@@ -1,10 +1,11 @@
 import { execFileSync, spawnSync } from "node:child_process";
+import { lstatSync, realpathSync } from "node:fs";
 import { lstat, readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { resolve, sep } from "node:path";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { observeLifecycleStatus, validateInstanceSlug, validateRepositoryManifest, validateVersionedProfile } from "../continuous/lifecycle.ts";
-import { loadSemanticGraph } from "../graph/index.ts";
-import { deriveWork } from "../graph/work.ts";
+import { loadSemanticGraph, objectsFor, objectValues, resourceDigest, type SemanticGraph } from "../graph/index.ts";
+import { deriveWork, type WorkPacket } from "../graph/work.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 
 const statusNonclaims = Object.freeze([
@@ -13,6 +14,9 @@ const statusNonclaims = Object.freeze([
   "lifecycle-running-is-not-work-completion-or-proof",
   "unobserved-values-are-not-zero",
   "no-full-anqr-staging-production-or-terminal-proof-claim",
+  "carrier-observation-covers-exactly-this-checkout-not-sibling-clones",
+  "closure-satisfiability-is-file-presence-not-byte-authentication",
+  "blast-radius-is-a-projection-not-a-performed-policy-change",
 ] as const);
 
 interface StatusArguments {
@@ -51,6 +55,183 @@ function parseStatusArguments(args: readonly string[]): StatusArguments {
   });
 }
 
+const graphPredicate = (name: string): string => `urn:usf:predicate:${name}`;
+const typePredicate = graphPredicate("type");
+const productionClosureType = "urn:usf:type:ProductionLeafRuntimeClosure";
+const constructionPolicyType = "urn:usf:type:ConstructionAuthorityPublicationPolicy";
+const completionPolicyType = "urn:usf:type:NoChangeWorkCompletionPublicationPolicy";
+
+/** Bound every projection so a malformed graph cannot make status unbounded. */
+const maxClosures = 64;
+const maxClosureMembers = 256;
+const maxPolicies = 128;
+
+function subjectsOfType(graph: SemanticGraph, type: string): string[] {
+  return [...new Set(graph.quads
+    .filter((quad) => quad.predicate === typePredicate && quad.objectKind === "iri" && quad.object === type)
+    .map((quad) => quad.subject))].sort();
+}
+
+function singleGraphValue(graph: SemanticGraph, subject: string, name: string): string | null {
+  const quads = objectsFor(graph, subject, graphPredicate(name));
+  return quads.length === 1 ? quads[0]!.object : null;
+}
+
+/**
+ * Same-root regular-file authentication for one declared closure member.
+ * Lexical containment alone is insufficient: an intermediate symlink can leave
+ * the repository while every path component still looks contained.
+ */
+function memberDisposition(repositoryRoot: string, member: string): "present" | "missing" | "not-regular-file" | "outside-root" {
+  if (member.length === 0 || member.startsWith("/") || member.split("/").includes("..")) return "outside-root";
+  const absolute = resolve(repositoryRoot, member);
+  let canonicalRoot: string;
+  try { canonicalRoot = realpathSync(repositoryRoot); }
+  catch { return "outside-root"; }
+  if (absolute !== resolve(canonicalRoot, member)) return "outside-root";
+  let metadata;
+  try { metadata = lstatSync(absolute); }
+  catch { return "missing"; }
+  if (metadata.isSymbolicLink() || !metadata.isFile()) return "not-regular-file";
+  let canonicalMember: string;
+  try { canonicalMember = realpathSync(absolute); }
+  catch { return "missing"; }
+  return canonicalMember === absolute && canonicalMember.startsWith(canonicalRoot + sep) ? "present" : "outside-root";
+}
+
+/**
+ * Assert that every typed ProductionLeafRuntimeClosure could actually be
+ * honoured by the executable repository.
+ *
+ * While a packet is incomplete its leaf dispatcher refuses at the proofblock
+ * boundary before closure authentication, so a missing member is unreachable
+ * and the packet's own confined validation cannot observe it. Publishing
+ * completion moves execution past that boundary and the missing member becomes
+ * a currentness refusal at the outer CLI. This projection is the
+ * pre-publication reading of that post-publication failure.
+ */
+export function closureSatisfiability(graph: SemanticGraph, repositoryRoot: string): Readonly<Record<string, unknown>> {
+  const closures = subjectsOfType(graph, productionClosureType).slice(0, maxClosures);
+  const rows = closures.map((closure) => {
+    const reasonCodes: string[] = [];
+    const declared = singleGraphValue(graph, closure, "closureMemberCount");
+    const declaredMemberCount = declared !== null && /^[0-9]{1,4}$/.test(declared) ? Number(declared) : null;
+    const runtimePaths = [...new Set(objectValues(graph, closure, graphPredicate("runtimePath")))].sort().slice(0, maxClosureMembers);
+    const entryModulePath = singleGraphValue(graph, closure, "entryModulePath");
+    const ownerWork = singleGraphValue(graph, closure, "ownerWork");
+    if (declaredMemberCount === null) reasonCodes.push("CLOSURE_MEMBER_COUNT_UNDECLARED");
+    else if (declaredMemberCount !== runtimePaths.length) reasonCodes.push(`CLOSURE_MEMBER_COUNT_MISMATCH:${declaredMemberCount}:${runtimePaths.length}`);
+    for (const member of runtimePaths) {
+      const disposition = memberDisposition(repositoryRoot, member);
+      if (disposition !== "present") reasonCodes.push(`CLOSURE_MEMBER_${disposition === "missing" ? "MISSING" : disposition === "not-regular-file" ? "NOT_REGULAR_FILE" : "OUTSIDE_ROOT"}:${member}`);
+    }
+    if (entryModulePath !== null && !runtimePaths.includes(entryModulePath)) reasonCodes.push(`CLOSURE_ENTRY_MODULE_NOT_A_MEMBER:${entryModulePath}`);
+    return Object.freeze({
+      closure, ownerWork, entryModulePath, declaredMemberCount,
+      runtimePathCount: runtimePaths.length,
+      satisfiable: reasonCodes.length === 0,
+      reasonCodes: Object.freeze([...new Set(reasonCodes)].sort()),
+    });
+  });
+  const unsatisfiable = rows.filter((row) => !row.satisfiable);
+  return Object.freeze({
+    status: rows.length === 0 ? "not-observed" : unsatisfiable.length === 0 ? "satisfiable" : "unsatisfiable",
+    closures: rows.length,
+    unsatisfiableClosures: unsatisfiable.length,
+    blockedWorks: Object.freeze([...new Set(unsatisfiable.map((row) => row.ownerWork).filter((owner): owner is string => owner !== null))].sort()),
+    rows: Object.freeze(rows),
+  });
+}
+
+/**
+ * Assert publication-policy coverage over the exact selected closure before
+ * evidence derivation is attempted. Zero eligible policies make a work
+ * permanently non-actionable with CONSTRUCTION_WORK_NOT_ELIGIBLE even though
+ * it can still report dependencyReady with verified-completion authority.
+ */
+export function publicationPolicyCoverage(graph: SemanticGraph, packets: readonly WorkPacket[]): Readonly<Record<string, unknown>> {
+  const eligibleByWork = (type: string): Map<string, string[]> => {
+    const byWork = new Map<string, string[]>();
+    for (const policy of subjectsOfType(graph, type).slice(0, maxPolicies)) {
+      for (const work of objectValues(graph, policy, graphPredicate("eligibleWork"))) {
+        byWork.set(work, [...(byWork.get(work) ?? []), policy].sort());
+      }
+    }
+    return byWork;
+  };
+  const construction = eligibleByWork(constructionPolicyType);
+  const completion = eligibleByWork(completionPolicyType);
+  const rows = packets.map((packet) => {
+    const constructionPolicies = construction.get(packet.id) ?? [];
+    const completionPolicies = completion.get(packet.id) ?? [];
+    const riskCodes: string[] = [];
+    if (constructionPolicies.length === 0) riskCodes.push("CONSTRUCTION_WORK_NOT_ELIGIBLE");
+    if (constructionPolicies.length > 1) riskCodes.push("CONSTRUCTION_AUTHORITY_POLICY_AMBIGUOUS");
+    if (completionPolicies.length === 0) riskCodes.push("WORK_COMPLETION_NOT_ELIGIBLE");
+    if (completionPolicies.length > 1) riskCodes.push("WORK_COMPLETION_POLICY_AMBIGUOUS");
+    for (const policy of [...constructionPolicies, ...completionPolicies]) {
+      const algorithms = objectValues(graph, policy, graphPredicate("publicationAlgorithm"));
+      if (algorithms.length !== 1 || !objectValues(graph, algorithms[0]!, graphPredicate("publicationPolicy")).includes(policy)) {
+        riskCodes.push(`CONSTRUCTION_AUTHORITY_PUBLICATION_CHAIN_INVALID:${policy}`);
+      }
+    }
+    return Object.freeze({
+      work: packet.id,
+      constructionAuthorityPolicies: Object.freeze(constructionPolicies),
+      completionPolicies: Object.freeze(completionPolicies),
+      riskCodes: Object.freeze([...new Set(riskCodes)].sort()),
+    });
+  });
+  const atRisk = rows.filter((row) => row.riskCodes.length > 0);
+  return Object.freeze({
+    status: rows.length === 0 ? "not-observed" : atRisk.length === 0 ? "covered" : "at-risk",
+    works: rows.length,
+    worksAtRisk: atRisk.length,
+    rows: Object.freeze(rows),
+  });
+}
+
+/**
+ * Project which current grants and completions a proposed policy change would
+ * stale, so widening an existing policy versus adding a disjoint sibling is a
+ * read-back decision rather than a trial amendment and rollback.
+ *
+ * Membership comes from each work's actual scoped dependency closure, not from
+ * eligibleWork edges. The two differ: a policy can sit inside the closure of a
+ * work it does not enumerate, and a work's own completion policy is not always
+ * inside its closure. Only the closure decides what a digest move stales.
+ */
+export function policyBlastRadius(graph: SemanticGraph, packets: readonly WorkPacket[]): Readonly<Record<string, unknown>> {
+  const policies = [...new Set([...subjectsOfType(graph, constructionPolicyType), ...subjectsOfType(graph, completionPolicyType)])].sort().slice(0, maxPolicies);
+  const rows = policies.map((policy) => {
+    const stales: { work: string; stage: string; currentAuthority: string }[] = [];
+    for (const packet of packets) {
+      if (!(packet.realisationBasis?.work.dependencies ?? []).some((dependency) => dependency.key === policy)) continue;
+      const currentAuthority = packet.realisationStage?.completion?.verified === true
+        ? "verified-completion"
+        : packet.eligibility?.construction.authority === "active-permission"
+          ? "construction-grant"
+          : "none";
+      if (currentAuthority !== "none") stales.push({ work: packet.id, stage: packet.realisationStage?.stage ?? "unknown", currentAuthority });
+    }
+    stales.sort((left, right) => left.work.localeCompare(right.work));
+    return Object.freeze({
+      policy,
+      policyResourceDigest: resourceDigest(graph, policy),
+      eligibleWork: Object.freeze(objectValues(graph, policy, graphPredicate("eligibleWork"))),
+      stalesOnChange: Object.freeze(stales.map((entry) => Object.freeze(entry))),
+      currentGrantsAtRisk: stales.filter((entry) => entry.currentAuthority === "construction-grant").length,
+      currentCompletionsAtRisk: stales.filter((entry) => entry.currentAuthority === "verified-completion").length,
+    });
+  });
+  return Object.freeze({
+    status: rows.length === 0 ? "not-observed" : "observed",
+    derivation: "scoped-dependency-closure-membership",
+    policies: rows.length,
+    rows: Object.freeze(rows),
+  });
+}
+
 function repositoryObservation(repositoryRoot: string): Readonly<Record<string, unknown>> {
   try {
     const commit = execFileSync("git", ["rev-parse", "HEAD^{commit}"], { cwd: repositoryRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
@@ -61,6 +242,69 @@ function repositoryObservation(repositoryRoot: string): Readonly<Record<string, 
   } catch {
     throw new UsfError("STATUS_REPOSITORY_UNAVAILABLE", exitCodes.CURRENTNESS_FAILURE, "Local Git carrier status is unavailable.");
   }
+}
+
+/** One bounded local git read that never contacts a remote. */
+function gitValue(repositoryRoot: string, args: readonly string[]): string | null {
+  try {
+    const value = execFileSync("git", args, { cwd: repositoryRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    return value.length === 0 || value.length > 512 ? null : value;
+  } catch { return null; }
+}
+
+/**
+ * Locate the authoritative carrier for this checkout without shell archaeology
+ * and without guessing.
+ *
+ * This observes exactly one checkout. Comparing a primary against a sibling
+ * clone is the caller's composition over two invocations; inventing that
+ * comparison from one root would be a guess. Upstream distance is read from
+ * already-fetched local remote-tracking refs only, so it is honest about
+ * staleness and contacts nothing. Absent upstream information is reported as
+ * not-observed with a reason code, never as "up to date".
+ */
+function carrierObservation(repositoryRoot: string, semanticDigest: string | null): Readonly<Record<string, unknown>> {
+  const gitDir = gitValue(repositoryRoot, ["rev-parse", "--git-dir"]);
+  const commonDir = gitValue(repositoryRoot, ["rev-parse", "--git-common-dir"]);
+  const insideWorktree = gitValue(repositoryRoot, ["rev-parse", "--is-inside-work-tree"]) === "true";
+  const detached = gitValue(repositoryRoot, ["symbolic-ref", "--quiet", "HEAD"]) === null;
+  const branch = detached ? null : gitValue(repositoryRoot, ["rev-parse", "--abbrev-ref", "HEAD"]);
+  const originConfigured = gitValue(repositoryRoot, ["config", "--get", "remote.origin.url"]) !== null;
+  const worktreeKind = gitDir === null || commonDir === null
+    ? "unknown"
+    : gitDir === commonDir ? "main-worktree" : "linked-worktree";
+
+  const upstreamRef = detached ? null : gitValue(repositoryRoot, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"]);
+  let upstream: Readonly<Record<string, unknown>>;
+  if (upstreamRef === null) {
+    upstream = Object.freeze({
+      status: "not-observed",
+      ref: null,
+      ahead: null,
+      behind: null,
+      reasonCode: detached ? "CARRIER_HEAD_DETACHED" : "CARRIER_UPSTREAM_NOT_CONFIGURED",
+      observedFromLocalRefsOnly: true,
+      remoteContact: false,
+    });
+  } else {
+    const counts = gitValue(repositoryRoot, ["rev-list", "--left-right", "--count", `HEAD...${upstreamRef}`]);
+    const parsed = counts === null ? null : /^([0-9]{1,9})\s+([0-9]{1,9})$/.exec(counts);
+    upstream = parsed === null
+      ? Object.freeze({ status: "not-observed", ref: upstreamRef, ahead: null, behind: null, reasonCode: "CARRIER_UPSTREAM_REF_UNREADABLE", observedFromLocalRefsOnly: true, remoteContact: false })
+      : Object.freeze({ status: "observed", ref: upstreamRef, ahead: Number(parsed[1]), behind: Number(parsed[2]), reasonCode: null, observedFromLocalRefsOnly: true, remoteContact: false });
+  }
+
+  return Object.freeze({
+    status: insideWorktree ? "observed" : "not-observed",
+    worktreeKind,
+    headDetached: detached,
+    branch,
+    originConfigured,
+    semanticDigest,
+    upstream,
+    comparisonScope: "this-checkout-only",
+    remoteContact: false,
+  });
 }
 
 async function providerObservation(repositoryRoot: string): Promise<Readonly<Record<string, unknown>>> {
@@ -148,8 +392,15 @@ async function broadStatus(repositoryRoot: string, args: readonly string[]): Pro
     metricsSourceObservation(repositoryRoot),
   ]);
   const semantic = semanticObservation(repositoryRoot, parsed);
+  const selectedGraph = parsed.profile === undefined || parsed.manifest === undefined
+    ? null
+    : loadSemanticGraph(repositoryRoot, parsed.manifest);
+  const selectedPackets = selectedGraph === null
+    ? []
+    : deriveWork(selectedGraph, { selector: `profile:${parsed.profile!}`, maxItems: parsed.maxItems }).items ?? [];
+  const notSelected = Object.freeze({ status: "not-selected", reasonCode: "STATUS_PROFILE_NOT_SELECTED", selectionRequired: ["--profile", "--manifest"] });
   const unobserved = [
-    ...(semantic.status === "not-selected" ? ["semantic", "work"] : []),
+    ...(semantic.status === "not-selected" ? ["semantic", "work", "closure-satisfiability", "publication-policy-coverage", "policy-blast-radius"] : []),
     "active-chains",
     "eligible-routes",
     "throughput",
@@ -163,7 +414,11 @@ async function broadStatus(repositoryRoot: string, args: readonly string[]): Pro
     status: "observed",
     detail: parsed.detail,
     repository: repositoryObservation(repositoryRoot),
+    carrier: carrierObservation(repositoryRoot, typeof semantic.semanticDigest === "string" ? semantic.semanticDigest : null),
     semantic,
+    closureSatisfiability: selectedGraph === null ? notSelected : closureSatisfiability(selectedGraph, repositoryRoot),
+    publicationPolicyCoverage: selectedGraph === null ? notSelected : publicationPolicyCoverage(selectedGraph, selectedPackets),
+    policyBlastRadius: selectedGraph === null ? notSelected : policyBlastRadius(selectedGraph, selectedPackets),
     lifecycle,
     providers,
     metrics,
