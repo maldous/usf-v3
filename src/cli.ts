@@ -68,6 +68,64 @@ const bootstrapHandlers: CommandHandlers = {
     return context.args.includes("--apply") ? operationalMutation(context.repositoryRoot, async () => completionAwarePublishCommandHandler(context)) : completionAwarePublishCommandHandler(context);
   },
   execute: (context) => operationalMutation(context.repositoryRoot, async () => (await import("./commands/execute.ts")).executeCommandHandler(context)),
+  "linear-binding": async ({ args, repositoryRoot }) => {
+    const operation = args[0];
+    if (operation !== "prepare" && operation !== "status" && operation !== "settle") {
+      throw new UsfError("LINEAR_BINDING_OPERATION_UNKNOWN", exitCodes.INVALID_INPUT, "Linear binding requires exactly one of: prepare, status, settle.");
+    }
+    const values = new Map<string, string>();
+    for (let index = 1; index < args.length; index += 1) {
+      const option = args[index]!;
+      const allowed = operation === "settle"
+        ? option === "--manifest" || option === "--binding" || option === "--evidence"
+        : option === "--manifest" || option === "--binding";
+      if (!allowed || values.has(option)) {
+        throw new UsfError("LINEAR_BINDING_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, `Linear binding options must be unique and explicit: ${option}`);
+      }
+      const value = args[++index];
+      if (value === undefined || value.length === 0 || value.startsWith("--")) {
+        throw new UsfError("LINEAR_BINDING_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, `Missing value for ${option}.`);
+      }
+      values.set(option, value);
+    }
+    const manifestPath = values.get("--manifest");
+    const bindingIri = values.get("--binding");
+    const evidenceDigest = values.get("--evidence");
+    const expectedSize = operation === "settle" ? 3 : 2;
+    if (
+      manifestPath === undefined
+      || bindingIri === undefined
+      || values.size !== expectedSize
+      || (operation === "settle" && (evidenceDigest === undefined || !/^sha256:[0-9a-f]{64}$/.test(evidenceDigest)))
+    ) {
+      throw new UsfError(
+        "LINEAR_BINDING_ARGUMENTS_INVALID",
+        exitCodes.INVALID_INPUT,
+        operation === "settle"
+          ? "Linear binding settle requires exactly --manifest PATH, --binding IRI, and --evidence sha256:<64hex>."
+          : "Linear binding prepare and status require exactly --manifest PATH and --binding IRI.",
+      );
+    }
+    const linear = await import("./commands/linear-binding.ts");
+    try {
+      const selector = Object.freeze({ repositoryRoot, manifestPath, bindingIri });
+      const result = operation === "prepare"
+        ? await operationalMutation(repositoryRoot, () => linear.prepareLinearBinding(selector), true)
+        : operation === "settle"
+          ? await operationalMutation(
+              repositoryRoot,
+              () => linear.afterHermesResult(selector, evidenceDigest as Parameters<typeof linear.afterHermesResult>[1]),
+              true,
+            )
+          : await linear.observeLinearBinding(selector);
+      return { output: Object.freeze({ schema: "urn:usf:linear-binding-result:1" as const, result }), exitCode: exitCodes.SUCCESS };
+    } catch (error) {
+      if (error instanceof linear.LinearBindingError) {
+        throw new UsfError(error.reasonCode, exitCodes.DOMAIN_FAILURE, error.reasonCode);
+      }
+      throw error;
+    }
+  },
   hermes: async ({ args, repositoryRoot }) => {
     if (args[0] === "steward") {
       const { stewardshipCommand } = await import("./commands/hermes-stewardship.ts");

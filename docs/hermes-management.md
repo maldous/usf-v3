@@ -33,6 +33,32 @@ The first packet is product-neutral. The second proves the selected ANQR
 management closure; the final exact product packet cannot be derived from the
 core-only manifest.
 
+## Linear-bound interim procedure
+
+The current bridge follows one bounded sequence: governed semantic authoring,
+`usf linear-binding prepare --manifest PATH --binding IRI`, a Hermes run,
+candidate validation/integration/completion,
+`usf linear-binding settle --manifest PATH --binding IRI --evidence sha256:<64hex>`,
+and then a separate evidence-linked Linear update. The source binding manifest
+and the target work manifest are distinct: the binding graph selects the target
+through `authority.targetManifest`.
+
+The bridge does not poll Linear, select or fabricate caller work, contact a
+provider while observing status or settling saved evidence, update an issue, or
+prove completion itself. Hermes accepts only the already-materialised native
+one-unit graph, rederives its current binding before dispatch, and correlates a
+successful native result using the graph execution evidence digest.
+
+After an interruption, recover the saved native result from
+`.usf/graph-executions/<digest>.json` and run `linear-binding settle` with the
+same source manifest, binding IRI, and evidence digest. Settlement authenticates
+the saved graph and evidence, recovers the matching STARTED or UNKNOWN attempt,
+and never redispatches provider work. Repeating the exact settlement is
+idempotent and may repair its partial issue-level record; a different digest or
+mismatched binding, attempt, intent, or basis is refused. Use `linear-binding
+status` independently to observe the attempt. Settlement, status, and any
+subsequent Linear update remain separate from proof.
+
 ## Operational stewardship and the current CLI
 
 The operator or its authorised Codex/Claude session uses the current CLI; this

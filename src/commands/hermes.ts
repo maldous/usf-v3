@@ -7,6 +7,13 @@ import { deriveStates, readDependencyGraph, readyUnits, stateCounts, type WorkUn
 import type { CommandResult } from "./dispatcher.ts";
 import { graphExecuteCommand } from "./graph-execute.ts";
 import { graphIntegrityCommand } from "./graph-integrity.ts";
+import {
+  LinearBindingError,
+  afterHermesResult,
+  beforeHermesDispatch,
+  observeLinearBinding,
+  type LinearBindingSelector,
+} from "./linear-binding.ts";
 import { readLocalCatalogue } from "./models.ts";
 import { readTrackedJson } from "./probe.ts";
 
@@ -15,6 +22,8 @@ const typePredicate = "urn:usf:predicate:type";
 const workUnitType = "urn:usf:type:SemanticWorkUnit";
 const executionResultPredicate = "urn:usf:predicate:executionResult";
 const attemptCountPredicate = "urn:usf:predicate:hermesAttemptCount";
+const bindingIriPredicate = "urn:usf:predicate:bindingIri";
+const bindingManifestPathPredicate = "urn:usf:predicate:bindingManifestPath";
 const maximumCyclesCeiling = 12;
 const maximumAttemptsPerUnit = 3;
 
@@ -87,6 +96,62 @@ async function discoverWork(repositoryRoot: string, workDirectory: string): Prom
     discovered.push(Object.freeze({ file: `${workDirectory}/${name}`, graph, unitIris, quads: Object.freeze(quads) }));
   }
   return Object.freeze(discovered);
+}
+
+function oneLiteral(work: DiscoveredWork, unitIri: string, predicate: string): string | undefined {
+  const matches = work.quads.filter((quad) => quad.subject === unitIri && quad.predicate === predicate);
+  if (matches.length === 0) return undefined;
+  if (matches.length !== 1 || matches[0]!.objectKind !== "literal" || matches[0]!.object.length === 0) {
+    throw new UsfError("HERMES_LINEAR_BINDING_METADATA_INVALID", exitCodes.INVALID_INPUT, "Bound Hermes metadata must contain one non-empty literal per field.");
+  }
+  return matches[0]!.object;
+}
+
+function bindingSelector(repositoryRoot: string, work: DiscoveredWork): LinearBindingSelector | undefined {
+  const metadata = work.unitIris.map((unitIri) => Object.freeze({
+    bindingIri: oneLiteral(work, unitIri, bindingIriPredicate),
+    manifestPath: oneLiteral(work, unitIri, bindingManifestPathPredicate),
+  }));
+  const hasBindingMetadata = metadata.some(
+    (entry) => entry.bindingIri !== undefined || entry.manifestPath !== undefined,
+  );
+  if (!hasBindingMetadata) return undefined;
+  const boundMetadata = metadata[0]!;
+  if (work.unitIris.length !== 1
+    || boundMetadata.bindingIri === undefined
+    || boundMetadata.manifestPath === undefined) {
+    throw new UsfError("HERMES_LINEAR_BINDING_METADATA_INVALID", exitCodes.INVALID_INPUT, "A native bound graph must contain exactly one unit and complete binding metadata.");
+  }
+  return Object.freeze({
+    repositoryRoot,
+    manifestPath: boundMetadata.manifestPath,
+    bindingIri: boundMetadata.bindingIri,
+  });
+}
+
+async function verifyBoundWork(repositoryRoot: string, work: DiscoveredWork, unitIri: string, selector: LinearBindingSelector) {
+  try {
+    const observed = await observeLinearBinding(selector);
+    const binding = observed.binding;
+    if (binding.unit.unitIri !== unitIri
+      || binding.unit.bindingIri !== selector.bindingIri
+      || binding.unit.bindingManifestPath !== selector.manifestPath
+      || binding.unit.manifestPath !== binding.authority.targetManifest
+      || binding.unitPath !== work.file) {
+      throw new UsfError("HERMES_LINEAR_BINDING_IDENTITY_MISMATCH", exitCodes.INVALID_INPUT, "The discovered bound unit does not match current binding authority.");
+    }
+    const [discoveredBytes, trustedBytes] = await Promise.all([
+      readFile(resolve(repositoryRoot, work.file), "utf8"),
+      readFile(resolve(repositoryRoot, binding.unitPath), "utf8"),
+    ]);
+    if (discoveredBytes !== trustedBytes) {
+      throw new UsfError("HERMES_LINEAR_BINDING_GRAPH_MISMATCH", exitCodes.INVALID_INPUT, "The discovered bound graph bytes are not the prepared unit graph.");
+    }
+    return observed;
+  } catch (error) {
+    if (error instanceof LinearBindingError) throw new UsfError(error.reasonCode, exitCodes.DOMAIN_FAILURE, error.reasonCode);
+    throw error;
+  }
 }
 
 async function readStateQuads(repositoryRoot: string): Promise<readonly Quad[]> {
@@ -251,6 +316,52 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
         .filter((dependency) => !inThisGraph.has(dependency)))].sort());
       // The whole work graph is supplied so its dependency edges validate; the
       // scheduler names exactly the units it selected.
+      const selector = bindingSelector(repositoryRoot, work);
+      const boundUnit = selector !== undefined ? work.unitIris[0]! : units[0]!;
+      if (selector !== undefined) {
+        const observed = await verifyBoundWork(repositoryRoot, work, boundUnit, selector);
+        if (observed.status === "SETTLED" || observed.status === "COMPLETED") {
+          dispatches.push(Object.freeze({
+            workGraph: graphIri,
+            dispatchedUnits: Object.freeze([]),
+            graphExecutionStatus: "excluded-already-terminal",
+            dispatchFailure: null,
+            dispatchFailureDetail: null,
+            graphExecutionEvidenceDigest: null,
+            authoritySnapshot: null,
+            concurrency: null,
+            transportsUsed: Object.freeze([]),
+            refusals: Object.freeze([]),
+          }));
+          continue;
+        }
+        if (observed.status === "UNKNOWN") {
+          dispatches.push(Object.freeze({
+            workGraph: graphIri,
+            dispatchedUnits: Object.freeze([]),
+            graphExecutionStatus: "refused-unknown-linear-attempt",
+            dispatchFailure: "LINEAR_BINDING_ATTEMPT_UNKNOWN",
+            dispatchFailureDetail: "UNKNOWN requires bounded reconciliation and is never placed on the generic retry path.",
+            graphExecutionEvidenceDigest: null,
+            authoritySnapshot: null,
+            concurrency: null,
+            transportsUsed: Object.freeze([]),
+            refusals: Object.freeze([Object.freeze({ unit: boundUnit, attempts: attemptsFor(boundUnit) })]),
+          }));
+          continue;
+        }
+        let started;
+        try {
+          started = await beforeHermesDispatch(selector);
+        } catch (error) {
+          if (error instanceof LinearBindingError) throw new UsfError(error.reasonCode, exitCodes.DOMAIN_FAILURE, error.reasonCode);
+          throw error;
+        }
+        if (started.status !== "STARTED") {
+          throw new UsfError("HERMES_LINEAR_BINDING_NOT_STARTED", exitCodes.DOMAIN_FAILURE, "Bound work may dispatch only from a freshly established STARTED attempt.");
+        }
+        await verifyBoundWork(repositoryRoot, work, boundUnit, selector);
+      }
       const executed = await graphExecuteCommand(repositoryRoot, [
         "--input", work.file,
         "--graph", graphIri,
@@ -271,7 +382,26 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
         exitCode: exitCodes.EXTERNAL_UNAVAILABLE as ExitCode,
       }));
       const evidence = executed.output as Record<string, unknown>;
-      const unitRecords = Array.isArray(evidence.units) ? evidence.units as Record<string, unknown>[] : [];
+      let unitRecords = Array.isArray(evidence.units) ? evidence.units as Record<string, unknown>[] : [];
+      if (selector !== undefined) {
+        const successful = unitRecords.length === 1
+          && unitRecords[0]!.unit === boundUnit
+          && unitRecords[0]!.status === "ok";
+        const evidenceDigest = evidence.evidenceDigest;
+        if (!successful || typeof evidenceDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(evidenceDigest)) {
+          unitRecords = [];
+        } else {
+          try {
+            const settled = await afterHermesResult(selector, evidenceDigest as `sha256:${string}`);
+            if (settled.status !== "SETTLED" && settled.status !== "COMPLETED") {
+              unitRecords = [];
+            }
+          } catch (error) {
+            if (!(error instanceof LinearBindingError)) throw error;
+            unitRecords = [];
+          }
+        }
+      }
 
       for (const unitRecord of unitRecords) {
         const unitIri = typeof unitRecord.unit === "string" ? unitRecord.unit : null;
