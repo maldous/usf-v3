@@ -353,3 +353,66 @@ test("CLI binding reads follow only the selected target manifest without runtime
     assert.deepEqual(readdirSync(root), ["graph"]);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+test("no-change producer describes derived identity and retained-state recovery without execution admission", async () => {
+  const graph = actualDescriptorGraph();
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const id = "urn:usf:cli-transition:no-change-workspace:1";
+  const inspect = (value: SemanticGraph) => deriveCliTransitionCoverage(value, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
+  const report = inspect(graph);
+  const descriptor = report.descriptors.find(value => value.identity === id)!;
+  assert(descriptor);
+  const effect = descriptor.effect as Record<string, unknown>;
+  const input = descriptor.input as Record<string, unknown>;
+  const recovery = descriptor.recovery as Record<string, unknown>;
+  const cases = recovery.cases as readonly Record<string, unknown>[];
+  assert.equal(effect.effectClass, "candidate-workspace");
+  assert.equal(effect.contact, "none");
+  assert.equal(input.schema, "urn:usf:schema:no-change-request:1");
+  assert.deepEqual(cases.map(value => value.whenState).sort(), ["absent", "busy", "complete-current", "conflicting", "partial", "stale", "unknown"]);
+  for (const value of cases) {
+    const creates = value.whenState === "absent";
+    const reuses = value.whenState === "complete-current";
+    assert.equal(value.action, creates ? "create" : reuses ? "reuse" : "refuse");
+    assert.equal(value.mayMutateWorkspace, creates);
+    assert.deepEqual(value.nextTransitions, creates || reuses ? ["urn:usf:cli-transition:completion-check-receipts:1"] : []);
+    assert.deepEqual(value.refusalCodes, [], "do not manufacture an exhaustive native refusal classification");
+    assert.equal("fields" in value, false);
+  }
+  assert.match(String(cases.find(value => value.whenState === "partial")!.condition), /retained before this invocation/);
+  assert.equal(report.complete, false);
+  assert.equal(report.executionAuthority, "none");
+  assert.equal(report.parallelSafety.state, "unproven");
+  assert.equal(report.terminalClosure.assessment.satisfaction, "unverified");
+  assert(report.diagnostics.some(value => value.subject === id && value.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
+  await assert.rejects(() => observationCommandHandler({ command: "realise", args: ["--input", "-"], repositoryRoot: "/unused" }, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+
+  const changed = structuredClone(graph);
+  changed.quads = changed.quads.map(q => q.subject === "urn:usf:cli-recovery-case:no-change-partial:1" && q.predicate === "urn:usf:predicate:recoveryCaseAction" ? { ...q, object: "create" } : q);
+  const altered = inspect(changed);
+  assert.notEqual(altered.digest, report.digest);
+  assert.equal(altered.executionAuthority, "none");
+  assert.equal(altered.complete, false);
+  assert(altered.diagnostics.some(value => value.subject === id && value.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), "a changed graph declaration is not compiled recovery support");
+
+  const missing = structuredClone(graph);
+  missing.quads = missing.quads.filter(q => !(q.subject === "urn:usf:cli-recovery-case:no-change-partial:1" && q.predicate === "urn:usf:predicate:recoveryCaseMayMutate"));
+  const incomplete = inspect(missing);
+  assert(incomplete.diagnostics.some(value => value.reasonCode === "CLI_RECORD_CARDINALITY" && value.subject === "urn:usf:cli-recovery-case:no-change-partial:1"));
+});
+
+test("generated no-change request and recovery cases reject opaque or caller-derived overrides", async () => {
+  const { createJsonSchemaValidator } = await import("../../../src/schema/index.ts");
+  const canonical = deriveTransitionSchemaResult(actualDescriptorGraph(), { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" }).descriptorSchema!;
+  const validator = (fragment: string) => createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:no-change-contract:" + fragment, $ref: String(canonical.$id) + "#/$defs/" + fragment }, { dependencySchemas: [canonical] });
+  const input = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  assert.equal(validator("noChangeRequest").validate(input).valid, true);
+  for (const key of ["candidateDigest", "profile", "work", "basis", "policy", "workspacePath", "output", "fields", "executionAuthority"]) {
+    assert.equal(validator("noChangeRequest").validate({ ...input, [key]: "invented" }).valid, false, key);
+  }
+  const branch = { whenState: "partial", action: "refuse", mayMutateWorkspace: false, condition: "Retained before invocation", nextTransitions: [], refusalCodes: [], explanation: "No partial repair" };
+  assert.equal(validator("recoveryCase").validate(branch).valid, true);
+  for (const extra of [{ fields: {} }, { action: "repair" }, { whenState: "completed" }, { mayMutateWorkspace: "false" }, { nextTransitions: "execute" }]) {
+    assert.equal(validator("recoveryCase").validate({ ...branch, ...extra }).valid, false);
+  }
+});
