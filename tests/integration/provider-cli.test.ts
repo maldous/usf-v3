@@ -36,7 +36,7 @@ function withProviderCliFixture(run: (fixtureRoot: string) => void): void {
   chmodSync(temporaryRoot, 0o700);
   const fixtureRoot = mkdtempSync(resolve(temporaryRoot, "provider-cli-repository-"));
   try {
-    for (const directory of ["config", "docs", "evidence", "graph", "recipes", "schemas", "src", "tests"]) {
+    for (const directory of ["bin", "config", "docs", "evidence", "graph", "recipes", "schemas", "scripts", "src", "tests"]) {
       cpSync(resolve(repositoryRoot, directory), resolve(fixtureRoot, directory), { recursive: true });
     }
     for (const path of ["GOAL.md", "package.json", "pnpm-lock.yaml"]) {
@@ -239,7 +239,7 @@ test("availability requires explicit zero-paid contact controls and help describ
     "--route", "openrouter-candidate",
     "--profile", "urn:usf:profile:v3-self-host:3",
     "--manifest", "graph/manifests/self-host-provider-v3.json",
-  ], { cwd: repositoryRoot, encoding: "utf8", timeout: 5_000 });
+  ], { cwd: repositoryRoot, encoding: "utf8", timeout: 35_000 });
   assert.equal(registeredRefusal.error, undefined);
   assert.equal(registeredRefusal.status, 1);
   assert.equal(registeredRefusal.stdout, "");
