@@ -82,8 +82,12 @@ test("interrogation and preparation share actual graph-bound observation admissi
   const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
   const admitted = inspectObservationTransition(graph, selection, "resolve prepare-local");
   const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
-  assert.deepEqual(report.descriptors[0], admitted.descriptor);
-  assert.equal(report.diagnostics.some(d => d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), false);
+  assert.deepEqual(report.descriptors.find(d => d.identity === admitted.descriptor.identity), admitted.descriptor);
+  assert.equal(report.diagnostics.some(d => d.subject === admitted.descriptor.identity && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), false);
+  for (const stage of ["evidence", "proof", "publication"]) {
+    const identity = `urn:usf:cli-transition:completion-${stage}:1`;
+    assert(report.diagnostics.some(d => d.subject === identity && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), identity);
+  }
   assert.equal(report.executionAuthority, "none");
   assert.equal(report.complete, false);
   assert.equal(report.parallelSafety.state, "unproven");
@@ -191,4 +195,29 @@ test("every declared selector bound is enforced without hidden coercion", () => 
   for (const value of ["", "--manifest", "urn:invalid identity", "USF-0"]) {
     assert.throws(() => parseTransitionInterrogation(["inspect", "--root", value]), { code: "CLI_TRANSITION_ARGUMENTS_INVALID" });
   }
+});
+
+test("completion lineage remains visible without admitting unmapped execution or terminal satisfaction", () => {
+  const graph = actualDescriptorGraph();
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
+  const assessment = report.terminalClosure.assessment;
+  const stages = ["evidence", "proof", "publication"];
+  for (const [index, stage] of stages.entries()) {
+    const transition = `urn:usf:cli-transition:completion-${stage}:1`;
+    const artifact = `urn:usf:cli-contract:completion-${stage}-artifact:1`;
+    const recovery = `urn:usf:cli-contract:completion-${stage}-recovery:1`;
+    for (const identity of [transition, artifact, recovery]) assert(assessment.nodes.some(n => n.identity === identity && n.state === "unverified"), identity);
+    assert(assessment.edges.some(e => e.source === transition && e.predicate === "urn:usf:predicate:produces" && e.target === artifact));
+    assert(assessment.edges.some(e => e.source === artifact && e.predicate === "urn:usf:predicate:producer" && e.target === transition));
+    assert(assessment.edges.some(e => e.source === transition && e.predicate === "urn:usf:predicate:recoveryContract" && e.target === recovery));
+    if (index > 0) assert(assessment.edges.some(e => e.source === transition && e.predicate === "urn:usf:predicate:consumes" && e.target === `urn:usf:cli-contract:completion-${stages[index - 1]}-artifact:1`));
+    assert(report.diagnostics.some(d => d.subject === transition && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
+  }
+  assert.equal(assessment.structuralComplete, false);
+  assert.equal(assessment.satisfaction, "unverified");
+  assert(assessment.reasonCodes.includes("TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING"));
+  assert.equal(report.complete, false);
+  assert.equal(report.executionAuthority, "none");
+  assert.equal(report.parallelSafety.state, "unproven");
 });
