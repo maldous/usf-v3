@@ -5,7 +5,7 @@ import { lstat, mkdir, open, readFile, rename, rm, stat } from "node:fs/promises
 import { dirname, resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { linuxProcessInspector, type ProcessIdentity } from "../continuous/lifecycle.ts";
-import { acquireStewardActivity, acquireSupervisorLifetimeLock } from "../continuous/stewardship.ts";
+import { acquireStewardActivity, acquireSupervisorLifetimeLock, bindSupervisorToActiveClaimUnderActivity, withStewardedOperation, type StewardshipDependencies, type StewardshipLock } from "../continuous/stewardship.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
@@ -343,6 +343,53 @@ export async function observeSupervisor(repositoryRoot: string): Promise<Readonl
     && observed.argvDigest === record.process.argvDigest
     && observed.executablePathDigest === record.process.executablePathDigest;
   return Object.freeze({ liveness: same ? "live" as const : "stale" as const, record });
+}
+
+/** Foreground lanes share canonical lifecycle discovery with detached Hermes. */
+export async function registerForegroundSupervisor(repositoryRoot: string, input: {
+  readonly lifetime: StewardshipLock;
+  readonly process: ProcessIdentity;
+  readonly claimId: string;
+  readonly generation: string;
+  readonly dependencies: StewardshipDependencies;
+  readonly args: readonly string[];
+}): Promise<HermesSupervisorRecord> {
+  if (!input.lifetime.held() || !validProcessIdentity(input.process)) {
+    throw new UsfError("HERMES_SUPERVISOR_ADMISSION_REQUIRED", exitCodes.CONTAINMENT_REFUSAL, "Foreground admission requires held lifetime ownership and exact process identity.");
+  }
+  return withStewardedOperation(repositoryRoot, input.claimId, input.generation, async () => {
+    const existing = await observeSupervisor(repositoryRoot);
+    if (existing.liveness === "live") throw new UsfError("HERMES_SUPERVISOR_ALREADY_ACTIVE", exitCodes.DOMAIN_FAILURE, "A live supervisor already owns this repository.");
+    const parsed = parseLifecycleArgumentsAgainstAuthority(repositoryRoot, input.args);
+    const observed = await linuxProcessInspector.inspect(input.process.pid);
+    if (observed === null || !sameProcess(observed, input.process)) throw new UsfError("HERMES_SUPERVISOR_ADMISSION_REQUIRED", exitCodes.CONTAINMENT_REFUSAL, "Foreground process identity moved.");
+    const startedAt = new Date().toISOString();
+    const record: HermesSupervisorRecord = { schema: "urn:usf:hermes-supervisor:1", version: 1,
+      supervisorId: canonicalDigest({ process: input.process, startedAt }).slice(7, 32), startedAt, process: input.process,
+      manifest: parsed.manifest, usefulTokenTarget: parsed.usefulTokenTarget, envFile: parsed.envFile,
+      pauseSeconds: parsed.pauseSeconds, concurrency: parsed.concurrency, dispatchLimit: parsed.dispatchLimit,
+      authorityIdentity: authorityIdentity(repositoryRoot, parsed.manifest) };
+    await bindSupervisorToActiveClaimUnderActivity(repositoryRoot, input.claimId, input.generation, input.process, input.dependencies);
+    await writeJson(repositoryRoot, supervisorRecord, record);
+    return record;
+  }, input.dependencies);
+}
+
+export async function foregroundSupervisorStopRequested(repositoryRoot: string, record: HermesSupervisorRecord): Promise<boolean> {
+  const request = await readJson<{ supervisorId?: unknown }>(repositoryRoot, stopRequestRecord);
+  return request?.supervisorId === record.supervisorId;
+}
+
+export async function unregisterForegroundSupervisor(repositoryRoot: string, record: HermesSupervisorRecord): Promise<void> {
+  const activity = await acquireStewardActivity(repositoryRoot);
+  try {
+    const current = await observeSupervisor(repositoryRoot);
+    if (current.record?.supervisorId !== record.supervisorId || !sameProcess(current.record.process, record.process)) return;
+    await writeJson(repositoryRoot, `${supervisorRoot}/foreground-${record.supervisorId}.json`, { record, stoppedAt: new Date().toISOString() });
+    await rm(resolve(repositoryRoot, supervisorRecord));
+    const request = await readJson<{ supervisorId?: unknown }>(repositoryRoot, stopRequestRecord);
+    if (request?.supervisorId === record.supervisorId) await rm(resolve(repositoryRoot, stopRequestRecord), { force: true });
+  } finally { await activity.release(); }
 }
 
 function authorityIdentity(repositoryRoot: string, manifest: string = deliveryManifest): string {

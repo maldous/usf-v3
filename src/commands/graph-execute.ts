@@ -1,6 +1,5 @@
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
-import { resolve } from "node:path";
+import { lstat, mkdir, readFile, realpath, stat, writeFile } from "node:fs/promises";
+import { isAbsolute, resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
@@ -17,7 +16,7 @@ import {
   deriveRouteUniverse, diversifyCandidates, rotationGroup, type ExecutionCandidate,
 } from "../providers/route-universe.ts";
 import { readAuthoritySnapshot, snapshotDifference, type AuthoritySnapshot } from "../providers/authority-snapshot.ts";
-import { observeQualifiedTaskClasses } from "../providers/capabilities.ts";
+import { observeQualifiedTaskClasses, qualificationSnapshot } from "../providers/capabilities.ts";
 import {
   localAgentTransportIds, observeTransportCapability, type AuthenticatedTransportCapability,
 } from "../providers/transports.ts";
@@ -78,6 +77,69 @@ const hardMaximumConcurrency = 16;
 const invocationTimeoutMs = 150_000;
 const hostAgentTimeoutFloorMs = 420_000;
 const invocationTimeoutCeilingMs = 600_000;
+// Graph executions may overlap in one supervisor process. Keep dispatch fully
+// concurrent, but serialize the final read/merge/write so an older snapshot
+// cannot overwrite another binding's freshly persisted route observations.
+let routeDeferralPersistence = Promise.resolve();
+
+export interface ContainedProviderEnvironment {
+  readonly providerHome: string;
+  readonly temporaryDirectory: string;
+  readonly environment: NodeJS.ProcessEnv;
+}
+
+/** Build one minimal child environment from an already-provisioned private home. */
+export async function containedProviderEnvironment(
+  repositoryRoot: string,
+  hostEnvironment: Readonly<Record<string, string | undefined>> = process.env,
+): Promise<ContainedProviderEnvironment> {
+  const configured = hostEnvironment.USF_PROVIDER_HOME;
+  const providerHome = configured === undefined || configured.length === 0
+    ? resolve(repositoryRoot, ".usf", "provider-home")
+    : configured;
+  if (!isAbsolute(providerHome)) {
+    throw new UsfError("GRAPH_EXECUTE_PROVIDER_HOME_REFUSED", exitCodes.CONTAINMENT_REFUSAL,
+      "USF_PROVIDER_HOME must be an absolute owner-private directory.");
+  }
+  const entry = await lstat(providerHome).catch(() => undefined);
+  const canonical = await realpath(providerHome).catch(() => undefined);
+  const uid = typeof process.getuid === "function" ? process.getuid() : undefined;
+  const path = hostEnvironment.PATH;
+  if (entry === undefined || canonical === undefined || canonical !== providerHome
+    || !entry.isDirectory() || entry.isSymbolicLink() || uid === undefined || entry.uid !== uid
+    || (entry.mode & 0o077) !== 0 || path === undefined || path.length === 0) {
+    throw new UsfError("GRAPH_EXECUTE_PROVIDER_HOME_REFUSED", exitCodes.CONTAINMENT_REFUSAL,
+      "The contained provider home or executable PATH is unavailable or unsafe.");
+  }
+  const temporaryDirectory = resolve(repositoryRoot, ".usf", "tmp");
+  await mkdir(temporaryDirectory, { recursive: true, mode: 0o700 });
+  const temporary = await lstat(temporaryDirectory).catch(() => undefined);
+  const canonicalTemporary = await realpath(temporaryDirectory).catch(() => undefined);
+  if (temporary === undefined || canonicalTemporary === undefined || canonicalTemporary !== temporaryDirectory
+    || !temporary.isDirectory() || temporary.isSymbolicLink()
+    || temporary.uid !== uid || (temporary.mode & 0o077) !== 0) {
+    throw new UsfError("GRAPH_EXECUTE_PROVIDER_HOME_REFUSED", exitCodes.CONTAINMENT_REFUSAL,
+      "The contained provider temporary directory is unavailable or unsafe.");
+  }
+  return Object.freeze({
+    providerHome,
+    temporaryDirectory,
+    environment: Object.freeze({ HOME: providerHome, USF_PROVIDER_HOME: providerHome, PATH: path, TMPDIR: temporaryDirectory }),
+  });
+}
+
+async function persistRouteDeferrals(
+  repositoryRoot: string,
+  outcomes: readonly ObservedRouteOutcome[],
+): Promise<void> {
+  const operation = routeDeferralPersistence.then(async () => {
+    const current = await readRouteDeferrals(repositoryRoot);
+    await writeRouteDeferrals(repositoryRoot, applyRouteOutcomes(current, outcomes, Date.now()));
+  });
+  // A refusal remains visible to its caller but cannot poison subsequent runs.
+  routeDeferralPersistence = operation.catch(() => undefined);
+  await operation;
+}
 
 /**
  * How long one invocation may run.
@@ -160,11 +222,27 @@ function parse(args: readonly string[], declaredConcurrency: number | null = nul
 interface SemanticWorkUnit {
   readonly iri: string;
   readonly prompt: string;
+  readonly promptDigest: string;
   readonly requiredCapabilities: readonly string[];
   readonly maximumOutputTokens: number;
   readonly minimumContextTokens: number | null;
   /** Digest of exactly the source quads that assert this unit. */
   readonly sourceAssertionDigest: string;
+}
+
+/** Limits the SDK branch actually enforces for a single no-tools generation. */
+export function sdkInvocationLimits(
+  candidate: Readonly<{ readonly contextLimit: number | null }>,
+  unit: Readonly<{ readonly prompt: string; readonly maximumOutputTokens: number }>,
+  maxWallTimeMs: number,
+): Readonly<{ maxTurns: number; maxWallTimeMs: number; maxInputTokens: number; maxOutputTokens: number; maxToolCalls: number; maxRetries: number }> | null {
+  const contextLimit = candidate.contextLimit;
+  if (contextLimit === null || !Number.isSafeInteger(contextLimit) || contextLimit <= unit.maximumOutputTokens
+    || !Number.isSafeInteger(maxWallTimeMs) || maxWallTimeMs <= 0) return null;
+  const maxInputTokens = contextLimit - unit.maximumOutputTokens;
+  // UTF-8 bytes are an intentionally conservative upper bound for text tokens.
+  if (Buffer.byteLength(unit.prompt, "utf8") > maxInputTokens) return null;
+  return Object.freeze({ maxTurns: 1, maxWallTimeMs, maxInputTokens, maxOutputTokens: unit.maximumOutputTokens, maxToolCalls: 0, maxRetries: 0 });
 }
 
 function literalsFor(quads: readonly Quad[], subject: string, predicate: string): readonly string[] {
@@ -209,6 +287,7 @@ function extractWorkUnits(quads: readonly Quad[]): readonly SemanticWorkUnit[] {
     return Object.freeze({
       iri,
       prompt: prompts[0]!,
+      promptDigest: canonicalDigest(prompts[0]!),
       requiredCapabilities: Object.freeze([...new Set(
         capabilityPredicates.flatMap((predicate) => literalsFor(quads, iri, predicate)),
       )].sort()),
@@ -288,35 +367,37 @@ export interface GraphExecutionDependencies {
     repositoryRoot: string;
     observedAt: string;
     suppliedCredentialNames: readonly string[];
+    providerHome?: string;
   }>) => Promise<readonly AuthenticatedTransportCapability[]>;
   readonly invokeCli: (input: Readonly<{
     candidate: ExecutionCandidate;
     prompt: string;
     timeoutMs: number;
+    environment?: NodeJS.ProcessEnv;
   }>) => Promise<CliInvocationResult>;
 }
 
 const productionGraphExecutionDependencies: GraphExecutionDependencies = Object.freeze({
   observeLocalAgentCapabilities: async (
-    { repositoryRoot, observedAt, suppliedCredentialNames }:
+    { repositoryRoot, observedAt, suppliedCredentialNames, providerHome }:
     Parameters<GraphExecutionDependencies["observeLocalAgentCapabilities"]>[0],
   ) =>
     Object.freeze(await Promise.all(localAgentTransportIds.map((transport) => observeTransportCapability(transport, {
       repositoryRoot,
-      homeDirectory: homedir(),
+      homeDirectory: providerHome ?? resolve(repositoryRoot, ".usf", "provider-home"),
       observedAt,
       suppliedCredentialNames,
       requiredCredentialName: null,
       adapterInstalled: false,
     })))),
   invokeCli: async (
-    { candidate, prompt, timeoutMs }: Parameters<GraphExecutionDependencies["invokeCli"]>[0],
+    { candidate, prompt, timeoutMs, environment }: Parameters<GraphExecutionDependencies["invokeCli"]>[0],
   ) => candidate.transport === "claude-cli"
-    ? invokeClaudeCli(prompt, timeoutMs, candidate.model)
+    ? invokeClaudeCli(prompt, timeoutMs, candidate.model, "claude", environment)
     : candidate.transport === "codex-cli"
-      ? invokeCodexCli(prompt, timeoutMs, candidate.model)
+      ? invokeCodexCli(prompt, timeoutMs, candidate.model, "codex", environment)
       : candidate.transport === "antigravity-cli"
-        ? invokeAntigravityCli(prompt, candidate.model ?? "", timeoutMs)
+        ? invokeAntigravityCli(prompt, candidate.model ?? "", timeoutMs, "agy", environment)
         : Promise.reject(new UsfError("GRAPH_EXECUTE_TRANSPORT_INVALID", exitCodes.DOMAIN_FAILURE,
             "The CLI invocation dependency received a non-CLI transport.")),
 });
@@ -429,9 +510,23 @@ export async function graphExecuteCommand(
     const value = environment.getCredential(name);
     return typeof value === "string" && value.length > 0;
   }).sort());
-  const localAgentCapabilities = Object.freeze(await dependencies.observeLocalAgentCapabilities({
-    repositoryRoot, observedAt, suppliedCredentialNames,
-  }));
+  // A host-session containment failure is not authority over API routes. Keep
+  // the SDK pool available, while admitting no local transport without a
+  // private home and recording that refusal explicitly in the result.
+  let containedProvider: ContainedProviderEnvironment | null = null;
+  let localAgentContainmentReason: string | null = null;
+  try {
+    containedProvider = await containedProviderEnvironment(repositoryRoot);
+  } catch (error) {
+    localAgentContainmentReason = error instanceof UsfError
+      ? error.code
+      : "GRAPH_EXECUTE_PROVIDER_HOME_REFUSED";
+  }
+  const localAgentCapabilities = Object.freeze(containedProvider === null
+    ? []
+    : await dependencies.observeLocalAgentCapabilities({
+      repositoryRoot, observedAt, suppliedCredentialNames, providerHome: containedProvider.providerHome,
+    }));
   const observedRoutes = (await observeAvailableRoutes(repositoryRoot)).routeIds;
 
   /**
@@ -453,9 +548,11 @@ export async function graphExecuteCommand(
     for (const adapterPackage of adapterPackages) {
       if (await observeInstalledAdapter(repositoryRoot, adapterPackage) !== undefined) currentAdapters.push(adapterPackage);
     }
-    const currentCapabilities = await dependencies.observeLocalAgentCapabilities({
-      repositoryRoot, observedAt, suppliedCredentialNames,
-    });
+    const currentCapabilities = containedProvider === null
+      ? []
+      : await dependencies.observeLocalAgentCapabilities({
+        repositoryRoot, observedAt, suppliedCredentialNames, providerHome: containedProvider.providerHome,
+      });
     return readAuthoritySnapshot({
       catalogueRawDigest: catalogue.snapshot.rawDigest,
       catalogueNormalizedDigest: await catalogueFingerprint(),
@@ -483,7 +580,8 @@ export async function graphExecuteCommand(
   // model was complete, adversarially proven and never consulted: this command
   // is the only path hermes implement dispatches through, and it derived every
   // candidate with an empty earned-task-class set.
-  const qualifiedTaskClassesByRoute = (await observeQualifiedTaskClasses(repositoryRoot)).byRoute;
+  const qualification = await observeQualifiedTaskClasses(repositoryRoot);
+  const qualifiedTaskClassesByRoute = qualification.byRoute;
   const deferralRecords = await readRouteDeferrals(repositoryRoot);
   const deferred = deferredCandidateIds(deferralRecords, Date.now());
   // What each route has actually produced, used to order the pool.
@@ -567,6 +665,21 @@ export async function graphExecuteCommand(
       try {
         if (candidate.transport === "claude-cli" || candidate.transport === "codex-cli"
           || candidate.transport === "antigravity-cli") {
+          if (containedProvider === null) {
+            attempts.push(Object.freeze({
+              candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
+              model: candidate.model, requestedModel: candidate.model, actualModel: null,
+              phase: "preflight" as const, contacted: false, startedAt: attemptStartedAt, latencyMs: 0,
+              outcome: "refused" as const, reasonCode: localAgentContainmentReason ?? "GRAPH_EXECUTE_PROVIDER_HOME_REFUSED",
+              statusCode: null, retryAfter: null, costIncurred: false, usage: null,
+              transportReportedCostUsd: null,
+            }));
+            observedRouteOutcomes.push(Object.freeze({
+              candidateId: candidate.candidateId, outcome: "refused" as const,
+              reasonCode: localAgentContainmentReason ?? "GRAPH_EXECUTE_PROVIDER_HOME_REFUSED",
+            }));
+            continue;
+          }
           if (candidate.transport === "antigravity-cli"
             && (candidate.model === null || candidate.model.length === 0 || candidate.model === "default")) {
             attempts.push(Object.freeze({
@@ -585,7 +698,9 @@ export async function graphExecuteCommand(
           }
           const hostTimeoutMs = invocationTimeoutFor(candidate, productivity);
           invocationStarted = true;
-          const produced = await dependencies.invokeCli({ candidate, prompt: unit.prompt, timeoutMs: hostTimeoutMs });
+          const produced = await dependencies.invokeCli({
+            candidate, prompt: unit.prompt, timeoutMs: hostTimeoutMs, environment: containedProvider.environment,
+          });
           const elapsed = Math.round(performance.now() - attemptStarted);
           const usable = produced.outcome === "ok" && produced.text !== null && produced.text.trim().length > 0;
           attempts.push(Object.freeze({
@@ -650,13 +765,27 @@ export async function graphExecuteCommand(
           throw new UsfError("GRAPH_EXECUTE_PREFLIGHT_INVARIANT", exitCodes.DOMAIN_FAILURE,
             "An SDK invocation crossed preflight without its adapter, model and credential.");
         }
+        const maxWallTimeMs = invocationTimeoutFor(candidate, productivity);
+        const limits = sdkInvocationLimits(candidate, unit, maxWallTimeMs);
+        if (limits === null) {
+          attempts.push(Object.freeze({
+            candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
+            model: candidate.model, requestedModel: candidate.model, actualModel: null,
+            phase: "preflight" as const, contacted: false, startedAt: attemptStartedAt, latencyMs: 0,
+            outcome: "refused" as const, reasonCode: "SDK_CONTEXT_LIMIT_UNAVAILABLE_OR_EXCEEDED",
+            statusCode: null, retryAfter: null, costIncurred: false, usage: null, transportReportedCostUsd: null,
+          }));
+          observedRouteOutcomes.push(Object.freeze({ candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode: "SDK_CONTEXT_LIMIT_UNAVAILABLE_OR_EXCEEDED" }));
+          continue;
+        }
         const model = await languageModelFor(adapterPackage, requestedModel, credential, candidate.baseUrl);
         invocationStarted = true;
         const produced = await generateText({
           model: model as Parameters<typeof generateText>[0]["model"],
           prompt: unit.prompt,
           maxOutputTokens: unit.maximumOutputTokens,
-          abortSignal: AbortSignal.timeout(invocationTimeoutFor(candidate, productivity)),
+          maxRetries: 0,
+          abortSignal: AbortSignal.timeout(maxWallTimeMs),
         });
         const elapsed = Math.round(performance.now() - attemptStarted);
         // A 200 that carries no text is a vacuous answer, not a result. It must
@@ -832,6 +961,7 @@ export async function graphExecuteCommand(
     const resultIri = `urn:usf:execution-result:${canonicalDigest({
       unit: outcome.unit.iri,
       sourceAssertionDigest: outcome.unit.sourceAssertionDigest,
+      promptDigest: outcome.unit.promptDigest,
       text: outcome.text,
       selected: outcome.selected?.candidateId ?? null,
     }).slice("sha256:".length)}`;
@@ -924,9 +1054,13 @@ export async function graphExecuteCommand(
       parallelUtilisation: wallMs === 0 || units.length === 0 ? null
         : Number((serialMs / (wallMs * Math.min(parsed.concurrency, units.length))).toFixed(3)),
     }),
-    localAgentDispositions: Object.freeze(localAgentCapabilities.map((capability) => Object.freeze({
-      transport: capability.transport, usable: capability.usable, reason: capability.reason,
-    }))),
+    localAgentDispositions: Object.freeze(containedProvider === null
+      ? localAgentTransportIds.map((transport) => Object.freeze({
+        transport, usable: false, reason: localAgentContainmentReason ?? "GRAPH_EXECUTE_PROVIDER_HOME_REFUSED",
+      }))
+      : localAgentCapabilities.map((capability) => Object.freeze({
+        transport: capability.transport, usable: capability.usable, reason: capability.reason,
+      }))),
     units: Object.freeze(ordered.map((outcome) => Object.freeze({
       unit: outcome.unit.iri,
       sourceAssertionDigest: outcome.unit.sourceAssertionDigest,
@@ -938,13 +1072,24 @@ export async function graphExecuteCommand(
       reasonCode: outcome.reasonCode,
       selectedCandidateId: outcome.selected?.candidateId ?? null,
       transport: outcome.selected?.transport ?? null,
+      provider: outcome.selected?.provider ?? null,
+      requestedModel: outcome.selected?.model ?? null,
+      costClass: outcome.selected?.costClass ?? null,
+      economicBasis: outcome.selected?.economicBasis ?? null,
       actualModel: outcome.actualModel,
       invocationIdentity: outcome.invocationIdentity,
       usage: outcome.usage,
+      // SDK calls are configured as one no-tools, no-retry generation. Host
+      // transports remain explicitly unknown until they expose equivalent data.
+      toolCalls: outcome.selected?.transport === "vercel-ai-sdk" ? 0 : null,
+      limits: outcome.selected?.transport === "vercel-ai-sdk"
+        ? sdkInvocationLimits(outcome.selected, outcome.unit, invocationTimeoutFor(outcome.selected, productivity))
+        : null,
       transportReportedCostUsd: outcome.transportReportedCostUsd,
       resultDigest: outcome.text === null ? null : canonicalDigest(outcome.text),
       resultText: outcome.text,
     }))),
+    qualificationSnapshot: qualificationSnapshot(qualification),
     nonClaims: Object.freeze([
       "Each result is bound to the exact source quads that asserted its work unit. Provenance is by digest, not by narration.",
       "A transport that does not expose its resolved model identity is recorded as unobservable rather than assigned an invented model.",
@@ -960,8 +1105,7 @@ export async function graphExecuteCommand(
 
   // Availability memory is folded in once, after the run, so a route deferred
   // mid-run still receives every observation this run made about it.
-  await writeRouteDeferrals(repositoryRoot,
-    applyRouteOutcomes(deferralRecords, observedRouteOutcomes, Date.now()));
+  await persistRouteDeferrals(repositoryRoot, observedRouteOutcomes);
 
   const evidenceDirectory = resolve(repositoryRoot, ".usf", "graph-executions");
   await mkdir(evidenceDirectory, { recursive: true, mode: 0o700 });

@@ -186,6 +186,8 @@ export function satisfiesCapabilities(
 export interface ObservedQualification {
   /** `provider:model` to the task classes it currently holds a role for. */
   readonly byRoute: ReadonlyMap<string, readonly string[]>;
+  /** Durable qualification records supporting each currently earned route/class. */
+  readonly receiptsByRoute: ReadonlyMap<string, readonly QualificationReceipt[]>;
   readonly recordCount: number;
   /** Records earned under suite, corpus, qualification or economics identities no longer in force. */
   readonly supersededCount: number;
@@ -196,6 +198,36 @@ export interface ObservedQualification {
     qualificationPolicyDigest: string; effectivePolicyDigest: string;
   }>;
   readonly evaluated: true;
+}
+
+export interface QualificationReceipt {
+  readonly taskClass: string;
+  readonly role: string;
+  readonly qualificationDigest: string;
+  readonly observationSetDigest: string;
+}
+
+/**
+ * Freeze the exact qualification evidence consumed by a dispatch.  This is a
+ * snapshot, not a fresh authority lookup: a later adapter can prove which
+ * records selected the route without treating a current reader as history.
+ */
+export function qualificationSnapshot(qualification: ObservedQualification): Readonly<{
+  readonly basis: ObservedQualification["basis"];
+  readonly routes: readonly Readonly<{
+    readonly routeId: string;
+    readonly taskClasses: readonly string[];
+    readonly receipts: readonly QualificationReceipt[];
+  }>[];
+}> {
+  return Object.freeze({
+    basis: qualification.basis,
+    routes: Object.freeze([...qualification.byRoute.entries()].map(([routeId, taskClasses]) => Object.freeze({
+      routeId,
+      taskClasses,
+      receipts: qualification.receiptsByRoute.get(routeId) ?? Object.freeze([]),
+    }))),
+  });
 }
 
 const qualificationDirectoryName = "qualifications";
@@ -459,6 +491,7 @@ export async function observeQualifiedTaskClasses(
   const directory = resolve(repositoryRoot, ".usf", qualificationDirectoryName);
   const names = await readdir(directory).catch(() => [] as string[]);
   const byRoute = new Map<string, Set<string>>();
+  const receiptsByRoute = new Map<string, QualificationReceipt[]>();
   let recordCount = 0;
   let supersededCount = 0;
   for (const name of names) {
@@ -493,13 +526,25 @@ export async function observeQualifiedTaskClasses(
     const held = byRoute.get(routeId) ?? new Set<string>();
     held.add(taskClass);
     byRoute.set(routeId, held);
+    const receipts = receiptsByRoute.get(routeId) ?? [];
+    receipts.push(Object.freeze({
+      taskClass,
+      role: record.role,
+      qualificationDigest: record.qualificationDigest,
+      observationSetDigest: record.observationSetDigest,
+    }));
+    receiptsByRoute.set(routeId, receipts);
   }
   const frozen = new Map<string, readonly string[]>();
+  const frozenReceipts = new Map<string, readonly QualificationReceipt[]>();
   for (const [routeId, held] of [...byRoute].sort(([left], [right]) => left.localeCompare(right))) {
     frozen.set(routeId, Object.freeze([...held].sort()));
+    frozenReceipts.set(routeId, Object.freeze([...(receiptsByRoute.get(routeId) ?? [])]
+      .sort((left, right) => `${left.taskClass}|${left.qualificationDigest}`.localeCompare(`${right.taskClass}|${right.qualificationDigest}`))));
   }
   return Object.freeze({
     byRoute: frozen,
+    receiptsByRoute: frozenReceipts,
     recordCount,
     supersededCount,
     basis,

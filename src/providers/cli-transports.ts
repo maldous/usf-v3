@@ -83,6 +83,7 @@ export async function invokeClaudeCli(
   timeoutMs: number,
   model: string | null = null,
   executable = "claude",
+  environment: NodeJS.ProcessEnv | undefined = undefined,
 ): Promise<CliInvocationResult> {
   let stdout: string;
   try {
@@ -91,6 +92,7 @@ export async function invokeClaudeCli(
       maxBuffer: maximumOutputBytes,
       encoding: "utf8",
       windowsHide: true,
+      env: environment,
     });
     stdout = produced.stdout;
   } catch (error) {
@@ -233,8 +235,11 @@ export async function invokeCodexCli(
    */
   model: string | null = null,
   executable = "codex",
+  environment: NodeJS.ProcessEnv | undefined = undefined,
 ): Promise<CliInvocationResult> {
-  const scratch = await mkdtemp(join(tmpdir(), "usf-codex-"));
+  // Graph execution supplies a validated contained TMPDIR. Legacy callers that
+  // omit the environment retain their established ambient scratch behaviour.
+  const scratch = await mkdtemp(join(environment?.TMPDIR ?? tmpdir(), "usf-codex-"));
   const lastMessagePath = join(scratch, "last-message.txt");
   try {
     // Codex reads additional instructions from standard input when it stays
@@ -258,7 +263,7 @@ export async function invokeCodexCli(
             "-o", lastMessagePath, prompt,
           ];
         })(),
-        { stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
+        { stdio: ["ignore", "pipe", "pipe"], windowsHide: true, env: environment },
       );
       let collected = "";
       let bytes = 0;
@@ -419,6 +424,7 @@ export async function invokeAntigravityCli(
   modelId: string,
   timeoutMs: number,
   executable = "agy",
+  environment: NodeJS.ProcessEnv | undefined = undefined,
 ): Promise<CliInvocationResult> {
   if (modelId.length === 0 || modelId === "default") {
     return frozenRefusal("antigravity-cli", "TRANSPORT_MODEL_IDENTITY_REQUIRED",
@@ -429,7 +435,7 @@ export async function invokeAntigravityCli(
     const produced = await runFile(
       executable,
       [...antigravityCliArguments(prompt, modelId)],
-      { timeout: timeoutMs, maxBuffer: maximumOutputBytes, encoding: "utf8", windowsHide: true },
+      { timeout: timeoutMs, maxBuffer: maximumOutputBytes, encoding: "utf8", windowsHide: true, env: environment },
     );
     stdout = produced.stdout;
   } catch (error) {

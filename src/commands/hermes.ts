@@ -1,5 +1,7 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { randomUUID } from "node:crypto";
+import { constants } from "node:fs";
+import { link, lstat, mkdir, open, readdir, readFile, rename, unlink } from "node:fs/promises";
+import { dirname, relative, resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
@@ -26,6 +28,9 @@ const bindingIriPredicate = "urn:usf:predicate:bindingIri";
 const bindingManifestPathPredicate = "urn:usf:predicate:bindingManifestPath";
 const maximumCyclesCeiling = 12;
 const maximumAttemptsPerUnit = 3;
+const privateDirectoryMode = 0o700;
+const privateFileMode = 0o600;
+let stateWriteQueue: Promise<void> = Promise.resolve();
 
 function invalid(message: string): never {
   throw new UsfError("HERMES_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, message);
@@ -211,6 +216,118 @@ async function readStateQuads(repositoryRoot: string): Promise<readonly Quad[]> 
   try { return Object.freeze(parseStrictNQuads(source, stateGraph, 200_000)); } catch { return Object.freeze([]); }
 }
 
+function canonicalState(quads: readonly Quad[]): readonly Quad[] {
+  const normalized = quads.map((quad) => Object.freeze({ ...quad, canonical: canonicalQuadLine(quad) }));
+  return Object.freeze([...new Map(normalized.map((quad) => [quad.canonical, quad])).values()]
+    .sort((left, right) => left.canonical.localeCompare(right.canonical)));
+}
+
+function maximumAttempt(quads: readonly Quad[], unitIri: string): number | undefined {
+  const attempts = quads
+    .filter((quad) => quad.subject === unitIri && quad.predicate === attemptCountPredicate && quad.objectKind === "literal")
+    .map((quad) => Number(quad.object))
+    .filter((value) => Number.isSafeInteger(value) && value >= 0);
+  return attempts.length === 0 ? undefined : Math.max(...attempts);
+}
+
+/**
+ * Merges only state material produced by this call. Attempt counters are
+ * monotonic maxima, and result subgraphs are canonical-set unions, so a stale
+ * caller cannot erase an independent binding's result or inflate a replay.
+ */
+export function mergeHermesState(
+  current: readonly Quad[],
+  local: readonly Quad[],
+  changedUnitIris: readonly string[],
+): readonly Quad[] {
+  const changed = new Set(changedUnitIris);
+  const merged = current.filter((quad) => !(changed.has(quad.subject) && quad.predicate === attemptCountPredicate));
+  const additions: Quad[] = [];
+  for (const unitIri of [...changed].sort()) {
+    const localAttempts = maximumAttempt(local, unitIri);
+    const currentAttempts = maximumAttempt(current, unitIri);
+    const attempts = Math.max(localAttempts ?? 0, currentAttempts ?? 0);
+    if (localAttempts !== undefined || currentAttempts !== undefined) additions.push(quadOf(unitIri, attemptCountPredicate, String(attempts), "literal"));
+    const resultIris = local
+      .filter((quad) => quad.subject === unitIri && quad.predicate === executionResultPredicate && quad.objectKind === "iri")
+      .map((quad) => quad.object);
+    for (const resultIri of resultIris) {
+      additions.push(...local.filter((quad) => quad.subject === unitIri && quad.predicate === executionResultPredicate && quad.object === resultIri));
+      additions.push(...local.filter((quad) => quad.subject === resultIri));
+    }
+  }
+  return canonicalState([...merged, ...additions]);
+}
+
+function statePath(repositoryRoot: string): string {
+  const root = resolve(repositoryRoot);
+  const path = resolve(root, ".usf", "hermes", "state.nq");
+  if (relative(root, path).startsWith("..")) throw new UsfError("HERMES_STATE_PATH_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes state path escapes the repository.");
+  return path;
+}
+
+async function secureHermesDirectory(repositoryRoot: string): Promise<string> {
+  const root = resolve(repositoryRoot);
+  const directory = dirname(statePath(root));
+  await mkdir(directory, { recursive: true, mode: privateDirectoryMode });
+  const metadata = await lstat(directory).catch(() => undefined);
+  if (metadata === undefined || !metadata.isDirectory() || metadata.isSymbolicLink() || (metadata.mode & 0o077) !== 0) {
+    throw new UsfError("HERMES_STATE_PATH_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes state directory is not private and direct.");
+  }
+  return directory;
+}
+
+async function writePrivateAtomic(path: string, bytes: string, replace: boolean): Promise<void> {
+  const directory = dirname(path);
+  const temporary = resolve(directory, `.state-${process.pid}-${randomUUID()}.tmp`);
+  let handle;
+  try {
+    handle = await open(temporary, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | (constants.O_NOFOLLOW ?? 0), privateFileMode);
+    await handle.writeFile(bytes, "utf8");
+    await handle.sync();
+    await handle.close();
+    handle = undefined;
+    if (replace) {
+      const prior = await lstat(path).catch((error: NodeJS.ErrnoException) => error.code === "ENOENT" ? undefined : Promise.reject(error));
+      if (prior !== undefined && (!prior.isFile() || prior.isSymbolicLink() || prior.nlink !== 1 || (prior.mode & 0o077) !== 0)) {
+        throw new UsfError("HERMES_STATE_PATH_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes state file is not private and regular.");
+      }
+      await rename(temporary, path);
+    } else {
+      try { await link(temporary, path); }
+      catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+        const metadata = await lstat(path);
+        if (!metadata.isFile() || metadata.isSymbolicLink() || metadata.nlink !== 1 || (metadata.mode & 0o077) !== 0) {
+          throw new UsfError("HERMES_STATE_PATH_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Content-addressed Hermes report is not private and regular.");
+        }
+        const existing = await readFile(path, "utf8");
+        if (existing !== bytes) throw new UsfError("HERMES_REPORT_COLLISION", exitCodes.CONTAINMENT_REFUSAL, "Content-addressed Hermes report path contains different bytes.");
+      }
+    }
+    const directoryHandle = await open(directory, constants.O_RDONLY | (constants.O_DIRECTORY ?? 0) | (constants.O_NOFOLLOW ?? 0));
+    try { await directoryHandle.sync(); } finally { await directoryHandle.close(); }
+  } finally {
+    await handle?.close();
+    await unlink(temporary).catch(() => undefined);
+  }
+}
+
+function serializeStateWrite<T>(operation: () => Promise<T>): Promise<T> {
+  const run = stateWriteQueue.then(operation, operation);
+  stateWriteQueue = run.then(() => undefined, () => undefined);
+  return run;
+}
+
+async function persistMergedState(repositoryRoot: string, local: readonly Quad[], changedUnitIris: readonly string[]): Promise<readonly Quad[]> {
+  return serializeStateWrite(async () => {
+    await secureHermesDirectory(repositoryRoot);
+    const merged = mergeHermesState(await readStateQuads(repositoryRoot), local, changedUnitIris);
+    await writePrivateAtomic(statePath(repositoryRoot), `${merged.map((quad) => quad.canonical).join("\n")}\n`, true);
+    return merged;
+  });
+}
+
 function quadOf(subject: string, predicate: string, object: string, objectKind: "iri" | "literal"): Quad {
   const built = { subject, predicate, object, objectKind, graph: stateGraph, canonical: "" };
   built.canonical = canonicalQuadLine(built);
@@ -324,10 +441,10 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
       { defects: dependencyGraph.defects.slice(0, 8) });
   }
 
-  const cycleDirectory = resolve(repositoryRoot, ".usf", "hermes");
-  await mkdir(cycleDirectory, { recursive: true, mode: 0o700 });
+  const cycleDirectory = await secureHermesDirectory(repositoryRoot);
 
   const cycles: unknown[] = [];
+  const changedUnitIris = new Set<string>();
   let terminalState = "idle-no-pending-work";
 
   for (let cycle = 1; cycle <= parsed.maximumCycles; cycle += 1) {
@@ -460,6 +577,7 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
         const unitIri = typeof unitRecord.unit === "string" ? unitRecord.unit : null;
         if (unitIri === null) continue;
         const attempts = attemptsFor(unitIri) + 1;
+        changedUnitIris.add(unitIri);
         state = state.filter((quad) => !(quad.subject === unitIri && quad.predicate === attemptCountPredicate));
         state.push(quadOf(unitIri, attemptCountPredicate, String(attempts), "literal"));
         if (unitRecord.status !== "ok") continue;
@@ -526,14 +644,10 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     terminalState = nextReady.length === 0 ? "all-work-terminal" : "cycles-exhausted";
   }
 
-  // Persist the semantic state graph.
-  const orderedState = Object.freeze([...new Map(state.map((quad) => [quad.canonical, quad])).values()]
-    .sort((left, right) => left.canonical.localeCompare(right.canonical)));
-  await writeFile(
-    resolve(repositoryRoot, ".usf", "hermes", "state.nq"),
-    `${orderedState.map((quad) => quad.canonical).join("\n")}\n`,
-    { mode: 0o600 },
-  );
+  // Read and merge inside the narrow persistence queue. Provider dispatch has
+  // already completed, so this does not reduce graph/provider concurrency.
+  state = [...await persistMergedState(repositoryRoot, state, [...changedUnitIris])];
+  const orderedState = canonicalState(state);
 
   const done = new Set(orderedState.filter((quad) => quad.predicate === executionResultPredicate).map((quad) => quad.subject));
   const report = Object.freeze({
@@ -564,10 +678,11 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     ]),
   });
 
-  await writeFile(
-    resolve(repositoryRoot, ".usf", "hermes", `cycle-report-${canonicalDigest(report).slice("sha256:".length)}.json`),
-    `${JSON.stringify(report, null, 1)}\n`,
-    { mode: 0o600 },
+  const reportBytes = `${JSON.stringify(report, null, 1)}\n`;
+  await writePrivateAtomic(
+    resolve(cycleDirectory, `cycle-report-${canonicalDigest(report).slice("sha256:".length)}.json`),
+    reportBytes,
+    false,
   );
 
   return {

@@ -143,6 +143,10 @@ const bootstrapHandlers: CommandHandlers = {
         ? operationalMutation(repositoryRoot, () => implementCommand(repositoryRoot, args.slice(1)), true)
         : implementCommand(repositoryRoot, args.slice(1));
     }
+    if (args.includes("--linear-policy")) {
+      const { hermesLinearCommand } = await import("./commands/hermes-linear.ts");
+      return hermesLinearCommand(repositoryRoot, args);
+    }
     if (args[0] === "start" || args[0] === "stop" || args[0] === "supervise" || args[0] === "status") {
       const lifecycle = await import("./commands/hermes-lifecycle.ts");
       if (args[0] === "start") return operationalMutation(repositoryRoot, () => lifecycle.hermesStartCommand(repositoryRoot, args.slice(1)), true);
