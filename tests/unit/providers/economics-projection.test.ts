@@ -22,6 +22,12 @@ function authorization(name: string, transport: string, provider: string, entitl
     quad(iri, `${P}maximumPaidCostUsd`, "0"),
     quad(iri, `${P}evidence`, "documented"),
     quad(iri, `${P}sourceDocumentation`, "https://example.invalid"),
+    // The spend axis. An authorization says which account may be used; these say
+    // what that account may be used for, and the projection refuses without
+    // them rather than defaulting to a permission nobody declared.
+    quad(iri, `${P}accountBasis`, "trial"),
+    quad(iri, `${P}permittedCostClass`, "zero-price"),
+    quad(iri, `${P}paidSpendPermitted`, "false"),
   ];
 }
 function graphOf(quads: readonly Quad[]): SemanticGraph {
@@ -67,6 +73,21 @@ test("an incomplete authorization or policy fails closed rather than projecting 
   // A policy missing a scalar is equally refused.
   const noPolicy = baseQuads().filter((entry) => entry.predicate !== `${P}paidFallback`);
   assert.throws(() => projectEconomics(graphOf(noPolicy)), /ECONOMICS_POLICY_INCOMPLETE/u);
+
+  // The spend axis is required, not defaulted. An authorization that names an
+  // account without saying what it may be used for is incomplete: defaulting to
+  // "anything" is how a declaration stops meaning anything, and defaulting to
+  // "nothing" would hide the omission behind a refusal that reads as policy.
+  for (const omitted of [`${P}accountBasis`, `${P}permittedCostClass`, `${P}paidSpendPermitted`]) {
+    const missing = [...baseQuads().filter((entry) => entry.subject === policy),
+      ...authorization("x-y", "vercel-ai-sdk", "groq", "free-quota").filter((entry) => entry.predicate !== omitted)];
+    assert.throws(() => projectEconomics(graphOf(missing)), /ECONOMICS_AUTHORIZATION_INCOMPLETE/u, omitted);
+  }
+  // A spend flag that is neither true nor false is refused rather than coerced.
+  const badFlag = [...baseQuads().filter((entry) => entry.subject === policy),
+    ...authorization("x-y", "vercel-ai-sdk", "groq", "free-quota")
+      .map((entry) => entry.predicate === `${P}paidSpendPermitted` ? quad(entry.subject, entry.predicate, "yes") : entry)];
+  assert.throws(() => projectEconomics(graphOf(badFlag)), /ECONOMICS_PAID_SPEND_INVALID/u);
 });
 
 test("verification accepts a faithful projection and rejects every unfaithful one", () => {
@@ -84,6 +105,7 @@ test("verification accepts a faithful projection and rejects every unfaithful on
     authorizations: [...faithful.authorizations, {
       transport: "vercel-ai-sdk", provider: "openrouter", entitlement: "free-quota",
       basis: "hand-edited", maximumPaidCostUsd: 0, evidence: "x", sourceDocumentation: "x",
+      accountBasis: "prepaid", permittedCostClasses: ["zero-price"], paidSpendPermitted: false,
     }],
   }, graph), /DIVERGED/u);
   // A hand-added cost class riding a correct digest.

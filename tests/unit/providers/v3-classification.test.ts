@@ -20,6 +20,8 @@ const groqAuthorization: ExecutionEconomicAuthorization = Object.freeze({
   transport: "vercel-ai-sdk", provider: "groq", entitlement: "free-quota",
   basis: "operator-declared-free-tier", maximumPaidCostUsd: 0,
   evidence: "documented free tier", sourceDocumentation: "https://example.invalid",
+  accountBasis: "trial", permittedCostClasses: Object.freeze(["priced", "zero-price"]),
+  paidSpendPermitted: false,
 });
 
 function model(id: string, input: number | null, output: number | null, capabilities: readonly string[] = ["reasoning"]) {
@@ -58,6 +60,7 @@ function input(overrides: Partial<ClassificationInput> = {}): ClassificationInpu
     policy,
     requirement: { requiredCapabilities: [], minimumContextTokens: null, minimumOutputTokens: null },
     observedAvailableRouteIds: [],
+    qualifiedTaskClassesByRoute: new Map<string, readonly string[]>(),
     ...overrides,
   } as ClassificationInput;
 }
@@ -89,26 +92,63 @@ test("a priced model is eligible only under an explicit authorization", () => {
   assert.equal(authorized.classifications[0]?.economicBasis, "operator-declared-free-tier");
 });
 
-test("a catalogue zero price is eligible with no authorization, unknown price never is", () => {
-  const zero = classifyCatalogue(input({
-    authorizations: [],
-    snapshot: snapshot([{
-      providerRoute: "openrouter", name: "OpenRouter",
-      adapter: { package: "@openrouter/ai-sdk-provider", installedVersion: "1" },
-      credentialNames: ["OPENROUTER_API_KEY"],
-      models: [model("free-model", 0, 0), model("priced-model", 1.5, 6), model("unknown-model", null, null)],
-    }]),
+test("a catalogue price authorizes nothing, and permission is per authorized account", () => {
+  const openrouterModels = [model("free-model", 0, 0), model("priced-model", 1.5, 6), model("unknown-model", null, null)];
+  const openrouterSnapshot = snapshot([{
+    providerRoute: "openrouter", name: "OpenRouter",
+    adapter: { package: "@openrouter/ai-sdk-provider", installedVersion: "1" },
+    credentialNames: ["OPENROUTER_API_KEY"],
+    models: openrouterModels,
+  }]);
+  const base = {
+    snapshot: openrouterSnapshot,
     installedAdapterPackages: ["@openrouter/ai-sdk-provider"],
     suppliedCredentialNames: ["OPENROUTER_API_KEY"],
+  };
+
+  // Undeclared. A zero catalogue price used to admit this provider on its own,
+  // which is how 21 of 45 routable candidates came to belong to no declared
+  // authorization at all. Price is a property of a model; permission is a
+  // statement about an account, and it is now required.
+  const undeclared = classifyCatalogue(input({ ...base, authorizations: [] }));
+  const undeclaredByModel = new Map(undeclared.classifications.map((entry) => [entry.model, entry]));
+  assert.equal(undeclaredByModel.get("free-model")?.state, "AUTHENTICATED");
+  assert.equal(undeclaredByModel.get("free-model")?.reason, "ECONOMICS_AUTHORIZATION_ABSENT");
+  assert.notEqual(undeclaredByModel.get("free-model")?.economicBasis, "catalogue-declared-zero-price");
+  assert.equal(undeclaredByModel.get("priced-model")?.reason, "ECONOMICS_COST_CLASS_REFUSED");
+  assert.equal(undeclaredByModel.get("unknown-model")?.reason, "ECONOMICS_COST_CLASS_REFUSED");
+
+  // Declared, on a prepaid account permitted only for free routes. The three
+  // models then separate on three different reasons, which is the whole point of
+  // splitting authorization from spend permission.
+  const prepaid: ExecutionEconomicAuthorization = Object.freeze({
+    transport: "vercel-ai-sdk", provider: "openrouter", entitlement: "free-quota",
+    basis: "operator-declared-prepaid-account", maximumPaidCostUsd: 0,
+    evidence: "operator-declared prepaid balance, free routes only",
+    sourceDocumentation: "https://example.invalid",
+    accountBasis: "prepaid", permittedCostClasses: Object.freeze(["zero-price"]),
+    paidSpendPermitted: false,
+  });
+  const declared = classifyCatalogue(input({ ...base, authorizations: [prepaid] }));
+  const declaredByModel = new Map(declared.classifications.map((entry) => [entry.model, entry]));
+  assert.equal(declaredByModel.get("free-model")?.state, "ROUTABLE");
+  assert.equal(declaredByModel.get("free-model")?.economicBasis, "operator-declared-prepaid-account");
+  // Authorized, but this account may not be used for a priced model.
+  assert.equal(declaredByModel.get("priced-model")?.state, "AUTHENTICATED");
+  assert.equal(declaredByModel.get("priced-model")?.reason, "ECONOMICS_COST_CLASS_NOT_PERMITTED");
+  // An unknown price may be a paid one, so an account that may not spend may not
+  // reach it, and that is a different refusal from a class it merely lacks.
+  assert.equal(declaredByModel.get("unknown-model")?.state, "AUTHENTICATED");
+  assert.equal(declaredByModel.get("unknown-model")?.reason, "ECONOMICS_PAID_SPEND_REFUSED");
+
+  // Widening is an explicit declaration and nothing else changes to permit it.
+  const widened = classifyCatalogue(input({
+    ...base,
+    authorizations: [Object.freeze({ ...prepaid, permittedCostClasses: Object.freeze(["priced", "zero-price"]) })],
   }));
-  const byModel = new Map(zero.classifications.map((entry) => [entry.model, entry]));
-  assert.equal(byModel.get("free-model")?.state, "ROUTABLE");
-  assert.equal(byModel.get("free-model")?.economicBasis, "catalogue-declared-zero-price");
-  // OpenRouter's paid-credit economics are refused, never generalized away.
-  assert.equal(byModel.get("priced-model")?.state, "AUTHENTICATED");
-  assert.equal(byModel.get("priced-model")?.reason, "ECONOMICS_COST_CLASS_REFUSED");
-  assert.equal(byModel.get("unknown-model")?.state, "AUTHENTICATED");
-  assert.equal(byModel.get("unknown-model")?.reason, "ECONOMICS_COST_CLASS_REFUSED");
+  const widenedByModel = new Map(widened.classifications.map((entry) => [entry.model, entry]));
+  assert.equal(widenedByModel.get("priced-model")?.state, "ROUTABLE");
+  assert.equal(widenedByModel.get("unknown-model")?.reason, "ECONOMICS_PAID_SPEND_REFUSED");
 });
 
 test("catalogue cost classification treats absent or partial pricing as unknown", () => {
@@ -167,6 +207,7 @@ test("a local agent transport is admitted only when authenticated and authorized
   const base = {
     ...input({ authorizations: [] }),
     localAgentCapabilities: [capability("claude-cli", true)],
+    qualifiedTaskClassesByRoute: new Map<string, readonly string[]>(),
   };
   // Authenticated but with no operator authorization: refused.
   const unauthorized = deriveRouteUniverse(base);
@@ -178,6 +219,8 @@ test("a local agent transport is admitted only when authenticated and authorized
     transport: "claude-cli", provider: "claude-cli", entitlement: "subscription-included",
     basis: "operator-declared-subscription", maximumPaidCostUsd: 0,
     evidence: "operator subscription", sourceDocumentation: "https://example.invalid",
+    accountBasis: "subscription", permittedCostClasses: Object.freeze(["subscription-included"]),
+    paidSpendPermitted: false,
   });
   const authorized = deriveRouteUniverse({ ...base, authorizations: [subscription] });
   assert.equal(authorized.localAgentDispositions[0]?.admitted, true);
@@ -220,8 +263,11 @@ test("a model that cannot emit text is not a candidate for text work", () => {
       withModalities("song-model", ["audio", "text"]), withModalities("undeclared-model", null)],
   }];
   const universe = deriveRouteUniverse({
-    ...input({ snapshot: snapshot(providers), authorizations: [] }),
+    // Authorized explicitly: the subject here is output modality, and a zero
+    // catalogue price no longer stands in for permission.
+    ...input({ snapshot: snapshot(providers), authorizations: [groqAuthorization] }),
     localAgentCapabilities: [],
+    qualifiedTaskClassesByRoute: new Map<string, readonly string[]>(),
   });
   const models = universe.candidates.map((entry) => entry.model).sort();
   // An audio route is excluded; an undeclared modality is not a disqualification.

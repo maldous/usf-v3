@@ -23,7 +23,12 @@
       "basis": "operator-declared-subscription",
       "maximumPaidCostUsd": 0,
       "evidence": "The Antigravity CLI executes under the operator's existing authenticated Google Antigravity subscription. Marginal per-invocation cost is zero; the subscription enforces its own limits and refuses rather than billing this repository. It may not fall back to paid Anthropic or Google API access.",
-      "sourceDocumentation": "https://antigravity.google/cli"
+      "sourceDocumentation": "https://antigravity.google/cli",
+      "accountBasis": "undeclared-retained",
+      "permittedCostClasses": [
+        "subscription-included"
+      ],
+      "paidSpendPermitted": false
     },
     {
       "transport": "claude-cli",
@@ -32,7 +37,12 @@
       "basis": "operator-declared-subscription",
       "maximumPaidCostUsd": 0,
       "evidence": "The Claude CLI executes under the operator's existing authenticated Claude subscription. Marginal per-invocation cost is zero; the cost figures the CLI reports are list-basis attribution for usage accounting, not a charge against this repository.",
-      "sourceDocumentation": "https://docs.claude.com/en/docs/claude-code/overview"
+      "sourceDocumentation": "https://docs.claude.com/en/docs/claude-code/overview",
+      "accountBasis": "undeclared-retained",
+      "permittedCostClasses": [
+        "subscription-included"
+      ],
+      "paidSpendPermitted": false
     },
     {
       "transport": "codex-cli",
@@ -41,7 +51,12 @@
       "basis": "operator-declared-subscription",
       "maximumPaidCostUsd": 0,
       "evidence": "The Codex CLI executes under the operator's existing authenticated ChatGPT/Codex subscription. Marginal per-invocation cost is zero; the subscription enforces its own usage limits and refuses rather than billing this repository.",
-      "sourceDocumentation": "https://developers.openai.com/codex/cli/"
+      "sourceDocumentation": "https://developers.openai.com/codex/cli/",
+      "accountBasis": "undeclared-retained",
+      "permittedCostClasses": [
+        "subscription-included"
+      ],
+      "paidSpendPermitted": false
     },
     {
       "transport": "vercel-ai-sdk",
@@ -50,7 +65,14 @@
       "basis": "operator-declared-free-tier",
       "maximumPaidCostUsd": 0,
       "evidence": "Cerebras documents that the Free Trial tier stops API access when credits are exhausted rather than billing; there is no charge until the operator purchases additional credits.",
-      "sourceDocumentation": "https://inference-docs.cerebras.ai/support/rate-limits"
+      "sourceDocumentation": "https://inference-docs.cerebras.ai/support/rate-limits",
+      "accountBasis": "undeclared-retained",
+      "permittedCostClasses": [
+        "priced",
+        "unknown",
+        "zero-price"
+      ],
+      "paidSpendPermitted": false
     },
     {
       "transport": "vercel-ai-sdk",
@@ -59,7 +81,14 @@
       "basis": "operator-declared-free-tier",
       "maximumPaidCostUsd": 0,
       "evidence": "Groq documents the free tier as rate-limited only; billing begins solely after the operator explicitly upgrades to the Developer tier or crosses a published spend threshold, so a free-tier key cannot silently incur cost.",
-      "sourceDocumentation": "https://console.groq.com/docs/rate-limits"
+      "sourceDocumentation": "https://console.groq.com/docs/rate-limits",
+      "accountBasis": "undeclared-retained",
+      "permittedCostClasses": [
+        "priced",
+        "unknown",
+        "zero-price"
+      ],
+      "paidSpendPermitted": false
     }
   ],
   "nonClaims": [

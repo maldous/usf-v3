@@ -669,6 +669,8 @@ test("every declared execution transport can carry an authorization", async () =
     transport, provider: transport, entitlement: "subscription-included",
     basis: "operator-declared", maximumPaidCostUsd: 0,
     evidence: "declared", sourceDocumentation: "https://example.invalid",
+    accountBasis: "subscription", permittedCostClasses: ["subscription-included"],
+    paidSpendPermitted: false,
   }));
   const parsed = parseExecutionEconomicAuthorizations({ authorizations });
   assert.deepEqual(parsed.map((entry) => entry.transport).sort(), [...executionTransportIds].sort());
@@ -677,4 +679,27 @@ test("every declared execution transport can carry an authorization", async () =
   assert.equal(parseExecutionEconomicAuthorizations({
     authorizations: [{ ...authorizations[0]!, transport: "invented-transport" }],
   }).length, 0);
+
+  // The spend axis is required at the wire boundary too. An authorization that
+  // names an account without saying what it may be used for is dropped, so a
+  // projection somebody hand-edited cannot smuggle in a permission that was
+  // never declared.
+  for (const omitted of ["accountBasis", "permittedCostClasses", "paidSpendPermitted"] as const) {
+    const partial: Record<string, unknown> = { ...authorizations[0]! };
+    delete partial[omitted];
+    assert.equal(parseExecutionEconomicAuthorizations({ authorizations: [partial] }).length, 0, omitted);
+  }
+  // An empty permitted set parses and permits nothing, which is a declaration
+  // rather than an omission: the operator said this account may reach no class.
+  const noneParsed = parseExecutionEconomicAuthorizations({
+    authorizations: [{ ...authorizations[0]!, permittedCostClasses: [] }],
+  });
+  assert.equal(noneParsed.length, 1);
+  assert.deepEqual(noneParsed[0]?.permittedCostClasses, []);
+  // Duplicates collapse and the set is ordered, so the same permission cannot
+  // present two different digests.
+  const dedup = parseExecutionEconomicAuthorizations({
+    authorizations: [{ ...authorizations[0]!, permittedCostClasses: ["zero-price", "priced", "zero-price"] }],
+  });
+  assert.deepEqual(dedup[0]?.permittedCostClasses, ["priced", "zero-price"]);
 });

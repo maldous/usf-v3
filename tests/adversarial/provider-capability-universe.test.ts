@@ -9,6 +9,8 @@ import {
   splitCapabilityRequirement, satisfiesCapabilities, taskClassCapabilities,
   unmetCapabilities,
 } from "../../src/providers/capabilities.ts";
+import { antigravityCliArguments } from "../../src/providers/cli-transports.ts";
+import { deriveRouteUniverse } from "../../src/providers/route-universe.ts";
 
 /**
  * Adversarial proof for the shared capability vocabulary.
@@ -190,4 +192,101 @@ test("a repository with no qualification directory reports evaluated and empty",
   assert.equal(observed.evaluated, true);
   assert.equal(observed.byRoute.size, 0);
   assert.equal(observed.recordCount, 0);
+});
+
+/**
+ * Adversarial proof that the qualification gate is load-bearing on the path
+ * Hermes dispatches through.
+ *
+ * Every property above held before this was written, and constrained nothing:
+ * the map of earned task classes was an optional input, and two of the three
+ * production callers of the route universe simply did not pass it -- including
+ * `graph execute`, the only path `hermes implement` dispatches through. So a
+ * qualification model with thirteen proven properties derived every candidate
+ * with an empty earned set. The field is required now, which is why the two
+ * omissions became compiler errors rather than a finding somebody had to notice.
+ */
+test("a task class constrains the derived universe, and its absence refuses", () => {
+  const catalogueModel = {
+    route: { provider: "groq", model: "m" },
+    underlying: { family: "f", model: "m" },
+    capabilityNames: ["reasoning"],
+    cost: { input: 0, output: 0, currency: "USD", unit: "per-million-tokens" },
+    limits: { context: 100_000, output: 8_000, input: null },
+    modalities: { input: ["text"], output: ["text"] },
+  };
+  const universeInput = (qualified: ReadonlyMap<string, readonly string[]>) => ({
+    snapshot: {
+      schema: "urn:usf:model-catalogue:1",
+      source: "models.dev/api.json",
+      rawDigest: `sha256:${"a".repeat(64)}`,
+      normalizedDigest: `sha256:${"b".repeat(64)}`,
+      providers: [{
+        providerRoute: "groq", name: "Groq",
+        adapter: { package: "@ai-sdk/groq", installedVersion: "1" },
+        credentialNames: ["GROQ_API_KEY"],
+        models: [catalogueModel],
+      }],
+      denominators: {},
+      nonclaims: [],
+    } as unknown as Parameters<typeof deriveRouteUniverse>[0]["snapshot"],
+    installedAdapterPackages: ["@ai-sdk/groq"],
+    suppliedCredentialNames: ["GROQ_API_KEY"],
+    authorizations: [{
+      transport: "vercel-ai-sdk" as const, provider: "groq", entitlement: "free-quota",
+      basis: "operator-declared-free-tier", maximumPaidCostUsd: 0,
+      evidence: "documented free tier", sourceDocumentation: "https://example.invalid",
+      accountBasis: "trial", permittedCostClasses: ["zero-price"], paidSpendPermitted: false,
+    }],
+    policy: {
+      maximumPaidCost: 0, paidFallback: "prohibited", unknownPrice: "ineligible",
+      acceptedCostClasses: ["free-quota", "zero-price", "subscription-included"],
+    },
+    requirement: { requiredCapabilities: ["typescript"], minimumContextTokens: null, minimumOutputTokens: null },
+    observedAvailableRouteIds: [],
+    localAgentCapabilities: [],
+    qualifiedTaskClassesByRoute: qualified,
+  });
+
+  // No qualification: the model is authorized, capable and refused, because the
+  // work asks for a task class this route has not earned.
+  const withoutQualification = deriveRouteUniverse(universeInput(new Map()));
+  assert.deepEqual(withoutQualification.candidates.map((entry) => entry.candidateId), []);
+
+  // The exact route earns it and becomes a candidate. Nothing else changed.
+  const withQualification = deriveRouteUniverse(universeInput(new Map([["groq:m", ["typescript"]]])));
+  assert.deepEqual(withQualification.candidates.map((entry) => entry.candidateId), ["vercel-ai-sdk:groq:m"]);
+  assert.deepEqual(withQualification.candidates[0]?.qualifiedTaskClasses, ["typescript"]);
+
+  // A different task class on the same route earns nothing for this work.
+  const wrongClass = deriveRouteUniverse(universeInput(new Map([["groq:m", ["node-test"]]])));
+  assert.deepEqual(wrongClass.candidates.map((entry) => entry.candidateId), []);
+
+  // The same task class on a sibling model earns nothing for this one.
+  const wrongModel = deriveRouteUniverse(universeInput(new Map([["groq:other", ["typescript"]]])));
+  assert.deepEqual(wrongModel.candidates.map((entry) => entry.candidateId), []);
+});
+
+/**
+ * Adversarial proof for the Antigravity worker turn.
+ *
+ * A route that answers every time and produces nothing usable is the one failure
+ * the transport layer cannot report, so the mode it runs in is pinned and
+ * asserted rather than left to a default.
+ */
+test("the antigravity worker turn pins accept-edits and never plan mode", () => {
+  const argv = antigravityCliArguments("do the work", "gpt-oss-120b-medium");
+  const mode = argv[argv.indexOf("--mode") + 1];
+  assert.equal(mode, "accept-edits");
+  assert.notEqual(mode, "plan");
+  assert.equal(argv.includes("plan"), false);
+  // The rest of the turn stays bounded: one printed answer, structured output,
+  // sandboxed, and an explicit model because the transport's default carries its
+  // own quota.
+  assert.equal(argv.includes("--print"), true);
+  assert.deepEqual(argv.slice(argv.indexOf("--output-format"), argv.indexOf("--output-format") + 2), ["--output-format", "stream-json"]);
+  assert.equal(argv.includes("--sandbox"), true);
+  assert.equal(argv[argv.indexOf("--model") + 1], "gpt-oss-120b-medium");
+  // Exactly one mode is named, so no later argument can override it.
+  assert.equal(argv.filter((entry) => entry === "--mode").length, 1);
 });

@@ -234,6 +234,14 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
         routeCost: declared.cost,
         routeEntitlement: declared.entitlement,
         routePaidFallback: false,
+        // The catalogue's own class for this exact model, carried through
+        // unchanged. An authorized provider used to have every model reported as
+        // free-quota, which is why an unknown-price model on a trial account was
+        // admitted without anything ever asking whether that account may reach
+        // one. The declared cost stays the operative entitlement; this is the
+        // separate fact the authorization's permitted classes are checked
+        // against.
+        catalogueCostClass: costClass,
         policy: input.policy,
         authorizations: input.authorizations,
       });

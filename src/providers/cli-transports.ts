@@ -374,6 +374,34 @@ export function antigravityQuotaResetInstant(detail: string, observedAtMs: numbe
  * the provider-reported init envelope, never from configuration. An explicit
  * model identity is mandatory; there is no default fallback.
  */
+/**
+ * The exact argv for one bounded Antigravity CLI worker turn.
+ *
+ * Mode is pinned, and pinned to accept-edits rather than plan. In plan mode this
+ * CLI answers a generation request by writing an implementation-plan artefact
+ * and asking for approval -- "I've created an implementation plan ... you can
+ * review it" -- so the route cannot return the work at all. Measured over one
+ * session: 20 of 20 invocations succeeded, 0 of 13 outputs survived admission,
+ * and 606 619 output tokens were spent producing plans nobody asked for. A
+ * perfect transport record and no useful work is the worst shape a route can
+ * have, because nothing in the transport layer reports it.
+ *
+ * Compared directly on one repair prompt, from a scratch working directory so
+ * neither mode could touch the repository: accept-edits returned the complete
+ * corrected module carrying the fix in 648 output tokens, plan returned 406
+ * characters of narrative in 1 359, and neither created a file. Verified against
+ * the installed binary, whose --mode accepts only accept-edits or plan.
+ */
+export function antigravityCliArguments(prompt: string, modelId: string): readonly string[] {
+  return Object.freeze([
+    "--print", prompt,
+    "--output-format", "stream-json",
+    "--sandbox",
+    "--mode", "accept-edits",
+    "--model", modelId,
+  ]);
+}
+
 export async function invokeAntigravityCli(
   prompt: string,
   modelId: string,
@@ -388,7 +416,7 @@ export async function invokeAntigravityCli(
   try {
     const produced = await runFile(
       executable,
-      ["--print", prompt, "--output-format", "stream-json", "--sandbox", "--mode", "plan", "--model", modelId],
+      [...antigravityCliArguments(prompt, modelId)],
       { timeout: timeoutMs, maxBuffer: maximumOutputBytes, encoding: "utf8", windowsHide: true },
     );
     stdout = produced.stdout;

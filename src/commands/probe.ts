@@ -21,6 +21,7 @@ import { loadSemanticGraph } from "../graph/index.ts";
 import { readProviderBindings } from "../providers/provider-bindings.ts";
 import { readProviderExecutionPolicy } from "../providers/provider-policy.ts";
 import { readGraphDerivedEconomics } from "../providers/economics-projection.ts";
+import { observeQualifiedTaskClasses } from "../providers/capabilities.ts";
 import { deriveRouteUniverse } from "../providers/route-universe.ts";
 import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 import { languageModelFor } from "./execute.ts";
@@ -369,6 +370,11 @@ async function resolveQualificationRoute(
 
   const universe = deriveRouteUniverse({
     localAgentCapabilities: [],
+    // The same earned-task-class observation routing uses. This call site
+    // omitted it while the field was optional, so the availability preflight
+    // reported a universe that ignored qualification entirely; the field is
+    // required now and the omission is no longer expressible.
+    qualifiedTaskClassesByRoute: (await observeQualifiedTaskClasses(repositoryRoot, new Date())).byRoute,
     transportSelectedModel: bindings.transportSelectedModel,
     snapshot: catalogue.snapshot,
     installedAdapterPackages: Object.freeze(installed),

@@ -23,6 +23,9 @@ const groqAuthorization = Object.freeze({
   maximumPaidCostUsd: 0,
   evidence: "documented free tier",
   sourceDocumentation: "https://console.groq.com/docs/rate-limits",
+  accountBasis: "trial",
+  permittedCostClasses: Object.freeze(["priced", "zero-price"]),
+  paidSpendPermitted: false,
 });
 
 function economicsInput(overrides: Partial<EconomicEligibilityInput> = {}): EconomicEligibilityInput {
@@ -32,6 +35,7 @@ function economicsInput(overrides: Partial<EconomicEligibilityInput> = {}): Econ
     routeCost: "free-quota",
     routeEntitlement: "free-quota",
     routePaidFallback: false,
+    catalogueCostClass: "priced",
     policy: zeroPaidPolicy,
     authorizations: Object.freeze([groqAuthorization]),
     ...overrides,

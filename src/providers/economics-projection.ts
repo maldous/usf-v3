@@ -36,8 +36,31 @@ export interface ProjectedEconomics {
     maximumPaidCostUsd: number;
     evidence: string;
     sourceDocumentation: string;
+    accountBasis: string;
+    permittedCostClasses: readonly string[];
+    paidSpendPermitted: boolean;
   }>[];
   readonly nonClaims: readonly string[];
+}
+
+/**
+ * What the retired authorization shape permitted, read from its entitlement.
+ *
+ * The retired shape carried no spend axis, and the runtime treated an authorized
+ * provider's every model as free-quota regardless of catalogue price. This
+ * reproduces that reach for the priced and zero-price classes.
+ *
+ * It deliberately does not reproduce it for an unknown price. `unknown` is
+ * listed here, and the spend check refuses it first, because an unknown price
+ * may be a paid one and the retired shape permits no spend. Measured, that
+ * narrows one provider from fourteen candidates to ten: four groq models the old
+ * reading admitted with no price known at all. The narrowing is the point, so it
+ * is stated rather than described as a no-op.
+ */
+function retiredShapePermittedClasses(entitlement: string): readonly string[] {
+  if (entitlement === "subscription-included") return Object.freeze(["subscription-included"]);
+  if (entitlement === "free-quota" || entitlement === "local") return Object.freeze(["priced", "unknown", "zero-price"]);
+  return Object.freeze([]);
 }
 
 function one(graph: SemanticGraph, subject: string, predicate: string): string | null {
@@ -90,13 +113,37 @@ export function projectEconomics(graph: SemanticGraph): ProjectedEconomics {
     const maximum = one(graph, subject, "urn:usf:predicate:maximumPaidCostUsd");
     const evidence = one(graph, subject, "urn:usf:predicate:evidence");
     const sourceDocumentation = one(graph, subject, "urn:usf:predicate:sourceDocumentation");
+    // The spend axis, with the same transitional acceptance the wire parser
+    // carries. A half-declared axis is incomplete and refused; an authorization
+    // carrying none of the three is the retired shape and is read under the
+    // documented transitional default, so the reader can land before the graph
+    // moves and no commit has the two disagreeing. Removable once no graph omits
+    // the axis.
+    const accountBasis = one(graph, subject, "urn:usf:predicate:accountBasis");
+    const permittedCostClasses = many(graph, subject, "urn:usf:predicate:permittedCostClass");
+    const paidSpend = one(graph, subject, "urn:usf:predicate:paidSpendPermitted");
     if (transport === null || provider === null || entitlement === null || basis === null
       || maximum === null || evidence === null || sourceDocumentation === null) {
       throw new Error(`ECONOMICS_AUTHORIZATION_INCOMPLETE:${subject}`);
     }
+    const axisPresent = [accountBasis !== null, permittedCostClasses.length > 0, paidSpend !== null]
+      .filter((present) => present).length;
+    if (axisPresent !== 0 && axisPresent !== 3) throw new Error(`ECONOMICS_AUTHORIZATION_INCOMPLETE:${subject}`);
+    if (paidSpend !== null && paidSpend !== "true" && paidSpend !== "false") {
+      throw new Error(`ECONOMICS_PAID_SPEND_INVALID:${subject}`);
+    }
+    const retired = axisPresent === 0;
+    const effectiveAccountBasis = retired ? "undeclared-retained" : accountBasis as string;
+    const effectivePermitted = retired ? retiredShapePermittedClasses(entitlement) : permittedCostClasses;
+    const effectivePaidSpend = retired ? false : paidSpend === "true";
     const maximumPaidCostUsd = Number(maximum);
     if (!Number.isFinite(maximumPaidCostUsd)) throw new Error(`ECONOMICS_BUDGET_INVALID:${subject}`);
-    return Object.freeze({ transport, provider, entitlement, basis, maximumPaidCostUsd, evidence, sourceDocumentation });
+    return Object.freeze({
+      transport, provider, entitlement, basis, maximumPaidCostUsd, evidence, sourceDocumentation,
+      accountBasis: effectiveAccountBasis,
+      permittedCostClasses: effectivePermitted,
+      paidSpendPermitted: effectivePaidSpend,
+    });
   }).sort((left, right) =>
     left.transport.localeCompare(right.transport) || left.provider.localeCompare(right.provider));
 

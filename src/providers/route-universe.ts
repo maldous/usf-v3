@@ -98,9 +98,15 @@ export interface RouteUniverseInput {
   readonly localAgentCapabilities: readonly AuthenticatedTransportCapability[];
   /**
    * Task classes each route has earned, keyed `provider:model`, and `provider`
-   * alone for a transport that selects its own model. Absent means none.
+   * alone for a transport that selects its own model. An empty map means none.
+   *
+   * Required, not optional. It was optional, and the one command Hermes
+   * dispatches through simply did not pass it -- so every candidate was derived
+   * with an empty earned-task-class set and a qualification model that holds
+   * thirteen adversarial properties constrained nothing at all. A caller that
+   * has no qualifications to supply passes an empty map and says so.
    */
-  readonly qualifiedTaskClassesByRoute?: ReadonlyMap<string, readonly string[]>;
+  readonly qualifiedTaskClassesByRoute: ReadonlyMap<string, readonly string[]>;
 }
 
 export interface RouteUniverse {
@@ -204,6 +210,9 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       routeCost: "subscription-included",
       routeEntitlement: "subscription-included",
       routePaidFallback: false,
+      // A host agent carries no catalogue model, so its cost class is the
+      // subscription itself rather than anything models.dev prices.
+      catalogueCostClass: "subscription-included",
       policy: input.policy,
       authorizations: input.authorizations,
     });
@@ -217,7 +226,7 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
     // the suite holds no task class, however capable its underlying model is.
     const agentEvidence: RouteCapabilityEvidence = {
       modelFeatures: profile.capabilityNames as readonly string[],
-      qualifiedTaskClasses: input.qualifiedTaskClassesByRoute?.get(profile.provider) ?? [],
+      qualifiedTaskClasses: input.qualifiedTaskClassesByRoute.get(profile.provider) ?? [],
     };
     const agentUnmet = unmetCapabilities(input.requirement.requiredCapabilities, agentEvidence);
     if (agentUnmet.missingModelFeatures.length > 0) {
@@ -255,7 +264,7 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       economicBasis: economics.basis,
       capabilityNames: profile.capabilityNames,
       qualifiedTaskClasses: Object.freeze([
-        ...(input.qualifiedTaskClassesByRoute?.get(
+        ...(input.qualifiedTaskClassesByRoute.get(
           selected === null ? profile.provider : `${profile.provider}:${selected}`,
         ) ?? agentEvidence.qualifiedTaskClasses),
       ]),

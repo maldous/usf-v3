@@ -15,6 +15,7 @@ import {
   deriveRouteUniverse, diversifyCandidates, rotationGroup, type ExecutionCandidate,
 } from "../providers/route-universe.ts";
 import { readAuthoritySnapshot, snapshotDifference, type AuthoritySnapshot } from "../providers/authority-snapshot.ts";
+import { observeQualifiedTaskClasses } from "../providers/capabilities.ts";
 import { localAgentTransportIds, observeTransportCapability } from "../providers/transports.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { languageModelFor, parseEffectiveCostPolicy } from "./execute.ts";
@@ -407,6 +408,13 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   // unattended operation does not re-pay the same refusal on every unit. The
   // set is frozen for the whole run: within one run every unit sees the same
   // availability picture.
+  // What each route has earned. Read once for the run, so every unit in a cycle
+  // sees the same qualification picture, and passed into the universe so a task
+  // class actually constrains dispatch. Until this was wired, the qualification
+  // model was complete, adversarially proven and never consulted: this command
+  // is the only path hermes implement dispatches through, and it derived every
+  // candidate with an empty earned-task-class set.
+  const qualifiedTaskClassesByRoute = (await observeQualifiedTaskClasses(repositoryRoot, new Date(observedAt))).byRoute;
   const deferralRecords = await readRouteDeferrals(repositoryRoot);
   const deferred = deferredCandidateIds(deferralRecords, Date.now());
   // What each route has actually produced, used to order the pool.
@@ -437,6 +445,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       providerEndpoints: bindings.endpoints,
       transportSelectedModel: bindings.transportSelectedModel,
       localAgentCapabilities,
+      qualifiedTaskClassesByRoute,
     });
     // Spread units across providers so one quota failure cannot collapse the
     // batch. Currently deferred routes drop to the back rather than out: if
