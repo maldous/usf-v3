@@ -68,7 +68,13 @@ const bootstrapHandlers: CommandHandlers = {
     }
     return (await import("./commands/work-completion.ts")).completionAwareEvidenceCommandHandler(context);
   },
-  prove: async (context) => (await import("./commands/work-completion.ts")).completionAwareProveCommandHandler(context),
+  prove: async (context) => {
+    if (context.args[0] === "completion" && context.args[1] === "--input") {
+      const { observationCommandHandler } = await import("./commands/transition.ts");
+      return observationCommandHandler({ ...context, args: context.args.slice(1) }, "prove completion");
+    }
+    return (await import("./commands/work-completion.ts")).completionAwareProveCommandHandler(context);
+  },
   metrics: async (context) => (await import("./commands/metrics.ts")).metricsCommandHandler(context),
   models: async (context) => {
     const { modelsCommandHandler } = await import("./commands/models.ts");
@@ -83,6 +89,10 @@ const bootstrapHandlers: CommandHandlers = {
     return context.args[0] === "qualify" ? operationalMutation(context.repositoryRoot, async () => probeCommandHandler(context)) : probeCommandHandler(context);
   },
   publish: async (context) => {
+    if (context.args[0] === "work-completion" && context.args[1] === "--input") {
+      const { executeTransitionCommand } = await import("./commands/transition.ts");
+      return operationalMutation(context.repositoryRoot, () => executeTransitionCommand({ ...context, args: context.args.slice(1) }, "publish work-completion"));
+    }
     const { completionAwarePublishCommandHandler } = await import("./commands/work-completion.ts");
     return context.args.includes("--apply") ? operationalMutation(context.repositoryRoot, async () => completionAwarePublishCommandHandler(context)) : completionAwarePublishCommandHandler(context);
   },

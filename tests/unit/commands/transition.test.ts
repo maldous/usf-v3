@@ -10,15 +10,139 @@ import { canonicalQuadLine, parseStrictNQuads } from "../../../src/graph/nquads.
 import { deriveCliTransitionContext, deriveCliTransitionCoverage } from "../../../src/graph/cli-transitions.ts";
 import { findHelpTopic, transitionInterrogationContract, transitionSchemaContract } from "../../../src/commands/help.ts";
 import { canonicalDigest } from "../../../src/core/canonical.ts";
+import { executeTransitionCommand } from "../../../src/commands/transition.ts";
+import { prepareCanonicalCompletionProof, runCanonicalCompletionPublication } from "../../../src/commands/work-completion.ts";
+
+test("binding proof and publication dispatch derive native work and target without authorising missing evidence", async () => {
+  const root = mkdtempSync(join(tmpdir(), "usf-binding-proof-dispatch-"));
+  try {
+    mkdirSync(join(root, "graph"));
+    mkdirSync(join(root, "schemas"));
+    mkdirSync(join(root, ".usf"), { mode: 0o700 });
+    mkdirSync(join(root, ".usf/inputs"), { mode: 0o700 });
+    const source = actualDescriptorGraph();
+    const sources = [...new Set(source.quads.map(q => q.graph))].map((graph, i) => {
+      const path = `graph/source-${i}.nq`;
+      writeFileSync(join(root, path), source.quads.filter(q => q.graph === graph).map(canonicalQuadLine).join("\n") + "\n");
+      return { path, graph, format: "application/n-quads", role: "contract", validationProfile: "bootstrap-nquads-v1" };
+    });
+    writeFileSync(join(root, "graph/target.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources }));
+    const originalBinding = bindingRows().map(canonicalQuadLine).join("\n") + "\n";
+    writeFileSync(join(root, "graph/bindings.nq"), originalBinding);
+    writeFileSync(join(root, "graph/bindings.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [{
+      path: "graph/bindings.nq", graph: "urn:test:bindings", format: "application/n-quads", role: "contract", validationProfile: "bootstrap-nquads-v1",
+    }] }));
+    for (const name of ["cli-transition-descriptor", "completion-proof-bundle", "work-completion-publication-result"]) {
+      writeFileSync(join(root, "schemas", name + ".schema.json"), readFileSync(new URL("../../../schemas/" + name + ".schema.json", import.meta.url)));
+    }
+    const selection = { rootIdentity: "urn:test:binding", manifestPath: "graph/bindings.json" };
+    const nativeSelection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/target.json" };
+    const refusal = async (operation: () => Promise<unknown>) => {
+      try { await operation(); }
+      catch (error) {
+        assert(error instanceof Error);
+        assert("code" in error && typeof error.code === "string");
+        return { code: error.code, message: error.message };
+      }
+      assert.fail("The fixture has no authenticated completion evidence.");
+    };
+    for (const [command, mode] of [["prove completion", undefined], ["publish work-completion", "verify"]] as const) {
+      const input = mode === undefined ? selection : { ...selection, mode };
+      const inspected = inspectTransition(loadTransitionContextGraph(root, selection), selection, command);
+      assert.equal(inspected.context.work, nativeSelection.rootIdentity);
+      assert.equal(inspected.context.binding?.targetManifest, nativeSelection.manifestPath);
+      assert.equal(inspected.validator.validate(input).valid, true);
+      const baseline = await refusal(() => mode === undefined
+        ? prepareCanonicalCompletionProof(root, nativeSelection)
+        : runCanonicalCompletionPublication(root, { ...nativeSelection, mode }));
+      assert.notEqual(baseline.code, "WORK_COMPLETION_ARGUMENTS_INVALID", "native work selection must succeed before the genuine evidence refusal");
+      writeFileSync(join(root, ".usf/inputs/input.json"), JSON.stringify(input), { mode: 0o600 });
+      const dispatch = () => executeTransitionCommand({ command: mode === undefined ? "prove" : "publish",
+        repositoryRoot: root, args: ["--input", ".usf/inputs/input.json"] }, command);
+      assert.deepEqual(await refusal(dispatch), baseline, "dispatch must reach the same native guard as the derived work/target");
+      for (const key of ["work", "profile", "targetManifest", "candidateDigest", "basis"]) {
+        writeFileSync(join(root, ".usf/inputs/input.json"), JSON.stringify({ ...input, [key]: "caller override" }), { mode: 0o600 });
+        assert.equal((await refusal(dispatch)).code, "CLI_TRANSITION_INPUT_INVALID", key);
+      }
+      writeFileSync(join(root, ".usf/inputs/input.json"), JSON.stringify(input), { mode: 0o600 });
+      writeFileSync(join(root, "graph/bindings.nq"), bindingRows("graph/missing.json").map(canonicalQuadLine).join("\n") + "\n");
+      await assert.rejects(dispatch, /MANIFEST_UNREADABLE/u, "changed binding target must not reuse the prior derived selection");
+      writeFileSync(join(root, "graph/bindings.nq"), originalBinding);
+    }
+    assert.deepEqual(readdirSync(root).sort(), [".usf", "graph", "schemas"]);
+    assert.deepEqual(readdirSync(join(root, ".usf")), ["inputs"]);
+    assert.deepEqual(readdirSync(join(root, ".usf/inputs")), ["input.json"]);
+    assert.equal(readFileSync(join(root, "graph/bindings.nq"), "utf8"), originalBinding);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
 
 function actualDescriptorGraph(): SemanticGraph {
   const quads = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
-  const selected = new Set(["urn:usf:schema:no-change-realisation-result:1", "urn:usf:schema:completion-evidence-candidate:1", "urn:usf:command:realise-no-change:1"]);
+  const selected = new Set(["urn:usf:schema:no-change-realisation-result:1", "urn:usf:schema:completion-evidence-candidate:1", "urn:usf:command:realise-no-change:1", "urn:usf:schema:completion-proof-bundle:1", "urn:usf:schema:work-completion-publication-result:1", "urn:usf:schema:work-completion-publication-receipt:1", "urn:usf:command:prove-completion:1", "urn:usf:command:publish-work-completion:1"]);
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/profile-authority.nq", import.meta.url), "utf8"), "urn:usf:graph:profile-authority").filter(q => selected.has(q.subject)));
   return { quads, manifest: { schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [] }, semanticDigest: "untrusted", graphDigests: {}, sourceDigests: {}, repositoryRoot: fileURLToPath(new URL("../../../", import.meta.url)) };
 }
+
+test("proof and publication map exact root-derived contracts without satisfying prerequisites by declaration", () => {
+  const graph = actualDescriptorGraph();
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  for (const [command, stage, prerequisite] of [["prove completion", "proof", "evidence"], ["publish work-completion", "publication", "proof"]] as const) {
+    const inspected = inspectTransition(graph, selection, command);
+    const identity = `urn:usf:cli-transition:completion-${stage}:1`;
+    assert.equal(inspected.transitionIdentity, identity);
+    assert.deepEqual(inspected.descriptor.prerequisites, [`urn:usf:cli-transition:completion-${prerequisite}:1`]);
+    const consumed = inspected.descriptor.consumes as readonly { identity: string; producer: string }[];
+    assert.deepEqual(consumed.map(a => a.identity), [`urn:usf:cli-contract:completion-${prerequisite}-artifact:1`]);
+    assert.equal(consumed[0]!.producer, `urn:usf:cli-transition:completion-${prerequisite}:1`);
+    const inputs = stage === "proof" ? [selection] : ["verify", "apply"].map(mode => ({ ...selection, mode }));
+    for (const input of inputs) {
+      assert.equal(inspected.validator.validate(input).valid, true);
+      for (const key of ["candidateDigest", "bundle", "evidence", "obligation", "profile", "work", "basis", "snapshot", "output", "fields", "executionAuthority"]) {
+        assert.equal(inspected.validator.validate({ ...input, [key]: "caller override" }).valid, false, `${command}: ${key}`);
+      }
+      for (const key of ["rootIdentity", "manifestPath"]) {
+        const missing: Record<string, unknown> = { ...input }; delete missing[key];
+        assert.equal(inspected.validator.validate(missing).valid, false);
+        assert.equal(inspected.validator.validate({ ...input, [key]: "" }).valid, false);
+      }
+    }
+    if (stage === "publication") {
+      assert.equal(inspected.validator.validate(selection).valid, false);
+      assert.equal(inspected.validator.validate({ ...selection, mode: "repair" }).valid, false);
+      assert.throws(() => inspectObservationTransition(graph, selection, command), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+    }
+    const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, transitionAdaptersForCoverage());
+    assert.equal(report.diagnostics.some(d => d.subject === identity && d.field === "adapter"), false);
+    assert.equal(report.executionAuthority, "none"); assert.equal(report.complete, false);
+    assert.equal(report.parallelSafety.state, "unproven"); assert.equal(report.terminalClosure.assessment.satisfaction, "unverified");
+    const help = findHelpTopic(command.split(" "));
+    assert.ok(help); assert(help.synopsis.some(line => line.includes("--input")), command);
+  }
+});
+
+test("proof publication mappings refuse changed prerequisites rule roles schema and ownership before effects", () => {
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  for (const [command, stage, prerequisite] of [["prove completion", "proof", "evidence"], ["publish work-completion", "publication", "proof"]] as const) {
+    const identity = `urn:usf:cli-transition:completion-${stage}:1`;
+    const mutations: ((graph: SemanticGraph) => void)[] = [
+      g => { g.quads = g.quads.filter(q => !(q.subject === identity && q.predicate === "urn:usf:predicate:requiresTransition")); },
+      g => { g.quads = g.quads.filter(q => !(q.subject === `urn:usf:cli-transition:completion-${prerequisite}:1` && q.predicate === "urn:usf:predicate:produces")); },
+      g => { g.quads = g.quads.filter(q => !(q.subject === identity && q.predicate === "urn:usf:predicate:publicationPolicy")); },
+      g => { const row = g.quads.find(q => q.subject === identity && q.predicate === "urn:usf:predicate:resultSchema")!; row.object = "urn:usf:schema:completion-evidence-candidate:1"; },
+      g => { const row = g.quads.find(q => q.subject === `urn:usf:rule:completion-${stage}-input:1` && q.predicate === "urn:usf:predicate:text")!; row.object += " Changed operational meaning."; },
+      g => { const row = g.quads.find(q => q.subject === `urn:usf:cli-contract:completion-${prerequisite}-artifact:1` && q.predicate === "urn:usf:predicate:work")!; row.object = "urn:test:foreign-work"; },
+    ];
+    for (const [index, mutate] of mutations.entries()) {
+      const graph = actualDescriptorGraph(); mutate(graph);
+      assert.throws(() => inspectTransition(graph, selection, command), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+      const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, transitionAdaptersForCoverage());
+      assert(report.diagnostics.some(d => d.subject === identity && d.field === "adapter" && d.reasonCode === "CLI_TRANSITION_UNIMPLEMENTED"), JSON.stringify({ command, mutation: index, diagnostics: report.diagnostics.filter(d => d.subject === identity || d.subject.includes("completion-")) }));
+      assert.equal(report.executionAuthority, "none"); assert.equal(report.parallelSafety.state, "unproven");
+    }
+  }
+});
 
 test("schema CLI uses the same selectors and emits current graph-derived schema without authority", () => {
   assert.equal(transitionSchemaContract.inputs, transitionInterrogationContract.inputs);
@@ -98,10 +222,6 @@ test("interrogation and preparation share actual graph-bound observation admissi
   const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
   assert.deepEqual(report.descriptors.find(d => d.identity === admitted.descriptor.identity), admitted.descriptor);
   assert.equal(report.diagnostics.some(d => d.subject === admitted.descriptor.identity && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), false);
-  for (const stage of ["proof", "publication"]) {
-    const identity = `urn:usf:cli-transition:completion-${stage}:1`;
-    assert(report.diagnostics.some(d => d.subject === identity && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), identity);
-  }
   assert.equal(report.executionAuthority, "none");
   assert.equal(report.complete, false);
   assert.equal(report.parallelSafety.state, "unproven");
@@ -211,10 +331,10 @@ test("every declared selector bound is enforced without hidden coercion", () => 
   }
 });
 
-test("completion lineage remains visible without admitting unmapped execution or terminal satisfaction", () => {
+test("completion lineage remains visible without granting execution or terminal satisfaction", () => {
   const graph = actualDescriptorGraph();
   const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
-  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
+  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, transitionAdaptersForCoverage());
   const assessment = report.terminalClosure.assessment;
   const stages = ["evidence", "proof", "publication"];
   for (const [index, stage] of stages.entries()) {
@@ -226,15 +346,10 @@ test("completion lineage remains visible without admitting unmapped execution or
     assert(assessment.edges.some(e => e.source === artifact && e.predicate === "urn:usf:predicate:producer" && e.target === transition));
     assert(assessment.edges.some(e => e.source === transition && e.predicate === "urn:usf:predicate:recoveryContract" && e.target === recovery));
     if (index > 0) assert(assessment.edges.some(e => e.source === transition && e.predicate === "urn:usf:predicate:consumes" && e.target === `urn:usf:cli-contract:completion-${stages[index - 1]}-artifact:1`));
-    if (stage !== "evidence") assert(report.diagnostics.some(d => d.subject === transition && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
-    else assert(!report.diagnostics.some(d => d.subject === transition && d.field === "adapter"));
+    assert(!report.diagnostics.some(d => d.subject === transition && d.field === "adapter"), transition);
   }
-  const declared = graph.quads.filter(q =>
-    q.subject === "urn:usf:cli-terminal-closure:cli-transition-definition:1" &&
-    q.predicate === "urn:usf:predicate:terminalArtifact" && q.objectKind === "iri").map(q => q.object);
-  assert(declared.length > 0);
-  assert.deepEqual(assessment.terminalArtifacts, [...new Set(declared)].sort());
   assert.equal(assessment.satisfaction, "unverified");
+  assert(assessment.terminalArtifacts.includes("urn:usf:cli-contract:completion-publication-artifact:1"));
   assert.equal(report.complete, false);
   assert.equal(report.executionAuthority, "none");
   assert.equal(report.parallelSafety.state, "unproven");
@@ -330,7 +445,7 @@ test("CLI binding reads follow only the selected target manifest without runtime
   try {
     mkdirSync(join(root, "graph"));
     const source = actualDescriptorGraph();
-    const names = ["cli-transition-definition", "cli-transition-record-specifications", "cli-transition-field-specifications", "cli-transition-completion-field-specifications", "v3-convention"].map(name => "urn:usf:graph:" + name);
+    const names = ["urn:usf:graph:cli-transition-definition","urn:usf:graph:cli-transition-record-specifications","urn:usf:graph:cli-transition-field-specifications","urn:usf:graph:cli-transition-completion-field-specifications","urn:usf:graph:v3-convention"];
     const sources = names.map((graph, i) => {
       const path = `graph/source-${i}.nq`;
       writeFileSync(join(root, path), source.quads.filter(q => q.graph === graph).map(canonicalQuadLine).join("\n") + "\n");

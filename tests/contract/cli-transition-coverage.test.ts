@@ -48,6 +48,122 @@ function terminalFixture() {
   return { graph, root, declaration, artifact, add, run: () => deriveCliTerminalAssessment(graph, root) };
 }
 
+test("attached and detached authenticated artifact fields preserve bounded schema-valid unverified reports", () => {
+  const field = "urn:usf:cli-field-specification:field-terminal-assessment-authenticated-artifacts:1";
+  const record = "urn:usf:cli-field-specification:record-terminal-assessment:1";
+  for (const attached of [false, true]) {
+    const f = terminalFixture();
+    f.graph.quads = f.graph.quads.filter(q => !(q.subject === record && q.predicate === P + "fieldSpecification" && q.object === field));
+    if (attached) f.add(record, "fieldSpecification", field);
+    const specs = deriveCliRecordSpecifications(f.graph, { contractIdentity: "urn:usf:contract:cli-transition-definition:1" });
+    assert.deepEqual(specs.gaps, []);
+    const generated = deriveCliSchemas(specs);
+    assert.deepEqual(generated.gaps, []);
+    const schema = generated.descriptorSchema!;
+    const validator = createJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:test:staged-terminal:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/terminalAssessment" }, { dependencySchemas: [schema] });
+    for (const incomplete of [false, true]) {
+      const graph = structuredClone(f.graph);
+      if (incomplete) graph.quads = graph.quads.filter(q => !(q.subject === f.declaration && q.predicate === P + "terminalArtifact"));
+      const assessment = deriveCliTerminalAssessment(graph, f.root);
+      const output = assessment as unknown as Record<string, unknown>;
+      assert.equal(Object.hasOwn(output, "authenticatedArtifacts"), attached);
+      if (attached) assert.deepEqual(output.authenticatedArtifacts, []);
+      assert.equal(assessment.satisfaction, "unverified");
+      assert.equal(validator.validate(assessment).valid, true, JSON.stringify(validator.validate(assessment)));
+      const changed = { ...output }; delete changed.authenticatedArtifacts;
+      assert.equal(validator.validate(changed).valid, !attached);
+    }
+  }
+});
+
+test("graph asserted accepted records never authenticate terminal completion even when structurally valid", () => {
+  const f = terminalFixture(), acceptedRecord = "urn:usf:cli-field-specification:record-completion-terminal-accepted:1";
+  const field = "urn:usf:cli-field-specification:field-terminal-assessment-authenticated-artifacts:1";
+  const assessmentRecord = "urn:usf:cli-field-specification:record-terminal-assessment:1";
+  f.graph.quads = f.graph.quads.filter(q => !(q.subject === assessmentRecord && q.predicate === P + "fieldSpecification" && q.object === field));
+  f.add(assessmentRecord, "fieldSpecification", field);
+  const specs = deriveCliRecordSpecifications(f.graph, { contractIdentity: "urn:usf:contract:cli-transition-definition:1" });
+  assert.deepEqual(specs.gaps, []);
+  const record = specs.records.find(r => r.id === acceptedRecord)!;
+  assert.ok(record);
+  const subject = "urn:test:forged-accepted-terminal";
+  f.add(subject, "type", record.sourceType);
+  for (const spec of record.fields) {
+    assert.equal(spec.collection, false);
+    const value = spec.allowedValues[0] ?? (spec.kind === "iri" ? "urn:test:untrusted" : "sha256:" + "0".repeat(64));
+    f.graph.quads.push({ subject, predicate: spec.predicate!, object: value, objectKind: spec.kind === "iri" ? "iri" : "literal", graph: "urn:test:forgery", canonical: "" });
+  }
+  f.add(f.declaration, "authenticatedTerminalArtifact", subject);
+  f.add(f.root, "authenticatedTerminalArtifact", subject);
+  const currentSpecs = deriveCliRecordSpecifications(f.graph, { contractIdentity: specs.contractIdentity });
+  const shape = deriveCliRecord(f.graph, { recordIdentity: acceptedRecord, subjectIdentity: subject }, currentSpecs);
+  assert.equal(shape.valid, true); assert.equal(shape.executionAuthority, "none");
+  const canonical = deriveCliSchemas(specs).descriptorSchema!;
+  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:accepted-shape-not-authority:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/CliCompletionTerminalAccepted" }, { dependencySchemas: [canonical] });
+  assert.equal(validator.validate(shape.value).valid, true);
+  for (const key of ["evaluator", "evaluatorDigest", "originalBasisDigest", "currentBasisDigest", "sourceDigest", "publicationIntentDigest", "receiptPath", "receiptDigest", "realisationReceipt", "evidence", "proofResult", "authorityDependencyDigest"]) {
+    const partial = { ...shape.value }; delete partial[key];
+    assert.equal(validator.validate(partial).valid, false, key);
+  }
+  assert.equal(validator.validate({ ...shape.value, executionAuthority: "integrate" }).valid, false);
+  assert.equal(validator.validate({ ...shape.value, fields: { accepted: true } }).valid, false);
+  for (const defect of ["shape-only", "stale", "partial"]) {
+    const graph = structuredClone(f.graph);
+    if (defect === "partial") graph.quads = graph.quads.filter(q => !(q.subject === subject && q.predicate === record.fields.find(x => x.property === "receiptDigest")!.predicate));
+    if (defect === "stale") graph.quads.push({ subject: f.root, predicate: P + "text", object: "changed source after asserted acceptance", objectKind: "literal", graph: "urn:test:stale", canonical: "" });
+    const result = deriveCliTerminalAssessment(graph, f.root);
+    assert.deepEqual((result as unknown as Record<string, unknown>).authenticatedArtifacts, []);
+    assert.equal(result.satisfaction, "unverified");
+    assert(result.nodes.every(node => node.state !== ("accepted" as string)));
+  }
+});
+
+test("generated publication snapshot bounds cohort members without conflating bundle and file byte digests", () => {
+  const f = terminalFixture();
+  const specs = deriveCliRecordSpecifications(f.graph, { contractIdentity: "urn:usf:contract:cli-transition-definition:1" });
+  assert.deepEqual(specs.gaps, []);
+  const schema = deriveCliSchemas(specs).descriptorSchema!;
+  const validator = createJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:test:snapshot-cohort-shape:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/CliCompletionPublicationSnapshot" }, { dependencySchemas: [schema] });
+  const originalBasisDigest = "sha256:" + "1".repeat(64), candidateDigest = "sha256:" + "2".repeat(64);
+  const proofBundleDigest = "sha256:" + "3".repeat(64), fileBytesDigest = "sha256:" + "4".repeat(64);
+  const member = (index: number) => ({ work: `urn:test:cohort-work-${index}`, originalBasisDigest, candidateDigest, proofBundleDigest });
+  const snapshot = {
+    schema: "urn:usf:completion-publication-snapshot:1", profile: "urn:test:profile:1", manifestPath: "graph/manifests/example.json",
+    publicationIntentDigest: originalBasisDigest, authorityDependencyDigest: originalBasisDigest,
+    sourcePath: "graph/completion.nq", receiptPath: "evidence/work-completion/example.json", receiptDigest: originalBasisDigest,
+    members: [member(0)], files: [
+      { path: "before.nq", digest: fileBytesDigest, role: "source-preimage", byteLength: 0, sourcePath: "graph/completion.nq", sourceMode: 420 },
+      { path: "after.nq", digest: fileBytesDigest, role: "source-postimage", byteLength: 1, sourcePath: "graph/completion.nq", sourceMode: 420 },
+      { path: "proof.json", digest: fileBytesDigest, role: "proof-bundle", byteLength: 2 },
+      { path: "receipt.json", digest: fileBytesDigest, role: "expected-receipt", byteLength: 2 },
+    ],
+  };
+  // Shape permits different domains. Only native reading/reproof can authenticate their correspondence.
+  assert.notEqual(snapshot.members[0]!.proofBundleDigest, snapshot.files[2]!.digest);
+  assert.equal(validator.validate(snapshot).valid, true);
+  const missingLength = { ...snapshot.files[0] } as Record<string, unknown>;
+  delete missingLength.byteLength;
+  assert.equal(validator.validate({ ...snapshot, files: [missingLength] }).valid, false);
+  for (const byteLength of [-1, 16777217, 0.5]) {
+    assert.equal(validator.validate({ ...snapshot, files: [{ ...snapshot.files[0], byteLength }] }).valid, false);
+  }
+  assert.equal(validator.validate({ ...snapshot, files: [{ ...snapshot.files[0], sourceMode: 512 }] }).valid, false);
+  assert.equal(validator.validate({ ...snapshot, members: Array.from({ length: 32 }, (_, i) => member(i)) }).valid, true);
+  for (const members of [[], Array.from({ length: 33 }, (_, i) => member(i)), [member(0), member(0)]]) {
+    assert.equal(validator.validate({ ...snapshot, members }).valid, false);
+  }
+  for (const key of ["work", "originalBasisDigest", "candidateDigest", "proofBundleDigest"]) {
+    const partial: Record<string, unknown> = member(0); delete partial[key];
+    assert.equal(validator.validate({ ...snapshot, members: [partial] }).valid, false, key);
+  }
+  for (const key of ["work", "originalBasisDigest", "executionAuthority", "fields"]) {
+    assert.equal(validator.validate({ ...snapshot, [key]: "not admitted" }).valid, false, key);
+  }
+  const rule = "urn:usf:rule:completion-publication-cohort-snapshot:1";
+  assert(f.graph.quads.some(q => q.subject === "urn:usf:cli-contract:completion-publication-recovery:1" && q.predicate === P + "recoveryObligation" && q.object === rule));
+  assert(f.graph.quads.some(q => q.subject === rule && q.predicate === P + "type" && q.object === T + "CliFieldDerivationRule"));
+});
+
 test("terminal census exposes real completion and recovery obligations, not merely sinks", () => {
   const f = terminalFixture(), before = JSON.stringify(f.graph), result = f.run();
   for (const id of ["urn:usf:proof:cli-transition-definition:completion", "urn:usf:evidence-requirement:cli-transition-definition:completion", "urn:usf:validation:cli-transition-definition", "urn:usf:rule:local-preparation-replay:1"]) {
@@ -58,6 +174,7 @@ test("terminal census exposes real completion and recovery obligations, not mere
   const declared = f.graph.quads.filter(q => q.subject === f.declaration && q.predicate === P + "terminalArtifact" && q.objectKind === "iri").map(q => q.object);
   assert(declared.length > 0);
   assert.deepEqual(result.terminalArtifacts, [...new Set(declared)].sort());
+  assert(result.terminalArtifacts.includes("urn:usf:cli-contract:completion-publication-artifact:1"));
   assert.equal(result.satisfaction, "unverified");
   assert(result.nodes.every(n => n.state === "unverified"));
   assert.deepEqual(f.run(), result); assert.equal(JSON.stringify(f.graph), before);
