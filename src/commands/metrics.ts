@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { constants } from "node:fs";
+import { constants, type Stats } from "node:fs";
 import { lstat, open, realpath } from "node:fs/promises";
 import { relative, resolve, sep } from "node:path";
 import { exitCodes, UsfError } from "../core/errors.ts";
@@ -11,6 +11,7 @@ import {
 } from "../observability/metrics.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { summarizeJobLifecycle, type LifecycleSource } from "../observability/job-lifecycle.ts";
+import { appendLifecycleObservation, createLifecycleObservation } from "../observability/job-lifecycle-recorder.ts";
 
 const views = new Set<MetricView>([
   "summary",
@@ -28,6 +29,7 @@ const maximumItems = 100;
 const defaultInput = ".usf/metrics/events.jsonl";
 const inputPattern = /^\.usf\/metrics\/[A-Za-z0-9][A-Za-z0-9._-]{0,95}\.jsonl$/;
 const labelPattern = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$/;
+const recordInputPattern = /^\.usf\/inputs\/[A-Za-z0-9][A-Za-z0-9._-]{0,95}\.json$/;
 
 interface ParsedMetrics {
   readonly view: MetricView;
@@ -305,10 +307,129 @@ async function readSource(
     : readFileSource(repositoryRoot, input, explicit, limit);
 }
 
+function assertPrivateRecordFile(metadata: Stats): void {
+  if (
+    !metadata.isFile() ||
+    metadata.isSymbolicLink() ||
+    metadata.nlink !== 1 ||
+    metadata.size < 1 ||
+    metadata.size > 16_384 ||
+    (metadata.mode & 0o777) !== 0o600 ||
+    (typeof process.getuid === "function" && metadata.uid !== process.getuid())
+  ) {
+    throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input must be one private bounded regular file.");
+  }
+}
+
+function samePrivateRecordFile(left: Stats, right: Stats): boolean {
+  return left.dev === right.dev && left.ino === right.ino && left.size === right.size;
+}
+
+interface DirectorySnapshot {
+  readonly path: string;
+  readonly canonical: string;
+  readonly dev: number;
+  readonly ino: number;
+}
+
+async function privateDirectorySnapshot(path: string): Promise<DirectorySnapshot> {
+  await assertPrivateDirectory(path);
+  const metadata = await lstat(path);
+  return Object.freeze({ path, canonical: await realpath(path), dev: metadata.dev, ino: metadata.ino });
+}
+
+async function rootDirectorySnapshot(path: string): Promise<DirectorySnapshot> {
+  const metadata = await lstat(path);
+  if (
+    !metadata.isDirectory() ||
+    metadata.isSymbolicLink() ||
+    (metadata.mode & 0o022) !== 0 ||
+    (typeof process.getuid === "function" && metadata.uid !== process.getuid())
+  ) {
+    throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record repository root must be an owned non-writable real directory.");
+  }
+  return Object.freeze({ path, canonical: await realpath(path), dev: metadata.dev, ino: metadata.ino });
+}
+
+async function revalidateDirectorySnapshot(snapshot: DirectorySnapshot, privateDirectory: boolean): Promise<void> {
+  if (await realpath(snapshot.path) !== snapshot.canonical) {
+    throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input ancestor changed while reading.");
+  }
+  if (privateDirectory) await assertPrivateDirectory(snapshot.path);
+  else await rootDirectorySnapshot(snapshot.path);
+  const metadata = await lstat(snapshot.path);
+  if (metadata.dev !== snapshot.dev || metadata.ino !== snapshot.ino) {
+    throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input ancestor changed while reading.");
+  }
+}
+
+async function recordInput(repositoryRoot: string, input: string): Promise<{ readonly value: unknown; readonly root: DirectorySnapshot }> {
+  if (!recordInputPattern.test(input)) invalidArguments("Record input must be a direct .usf/inputs JSON file.");
+  try {
+    const root = await realpath(repositoryRoot);
+    const inputs = resolve(root, ".usf/inputs");
+    const rootSnapshot = await rootDirectorySnapshot(root);
+    const usfSnapshot = await privateDirectorySnapshot(resolve(root, ".usf"));
+    const inputsSnapshot = await privateDirectorySnapshot(inputs);
+    const canonicalInputs = inputsSnapshot.canonical;
+    const path = resolve(root, input);
+    const namedRelation = relative(canonicalInputs, path);
+    if (namedRelation === "" || namedRelation === ".." || namedRelation.startsWith(`..${sep}`) || namedRelation.includes(sep)) {
+      throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input escapes the private inputs directory.");
+    }
+    const named = await lstat(path).catch(() => undefined);
+    if (named === undefined) throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input is unavailable.");
+    assertPrivateRecordFile(named);
+    const canonicalPath = await realpath(path);
+    const canonicalRelation = relative(canonicalInputs, canonicalPath);
+    if (canonicalRelation !== namedRelation || canonicalRelation === "" || canonicalRelation === ".." || canonicalRelation.startsWith(`..${sep}`) || canonicalRelation.includes(sep)) {
+      throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input resolves outside the private inputs directory.");
+    }
+    const handle = await open(path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+    try {
+      const opened = await handle.stat();
+      assertPrivateRecordFile(opened);
+      if (!samePrivateRecordFile(named, opened)) throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input changed while opening.");
+      const raw = await handle.readFile();
+      if (raw.byteLength !== opened.size) throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input changed while reading.");
+      const after = await lstat(path);
+      assertPrivateRecordFile(after);
+      if (!samePrivateRecordFile(opened, after)) throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input changed while reading.");
+      if (await realpath(path) !== canonicalPath) throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input changed while reading.");
+      await revalidateDirectorySnapshot(rootSnapshot, false);
+      await revalidateDirectorySnapshot(usfSnapshot, true);
+      await revalidateDirectorySnapshot(inputsSnapshot, true);
+      try {
+        return Object.freeze({ value: JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(raw)), root: rootSnapshot });
+      } catch {
+        throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.INVALID_INPUT, "Record input must be UTF-8 JSON.");
+      }
+    } finally {
+      await handle.close();
+    }
+  } catch (error) {
+    if (error instanceof UsfError) throw error;
+    throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record input could not be authenticated.");
+  }
+}
+
 export const metricsCommandHandler: CommandHandler = async ({
   args,
   repositoryRoot,
 }) => {
+  if (args[0] === "record") {
+    if (args.length !== 3 || args[1] !== "--input") invalidArguments("metrics record requires exactly --input PATH.");
+    const authenticated = await recordInput(repositoryRoot, args[2]!);
+    const event = createLifecycleObservation(authenticated.value);
+    try {
+      await revalidateDirectorySnapshot(authenticated.root, false);
+    } catch (error) {
+      if (error instanceof UsfError) throw error;
+      throw new UsfError("METRICS_INPUT_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "Record root changed before append.");
+    }
+    const result = await appendLifecycleObservation(authenticated.root.canonical, event);
+    return { output: Object.freeze({ schema: "urn:usf:job-lifecycle-record-result:1", ...result, acceptanceStatus: "unverified", acceptedOutcome: null }) };
+  }
   const parsed = parse(args);
   const source = await readSource(
     repositoryRoot,

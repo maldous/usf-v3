@@ -36,17 +36,24 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.deepEqual(parseCommand(["--help"]), { command: "help", args: [] });
   assert.deepEqual(parseCommand(["--help", "--json"]), { command: "help", args: ["--json"] });
   assert.deepEqual(parseCommand(["metrics", "tokens", "--help", "--json"]), { command: "help", args: ["metrics", "tokens", "--json"] });
+  assert.deepEqual(parseCommand(["metrics", "record", "--help", "--json"]), { command: "help", args: ["metrics", "record", "--json"] });
   const machine = helpCommandResult(["metrics", "tokens", "--json"]);
   assert.equal(machine.outputMode, "json");
   const output = machine.output as { schema: string; status: string; topic: string[]; command: { outputSchema: string; externalContact: string; historyScan: string; availability: string; exitCodeMeanings: Array<{ code: number; meaning: string }> } };
   assert.equal(output.schema, "urn:usf:cli-help:1");
   assert.equal(output.status, "ok");
   assert.deepEqual(output.topic, ["metrics", "tokens"]);
-  assert.equal(output.command.outputSchema, "urn:usf:metrics-report:1");
+  assert.equal(output.command.outputSchema, "urn:usf:metrics-report:1 | urn:usf:job-lifecycle-metrics-report:2");
   assert.equal(output.command.externalContact, "none");
   assert.equal(output.command.historyScan, "bounded");
   assert.equal(output.command.availability, "implemented");
   assert.deepEqual(output.command.exitCodeMeanings[0], { code: 0, meaning: "success" });
+  const metricsHelp = helpCommandResult(["metrics", "--json"]);
+  const metrics = (metricsHelp.output as { command: { outputSchema: string; authorityEffect: string } }).command;
+  assert.equal(metrics.outputSchema, "urn:usf:metrics-report:1 | urn:usf:job-lifecycle-metrics-report:2 | urn:usf:job-lifecycle-record-result:1");
+  assert.match(metrics.authorityEffect, /writes only the recorder's private v2 ledger/u);
+  const recordHelp = helpCommandResult(["metrics", "record", "--json"]);
+  assert.equal((recordHelp.output as { command: { outputSchema: string } }).command.outputSchema, "urn:usf:job-lifecycle-record-result:1");
 
   const queryHelp = helpCommandResult(["query", "--json"]);
   const queryOptions = (queryHelp.output as { command: { options: Array<{ syntax: string }> } }).command.options.map((option) => option.syntax);
