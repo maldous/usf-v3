@@ -32,6 +32,57 @@ const fallbackAuthorizedPathPrefixes: readonly string[] = Object.freeze([
 ]);
 
 const graphFixtureDirectoryName = "fixtures";
+const graphDirectoryName = "graph";
+
+/**
+ * The graph-source denominator of a transaction is its proposed POSTIMAGE, not
+ * its preimage: discovery walks what already exists, and a transaction that
+ * creates a graph source must have those bytes parsed and integrity-checked
+ * too. Otherwise the guarantee that the resulting corpus satisfies every
+ * invariant before any write holds for every source except the ones being
+ * introduced.
+ *
+ * The earlier recursion repair fixed depth and left novelty open. Measured: a
+ * transaction creating nine sources carrying 3611 quads reported the
+ * pre-transaction corpus as its validated denominator and applied successfully,
+ * and the two real defects in the created bytes were caught only by a later
+ * `usf graph integrity` run.
+ *
+ * Fixtures stay excluded at any depth, for the same reason the gate excludes
+ * them: synthetic test input in its own namespace carries known defects and is
+ * deliberately outside the corpus.
+ */
+export function graphSourceDenominator(
+  discovered: readonly string[],
+  postimagePaths: readonly string[],
+): readonly string[] {
+  const created = postimagePaths
+    .filter((path) => path.startsWith(`${graphDirectoryName}/`) && path.endsWith(".nq"))
+    .map((path) => path.slice(graphDirectoryName.length + 1))
+    .filter((name) => !name.split("/").includes(graphFixtureDirectoryName));
+  return Object.freeze([...new Set([...discovered, ...created])].sort());
+}
+
+/**
+ * Whether an integrity violation is this corpus's to answer for.
+ *
+ * A violation carrying no graph label is corpus-level rather than local to one
+ * source, and `undeclared-type` reports exactly that way. Requiring a non-empty
+ * label silently excused every one of them, so a transaction introducing an
+ * undeclared type was accepted while the gate reported the same corpus as
+ * non-conforming. Convention exemption is a property of one named graph's local
+ * style and cannot excuse an unattributable structural violation.
+ *
+ * Measured at the basis this was written against: all 24 legacy violations
+ * carry a named exempt graph and none carries an empty label, so treating an
+ * empty label as owned introduces no false refusal.
+ */
+export function isOwnedIntegrityViolation(
+  graph: string,
+  conventionExemptGraphs: readonly string[],
+): boolean {
+  return graph.length === 0 || !conventionExemptGraphs.includes(graph);
+}
 
 export type OperationKind = "append-quads" | "write-file" | "derive-economics-projection";
 
@@ -247,7 +298,7 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
   // overlay path without ever checking the bytes it produced. Fixtures are
   // synthetic test input and are excluded here for the same reason the gate
   // excludes them.
-  const graphFiles = (await (async function walk(dir: string, prefix: string): Promise<readonly string[]> {
+  const discovered = await (async function walk(dir: string, prefix: string): Promise<readonly string[]> {
     const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
     const found: string[] = [];
     for (const entry of entries) {
@@ -259,7 +310,8 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
       }
     }
     return found;
-  })(graphDirectory, "")).slice().sort();
+  })(graphDirectory, "");
+  const graphFiles = graphSourceDenominator(discovered, [...postimages.keys()]);
   const resultingQuads: Quad[] = [];
   for (const name of graphFiles) {
     const path = `graph/${name}`;
@@ -283,7 +335,7 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
     .then((module) => module.integrityScopes(resultingQuads));
   const integrity = checkIntegrity(resultingQuads, { conventionExemptGraphs, stateReasonGraphs, derivedOnlyTypes, functionalPredicates });
   const ownedViolations = integrity.violations.filter(
-    (violation) => violation.graph.length > 0 && !conventionExemptGraphs.includes(violation.graph),
+    (violation) => isOwnedIntegrityViolation(violation.graph, conventionExemptGraphs),
   );
   if (ownedViolations.length > 0) {
     throw new UsfError("TRANSACT_INTEGRITY_VIOLATION", exitCodes.DOMAIN_FAILURE,
