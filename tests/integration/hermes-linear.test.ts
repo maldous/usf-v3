@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { compatibleLinearLanes, currentLinearBindingSelections, linearMutationLedgerSettled, runLinearLaneCycle, LinearMutations, parseHermesLinearArguments, loadLinearCredentials, hermesLinearCommand, type LinearLane } from "../../src/commands/hermes-linear.ts";
 import { canonicalDigest } from "../../src/core/canonical.ts";
-import { LinearStateStore } from "../../src/linear/state.ts";
+import { LinearStateStore } from "../../src/commands/linear-state.ts";
 import { acquireSupervisorLifetimeLock, claimStewardship, releaseStewardship, withSupervisorActivity } from "../../src/continuous/stewardship.ts";
 import { linuxProcessInspector } from "../../src/continuous/lifecycle.ts";
 import { observeSupervisor, registerForegroundSupervisor, unregisterForegroundSupervisor } from "../../src/commands/hermes-lifecycle.ts";

@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
 import { canonicalDigest } from "../../../src/core/canonical.ts";
-import { contributionFromGraphExecution, LinearContributionError } from "../../../src/linear/contribution.ts";
+import { contributionFromGraphExecution, LinearContributionError } from "../../../src/commands/linear-contribution.ts";
 import { proposalBasis } from "../../fixtures/proposal-packet.ts";
 import { createRealisationBasis } from "../../../src/realisation/basis.ts";
 import { containedProviderEnvironment, sdkInvocationLimits } from "../../../src/commands/graph-execute.ts";

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   LinearClient, LinearClientError, parseLinearPolicy, type LinearFetch, type LinearPolicy,
-} from "../../../src/linear/client.ts";
+} from "../../../src/commands/linear-client.ts";
 
 const teamId = "77f0a87a-f966-460f-b744-98e75634f128";
 const otherTeamId = "53f584e7-70a1-4b1e-b982-b815210e47d4";

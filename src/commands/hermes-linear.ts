@@ -8,14 +8,14 @@ import { deriveWork } from "../graph/work.ts";
 import type { PreparedLinearBinding, LinearBindingSelector } from "./linear-binding.ts";
 import { observeLinearBinding } from "./linear-binding.ts";
 import { loadCredentialEnvFile, type CredentialEnvironment } from "../providers/config.ts";
-import { LinearClient, parseLinearPolicy, type LinearIssue, type LinearPolicy, type LinearTeamPolicy, type LinearWorkspacePolicy } from "../linear/client.ts";
-import { LinearStateStore, readLinearRecord, writeLinearRecord, type LinearRecordValue } from "../linear/state.ts";
+import { LinearClient, parseLinearPolicy, type LinearIssue, type LinearPolicy, type LinearTeamPolicy, type LinearWorkspacePolicy } from "./linear-client.ts";
+import { LinearStateStore, readLinearRecord, writeLinearRecord, type LinearRecordValue } from "./linear-state.ts";
 import { linuxProcessInspector } from "../continuous/lifecycle.ts";
 import { acquireSupervisorLifetimeLock, claimStewardship, releaseStewardship, withSupervisorActivity } from "../continuous/stewardship.ts";
 import { currentStewardshipDependencies } from "./hermes-stewardship.ts";
 import { registerForegroundSupervisor, unregisterForegroundSupervisor, foregroundSupervisorStopRequested, type HermesSupervisorRecord } from "./hermes-lifecycle.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
-import { executeLinearDelivery } from "../continuous/linear-delivery.ts";
+import { executeLinearDelivery } from "./linear-delivery.ts";
 import type { CommandResult } from "./dispatcher.ts";
 
 const predicate = (name: string): string => `urn:usf:predicate:${name}`;

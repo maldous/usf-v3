@@ -1,25 +1,25 @@
 import { resolve, sep } from "node:path";
-import { apply } from "../commands/apply.ts";
-import { runGraphDerivedCheck } from "../commands/check.ts";
-import { integrateCommandHandler } from "../commands/apply.ts";
-import { constructionAwarePublishCommandHandler, evidenceCommandHandler, proveCommandHandler } from "../commands/construction-authority.ts";
-import { hermesCommand } from "../commands/hermes.ts";
+import { apply } from "./apply.ts";
+import { runGraphDerivedCheck } from "./check.ts";
+import { integrateCommandHandler } from "./apply.ts";
+import { constructionAwarePublishCommandHandler, evidenceCommandHandler, proveCommandHandler } from "./construction-authority.ts";
+import { hermesCommand } from "./hermes.ts";
 import {
   observeLinearBinding,
   prepareLinearBinding,
   type LinearBindingResult,
   type LinearBindingSelector,
-} from "../commands/linear-binding.ts";
-import { resolveCommand } from "../commands/resolve.ts";
+} from "./linear-binding.ts";
+import { resolveCommand } from "./resolve.ts";
 import {
   completionAwareEvidenceCommandHandler,
   completionAwareProveCommandHandler,
   completionAwarePublishCommandHandler,
   realiseCommandHandler,
-} from "../commands/work-completion.ts";
+} from "./work-completion.ts";
 import { canonicalDigest } from "../core/canonical.ts";
-import { contributionFromSettledLinearResult } from "../linear/contribution.ts";
-import { readLinearRecord, writeLinearRecord, type LinearRecordObject } from "../linear/state.ts";
+import { contributionFromSettledLinearResult } from "./linear-contribution.ts";
+import { readLinearRecord, writeLinearRecord, type LinearRecordObject } from "./linear-state.ts";
 import { candidateScope, deriveCandidatePreimages, type CandidateSpec } from "../realisation/index.ts";
 
 export interface LinearDeliveryEvidence {

@@ -3,7 +3,7 @@ import { lstat, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, test } from "node:test";
-import { LinearStateError, LinearStateStore, readLinearRecord, writeLinearRecord } from "../../../src/linear/state.ts";
+import { LinearStateError, LinearStateStore, readLinearRecord, writeLinearRecord } from "../../../src/commands/linear-state.ts";
 
 const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true }))); });
