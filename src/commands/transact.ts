@@ -55,12 +55,19 @@ const graphDirectoryName = "graph";
 export function graphSourceDenominator(
   discovered: readonly string[],
   postimagePaths: readonly string[],
+  deletedPaths: readonly string[] = [],
 ): readonly string[] {
-  const created = postimagePaths
+  const relative = (paths: readonly string[]): readonly string[] => paths
     .filter((path) => path.startsWith(`${graphDirectoryName}/`) && path.endsWith(".nq"))
     .map((path) => path.slice(graphDirectoryName.length + 1))
     .filter((name) => !name.split("/").includes(graphFixtureDirectoryName));
-  return Object.freeze([...new Set([...discovered, ...created])].sort());
+  const created = relative(postimagePaths);
+  const removed = new Set(relative(deletedPaths));
+  // Existing, plus created, minus deleted. Omitting the subtraction would
+  // validate a corpus containing a source the transaction is about to remove,
+  // which is the same class of defect as omitting the addition: the reported
+  // denominator would not be the resulting one.
+  return Object.freeze([...new Set([...discovered, ...created])].filter((name) => !removed.has(name)).sort());
 }
 
 /**
@@ -84,7 +91,7 @@ export function isOwnedIntegrityViolation(
   return graph.length === 0 || !conventionExemptGraphs.includes(graph);
 }
 
-export type OperationKind = "append-quads" | "write-file" | "derive-economics-projection";
+export type OperationKind = "append-quads" | "write-file" | "delete-file" | "derive-economics-projection";
 
 interface ProposedOperation {
   readonly kind: OperationKind;
@@ -128,17 +135,26 @@ function parseProposal(value: unknown): Proposal {
     const operation = entry as Record<string, unknown>;
     const kind = operation.kind;
     const path = operation.path;
-    if (kind !== "append-quads" && kind !== "write-file" && kind !== "derive-economics-projection") {
+    if (kind !== "append-quads" && kind !== "write-file" && kind !== "delete-file" && kind !== "derive-economics-projection") {
       invalid("Unknown operation kind.", { kind });
     }
     if (typeof path !== "string" || path.length === 0 || path.startsWith("/") || path.includes("..")) {
       invalid("An operation path must be a repository-relative path.", { path });
     }
-    if (kind !== "derive-economics-projection" && typeof operation.content !== "string") {
+    if (kind !== "derive-economics-projection" && kind !== "delete-file" && typeof operation.content !== "string") {
       invalid("This operation kind requires content.", { kind, path });
+    }
+    if (kind === "delete-file" && operation.content !== undefined) {
+      invalid("A delete carries no content.", { kind, path });
     }
     const preimage = operation.preimageDigest;
     if (preimage !== null && typeof preimage !== "string") invalid("preimageDigest must be a digest or null.", { path });
+    // A deletion must name what it expects to remove. A null preimage asserts
+    // absence, and deleting something already absent is not a change: it is a
+    // proposal that has lost track of the state it was derived against.
+    if (kind === "delete-file" && preimage === null) {
+      invalid("A delete requires the preimage digest of the path it removes.", { kind, path });
+    }
     return Object.freeze({
       kind, path,
       content: typeof operation.content === "string" ? operation.content : undefined,
@@ -281,12 +297,22 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
   // Compute every postimage in memory first; nothing is written until the whole
   // resulting state validates.
   const postimages = new Map<string, string>();
+  const deletions = new Set<string>();
   for (const operation of proposal.operations) {
     const preimage = preimageByPath.get(operation.path)!;
     if (operation.kind === "append-quads") {
       postimages.set(operation.path, mergeQuadFile(postimages.get(operation.path) ?? preimage.bytes ?? "", operation.content!));
+      deletions.delete(operation.path);
     } else if (operation.kind === "write-file") {
       postimages.set(operation.path, operation.content!);
+      deletions.delete(operation.path);
+    } else if (operation.kind === "delete-file") {
+      // The last operation on a path wins, so a write followed by a delete is a
+      // delete. Removing it from postimages is what makes the validated corpus
+      // below the corpus that will exist, rather than the corpus plus a file
+      // that is about to go.
+      postimages.delete(operation.path);
+      deletions.add(operation.path);
     }
   }
 
@@ -311,7 +337,7 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
     }
     return found;
   })(graphDirectory, "");
-  const graphFiles = graphSourceDenominator(discovered, [...postimages.keys()]);
+  const graphFiles = graphSourceDenominator(discovered, [...postimages.keys()], [...deletions]);
   const resultingQuads: Quad[] = [];
   for (const name of graphFiles) {
     const path = `graph/${name}`;
@@ -381,6 +407,7 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
     derivedAffectedPaths: derivedPaths,
     overdeclaredPaths: Object.freeze(overdeclared),
     preimages: Object.freeze(preimages.map((entry) => Object.freeze({ path: entry.path, preimageDigest: entry.digest }))),
+    deletions: Object.freeze([...deletions].sort()),
     postimages: postimageRecords,
     derivations: Object.freeze(derivations),
     validation: Object.freeze({
@@ -427,6 +454,12 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
       // The directory is part of the declared path, not a separate effect.
       await mkdir(dirname(target), { recursive: true, mode: 0o755 });
       await rename(entry.temporary, target);
+    }
+    // Deletions land after the writes, so a move never passes through a state
+    // where neither copy exists. Both are inside the same rollback, and the
+    // captured preimage bytes restore a deleted file exactly.
+    for (const path of [...deletions].sort()) {
+      await rm(resolve(writeRoot, path), { force: true });
     }
   } catch (error) {
     // Restore every captured preimage so a partial application cannot survive.
