@@ -388,12 +388,12 @@ function verifyReceipt(root: string, request: ParsedRequest, graph: SemanticGrap
 export const providerReceiptsCommandHandler: CommandHandler = ({ args, repositoryRoot }) => {
   const request = parseRequest(args);
   const graph = semanticAuthority(repositoryRoot, request);
+  if (request.operation === "acquire") {
+    refuse("PROVIDERS_RECEIPT_PROOFBLOCKED", exitCodes.DOMAIN_FAILURE, "Live account-source acquisition remains separately proofblocked; no provider was contacted.");
+  }
   const routes = readProviderConfig(repositoryRoot);
   const matching = routes.filter((route) => route.id === request.route);
   if (matching.length !== 1) refuse("PROVIDERS_RECEIPT_ROUTE_UNKNOWN", exitCodes.INVALID_INPUT, "The selected route is not uniquely configured.");
   const route = matching[0]!;
-  if (request.operation === "acquire") {
-    refuse("PROVIDERS_RECEIPT_PROOFBLOCKED", exitCodes.DOMAIN_FAILURE, "Live account-source acquisition remains separately proofblocked; no provider was contacted.");
-  }
   return { output: verifyReceipt(repositoryRoot, request, graph, route) };
 };
