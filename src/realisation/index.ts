@@ -722,20 +722,38 @@ export async function materialiseNoChangeCandidate(
   return withCandidateLock(canonicalRoot, candidateDigest, async (lockedRoot) => {
     await currentBasis(lockedRoot, basis);
     const workspace = workspaceFor(lockedRoot, candidateDigest);
+    const manifest: NoChangeWorkspaceManifest = Object.freeze({ ...draft, digest: candidateDigest });
+    const result = Object.freeze({
+      workspace,
+      workspacePath: relative(lockedRoot, workspace).split(sep).join("/"),
+      basis,
+      preimages,
+      candidateDigest,
+      policy,
+    });
     await assertPrivateUsfDirectory(lockedRoot, ".usf", true);
     await assertPrivateUsfDirectory(lockedRoot, ".usf/workspaces", true);
+    let exists = false;
     try {
       await lstat(workspace);
-      await assertPrivateWorkspaceRoot(lockedRoot, workspace);
+      exists = true;
     } catch (error: unknown) {
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     }
-    await rm(workspace, { recursive: true, force: true });
+    // Replay authenticates under the same candidate lock; invalid retained state is never erased.
+    if (exists) {
+      const retained = await loadManifest(lockedRoot, workspace);
+      if (canonicalJson(retained) !== canonicalJson(manifest)) {
+        throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Existing no-change workspace does not match the requested identity");
+      }
+      await currentBasis(lockedRoot, retained.basis);
+      await assertWorkspaceCandidateBytes(lockedRoot, workspace, retained);
+      return result;
+    }
     await mkdir(workspace, { mode: 0o700 });
     await assertPrivateWorkspaceRoot(lockedRoot, workspace);
     try {
       for (const path of scope) await copyRegularTree(lockedRoot, workspace, path);
-      const manifest: NoChangeWorkspaceManifest = Object.freeze({ ...draft, digest: candidateDigest });
       await writeAtomically(resolve(workspace, manifestName), Buffer.from(canonicalJson(manifest, { rejectAbsolutePaths: true })));
       const readback = await loadManifest(lockedRoot, workspace);
       if (readback.schema !== manifest.schema || readback.digest !== candidateDigest) {
@@ -743,14 +761,7 @@ export async function materialiseNoChangeCandidate(
       }
       await currentBasis(lockedRoot, readback.basis);
       await assertWorkspaceCandidateBytes(lockedRoot, workspace, readback);
-      return Object.freeze({
-        workspace,
-        workspacePath: relative(lockedRoot, workspace).split(sep).join("/"),
-        basis,
-        preimages,
-        candidateDigest,
-        policy,
-      });
+      return result;
     } catch (error) {
       await rm(workspace, { recursive: true, force: true });
       throw error;

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { chmod, cp, mkdir, mkdtemp, readFile, readdir, rm, unlink, writeFile } from "node:fs/promises";
+import { chmod, cp, mkdir, mkdtemp, open, readFile, readdir, rm, stat, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import test from "node:test";
 
@@ -212,6 +212,40 @@ test("retained real receipt is reauthenticated before no-change completion effec
     const realised = await realiseCommandHandler({ command: "realise", repositoryRoot: isolated.root, args: ["no-change", "--work", work, "--profile", profile, "--manifest", manifest] });
     const candidateDigest = (realised.output as { candidateDigest: string }).candidateDigest;
     assert.equal(candidateDigest, fixture.provenance.candidateDigest);
+
+    const workspacePath = resolve(isolated.root, (realised.output as { workspacePath: string }).workspacePath);
+    const workspaceManifestPath = resolve(workspacePath, ".usf-workspace.json");
+    const manifestBytes = await readFile(workspaceManifestPath);
+    const directory = await open(workspacePath, "r");
+    try {
+      const original = await directory.stat();
+      const replay = async () => realiseCommandHandler({ command: "realise", repositoryRoot: isolated.root, args: ["no-change", "--work", work, "--profile", profile, "--manifest", manifest] });
+      for (let index = 0; index < 2; index += 1) {
+        assert.deepEqual(await replay(), realised);
+        assert.equal((await stat(workspacePath)).ino, original.ino, "replay must retain the existing directory, not rebuild it");
+        assert.deepEqual(await readFile(workspaceManifestPath), manifestBytes);
+      }
+      await writeFile(workspaceManifestPath, "invalid retained manifest", { mode: 0o600 });
+      await assert.rejects(replay, { code: "WORK_COMPLETION_REALISATION_REFUSED", exitCode: 4 });
+      assert.equal(await readFile(workspaceManifestPath, "utf8"), "invalid retained manifest");
+      await unlink(workspaceManifestPath);
+      await assert.rejects(replay, { code: "WORK_COMPLETION_REALISATION_REFUSED", exitCode: 4 });
+      assert.equal(existsSync(workspaceManifestPath), false, "partial workspace must not be silently reconstructed");
+      assert.equal((await stat(workspacePath)).ino, original.ino);
+      await writeFile(workspaceManifestPath, manifestBytes, { mode: 0o600 });
+      const extraPath = resolve(workspacePath, "unexpected-replay-input.txt");
+      await writeFile(extraPath, "preserve conflicting bytes", { mode: 0o600 });
+      await assert.rejects(replay, { code: "WORK_COMPLETION_REALISATION_REFUSED", exitCode: 4 });
+      assert.equal(await readFile(extraPath, "utf8"), "preserve conflicting bytes");
+      await unlink(extraPath);
+      const retainedSourcePath = resolve(workspacePath, "src/core/scope.ts");
+      const retainedSource = await readFile(retainedSourcePath);
+      await writeFile(retainedSourcePath, "changed retained source");
+      await assert.rejects(replay, { code: "WORK_COMPLETION_REALISATION_REFUSED", exitCode: 4 });
+      assert.equal(await readFile(retainedSourcePath, "utf8"), "changed retained source");
+      await writeFile(retainedSourcePath, retainedSource);
+      assert.deepEqual(await replay(), realised);
+    } finally { await directory.close(); }
 
     await assert.rejects(
       async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root, args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest] }),
