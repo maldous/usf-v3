@@ -109,7 +109,7 @@ async function checkSubprocess(root: string, digest: string, validationId: strin
     cwd: root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"],
   });
   let reached = false, preSpawnManifestDrifted = false, launches = 0, successfulExits = 0, stderr = "", stdout = "";
-  let result: { status: string; reasonCode?: string; receipt?: { receiptDigest: string } } | undefined;
+  let result: { status: string; reasonCode?: string; disposition?: string; receipt?: { receiptDigest: string } } | undefined;
   child.stderr!.on("data", chunk => { stderr += String(chunk); });
   child.stdout!.on("data", chunk => { stdout += String(chunk); });
   child.on("message", (message: unknown) => {
@@ -173,6 +173,9 @@ test("native check interruption preserves authenticated unknown outcomes and rec
     assert.equal(intent.workIri, spec.basis.work.id);
     assert.equal(intent.explicitProfileIri, spec.basis.selection.profile);
     assert.equal((await lstat(intentPath)).mode & 0o777, 0o600);
+    const pendingBeforePreflight = boundary === "pending-synced"
+      ? { bytes: await readFile(pendingPath), identity: await lstat(pendingPath) }
+      : null;
     // This is native rederivation, not authentication by self-rehashed JSON.
     const preflight = await checkSubprocess(root, spec.digest, validationId, "preflight");
     assert.equal(preflight.launches, 0);
@@ -205,11 +208,21 @@ test("native check interruption preserves authenticated unknown outcomes and rec
       }
     } else {
       if (boundary === "pending-synced") {
-        assert.equal(preflight.result?.status, "refused");
-        assert.equal(preflight.result?.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
-        // Preserve actual child-produced bytes through an unsafe-path refusal.
-        const pendingBytes = await readFile(pendingPath);
+        assert.ok(pendingBeforePreflight);
+        const { bytes: pendingBytes, identity: pendingIdentity } = pendingBeforePreflight;
         assert.equal(JSON.parse(pendingBytes.toString("utf8")).exitCode, 0);
+        assert.equal(preflight.result?.status, "authenticated");
+        assert.equal(preflight.result?.disposition, "STARTED");
+        assert.equal(preflight.launches, 0);
+        assert.equal(preflight.successfulExits, 0);
+        assert.deepEqual(await readFile(pendingPath), pendingBytes);
+        assert.equal((await lstat(pendingPath)).ino, pendingIdentity.ino);
+        assert.deepEqual(await readFile(intentPath), originalIntentBytes);
+        await assert.rejects(
+          () => readGraphDerivedCheckReceipt(root, spec.digest, validationId),
+          { reasonCode: "CHECK_RECEIPT_PATH_UNSAFE" },
+          "strict receipt reading does not admit a pending publication",
+        );
         const saved = `${pendingPath}.held`;
         await rename(pendingPath, saved);
         await symlink(saved, pendingPath);

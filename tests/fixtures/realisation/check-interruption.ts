@@ -73,8 +73,8 @@ let result;
 if (boundary === "preflight") {
   try {
     const { withCandidateLock } = await import(pathToFileURL(resolve(sourceRoot, "src/realisation/index.ts")).href);
-    await withCandidateLock(root, candidateDigest, () => native.authenticateGraphDerivedCheckIntent(root, candidateDigest, validationId));
-    result = { status: "authenticated" };
+    const disposition = await withCandidateLock(root, candidateDigest, () => native.authenticateGraphDerivedCheckIntent(root, candidateDigest, validationId));
+    result = { status: "authenticated", disposition };
   } catch (error) {
     result = { status: "refused", reasonCode: (error as { reasonCode?: string }).reasonCode };
   }
