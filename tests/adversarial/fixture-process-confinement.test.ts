@@ -1,8 +1,22 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync, type SpawnSyncReturns } from "node:child_process";
-import { chmod, copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  appendFile,
+  chmod,
+  copyFile,
+  lstat,
+  mkdir,
+  open,
+  readFile,
+  readlink,
+  rename,
+  rm,
+  stat,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { createServer, type ListenOptions } from "node:net";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import test from "node:test";
 
 const EXPECTED_ENVIRONMENT_KEYS = [
@@ -468,6 +482,144 @@ test("fixture-process-confined", async () => {
 
   await rm(scratchFile, { force: true });
   await rm(copiedNode, { force: true });
+});
+
+test("fixture-process-native-metadata", async () => {
+  assert.equal("permission" in process, false, "native Node must not expose process.permission");
+
+  const getuid = process.getuid;
+  if (typeof getuid !== "function") {
+    assert.fail("native Node must expose process.getuid");
+  }
+  const observedUid = getuid();
+
+  const scratch = process.env.TMPDIR;
+  assert.ok(
+    typeof scratch === "string" && scratch.startsWith("/") && scratch !== "/",
+    "TMPDIR must identify an absolute scoped scratch directory",
+  );
+  await mkdir(scratch, { recursive: true, mode: 0o700 });
+
+  const payload = "native-metadata-payload\n";
+  const originalPath = join(scratch, "native-metadata-original.txt");
+  const renamedPath = join(scratch, "native-metadata-renamed.txt");
+  const relativeLinkPath = join(scratch, "native-metadata-relative-link");
+  await writeFile(originalPath, payload, { encoding: "utf8", mode: 0o640 });
+
+  const handle = await open(originalPath, "r+");
+  await handle.chmod(0o600);
+  await handle.close();
+
+  const originalMetadata = await stat(originalPath);
+  assert.equal(originalMetadata.uid, observedUid);
+  assert.equal(originalMetadata.mode & 0o777, 0o600);
+  assert.equal(originalMetadata.nlink, 1);
+  assert.equal(originalMetadata.isFile(), true);
+  assert.equal(await readFile(originalPath, "utf8"), payload);
+
+  await rename(originalPath, renamedPath);
+  await assert.rejects(
+    () => stat(originalPath),
+    (error: unknown) => error instanceof Error && "code" in error && error.code === "ENOENT",
+    "the exact old scratch path must be absent after rename",
+  );
+  const renamedMetadata = await stat(renamedPath);
+  assert.equal(renamedMetadata.uid, observedUid);
+  assert.equal(renamedMetadata.mode & 0o777, 0o600);
+  assert.equal(renamedMetadata.nlink, 1);
+  assert.equal(renamedMetadata.isFile(), true);
+  assert.equal(await readFile(renamedPath, "utf8"), payload);
+
+  const relativeTarget = basename(renamedPath);
+  await symlink(relativeTarget, relativeLinkPath);
+  const relativeLinkMetadata = await lstat(relativeLinkPath);
+  assert.equal(relativeLinkMetadata.uid, observedUid);
+  assert.equal(relativeLinkMetadata.nlink, 1);
+  assert.equal(relativeLinkMetadata.isSymbolicLink(), true);
+  assert.equal(await readlink(relativeLinkPath), relativeTarget);
+  assert.equal(await readFile(relativeLinkPath, "utf8"), payload);
+
+  const sourcePath = join(process.cwd(), "src/realisation/fixture-process-launcher.py");
+  const readonlyTargets = [
+    {
+      label: "execution-view source",
+      path: sourcePath,
+      newLinkPath: join(dirname(sourcePath), "fixture-process-native-metadata-link"),
+    },
+    {
+      label: "approved Node tool",
+      path: "/usr/bin/node",
+      newLinkPath: "/usr/bin/usf-fixture-process-native-metadata-link",
+    },
+  ] as const;
+  const metadataDenialCodes = new Set(["EACCES", "EPERM", "EROFS"]);
+  const isMetadataDenial = (error: unknown): boolean => {
+    const code = error instanceof Error && "code" in error ? String(error.code) : "";
+    return metadataDenialCodes.has(code);
+  };
+
+  for (const target of readonlyTargets) {
+    const beforeBytes = await readFile(target.path);
+    const beforeMetadata = await stat(target.path);
+    await assert.rejects(
+      () => lstat(target.newLinkPath),
+      (error: unknown) => error instanceof Error && "code" in error && error.code === "ENOENT",
+      `${target.label} new-link path must initially be absent`,
+    );
+
+    const readonlyHandle = await open(target.path, "r");
+    try {
+      await assert.rejects(
+        () => readonlyHandle.chmod(0o600),
+        isMetadataDenial,
+        `${target.label} descriptor chmod must be denied by the OS`,
+      );
+    } finally {
+      await readonlyHandle.close();
+    }
+    await assert.rejects(
+      () => chmod(target.path, 0o600),
+      isMetadataDenial,
+      `${target.label} path chmod must be denied by the OS`,
+    );
+    await assert.rejects(
+      () => appendFile(target.path, "native-metadata-mutation\n"),
+      isMetadataDenial,
+      `${target.label} write must be denied by the OS`,
+    );
+    await assert.rejects(
+      () => symlink(basename(target.path), target.newLinkPath),
+      isMetadataDenial,
+      `${target.label} adjacent symlink creation must be denied by the OS`,
+    );
+
+    const afterMetadata = await stat(target.path);
+    assert.deepEqual(await readFile(target.path), beforeBytes, `${target.label} bytes must remain exact`);
+    assert.equal(afterMetadata.mode, beforeMetadata.mode, `${target.label} mode must remain exact`);
+    await assert.rejects(
+      () => lstat(target.newLinkPath),
+      (error: unknown) => error instanceof Error && "code" in error && error.code === "ENOENT",
+      `${target.label} refused new-link path must remain absent`,
+    );
+  }
+
+  const readonlySourceBefore = await readFile(sourcePath);
+  const readonlySourceModeBefore = (await stat(sourcePath)).mode;
+  const scratchReadonlyLink = join(scratch, "native-metadata-readonly-source-link");
+  await symlink(sourcePath, scratchReadonlyLink);
+  assert.equal((await lstat(scratchReadonlyLink)).isSymbolicLink(), true);
+  assert.equal(await readlink(scratchReadonlyLink), sourcePath);
+  await assert.rejects(
+    () => appendFile(scratchReadonlyLink, "native-metadata-symlink-mutation\n"),
+    isMetadataDenial,
+    "a scratch symlink must not permit mutation of the read-only execution-view source",
+  );
+  assert.deepEqual(await readFile(sourcePath), readonlySourceBefore);
+  assert.equal((await stat(sourcePath)).mode, readonlySourceModeBefore);
+
+  await rm(relativeLinkPath);
+  await rm(scratchReadonlyLink);
+  await rm(renamedPath);
 });
 
 test("fixture-process-default-denial", () => {
