@@ -13,7 +13,7 @@ import {
   type VerifiedTransitionCandidateCurrentness,
 } from "../realisation/transition.ts";
 import { evaluateConstructionAuthorityGrant } from "../realisation/construction-authority.ts";
-import { evaluateNoChangeCompletionRecords } from "../realisation/work-completion.ts";
+import { evaluateNoChangeCompletionRecords, type NoChangeCompletionRecordEvaluation, type ReadCompletionMemberBasis } from "../realisation/work-completion.ts";
 
 const typePredicate = "urn:usf:predicate:type";
 const workType = "urn:usf:type:WorkPacket";
@@ -856,13 +856,13 @@ function evaluateLegacyCompletion(graph: SemanticGraph, packet: WorkPacket, basi
   };
 }
 
-function evaluateCompletion(graph: SemanticGraph, packet: WorkPacket, basis: RealisationBasis): CompletionEvaluation {
+function evaluateCompletion(graph: SemanticGraph, packet: WorkPacket, basis: RealisationBasis, context: PacketDerivationContext): CompletionEvaluation {
   const completionPolicies = typedSubjects(graph, "urn:usf:type:NoChangeWorkCompletionPublicationPolicy").filter((policy) =>
     objectsFor(graph, policy, predicate("eligibleWork")).some((entry) => entry.objectKind === "iri" && entry.object === packet.id));
   if (completionPolicies.length === 0) return evaluateLegacyCompletion(graph, packet, basis);
 
   try {
-    const projection = evaluateNoChangeCompletionRecords(graph, packet, basis);
+    const projection = evaluatePreparedNoChangeCompletion(graph, packet, basis, context);
     const reasons = [...projection.reasonCodes];
     if (packet.eligibility?.activation.eligible !== true
       || packet.realisationAuthority?.permission?.activationState !== activeState) {
@@ -873,6 +873,7 @@ function evaluateCompletion(graph: SemanticGraph, packet: WorkPacket, basis: Rea
     const resources = [...new Set([...projection.authorityResources, ...projection.dynamicResources])].sort();
     const basisDependencies = uniqueDependencies([
       ...basis.work.dependencies.map((dependency) => ({ ...dependency })),
+      ...projection.memberBasisDependencies,
       ...projection.authoritySchemaPaths.map((path) => fileDependency(graph, path, "schema", false)),
       ...projection.authorityToolPaths.map((path) => fileDependency(graph, path, "tool", false)),
       ...(projection.receiptDependency === undefined ? [] : [projection.receiptDependency]),
@@ -1151,6 +1152,7 @@ interface PacketDerivationContext {
   readonly transitionCandidate?: VerifiedTransitionCandidateCurrentness;
   readonly completionMemo?: Map<string, CompletionEvaluation>;
   readonly completionStack?: Set<string>;
+  readonly transitionReadbackStack?: Set<string>;
 }
 
 type NormalizedReceiptDependency = Readonly<{ path: string; digest: string }>;
@@ -1791,6 +1793,108 @@ function splitsBootstrapAdmission(selection: WorkSelection, ready: boolean | und
   return match !== null && Number(match[2]) > 1;
 }
 
+function preparePacketBasis(
+  graph: SemanticGraph,
+  id: string,
+  decisionBoundary: DecisionBoundary,
+  manifestPath: string,
+  context: PacketDerivationContext,
+): PacketDerivation {
+  const derivation = packetFor(graph, id, decisionBoundary, context);
+  if (decisionBoundary.kind !== "realisation-profile") return derivation;
+  const basis = profileBasis(graph, derivation.packet, manifestPath, derivation.normalizedReceiptDependency);
+  const packet = Object.freeze({ ...derivation.packet, realisationBasis: basis });
+  assertBasisMatchesPacket(basis, packet);
+  return { ...derivation, packet };
+}
+
+export type CurrentNoChangeCompletion = NoChangeCompletionRecordEvaluation & {
+  readonly memberBasisDependencies: readonly Dependency[];
+};
+
+function evaluatePreparedNoChangeCompletion(
+  graph: SemanticGraph,
+  packet: WorkPacket,
+  basis: RealisationBasis,
+  context: PacketDerivationContext,
+): CurrentNoChangeCompletion {
+  const selection = profileSelection(graph, basis.selection.profile);
+  if ("reasonCode" in selection || selection.decisionBoundary.kind !== "realisation-profile"
+    || selection.decisionBoundary.root !== packet.decisionBoundary.root) throw new Error("WORK_COMPLETION_PROFILE_INVALID");
+  const selected = new Set(selection.ids);
+  const members = new Map<string, ReturnType<ReadCompletionMemberBasis>>();
+  const dependencies: Dependency[] = [];
+  const stack = context.completionStack;
+  if (stack === undefined) throw new Error("WORK_COMPLETION_CONTEXT_MISSING");
+  const reaches = (from: string, target: string): boolean => {
+    const pending = [...workDependencies(graph, from)], visited = new Set<string>();
+    while (pending.length > 0) {
+      const id = pending.pop()!;
+      if (id === target) return true;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      if (visited.size > 1000) throw new Error("WORK_COMPLETION_DEPENDENCY_LIMIT");
+      pending.push(...workDependencies(graph, id));
+    }
+    return false;
+  };
+  const readMember: ReadCompletionMemberBasis = workIri => {
+    if (typeof workIri !== "string" || workIri.length === 0 || workIri.length > 4096 || !selected.has(workIri)) {
+      throw new Error("WORK_COMPLETION_MEMBER_NOT_SELECTED");
+    }
+    const prior = members.get(workIri);
+    if (prior !== undefined) return prior;
+    if (members.size >= 32) throw new Error("WORK_COMPLETION_MEMBER_LIMIT");
+    for (const other of new Set([packet.id, ...members.keys()])) {
+      if (other !== workIri && (reaches(workIri, other) || reaches(other, workIri))) {
+        throw new Error("WORK_COMPLETION_DEPENDENT_COHORT_REFUSED");
+      }
+    }
+    if (stack.has(workIri)) throw new Error(`WORK_DEPENDENCY_CYCLE:${workIri}`);
+    stack.add(workIri);
+    try {
+      const derivation = preparePacketBasis(graph, workIri, selection.decisionBoundary, basis.selection.manifestPath, context);
+      assertTransitionAuthorityReadback(graph, derivation.transitionVerification === undefined ? [] : [derivation.transitionVerification], "TRANSITION_LIVE", context);
+      assertTransitionAuthorityReadback(graph, derivation.requiredTransitionVerifications, "REQUIRED_TRANSITION", context);
+      const currentBasis = derivation.packet.realisationBasis;
+      if (currentBasis === undefined) throw new Error("WORK_COMPLETION_BASIS_MISSING");
+      const result = Object.freeze({ packet: derivation.packet, basis: currentBasis });
+      dependencies.push(...currentBasis.work.dependencies.map(dependency => ({ ...dependency })));
+      members.set(workIri, result);
+      return result;
+    } finally { stack.delete(workIri); }
+  };
+  // The queried packet has already been prepared; never recurse into its own completion.
+  members.set(packet.id, Object.freeze({ packet, basis }));
+  dependencies.push(...basis.work.dependencies.map(dependency => ({ ...dependency })));
+  const ownedStackEntry = !stack.has(packet.id);
+  if (ownedStackEntry) stack.add(packet.id);
+  try {
+    const projection = evaluateNoChangeCompletionRecords(graph, packet, basis, readMember);
+    return Object.freeze({ ...projection, memberBasisDependencies: Object.freeze(uniqueDependencies(dependencies)) });
+  } finally { if (ownedStackEntry) stack.delete(packet.id); }
+}
+
+export function evaluateCurrentNoChangeCompletion(
+  graph: LoadedSemanticGraph,
+  selection: Readonly<{ workIri: string; profileIri: string }>,
+): CurrentNoChangeCompletion {
+  if (typeof selection.workIri !== "string" || selection.workIri.length === 0 || selection.workIri.length > 4096
+    || typeof selection.profileIri !== "string" || selection.profileIri.length === 0 || selection.profileIri.length > 4096) {
+    throw new Error("WORK_COMPLETION_MEMBER_NOT_SELECTED");
+  }
+  const selected = profileSelection(graph, selection.profileIri);
+  if ("reasonCode" in selected || selected.decisionBoundary.kind !== "realisation-profile"
+    || !selected.ids.includes(selection.workIri)) throw new Error("WORK_COMPLETION_MEMBER_NOT_SELECTED");
+  validateWorkDag(graph, selected.ids);
+  const context: PacketDerivationContext = { completionMemo: new Map(), completionStack: new Set(), transitionReadbackStack: new Set() };
+  const derivation = preparePacketBasis(graph, selection.workIri, selected.decisionBoundary, graph.manifestPath, context);
+  assertTransitionAuthorityReadback(graph, derivation.transitionVerification === undefined ? [] : [derivation.transitionVerification], "TRANSITION_LIVE", context);
+  assertTransitionAuthorityReadback(graph, derivation.requiredTransitionVerifications, "REQUIRED_TRANSITION", context);
+  if (derivation.packet.realisationBasis === undefined) throw new Error("WORK_COMPLETION_BASIS_MISSING");
+  return evaluatePreparedNoChangeCompletion(graph, derivation.packet, derivation.packet.realisationBasis, context);
+}
+
 function materializePacket(
   graph: SemanticGraph,
   id: string,
@@ -1801,10 +1905,10 @@ function materializePacket(
   const sharedContext: PacketDerivationContext = context.completionMemo !== undefined && context.completionStack !== undefined
     ? context
     : { ...context, completionMemo: new Map<string, CompletionEvaluation>(), completionStack: new Set<string>() };
-  const derivation = packetFor(graph, id, decisionBoundary, sharedContext);
+  const derivation = preparePacketBasis(graph, id, decisionBoundary, manifestPath, sharedContext);
   if (decisionBoundary.kind !== "realisation-profile") return derivation;
-  const basis = profileBasis(graph, derivation.packet, manifestPath, derivation.normalizedReceiptDependency);
-  const completion = evaluateCompletion(graph, derivation.packet, basis);
+  const basis = derivation.packet.realisationBasis!;
+  const completion = evaluateCompletion(graph, derivation.packet, basis, sharedContext);
   sharedContext.completionMemo?.set(id, completion);
   const receiptMember = derivation.transitionVerification?.receipt.postState.members.find((member) => member.workId === id);
   const checkedCurrent = receiptMember !== undefined
@@ -1872,35 +1976,41 @@ function assertTransitionAuthorityReadback(
   graph: SemanticGraph,
   verifications: readonly TransitionCurrentnessVerification[],
   reasonPrefix: "TRANSITION_LIVE" | "REQUIRED_TRANSITION",
+  parentContext: PacketDerivationContext = {},
 ): void {
+  const readbackStack = parentContext.transitionReadbackStack ?? new Set<string>();
   const receipts = new Map(verifications.map((verification) => [verification.receipt.receiptDigest, verification]));
   for (const verification of receipts.values()) {
     const receipt = verification.receipt;
-    if (receipt.postState.selection.manifestPath !== receipt.manifestPath) throw new Error(`${reasonPrefix}_RECEIPT_SELECTION_MISMATCH`);
-    const authorityGraph = loadSemanticGraph(graph.repositoryRoot, receipt.manifestPath);
-    const selection = profileSelection(authorityGraph, receipt.profile);
-    if ("reasonCode" in selection || selection.decisionBoundary.kind !== "realisation-profile" || selection.decisionBoundary.root !== receipt.profile) {
-      throw new Error(`${reasonPrefix}_AUTHORITY_PROFILE_INVALID`);
-    }
-    const selected = new Set(selection.ids);
-    if (receipt.postState.members.some((member) => !selected.has(member.workId))) throw new Error(`${reasonPrefix}_MEMBER_NOT_SELECTED`);
-    const context: PacketDerivationContext = { completionMemo: new Map(), completionStack: new Set() };
-    const live = receipt.postState.members.map((member) => materializePacket(
-      authorityGraph,
-      member.workId,
-      selection.decisionBoundary,
-      receipt.manifestPath,
-      context,
-    ));
-    if (live.some((derivation) => derivation.transitionVerification?.receipt.receiptDigest !== receipt.receiptDigest)) {
-      throw new Error(`${reasonPrefix}_RECEIPT_READBACK_MISMATCH`);
-    }
-    const bases = live.map(({ packet }) => {
-      if (!packet.realisationBasis) throw new Error(`${reasonPrefix}_BASIS_MISSING`);
-      return packet.realisationBasis;
-    });
-    assertNormalizedReceiptBasis(bases, verification.normalizedReceiptDependency);
-    assertTransitionPostSemanticCurrentness(receipt, bases);
+    if (readbackStack.has(receipt.receiptDigest)) throw new Error(`${reasonPrefix}_READBACK_CYCLE`);
+    readbackStack.add(receipt.receiptDigest);
+    try {
+      if (receipt.postState.selection.manifestPath !== receipt.manifestPath) throw new Error(`${reasonPrefix}_RECEIPT_SELECTION_MISMATCH`);
+      const authorityGraph = loadSemanticGraph(graph.repositoryRoot, receipt.manifestPath);
+      const selection = profileSelection(authorityGraph, receipt.profile);
+      if ("reasonCode" in selection || selection.decisionBoundary.kind !== "realisation-profile" || selection.decisionBoundary.root !== receipt.profile) {
+        throw new Error(`${reasonPrefix}_AUTHORITY_PROFILE_INVALID`);
+      }
+      const selected = new Set(selection.ids);
+      if (receipt.postState.members.some((member) => !selected.has(member.workId))) throw new Error(`${reasonPrefix}_MEMBER_NOT_SELECTED`);
+      const context: PacketDerivationContext = { completionMemo: new Map(), completionStack: new Set(), transitionReadbackStack: readbackStack };
+      const live = receipt.postState.members.map((member) => preparePacketBasis(
+        authorityGraph,
+        member.workId,
+        selection.decisionBoundary,
+        receipt.manifestPath,
+        context,
+      ));
+      if (live.some((derivation) => derivation.transitionVerification?.receipt.receiptDigest !== receipt.receiptDigest)) {
+        throw new Error(`${reasonPrefix}_RECEIPT_READBACK_MISMATCH`);
+      }
+      const bases = live.map(({ packet }) => {
+        if (!packet.realisationBasis) throw new Error(`${reasonPrefix}_BASIS_MISSING`);
+        return packet.realisationBasis;
+      });
+      assertNormalizedReceiptBasis(bases, verification.normalizedReceiptDependency);
+      assertTransitionPostSemanticCurrentness(receipt, bases);
+    } finally { readbackStack.delete(receipt.receiptDigest); }
   }
 }
 

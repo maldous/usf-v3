@@ -145,9 +145,11 @@ export interface NoChangeCompletionAuthority {
   readonly maximumBundleCount: number;
 }
 
-function completionSchemaBinding(graph: SemanticGraph, policy: string, name: string, schemaPaths: readonly string[]): Readonly<{ iri: string; path: string; recordSchema: string }> {
+function completionSchemaBinding(graph: SemanticGraph, policy: string, name: string, schemaPaths: readonly string[]): Readonly<{ iri: string; path: string; recordSchema: string; version: string }> {
   const iri = oneValue(graph, policy, name, "iri");
-  if (!hasExactType(graph, iri, "urn:usf:type:SemanticRecordSchema") || oneValue(graph, iri, "version", "literal") !== "1") {
+  const version = oneValue(graph, iri, "version", "literal");
+  if (!hasExactType(graph, iri, "urn:usf:type:SemanticRecordSchema")
+    || (name === "publicationReceiptSchema" ? !["1", "2"].includes(version) : version !== "1")) {
     throw new Error(`WORK_COMPLETION_${name.toUpperCase()}_INVALID`);
   }
   const path = oneValue(graph, iri, "repositoryPath", "literal");
@@ -156,7 +158,86 @@ function completionSchemaBinding(graph: SemanticGraph, policy: string, name: str
   try { recordSchema = (JSON.parse(readFileSync(resolve(graph.repositoryRoot, path), "utf8")) as { $id?: unknown }).$id; }
   catch { throw new Error(`WORK_COMPLETION_${name.toUpperCase()}_SCHEMA_INVALID`); }
   if (typeof recordSchema !== "string" || !iriPattern.test(recordSchema)) throw new Error(`WORK_COMPLETION_${name.toUpperCase()}_SCHEMA_INVALID`);
-  return Object.freeze({ iri, path, recordSchema });
+  if (name === "publicationReceiptSchema") {
+    const expected = version === "1"
+      ? { iri: "urn:usf:schema:work-completion-publication-receipt:1", path: "schemas/work-completion-publication-receipt.schema.json", recordSchema: "urn:usf:work-completion-publication-receipt:1" }
+      : { iri: "urn:usf:schema:work-completion-publication-receipt:2", path: "schemas/work-completion-publication-receipt-v2.schema.json", recordSchema: "urn:usf:work-completion-publication-receipt:2" };
+    if (iri !== expected.iri || path !== expected.path || recordSchema !== expected.recordSchema) {
+      throw new Error("WORK_COMPLETION_PUBLICATION_RECEIPT_SCHEMA_INVALID");
+    }
+  }
+  return Object.freeze({ iri, path, recordSchema, version });
+}
+
+function assertPublicationReceiptSchemaSelection(
+  graph: SemanticGraph,
+  policy: string,
+  schema: Readonly<{ iri: string; path: string; recordSchema: string; version: string }>,
+): void {
+  const selectionRules = exactValues(graph, policy, "schemaSelectionRule", "iri");
+  if (schema.version === "1" && selectionRules.length === 0) return;
+  if (selectionRules.length !== 1) throw new Error("WORK_COMPLETION_PUBLICATION_RECEIPT_SCHEMA_SELECTION_INVALID");
+  const selectionRule = selectionRules[0] as string;
+  if (!hasExactType(graph, selectionRule, "urn:usf:type:CliFieldDerivationRule")
+    || oneValue(graph, selectionRule, "version", "literal") !== "1"
+    || oneValue(graph, selectionRule, "schemaRole", "literal") !== "publicationReceiptSchema"
+    || oneValue(graph, selectionRule, "otherSchemaVersion", "literal") !== "1") {
+    throw new Error("WORK_COMPLETION_PUBLICATION_RECEIPT_SCHEMA_SELECTION_INVALID");
+  }
+  const bindings = exactValues(graph, selectionRule, "admittedBinding", "iri");
+  const expectedBindings = [
+    { schema: "urn:usf:schema:work-completion-publication-receipt:1", version: "1", path: "schemas/work-completion-publication-receipt.schema.json" },
+    { schema: "urn:usf:schema:work-completion-publication-receipt:2", version: "2", path: "schemas/work-completion-publication-receipt-v2.schema.json" },
+  ];
+  if (bindings.length !== expectedBindings.length || expectedBindings.some((expected) => bindings.filter((binding) =>
+    hasExactType(graph, binding, "urn:usf:type:SemanticRecordSchemaBinding")
+    && oneValue(graph, binding, "schema", "iri") === expected.schema
+    && oneValue(graph, binding, "version", "literal") === expected.version
+    && oneValue(graph, binding, "repositoryPath", "literal") === expected.path).length !== 1)) {
+    throw new Error("WORK_COMPLETION_PUBLICATION_RECEIPT_SCHEMA_BINDINGS_INVALID");
+  }
+  const selected = bindings.filter((binding) =>
+    hasExactType(graph, binding, "urn:usf:type:SemanticRecordSchemaBinding")
+    && oneValue(graph, binding, "schema", "iri") === schema.iri
+    && oneValue(graph, binding, "version", "literal") === schema.version
+    && oneValue(graph, binding, "repositoryPath", "literal") === schema.path);
+  if (selected.length !== 1) throw new Error("WORK_COMPLETION_PUBLICATION_RECEIPT_SCHEMA_BINDING_INVALID");
+  if (schema.version !== "2") return;
+  const membership = oneValue(graph, schema.iri, "digestMembership", "iri");
+  if (membership !== "urn:usf:rule:completion-publication-member-manifests:2"
+    || !hasExactType(graph, membership, "urn:usf:type:CanonicalDigestMembership")
+    || oneValue(graph, membership, "version", "literal") !== "2"
+    || oneValue(graph, membership, "digestField", "literal") !== "cohortManifestDigest"
+    || !sameSet(exactValues(graph, membership, "memberField", "literal"), ["ordinal", "workIri", "manifestPath", "manifestDigest"])
+    || oneValue(graph, membership, "order", "literal") !== "ordinal-ascending"
+    || oneValue(graph, membership, "canonicalizationRule", "literal") !== "canonical-json-array-sha256"
+    || oneValue(graph, membership, "memberAuthentication", "literal") !== "all-current-members"
+    || oneValue(graph, membership, "manifestPathConstraint", "literal") !== "selected-manifest"
+    || oneValue(graph, membership, "dependencyConstraint", "literal") !== "no-intra-cohort-dependency"
+    ) {
+    throw new Error("WORK_COMPLETION_COHORT_MEMBERSHIP_RULE_INVALID");
+  }
+  const memberBasisRule = oneValue(graph, membership, "basisDerivationRule", "iri");
+  if (memberBasisRule !== "urn:usf:rule:completion-publication-member-basis:1"
+    || !hasExactType(graph, memberBasisRule, "urn:usf:type:CliFieldDerivationRule")
+    || oneValue(graph, memberBasisRule, "version", "literal") !== "1"
+    || oneValue(graph, memberBasisRule, "algorithm", "iri") !== oneValue(graph, policy, "publicationAlgorithm", "iri")
+    || oneValue(graph, memberBasisRule, "publicationPolicy", "iri") !== policy
+    || oneValue(graph, memberBasisRule, "implementationPath", "literal") !== "src/graph/work.ts"
+    || !sameSet(exactValues(graph, memberBasisRule, "contextBinding", "literal"), ["graph", "realisation-profile", "manifest", "bounded-member-set", "invocation-derivation-context"])
+    || !sameSet(exactValues(graph, memberBasisRule, "producedValue", "literal"), ["packet", "realisation-basis"])
+    || !sameSet(exactValues(graph, memberBasisRule, "requiredReadback", "literal"), ["TRANSITION_LIVE", "REQUIRED_TRANSITION"])
+    || !sameSet(exactValues(graph, memberBasisRule, "refusedInput", "literal"), ["recursive-member-completion", "caller-supplied-basis", "intra-cohort-dependency"])) {
+    throw new Error("WORK_COMPLETION_COHORT_MEMBER_BASIS_RULE_INVALID");
+  }
+  const reauthenticationRule = "urn:usf:rule:completion-publication-reauthentication:1";
+  const snapshotRule = "urn:usf:rule:completion-publication-snapshot-authentication:1";
+  const cohortSnapshotRule = "urn:usf:rule:completion-publication-cohort-snapshot:1";
+  if (oneValue(graph, reauthenticationRule, "memberAuthenticationRule", "iri") !== membership
+    || oneValue(graph, snapshotRule, "memberAuthenticationRule", "iri") !== membership
+    || oneValue(graph, cohortSnapshotRule, "memberAuthenticationRule", "iri") !== membership) {
+    throw new Error("WORK_COMPLETION_COHORT_AUTHENTICATION_RULE_INVALID");
+  }
 }
 
 export function deriveNoChangeCompletionAuthority(
@@ -223,6 +304,7 @@ export function deriveNoChangeCompletionAuthority(
   const proofBundleSchema = completionSchemaBinding(graph, policyIri, "proofBundleSchema", schemaPaths);
   const publicationReceiptSchema = completionSchemaBinding(graph, policyIri, "publicationReceiptSchema", schemaPaths);
   const publicationResultSchema = completionSchemaBinding(graph, policyIri, "publicationResultSchema", schemaPaths);
+  assertPublicationReceiptSchemaSelection(graph, policyIri, publicationReceiptSchema);
   const semanticDependencies = exactValues(graph, workIri, "semanticDependency", "iri");
   return Object.freeze({
     policy: Object.freeze({
@@ -484,7 +566,7 @@ export function createCompletionProofBundle(
   return Object.freeze({ ...bundleDraft, bundleDigest: canonicalDigest(bundleDraft, { rejectAbsolutePaths: true }) });
 }
 
-export interface WorkCompletionPublicationMember {
+interface WorkCompletionPublicationMemberCore {
   readonly ordinal: number;
   readonly workIri: string;
   readonly realisationReceiptIri: string;
@@ -499,6 +581,15 @@ export interface WorkCompletionPublicationMember {
   readonly policyDigest: string;
   readonly publicationIntentDigest: string;
 }
+
+export interface WorkCompletionPublicationMemberV1 extends WorkCompletionPublicationMemberCore {}
+
+export interface WorkCompletionPublicationMemberV2 extends WorkCompletionPublicationMemberCore {
+  readonly manifestPath: string;
+  readonly manifestDigest: string;
+}
+
+export type WorkCompletionPublicationMember = WorkCompletionPublicationMemberV1 | WorkCompletionPublicationMemberV2;
 
 export interface WorkCompletionPublicationOperation {
   readonly ordinal: number;
@@ -541,8 +632,7 @@ export interface CompletionPublicationSnapshot {
 }
 
 
-export interface WorkCompletionPublicationReceipt {
-  readonly schema: string;
+interface WorkCompletionPublicationReceiptCore {
   readonly status: "verified";
   readonly algorithmIri: string;
   readonly algorithmVersion: "1";
@@ -556,7 +646,6 @@ export interface WorkCompletionPublicationReceipt {
   readonly profileIri: string;
   readonly profileVersion: string;
   readonly manifestPath: string;
-  readonly manifestDigest: string;
   readonly authorityDependencies: readonly WorkCompletionAuthorityDependency[];
   readonly authorityDependencyDigest: string;
   readonly baseSourceDigest: string;
@@ -570,6 +659,49 @@ export interface WorkCompletionPublicationReceipt {
   readonly validationResultDigest: string;
   readonly nonClaims: readonly string[];
   readonly receiptDigest: string;
+}
+
+export interface WorkCompletionPublicationReceiptV1 extends WorkCompletionPublicationReceiptCore {
+  readonly schema: "urn:usf:work-completion-publication-receipt:1";
+  readonly manifestDigest: string;
+  readonly members: readonly WorkCompletionPublicationMemberV1[];
+}
+
+export interface WorkCompletionPublicationReceiptV2 extends WorkCompletionPublicationReceiptCore {
+  readonly schema: "urn:usf:work-completion-publication-receipt:2";
+  readonly cohortManifestDigest: string;
+  readonly members: readonly WorkCompletionPublicationMemberV2[];
+}
+
+export type WorkCompletionPublicationReceipt = WorkCompletionPublicationReceiptV1 | WorkCompletionPublicationReceiptV2;
+
+export interface CompletionMemberBasis {
+  readonly packet: WorkPacket;
+  readonly basis: RealisationBasis;
+}
+
+export type ReadCompletionMemberBasis = (workIri: string) => CompletionMemberBasis;
+
+function isV2PublicationReceiptSchema(authority: NoChangeCompletionAuthority): boolean {
+  return authority.publicationReceiptSchemaIri === "urn:usf:schema:work-completion-publication-receipt:2";
+}
+
+function isV2PublicationReceipt(receipt: WorkCompletionPublicationReceipt): receipt is WorkCompletionPublicationReceiptV2 {
+  return receipt.schema === "urn:usf:work-completion-publication-receipt:2";
+}
+
+function memberManifestTuples(members: readonly WorkCompletionPublicationMemberV2[]): readonly Readonly<{
+  ordinal: number;
+  workIri: string;
+  manifestPath: string;
+  manifestDigest: string;
+}>[] {
+  return Object.freeze(members.map(({ ordinal, workIri, manifestPath, manifestDigest }) =>
+    Object.freeze({ ordinal, workIri, manifestPath, manifestDigest })));
+}
+
+function cohortManifestDigest(members: readonly WorkCompletionPublicationMemberV2[]): string {
+  return canonicalDigest(memberManifestTuples(members), { rejectAbsolutePaths: true });
 }
 
 export function createWorkCompletionPublicationReceipt(input: Readonly<{
@@ -587,8 +719,23 @@ export function createWorkCompletionPublicationReceipt(input: Readonly<{
   members: readonly WorkCompletionPublicationMember[];
   operations: readonly WorkCompletionPublicationOperation[];
 }>): WorkCompletionPublicationReceipt {
-  const draft: Omit<WorkCompletionPublicationReceipt, "receiptDigest"> = {
-    schema: input.authority.publicationReceiptRecordSchema,
+  const v2 = isV2PublicationReceiptSchema(input.authority);
+  if ((v2 && input.authority.publicationReceiptRecordSchema !== "urn:usf:work-completion-publication-receipt:2")
+    || (!v2 && input.authority.publicationReceiptRecordSchema !== "urn:usf:work-completion-publication-receipt:1")) {
+    throw new Error("WORK_COMPLETION_PUBLICATION_RECEIPT_SCHEMA_INVALID");
+  }
+  const v2Members = v2 ? input.members.map((member) => {
+    if (!("manifestPath" in member) || !("manifestDigest" in member)
+      || parseRepositoryPath(member.manifestPath, "file") === null || !digestPattern.test(member.manifestDigest)) {
+      throw new Error("WORK_COMPLETION_COHORT_MEMBER_MANIFEST_INVALID");
+    }
+    return Object.freeze({ ...member }) as WorkCompletionPublicationMemberV2;
+  }) : undefined;
+  if (v2 && (new Set(v2Members!.map((member) => member.workIri)).size !== v2Members!.length
+    || canonicalJson(v2Members!.map((member) => member.ordinal)) !== canonicalJson(v2Members!.map((_, index) => index + 1)))) {
+    throw new Error("WORK_COMPLETION_COHORT_MEMBER_ORDER_INVALID");
+  }
+  const draft: Omit<WorkCompletionPublicationReceiptCore, "receiptDigest" | "members"> & { readonly members: readonly WorkCompletionPublicationMember[] } = {
     status: "verified",
     algorithmIri: input.authority.publicationAlgorithmIri,
     algorithmVersion: "1",
@@ -602,7 +749,6 @@ export function createWorkCompletionPublicationReceipt(input: Readonly<{
     profileIri: input.profileIri,
     profileVersion: input.profileVersion,
     manifestPath: input.manifestPath,
-    manifestDigest: input.manifestDigest,
     authorityDependencies: Object.freeze(input.authorityDependencies.map((dependency) => Object.freeze({ ...dependency }))),
     authorityDependencyDigest: canonicalDigest(input.authorityDependencies, { rejectAbsolutePaths: true }),
     baseSourceDigest: input.baseSourceDigest,
@@ -615,13 +761,29 @@ export function createWorkCompletionPublicationReceipt(input: Readonly<{
     deltaDigest: canonicalDigest(input.operations, { rejectAbsolutePaths: true }),
     validationResultDigest: canonicalDigest({
       members: input.members.map(({ workIri, realisationDigest, evidenceDigest, proofDigest }) => ({ workIri, realisationDigest, evidenceDigest, proofDigest })),
+      ...(v2 ? { cohortManifestDigest: cohortManifestDigest(v2Members!) } : {}),
       operationCount: input.operations.length,
       authorityDependencyDigest: canonicalDigest(input.authorityDependencies, { rejectAbsolutePaths: true }),
       resultingSemanticDigest: input.resultingSemanticDigest,
     }, { rejectAbsolutePaths: true }),
     nonClaims: workCompletionNonClaims,
   };
-  return Object.freeze({ ...draft, receiptDigest: canonicalDigest(draft, { rejectAbsolutePaths: true }) });
+  if (v2) {
+    const v2Draft: Omit<WorkCompletionPublicationReceiptV2, "receiptDigest"> = {
+      ...draft,
+      schema: "urn:usf:work-completion-publication-receipt:2",
+      cohortManifestDigest: cohortManifestDigest(v2Members!),
+      members: Object.freeze(v2Members!),
+    };
+    return Object.freeze({ ...v2Draft, receiptDigest: canonicalDigest(v2Draft, { rejectAbsolutePaths: true }) });
+  }
+  const v1Draft: Omit<WorkCompletionPublicationReceiptV1, "receiptDigest"> = {
+    ...draft,
+    schema: "urn:usf:work-completion-publication-receipt:1",
+    manifestDigest: input.manifestDigest,
+    members: Object.freeze(input.members.map((member) => Object.freeze({ ...member }) as WorkCompletionPublicationMemberV1)),
+  };
+  return Object.freeze({ ...v1Draft, receiptDigest: canonicalDigest(v1Draft, { rejectAbsolutePaths: true }) });
 }
 
 export function completionPublicationIntentDigest(
@@ -630,6 +792,30 @@ export function completionPublicationIntentDigest(
   manifestPath: string,
   authority: NoChangeCompletionAuthority,
 ): string {
+  if (isV2PublicationReceiptSchema(authority)) {
+    const members = bundles.map((bundle, index) => Object.freeze({
+      ordinal: index + 1,
+      workIri: bundle.evidence.workIri,
+      manifestPath: bundle.evidence.manifestPath,
+      manifestDigest: bundle.evidence.manifestDigest,
+    }));
+    if (new Set(members.map((member) => member.workIri)).size !== members.length
+      || members.some((member) => parseRepositoryPath(member.manifestPath, "file") === null || !digestPattern.test(member.manifestDigest))) {
+      throw new Error("WORK_COMPLETION_COHORT_INTENT_MEMBERS_INVALID");
+    }
+    return canonicalDigest({
+      schema: "urn:usf:work-completion-publication-receipt:2",
+      members,
+      cohortManifestDigest: canonicalDigest(members, { rejectAbsolutePaths: true }),
+      bundles: bundles.map((bundle) => ({ workIri: bundle.evidence.workIri, bundleDigest: bundle.bundleDigest })),
+      profileIri,
+      manifestPath,
+      publicationPolicyIri: authority.policy.iri,
+      publicationPolicyDigest: authority.policy.resourceDigest,
+      targetGraphIri: authority.targetGraphIri,
+      semanticSourcePath: authority.sourcePath,
+    }, { rejectAbsolutePaths: true });
+  }
   return canonicalDigest({
     bundles: bundles.map((bundle) => ({ workIri: bundle.evidence.workIri, bundleDigest: bundle.bundleDigest })),
     profileIri,
@@ -749,6 +935,9 @@ export function workCompletionRecordLines(
       candidateDigest: evidence.candidateDigest,
       policyDigest: authority.policy.resourceDigest,
       publicationIntentDigest,
+      ...(isV2PublicationReceiptSchema(authority)
+        ? { manifestPath: evidence.manifestPath, manifestDigest: evidence.manifestDigest }
+        : {}),
     }),
   });
 }
@@ -799,6 +988,12 @@ export interface NoChangeCompletionRecordEvaluation {
   readonly authorityResources: readonly string[];
   readonly authoritySchemaPaths: readonly string[];
   readonly authorityToolPaths: readonly string[];
+  readonly cohortMemberEvidence?: readonly Readonly<{
+    workIri: string;
+    realisationBasisDigest: string;
+    scopedDependencyDigest: string;
+    dynamicResources: readonly string[];
+  }>[];
   readonly receiptDependency?: Readonly<{ key: string; digest: string; kind: "file" }>;
   readonly authenticatedPublication?: Readonly<{
     originalBasisDigest: string;
@@ -887,6 +1082,11 @@ function readCompletionReceipt(
   catch { throw new Error("WORK_COMPLETION_RECEIPT_JSON_INVALID"); }
   if (!validateWorkCompletionReceiptShape(graph.repositoryRoot, value, authority)) throw new Error("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID");
   const receipt = value as WorkCompletionPublicationReceipt;
+  const v2 = isV2PublicationReceipt(receipt);
+  if ((isV2PublicationReceiptSchema(authority) !== v2)
+    || receipt.schema !== authority.publicationReceiptRecordSchema) {
+    throw new Error("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID");
+  }
   if (`${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n` !== bytes.toString("utf8")
     || canonicalDigest(withoutReceiptDigest(receipt), { rejectAbsolutePaths: true }) !== receipt.receiptDigest
     || receipt.publicationIntentDigest !== intentDigest || receipt.publicationReceiptPath !== path
@@ -897,10 +1097,14 @@ function readCompletionReceipt(
     || canonicalDigest(receipt.operations, { rejectAbsolutePaths: true }) !== receipt.deltaDigest
     || canonicalDigest({
       members: receipt.members.map(({ workIri, realisationDigest, evidenceDigest, proofDigest }) => ({ workIri, realisationDigest, evidenceDigest, proofDigest })),
+      ...(v2 ? { cohortManifestDigest: receipt.cohortManifestDigest } : {}),
       operationCount: receipt.operations.length,
       authorityDependencyDigest: receipt.authorityDependencyDigest,
       resultingSemanticDigest: receipt.resultingSemanticDigest,
-    }, { rejectAbsolutePaths: true }) !== receipt.validationResultDigest) {
+    }, { rejectAbsolutePaths: true }) !== receipt.validationResultDigest
+    || (v2 && (new Set(receipt.members.map((member) => member.workIri)).size !== receipt.members.length
+      || receipt.members.some((member) => parseRepositoryPath(member.manifestPath, "file") === null || !digestPattern.test(member.manifestDigest))
+      || cohortManifestDigest(receipt.members) !== receipt.cohortManifestDigest))) {
     throw new Error("WORK_COMPLETION_RECEIPT_DIGEST_INVALID");
   }
   const operationLines = receipt.operations.map(({ line }) => line);
@@ -942,6 +1146,17 @@ export function evaluateNoChangeCompletionRecords(
   graph: SemanticGraph,
   packet: WorkPacket,
   basis: RealisationBasis,
+  readMember?: ReadCompletionMemberBasis,
+): NoChangeCompletionRecordEvaluation {
+  return evaluateNoChangeCompletionRecordsLocal(graph, packet, basis, readMember, true);
+}
+
+function evaluateNoChangeCompletionRecordsLocal(
+  graph: SemanticGraph,
+  packet: WorkPacket,
+  basis: RealisationBasis,
+  readMember: ReadCompletionMemberBasis | undefined,
+  authenticateCohort: boolean,
 ): NoChangeCompletionRecordEvaluation {
   const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
   const profileIri = packet.decisionBoundary.root;
@@ -959,6 +1174,7 @@ export function evaluateNoChangeCompletionRecords(
     proofResult?: string | null;
     receiptDependency?: Readonly<{ key: string; digest: string; kind: "file" }>;
     authenticatedPublication?: NoChangeCompletionRecordEvaluation["authenticatedPublication"];
+    cohortMemberEvidence?: NoChangeCompletionRecordEvaluation["cohortMemberEvidence"];
   }> = {}): NoChangeCompletionRecordEvaluation => {
     const reasonCodes = [...new Set(reasons)].sort();
     return Object.freeze({
@@ -973,6 +1189,7 @@ export function evaluateNoChangeCompletionRecords(
       authorityToolPaths: authority.toolPaths,
       ...(input.receiptDependency === undefined ? {} : { receiptDependency: input.receiptDependency }),
       ...(input.authenticatedPublication === undefined ? {} : { authenticatedPublication: input.authenticatedPublication }),
+      ...(input.cohortMemberEvidence === undefined ? {} : { cohortMemberEvidence: input.cohortMemberEvidence }),
     });
   };
   if (basis === undefined || packet.decisionBoundary.kind !== "realisation-profile" || profileIri === null || profileVersion === undefined
@@ -1104,7 +1321,8 @@ export function evaluateNoChangeCompletionRecords(
     if (!digestPattern.test(publicationIntentDigest)) throw new Error("WORK_COMPLETION_INTENT_INVALID");
     const { receipt, path, bytes } = readCompletionReceipt(graph, publicationIntentDigest, authority);
     if (receipt.profileIri !== profileIri || receipt.profileVersion !== profileVersion
-      || receipt.manifestPath !== basis.selection.manifestPath || receipt.manifestDigest !== basis.selection.manifestDigest
+      || receipt.manifestPath !== basis.selection.manifestPath
+      || (!isV2PublicationReceipt(receipt) && receipt.manifestDigest !== basis.selection.manifestDigest)
       || receipt.publicationPolicyIri !== authority.policy.iri || receipt.publicationPolicyDigest !== authority.policy.resourceDigest
       || receipt.algorithmIri !== authority.publicationAlgorithmIri || receipt.algorithmResourceDigest !== authority.publicationAlgorithmDigest
       || receipt.targetGraphIri !== authority.targetGraphIri || receipt.semanticSourcePath !== authority.sourcePath) {
@@ -1128,6 +1346,73 @@ export function evaluateNoChangeCompletionRecords(
       || member.publicationIntentDigest !== publicationIntentDigest) {
       throw new Error("WORK_COMPLETION_RECEIPT_MEMBER_MISMATCH");
     }
+    let cohortMemberEvidence: NoChangeCompletionRecordEvaluation["cohortMemberEvidence"];
+    if (isV2PublicationReceipt(receipt) && authenticateCohort) {
+      if (readMember === undefined) throw new Error("WORK_COMPLETION_COHORT_MEMBER_READER_REQUIRED");
+      const cohortWorks = new Set(receipt.members.map((entry) => entry.workIri));
+      if (receipt.members.some((entry) => objectValues(graph, entry.workIri, predicate("dependsOn")).some((dependency) => cohortWorks.has(dependency)))) {
+        throw new Error("WORK_COMPLETION_COHORT_DEPENDENCY_INVALID");
+      }
+      const selfMember = receipt.members.find((entry) => entry.realisationReceiptIri === realisationReceipt);
+      if (selfMember === undefined) throw new Error("WORK_COMPLETION_COHORT_SELF_MEMBER_INVALID");
+      const cohortEvidence: Array<Readonly<{
+        workIri: string;
+        realisationBasisDigest: string;
+        scopedDependencyDigest: string;
+        dynamicResources: readonly string[];
+      }>> = [];
+      for (const expectedMember of receipt.members) {
+        if (expectedMember.manifestPath !== basis.selection.manifestPath) {
+          throw new Error("WORK_COMPLETION_COHORT_MANIFEST_SELECTION_INVALID");
+        }
+        if (expectedMember.workIri === packet.id) {
+          if (expectedMember !== selfMember || expectedMember.realisationBasisDigest !== basis.basisDigest
+            || expectedMember.scopedDependencyDigest !== basis.work.scopedDependencyDigest
+            || expectedMember.manifestDigest !== basis.selection.manifestDigest
+            || packet.eligibility?.activation.eligible !== true || packet.eligibility.dependencyReady !== true
+            || packet.eligibility.construction.eligible !== true || packet.eligibility.construction.authority !== "active-permission"
+            || packet.realisationAuthority?.permission?.activationState !== "urn:usf:contract-state:active") {
+            throw new Error("WORK_COMPLETION_COHORT_SELF_MEMBER_MISMATCH");
+          }
+          cohortEvidence.push(Object.freeze({
+            workIri: packet.id,
+            realisationBasisDigest: basis.basisDigest,
+            scopedDependencyDigest: basis.work.scopedDependencyDigest,
+            dynamicResources: Object.freeze([realisationReceipt, evidence, proofResult].sort()),
+          }));
+          continue;
+        }
+        const sibling = readMember(expectedMember.workIri);
+        if (sibling.packet.id !== expectedMember.workIri || sibling.packet.decisionBoundary.kind !== "realisation-profile"
+          || sibling.packet.decisionBoundary.root !== profileIri || sibling.packet.decisionBoundary.profileVersion !== profileVersion
+          || sibling.basis.selection.manifestPath !== basis.selection.manifestPath
+          || sibling.basis.selection.manifestPath !== expectedMember.manifestPath
+          || sibling.basis.selection.manifestDigest !== expectedMember.manifestDigest
+          || sibling.packet.eligibility?.activation.eligible !== true || sibling.packet.eligibility.dependencyReady !== true
+          || sibling.packet.eligibility.construction.eligible !== true || sibling.packet.eligibility.construction.authority !== "active-permission"
+          || sibling.packet.realisationAuthority?.permission?.activationState !== "urn:usf:contract-state:active") {
+          throw new Error("WORK_COMPLETION_COHORT_MEMBER_CONTEXT_INVALID");
+        }
+        const siblingEvaluation = evaluateNoChangeCompletionRecordsLocal(graph, sibling.packet, sibling.basis, readMember, false);
+        const siblingPublication = siblingEvaluation.authenticatedPublication;
+        if (!siblingEvaluation.verified || siblingEvaluation.realisationReceipt !== expectedMember.realisationReceiptIri
+          || siblingPublication === undefined || siblingPublication.publicationIntentDigest !== receipt.publicationIntentDigest
+          || siblingPublication.receiptDigest !== receipt.receiptDigest
+          || siblingPublication.authorityDependencyDigest !== receipt.authorityDependencyDigest
+          || sibling.basis.basisDigest !== expectedMember.realisationBasisDigest
+          || sibling.basis.work.scopedDependencyDigest !== expectedMember.scopedDependencyDigest) {
+          throw new Error("WORK_COMPLETION_COHORT_MEMBER_AUTHENTICATION_INVALID");
+        }
+        resources.push(...siblingEvaluation.dynamicResources);
+        cohortEvidence.push(Object.freeze({
+          workIri: expectedMember.workIri,
+          realisationBasisDigest: sibling.basis.basisDigest,
+          scopedDependencyDigest: sibling.basis.work.scopedDependencyDigest,
+          dynamicResources: siblingEvaluation.dynamicResources,
+        }));
+      }
+      cohortMemberEvidence = Object.freeze(cohortEvidence);
+    }
     const subjectLines = receipt.operations.map(({ line }) => line).filter((line) => {
       const parsed = parseStrictNQuads(`${line}\n`, authority.targetGraphIri, 1)[0];
       return parsed !== undefined && [realisationReceipt, evidence, proofResult].includes(parsed.subject);
@@ -1147,6 +1432,7 @@ export function evaluateNoChangeCompletionRecords(
         authorityDependencyDigest: receipt.authorityDependencyDigest,
         sourceDigest: receipt.resultingSourceDigest,
       }),
+      ...(cohortMemberEvidence === undefined ? {} : { cohortMemberEvidence }),
     });
   } catch {
     reasons.push(`WORK_COMPLETION_PUBLICATION_RECEIPT_INVALID:${realisationReceipt}`);

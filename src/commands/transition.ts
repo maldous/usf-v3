@@ -291,16 +291,16 @@ transitionAdapters.set("publish work-completion", {
   outputSchema: "urn:usf:work-completion-publication-result:1",
   resultSchema: "urn:usf:schema:work-completion-publication-result:1",
   resultSchemaPath: "schemas/work-completion-publication-result.schema.json",
-  artifactSchema: "urn:usf:schema:work-completion-publication-receipt:1",
+  artifactSchema: "urn:usf:schema:work-completion-publication-receipt:2",
   effectClass: "completion-publication",
   publicationPolicy: "urn:usf:publication-policy:cli-transition-definition-no-change-completion:1",
   prerequisiteTransitions: ["urn:usf:cli-transition:completion-proof:1"],
   recoveryCasesDigest: "sha256:5e8288c513655b69453894d6591c3694b8b8e6d58c9eee374ef094bb47360e0e",
   rules: Object.freeze({
     "urn:usf:rule:completion-publication-input:1": "sha256:d9414af6591e399f6fa094f24fc41e3194731460b41b6800f86b0882b0b66251",
-    [completionPublicationRule]: "sha256:a2b6d91a6fd064ba1c422795e861a1ee39a23c44a9efe424355fc3497a13b46c",
-    [completionPublicationSnapshotRule]: "sha256:bb8347f6b475767f2908fadd6e48ef4c896db3f5e657ec06934c7e2226ca41c9",
-    [completionPublicationCohortRule]: "sha256:0e86c6295afaf20677a237dae02df4f9d50ef41d870ec579a9e7a376e75475a0",
+    [completionPublicationRule]: "sha256:4bccaa01e615cb7b80c00b2a2bb978add9aed74f6af48c4d6d806e2d36bb66dc",
+    [completionPublicationSnapshotRule]: "sha256:f3e0715ae9500535ca9d23c201b16777edc9046e67530d5748c80999c6aa0d40",
+    [completionPublicationCohortRule]: "sha256:c9002f344f927c3389d8554739249a6ecc4216835d13ad8dc302b8e9736698bc",
     [completionPublicationSourceAuthenticationRule]: "sha256:c76bcc7adf9c643b626c3f8266eac392e3e57a945b6e9aedc60e152aa385e9e9",
     [completionProofRule]: "sha256:78bd88e4758bd4726c41d7352cf8b11c9ddf5f9607ff3e942de047bb20c27cb8",
     "urn:usf:rule:completion-terminal-native-evaluation:1": "sha256:b9c8fd3a8e648ecb1ddb6e1bbdca0d4e536ebfeffdfd8f204a38287370b0ea3d",
@@ -740,6 +740,17 @@ function attachAuthenticatedTerminalArtifacts(
     evaluated = evaluate(repositoryRoot, { rootIdentity: work, manifestPath: nativeManifestPath });
   } catch (error) {
     if (error instanceof UsfError && error.code === "WORK_COMPLETION_WORK_PROJECTION_INVALID") return output;
+    if (error instanceof Error && error.message === "WORK_COMPLETION_PUBLICATIONRECEIPTSCHEMA_INVALID") {
+      const { digest: _ignored, ...body } = output;
+      const diagnostics = [...body.diagnostics, {
+        reasonCode: "TRANSITION_TERMINAL_EVALUATION_REFUSED",
+        subject: "urn:usf:rule:completion-terminal-native-evaluation:1",
+        field: error.message,
+      }];
+      const refused = { ...body, diagnostics, complete: false,
+        reasonCode: "TRANSITION_SEMANTICS_INCOMPLETE" as const, executionAuthority: "none" as const };
+      return { ...refused, digest: canonicalDigest(refused) };
+    }
     throw error;
   }
   const result = observationObject(evaluated);
