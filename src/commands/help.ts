@@ -306,7 +306,14 @@ const providerPolicyTopics = [
 
 const probeQualifyTopic = topic(["probe", "qualify"], {
   purpose: "Qualify one exact authorized route by observed invocation. Qualification is earned empirically from observed invocations; it is not a catalogue fact and does not decay with the clock.",
-  synopsis: ["usf probe qualify [options]"], options: [{ syntax: "--route ID | --model ID", description: "Select the exact authorized route to qualify." }, envFileOption],
+  synopsis: ["usf probe qualify --provider ID --model ID --task-class NAME --env-file PATH [--max-output-tokens N]"],
+  options: [
+    { syntax: "--provider ID", description: "Provider identifier." },
+    { syntax: "--model ID", description: "Model identifier." },
+    { syntax: "--task-class NAME", description: "Task class name." },
+    envFileOption,
+    { syntax: "--max-output-tokens N", description: "Positive integer token limit; default 512, maximum 8192." }
+  ],
   outputSchema: "urn:usf:qualification-run-result:1", exitCodes: Object.freeze([0, 1, 2, 3, 4, 5, 6]), externalContact: "explicit", historyScan: "bounded",
   authorityEffect: "Contacts one exact authorized route and writes an ignored qualification record. It creates no economic, routing, Git or semantic authority.", availability: "implemented" });
 
