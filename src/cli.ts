@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { dispatchCommand, parseCommand, type CommandHandlers } from "./commands/dispatcher.ts";
+import { canonicalParserCommandPath, forwardedCanonicalParserArgs, matchCanonicalParserContract } from "./commands/canonical-parser-contracts.ts";
 import { errorOutput, exitCodes, UsfError } from "./core/errors.ts";
 import { resolveRepositoryRoot } from "./core/repository.ts";
 import { localGitChildEnvironment } from "./providers/local-git.ts";
@@ -40,17 +41,19 @@ const bootstrapHandlers: CommandHandlers = {
   },
   resolve: async (context) => (await import("./commands/resolve.ts")).resolveCommandHandler(context),
   realise: async (context) => {
-    if (context.args[0] === "no-change" && context.args[1] === "--input") {
+    const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:realise-no-change:1") {
       const { executeTransitionCommand } = await import("./commands/transition.ts");
-      return executeTransitionCommand({ ...context, args: context.args.slice(1) }, "realise no-change");
+      return executeTransitionCommand({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract));
     }
     return (await import("./commands/work-completion.ts")).realiseCommandHandler(context);
   },
   apply: async (context) => (await import("./commands/apply.ts")).applyHandler(context),
   check: async (context) => {
-    if (context.args[0] === "--input") {
+    const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:check-input:1") {
       const { executeTransitionCommand } = await import("./commands/transition.ts");
-      return executeTransitionCommand(context, "check");
+      return executeTransitionCommand({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract));
     }
     return (await import("./commands/apply.ts")).admissionCheckHandler(context);
   },
@@ -62,16 +65,18 @@ const bootstrapHandlers: CommandHandlers = {
       : bootstrapCarrierCommandHandler(context);
   },
   evidence: async (context) => {
-    if (context.args[0] === "completion" && context.args[1] === "--input") {
+    const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:completion-evidence:1") {
       const { observationCommandHandler } = await import("./commands/transition.ts");
-      return observationCommandHandler({ ...context, args: context.args.slice(1) }, "evidence completion");
+      return observationCommandHandler({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract));
     }
     return (await import("./commands/work-completion.ts")).completionAwareEvidenceCommandHandler(context);
   },
   prove: async (context) => {
-    if (context.args[0] === "completion" && context.args[1] === "--input") {
+    const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:completion-proof:1") {
       const { observationCommandHandler } = await import("./commands/transition.ts");
-      return observationCommandHandler({ ...context, args: context.args.slice(1) }, "prove completion");
+      return observationCommandHandler({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract));
     }
     return (await import("./commands/work-completion.ts")).completionAwareProveCommandHandler(context);
   },
@@ -89,9 +94,10 @@ const bootstrapHandlers: CommandHandlers = {
     return context.args[0] === "qualify" ? operationalMutation(context.repositoryRoot, async () => probeCommandHandler(context)) : probeCommandHandler(context);
   },
   publish: async (context) => {
-    if (context.args[0] === "work-completion" && context.args[1] === "--input") {
+    const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:completion-publication:1") {
       const { executeTransitionCommand } = await import("./commands/transition.ts");
-      return operationalMutation(context.repositoryRoot, () => executeTransitionCommand({ ...context, args: context.args.slice(1) }, "publish work-completion"));
+      return operationalMutation(context.repositoryRoot, () => executeTransitionCommand({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract)));
     }
     const { completionAwarePublishCommandHandler } = await import("./commands/work-completion.ts");
     return context.args.includes("--apply") ? operationalMutation(context.repositoryRoot, async () => completionAwarePublishCommandHandler(context)) : completionAwarePublishCommandHandler(context);

@@ -229,7 +229,7 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
       const orderingRules = many(fieldId, "collectionOrderingRule");
       if (orderingRules.length > 0) {
         if (orderingRules.length !== 1 || !collection || subjectSource
-          || orderingRules[0] !== prefix + "rule-native-trace-sequence:1") {
+          || ![prefix + "rule-native-trace-sequence:1", prefix + "rule-native-ordered-sequence:1"].includes(orderingRules[0]!)) {
           bad(fieldId, "collectionOrderingRule", "CLI_SPECIFICATION_RULE_UNKNOWN");
         } else {
           typed(orderingRules[0]!, "CliFieldDerivationRule");
@@ -362,6 +362,134 @@ export function verifyCliDescriptorSchema(
 export interface CliTransitionInventory {
   readonly leaves: readonly { readonly path: readonly string[]; readonly owner: string | null; readonly parserOwner: string | null }[];
   readonly complete: boolean;
+  readonly parserSource?: CliCanonicalParserSource;
+}
+export interface CliCanonicalParserBinding {
+  readonly identity: string;
+  readonly version: string;
+  readonly namedCommand: string;
+  readonly adapterIdentity: string;
+  readonly canonicalSelectorTokens: readonly string[];
+  readonly forwardedArgumentOffset: number;
+  readonly fallbackRegion: Readonly<{ identity: string; sourceDispatchSurfaceToken: string; complementOf: string }>;
+}
+export interface CliCanonicalParserSource {
+  readonly contracts: readonly CliCanonicalParserBinding[];
+  readonly sourcePath: string;
+  readonly parserExport: string;
+}
+export function canonicalParserCommandPath(binding: CliCanonicalParserBinding): string {
+  return binding.canonicalSelectorTokens.slice(0, binding.forwardedArgumentOffset + 1).join(" ");
+}
+export interface CliParserCoverage {
+  readonly sourceBasis: string;
+  readonly status: "partial" | "unavailable";
+  readonly matchedSelectors: readonly (CliCanonicalParserBinding & Readonly<{ sourcePath: string; parserExport: string }>)[];
+  readonly unresolvedRegions: readonly string[];
+  readonly diagnostics: readonly CliTransitionDiagnostic[];
+}
+
+export function deriveCliParserCoverage(graph: SemanticGraph, contract: string | null, source?: CliCanonicalParserSource,
+  specifications = contract === null ? null : deriveCliRecordSpecifications(graph, { contractIdentity: contract })): CliParserCoverage {
+  const p = "urn:usf:predicate:", t = "urn:usf:type:";
+  const diagnostics: CliTransitionDiagnostic[] = [];
+  const matchedSelectors: Array<CliCanonicalParserBinding & { sourcePath: string; parserExport: string }> = [];
+  const values = (subject: string, field: string, kind: "iri" | "literal" = "iri") =>
+    graph.quads.filter(q => q.subject === subject && q.predicate === p + field && q.objectKind === kind).map(q => q.object);
+  const issue = (subject: string, field: string, reasonCode = "CLI_PARSER_CONTRACT_MISMATCH") => diagnostics.push({ subject, field, reasonCode });
+  const text = (value: unknown): value is string => typeof value === "string" && value.length > 0 && value.length <= 4096;
+  const exact = (subject: string, field: string, kind: "iri" | "literal", expected: string) => {
+    const rows = graph.quads.filter(q => q.subject === subject && q.predicate === p + field);
+    const distinct = new Map(rows.map(row => [canonicalJson([row.objectKind, row.object]), row]));
+    if (distinct.size !== 1 || rows.some(row => row.objectKind !== kind || row.object !== expected)) issue(subject, field);
+  };
+  const ids = sorted(graph.quads.filter(q => q.predicate === p + "type" && q.objectKind === "iri"
+    && q.object === t + "CliCanonicalParserContract" && contract !== null && values(q.subject, "forContract").includes(contract)).map(q => q.subject));
+  const sourceBasis = canonicalQuadDigest(graph.quads);
+  const record = specifications?.records.find(item => item.fragment === "/$defs/parserCoverage");
+  const selectorField = record?.fields.find(field => field.property === "matchedSelectors");
+  const regionField = record?.fields.find(field => field.property === "unresolvedRegions");
+  const diagnosticField = record?.fields.find(field => field.property === "diagnostics");
+  const selectorRecord = specifications?.records.find(item => item.id === selectorField?.record);
+  const tokenField = selectorRecord?.fields.find(field => field.property === "canonicalSelectorTokens");
+  const offsetField = selectorRecord?.fields.find(field => field.property === "forwardedArgumentOffset");
+  const versionField = selectorRecord?.fields.find(field => field.property === "version");
+  const fallbackField = selectorRecord?.fields.find(field => field.property === "fallbackRegion");
+  const fallbackRecord = specifications?.records.find(item => item.id === fallbackField?.record);
+  const surfaceField = fallbackRecord?.fields.find(field => field.property === "sourceDispatchSurfaceToken");
+  if (!specifications || specifications.gaps.length > 0 || !selectorField || !regionField || !diagnosticField || !tokenField || !offsetField || !versionField
+    || !surfaceField || selectorField.maximum < 1 || diagnosticField.maximum < 1 || offsetField.minimumValue === null || offsetField.maximumValue === null) {
+    return immutable({ sourceBasis, status: "unavailable", matchedSelectors: [], unresolvedRegions: [],
+      diagnostics: [{ subject: contract ?? "urn:usf:cli", field: "parserCoverage", reasonCode: "CLI_PARSER_CENSUS_SCHEMA_UNAVAILABLE" }] });
+  }
+  if (ids.length > selectorField.maximum || (source !== undefined && (source === null || !Array.isArray(source.contracts) || source.contracts.length > selectorField.maximum))) {
+    return immutable({ sourceBasis, status: "unavailable", matchedSelectors: [], unresolvedRegions: [],
+      diagnostics: [{ subject: contract ?? "urn:usf:cli", field: "parserContracts", reasonCode: "CLI_PARSER_CENSUS_BOUNDS_EXCEEDED" }] });
+  }
+  const unresolvedRegions = sorted(ids.flatMap(id => values(id, "fallbackRegion")));
+  if (unresolvedRegions.length > regionField.maximum) return immutable({ sourceBasis, status: "unavailable", matchedSelectors: [], unresolvedRegions: [],
+    diagnostics: [{ subject: contract ?? "urn:usf:cli", field: "fallbackRegion", reasonCode: "CLI_PARSER_CENSUS_BOUNDS_EXCEEDED" }] });
+  if (ids.length === 0 || source === undefined || !text(source.sourcePath) || !text(source.parserExport)) {
+    issue(contract ?? "urn:usf:cli", "parserContracts", "CLI_PARSER_CENSUS_UNAVAILABLE");
+  } else {
+    const seen = new Set<string>(), selectors = new Set<string>();
+    const selectorSequences: Array<readonly string[]> = [];
+    for (const binding of source.contracts) {
+      if (!binding || !text(binding.identity) || !text(binding.version) || !text(binding.namedCommand) || !text(binding.adapterIdentity)
+        || !Array.isArray(binding.canonicalSelectorTokens) || binding.canonicalSelectorTokens.length < tokenField.minimum || binding.canonicalSelectorTokens.length > tokenField.maximum
+        || binding.canonicalSelectorTokens.some(token => !text(token) || token.length < tokenField.minimumLength || token.length > tokenField.maximumLength || /\s/.test(token))
+        || !Number.isSafeInteger(binding.forwardedArgumentOffset) || binding.forwardedArgumentOffset < offsetField.minimumValue
+        || binding.forwardedArgumentOffset > offsetField.maximumValue || binding.forwardedArgumentOffset >= binding.canonicalSelectorTokens.length
+        || (versionField.allowedValues.length > 0 && !versionField.allowedValues.includes(binding.version))
+        || binding.version.length < versionField.minimumLength || binding.version.length > versionField.maximumLength
+        || !binding.fallbackRegion || !text(binding.fallbackRegion.identity) || !text(binding.fallbackRegion.sourceDispatchSurfaceToken)
+        || binding.fallbackRegion.complementOf !== binding.identity
+        || binding.fallbackRegion.sourceDispatchSurfaceToken.length < surfaceField.minimumLength || binding.fallbackRegion.sourceDispatchSurfaceToken.length > surfaceField.maximumLength
+        || binding.fallbackRegion.sourceDispatchSurfaceToken !== binding.canonicalSelectorTokens[0]) {
+        issue(contract!, "parserContracts", "CLI_PARSER_SOURCE_INVALID");
+        continue;
+      }
+      const before = diagnostics.length;
+      const selector = canonicalJson(binding.canonicalSelectorTokens);
+      if (seen.has(binding.identity) || selectors.has(selector)) issue(binding.identity, "canonicalSelectorTokens", "CLI_PARSER_SOURCE_DUPLICATE");
+      if (selectorSequences.some(tokens => tokens.slice(0, Math.min(tokens.length, binding.canonicalSelectorTokens.length))
+        .every((token, index) => token === binding.canonicalSelectorTokens[index]))) issue(binding.identity, "canonicalSelectorTokens", "CLI_PARSER_SELECTOR_OVERLAP");
+      seen.add(binding.identity);
+      selectors.add(selector);
+      selectorSequences.push(binding.canonicalSelectorTokens);
+      if (!ids.includes(binding.identity)) issue(binding.identity, "forContract", "CLI_PARSER_SOURCE_UNADMITTED");
+      exact(binding.identity, "type", "iri", t + "CliCanonicalParserContract");
+      exact(binding.identity, "forContract", "iri", contract!);
+      exact(binding.identity, "version", "literal", binding.version);
+      exact(binding.identity, "registeredCommand", "iri", binding.namedCommand);
+      exact(binding.identity, "adapterIdentity", "iri", binding.adapterIdentity);
+      exact(binding.identity, "canonicalSelectorTokens", "literal", selector);
+      exact(binding.identity, "forwardedArgumentOffset", "literal", String(binding.forwardedArgumentOffset));
+      exact(binding.identity, "sourcePath", "literal", source.sourcePath);
+      exact(binding.identity, "canonicalParserExport", "literal", source.parserExport);
+      exact(binding.identity, "fallbackRegion", "iri", binding.fallbackRegion.identity);
+      exact(binding.namedCommand, "type", "iri", t + "RegisteredCliCommand");
+      exact(binding.namedCommand, "forContract", "iri", contract!);
+      exact(binding.namedCommand, "adapterIdentity", "iri", binding.adapterIdentity);
+      exact(binding.namedCommand, "commandPath", "literal", canonicalParserCommandPath(binding));
+      exact(binding.fallbackRegion.identity, "type", "iri", t + "CliCanonicalParserFallbackRegion");
+      exact(binding.fallbackRegion.identity, "sourceDispatchSurfaceToken", "literal", binding.fallbackRegion.sourceDispatchSurfaceToken);
+      exact(binding.fallbackRegion.identity, "complementOf", "iri", binding.identity);
+      if (diagnostics.length === before) matchedSelectors.push({ identity: binding.identity, version: binding.version,
+        namedCommand: binding.namedCommand, adapterIdentity: binding.adapterIdentity,
+        canonicalSelectorTokens: [...binding.canonicalSelectorTokens], forwardedArgumentOffset: binding.forwardedArgumentOffset,
+        sourcePath: source.sourcePath, parserExport: source.parserExport,
+        fallbackRegion: { identity: binding.fallbackRegion.identity, sourceDispatchSurfaceToken: binding.fallbackRegion.sourceDispatchSurfaceToken,
+          complementOf: binding.fallbackRegion.complementOf } });
+    }
+    for (const id of ids) if (!seen.has(id)) issue(id, "parserExport", "CLI_PARSER_SOURCE_MISSING");
+  }
+  if (diagnostics.length > diagnosticField.maximum) return immutable({ sourceBasis, status: "unavailable", matchedSelectors: [], unresolvedRegions,
+    diagnostics: [{ subject: contract ?? "urn:usf:cli", field: "diagnostics", reasonCode: "CLI_PARSER_CENSUS_BOUNDS_EXCEEDED" }] });
+  const ordered = [...new Map(diagnostics.map(d => [canonicalJson(d), d])).entries()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, d]) => d);
+  return immutable({ sourceBasis, status: ordered.length === 0 ? "partial" : "unavailable",
+    matchedSelectors: ordered.length === 0 ? matchedSelectors.sort((a, b) => a.identity < b.identity ? -1 : a.identity > b.identity ? 1 : 0) : [],
+    unresolvedRegions, diagnostics: ordered });
 }
 export interface CliTransitionAdapter {
   readonly id: string; readonly effectClass: string;
@@ -444,6 +572,7 @@ export interface CliTransitionCoverageReport {
   readonly requiredGraphRefs: readonly string[];
   readonly descriptors: readonly Readonly<Record<string, CliRecordValue>>[];
   readonly operationalSupport: readonly CliOperationalSupport[];
+  readonly parserCoverage: CliParserCoverage;
   readonly waves: readonly (readonly string[])[];
   readonly topologicalOnly: boolean;
   readonly parallelSafety: CliParallelSafetyAssessment;
@@ -745,6 +874,8 @@ export function deriveCliTransitionCoverage(
   if (!inventory.complete) issue("TRANSITION_INVENTORY_INCOMPLETE", root, "inventory");
 
   const specifications = contract === null ? null : deriveCliRecordSpecifications(graph, { contractIdentity: contract });
+  const parserCoverage = deriveCliParserCoverage(graph, contract, inventory.parserSource, specifications);
+  diagnostics.push(...parserCoverage.diagnostics);
   const descriptorRecord = specifications?.records.find(record => record.fragment === "");
   const descriptors: Readonly<Record<string, CliRecordValue>>[] = [];
   const operationalUsers = new Map<string, Set<string>>();
@@ -917,7 +1048,7 @@ export function deriveCliTransitionCoverage(
       assessmentRule: "urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1",
       missingObligations: ["urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1"],
       reasonCodes: ["TRANSITION_PARALLEL_SAFETY_UNAUTHENTICATED"] },
-    terminalClosure: { declared, derived, equal, assessment }, operationalSupport: operationalObservations,
+    terminalClosure: { declared, derived, equal, assessment }, operationalSupport: operationalObservations, parserCoverage,
     diagnostics: uniqueDiagnostics, complete: uniqueDiagnostics.length === 0,
     reasonCode: uniqueDiagnostics.length === 0 ? "TRANSITION_COVERAGE_COMPLETE" as const : "TRANSITION_SEMANTICS_INCOMPLETE" as const, executionAuthority: "none" as const };
   function freeze<TValue>(value: TValue): TValue {

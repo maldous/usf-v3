@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { createJsonSchemaValidator } from "../../src/schema/index.ts";
-import { deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
+import { deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliParserCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
 import { transitionAdaptersForCoverage } from "../../src/commands/transition.ts";
-import type { CliOperationalSupport, CliOperationalSupportDefinition, CliRecordDerivation, CliTransitionAdapter } from "../../src/graph/cli-transitions.ts";
+import { canonicalParserContracts } from "../../src/commands/canonical-parser-contracts.ts";
+import type { CliCanonicalParserSource, CliOperationalSupport, CliOperationalSupportDefinition, CliRecordDerivation, CliTransitionAdapter } from "../../src/graph/cli-transitions.ts";
 import type { SemanticGraph } from "../../src/graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../src/graph/nquads.ts";
 
@@ -39,7 +40,7 @@ test("partitioned specifications retain multiplicity and bind named-source prove
 });
 
 function terminalFixture() {
-  const quads = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications","v3-convention"].flatMap(name =>
+  const quads = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications","profile-authority","v3-convention"].flatMap(name =>
     parseStrictNQuads(readFileSync(new URL("../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
   const graph = { quads } as SemanticGraph;
@@ -48,6 +49,130 @@ function terminalFixture() {
   const add = (subject: string, field: string, object: string) => graph.quads.push({ subject, predicate: P + field, object, objectKind: "iri", graph: "urn:test:terminal", canonical: "" });
   return { graph, root, declaration, artifact, add, run: () => deriveCliTerminalAssessment(graph, root) };
 }
+
+function parserCoverageFixture() {
+  const { graph } = terminalFixture();
+  const source: CliCanonicalParserSource = canonicalParserContracts;
+  const specifications = deriveCliRecordSpecifications(graph, { contractIdentity: "urn:usf:contract:cli-transition-definition:1" });
+  const record = specifications.records.find(item => item.fragment === "/$defs/parserCoverage");
+  const field = (property: string) => record?.fields.find(item => item.property === property);
+  const selector = field("matchedSelectors");
+  const selectorRecord = specifications.records.find(item => item.id === selector?.record);
+  return {
+    graph, source, specifications, selectorMaximum: selector?.maximum ?? 0,
+    tokenMaximum: selectorRecord?.fields.find(item => item.property === "canonicalSelectorTokens")?.maximum ?? 0,
+    diagnosticMaximum: field("diagnostics")?.maximum ?? 0,
+    run: (candidate: CliCanonicalParserSource | undefined, candidateGraph = graph) =>
+      deriveCliParserCoverage(candidateGraph, "urn:usf:contract:cli-transition-definition:1", candidate),
+  };
+}
+
+function parserReasonCodes(result: ReturnType<ReturnType<typeof parserCoverageFixture>["run"]>): readonly string[] {
+  return result.diagnostics.map(diagnostic => diagnostic.reasonCode);
+}
+
+test("canonical parser coverage matches all five graph-declared parser contracts without a completion claim", () => {
+  const f = parserCoverageFixture(), result = f.run(f.source);
+  assert.equal(result.status, "partial");
+  assert.equal(result.matchedSelectors.length, 5);
+  assert.equal(result.unresolvedRegions.length, 5);
+  assert.equal(f.selectorMaximum, 32);
+  assert.equal(f.tokenMaximum, 32);
+  assert.equal(f.diagnosticMaximum, 1024);
+  assert.deepEqual(result.diagnostics, []);
+  assert.deepEqual(result.matchedSelectors.map(binding => binding.identity), [...result.matchedSelectors.map(binding => binding.identity)].sort());
+  assert.equal(result.sourceBasis, canonicalQuadDigest(f.graph.quads));
+});
+
+test("canonical parser coverage refuses unavailable, missing, duplicate and foreign parser sources", () => {
+  const f = parserCoverageFixture();
+  for (const source of [undefined, { ...f.source, contracts: f.source.contracts.slice(1) },
+    { ...f.source, contracts: [...f.source.contracts, f.source.contracts[0]!] },
+    { ...f.source, contracts: [{ ...f.source.contracts[0]!, identity: "urn:test:foreign-parser-contract:1",
+      fallbackRegion: { ...f.source.contracts[0]!.fallbackRegion, complementOf: "urn:test:foreign-parser-contract:1" } }, ...f.source.contracts.slice(1)] }]) {
+    const result = f.run(source);
+    assert.equal(result.status, "unavailable");
+    assert.deepEqual(result.matchedSelectors, []);
+  }
+  assert(parserReasonCodes(f.run(f.source)).length === 0);
+  assert(parserReasonCodes(f.run(undefined)).includes("CLI_PARSER_CENSUS_UNAVAILABLE"));
+  assert(parserReasonCodes(f.run({ ...f.source, contracts: f.source.contracts.slice(1) })).includes("CLI_PARSER_SOURCE_MISSING"));
+  assert(parserReasonCodes(f.run({ ...f.source, contracts: [...f.source.contracts, f.source.contracts[0]!] })).includes("CLI_PARSER_SOURCE_DUPLICATE"));
+  assert(parserReasonCodes(f.run({ ...f.source, contracts: [{ ...f.source.contracts[0]!, identity: "urn:test:foreign-parser-contract:1",
+    fallbackRegion: { ...f.source.contracts[0]!.fallbackRegion, complementOf: "urn:test:foreign-parser-contract:1" } }, ...f.source.contracts.slice(1)] })).includes("CLI_PARSER_SOURCE_UNADMITTED"));
+});
+
+test("canonical parser coverage refuses absent or incomplete generated schema records", () => {
+  const f = parserCoverageFixture(), record = "urn:usf:cli-field-specification:record-parser-coverage:1";
+  const absent = structuredClone(f.graph);
+  absent.quads = absent.quads.filter(quad => !(quad.subject === "urn:usf:cli-field-specification:amendment:1"
+    && quad.predicate === P + "recordSpecification" && quad.object === record));
+  const incomplete = structuredClone(f.graph);
+  incomplete.quads = incomplete.quads.filter(quad => !(quad.subject === record && quad.predicate === P + "fieldSpecification"
+    && quad.object === "urn:usf:cli-field-specification:field-parser-coverage-matched-selectors:1"));
+  for (const graph of [absent, incomplete]) {
+    const result = f.run(f.source, graph);
+    assert.equal(result.status, "unavailable");
+    assert.deepEqual(result.matchedSelectors, []);
+    assert.deepEqual(result.unresolvedRegions, []);
+    assert.deepEqual(parserReasonCodes(result), ["CLI_PARSER_CENSUS_SCHEMA_UNAVAILABLE"]);
+  }
+});
+
+test("canonical parser coverage refuses exact binding, fallback, selector and bounds changes", () => {
+  const f = parserCoverageFixture(), first = f.source.contracts.find(binding => binding.canonicalSelectorTokens[0] === "check")!,
+    second = f.source.contracts.find(binding => binding.canonicalSelectorTokens[0] === "evidence")!;
+  const changed = (binding: typeof first) => ({ ...f.source, contracts: f.source.contracts.map(current => current.identity === first.identity ? binding : current) });
+  const expectMismatch = (source: CliCanonicalParserSource, expected: string) => {
+    const result = f.run(source);
+    assert.equal(result.status, "unavailable");
+    assert.deepEqual(result.matchedSelectors, []);
+    assert(parserReasonCodes(result).includes(expected));
+  };
+  expectMismatch(changed({ ...first, version: "2" }), "CLI_PARSER_CONTRACT_MISMATCH");
+  expectMismatch(changed({ ...first, canonicalSelectorTokens: ["check", "--different-input"] }), "CLI_PARSER_CONTRACT_MISMATCH");
+  expectMismatch(changed({ ...first, forwardedArgumentOffset: 1 }), "CLI_PARSER_CONTRACT_MISMATCH");
+  expectMismatch({ ...f.source, sourcePath: "src/other-cli.ts" }, "CLI_PARSER_CONTRACT_MISMATCH");
+  expectMismatch({ ...f.source, parserExport: "src/commands/other.ts#other" }, "CLI_PARSER_CONTRACT_MISMATCH");
+  expectMismatch(changed({ ...first, namedCommand: "urn:test:command:other:1" }), "CLI_PARSER_CONTRACT_MISMATCH");
+  expectMismatch(changed({ ...first, adapterIdentity: "urn:test:cli-adapter:other:1" }), "CLI_PARSER_CONTRACT_MISMATCH");
+  const commandPathMismatch = structuredClone(f.graph);
+  const commandPath = commandPathMismatch.quads.find(quad => quad.subject === first.namedCommand && quad.predicate === P + "commandPath");
+  assert.ok(commandPath);
+  commandPathMismatch.quads.splice(commandPathMismatch.quads.indexOf(commandPath), 1, { ...commandPath, object: "check different" });
+  const commandPathResult = f.run(f.source, commandPathMismatch);
+  assert.equal(commandPathResult.status, "unavailable");
+  assert.deepEqual(commandPathResult.matchedSelectors, []);
+  assert(parserReasonCodes(commandPathResult).includes("CLI_PARSER_CONTRACT_MISMATCH"));
+  const duplicateCommandPath = structuredClone(f.graph);
+  duplicateCommandPath.quads.push({ ...commandPath, graph: "urn:test:parser-command-path-duplicate" });
+  const duplicateCommandPathResult = f.run(f.source, duplicateCommandPath);
+  assert.equal(duplicateCommandPathResult.status, "partial");
+  assert.equal(duplicateCommandPathResult.matchedSelectors.length, 5);
+  assert.deepEqual(duplicateCommandPathResult.diagnostics, []);
+  const conflictingCommandPath = structuredClone(f.graph);
+  conflictingCommandPath.quads.push({ ...commandPath, object: "check conflicting", graph: "urn:test:parser-command-path-conflict" });
+  const conflictingCommandPathResult = f.run(f.source, conflictingCommandPath);
+  assert.equal(conflictingCommandPathResult.status, "unavailable");
+  assert.deepEqual(conflictingCommandPathResult.matchedSelectors, []);
+  assert(parserReasonCodes(conflictingCommandPathResult).includes("CLI_PARSER_CONTRACT_MISMATCH"));
+  expectMismatch(changed({ ...first, fallbackRegion: { ...first.fallbackRegion, identity: "urn:test:cli-canonical-parser-fallback:wrong:1" } }), "CLI_PARSER_CONTRACT_MISMATCH");
+  expectMismatch({ ...f.source, contracts: f.source.contracts.map(binding => binding.identity === second.identity ? {
+    ...binding, canonicalSelectorTokens: ["check", "--input", "extra"],
+    fallbackRegion: { ...binding.fallbackRegion, sourceDispatchSurfaceToken: "check" },
+  } : binding) }, "CLI_PARSER_SELECTOR_OVERLAP");
+  const overlongTokens = ["check", ...Array.from({ length: f.tokenMaximum }, (_, index) => `token-${index}`)];
+  expectMismatch(changed({ ...first, canonicalSelectorTokens: overlongTokens }), "CLI_PARSER_SOURCE_INVALID");
+  const bounded = f.run({ ...f.source, contracts: Array.from({ length: f.selectorMaximum + 1 }, () => first) });
+  assert.equal(bounded.status, "unavailable");
+  assert.deepEqual(bounded.matchedSelectors, []);
+  assert.deepEqual(parserReasonCodes(bounded), ["CLI_PARSER_CENSUS_BOUNDS_EXCEEDED"]);
+});
+
+test("canonical parser coverage is deterministic for source contract ordering", () => {
+  const f = parserCoverageFixture(), forward = f.run(f.source), reverse = f.run({ ...f.source, contracts: [...f.source.contracts].reverse() });
+  assert.deepEqual(reverse, forward);
+});
 
 test("attached and detached authenticated artifact fields preserve bounded schema-valid unverified reports", () => {
   const field = "urn:usf:cli-field-specification:field-terminal-assessment-authenticated-artifacts:1";

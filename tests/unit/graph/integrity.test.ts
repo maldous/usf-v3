@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { checkIntegrity, derivedOnlyTypes, terminalIdentifierKinds } from "../../../src/graph/integrity.ts";
+import { loadSemanticGraph } from "../../../src/graph/index.ts";
 import { readRuntimeAuthority } from "../../../src/graph/runtime-authority.ts";
 import { canonicalQuadLine, type Quad } from "../../../src/graph/nquads.ts";
 
 const graph = "urn:usf:graph:test";
+const P = "urn:usf:predicate:", T = "urn:usf:type:";
 function quad(subject: string, predicate: string, object: string, objectKind: "iri" | "literal" = "iri", g = graph): Quad {
   const built = { subject, predicate, object, objectKind, graph: g, canonical: "" };
   built.canonical = canonicalQuadLine(built);
@@ -20,6 +23,45 @@ const declarePredicate = (p: string) => quad(p, "urn:usf:predicate:type", "urn:u
 // the corpus defines. These three quads are the smallest self-describing
 // vocabulary -- the predicate meta-type, and `type` declaring itself.
 const vocabulary = [metaType, declareType("urn:usf:type:SemanticPredicate"), declarePredicate("urn:usf:predicate:type")];
+
+test("selected production CLI record specifications satisfy complete graph integrity", () => {
+  const selectedGraph = loadSemanticGraph(fileURLToPath(new URL("../../..", import.meta.url)), "graph/manifests/cli-transition-definition.json");
+  const report = checkIntegrity(selectedGraph.quads);
+
+  const recordSpecifications = new Set(selectedGraph.quads.filter(quad =>
+    quad.predicate === P + "type" && quad.objectKind === "iri" && quad.object === T + "CliRecordSpecification").map(quad => quad.subject));
+  const sourceTypeRows = selectedGraph.quads.filter(quad => recordSpecifications.has(quad.subject) && quad.predicate === P + "sourceType" && quad.objectKind === "iri");
+  assert(sourceTypeRows.length > 0);
+  const sourceTypes = new Set(sourceTypeRows.map(quad => quad.object));
+  const operationalFields = new Set(selectedGraph.quads.filter(quad => quad.subject.startsWith("urn:usf:cli-field-specification:field-operational-support-")
+    && quad.predicate === P + "type" && quad.objectKind === "iri" && quad.object === T + "CliFieldSpecification").map(quad => quad.subject));
+  assert(operationalFields.size > 0);
+  assert.deepEqual(report.violations.filter(violation => sourceTypes.has(violation.subject) || operationalFields.has(violation.subject)), []);
+
+  const missingType = structuredClone(selectedGraph);
+  const sourceType = missingType.quads.find(quad => quad.subject === sourceTypeRows[0]!.subject && quad.predicate === P + "sourceType");
+  assert.ok(sourceType);
+  missingType.quads.splice(missingType.quads.indexOf(sourceType), 1, { ...sourceType, object: "urn:usf:type:MissingOperationalSupport:1" });
+  const missingTypeReport = checkIntegrity(missingType.quads);
+  assert.equal(missingTypeReport.conforming, false);
+  assert(missingTypeReport.violations.some(violation =>
+    violation.code === "dangling-reference" && violation.subject === "urn:usf:type:MissingOperationalSupport:1"));
+
+  const malformedIdentity = "urn:usf:cli-field-specification:field-integrity-badName:1";
+  const selectedField = selectedGraph.quads.find(quad => operationalFields.has(quad.subject)
+    && quad.predicate === P + "type" && quad.objectKind === "iri" && quad.object === T + "CliFieldSpecification");
+  assert.ok(selectedField);
+  const malformedField = structuredClone(selectedGraph);
+  malformedField.quads = malformedField.quads.map(quad => ({
+    ...quad,
+    subject: quad.subject === selectedField.subject ? malformedIdentity : quad.subject,
+    object: quad.objectKind === "iri" && quad.object === selectedField.subject ? malformedIdentity : quad.object,
+  }));
+  const malformedFieldReport = checkIntegrity(malformedField.quads);
+  assert.equal(malformedFieldReport.conforming, false);
+  assert(malformedFieldReport.violations.some(violation =>
+    violation.code === "instance-local-name-style" && violation.subject === malformedIdentity));
+});
 
 test("a conforming corpus yields zero violations and says so explicitly", () => {
   const report = checkIntegrity([

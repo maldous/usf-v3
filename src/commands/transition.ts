@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
 import { deriveCliTransitionContext, deriveCliTransitionIds, consistentArtifactProducer, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, inspectCliOperationalSupportAdmission, verifyCliDescriptorSchema, type CliTransitionAdapter, type CliOperationalSupport, type CliOperationalSupportDefinition, type CliRecordDerivation, type CliTransitionDiagnostic } from "../graph/cli-transitions.ts";
+import { canonicalParserContracts } from "./canonical-parser-contracts.ts";
 import { canonicalQuadDigest, canonicalQuadLine } from "../graph/nquads.ts";
 import { deriveLinearBindingDeclaration, LinearBindingError } from "../graph/linear-binding.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
@@ -990,6 +991,7 @@ export async function transitionCommandHandler(request: CommandRequest, installe
   // projection cannot attest an exhaustive inventory until they are migrated.
   const inventory = {
     complete: false,
+    parserSource: canonicalParserContracts,
     leaves: [...paths.values()].map((path) => ({ path,
       owner: path.join(" ") === transitionInterrogationContract.path.join(" ") ? "urn:usf:contract:cli-transition-definition:1" : null,
       parserOwner: path.join(" ") === transitionInterrogationContract.path.join(" ") ? "src/commands/help.ts#transitionInterrogationContract" : null,

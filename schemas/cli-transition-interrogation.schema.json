@@ -19,6 +19,7 @@
     "parallelSafety",
     "terminalClosure",
     "operationalSupport",
+    "parserCoverage",
     "diagnostics",
     "complete",
     "reasonCode",
@@ -93,6 +94,9 @@
     },
     "parallelSafety": {
       "$ref": "urn:usf:cli-transition-descriptor:1#/$defs/parallelSafety"
+    },
+    "parserCoverage": {
+      "$ref": "urn:usf:cli-transition-descriptor:1#/$defs/parserCoverage"
     },
     "terminalClosure": {
       "type": "object",
