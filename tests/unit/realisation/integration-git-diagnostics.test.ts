@@ -20,6 +20,7 @@ import {
   assertAuthenticatedCandidateWhitespace,
   IntegrationError,
   isTrustedRootOwnedGitUid,
+  stagedIntegrationPaths,
   type AuthenticatedCandidateWhitespaceInput,
   type IntegrationGitDiagnostic,
   type IntegrationWhitespacePreflightDependencies,
@@ -66,6 +67,33 @@ async function repositoryFixture(context: TestContext): Promise<string> {
   git(["commit", "-m", "fixture"]);
   return root;
 }
+
+test("staged integration paths retain both rename paths alongside additions deletions and modifications", async (context) => {
+  const root = await fixture(context);
+  const git = (...args: string[]): string => {
+    const result = spawnSync("/usr/bin/git", ["-c", "user.name=USF Test", "-c", "user.email=test@invalid.local", "-C", root, ...args], {
+      env: { PATH: "/usr/bin:/bin", LANG: "C", LC_ALL: "C", HOME: root, GIT_CONFIG_NOSYSTEM: "1", GIT_CONFIG_GLOBAL: "/dev/null", GIT_TERMINAL_PROMPT: "0" },
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout;
+  };
+  git("init", "-b", "main");
+  git("config", "diff.renames", "true");
+  for (const [path, content] of [
+    ["old.ts", "rename identity\n"], ["deleted.ts", "deleted content\n"], ["modified.ts", "before\n"],
+  ]) await writeFile(join(root, path!), content!);
+  git("add", "--all");
+  git("commit", "-m", "fixture");
+  const base = git("rev-parse", "HEAD").trim();
+  git("mv", "old.ts", "new.ts");
+  await rm(join(root, "deleted.ts"));
+  await writeFile(join(root, "added.ts"), "independent addition\n");
+  await writeFile(join(root, "modified.ts"), "after\n");
+  git("add", "--all");
+  assert.match(git("diff", "--cached", "--name-status", base), /R100\told\.ts\tnew\.ts/u);
+  assert.deepEqual(stagedIntegrationPaths(root, base), ["added.ts", "deleted.ts", "modified.ts", "new.ts", "old.ts"]);
+});
 
 function selfHostBasis(root: string): RealisationBasis {
   const derived = deriveWork(loadSemanticGraph(root, selfHostManifestPath), { profile: selfHostProfile, selector: selfHostWork });

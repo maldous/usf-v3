@@ -2366,6 +2366,10 @@ function cohortMembers(records: readonly AuthenticatedCandidateRecord[]): Integr
   });
 }
 
+export function stagedIntegrationPaths(root: string, base: string): string[] {
+  return nulFields(git(root, "diff", ["--cached", "--name-only", "--no-renames", "-z", base]));
+}
+
 function parseRawGitDiff(root: string, base: string, paths: readonly string[], cached = true): AuthoritativeGitPathEffect[] {
   const fields = nulFields(git(root, "diff", [...(cached ? ["--cached"] : []), "--raw", "--no-abbrev", "--no-renames", "-z", base, "--", ...paths]));
   if (fields.length % 2 !== 0) throw new IntegrationError("INTEGRATION_UNDECLARED_EFFECT");
@@ -3059,7 +3063,7 @@ export async function prepareCandidateIntegration(root: string, options: Candida
       if (!expected || expected.beforeDigest !== effect.beforeDigest || expected.afterDigest !== effect.afterDigest
         || expected.beforeMode !== effect.beforeMode || expected.afterMode !== effect.afterMode) throw new IntegrationError("INTEGRATION_UNDECLARED_EFFECT");
     }
-    const undeclared = nulFields(git(worktree, "diff", ["--cached", "--name-only", "-z", startingCarrierCommit]));
+    const undeclared = stagedIntegrationPaths(worktree, startingCarrierCommit);
     if (canonicalJson(bytewiseSorted(undeclared)) !== canonicalJson(touchedPaths)) throw new IntegrationError("INTEGRATION_UNDECLARED_EFFECT");
     git(worktree, "commit", ["--no-verify", "--no-gpg-sign", "-m", `USF integration ${request.requestDigest}`]);
     const preparedCarrierCommit = gitHead(worktree);
