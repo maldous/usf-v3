@@ -570,7 +570,9 @@ test("typed safety schema represents assessments without authenticating proof or
   assert.equal(schema.properties.parallelSafety.$ref, descriptor.$id + "#/$defs/parallelSafety");
   assert.equal(schema.properties.topologicalOnly.type, "boolean");
   const validator = createJsonSchemaValidator(schema, { dependencySchemas: [descriptor] });
-  const report = fixture([[], []]).run();
+  const raw = fixture([[], []]).run();
+  const report = { ...raw, terminalClosure: { ...raw.terminalClosure,
+    assessment: { ...raw.terminalClosure.assessment, authenticatedArtifacts: [] } } };
   assert.equal(report.parallelSafety.state, "unproven");
   assert.equal(report.topologicalOnly, true);
   const members = ["urn:test:left", "urn:test:right"];
@@ -635,7 +637,9 @@ test("schema separates semantic completeness from authority without admitting pa
   const validator = createJsonSchemaValidator(schema, { dependencySchemas: [descriptor] });
   assert.equal(schema.properties.descriptors.items.$ref, descriptor.$id);
   assert.equal(schema.$defs.descriptor, undefined);
-  const report = fixture([[]]).run();
+  const raw = fixture([[]]).run();
+  const report = { ...raw, terminalClosure: { ...raw.terminalClosure,
+    assessment: { ...raw.terminalClosure.assessment, authenticatedArtifacts: [] } } };
   const legacyDescriptor = { id: "urn:test:legacy", fields: { mode: "inspect" } };
   assert.equal(validator.validate({ ...report, descriptors: [legacyDescriptor] }).valid, false);
   assert.equal(createJsonSchemaValidator(descriptor).validate(legacyDescriptor).valid, false);

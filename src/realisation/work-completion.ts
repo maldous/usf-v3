@@ -513,6 +513,34 @@ export interface WorkCompletionAuthorityDependency {
   readonly digest: string;
 }
 
+export interface CompletionPublicationSnapshotMember {
+  readonly work: string;
+  readonly originalBasisDigest: string;
+  readonly candidateDigest: string;
+  readonly proofBundleDigest: string;
+}
+
+export interface CompletionPublicationSnapshot {
+  readonly schema: "urn:usf:completion-publication-snapshot:1";
+  readonly profile: string;
+  readonly manifestPath: string;
+  readonly publicationIntentDigest: string;
+  readonly authorityDependencyDigest: string;
+  readonly sourcePath: string;
+  readonly receiptPath: string;
+  readonly receiptDigest: string;
+  readonly members: readonly CompletionPublicationSnapshotMember[];
+  readonly files: readonly Readonly<{
+    path: string;
+    digest: string;
+    byteLength: number;
+    sourcePath?: string;
+    sourceMode?: number;
+    role: "authority-input" | "expected-receipt" | "proof-bundle" | "source-postimage" | "source-preimage";
+  }>[];
+}
+
+
 export interface WorkCompletionPublicationReceipt {
   readonly schema: string;
   readonly status: "verified";
@@ -772,6 +800,13 @@ export interface NoChangeCompletionRecordEvaluation {
   readonly authoritySchemaPaths: readonly string[];
   readonly authorityToolPaths: readonly string[];
   readonly receiptDependency?: Readonly<{ key: string; digest: string; kind: "file" }>;
+  readonly authenticatedPublication?: Readonly<{
+    originalBasisDigest: string;
+    publicationIntentDigest: string;
+    receiptDigest: string;
+    authorityDependencyDigest: string;
+    sourceDigest: string;
+  }>;
 }
 
 function typedSubjects(graph: SemanticGraph, type: string): string[] {
@@ -923,6 +958,7 @@ export function evaluateNoChangeCompletionRecords(
     evidence?: string | null;
     proofResult?: string | null;
     receiptDependency?: Readonly<{ key: string; digest: string; kind: "file" }>;
+    authenticatedPublication?: NoChangeCompletionRecordEvaluation["authenticatedPublication"];
   }> = {}): NoChangeCompletionRecordEvaluation => {
     const reasonCodes = [...new Set(reasons)].sort();
     return Object.freeze({
@@ -936,6 +972,7 @@ export function evaluateNoChangeCompletionRecords(
       authoritySchemaPaths: authority.schemaPaths,
       authorityToolPaths: authority.toolPaths,
       ...(input.receiptDependency === undefined ? {} : { receiptDependency: input.receiptDependency }),
+      ...(input.authenticatedPublication === undefined ? {} : { authenticatedPublication: input.authenticatedPublication }),
     });
   };
   if (basis === undefined || packet.decisionBoundary.kind !== "realisation-profile" || profileIri === null || profileVersion === undefined
@@ -1103,6 +1140,13 @@ export function evaluateNoChangeCompletionRecords(
       evidence,
       proofResult,
       receiptDependency: Object.freeze({ key: path, digest: sha256(bytes), kind: "file" as const }),
+      authenticatedPublication: Object.freeze({
+        originalBasisDigest: member.realisationBasisDigest,
+        publicationIntentDigest: receipt.publicationIntentDigest,
+        receiptDigest: receipt.receiptDigest,
+        authorityDependencyDigest: receipt.authorityDependencyDigest,
+        sourceDigest: receipt.resultingSourceDigest,
+      }),
     });
   } catch {
     reasons.push(`WORK_COMPLETION_PUBLICATION_RECEIPT_INVALID:${realisationReceipt}`);

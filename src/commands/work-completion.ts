@@ -26,8 +26,9 @@ import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { parseRepositoryPath } from "../core/scope.ts";
 import { loadSemanticGraph, objectValues, type LoadedSemanticGraph } from "../graph/index.ts";
-import { parseStrictNQuads } from "../graph/nquads.ts";
+import { canonicalQuadDigest, parseStrictNQuads } from "../graph/nquads.ts";
 import { deriveWork, type WorkPacket } from "../graph/work.ts";
+import { deriveCliTransitionContext } from "../graph/cli-transitions.ts";
 import {
   authenticateNoChangeWorkspace,
   materialiseNoChangeCandidate,
@@ -41,6 +42,7 @@ import {
   createCompletionProofBundle,
   createWorkCompletionPublicationReceipt,
   deriveNoChangeCompletionAuthority,
+  evaluateNoChangeCompletionRecords,
   validateCompletionBundleShape,
   validateCompletionEvidenceShape,
   validateWorkCompletionReceiptShape,
@@ -50,6 +52,7 @@ import {
   type CompletionEvidenceCandidate,
   type CompletionProofBundle,
   type CompletionValidationReference,
+  type CompletionPublicationSnapshot,
   type NoChangeCompletionAuthority,
   type WorkCompletionPublicationMember,
   type WorkCompletionPublicationOperation,
@@ -94,6 +97,17 @@ interface PreparedPublication {
   readonly state: "absent" | "matching";
   readonly affectedWorks: readonly string[];
   readonly authority: NoChangeCompletionAuthority;
+}
+
+interface PublicationSnapshotBinding {
+  readonly root: string;
+  readonly schemaPath: string;
+  readonly fragment: string;
+}
+
+interface PreparedPublicationSnapshot {
+  readonly metadata: CompletionPublicationSnapshot;
+  readonly bytes: ReadonlyMap<string, Buffer>;
 }
 
 function refuse(code: string, message: string, exitCode: ExitCode = exitCodes.INVALID_INPUT, details?: Record<string, unknown>): never {
@@ -366,7 +380,7 @@ function atomicWrite(path: string, bytes: string | Buffer, mode: number): void {
   }
 }
 
-function atomicCreate(path: string, bytes: string, mode: number): void {
+function atomicCreate(path: string, bytes: string | Buffer, mode: number): void {
   const temporary = temporaryPath(path);
   let descriptor: number | undefined;
   try {
@@ -677,11 +691,9 @@ export async function prepareCompletionEvidence(root: string, request: Completio
   } catch (error) { return asUsfError(error, "WORK_COMPLETION_EVIDENCE_REFUSED"); }
 }
 
-async function produceProof(root: string, request: ProofRequest, value: unknown): Promise<CompletionProofBundle> {
-  const graph = loadSemanticGraph(root, request.manifestPath);
-  const { evidence, packet } = await authenticateEvidence(root, graph, request.profile, value);
+async function produceCompletionProof(root: string, graph: LoadedSemanticGraph, packet: WorkPacket, evidence: CompletionEvidenceCandidate, obligation: string): Promise<CompletionProofBundle> {
   const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
-  const bundle = createCompletionProofBundle(graph, packet, evidence, request.obligation);
+  const bundle = createCompletionProofBundle(graph, packet, evidence, obligation);
   validateCompletionBundleShape(bundle);
   if (!validateSchema<CompletionProofBundle>(root, authority.proofBundleSchemaPath, bundle)) {
     refuse("WORK_COMPLETION_PROOF_SCHEMA_INVALID", "Derived completion proof failed its closed graph-selected schema.", exitCodes.CURRENTNESS_FAILURE);
@@ -689,7 +701,202 @@ async function produceProof(root: string, request: ProofRequest, value: unknown)
   return bundle;
 }
 
-function publicationReceiptPath(root: string, repositoryPath: string, createParent: boolean): string {
+async function produceProof(root: string, request: ProofRequest, value: unknown): Promise<CompletionProofBundle> {
+  const graph = loadSemanticGraph(root, request.manifestPath);
+  const { evidence, packet } = await authenticateEvidence(root, graph, request.profile, value);
+  return produceCompletionProof(root, graph, packet, evidence, request.obligation);
+}
+
+export interface CanonicalCompletionProofRequest {
+  readonly rootIdentity: string;
+  readonly manifestPath: string;
+}
+
+function parseCanonicalCompletionProofRequest(value: unknown): Readonly<CanonicalCompletionProofRequest> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)
+    || Object.getOwnPropertySymbols(value).length !== 0) {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Canonical proof preparation requires only rootIdentity and manifestPath.");
+  }
+  const keys = Object.getOwnPropertyNames(value).sort();
+  if (canonicalJson(keys) !== canonicalJson(["manifestPath", "rootIdentity"])) {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Canonical proof preparation requires only rootIdentity and manifestPath.");
+  }
+  const manifest = Object.getOwnPropertyDescriptor(value, "manifestPath");
+  const root = Object.getOwnPropertyDescriptor(value, "rootIdentity");
+  if (manifest === undefined || root === undefined || !("value" in manifest) || !("value" in root)
+    || typeof manifest.value !== "string" || parseRepositoryPath(manifest.value, "file") === null
+    || typeof root.value !== "string" || !iriPattern.test(root.value)) {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Canonical proof preparation requires own data rootIdentity and manifestPath.");
+  }
+  return Object.freeze({ rootIdentity: root.value, manifestPath: manifest.value });
+}
+
+/** Root-selected, no-persistence proof preparation for the transition adapter. */
+export async function prepareCanonicalCompletionProof(root: string, request: CanonicalCompletionProofRequest): Promise<CompletionProofBundle> {
+  try {
+    const selected = parseCanonicalCompletionProofRequest(request);
+    const repositoryRoot = realpathSync(resolve(root));
+    const graph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
+    const context = deriveCliTransitionContext(graph, selected.rootIdentity);
+    if (context.diagnostics.length !== 0 || context.profile === null || context.work !== selected.rootIdentity) {
+      refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Canonical proof requires one admitted work context.");
+    }
+    const packet = exactPacket(graph, context.profile, selected.rootIdentity);
+    const basis = packet.realisationBasis;
+    const obligation = packet.realisationAuthority?.completionProofObligation;
+    if (basis === undefined || typeof obligation !== "string") refuse("WORK_COMPLETION_PROOF_OBLIGATION_INVALID", "Canonical proof preparation requires one graph-selected completion proof obligation.", exitCodes.CURRENTNESS_FAILURE);
+    const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
+    const candidateDigest = await deriveNoChangeCandidateIdentity(repositoryRoot, basis, authority.policy);
+    const evidence = await deriveEvidence(repositoryRoot, graph, packet, candidateDigest);
+    const bundle = await produceCompletionProof(repositoryRoot, graph, packet, evidence, obligation);
+    const currentGraph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
+    const currentContext = deriveCliTransitionContext(currentGraph, selected.rootIdentity);
+    if (currentContext.diagnostics.length !== 0 || currentContext.profile === null || currentContext.work !== selected.rootIdentity) {
+      refuse("WORK_COMPLETION_BUNDLE_NOT_CURRENT", "Canonical completion context changed during preparation.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    const currentPacket = exactPacket(currentGraph, currentContext.profile, selected.rootIdentity);
+    const currentAuthority = deriveNoChangeCompletionAuthority(currentGraph, currentPacket.id);
+    if (context.profile !== currentContext.profile || canonicalJson(packet.realisationBasis) !== canonicalJson(currentPacket.realisationBasis)
+      || canonicalJson(authority) !== canonicalJson(currentAuthority)) {
+      refuse("WORK_COMPLETION_BUNDLE_NOT_CURRENT", "Canonical completion proof authority changed during preparation.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return bundle;
+  } catch (error) { return asUsfError(error, "WORK_COMPLETION_PROOF_REFUSED"); }
+}
+
+export interface CanonicalCompletionPublicationRequest extends CanonicalCompletionProofRequest {
+  readonly mode: "verify" | "apply";
+}
+
+/** Read-only projection of the existing native evaluator, never graph assertions. */
+export function evaluateCanonicalCompletionTerminal(root: string, request: CanonicalCompletionProofRequest) {
+  const selection = parseCanonicalCompletionProofRequest(request);
+  const repository = realpathSync(root);
+  const evaluator = "urn:usf:rule:completion-terminal-native-evaluation:1";
+  const read = () => {
+    const graph = loadSemanticGraph(repository, selection.manifestPath);
+    const context = deriveCliTransitionContext(graph, selection.rootIdentity);
+    if (context.diagnostics.length !== 0 || context.profile === null || context.work !== selection.rootIdentity) {
+      refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Terminal evaluation requires one admitted work context.");
+    }
+    const packet = exactPacket(graph, context.profile, selection.rootIdentity);
+    const basis = packet.realisationBasis;
+    if (basis === undefined) refuse("WORK_COMPLETION_AUTHORITY_INCOMPLETE", "Terminal evaluation requires a current basis.", exitCodes.CURRENTNESS_FAILURE);
+    const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
+    const rule = graph.quads.filter(q => q.subject === evaluator);
+    const ruleValues = (name: string) => rule.filter(q => q.predicate === predicate(name) && q.objectKind === "iri").map(q => q.object);
+    if (canonicalQuadDigest(rule) !== "sha256:b9c8fd3a8e648ecb1ddb6e1bbdca0d4e536ebfeffdfd8f204a38287370b0ea3d"
+      || canonicalJson(ruleValues("algorithm")) !== canonicalJson([authority.publicationAlgorithmIri])
+      || canonicalJson(ruleValues("publicationPolicy")) !== canonicalJson([authority.policy.iri])) {
+      refuse("WORK_COMPLETION_TERMINAL_EVALUATOR_INVALID", "Terminal evaluator does not select the native publication authority.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    const result = evaluateNoChangeCompletionRecords(graph, packet, basis);
+    const artifacts: Record<string, unknown>[] = [];
+    if (packet.realisationStage?.stage === "verified-complete" && packet.realisationStage.completion.verified
+      && result.verified && result.authenticatedPublication !== undefined && result.receiptDependency !== undefined
+      && result.realisationReceipt !== null && result.evidence !== null && result.proofResult !== null) {
+      const source = readPublicationFile(repository, authority.sourcePath);
+      const receipt = readPublicationFile(repository, result.receiptDependency.key);
+      if (sha256(receipt.bytes) !== result.receiptDependency.digest) {
+        refuse("WORK_COMPLETION_TERMINAL_STALE", "Publication receipt changed during native evaluation.", exitCodes.CURRENTNESS_FAILURE);
+      }
+      if (sha256(source.bytes) !== result.authenticatedPublication.sourceDigest) {
+        refuse("WORK_COMPLETION_TERMINAL_STALE", "Current source is not the receipt-authenticated publication postimage.", exitCodes.CURRENTNESS_FAILURE);
+      }
+      const declarations = graph.quads.filter(q => q.predicate === predicate("authenticationRule")
+        && q.objectKind === "iri" && q.object === evaluator).map(q => q.subject);
+      if (declarations.length !== 1) refuse("WORK_COMPLETION_TERMINAL_ARTIFACT_INVALID", "Native publication requires exactly one admitted artifact contract.", exitCodes.CURRENTNESS_FAILURE);
+      const artifactRows = graph.quads.filter(q => q.subject === declarations[0]);
+      const expected: Record<string, string> = { type: "urn:usf:type:CliArtifactContract",
+        producer: "urn:usf:cli-transition:completion-publication:1", schema: authority.publicationReceiptSchemaIri,
+        work: packet.id, profile: context.profile, proofObligation: packet.realisationAuthority!.completionProofObligation! };
+      if (canonicalQuadDigest(artifactRows) !== "sha256:1ea9688a98576163138e88b34e199d03982468c75fe12b78f8c33374d18ea412"
+        || Object.entries(expected).some(([name, value]) => canonicalJson(artifactRows.filter(q => q.predicate === predicate(name) && q.objectKind === "iri").map(q => q.object)) !== canonicalJson([value]))
+        || canonicalJson(graph.quads.filter(q => q.subject === expected.producer && q.predicate === predicate("produces") && q.objectKind === "iri").map(q => q.object)) !== canonicalJson(declarations)) {
+        refuse("WORK_COMPLETION_TERMINAL_ARTIFACT_INVALID", "Artifact contract or native producer lineage differs from the compiled semantic boundary.", exitCodes.CURRENTNESS_FAILURE);
+      }
+      for (const artifact of [...new Set(declarations)].sort()) artifacts.push(Object.freeze({
+        artifact, state: "accepted", work: packet.id, profile: context.profile, manifestPath: selection.manifestPath,
+        evaluator, evaluatorDigest: canonicalQuadDigest(rule), currentBasisDigest: basis.basisDigest,
+        ...result.authenticatedPublication,
+        receiptPath: result.receiptDependency.key, realisationReceipt: result.realisationReceipt,
+        evidence: result.evidence, proofResult: result.proofResult,
+      }));
+    }
+    return { graphDigest: canonicalQuadDigest(graph.quads), basisDigest: basis.basisDigest,
+      result: { authenticatedArtifacts: Object.freeze(artifacts), evaluator, evaluatorDigest: canonicalQuadDigest(rule),
+        manifestPath: selection.manifestPath, profile: context.profile, work: packet.id } };
+  };
+  const before = read();
+  const after = read();
+  if (canonicalJson(before) !== canonicalJson(after)) {
+    refuse("WORK_COMPLETION_TERMINAL_STALE", "Terminal source, receipt or authority changed during readback.", exitCodes.CURRENTNESS_FAILURE);
+  }
+  return Object.freeze(after.result);
+}
+
+function parseCanonicalCompletionPublicationRequest(value: unknown): Readonly<CanonicalCompletionPublicationRequest> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)
+    || Object.getOwnPropertySymbols(value).length !== 0
+    || canonicalJson(Object.getOwnPropertyNames(value).sort()) !== canonicalJson(["manifestPath", "mode", "rootIdentity"])) {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Canonical publication requires only rootIdentity, manifestPath and mode.");
+  }
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  if (["rootIdentity", "manifestPath", "mode"].some(key => !("value" in descriptors[key]!))
+    || (descriptors.mode!.value !== "verify" && descriptors.mode!.value !== "apply")) {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Canonical publication requires own data properties and an explicit verify/apply mode.");
+  }
+  const selection = parseCanonicalCompletionProofRequest({
+    rootIdentity: descriptors.rootIdentity!.value,
+    manifestPath: descriptors.manifestPath!.value,
+  });
+  return Object.freeze({ ...selection, mode: descriptors.mode!.value as "verify" | "apply" });
+}
+
+/** Both CLI surfaces delegate to the same native publisher and receipt domain. */
+export async function runCanonicalCompletionPublication(root: string, request: CanonicalCompletionPublicationRequest): Promise<Record<string, unknown>> {
+  try {
+    const selected = parseCanonicalCompletionPublicationRequest(request);
+    const repositoryRoot = realpathSync(resolve(root));
+    const graph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
+    const context = deriveCliTransitionContext(graph, selected.rootIdentity);
+    if (context.diagnostics.length !== 0 || context.profile === null || context.work !== selected.rootIdentity) {
+      refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Canonical publication requires one admitted work context.");
+    }
+    const authority = deriveNoChangeCompletionAuthority(graph, selected.rootIdentity);
+    const binding = publicationSnapshotBinding(graph, authority);
+    const group = binding === null ? null : publicationSnapshotGroup(binding, context.profile, selected.manifestPath, [selected.rootIdentity]);
+    if (binding !== null && group !== null && existsSync(resolve(repositoryRoot, group))) {
+      assertPrivateDirectory(repositoryRoot, group, false);
+      const entries = readdirSync(resolve(repositoryRoot, group)).sort();
+      if (entries.length > 32 || entries.some(name => !/^[0-9a-f]{64}$/.test(name))) {
+        refuse("WORK_COMPLETION_SNAPSHOT_INVENTORY_INVALID", "Snapshot discovery exceeds its bounded intent inventory.", exitCodes.CONTAINMENT_REFUSAL);
+      }
+      const matches = entries.map(name => readPublicationSnapshot(repositoryRoot, binding, `${group}${name}`))
+        .filter(snapshot => snapshot.metadata.profile === context.profile && snapshot.metadata.manifestPath === selected.manifestPath
+          && snapshot.metadata.members.some(member => member.work === selected.rootIdentity));
+      if (matches.length > 1 || (matches[0] !== undefined && matches[0].metadata.members.length !== 1)) {
+        refuse("WORK_COMPLETION_SNAPSHOT_AMBIGUOUS", "Root-only publication requires one exact single-work retained intent; historical cohorts are not silently selected.", exitCodes.INTEGRATION_CONFLICT);
+      }
+      if (matches[0] !== undefined) {
+        const snapshot = matches[0];
+        const bundles = snapshot.metadata.files.filter(file => file.role === "proof-bundle").map(file =>
+          JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(snapshot.bytes.get(file.path)!)) as CompletionProofBundle);
+        return await publishCompletion(repositoryRoot, { profile: context.profile, manifestPath: selected.manifestPath,
+          mode: selected.mode, bundlePaths: [] }, bundles);
+      }
+    }
+    const bundle = await prepareCanonicalCompletionProof(repositoryRoot, {
+      rootIdentity: selected.rootIdentity, manifestPath: selected.manifestPath,
+    });
+    return await publishCompletion(repositoryRoot, {
+      profile: bundle.evidence.profileIri, manifestPath: selected.manifestPath,
+      mode: selected.mode, bundlePaths: [],
+    }, [bundle]);
+  } catch (error) { return asUsfError(error, "WORK_COMPLETION_PUBLICATION_REFUSED"); }
+}
+
+function publicationReceiptPath(root: string, repositoryPath: string, createParent: boolean, pendingIdentity?: { dev: number; ino: number }): string {
   if (!receiptPathPattern.test(repositoryPath)) refuse("WORK_COMPLETION_RECEIPT_PATH_INVALID", "Completion receipts must use the exact tracked publication root.", exitCodes.CONTAINMENT_REFUSAL);
   const canonicalRoot = realpathSync(resolve(root));
   const absolute = resolve(canonicalRoot, repositoryPath);
@@ -713,7 +920,9 @@ function publicationReceiptPath(root: string, repositoryPath: string, createPare
   }
   if (existsSync(absolute)) {
     const entry = lstatSync(absolute);
-    if (entry.isSymbolicLink() || !entry.isFile() || entry.nlink !== 1 || entry.uid !== processUid(entry.uid)
+    const ownedPendingLink = pendingIdentity !== undefined && entry.nlink === 2
+      && entry.dev === pendingIdentity.dev && entry.ino === pendingIdentity.ino;
+    if (entry.isSymbolicLink() || !entry.isFile() || (entry.nlink !== 1 && !ownedPendingLink) || entry.uid !== processUid(entry.uid)
       || (entry.mode & 0o777) !== 0o644 || entry.size > maximumInputBytes || realpathSync(absolute) !== absolute) {
       refuse("WORK_COMPLETION_RECEIPT_FILE_UNSAFE", "Completion receipt is not an exact owner-contained regular file.", exitCodes.CONTAINMENT_REFUSAL);
     }
@@ -973,7 +1182,508 @@ function publicationResult(
   return result;
 }
 
+function publicationSnapshotBinding(graph: LoadedSemanticGraph, authority: NoChangeCompletionAuthority): PublicationSnapshotBinding | null {
+  const selected = (subject: string, property: string, kind: "iri" | "literal"): string => {
+    const rows = graph.quads.filter(q => q.subject === subject && q.predicate === predicate(property));
+    const values = [...new Set(rows.map(q => q.object))];
+    if (rows.some(q => q.objectKind !== kind) || values.length !== 1) {
+      refuse("WORK_COMPLETION_SNAPSHOT_AUTHORITY_INVALID", "Snapshot authority must be uniquely graph-selected.", exitCodes.CURRENTNESS_FAILURE, { subject, property });
+    }
+    return values[0]!;
+  };
+  const hasRoot = graph.quads.some(q => q.subject === authority.policy.iri && q.predicate === predicate("publicationSnapshotRoot"));
+  const hasSchema = graph.quads.some(q => q.subject === authority.policy.iri && q.predicate === predicate("publicationSnapshotSchema"));
+  if (!hasRoot && !hasSchema) return null;
+  const snapshotRoot = selected(authority.policy.iri, "publicationSnapshotRoot", "literal");
+  const schema = selected(authority.policy.iri, "publicationSnapshotSchema", "iri");
+  const schemaPath = selected(schema, "repositoryPath", "literal");
+  const record = selected(schema, "recordSpecification", "iri");
+  const fragment = selected(record, "schemaFragment", "literal");
+  if (!snapshotRoot.startsWith(authority.candidateRoot) || !snapshotRoot.endsWith("/")
+    || snapshotRoot.split("/").some((part, index, parts) => part === ".." || part === "." || (part === "" && index !== parts.length - 1))
+    || parseRepositoryPath(schemaPath, "file") === null || !/^\/\$defs\/[A-Za-z][A-Za-z0-9]*$/.test(fragment)) {
+    refuse("WORK_COMPLETION_SNAPSHOT_AUTHORITY_INVALID", "Snapshot paths or record selection escape the admitted policy.", exitCodes.CONTAINMENT_REFUSAL);
+  }
+  return Object.freeze({ root: snapshotRoot, schemaPath, fragment });
+}
+
+function snapshotSchema(root: string, binding: PublicationSnapshotBinding, value: unknown): asserts value is CompletionPublicationSnapshot {
+  const schema = JSON.parse(readFileSync(resolve(root, binding.schemaPath), "utf8")) as { $schema?: string; $defs?: Record<string, unknown> };
+  const result = createJsonSchemaValidator({ $schema: schema.$schema, $defs: schema.$defs, $ref: `#${binding.fragment}` }).validate(value);
+  if (!result.valid) refuse("WORK_COMPLETION_SNAPSHOT_SCHEMA_INVALID", "Snapshot failed its graph-selected generated record schema.", exitCodes.CURRENTNESS_FAILURE);
+}
+
+function publicationInputPath(path: string): boolean {
+  if (parseRepositoryPath(path, "file") !== null) return true;
+  if (/^\.usf\/receipts\/check\/[0-9a-f]{64}\/[0-9a-f]{64}(?:\.intent)?\.json(?:\.pending)?$/.test(path)) return true;
+  const workspace = /^\.usf\/workspaces\/[0-9a-f]{64}\/(.+)$/.exec(path);
+  return workspace !== null && parseRepositoryPath(workspace[1]!, "file") !== null;
+}
+
+function readPublicationFile(root: string, path: string, privateFile = false, snapshotRoot?: string): { bytes: Buffer; mode: number } {
+  const snapshotFile = snapshotRoot !== undefined && path.startsWith(snapshotRoot)
+    && /^[0-9a-f]{64}\/[0-9a-f]{64}\/(?:snapshot\.json|source\.pending|files\/[0-9]{4}\.bin)$/.test(path.slice(snapshotRoot.length));
+  if (!publicationInputPath(path) && !snapshotFile) refuse("WORK_COMPLETION_SNAPSHOT_PATH_INVALID", "Snapshot input requires one contained file path.", exitCodes.CONTAINMENT_REFUSAL);
+  const absolute = resolve(root, path);
+  let cursor = realpathSync(root);
+  for (const segment of dirname(path).split("/")) {
+    if (segment === ".") continue;
+    cursor = resolve(cursor, segment);
+    const entry = lstatSync(cursor);
+    if (!entry.isDirectory() || entry.isSymbolicLink() || realpathSync(cursor) !== cursor || entry.uid !== processUid(entry.uid)) {
+      refuse("WORK_COMPLETION_SNAPSHOT_PATH_UNSAFE", "Snapshot input ancestry is unsafe.", exitCodes.CONTAINMENT_REFUSAL);
+    }
+  }
+  const named = lstatSync(absolute);
+  const fd = openSync(absolute, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW);
+  try {
+    const before = fstatSync(fd);
+    if (!before.isFile() || before.nlink !== 1 || before.uid !== processUid(before.uid)
+      || before.dev !== named.dev || before.ino !== named.ino || before.mode !== named.mode
+      || before.size > 16 * 1024 * 1024 || (privateFile && (before.mode & 0o777) !== 0o600)) {
+      refuse("WORK_COMPLETION_SNAPSHOT_FILE_UNSAFE", "Snapshot input is not one bounded authenticated regular file.", exitCodes.CONTAINMENT_REFUSAL);
+    }
+    const bytes = readFileSync(fd);
+    const after = fstatSync(fd);
+    const finalName = lstatSync(absolute);
+    if (after.dev !== before.dev || after.ino !== before.ino || after.mode !== before.mode || after.nlink !== 1
+      || after.size !== before.size || after.mtimeMs !== before.mtimeMs || after.ctimeMs !== before.ctimeMs
+      || finalName.dev !== before.dev || finalName.ino !== before.ino || bytes.length !== before.size) {
+      refuse("WORK_COMPLETION_SNAPSHOT_INPUT_CHANGED", "Snapshot input changed while read.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return { bytes, mode: before.mode & 0o777 };
+  } finally { closeSync(fd); }
+}
+
+function buildPublicationSnapshot(root: string, prepared: PreparedPublication, bundles: readonly CompletionProofBundle[], binding: PublicationSnapshotBinding): PreparedPublicationSnapshot {
+  const paths = new Set<string>([
+    ...prepared.graph.sources.map(source => source.path),
+    ...prepared.graph.manifests.map(manifest => manifest.path),
+    ...prepared.authority.schemaPaths, ...prepared.authority.toolPaths, binding.schemaPath,
+  ]);
+  const addTree = (path: string, depth = 0): void => {
+    if (depth > 32 || paths.size > 1024) refuse("WORK_COMPLETION_SNAPSHOT_BOUNDS", "Snapshot input closure exceeds its bound.", exitCodes.CONTAINMENT_REFUSAL);
+    const info = lstatSync(resolve(root, path));
+    if (info.isSymbolicLink()) refuse("WORK_COMPLETION_SNAPSHOT_PATH_UNSAFE", "Snapshot refuses linked input trees.", exitCodes.CONTAINMENT_REFUSAL);
+    if (info.isDirectory()) for (const name of readdirSync(resolve(root, path)).sort()) addTree(`${path}/${name}`, depth + 1);
+    else if (info.isFile()) paths.add(path);
+    else refuse("WORK_COMPLETION_SNAPSHOT_PATH_UNSAFE", "Snapshot refuses special input files.", exitCodes.CONTAINMENT_REFUSAL);
+  };
+  const ordered = [...bundles].sort((a, b) => utf8Compare(a.evidence.workIri, b.evidence.workIri));
+  for (const bundle of ordered) {
+    const packet = exactPacket(prepared.graph, prepared.receipt.profileIri, bundle.evidence.workIri);
+    for (const dependency of packet.realisationBasis!.work.dependencies) {
+      if (dependency.kind !== "semantic-resource" && dependency.kind !== "semantic-graph" && existsSync(resolve(root, dependency.key))) paths.add(dependency.key);
+    }
+    addTree(`.usf/workspaces/${bundle.evidence.candidateDigest.slice(7)}`);
+    for (const reference of bundle.evidence.validationResults) {
+      paths.add(reference.receiptPath);
+      const checked = JSON.parse(readPublicationFile(root, reference.receiptPath).bytes.toString("utf8")) as CheckedCandidateReceipt;
+      for (const dependency of checked.validationAuthorityDependencies) paths.add(dependency.path);
+      for (const suffix of [".intent.json", ".intent.json.pending", ".json.pending"]) {
+        const path = reference.receiptPath.replace(/\.json$/, suffix);
+        if (existsSync(resolve(root, path))) paths.add(path);
+      }
+    }
+  }
+  paths.delete(prepared.authority.sourcePath);
+  const files: CompletionPublicationSnapshot["files"][number][] = [];
+  const payloads = new Map<string, Buffer>();
+  let totalBytes = 0;
+  const add = (role: CompletionPublicationSnapshot["files"][number]["role"], bytes: Buffer, sourcePath?: string, sourceMode?: number): void => {
+    totalBytes += bytes.length;
+    if (files.length >= 1024 || bytes.length > 16 * 1024 * 1024 || totalBytes > 64 * 1024 * 1024) {
+      refuse("WORK_COMPLETION_SNAPSHOT_BOUNDS", "Snapshot exceeds the declared file or aggregate bound.", exitCodes.CONTAINMENT_REFUSAL);
+    }
+    const path = `files/${String(files.length).padStart(4, "0")}.bin`;
+    files.push(Object.freeze({ path, role, digest: sha256(bytes), byteLength: bytes.length,
+      ...(sourcePath === undefined ? {} : { sourcePath, sourceMode: sourceMode! }) }));
+    payloads.set(path, bytes);
+  };
+  for (const path of [...paths].sort(utf8Compare)) {
+    const value = readPublicationFile(root, path);
+    add("authority-input", value.bytes, path, value.mode);
+  }
+  const sourceMode = readPublicationFile(root, prepared.authority.sourcePath).mode;
+  add("source-preimage", Buffer.from(prepared.sourceBefore), prepared.authority.sourcePath, sourceMode);
+  add("source-postimage", Buffer.from(prepared.sourceAfter), prepared.authority.sourcePath, sourceMode);
+  add("expected-receipt", Buffer.from(prepared.receiptBytes));
+  for (const bundle of ordered) add("proof-bundle", Buffer.from(`${canonicalJson(bundle, { rejectAbsolutePaths: true })}\n`));
+  const metadata: CompletionPublicationSnapshot = Object.freeze({
+    schema: "urn:usf:completion-publication-snapshot:1", profile: prepared.receipt.profileIri,
+    manifestPath: prepared.receipt.manifestPath, publicationIntentDigest: prepared.receipt.publicationIntentDigest,
+    authorityDependencyDigest: prepared.receipt.authorityDependencyDigest,
+    sourcePath: prepared.authority.sourcePath, receiptPath: prepared.receipt.publicationReceiptPath,
+    receiptDigest: prepared.receipt.receiptDigest,
+    members: Object.freeze(ordered.map(bundle => Object.freeze({ work: bundle.evidence.workIri,
+      originalBasisDigest: bundle.evidence.realisationBasisDigest, candidateDigest: bundle.evidence.candidateDigest,
+      proofBundleDigest: bundle.bundleDigest }))), files: Object.freeze(files),
+  });
+  snapshotSchema(root, binding, metadata);
+  return { metadata, bytes: payloads };
+}
+
+function publicationSnapshotGroup(binding: PublicationSnapshotBinding, profile: string, manifestPath: string, works: readonly string[]): string {
+  const identity = canonicalDigest({ profile, manifestPath, works: [...works].sort(utf8Compare) }, { rejectAbsolutePaths: true });
+  return `${binding.root}${identity.slice(7)}/`;
+}
+
+function publicationSnapshotDirectory(binding: PublicationSnapshotBinding, intent: string, profile: string, manifestPath: string, works: readonly string[]): string {
+  if (!digestPattern.test(intent)) refuse("WORK_COMPLETION_SNAPSHOT_INTENT_INVALID", "Snapshot intent must be native and content-addressed.");
+  return `${publicationSnapshotGroup(binding, profile, manifestPath, works)}${intent.slice(7)}`;
+}
+
+function readPublicationSnapshot(root: string, binding: PublicationSnapshotBinding, directory: string): PreparedPublicationSnapshot {
+  if (!directory.startsWith(binding.root) || !/^[0-9a-f]{64}\/[0-9a-f]{64}$/.test(directory.slice(binding.root.length))) {
+    refuse("WORK_COMPLETION_SNAPSHOT_PATH_INVALID", "Snapshot directory is not an exact policy-derived intent.", exitCodes.CONTAINMENT_REFUSAL);
+  }
+  assertPrivateDirectory(root, directory, false);
+  const metadataBytes = readPublicationFile(root, `${directory}/snapshot.json`, true, binding.root).bytes;
+  let value: unknown;
+  try { value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(metadataBytes)); }
+  catch { return refuse("WORK_COMPLETION_SNAPSHOT_INVALID", "Snapshot metadata is not strict UTF-8 JSON.", exitCodes.CURRENTNESS_FAILURE); }
+  snapshotSchema(root, binding, value);
+  const metadata = value;
+  if (publicationSnapshotDirectory(binding, metadata.publicationIntentDigest, metadata.profile, metadata.manifestPath, metadata.members.map(member => member.work)) !== directory
+    || `${canonicalJson(metadata, { rejectAbsolutePaths: true })}\n` !== metadataBytes.toString("utf8")
+    || !receiptPathPattern.test(metadata.receiptPath)) {
+    refuse("WORK_COMPLETION_SNAPSHOT_IDENTITY_INVALID", "Snapshot metadata does not bind its exact canonical intent.", exitCodes.CURRENTNESS_FAILURE);
+  }
+  const paths = new Set<string>();
+  const originals = new Set<string>();
+  const payloads = new Map<string, Buffer>();
+  const roleCounts = new Map<string, number>();
+  let total = 0;
+  for (const file of metadata.files) {
+    if (!/^files\/[0-9]{4}\.bin$/.test(file.path) || paths.has(file.path)) {
+      refuse("WORK_COMPLETION_SNAPSHOT_INVENTORY_INVALID", "Snapshot file inventory is duplicate or outside its bounded payload directory.", exitCodes.CONTAINMENT_REFUSAL);
+    }
+    const sourceBacked = ["authority-input", "source-preimage", "source-postimage"].includes(file.role);
+    if (sourceBacked ? file.sourcePath === undefined || file.sourceMode === undefined
+      : file.sourcePath !== undefined || file.sourceMode !== undefined) {
+      refuse("WORK_COMPLETION_SNAPSHOT_INVENTORY_INVALID", "Snapshot source provenance does not match its typed role.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    if (sourceBacked && !publicationInputPath(file.sourcePath!)) {
+      refuse("WORK_COMPLETION_SNAPSHOT_PATH_INVALID", "Snapshot source provenance is not contained.", exitCodes.CONTAINMENT_REFUSAL);
+    }
+    if (file.role === "authority-input") {
+      if (originals.has(file.sourcePath!) || file.sourcePath === metadata.sourcePath || file.sourcePath === metadata.receiptPath) {
+        refuse("WORK_COMPLETION_SNAPSHOT_INVENTORY_INVALID", "Authority inventory repeats a source or includes the planned publication effect.", exitCodes.CURRENTNESS_FAILURE);
+      }
+      originals.add(file.sourcePath!);
+    } else if ((file.role === "source-preimage" || file.role === "source-postimage") && file.sourcePath !== metadata.sourcePath) {
+      refuse("WORK_COMPLETION_SNAPSHOT_INVENTORY_INVALID", "Source images do not bind the declared publication path.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    const read = readPublicationFile(root, `${directory}/${file.path}`, true, binding.root);
+    total += read.bytes.length;
+    if (read.bytes.length !== file.byteLength || sha256(read.bytes) !== file.digest || total > 64 * 1024 * 1024) {
+      refuse("WORK_COMPLETION_SNAPSHOT_CONTENT_INVALID", "Snapshot bytes, size or aggregate bound do not authenticate.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    paths.add(file.path); payloads.set(file.path, read.bytes);
+    roleCounts.set(file.role, (roleCounts.get(file.role) ?? 0) + 1);
+  }
+  if (["source-preimage", "source-postimage", "expected-receipt"].some(role => roleCounts.get(role) !== 1)
+    || roleCounts.get("proof-bundle") !== metadata.members.length
+    || new Set(metadata.members.map(member => member.work)).size !== metadata.members.length
+    || new Set(metadata.members.map(member => member.proofBundleDigest)).size !== metadata.members.length) {
+    refuse("WORK_COMPLETION_SNAPSHOT_MEMBER_INVALID", "Snapshot does not preserve the exact source/receipt/cohort denominator.", exitCodes.CURRENTNESS_FAILURE);
+  }
+  const bundles = metadata.files.filter(file => file.role === "proof-bundle").map(file => {
+    const parsed: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(payloads.get(file.path)!));
+    validateCompletionBundleShape(parsed);
+    return parsed as CompletionProofBundle;
+  });
+  for (const member of metadata.members) {
+    const matching = bundles.filter(bundle => bundle.bundleDigest === member.proofBundleDigest);
+    if (matching.length !== 1 || matching[0]!.evidence.workIri !== member.work
+      || matching[0]!.evidence.realisationBasisDigest !== member.originalBasisDigest
+      || matching[0]!.evidence.candidateDigest !== member.candidateDigest) {
+      refuse("WORK_COMPLETION_SNAPSHOT_MEMBER_INVALID", "Snapshot bundle identities do not match member provenance.", exitCodes.CURRENTNESS_FAILURE);
+    }
+  }
+  const entries = readdirSync(resolve(root, directory)).sort();
+  if (entries.some(name => !["files", "snapshot.json", "source.pending", "receipt.pending"].includes(name))
+    || canonicalJson(readdirSync(resolve(root, directory, "files")).sort())
+      !== canonicalJson([...paths].map(path => path.slice("files/".length)).sort())) {
+    refuse("WORK_COMPLETION_SNAPSHOT_INVENTORY_INVALID", "Snapshot contains undeclared runtime entries.", exitCodes.CONTAINMENT_REFUSAL);
+  }
+  // This authenticates storage and lineage shape only. Reproof against the
+  // original semantic preimage is mandatory before any publication effect.
+  return { metadata, bytes: payloads };
+}
+
+function persistPublicationSnapshot(root: string, binding: PublicationSnapshotBinding, prepared: PreparedPublicationSnapshot): string {
+  const directory = publicationSnapshotDirectory(binding, prepared.metadata.publicationIntentDigest,
+    prepared.metadata.profile, prepared.metadata.manifestPath, prepared.metadata.members.map(member => member.work));
+  if (existsSync(resolve(root, directory))) {
+    const retained = readPublicationSnapshot(root, binding, directory);
+    if (canonicalJson(retained.metadata) !== canonicalJson(prepared.metadata)) {
+      refuse("WORK_COMPLETION_SNAPSHOT_CONFLICT", "Retained snapshot conflicts with independently prepared publication.", exitCodes.INTEGRATION_CONFLICT);
+    }
+    return directory;
+  }
+  assertPrivateDirectory(root, `${directory}/files`, true);
+  for (const file of prepared.metadata.files) {
+    atomicCreate(resolve(root, directory, file.path), prepared.bytes.get(file.path)!, 0o600);
+  }
+  atomicCreate(resolve(root, directory, "snapshot.json"), `${canonicalJson(prepared.metadata, { rejectAbsolutePaths: true })}\n`, 0o600);
+  fsyncDirectory(resolve(root, directory, "files"));
+  // Persist every newly created ancestor before the primary source can change.
+  const repository = realpathSync(root);
+  for (let current = resolve(root, directory); ; current = dirname(current)) {
+    fsyncDirectory(current);
+    if (current === repository) break;
+    if (dirname(current) === current) refuse("WORK_COMPLETION_SNAPSHOT_PATH_UNSAFE", "Snapshot durability path escaped the repository.", exitCodes.CONTAINMENT_REFUSAL);
+  }
+  const retained = readPublicationSnapshot(root, binding, directory);
+  if (canonicalJson(retained.metadata) !== canonicalJson(prepared.metadata)) {
+    refuse("WORK_COMPLETION_SNAPSHOT_CONFLICT", "Durable snapshot readback changed before publication.", exitCodes.CURRENTNESS_FAILURE);
+  }
+  return directory;
+}
+
+async function reauthenticatePublicationSnapshot(
+  root: string, request: PublishRequest, authority: NoChangeCompletionAuthority,
+  binding: PublicationSnapshotBinding, retained: PreparedPublicationSnapshot,
+): Promise<{ prepared: Omit<PreparedPublication, "graph">; bundles: readonly CompletionProofBundle[] }> {
+  const metadata = retained.metadata;
+  if (metadata.profile !== request.profile || metadata.manifestPath !== request.manifestPath
+    || metadata.sourcePath !== authority.sourcePath
+    || metadata.receiptPath !== `${authority.receiptRoot}${metadata.publicationIntentDigest.slice(7)}.json`) {
+    refuse("WORK_COMPLETION_SNAPSHOT_AUTHORITY_MISMATCH", "Retained snapshot does not select the current publication authority.", exitCodes.CURRENTNESS_FAILURE);
+  }
+  const fileFor = (role: string) => metadata.files.find(file => file.role === role)!;
+  const beforeFile = fileFor("source-preimage");
+  const afterFile = fileFor("source-postimage");
+  const before = retained.bytes.get(beforeFile.path)!;
+  const after = retained.bytes.get(afterFile.path)!;
+  const source = readPublicationFile(root, authority.sourcePath);
+  if ((!source.bytes.equals(before) && !source.bytes.equals(after)) || source.mode !== beforeFile.sourceMode
+    || afterFile.sourceMode !== beforeFile.sourceMode) {
+    refuse("WORK_COMPLETION_PUBLICATION_PARTIAL_STATE", "Current source is neither the exact retained preimage nor postimage.", exitCodes.INTEGRATION_CONFLICT);
+  }
+  const bundles = metadata.files.filter(file => file.role === "proof-bundle").map(file =>
+    JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(retained.bytes.get(file.path)!)) as CompletionProofBundle);
+  const view = copyCandidateRepository(root);
+  try {
+    // The original graph is reconstructed only in native validation scratch.
+    // Primary bytes are never rolled back to make old evidence appear current.
+    atomicWrite(resolve(view, authority.sourcePath), before, beforeFile.sourceMode!);
+    const copiedReceipt = resolve(view, metadata.receiptPath);
+    if (existsSync(copiedReceipt)) unlinkSync(copiedReceipt);
+    const originalGraph = loadSemanticGraph(view, request.manifestPath);
+    let copiedFiles = 0;
+    let copiedBytes = 0;
+    const copyRuntimeTree = (path: string, depth = 0): void => {
+      if (depth > 32 || copiedFiles > 1024 || copiedBytes > 64 * 1024 * 1024) {
+        refuse("WORK_COMPLETION_SNAPSHOT_BOUNDS", "Original runtime reconstruction exceeds the admitted bound.", exitCodes.CONTAINMENT_REFUSAL);
+      }
+      const info = lstatSync(resolve(root, path));
+      if (info.isSymbolicLink() || info.uid !== processUid(info.uid)) refuse("WORK_COMPLETION_SNAPSHOT_PATH_UNSAFE", "Original runtime input is linked or foreign-owned.", exitCodes.CONTAINMENT_REFUSAL);
+      const destination = resolve(view, path);
+      if (info.isDirectory()) {
+        if (!existsSync(destination)) mkdirSync(destination, { recursive: true, mode: info.mode & 0o777 });
+        for (const name of readdirSync(resolve(root, path)).sort()) copyRuntimeTree(`${path}/${name}`, depth + 1);
+      } else {
+        const input = readPublicationFile(root, path);
+        copiedFiles += 1; copiedBytes += input.bytes.length;
+        if (copiedFiles > 1024 || copiedBytes > 64 * 1024 * 1024) refuse("WORK_COMPLETION_SNAPSHOT_BOUNDS", "Original runtime input exceeds the admitted bound.", exitCodes.CONTAINMENT_REFUSAL);
+        mkdirSync(dirname(destination), { recursive: true, mode: 0o700 });
+        atomicCreate(destination, input.bytes, input.mode);
+      }
+    };
+    assertPrivateDirectory(view, ".usf", true);
+    for (const member of metadata.members) {
+      const packet = exactPacket(originalGraph, request.profile, member.work);
+      const selectedAuthority = deriveNoChangeCompletionAuthority(originalGraph, member.work);
+      if (packet.realisationBasis === undefined || packet.realisationBasis.basisDigest !== member.originalBasisDigest
+        || await deriveNoChangeCandidateIdentity(view, packet.realisationBasis, selectedAuthority.policy) !== member.candidateDigest) {
+        refuse("WORK_COMPLETION_SNAPSHOT_MEMBER_INVALID", "Original graph does not independently derive the retained member basis and candidate.", exitCodes.CURRENTNESS_FAILURE);
+      }
+      copyRuntimeTree(`.usf/workspaces/${member.candidateDigest.slice(7)}`);
+      const checks = `.usf/receipts/check/${member.candidateDigest.slice(7)}`;
+      if (existsSync(resolve(root, checks))) copyRuntimeTree(checks);
+    }
+    const prepared = await preparePublication(view, request, bundles, true);
+    const expectedBinding = publicationSnapshotBinding(prepared.graph, prepared.authority);
+    if (expectedBinding === null || canonicalJson(expectedBinding) !== canonicalJson(binding)
+      || prepared.state !== "absent" || prepared.receiptBytes !== retained.bytes.get(fileFor("expected-receipt").path)!.toString("utf8")
+      || !Buffer.from(prepared.sourceAfter).equals(after)) {
+      refuse("WORK_COMPLETION_SNAPSHOT_REPROOF_FAILED", "Retained bytes do not reproduce the native original publication.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    const expected = buildPublicationSnapshot(view, prepared, bundles, binding);
+    if (canonicalJson(expected.metadata) !== canonicalJson(metadata)) {
+      refuse("WORK_COMPLETION_SNAPSHOT_REPROOF_FAILED", "Retained snapshot differs from the complete independently rederived input denominator.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    for (const file of metadata.files.filter(file => file.role === "authority-input")) {
+      const current = readPublicationFile(root, file.sourcePath!);
+      if (current.mode !== file.sourceMode || !current.bytes.equals(retained.bytes.get(file.path)!)) {
+        refuse("WORK_COMPLETION_SNAPSHOT_STALE", "An original authority or runtime input changed outside the publication effect.", exitCodes.CURRENTNESS_FAILURE);
+      }
+    }
+    const { graph: _validationGraph, ...effect } = prepared;
+    return { prepared: effect, bundles };
+  } finally { rmSync(view, { recursive: true, force: true }); }
+}
+
+function writePublicationPending(path: string, bytes: Buffer, mode: number): void {
+  const fd = openSync(path, fsConstants.O_CREAT | fsConstants.O_EXCL | fsConstants.O_RDWR | fsConstants.O_NOFOLLOW, mode);
+  try { writeAllAndVerify(fd, bytes); }
+  finally { closeSync(fd); }
+  fsyncDirectory(dirname(path));
+}
+
+function authenticateReceiptPending(root: string, pendingPath: string, finalPath: string, expected: Buffer): "absent" | "pending" | "linked" {
+  const pendingAbsolute = resolve(root, pendingPath);
+  if (!existsSync(pendingAbsolute)) return "absent";
+  assertPrivateDirectory(root, dirname(pendingPath), false);
+  const named = lstatSync(pendingAbsolute);
+  const fd = openSync(pendingAbsolute, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW);
+  try {
+    const before = fstatSync(fd);
+    const finalAbsolute = publicationReceiptPath(root, finalPath, false, before);
+    const final = existsSync(finalAbsolute) ? lstatSync(finalAbsolute) : undefined;
+    const linked = final !== undefined && final.dev === before.dev && final.ino === before.ino;
+    if (!before.isFile() || before.uid !== processUid(before.uid) || before.dev !== named.dev || before.ino !== named.ino
+      || (before.mode & 0o777) !== 0o644 || before.size !== expected.length
+      || before.nlink !== (linked ? 2 : 1) || (final !== undefined && !linked)
+      || !readFileSync(fd).equals(expected)) {
+      refuse("WORK_COMPLETION_RECEIPT_PENDING_CONFLICT", "Pending receipt does not authenticate the exact original publication.", exitCodes.INTEGRATION_CONFLICT);
+    }
+    const after = fstatSync(fd);
+    if (after.ino !== before.ino || after.dev !== before.dev || after.nlink !== before.nlink || after.mode !== before.mode
+      || after.size !== before.size || after.mtimeMs !== before.mtimeMs || after.ctimeMs !== before.ctimeMs) {
+      refuse("WORK_COMPLETION_RECEIPT_PENDING_CONFLICT", "Pending receipt changed during authentication.", exitCodes.INTEGRATION_CONFLICT);
+    }
+    return linked ? "linked" : "pending";
+  } finally { closeSync(fd); }
+}
+
+async function applyPublicationSnapshot(
+  root: string, request: PublishRequest, binding: PublicationSnapshotBinding, directory: string,
+  retained: PreparedPublicationSnapshot,
+): Promise<Record<string, unknown>> {
+  const graph = loadSemanticGraph(root, request.manifestPath);
+  const authority = deriveNoChangeCompletionAuthority(graph, retained.metadata.members[0]!.work);
+  const { prepared, bundles } = await reauthenticatePublicationSnapshot(root, request, authority, binding, retained);
+  const sourceBefore = Buffer.from(prepared.sourceBefore);
+  const sourceAfter = Buffer.from(prepared.sourceAfter);
+  const receiptBytes = Buffer.from(prepared.receiptBytes);
+  const sourceMode = retained.metadata.files.find(file => file.role === "source-preimage")!.sourceMode!;
+  const sourcePending = `${directory}/source.pending`;
+  const receiptPending = `${directory}/receipt.pending`;
+  let source = readPublicationFile(root, authority.sourcePath);
+  let pending = authenticateReceiptPending(root, receiptPending, prepared.receipt.publicationReceiptPath, receiptBytes);
+  const finalReceipt = pending === "linked"
+    ? resolve(root, prepared.receipt.publicationReceiptPath)
+    : publicationReceiptPath(root, prepared.receipt.publicationReceiptPath, false);
+  if (source.bytes.equals(sourceBefore) && (pending !== "absent" || existsSync(finalReceipt))) {
+    refuse("WORK_COMPLETION_PUBLICATION_PARTIAL_STATE", "Receipt state exists before its source publication.", exitCodes.INTEGRATION_CONFLICT);
+  }
+  if (request.mode === "verify") {
+    if (pending !== "absent" || existsSync(resolve(root, sourcePending)) || (source.bytes.equals(sourceAfter) && !existsSync(finalReceipt))) {
+      refuse("WORK_COMPLETION_PUBLICATION_RECONCILIATION_REQUIRED", "The exact retained publication requires apply-mode reconciliation.", exitCodes.CURRENTNESS_FAILURE,
+        { publicationIntentDigest: prepared.receipt.publicationIntentDigest });
+    }
+    if (source.bytes.equals(sourceBefore)) return publicationResult(root, "verify", "absent", prepared.receipt, authority);
+    const verified = await preparePublication(root, request, bundles, false);
+    return publicationResult(root, "verify", verified.state, verified.receipt, verified.authority);
+  }
+  let changed = false;
+  if (source.bytes.equals(sourceBefore)) {
+    if (existsSync(resolve(root, sourcePending))) {
+      const retainedPending = readPublicationFile(root, sourcePending, false, binding.root);
+      if (retainedPending.mode !== sourceMode || !retainedPending.bytes.equals(sourceAfter)) {
+        refuse("WORK_COMPLETION_SOURCE_PENDING_CONFLICT", "Retained source write is not the exact authenticated postimage.", exitCodes.INTEGRATION_CONFLICT);
+      }
+    } else writePublicationPending(resolve(root, sourcePending), sourceAfter, sourceMode);
+    source = readPublicationFile(root, authority.sourcePath);
+    if (source.mode !== sourceMode || !source.bytes.equals(sourceBefore)) {
+      refuse("WORK_COMPLETION_PUBLICATION_PREIMAGE_CHANGED", "Source changed before the irreversible rename.", exitCodes.INTEGRATION_CONFLICT);
+    }
+    const finalPending = readPublicationFile(root, sourcePending, false, binding.root);
+    if (finalPending.mode !== sourceMode || !finalPending.bytes.equals(sourceAfter)) {
+      refuse("WORK_COMPLETION_SOURCE_PENDING_CONFLICT", "Pending source changed before publication.", exitCodes.INTEGRATION_CONFLICT);
+    }
+    renameSync(resolve(root, sourcePending), resolve(root, authority.sourcePath));
+    fsyncDirectory(dirname(resolve(root, authority.sourcePath)));
+    fsyncDirectory(resolve(root, directory));
+    const written = readPublicationFile(root, authority.sourcePath);
+    if (written.mode !== sourceMode || !written.bytes.equals(sourceAfter)) {
+      refuse("WORK_COMPLETION_PUBLICATION_READBACK_INVALID", "Source rename did not preserve the authenticated postimage; receipt publication refused.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    changed = true;
+  } else if (!source.bytes.equals(sourceAfter) || source.mode !== sourceMode || existsSync(resolve(root, sourcePending))) {
+    refuse("WORK_COMPLETION_PUBLICATION_PARTIAL_STATE", "Postimage source has conflicting pending state.", exitCodes.INTEGRATION_CONFLICT);
+  }
+  if (!existsSync(finalReceipt)) {
+    if (pending === "absent") {
+      writePublicationPending(resolve(root, receiptPending), receiptBytes, 0o644);
+      pending = "pending";
+    }
+    if (authenticateReceiptPending(root, receiptPending, prepared.receipt.publicationReceiptPath, receiptBytes) !== "pending") {
+      refuse("WORK_COMPLETION_RECEIPT_PENDING_CONFLICT", "Receipt publication is not an exact pending singleton.", exitCodes.INTEGRATION_CONFLICT);
+    }
+    const destination = publicationReceiptPath(root, prepared.receipt.publicationReceiptPath, true);
+    linkSync(resolve(root, receiptPending), destination);
+    fsyncDirectory(dirname(destination));
+    changed = true;
+  }
+  pending = authenticateReceiptPending(root, receiptPending, prepared.receipt.publicationReceiptPath, receiptBytes);
+  if (pending === "linked") {
+    unlinkSync(resolve(root, receiptPending));
+    fsyncDirectory(resolve(root, directory));
+    fsyncDirectory(dirname(finalReceipt));
+    changed = true;
+  } else if (pending !== "absent") {
+    refuse("WORK_COMPLETION_RECEIPT_PENDING_CONFLICT", "Final receipt is not the authenticated pending hardlink.", exitCodes.INTEGRATION_CONFLICT);
+  }
+  const readback = await preparePublication(root, request, bundles, false);
+  if (readback.state !== "matching" || readback.receipt.receiptDigest !== prepared.receipt.receiptDigest) {
+    refuse("WORK_COMPLETION_PUBLICATION_READBACK_INVALID", "Published effects did not authenticate on native readback.", exitCodes.CURRENTNESS_FAILURE);
+  }
+  return publicationResult(root, "apply", changed ? "created" : "matching", readback.receipt, readback.authority);
+}
+
 async function publishCompletion(root: string, request: PublishRequest, values: readonly unknown[]): Promise<Record<string, unknown>> {
+  for (const value of values) validateCompletionBundleShape(value);
+  const bundles = values as readonly CompletionProofBundle[];
+  if (bundles.length === 0) refuse("WORK_COMPLETION_BUNDLE_COUNT_INVALID", "Publication requires a bounded native cohort.");
+  const graph = loadSemanticGraph(root, request.manifestPath);
+  const authority = deriveNoChangeCompletionAuthority(graph, bundles[0]!.evidence.workIri);
+  const binding = publicationSnapshotBinding(graph, authority);
+  if (binding !== null) {
+    const intent = completionPublicationIntentDigest(bundles, request.profile, request.manifestPath, authority);
+    const directory = publicationSnapshotDirectory(binding, intent, request.profile, request.manifestPath, bundles.map(bundle => bundle.evidence.workIri));
+    const runRetained = async (): Promise<Record<string, unknown>> => {
+      const retained = readPublicationSnapshot(root, binding, directory);
+      const expected = [...bundles].map(bundle => bundle.bundleDigest).sort();
+      if (canonicalJson(expected) !== canonicalJson(retained.metadata.members.map(member => member.proofBundleDigest).sort())) {
+        refuse("WORK_COMPLETION_SNAPSHOT_MEMBER_INVALID", "Requested cohort does not match retained publication lineage.", exitCodes.CURRENTNESS_FAILURE);
+      }
+      return applyPublicationSnapshot(root, request, binding, directory, retained);
+    };
+    if (existsSync(resolve(root, directory))) {
+      if (request.mode === "verify") return runRetained();
+      const lock = await acquirePrimaryMutationLock(root);
+      try { return await runRetained(); } finally { await lock.handle.close(); }
+    }
+    const initial = await preparePublication(root, request, values, true);
+    if (request.mode === "verify" || initial.state === "matching") {
+      return publicationResult(root, request.mode, initial.state, initial.receipt, initial.authority);
+    }
+    const lock = await acquirePrimaryMutationLock(root);
+    try {
+      if (existsSync(resolve(root, directory))) return await runRetained();
+      const prepared = await preparePublication(root, request, values, false);
+      if (prepared.state !== "absent" || prepared.receipt.receiptDigest !== initial.receipt.receiptDigest) {
+        refuse("WORK_COMPLETION_PUBLICATION_CURRENTNESS_CHANGED", "Publication changed while awaiting its mutation lock.", exitCodes.INTEGRATION_CONFLICT);
+      }
+      const snapshot = buildPublicationSnapshot(root, prepared, bundles, binding);
+      persistPublicationSnapshot(root, binding, snapshot);
+      return await applyPublicationSnapshot(root, request, binding, directory, readPublicationSnapshot(root, binding, directory));
+    } finally { await lock.handle.close(); }
+  }
   const prepared = await preparePublication(root, request, values, true);
   if (request.mode === "verify") return publicationResult(root, "verify", prepared.state, prepared.receipt, prepared.authority);
   const lock = await acquirePrimaryMutationLock(root);
