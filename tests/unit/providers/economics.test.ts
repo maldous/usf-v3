@@ -1,8 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { sha256 } from "../../../src/core/canonical.ts";
 import {
+  accountSourceAuthorizationDigest,
+  accountTierReceiptDigest,
   evaluateZeroPaidEconomics,
+  parseAccountSourceAuthorization,
+  parseAccountTierReceipt,
   parseZeroPaidEconomicsEvidence,
+  verifyAccountTierReceipt,
   zeroPaidEconomicsEvidenceDigest,
   zeroPaidEconomicsPieceDigest,
 } from "../../../src/providers/economics.ts";
@@ -248,4 +254,147 @@ test("Cerebras one-time trial and promotional credit remain explicitly ineligibl
     evidence: bindSourceDigests(evidence),
     observedAt: now,
   }).code, "ZERO_PAID_PROMOTIONAL_OR_TRIAL_INELIGIBLE");
+});
+
+test("OpenRouter account receipt verification derives source facts but refuses the insufficient mapping", () => {
+  const rawPayload = {
+    data: {
+      byok_usage: 17.38,
+      byok_usage_daily: 1.25,
+      byok_usage_monthly: 17.38,
+      byok_usage_weekly: 8.5,
+      creator_user_id: "user_fixture_000000000000000000000000",
+      expires_at: "2027-12-31T23:59:59Z",
+      include_byok_in_limit: false,
+      is_free_tier: false,
+      is_management_key: false,
+      is_provisioning_key: false,
+      label: "sk-or-v1-fixture...000",
+      limit: 100,
+      limit_remaining: 74.5,
+      limit_reset: "monthly",
+      rate_limit: { interval: "1h", note: "This field is deprecated and safe to ignore.", requests: 1_000 },
+      usage: 25.5,
+      usage_daily: 2.5,
+      usage_monthly: 25.5,
+      usage_weekly: 10.25,
+    },
+  };
+  const raw = Buffer.from(JSON.stringify(rawPayload), "utf8");
+  const identityDigest = sha256('{"creatorUserId":"user_fixture_000000000000000000000000","label":"sk-or-v1-fixture...000"}');
+  const authorization = {
+    schema: "urn:usf:account-source-authorization:1",
+    version: 1,
+    routeMemberDigest: digest("1"),
+    profileDigest: digest("2"),
+    effectivePolicyDigest: digest("3"),
+    privacyProjectionDigest: digest("4"),
+    accountSourceProtocolDigest: digest("5"),
+    endpointIdentity: "https://openrouter.ai/api/v1/key",
+    method: "GET",
+    credentialName: "OPENROUTER_API_KEY",
+    maximumResponseBytes: 65_536,
+    timeoutMilliseconds: 10_000,
+    issuedAt: "2026-08-30T00:00:00.000Z",
+    expiresAt: "2026-08-30T01:00:00.000Z",
+    inferenceProhibited: true,
+    fallbackProhibited: true,
+  };
+  const receipt = {
+    schema: "urn:usf:account-tier-receipt:1",
+    version: 1,
+    routeMemberDigest: digest("1"),
+    accountSourceAuthorizationDigest: accountSourceAuthorizationDigest(authorization),
+    accountSourceProtocolDigest: digest("5"),
+    endpointIdentity: "https://openrouter.ai/api/v1/key",
+    rawProviderResponseDigest: sha256(raw),
+    authenticatedAccountIdentityDigest: identityDigest,
+    responseMappingDigest: digest("7"),
+    acquiredAt: "2026-08-30T00:01:00.000Z",
+    expiresAt: "2026-08-30T00:30:00.000Z",
+    tier: "UNPROVEN_FROM_OPENROUTER_CURRENT_KEY",
+    paidUsageEnabled: null,
+    automaticOverageEnabled: null,
+    limit: "100",
+    limitRemaining: "74.5",
+    limitReset: "monthly",
+    usage: {
+      total: "25.5",
+      daily: "2.5",
+      weekly: "10.25",
+      monthly: "25.5",
+      byokTotal: "17.38",
+      byokDaily: "1.25",
+      byokWeekly: "8.5",
+      byokMonthly: "17.38",
+      byokIncludedInLimit: false,
+      paidCreditHistoryIndicator: false,
+      managementKey: false,
+      provisioningKey: false,
+      keyExpiresAt: "2027-12-31T23:59:59.000Z",
+    },
+    costDisposition: "unknown",
+    verificationDisposition: "verified",
+    nonClaims: ["Authenticated key metadata does not establish zero-paid inference authority."],
+  };
+  const verify = (authorizationValue: unknown, receiptValue: unknown, overrides: Record<string, unknown> = {}) => verifyAccountTierReceipt({
+    authorization: authorizationValue,
+    receipt: receiptValue,
+    rawProviderResponse: raw,
+    expectedRouteMemberDigest: digest("1"),
+    expectedProfileDigest: digest("2"),
+    expectedEffectivePolicyDigest: digest("3"),
+    expectedPrivacyProjectionDigest: digest("4"),
+    expectedAccountSourceProtocolDigest: digest("5"),
+    expectedEndpointIdentity: "https://openrouter.ai/api/v1/key",
+    expectedCredentialName: "OPENROUTER_API_KEY",
+    expectedMaximumResponseBytes: 65_536,
+    expectedTimeoutMilliseconds: 10_000,
+    trustedResponseMapping: {
+      iri: "urn:usf:provider-operation:account-source:openrouter-current-key:1",
+      digest: digest("7"),
+      disposition: "insufficient-alone-for-zero-paid-account-receipt",
+    },
+    observedAt: "2026-08-30T00:02:00.000Z",
+    ...overrides,
+  });
+
+  const parsedAuthorization = parseAccountSourceAuthorization(authorization);
+  const parsedReceipt = parseAccountTierReceipt(receipt);
+  const sourceVerified = verify(parsedAuthorization, parsedReceipt);
+  assert.equal(sourceVerified.allowed, false);
+  assert.equal(sourceVerified.code, "ACCOUNT_TIER_MAPPING_INSUFFICIENT");
+  assert.equal(sourceVerified.authenticatedAccountIdentityDigest, identityDigest);
+  assert.equal(sourceVerified.receiptDigest, accountTierReceiptDigest(receipt));
+  assert.equal(Object.isFrozen(parsedAuthorization), true);
+  assert.equal(Object.isFrozen(parsedReceipt.usage), true);
+
+  const cases: readonly [string, (auth: Record<string, any>, record: Record<string, any>, payload: Record<string, any>) => void, Record<string, unknown>, string][] = [
+    ["closed authorization", (auth) => { auth.credentialValue = "forbidden"; }, {}, "ACCOUNT_TIER_RECEIPT_INVALID"],
+    ["raw mutation", () => {}, { rawProviderResponse: Buffer.from("tampered") }, "ACCOUNT_TIER_RAW_RESPONSE_DIGEST_MISMATCH"],
+    ["invalid official shape", (_auth, record, payload) => {
+      delete payload.data.usage_weekly;
+      const changedRaw = Buffer.from(JSON.stringify(payload));
+      record.rawProviderResponseDigest = sha256(changedRaw);
+    }, { rawProviderResponse: null }, "ACCOUNT_TIER_RAW_RESPONSE_INVALID"],
+    ["self-consistent forged receipt projection", (_auth, record) => {
+      record.authenticatedAccountIdentityDigest = digest("6");
+      record.paidUsageEnabled = false;
+      record.automaticOverageEnabled = false;
+      record.costDisposition = "zero-paid";
+    }, {}, "ACCOUNT_TIER_SOURCE_PROJECTION_MISMATCH"],
+    ["route binding", () => {}, { expectedRouteMemberDigest: digest("8") }, "ACCOUNT_TIER_BINDING_MISMATCH"],
+    ["profile binding", () => {}, { expectedProfileDigest: digest("8") }, "ACCOUNT_TIER_BINDING_MISMATCH"],
+    ["expiry", () => {}, { observedAt: "2026-08-30T00:30:00.000Z" }, "ACCOUNT_TIER_NOT_CURRENT"],
+  ];
+  for (const [label, mutate, overrides, expected] of cases) {
+    const auth = structuredClone(authorization) as Record<string, any>;
+    const record = structuredClone(receipt) as Record<string, any>;
+    const payload = structuredClone(rawPayload) as Record<string, any>;
+    mutate(auth, record, payload);
+    const effectiveOverrides = overrides.rawProviderResponse === null
+      ? { ...overrides, rawProviderResponse: Buffer.from(JSON.stringify(payload)) }
+      : overrides;
+    assert.equal(verify(auth, record, effectiveOverrides).code, expected, label);
+  }
 });

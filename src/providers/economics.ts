@@ -1,4 +1,4 @@
-import { canonicalDigest } from "../core/canonical.ts";
+import { canonicalDigest, sha256 } from "../core/canonical.ts";
 
 /**
  * Pure, credential-free zero-paid economics qualification.
@@ -553,4 +553,541 @@ export function evaluateZeroPaidEconomics(input: ZeroPaidEconomicsInput): ZeroPa
     quota: evidence.account.quota,
     validUntil: [evidence.terms.source.expiresAt, evidence.model.source.expiresAt, evidence.account.source.expiresAt].sort()[0]!,
   });
+}
+
+export interface AccountSourceAuthorization {
+  readonly schema: "urn:usf:account-source-authorization:1";
+  readonly version: 1;
+  readonly routeMemberDigest: string;
+  readonly profileDigest: string;
+  readonly effectivePolicyDigest: string;
+  readonly privacyProjectionDigest: string;
+  readonly accountSourceProtocolDigest: string;
+  readonly endpointIdentity: string;
+  readonly method: "GET";
+  readonly credentialName: string;
+  readonly maximumResponseBytes: number;
+  readonly timeoutMilliseconds: number;
+  readonly issuedAt: string;
+  readonly expiresAt: string;
+  readonly inferenceProhibited: true;
+  readonly fallbackProhibited: true;
+}
+
+export interface AccountTierReceiptUsage {
+  readonly total: string;
+  readonly daily: string;
+  readonly weekly: string;
+  readonly monthly: string;
+  readonly byokTotal: string;
+  readonly byokDaily: string;
+  readonly byokWeekly: string;
+  readonly byokMonthly: string;
+  readonly byokIncludedInLimit: boolean;
+  readonly paidCreditHistoryIndicator: boolean;
+  readonly managementKey: boolean;
+  readonly provisioningKey: boolean;
+  readonly keyExpiresAt: string | null;
+}
+
+export type AccountCostDisposition = "zero-paid" | "paid" | "unknown" | "refused";
+export type AccountVerificationDisposition = "verified" | "stale" | "mismatch" | "untrusted" | "refused";
+
+export interface AccountTierReceipt {
+  readonly schema: "urn:usf:account-tier-receipt:1";
+  readonly version: 1;
+  readonly routeMemberDigest: string;
+  readonly accountSourceAuthorizationDigest: string;
+  readonly accountSourceProtocolDigest: string;
+  readonly endpointIdentity: string;
+  readonly rawProviderResponseDigest: string;
+  readonly authenticatedAccountIdentityDigest: string;
+  readonly responseMappingDigest: string;
+  readonly acquiredAt: string;
+  readonly expiresAt: string;
+  readonly tier: string;
+  readonly paidUsageEnabled: boolean | null;
+  readonly automaticOverageEnabled: boolean | null;
+  readonly limit: string | null;
+  readonly limitRemaining: string | null;
+  readonly limitReset: string | null;
+  readonly usage: AccountTierReceiptUsage;
+  readonly costDisposition: AccountCostDisposition;
+  readonly verificationDisposition: AccountVerificationDisposition;
+  readonly nonClaims: readonly string[];
+}
+
+export type AccountTierReceiptCode =
+  | "ACCOUNT_TIER_RECEIPT_CURRENT"
+  | "ACCOUNT_TIER_RECEIPT_INVALID"
+  | "ACCOUNT_TIER_AUTHORIZATION_DIGEST_MISMATCH"
+  | "ACCOUNT_TIER_RAW_RESPONSE_DIGEST_MISMATCH"
+  | "ACCOUNT_TIER_RAW_RESPONSE_INVALID"
+  | "ACCOUNT_TIER_SOURCE_PROJECTION_MISMATCH"
+  | "ACCOUNT_TIER_BINDING_MISMATCH"
+  | "ACCOUNT_TIER_NOT_CURRENT"
+  | "ACCOUNT_TIER_MAPPING_INSUFFICIENT"
+  | "ACCOUNT_TIER_PAID_USAGE_ENABLED"
+  | "ACCOUNT_TIER_AUTOMATIC_OVERAGE_ENABLED"
+  | "ACCOUNT_TIER_COST_NOT_ZERO_PAID"
+  | "ACCOUNT_TIER_VERIFICATION_UNTRUSTED"
+  | "ACCOUNT_TIER_QUOTA_UNKNOWN"
+  | "ACCOUNT_TIER_QUOTA_EXHAUSTED"
+  | "ACCOUNT_TIER_PROMOTIONAL_INELIGIBLE";
+
+export interface AccountTierReceiptVerificationInput {
+  readonly authorization: unknown;
+  readonly receipt: unknown;
+  readonly rawProviderResponse: Uint8Array;
+  readonly expectedRouteMemberDigest: string;
+  readonly expectedProfileDigest: string;
+  readonly expectedEffectivePolicyDigest: string;
+  readonly expectedPrivacyProjectionDigest: string;
+  readonly expectedAccountSourceProtocolDigest: string;
+  readonly expectedEndpointIdentity: string;
+  readonly expectedCredentialName: string;
+  readonly expectedMaximumResponseBytes: number;
+  readonly expectedTimeoutMilliseconds: number;
+  /** Trusted graph-derived binding; it is authority only for mapping identity, never for account facts. */
+  readonly trustedResponseMapping: unknown;
+  readonly observedAt: string;
+}
+
+export interface AccountSourceMappingBinding {
+  readonly iri: "urn:usf:provider-operation:account-source:openrouter-current-key:1";
+  readonly digest: string;
+  readonly disposition: "insufficient-alone-for-zero-paid-account-receipt";
+}
+
+export interface AccountTierReceiptDecision {
+  readonly allowed: boolean;
+  readonly code: AccountTierReceiptCode;
+  readonly routeMemberDigest: string;
+  readonly authorizationDigest: string | null;
+  readonly receiptDigest: string | null;
+  readonly authenticatedAccountIdentityDigest: string | null;
+  readonly validUntil: string | null;
+}
+
+const accountCostDispositions = new Set<AccountCostDisposition>(["zero-paid", "paid", "unknown", "refused"]);
+const accountVerificationDispositions = new Set<AccountVerificationDisposition>(["verified", "stale", "mismatch", "untrusted", "refused"]);
+const credentialNamePattern = /^[A-Z_][A-Z0-9_]{0,127}$/u;
+const tierPattern = /^[A-Za-z0-9][A-Za-z0-9 ._+:/-]{0,127}$/u;
+const openRouterMappingIri = "urn:usf:provider-operation:account-source:openrouter-current-key:1";
+const openRouterMappingDisposition = "insufficient-alone-for-zero-paid-account-receipt";
+const openRouterEndpoint = "https://openrouter.ai/api/v1/key";
+const openRouterCredentialName = "OPENROUTER_API_KEY";
+const openRouterUnprovenTier = "UNPROVEN_FROM_OPENROUTER_CURRENT_KEY";
+const openRouterNonClaims = Object.freeze([
+  "Authenticated key metadata does not establish zero-paid inference authority.",
+]);
+
+function strictDigest(value: unknown): string {
+  const candidate = nonEmptyString(value, 71);
+  if (!digestPattern.test(candidate)) throw new Error("invalid digest");
+  return candidate;
+}
+
+function strictTimestamp(value: unknown): string {
+  if (typeof value !== "string" || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/u.test(value)) {
+    throw new Error("invalid timestamp");
+  }
+  const milliseconds = Date.parse(value);
+  if (!Number.isFinite(milliseconds) || new Date(milliseconds).toISOString() !== value) throw new Error("invalid timestamp");
+  return value;
+}
+
+function strictEndpoint(value: unknown): string {
+  const candidate = nonEmptyString(value, 2_048);
+  let url: URL;
+  try { url = new URL(candidate); }
+  catch { throw new Error("invalid endpoint"); }
+  if (url.protocol !== "https:" || url.username !== "" || url.password !== "" || url.port !== "" || url.hash !== "" || url.toString() !== candidate) {
+    throw new Error("invalid endpoint");
+  }
+  return candidate;
+}
+
+function boundedPositiveInteger(value: unknown, maximum: number): number {
+  if (!Number.isSafeInteger(value) || (value as number) < 1 || (value as number) > maximum) throw new Error("invalid bound");
+  return value as number;
+}
+
+function strictDecimalOrNull(value: unknown): string | null {
+  if (value === null) return null;
+  const candidate = nonEmptyString(value, 128);
+  if (!decimalPattern.test(candidate) || decimal(candidate) !== candidate) throw new Error("invalid decimal");
+  return candidate;
+}
+
+function strictDecimal(value: unknown): string {
+  const candidate = strictDecimalOrNull(value);
+  if (candidate === null) throw new Error("invalid decimal");
+  return candidate;
+}
+
+function strictLimitReset(value: unknown): string | null {
+  if (value === null) return null;
+  const candidate = nonEmptyString(value, 64);
+  if (!/^[a-z][a-z0-9_-]{0,63}$/u.test(candidate)) throw new Error("invalid limit reset");
+  return candidate;
+}
+
+function parseAccountReceiptUsage(value: unknown): AccountTierReceiptUsage {
+  const usage = record(value);
+  exactKeys(usage, [
+    "total", "daily", "weekly", "monthly", "byokTotal", "byokDaily", "byokWeekly",
+    "byokMonthly", "byokIncludedInLimit", "paidCreditHistoryIndicator", "managementKey",
+    "provisioningKey", "keyExpiresAt",
+  ]);
+  for (const value of [
+    usage.byokIncludedInLimit,
+    usage.paidCreditHistoryIndicator,
+    usage.managementKey,
+    usage.provisioningKey,
+  ]) if (typeof value !== "boolean") throw new Error("invalid source boolean");
+  return Object.freeze({
+    total: strictDecimal(usage.total),
+    daily: strictDecimal(usage.daily),
+    weekly: strictDecimal(usage.weekly),
+    monthly: strictDecimal(usage.monthly),
+    byokTotal: strictDecimal(usage.byokTotal),
+    byokDaily: strictDecimal(usage.byokDaily),
+    byokWeekly: strictDecimal(usage.byokWeekly),
+    byokMonthly: strictDecimal(usage.byokMonthly),
+    byokIncludedInLimit: usage.byokIncludedInLimit as boolean,
+    paidCreditHistoryIndicator: usage.paidCreditHistoryIndicator as boolean,
+    managementKey: usage.managementKey as boolean,
+    provisioningKey: usage.provisioningKey as boolean,
+    keyExpiresAt: usage.keyExpiresAt === null ? null : strictTimestamp(usage.keyExpiresAt),
+  });
+}
+
+/** Parse and freeze one closed, credential-name-only pre-contact authorization. */
+export function parseAccountSourceAuthorization(value: unknown): AccountSourceAuthorization {
+  const authorization = record(value);
+  exactKeys(authorization, [
+    "schema", "version", "routeMemberDigest", "profileDigest", "effectivePolicyDigest",
+    "privacyProjectionDigest", "accountSourceProtocolDigest", "endpointIdentity", "method",
+    "credentialName", "maximumResponseBytes", "timeoutMilliseconds", "issuedAt", "expiresAt",
+    "inferenceProhibited", "fallbackProhibited",
+  ]);
+  if (authorization.schema !== "urn:usf:account-source-authorization:1" || authorization.version !== 1
+    || authorization.method !== "GET" || authorization.inferenceProhibited !== true || authorization.fallbackProhibited !== true) {
+    throw new Error("invalid authorization");
+  }
+  const credentialName = nonEmptyString(authorization.credentialName, 128);
+  if (!credentialNamePattern.test(credentialName)) throw new Error("invalid credential name");
+  const result: AccountSourceAuthorization = {
+    schema: "urn:usf:account-source-authorization:1",
+    version: 1,
+    routeMemberDigest: strictDigest(authorization.routeMemberDigest),
+    profileDigest: strictDigest(authorization.profileDigest),
+    effectivePolicyDigest: strictDigest(authorization.effectivePolicyDigest),
+    privacyProjectionDigest: strictDigest(authorization.privacyProjectionDigest),
+    accountSourceProtocolDigest: strictDigest(authorization.accountSourceProtocolDigest),
+    endpointIdentity: strictEndpoint(authorization.endpointIdentity),
+    method: "GET",
+    credentialName,
+    maximumResponseBytes: boundedPositiveInteger(authorization.maximumResponseBytes, 1_048_576),
+    timeoutMilliseconds: boundedPositiveInteger(authorization.timeoutMilliseconds, 60_000),
+    issuedAt: strictTimestamp(authorization.issuedAt),
+    expiresAt: strictTimestamp(authorization.expiresAt),
+    inferenceProhibited: true,
+    fallbackProhibited: true,
+  };
+  if (Date.parse(result.issuedAt) >= Date.parse(result.expiresAt)) throw new Error("invalid authorization time");
+  return Object.freeze(result);
+}
+
+export function accountSourceAuthorizationDigest(value: unknown): `sha256:${string}` {
+  return canonicalDigest(parseAccountSourceAuthorization(value), { rejectAbsolutePaths: true });
+}
+
+/** Parse and freeze one closed sanitized provider-owned account observation. */
+export function parseAccountTierReceipt(value: unknown): AccountTierReceipt {
+  const receipt = record(value);
+  exactKeys(receipt, [
+    "schema", "version", "routeMemberDigest", "accountSourceAuthorizationDigest",
+    "accountSourceProtocolDigest", "endpointIdentity", "rawProviderResponseDigest",
+    "authenticatedAccountIdentityDigest", "responseMappingDigest", "acquiredAt", "expiresAt",
+    "tier", "paidUsageEnabled", "automaticOverageEnabled", "limit", "limitRemaining",
+    "limitReset", "usage", "costDisposition", "verificationDisposition", "nonClaims",
+  ]);
+  if (receipt.schema !== "urn:usf:account-tier-receipt:1" || receipt.version !== 1) throw new Error("invalid receipt");
+  const tier = nonEmptyString(receipt.tier, 128);
+  if (!tierPattern.test(tier)) throw new Error("invalid tier");
+  if (!Array.isArray(receipt.nonClaims) || receipt.nonClaims.length < 1 || receipt.nonClaims.length > 32) throw new Error("invalid nonclaims");
+  const nonClaims = receipt.nonClaims.map((claim) => nonEmptyString(claim, 512));
+  if (new Set(nonClaims).size !== nonClaims.length || [...nonClaims].sort().some((claim, index) => claim !== nonClaims[index])) {
+    throw new Error("invalid nonclaims");
+  }
+  const result: AccountTierReceipt = {
+    schema: "urn:usf:account-tier-receipt:1",
+    version: 1,
+    routeMemberDigest: strictDigest(receipt.routeMemberDigest),
+    accountSourceAuthorizationDigest: strictDigest(receipt.accountSourceAuthorizationDigest),
+    accountSourceProtocolDigest: strictDigest(receipt.accountSourceProtocolDigest),
+    endpointIdentity: strictEndpoint(receipt.endpointIdentity),
+    rawProviderResponseDigest: strictDigest(receipt.rawProviderResponseDigest),
+    authenticatedAccountIdentityDigest: strictDigest(receipt.authenticatedAccountIdentityDigest),
+    responseMappingDigest: strictDigest(receipt.responseMappingDigest),
+    acquiredAt: strictTimestamp(receipt.acquiredAt),
+    expiresAt: strictTimestamp(receipt.expiresAt),
+    tier,
+    paidUsageEnabled: nullableBoolean(receipt.paidUsageEnabled),
+    automaticOverageEnabled: nullableBoolean(receipt.automaticOverageEnabled),
+    limit: strictDecimalOrNull(receipt.limit),
+    limitRemaining: strictDecimalOrNull(receipt.limitRemaining),
+    limitReset: strictLimitReset(receipt.limitReset),
+    usage: parseAccountReceiptUsage(receipt.usage),
+    costDisposition: member(receipt.costDisposition, accountCostDispositions),
+    verificationDisposition: member(receipt.verificationDisposition, accountVerificationDispositions),
+    nonClaims: Object.freeze(nonClaims),
+  };
+  if (Date.parse(result.acquiredAt) >= Date.parse(result.expiresAt)) throw new Error("invalid receipt time");
+  return Object.freeze(result);
+}
+
+export function accountTierReceiptDigest(value: unknown): `sha256:${string}` {
+  return canonicalDigest(parseAccountTierReceipt(value), { rejectAbsolutePaths: true });
+}
+
+function parseAccountSourceMappingBinding(value: unknown): AccountSourceMappingBinding {
+  const binding = record(value);
+  exactKeys(binding, ["iri", "digest", "disposition"]);
+  if (binding.iri !== openRouterMappingIri || binding.disposition !== openRouterMappingDisposition) {
+    throw new Error("unsupported account source mapping");
+  }
+  return Object.freeze({
+    iri: openRouterMappingIri,
+    digest: strictDigest(binding.digest),
+    disposition: openRouterMappingDisposition,
+  });
+}
+
+function sanitizedIdentityField(value: unknown): string {
+  const candidate = nonEmptyString(value, 256);
+  const normalized = candidate.normalize("NFC");
+  if (normalized.trim() !== normalized || normalized.length > 256 || /[\u0000-\u001f\u007f-\u009f]/u.test(normalized)) {
+    throw new Error("invalid identity field");
+  }
+  return normalized;
+}
+
+function sourceDecimal(value: unknown): string {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > Number.MAX_SAFE_INTEGER || Object.is(value, -0)) {
+    throw new Error("invalid source number");
+  }
+  const text = String(value);
+  if (!/[eE]/u.test(text)) return decimal(text);
+  const match = /^(\d+)(?:\.(\d+))?[eE]([+-]?\d+)$/u.exec(text);
+  if (match === null) throw new Error("invalid source number");
+  const integer = match[1]!;
+  const fraction = match[2] ?? "";
+  const exponent = Number.parseInt(match[3]!, 10);
+  const digits = `${integer}${fraction}`;
+  const point = integer.length + exponent;
+  const expanded = point <= 0
+    ? `0.${"0".repeat(-point)}${digits}`
+    : point >= digits.length
+      ? `${digits}${"0".repeat(point - digits.length)}`
+      : `${digits.slice(0, point)}.${digits.slice(point)}`;
+  return decimal(expanded);
+}
+
+function sourceDecimalOrNull(value: unknown): string | null {
+  return value === null ? null : sourceDecimal(value);
+}
+
+interface OpenRouterCurrentKeyProjection {
+  readonly authenticatedAccountIdentityDigest: string;
+  readonly tier: string;
+  readonly paidUsageEnabled: null;
+  readonly automaticOverageEnabled: null;
+  readonly limit: string | null;
+  readonly limitRemaining: string | null;
+  readonly limitReset: string | null;
+  readonly usage: AccountTierReceiptUsage;
+  readonly costDisposition: "unknown";
+  readonly verificationDisposition: "verified";
+  readonly nonClaims: readonly string[];
+}
+
+function parseOpenRouterCurrentKeyResponse(raw: Uint8Array, maximumBytes: number): OpenRouterCurrentKeyProjection {
+  if (!(raw instanceof Uint8Array) || raw.byteLength < 2 || raw.byteLength > maximumBytes) throw new Error("invalid raw size");
+  let value: unknown;
+  try {
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(raw);
+    if (text.startsWith("\uFEFF")) throw new Error("byte order mark refused");
+    value = JSON.parse(text);
+  } catch {
+    throw new Error("invalid raw JSON");
+  }
+  const root = record(value);
+  exactKeys(root, ["data"]);
+  const data = record(root.data);
+  exactKeys(data, [
+    "byok_usage", "byok_usage_daily", "byok_usage_monthly", "byok_usage_weekly",
+    "creator_user_id", "expires_at", "include_byok_in_limit", "is_free_tier",
+    "is_management_key", "is_provisioning_key", "label", "limit", "limit_remaining",
+    "limit_reset", "rate_limit", "usage", "usage_daily", "usage_monthly", "usage_weekly",
+  ]);
+  for (const flag of [data.include_byok_in_limit, data.is_free_tier, data.is_management_key, data.is_provisioning_key]) {
+    if (typeof flag !== "boolean") throw new Error("invalid source boolean");
+  }
+  const deprecatedRateLimit = record(data.rate_limit);
+  exactKeys(deprecatedRateLimit, ["interval", "note", "requests"]);
+  nonEmptyString(deprecatedRateLimit.interval, 64);
+  nonEmptyString(deprecatedRateLimit.note, 256);
+  nonNegativeIntegerOrNull(deprecatedRateLimit.requests);
+  const label = sanitizedIdentityField(data.label);
+  const creatorUserId = sanitizedIdentityField(data.creator_user_id);
+  const keyExpiresAt = data.expires_at === null ? null : timestamp(data.expires_at);
+  const usage = Object.freeze({
+    total: sourceDecimal(data.usage),
+    daily: sourceDecimal(data.usage_daily),
+    weekly: sourceDecimal(data.usage_weekly),
+    monthly: sourceDecimal(data.usage_monthly),
+    byokTotal: sourceDecimal(data.byok_usage),
+    byokDaily: sourceDecimal(data.byok_usage_daily),
+    byokWeekly: sourceDecimal(data.byok_usage_weekly),
+    byokMonthly: sourceDecimal(data.byok_usage_monthly),
+    byokIncludedInLimit: data.include_byok_in_limit as boolean,
+    paidCreditHistoryIndicator: data.is_free_tier as boolean,
+    managementKey: data.is_management_key as boolean,
+    provisioningKey: data.is_provisioning_key as boolean,
+    keyExpiresAt,
+  });
+  return Object.freeze({
+    authenticatedAccountIdentityDigest: canonicalDigest({ creatorUserId, label }),
+    tier: openRouterUnprovenTier,
+    paidUsageEnabled: null,
+    automaticOverageEnabled: null,
+    limit: sourceDecimalOrNull(data.limit),
+    limitRemaining: sourceDecimalOrNull(data.limit_remaining),
+    limitReset: strictLimitReset(data.limit_reset),
+    usage,
+    costDisposition: "unknown",
+    verificationDisposition: "verified",
+    nonClaims: openRouterNonClaims,
+  });
+}
+
+function deniedAccountReceipt(
+  input: AccountTierReceiptVerificationInput,
+  code: AccountTierReceiptCode,
+  authorizationDigest: string | null = null,
+  receiptDigest: string | null = null,
+  accountDigest: string | null = null,
+): AccountTierReceiptDecision {
+  return Object.freeze({
+    allowed: false,
+    code,
+    routeMemberDigest: input.expectedRouteMemberDigest,
+    authorizationDigest,
+    receiptDigest,
+    authenticatedAccountIdentityDigest: accountDigest,
+    validUntil: null,
+  });
+}
+
+/**
+ * Reauthenticate a retained raw response and its closed route-local receipt.
+ * The current graph mapping verifies content but cannot establish zero-paid use.
+ */
+export function verifyAccountTierReceipt(input: AccountTierReceiptVerificationInput): AccountTierReceiptDecision {
+  let authorization: AccountSourceAuthorization;
+  let receipt: AccountTierReceipt;
+  let mapping: AccountSourceMappingBinding;
+  let observedAt: string;
+  try {
+    authorization = parseAccountSourceAuthorization(input.authorization);
+    receipt = parseAccountTierReceipt(input.receipt);
+    mapping = parseAccountSourceMappingBinding(input.trustedResponseMapping);
+    observedAt = strictTimestamp(input.observedAt);
+    for (const expected of [
+      input.expectedRouteMemberDigest,
+      input.expectedProfileDigest,
+      input.expectedEffectivePolicyDigest,
+      input.expectedPrivacyProjectionDigest,
+      input.expectedAccountSourceProtocolDigest,
+    ]) strictDigest(expected);
+    strictEndpoint(input.expectedEndpointIdentity);
+    if (!credentialNamePattern.test(input.expectedCredentialName)) throw new Error("invalid credential name");
+    boundedPositiveInteger(input.expectedMaximumResponseBytes, 1_048_576);
+    boundedPositiveInteger(input.expectedTimeoutMilliseconds, 60_000);
+  } catch {
+    return deniedAccountReceipt(input, "ACCOUNT_TIER_RECEIPT_INVALID");
+  }
+  const authorizationDigest = accountSourceAuthorizationDigest(authorization);
+  const receiptDigest = accountTierReceiptDigest(receipt);
+  if (receipt.accountSourceAuthorizationDigest !== authorizationDigest) {
+    return deniedAccountReceipt(input, "ACCOUNT_TIER_AUTHORIZATION_DIGEST_MISMATCH", authorizationDigest, receiptDigest, receipt.authenticatedAccountIdentityDigest);
+  }
+  if (sha256(input.rawProviderResponse) !== receipt.rawProviderResponseDigest) {
+    return deniedAccountReceipt(input, "ACCOUNT_TIER_RAW_RESPONSE_DIGEST_MISMATCH", authorizationDigest, receiptDigest, receipt.authenticatedAccountIdentityDigest);
+  }
+  if (authorization.routeMemberDigest !== input.expectedRouteMemberDigest
+    || receipt.routeMemberDigest !== input.expectedRouteMemberDigest
+    || authorization.profileDigest !== input.expectedProfileDigest
+    || authorization.effectivePolicyDigest !== input.expectedEffectivePolicyDigest
+    || authorization.privacyProjectionDigest !== input.expectedPrivacyProjectionDigest
+    || authorization.accountSourceProtocolDigest !== input.expectedAccountSourceProtocolDigest
+    || receipt.accountSourceProtocolDigest !== input.expectedAccountSourceProtocolDigest
+    || authorization.endpointIdentity !== input.expectedEndpointIdentity
+    || receipt.endpointIdentity !== input.expectedEndpointIdentity
+    || authorization.credentialName !== input.expectedCredentialName
+    || authorization.maximumResponseBytes !== input.expectedMaximumResponseBytes
+    || authorization.timeoutMilliseconds !== input.expectedTimeoutMilliseconds
+    || input.expectedEndpointIdentity !== openRouterEndpoint
+    || input.expectedCredentialName !== openRouterCredentialName
+    || receipt.responseMappingDigest !== mapping.digest) {
+    return deniedAccountReceipt(input, "ACCOUNT_TIER_BINDING_MISMATCH", authorizationDigest, receiptDigest, receipt.authenticatedAccountIdentityDigest);
+  }
+  let projection: OpenRouterCurrentKeyProjection;
+  try { projection = parseOpenRouterCurrentKeyResponse(input.rawProviderResponse, authorization.maximumResponseBytes); }
+  catch {
+    return deniedAccountReceipt(input, "ACCOUNT_TIER_RAW_RESPONSE_INVALID", authorizationDigest, receiptDigest, receipt.authenticatedAccountIdentityDigest);
+  }
+  const expectedProjection = {
+    authenticatedAccountIdentityDigest: projection.authenticatedAccountIdentityDigest,
+    tier: projection.tier,
+    paidUsageEnabled: projection.paidUsageEnabled,
+    automaticOverageEnabled: projection.automaticOverageEnabled,
+    limit: projection.limit,
+    limitRemaining: projection.limitRemaining,
+    limitReset: projection.limitReset,
+    usage: projection.usage,
+    costDisposition: projection.costDisposition,
+    verificationDisposition: projection.verificationDisposition,
+    nonClaims: projection.nonClaims,
+  };
+  const receiptProjection = {
+    authenticatedAccountIdentityDigest: receipt.authenticatedAccountIdentityDigest,
+    tier: receipt.tier,
+    paidUsageEnabled: receipt.paidUsageEnabled,
+    automaticOverageEnabled: receipt.automaticOverageEnabled,
+    limit: receipt.limit,
+    limitRemaining: receipt.limitRemaining,
+    limitReset: receipt.limitReset,
+    usage: receipt.usage,
+    costDisposition: receipt.costDisposition,
+    verificationDisposition: receipt.verificationDisposition,
+    nonClaims: receipt.nonClaims,
+  };
+  if (canonicalDigest(receiptProjection) !== canonicalDigest(expectedProjection)) {
+    return deniedAccountReceipt(input, "ACCOUNT_TIER_SOURCE_PROJECTION_MISMATCH", authorizationDigest, receiptDigest, projection.authenticatedAccountIdentityDigest);
+  }
+  const observed = Date.parse(observedAt);
+  if (Date.parse(authorization.issuedAt) > Date.parse(receipt.acquiredAt)
+    || Date.parse(receipt.acquiredAt) > observed
+    || observed >= Date.parse(receipt.expiresAt)
+    || observed >= Date.parse(authorization.expiresAt)
+    || Date.parse(receipt.expiresAt) > Date.parse(authorization.expiresAt)
+    || (projection.usage.keyExpiresAt !== null && (observed >= Date.parse(projection.usage.keyExpiresAt)
+      || Date.parse(receipt.expiresAt) > Date.parse(projection.usage.keyExpiresAt)))) {
+    return deniedAccountReceipt(input, "ACCOUNT_TIER_NOT_CURRENT", authorizationDigest, receiptDigest, receipt.authenticatedAccountIdentityDigest);
+  }
+  return deniedAccountReceipt(input, "ACCOUNT_TIER_MAPPING_INSUFFICIENT", authorizationDigest, receiptDigest, projection.authenticatedAccountIdentityDigest);
 }
