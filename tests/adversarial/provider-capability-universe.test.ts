@@ -1,20 +1,32 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, copyFile, mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
+import { canonicalDigest } from "../../src/core/canonical.ts";
+import { loadSemanticGraph } from "../../src/graph/index.ts";
 import {
   capabilityKind, observedModelFeatureCapabilities, observeQualifiedTaskClasses,
   splitCapabilityRequirement, satisfiesCapabilities, taskClassCapabilities,
   unmetCapabilities,
 } from "../../src/providers/capabilities.ts";
 import { antigravityCliArguments, claudeCliArguments, codexModelSelection } from "../../src/providers/cli-transports.ts";
-import { createQualificationPolicy, createQualificationSuite } from "../../src/providers/qualification.ts";
-import { fileURLToPath } from "node:url";
+import { projectEconomics, readGraphDerivedEconomics } from "../../src/providers/economics-projection.ts";
+import {
+  answerDigest, createQualificationPolicy, createQualificationSuite, promptDigest,
+  qualifySemanticProfile, sealQualificationObservation,
+  type QualificationAgentProfile, type QualificationObservation,
+  type QualificationPolicySnapshot, type QualificationSuiteSnapshot,
+  type SemanticQualificationResult,
+} from "../../src/providers/qualification.ts";
+import { deriveRouteUniverse } from "../../src/providers/route-universe.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
-import { deriveRouteUniverse } from "../../src/providers/route-universe.ts";
+const authoritySourceRoot = await access(resolve(repositoryRoot, "graph/manifests/v3-convention.json"))
+  .then(() => repositoryRoot)
+  .catch(() => fileURLToPath(new URL("../../../../../", import.meta.url)));
 
 /**
  * Adversarial proof for the shared capability vocabulary.
@@ -119,177 +131,411 @@ test("every task class the graph's work packets declare is in the vocabulary", (
 
 // ---- stored qualification records -------------------------------------------
 
-async function repositoryWith(records: readonly Readonly<Record<string, unknown>>[]): Promise<string> {
+const qualificationConfig = JSON.parse(
+  await readFile(resolve(authoritySourceRoot, "config/qualification.json"), "utf8"),
+) as {
+  suite: Parameters<typeof createQualificationSuite>[0];
+  policy: Parameters<typeof createQualificationPolicy>[0];
+};
+const currentSuite = createQualificationSuite(qualificationConfig.suite);
+const currentPolicy = createQualificationPolicy(qualificationConfig.policy);
+const currentEconomics = readGraphDerivedEconomics(
+  JSON.parse(await readFile(resolve(authoritySourceRoot, "config/execution-economics.json"), "utf8")) as unknown,
+  loadSemanticGraph(authoritySourceRoot, "graph/manifests/v3-convention.json"),
+);
+
+const pastEvaluation = "2000-01-01T00:01:00.000Z";
+const route = Object.freeze({ provider: "groq", model: "qwen/qwen3.6-27b" });
+const exactGraphFiles = Object.freeze([
+  "graph/manifests/v3-convention.json",
+  "graph/manifests/v3-execution.json",
+  "graph/manifests/self-host.json",
+  "graph/manifest.json",
+  "graph/foundation.nq",
+  "graph/usf-bootstrap.nq",
+  "graph/semantic-first.nq",
+  "graph/v3-execution.nq",
+  "graph/v3-convention.nq",
+]);
+
+interface QualificationFixture {
+  readonly record: Readonly<Record<string, unknown>>;
+  readonly observations: readonly QualificationObservation[];
+  readonly invocations: readonly Readonly<Record<string, unknown>>[];
+  readonly result: SemanticQualificationResult;
+}
+
+const passingAnswers: Readonly<Record<string, string>> = Object.freeze({
+  "typescript-readonly-contract": "readonly",
+  "typescript-two-layer-validation": "runtime validation and type checking",
+  "typescript-bounded-result": JSON.stringify({ files: [], risk: "bounded" }),
+  "typescript-authorized-scope": "smallest",
+  "cli-plan-operator-intent": "intent",
+  "cli-foreground-lifecycle": "foreground",
+  "cli-structured-invocation": JSON.stringify({ command: "node", arguments: ["--test"] }),
+  "cli-reusable-command-boundary": "registered command, no ad hoc script",
+});
+
+function recordFromResult(
+  result: SemanticQualificationResult,
+  observations: readonly QualificationObservation[],
+): Readonly<Record<string, unknown>> {
+  return Object.freeze({
+    schema: "urn:usf:qualification-record:1",
+    status: "ok",
+    role: result.derivedRoles[0] ?? "UNQUALIFIED",
+    taskClass: result.taskClass,
+    route: Object.freeze({ provider: result.profile.actual.provider, model: result.profile.requested.model }),
+    qualificationDigest: result.qualificationDigest,
+    observationSetDigest: result.inputs.observationSetDigest,
+    observations: Object.freeze([...observations]),
+    qualification: result,
+  });
+}
+
+function qualificationFixture(overrides: Readonly<{
+  route?: Readonly<{ provider: string; model: string }>;
+  taskClass?: string;
+  suite?: QualificationSuiteSnapshot;
+  policy?: QualificationPolicySnapshot;
+  effectivePolicyDigest?: string;
+  answers?: Readonly<Record<string, string>>;
+  evidenceOverrides?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+  evaluatedAt?: string;
+}> = {}): QualificationFixture {
+  const selectedRoute = overrides.route ?? route;
+  const taskClass = overrides.taskClass ?? "typescript";
+  const suite = overrides.suite ?? currentSuite;
+  const policy = overrides.policy ?? currentPolicy;
+  const effectivePolicyDigest = overrides.effectivePolicyDigest ?? currentEconomics.closureDigest;
+  const evaluatedAt = overrides.evaluatedAt ?? pastEvaluation;
+  const adapter = `@ai-sdk/${selectedRoute.provider}`;
+  const profile: QualificationAgentProfile = Object.freeze({
+    schema: "urn:usf:agent-profile:1",
+    provider: selectedRoute.provider,
+    requestedModel: selectedRoute.model,
+    adapter,
+    adapterVersion: "1.0.0",
+    adapterLockDigest: canonicalDigest({ adapter, version: "1.0.0" }, { rejectAbsolutePaths: true }),
+    authMode: "api_token",
+    toolProfile: "qualification-no-tools",
+    toolProfileDigest: canonicalDigest({ toolProfile: "qualification-no-tools" }, { rejectAbsolutePaths: true }),
+    promptVersion: "suite-declared-prompts",
+    promptDigest: canonicalDigest({ promptVersion: "suite-declared-prompts" }, { rejectAbsolutePaths: true }),
+    contextConfig: "suite-case-prompt-only",
+    contextConfigDigest: canonicalDigest({ contextConfig: "suite-case-prompt-only" }, { rejectAbsolutePaths: true }),
+    outputConfig: "bounded-text",
+    outputConfigDigest: canonicalDigest({ outputConfig: "bounded-text" }, { rejectAbsolutePaths: true }),
+  });
+  const cases = suite.corpus.cases.filter((item) => item.taskClass === taskClass);
+  const observations: QualificationObservation[] = [];
+  const invocations: Readonly<Record<string, unknown>>[] = [];
+  for (const [index, item] of cases.entries()) {
+    const answer = overrides.answers?.[item.caseId] ?? passingAnswers[item.caseId];
+    if (answer === undefined) throw new Error(`NO_OFFLINE_ANSWER:${item.caseId}`);
+    const startedAt = new Date(Date.parse("2000-01-01T00:00:00.000Z") + index * 2_000).toISOString();
+    const completedAt = new Date(Date.parse(startedAt) + 1_000).toISOString();
+    const usage = Object.freeze({ inputTokens: 10 + index, outputTokens: 2, totalTokens: 12 + index });
+    const evidence = Object.freeze({
+      schema: "urn:usf:qualification-invocation-evidence:1",
+      provider: selectedRoute.provider,
+      requestedModel: selectedRoute.model,
+      actualModel: selectedRoute.model,
+      transport: "vercel-ai-sdk",
+      adapterPackage: profile.adapter,
+      adapterVersion: profile.adapterVersion,
+      adapterLockDigest: profile.adapterLockDigest,
+      suiteId: suite.corpus.corpusId,
+      suiteVersion: suite.suiteVersion,
+      caseId: item.caseId,
+      prompt: item.prompt,
+      answer,
+      startedAt,
+      completedAt,
+      latencyMs: 1_000,
+      usage,
+      ...(overrides.evidenceOverrides?.[item.caseId] ?? {}),
+    });
+    const evidenceDigest = canonicalDigest(evidence, { rejectAbsolutePaths: true });
+    invocations.push(Object.freeze({ ...evidence, evidenceDigest }));
+    observations.push(sealQualificationObservation({
+      schema: "urn:usf:qualification-observation:1",
+      provider: selectedRoute.provider,
+      requestedModel: selectedRoute.model,
+      actualModel: selectedRoute.model,
+      transport: "vercel-ai-sdk",
+      adapterPackage: profile.adapter,
+      adapterVersion: profile.adapterVersion,
+      adapterLockDigest: profile.adapterLockDigest,
+      caseId: item.caseId,
+      promptDigest: promptDigest(item.prompt),
+      answer,
+      answerDigest: answerDigest(answer),
+      executionEvidenceDigest: evidenceDigest,
+      observedAt: completedAt,
+      latencyMs: 1_000,
+      usage,
+    }));
+  }
+  const result = qualifySemanticProfile({
+    profile, taskClass, suite, policy, effectivePolicyDigest,
+    observations, evaluatedAt,
+  });
+  return Object.freeze({
+    record: recordFromResult(result, observations),
+    observations: Object.freeze(observations),
+    invocations: Object.freeze(invocations),
+    result,
+  });
+}
+
+async function authorityRepository(): Promise<string> {
   const root = await mkdtemp(resolve(tmpdir(), "usf-qualification-"));
-  const directory = resolve(root, ".usf", "qualifications");
-  await mkdir(directory, { recursive: true });
-  // The observer binds a record against the qualification authority in force,
-  // so the fixture root carries the real one rather than a convenient copy.
+  for (const relativePath of exactGraphFiles) {
+    const target = resolve(root, relativePath);
+    await mkdir(dirname(target), { recursive: true });
+    await copyFile(resolve(authoritySourceRoot, relativePath), target);
+  }
   await mkdir(resolve(root, "config"), { recursive: true });
-  await writeFile(resolve(root, "config/qualification.json"),
-    await readFile(resolve(repositoryRoot, "config/qualification.json"), "utf8"), "utf8");
-  let index = 0;
-  for (const record of records) {
-    await writeFile(resolve(directory, `record-${index++}.json`), JSON.stringify(record), "utf8");
+  for (const name of ["qualification.json", "execution-economics.json"]) {
+    await copyFile(resolve(authoritySourceRoot, "config", name), resolve(root, "config", name));
   }
   return root;
 }
 
-const qualificationConfig = JSON.parse(
-  await readFile(resolve(repositoryRoot, "config/qualification.json"), "utf8"),
-) as { suite: Parameters<typeof createQualificationSuite>[0]; policy: Parameters<typeof createQualificationPolicy>[0] };
-const currentSuite = createQualificationSuite(qualificationConfig.suite);
-const currentPolicy = createQualificationPolicy(qualificationConfig.policy);
+async function repositoryWith(
+  fixtures: readonly QualificationFixture[],
+  options: Readonly<{ omitInvocationDigest?: string }> = {},
+): Promise<string> {
+  const root = await authorityRepository();
+  const qualificationDirectory = resolve(root, ".usf", "qualifications");
+  const invocationDirectory = resolve(root, ".usf", "qualification-invocations");
+  await mkdir(qualificationDirectory, { recursive: true, mode: 0o700 });
+  await mkdir(invocationDirectory, { recursive: true, mode: 0o700 });
+  for (const fixture of fixtures) {
+    const digest = String(fixture.record.qualificationDigest);
+    await writeFile(resolve(qualificationDirectory, `${digest.slice("sha256:".length)}.json`),
+      `${JSON.stringify(fixture.record, null, 2)}\n`, { mode: 0o600 });
+    for (const evidence of fixture.invocations) {
+      if (evidence.evidenceDigest === options.omitInvocationDigest) continue;
+      const evidenceDigest = String(evidence.evidenceDigest);
+      await writeFile(resolve(invocationDirectory, `${evidenceDigest.slice("sha256:".length)}.json`),
+        `${JSON.stringify(evidence, null, 2)}\n`, { mode: 0o600 });
+    }
+  }
+  return root;
+}
 
-const past = "2000-01-01T00:00:00.000Z";
-const route = { provider: "groq", model: "qwen/qwen3.6-27b" };
-const record = (over: Readonly<Record<string, unknown>> = {}) => {
-  const on = (over.route as typeof route | undefined) ?? route;
-  return {
-    status: "ok", role: "PATCH_PRODUCER", taskClass: "typescript",
-    route: on, ...over,
-    qualification: {
-      inputs: {
-        corpusDigest: currentSuite.corpusDigest,
-        qualificationPolicyDigest: currentPolicy.policyDigest,
-      },
-      // Evidence follows the route it is filed under unless a case overrides it.
-      profile: { requested: on, actual: on },
-      ...(over.qualification as Record<string, unknown> | undefined ?? {}),
-    },
-  };
-};
+function withRecord(
+  fixture: QualificationFixture,
+  record: Readonly<Record<string, unknown>>,
+): QualificationFixture {
+  return Object.freeze({ ...fixture, record });
+}
 
-test("a current record grants exactly its own task class to its own route", async () => {
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([record()]));
+test("a canonical offline record grants exactly its replayed task class to its route", async () => {
+  const fixture = qualificationFixture();
+  assert.equal(fixture.result.status, "qualified");
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([fixture]));
   assert.deepEqual([...observed.byRoute.keys()], ["groq:qwen/qwen3.6-27b"]);
   assert.deepEqual(observed.byRoute.get("groq:qwen/qwen3.6-27b"), ["typescript"]);
 });
 
-/**
- * The freshness repair, asserted from both sides.
- *
- * A qualification used to expire fifteen minutes after it was earned. That
- * number was copied from probe freshness in the same commit that introduced it,
- * and the two are different kinds of fact: whether a route is answering right
- * now decays, whether a model demonstrated competence at a task class does not.
- * The routing replay had decided it by identity all along and never consulted
- * the clock; this observer is what disagreed.
- */
-test("elapsed time alone does not withdraw a qualification", async () => {
-  // A record that would have been long expired under the old window, carrying
-  // an ageing expiresAt the observer no longer reads at all.
-  const observed = await observeQualifiedTaskClasses(
-    await repositoryWith([record({ expiresAt: past, evaluatedAt: past, observedAt: past })]));
+test("elapsed time alone does not withdraw a canonically replayed qualification", async () => {
+  const fixture = qualificationFixture({ evaluatedAt: pastEvaluation });
+  assert.ok(Date.parse(fixture.result.validUntil) < Date.now());
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([fixture]));
   assert.deepEqual(observed.byRoute.get("groq:qwen/qwen3.6-27b"), ["typescript"]);
   assert.equal(observed.supersededCount, 0, "age is not supersession");
 });
 
-test("a changed corpus supersedes the qualification earned under the old one", async () => {
-  // Changing any grader, prompt or case changes the corpus digest, so a verdict
-  // earned under the previous meaning of the task class stops counting. This is
-  // the invalidation that matters, and it names itself.
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([
-    record({ qualification: { inputs: { corpusDigest: `sha256:${"0".repeat(64)}`, qualificationPolicyDigest: currentPolicy.policyDigest }, profile: { requested: route, actual: route } } }),
-  ]));
+test("a record earned under another suite or corpus is superseded", async () => {
+  const wrongSuite = createQualificationSuite({ ...qualificationConfig.suite, suiteVersion: "1.1.1" });
+  const changedCases = qualificationConfig.suite.cases.map((item, index) =>
+    index === 0 ? { ...item, prompt: `${item.prompt} changed` } : item);
+  const wrongCorpus = createQualificationSuite({ ...qualificationConfig.suite, cases: changedCases });
+  for (const fixture of [qualificationFixture({ suite: wrongSuite }), qualificationFixture({ suite: wrongCorpus })]) {
+    const observed = await observeQualifiedTaskClasses(await repositoryWith([fixture]));
+    assert.equal(observed.byRoute.size, 0);
+    assert.equal(observed.supersededCount, 1);
+  }
+});
+
+test("a record earned under another qualification policy is superseded", async () => {
+  const wrongPolicy = createQualificationPolicy({ ...qualificationConfig.policy, policyVersion: "1.1.1" });
+  const observed = await observeQualifiedTaskClasses(
+    await repositoryWith([qualificationFixture({ policy: wrongPolicy })]));
   assert.equal(observed.byRoute.size, 0);
   assert.equal(observed.supersededCount, 1);
 });
 
-test("a changed policy supersedes the qualification earned under the old thresholds", async () => {
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([
-    record({ qualification: { inputs: { corpusDigest: currentSuite.corpusDigest, qualificationPolicyDigest: `sha256:${"1".repeat(64)}` }, profile: { requested: route, actual: route } } }),
-  ]));
+test("a changed current execution-economics policy supersedes the stored replay", async () => {
+  const fixture = qualificationFixture();
+  const root = await repositoryWith([fixture]);
+  const graphPath = resolve(root, "graph/v3-execution.nq");
+  const before = '<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .';
+  const after = '<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:maximumPaidCostUsd> "0.25" <urn:usf:graph:v3-execution> .';
+  const graphBytes = await readFile(graphPath, "utf8");
+  assert.ok(graphBytes.includes(before));
+  await writeFile(graphPath, graphBytes.replace(before, after), "utf8");
+  const changedProjection = projectEconomics(loadSemanticGraph(root, "graph/manifests/v3-convention.json"));
+  await writeFile(resolve(root, "config/execution-economics.json"),
+    `${JSON.stringify(changedProjection, null, 2)}\n`, "utf8");
+  const observed = await observeQualifiedTaskClasses(root);
   assert.equal(observed.byRoute.size, 0);
   assert.equal(observed.supersededCount, 1);
 });
 
-test("a record carrying no bound identity proved nothing checkable and is refused", async () => {
-  // Not superseded -- inadmissible. There is no contract to compare it against,
-  // and admitting it at any strength would let a writable file decide the
-  // outcome. This is also what retires every record written under the old shape.
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([
-    { status: "ok", role: "PATCH_PRODUCER", taskClass: "typescript", route, expiresAt: "2099-01-01T00:00:00.000Z" },
-  ]));
+test("a legacy record without durable observations grants nothing", async () => {
+  const fixture = qualificationFixture();
+  const { observations: _observations, ...legacy } = fixture.record;
+  const observed = await observeQualifiedTaskClasses(
+    await repositoryWith([withRecord(fixture, legacy)]));
   assert.equal(observed.byRoute.size, 0);
-  assert.equal(observed.supersededCount, 0);
   assert.equal(observed.recordCount, 1);
+  assert.equal(observed.supersededCount, 0);
 });
 
-test("evidence produced by another model cannot be indexed under this route", async () => {
-  // The record names one route and the evidence names another. Whichever is the
-  // mistake, the pair is not evidence for the route it is filed under.
-  const other = { provider: "groq", model: "openai/gpt-oss-120b" };
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([
-    record({ qualification: { inputs: { corpusDigest: currentSuite.corpusDigest, qualificationPolicyDigest: currentPolicy.policyDigest }, profile: { requested: route, actual: other } } }),
-  ]));
+test("a missing durable invocation record grants nothing", async () => {
+  const fixture = qualificationFixture();
+  const omitted = fixture.observations[0]!.executionEvidenceDigest;
+  const observed = await observeQualifiedTaskClasses(
+    await repositoryWith([fixture], { omitInvocationDigest: omitted }));
   assert.equal(observed.byRoute.size, 0);
 });
 
-test("the admitted basis is reported, so what was required is inspectable", async () => {
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([record()]));
-  assert.equal(observed.basis.corpusDigest, currentSuite.corpusDigest);
-  assert.equal(observed.basis.qualificationPolicyDigest, currentPolicy.policyDigest);
+test("content-addressed invocation evidence must still bind route, prompt and answer", async () => {
+  const caseId = "typescript-readonly-contract";
+  for (const changedEvidence of [
+    { provider: "cohere" },
+    { prompt: "Name an unrelated modifier." },
+    { answer: "mutable" },
+    { caseId: "typescript-two-layer-validation" },
+  ]) {
+    const fixture = qualificationFixture({ evidenceOverrides: { [caseId]: changedEvidence } });
+    assert.equal(fixture.result.status, "qualified",
+      "the pure grader cannot inspect the durable invocation record");
+    const observed = await observeQualifiedTaskClasses(await repositoryWith([fixture]));
+    assert.equal(observed.byRoute.size, 0,
+      "a correctly rehashed evidence file cannot transfer another invocation into this case");
+  }
+});
+
+test("an invocation file whose content no longer matches its digest grants nothing", async () => {
+  const fixture = qualificationFixture();
+  const first = fixture.invocations[0]!;
+  const tampered = Object.freeze({ ...first, answer: "tampered after persistence" });
+  const changed = Object.freeze({
+    ...fixture,
+    invocations: Object.freeze([tampered, ...fixture.invocations.slice(1)]),
+  });
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([changed]));
+  assert.equal(observed.byRoute.size, 0);
+});
+
+test("a qualification cannot be indexed under a sibling route", async () => {
+  const fixture = qualificationFixture();
+  const crossRoute = { ...fixture.record, route: { provider: route.provider, model: "openai/gpt-oss-120b" } };
+  const observed = await observeQualifiedTaskClasses(
+    await repositoryWith([withRecord(fixture, crossRoute)]));
+  assert.equal(observed.byRoute.size, 0);
+});
+
+test("a rehashed wrong score cannot override unmodified invocation observations", async () => {
+  const actual = qualificationFixture({ answers: { "typescript-readonly-contract": "mutable" } });
+  const claimed = qualificationFixture();
+  assert.equal(actual.result.status, "unqualified");
+  assert.equal(claimed.result.status, "qualified");
+  const { qualificationDigest: _claimedDigest, ...claimedWithoutDigest } = claimed.result;
+  const forgedWithoutDigest = {
+    ...claimedWithoutDigest,
+    inputs: { ...claimedWithoutDigest.inputs, observationSetDigest: actual.result.inputs.observationSetDigest },
+    observedAt: actual.result.observedAt,
+    evaluatedAt: actual.result.evaluatedAt,
+    validUntil: actual.result.validUntil,
+  };
+  const forgedQualification = {
+    ...forgedWithoutDigest,
+    qualificationDigest: canonicalDigest(forgedWithoutDigest, { rejectAbsolutePaths: true }),
+  } as SemanticQualificationResult;
+  const forged = withRecord(actual, recordFromResult(forgedQualification, actual.observations));
+  assert.equal(forgedQualification.inputs.observationSetDigest, actual.result.inputs.observationSetDigest);
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([forged]));
+  assert.equal(observed.byRoute.size, 0,
+    "canonical replay, not a self-asserted digest, must decide the score");
+});
+
+test("the admitted current suite, corpus, policy and economics basis is inspectable", async () => {
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([qualificationFixture()]));
   assert.equal(observed.basis.suiteId, currentSuite.suiteId);
   assert.equal(observed.basis.suiteVersion, currentSuite.suiteVersion);
+  assert.equal(observed.basis.suiteDigest, currentSuite.suiteDigest);
+  assert.equal(observed.basis.corpusDigest, currentSuite.corpusDigest);
+  assert.equal(observed.basis.qualificationPolicyDigest, currentPolicy.policyDigest);
+  assert.equal(observed.basis.effectivePolicyDigest, currentEconomics.closureDigest);
 });
 
-test("UNQUALIFIED is a recorded fact and not a capability", async () => {
-  const observed = await observeQualifiedTaskClasses(
-    await repositoryWith([record({ role: "UNQUALIFIED" })]));
+test("UNQUALIFIED is a recorded replay result and not a capability", async () => {
+  const fixture = qualificationFixture({ answers: { "typescript-readonly-contract": "mutable" } });
+  assert.equal(fixture.result.status, "unqualified");
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([fixture]));
   assert.equal(observed.byRoute.size, 0);
 });
 
-test("a failed, malformed or unparseable record grants nothing", async () => {
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([
-    record({ status: "failed" }),
-    record({ taskClass: "not-a-task-class" }),
-    record({ route: { provider: "groq" } }),
-  ]));
-  assert.equal(observed.byRoute.size, 0, "no partial credit from a defective record");
+test("a failed top-level status or task-class masquerade grants nothing", async () => {
+  const fixture = qualificationFixture();
+  for (const record of [
+    { ...fixture.record, status: "failed" },
+    { ...fixture.record, taskClass: "not-a-task-class" },
+    { ...fixture.record, route: { provider: "groq" } },
+  ]) {
+    const observed = await observeQualifiedTaskClasses(
+      await repositoryWith([withRecord(fixture, record)]));
+    assert.equal(observed.byRoute.size, 0);
+  }
 });
 
 test("a record may not grant a model feature under the guise of a task class", async () => {
-  // `tool-call` is a real capability name, but of the wrong kind. Accepting it
-  // here would let a stored file mint catalogue evidence -- the one direction
-  // of borrowing a writable record could actually achieve.
-  const observed = await observeQualifiedTaskClasses(
-    await repositoryWith([record({ taskClass: "tool-call" })]));
+  const fixture = qualificationFixture();
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([
+    withRecord(fixture, { ...fixture.record, taskClass: "tool-call" }),
+  ]));
   assert.equal(observed.byRoute.size, 0);
 });
 
-test("records accumulate per route and stay sorted and duplicate-free", async () => {
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([
-    record({ taskClass: "typescript" }),
-    record({ taskClass: "node-test" }),
-    record({ taskClass: "typescript" }),
-    record({ taskClass: "cli-design", route: { provider: "cohere", model: "north-mini-code-1-0" } }),
-  ]));
-  assert.deepEqual(observed.byRoute.get("groq:qwen/qwen3.6-27b"), ["node-test", "typescript"]);
-  assert.deepEqual(observed.byRoute.get("cohere:north-mini-code-1-0"), ["cli-design"]);
+test("canonical records accumulate per route and stay sorted", async () => {
+  const typescript = qualificationFixture();
+  const cliDesign = qualificationFixture({ taskClass: "cli-design" });
+  const sibling = qualificationFixture({
+    route: { provider: "cohere", model: "north-mini-code-1-0" },
+  });
+  assert.equal(cliDesign.result.status, "qualified");
+  const observed = await observeQualifiedTaskClasses(
+    await repositoryWith([typescript, cliDesign, sibling]));
+  assert.deepEqual(observed.byRoute.get("groq:qwen/qwen3.6-27b"), ["cli-design", "typescript"]);
+  assert.deepEqual(observed.byRoute.get("cohere:north-mini-code-1-0"), ["typescript"]);
 });
 
 test("a repository with no qualification directory reports evaluated and empty", async () => {
-  // Evaluated-and-none must be distinguishable from not-evaluated, or an empty
-  // result would be read as an unknown one and then guessed at.
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([]));
+  const observed = await observeQualifiedTaskClasses(await authorityRepository());
   assert.equal(observed.evaluated, true);
   assert.equal(observed.byRoute.size, 0);
   assert.equal(observed.recordCount, 0);
 });
 
-test("absent qualification authority admits nothing and still reports evaluated", async () => {
-  // A root with no config/qualification.json has no contract to bind a record
-  // against, so a record that would otherwise be admitted is inadmissible. The
-  // result is evaluated-and-none, never unknown.
+test("absent qualification or economics authority admits nothing", async () => {
+  const fixture = qualificationFixture();
   const root = await mkdtemp(resolve(tmpdir(), "usf-qualification-bare-"));
-  await mkdir(resolve(root, ".usf", "qualifications"), { recursive: true });
-  await writeFile(resolve(root, ".usf", "qualifications", "r.json"), JSON.stringify(record()), "utf8");
+  const directory = resolve(root, ".usf", "qualifications");
+  await mkdir(directory, { recursive: true });
+  await writeFile(resolve(directory, `${fixture.result.qualificationDigest.slice("sha256:".length)}.json`),
+    JSON.stringify(fixture.record), "utf8");
   const observed = await observeQualifiedTaskClasses(root);
   assert.equal(observed.evaluated, true);
   assert.equal(observed.recordCount, 1);
   assert.equal(observed.byRoute.size, 0);
   assert.equal(observed.basis.corpusDigest, "");
+  assert.equal(observed.basis.effectivePolicyDigest, "");
 });
 
 /**

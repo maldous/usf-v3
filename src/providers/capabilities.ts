@@ -1,6 +1,14 @@
-import { readdir, readFile } from "node:fs/promises";
+import { lstat, readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { createQualificationPolicy, createQualificationSuite } from "./qualification.ts";
+import { canonicalDigest } from "../core/canonical.ts";
+import { loadSemanticGraph } from "../graph/index.ts";
+import { readGraphDerivedEconomics } from "./economics-projection.ts";
+import {
+  createQualificationPolicy, createQualificationSuite, promptDigest,
+  qualifySemanticProfile, type QualificationAgentProfile,
+  type QualificationObservation, type QualificationPolicySnapshot,
+  type QualificationSuiteSnapshot, type SemanticQualificationResult,
+} from "./qualification.ts";
 
 /**
  * One capability vocabulary, in two kinds that never borrow each other's
@@ -150,9 +158,10 @@ export function satisfiesCapabilities(
  * for the same reason `observeAvailableRoutes` is the single implementation of
  * observed availability: two implementations of one decision is the defect.
  *
- * A record counts when it names the exact route, carries a qualified role for
- * the task class, and was earned under the suite, corpus and policy identities
- * still in force. It does not expire.
+ * A record counts only when the current suite and economics policy reproduce
+ * its complete qualification result from sealed observations, and every
+ * observation matches its exact content-addressed invocation record. It does
+ * not expire merely because time passed.
  *
  * It used to expire after fifteen minutes. That number was not derived: the
  * commit that introduced the qualification policy set `validitySeconds` to 900
@@ -178,46 +187,247 @@ export interface ObservedQualification {
   /** `provider:model` to the task classes it currently holds a role for. */
   readonly byRoute: ReadonlyMap<string, readonly string[]>;
   readonly recordCount: number;
-  /** Records earned under a suite, corpus or policy identity no longer in force. */
+  /** Records earned under suite, corpus, qualification or economics identities no longer in force. */
   readonly supersededCount: number;
   /** The identities admitted records were required to match. */
   readonly basis: Readonly<{
     suiteId: string; suiteVersion: string;
-    corpusDigest: string; qualificationPolicyDigest: string;
+    suiteDigest: string; corpusDigest: string;
+    qualificationPolicyDigest: string; effectivePolicyDigest: string;
   }>;
   readonly evaluated: true;
 }
 
 const qualificationDirectoryName = "qualifications";
+const qualificationInvocationDirectoryName = "qualification-invocations";
+const digestPattern = /^sha256:[0-9a-f]{64}$/u;
+const maximumQualificationRecordBytes = 1024 * 1024;
+const maximumInvocationEvidenceBytes = 256 * 1024;
+
+interface CurrentQualificationAuthority {
+  readonly suite: QualificationSuiteSnapshot;
+  readonly policy: QualificationPolicySnapshot;
+  readonly effectivePolicyDigest: string;
+}
+
+interface StoredQualificationRecord {
+  readonly schema: "urn:usf:qualification-record:1";
+  readonly status: "ok";
+  readonly role: string;
+  readonly taskClass: string;
+  readonly route: Readonly<{ readonly provider: string; readonly model: string }>;
+  readonly qualificationDigest: string;
+  readonly observationSetDigest: string;
+  readonly observations: readonly QualificationObservation[];
+  readonly qualification: SemanticQualificationResult;
+}
+
+const recordKeys = Object.freeze([
+  "schema", "status", "role", "taskClass", "route", "qualificationDigest",
+  "observationSetDigest", "observations", "qualification",
+]);
+const invocationEvidenceKeys = Object.freeze([
+  "schema", "provider", "requestedModel", "actualModel", "transport",
+  "adapterPackage", "adapterVersion", "adapterLockDigest", "suiteId",
+  "suiteVersion", "caseId", "prompt", "answer", "startedAt", "completedAt",
+  "latencyMs", "usage", "evidenceDigest",
+]);
+const qualificationObservationKeys = Object.freeze([
+  "schema", "provider", "requestedModel", "actualModel", "transport",
+  "adapterPackage", "adapterVersion", "adapterLockDigest", "caseId",
+  "promptDigest", "answer", "answerDigest", "executionEvidenceDigest",
+  "observedAt", "latencyMs", "usage", "observationDigest",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function exactKeys(value: Record<string, unknown>, expected: readonly string[]): boolean {
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
+}
+
+function validInstant(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const milliseconds = Date.parse(value);
+  return Number.isFinite(milliseconds) && new Date(milliseconds).toISOString() === value;
+}
+
+async function readJsonFile(path: string, maximumBytes: number): Promise<unknown> {
+  const metadata = await lstat(path).catch(() => undefined);
+  if (metadata === undefined || !metadata.isFile() || metadata.isSymbolicLink()
+    || metadata.nlink !== 1 || metadata.size === 0 || metadata.size > maximumBytes) return undefined;
+  const bytes = await readFile(path).catch(() => undefined);
+  const after = await lstat(path).catch(() => undefined);
+  if (bytes === undefined || after === undefined || after.dev !== metadata.dev || after.ino !== metadata.ino
+    || after.size !== metadata.size || after.mtimeMs !== metadata.mtimeMs
+    || bytes.byteLength !== metadata.size) return undefined;
+  try { return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown; }
+  catch { return undefined; }
+}
+
+async function readCurrentQualificationAuthority(
+  repositoryRoot: string,
+): Promise<CurrentQualificationAuthority | null> {
+  try {
+    const qualificationValue = await readJsonFile(
+      resolve(repositoryRoot, "config/qualification.json"), maximumQualificationRecordBytes);
+    if (!isRecord(qualificationValue)) return null;
+    const suite = createQualificationSuite(
+      qualificationValue.suite as Parameters<typeof createQualificationSuite>[0]);
+    const policy = createQualificationPolicy(
+      qualificationValue.policy as Parameters<typeof createQualificationPolicy>[0]);
+    const economicsValue = await readJsonFile(
+      resolve(repositoryRoot, "config/execution-economics.json"), maximumQualificationRecordBytes);
+    const economics = readGraphDerivedEconomics(
+      economicsValue,
+      loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json"),
+    );
+    return Object.freeze({ suite, policy, effectivePolicyDigest: economics.closureDigest });
+  } catch {
+    return null;
+  }
+}
+
+function qualificationProfile(result: SemanticQualificationResult): QualificationAgentProfile {
+  const requested = result.profile.requested;
+  return Object.freeze({
+    schema: "urn:usf:agent-profile:1" as const,
+    provider: requested.provider,
+    requestedModel: requested.model,
+    adapter: requested.adapter,
+    adapterVersion: requested.adapterVersion,
+    adapterLockDigest: requested.adapterLockDigest,
+    authMode: requested.authMode,
+    toolProfile: requested.toolProfile,
+    toolProfileDigest: requested.toolProfileDigest,
+    promptVersion: requested.promptVersion,
+    promptDigest: requested.promptDigest,
+    contextConfig: requested.contextConfig,
+    contextConfigDigest: requested.contextConfigDigest,
+    outputConfig: requested.outputConfig,
+    outputConfigDigest: requested.outputConfigDigest,
+  });
+}
+
+async function invocationEvidenceMatches(
+  repositoryRoot: string,
+  authority: CurrentQualificationAuthority,
+  observations: readonly QualificationObservation[],
+): Promise<boolean> {
+  const cases = new Map(authority.suite.corpus.cases.map((item) => [item.caseId, item]));
+  const seen = new Set<string>();
+  for (const observation of observations) {
+    if (!isRecord(observation) || !exactKeys(observation, qualificationObservationKeys)
+      || !digestPattern.test(observation.executionEvidenceDigest)
+      || seen.has(observation.executionEvidenceDigest)) return false;
+    seen.add(observation.executionEvidenceDigest);
+    const evidenceValue = await readJsonFile(resolve(
+      repositoryRoot, ".usf", qualificationInvocationDirectoryName,
+      `${observation.executionEvidenceDigest.slice("sha256:".length)}.json`,
+    ), maximumInvocationEvidenceBytes);
+    if (!isRecord(evidenceValue) || !exactKeys(evidenceValue, invocationEvidenceKeys)) return false;
+    const { evidenceDigest, ...evidence } = evidenceValue;
+    const item = cases.get(observation.caseId);
+    const usage = isRecord(evidenceValue.usage) ? evidenceValue.usage : null;
+    if (item === undefined
+      || evidenceValue.schema !== "urn:usf:qualification-invocation-evidence:1"
+      || evidenceDigest !== observation.executionEvidenceDigest
+      || canonicalDigest(evidence, { rejectAbsolutePaths: true }) !== observation.executionEvidenceDigest
+      || evidenceValue.provider !== observation.provider
+      || evidenceValue.requestedModel !== observation.requestedModel
+      || evidenceValue.actualModel !== observation.actualModel
+      || evidenceValue.transport !== observation.transport
+      || evidenceValue.adapterPackage !== observation.adapterPackage
+      || evidenceValue.adapterVersion !== observation.adapterVersion
+      || evidenceValue.adapterLockDigest !== observation.adapterLockDigest
+      || evidenceValue.suiteId !== authority.suite.corpus.corpusId
+      || evidenceValue.suiteVersion !== authority.suite.suiteVersion
+      || evidenceValue.caseId !== observation.caseId
+      || evidenceValue.prompt !== item.prompt
+      || observation.promptDigest !== promptDigest(item.prompt)
+      || evidenceValue.answer !== observation.answer
+      || evidenceValue.completedAt !== observation.observedAt
+      || evidenceValue.latencyMs !== observation.latencyMs
+      || !validInstant(evidenceValue.startedAt)
+      || !validInstant(evidenceValue.completedAt)
+      || Date.parse(evidenceValue.completedAt) - Date.parse(evidenceValue.startedAt) !== observation.latencyMs
+      || usage === null || !exactKeys(usage, ["inputTokens", "outputTokens", "totalTokens"])
+      || Object.values(usage).some((value) => typeof value !== "number" || !Number.isSafeInteger(value) || value < 0)
+      || usage?.inputTokens !== observation.usage.inputTokens
+      || usage?.outputTokens !== observation.usage.outputTokens
+      || usage?.totalTokens !== observation.usage.totalTokens) return false;
+  }
+  return true;
+}
+
+function currentInputs(
+  result: SemanticQualificationResult,
+  authority: CurrentQualificationAuthority,
+): boolean {
+  return result.inputs.suiteDigest === authority.suite.suiteDigest
+    && result.inputs.corpusDigest === authority.suite.corpusDigest
+    && result.inputs.qualificationPolicyDigest === authority.policy.policyDigest
+    && result.inputs.effectivePolicyDigest === authority.effectivePolicyDigest;
+}
+
+async function replayedRecordMatches(
+  repositoryRoot: string,
+  name: string,
+  record: StoredQualificationRecord,
+  authority: CurrentQualificationAuthority,
+): Promise<boolean> {
+  try {
+    if (name !== `${record.qualificationDigest.slice("sha256:".length)}.json`
+      || record.qualificationDigest !== record.qualification.qualificationDigest
+      || record.observationSetDigest !== record.qualification.inputs.observationSetDigest
+      || record.taskClass !== record.qualification.taskClass
+      || record.role !== record.qualification.derivedRoles[0]
+      || record.route.provider !== record.qualification.profile.actual.provider
+      || record.route.model !== record.qualification.profile.requested.model) return false;
+    const replayed = qualifySemanticProfile({
+      profile: qualificationProfile(record.qualification),
+      taskClass: record.taskClass,
+      suite: authority.suite,
+      policy: authority.policy,
+      effectivePolicyDigest: authority.effectivePolicyDigest,
+      observations: record.observations,
+      evaluatedAt: record.qualification.evaluatedAt,
+    });
+    if (replayed.status !== "qualified"
+      || replayed.derivedRoles[0] === "UNQUALIFIED"
+      || replayed.qualificationDigest !== record.qualificationDigest
+      || canonicalDigest(replayed, { rejectAbsolutePaths: true })
+        !== canonicalDigest(record.qualification, { rejectAbsolutePaths: true })) return false;
+    return invocationEvidenceMatches(repositoryRoot, authority, record.observations);
+  } catch {
+    return false;
+  }
+}
 
 export async function observeQualifiedTaskClasses(
   repositoryRoot: string,
 ): Promise<ObservedQualification> {
   // The identities in force now. A record earned under a different suite,
-  // corpus or policy proved something about a contract that has since changed,
-  // which is the only kind of ageing that matters here.
+  // corpus, qualification policy or execution-economics closure proved
+  // something about a contract that has since changed.
   // Absent or unreadable authority admits nothing. There is no contract to bind
   // a record against, so every record becomes inadmissible rather than trusted,
   // and the result still reports itself as evaluated so an empty answer is not
   // mistaken for an unknown one.
-  const authority = await readFile(resolve(repositoryRoot, "config/qualification.json"), "utf8")
-    .then((bytes) => {
-      const parsed = JSON.parse(bytes) as {
-        readonly suite: Parameters<typeof createQualificationSuite>[0];
-        readonly policy: Parameters<typeof createQualificationPolicy>[0];
-      };
-      const suite = createQualificationSuite(parsed.suite);
-      const policy = createQualificationPolicy(parsed.policy);
-      return Object.freeze({
-        suiteId: suite.suiteId,
-        suiteVersion: suite.suiteVersion,
-        corpusDigest: suite.corpusDigest,
-        qualificationPolicyDigest: policy.policyDigest,
-      });
-    })
-    .catch(() => null);
-  const basis = authority ?? Object.freeze({
-    suiteId: "", suiteVersion: "", corpusDigest: "", qualificationPolicyDigest: "",
+  const authority = await readCurrentQualificationAuthority(repositoryRoot);
+  const basis = authority === null ? Object.freeze({
+    suiteId: "", suiteVersion: "", suiteDigest: "", corpusDigest: "",
+    qualificationPolicyDigest: "", effectivePolicyDigest: "",
+  }) : Object.freeze({
+    suiteId: authority.suite.suiteId,
+    suiteVersion: authority.suite.suiteVersion,
+    suiteDigest: authority.suite.suiteDigest,
+    corpusDigest: authority.suite.corpusDigest,
+    qualificationPolicyDigest: authority.policy.policyDigest,
+    effectivePolicyDigest: authority.effectivePolicyDigest,
   });
 
   const directory = resolve(repositoryRoot, ".usf", qualificationDirectoryName);
@@ -227,47 +437,32 @@ export async function observeQualifiedTaskClasses(
   let supersededCount = 0;
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
-    const bytes = await readFile(resolve(directory, name), "utf8").catch(() => undefined);
-    if (bytes === undefined) continue;
+    const value = await readJsonFile(resolve(directory, name), maximumQualificationRecordBytes);
     recordCount += 1;
-    let record: {
-      readonly status?: unknown; readonly role?: unknown; readonly taskClass?: unknown;
-      readonly route?: { readonly provider?: unknown; readonly model?: unknown };
-      readonly qualification?: {
-        readonly inputs?: { readonly corpusDigest?: unknown; readonly qualificationPolicyDigest?: unknown };
-        readonly profile?: {
-          readonly requested?: { readonly provider?: unknown; readonly model?: unknown };
-          readonly actual?: { readonly provider?: unknown; readonly model?: unknown };
-        };
-      };
-    };
-    try { record = JSON.parse(bytes) as typeof record; } catch { continue; }
-    if (record.status !== "ok") continue;
+    if (!isRecord(value) || !exactKeys(value, recordKeys)) continue;
+    const record = value as unknown as StoredQualificationRecord;
+    if (record.schema !== "urn:usf:qualification-record:1" || record.status !== "ok") continue;
     // UNQUALIFIED is the policy default and a recorded fact, not a capability.
     if (typeof record.role !== "string" || record.role === "UNQUALIFIED") continue;
     const taskClass = record.taskClass;
     // A stored file may not mint catalogue evidence: only a real task class
     // counts, so a record naming a model feature grants nothing.
     if (typeof taskClass !== "string" || capabilityKind(taskClass) !== "task-class") continue;
-    const provider = record.route?.provider;
-    const model = record.route?.model;
+    if (!isRecord(record.route) || !exactKeys(record.route, ["provider", "model"])) continue;
+    const provider = record.route.provider;
+    const model = record.route.model;
     if (typeof provider !== "string" || typeof model !== "string") continue;
     // Earned under the contract still in force, decided the same way the routing
     // replay decides it. A record with no bound identity at all proved nothing
     // checkable and is refused rather than trusted.
     if (authority === null) continue;
-    const inputs = record.qualification?.inputs;
-    if (typeof inputs?.corpusDigest !== "string" || typeof inputs.qualificationPolicyDigest !== "string") continue;
-    if (inputs.corpusDigest !== basis.corpusDigest
-      || inputs.qualificationPolicyDigest !== basis.qualificationPolicyDigest) {
+    if (!isRecord(record.qualification) || !isRecord(record.qualification.inputs)
+      || !Array.isArray(record.observations)) continue;
+    if (!currentInputs(record.qualification, authority)) {
       supersededCount += 1;
       continue;
     }
-    // The evidence must have been produced by the route it is indexed under, in
-    // both directions: what was asked and what answered.
-    const profile = record.qualification?.profile;
-    if (profile?.requested?.provider !== provider || profile.requested.model !== model
-      || profile.actual?.provider !== provider || profile.actual.model !== model) continue;
+    if (!await replayedRecordMatches(repositoryRoot, name, record, authority)) continue;
     const routeId = `${provider}:${model}`;
     const held = byRoute.get(routeId) ?? new Set<string>();
     held.add(taskClass);

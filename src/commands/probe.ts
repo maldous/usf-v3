@@ -483,6 +483,11 @@ async function runQualificationSuite(
           Number(response.usage?.outputTokens ?? 0)} output tokens consumed)`);
         continue;
       }
+      const actualModel = response.response?.modelId ?? "";
+      if (actualModel.length === 0) {
+        failures.push(`${item.caseId}: ACTUAL_MODEL_UNOBSERVED`);
+        continue;
+      }
       const usage = {
         inputTokens: Number(response.usage?.inputTokens ?? 0),
         outputTokens: Number(response.usage?.outputTokens ?? 0),
@@ -493,7 +498,7 @@ async function runQualificationSuite(
       // executionEvidenceDigest points at something that exists.
       const evidence = Object.freeze({
         schema: "urn:usf:qualification-invocation-evidence:1" as const,
-        provider: route.provider, requestedModel: route.model, actualModel: route.model,
+        provider: route.provider, requestedModel: route.model, actualModel,
         transport: route.transport, adapterPackage: route.adapterPackage,
         adapterVersion: route.profile.adapterVersion, adapterLockDigest: route.profile.adapterLockDigest,
         suiteId: suite.corpus.corpusId, suiteVersion: suite.suiteVersion,
@@ -511,7 +516,7 @@ async function runQualificationSuite(
         schema: "urn:usf:qualification-observation:1",
         provider: route.provider,
         requestedModel: route.model,
-        actualModel: route.model,
+        actualModel,
         transport: route.transport,
         adapterPackage: route.adapterPackage,
         adapterVersion: route.profile.adapterVersion,
@@ -544,6 +549,7 @@ async function runQualificationSuite(
 async function storeQualificationRecord(
   repositoryRoot: string,
   result: SemanticQualificationResult,
+  observations: readonly QualificationObservation[],
 ): Promise<{ readonly recordPath: string }> {
   const record = Object.freeze({
     schema: "urn:usf:qualification-record:1" as const,
@@ -551,9 +557,9 @@ async function storeQualificationRecord(
     role: result.derivedRoles[0] ?? "UNQUALIFIED",
     taskClass: result.taskClass,
     route: Object.freeze({ provider: result.profile.actual.provider, model: result.profile.requested.model }),
-    expiresAt: result.validUntil,
     qualificationDigest: result.qualificationDigest,
     observationSetDigest: result.inputs.observationSetDigest,
+    observations: Object.freeze([...observations]),
     qualification: result,
   });
   const directory = resolve(repositoryRoot, ".usf", "qualifications");
@@ -640,7 +646,7 @@ async function runQualify(repositoryRoot: string, args: readonly string[]) {
     evaluatedAt: new Date().toISOString(),
   });
 
-  const stored = await storeQualificationRecord(repositoryRoot, result);
+  const stored = await storeQualificationRecord(repositoryRoot, result, run.observations);
   return {
     output: Object.freeze({
       schema: "urn:usf:qualification-run-result:1" as const,
@@ -661,7 +667,7 @@ async function runQualify(repositoryRoot: string, args: readonly string[]) {
       externalContact: true as const,
       authorityEffect: "none" as const,
       nonClaims: Object.freeze([
-        "A qualification is earned from the observations recorded here and expires with the declared policy window.",
+        "A qualification is earned from the durable observations recorded here and remains usable only while canonical replay matches the current suite, policy, execution economics and route; elapsed time alone does not withdraw it.",
         "It grants no economic authorization: whether this route may be executed remains decided where execution is authorised.",
         "It asserts nothing about account tier, quota, billing or provider-console state.",
       ]),
