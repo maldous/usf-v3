@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { existsSync } from "node:fs";
-import { chmod, cp, mkdir, mkdtemp, open, readFile, readdir, rm, stat, unlink, writeFile } from "node:fs/promises";
+import { chmod, cp, mkdir, mkdtemp, open, readFile, readdir, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import test from "node:test";
 
@@ -22,7 +22,15 @@ import {
 import { loadSemanticGraph } from "../../src/graph/index.ts";
 import { deriveWork } from "../../src/graph/work.ts";
 import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
-import { deriveNoChangeCandidateIdentity } from "../../src/realisation/index.ts";
+import {
+  authenticateNoChangeWorkspace,
+  currentCandidateWorkspace,
+  currentCandidateWorkspaceForCheckRecovery,
+  deriveNoChangeCandidateIdentity,
+  withAuthenticatedNoChangeWorkspace,
+  withAuthenticatedNoChangeWorkspaceForCheckRecovery,
+  withCandidateLock,
+} from "../../src/realisation/index.ts";
 import { ensureGraphDerivedCheck, readGraphDerivedCheckReceipt, type CheckedCandidateReceipt } from "../../src/commands/check.ts";
 import {
   deriveNoChangeCompletionAuthority,
@@ -449,13 +457,86 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
     await writeFile(resolve(isolated.root, stalePath), Buffer.concat([staleBytes, Buffer.from("\n")]), { mode: 0o600 });
     await assert.rejects(
       () => deriveNoChangeCandidateIdentity(isolated.root, work.realisationBasis!, authority.policy),
-      { code: "STALE_REALISATION_BASIS" },
+      { reasonCode: "STALE_REALISATION_BASIS" },
     );
     await writeFile(resolve(isolated.root, stalePath), staleBytes, { mode: 0o600 });
     assert.equal(await deriveNoChangeCandidateIdentity(isolated.root, work.realisationBasis, authority.policy), identity);
 
     const native = await realiseNoChangeWork(isolated.root, request);
     assert.equal(native.candidateDigest, identity, "identity must match the native no-change result");
+    const workspaceIdentity = await withAuthenticatedNoChangeWorkspace(isolated.root, identity, async (workspace) => {
+      assert.equal(workspace.candidateDigest, identity);
+      await assert.rejects(
+        () => withCandidateLock(isolated.root, identity, async () => undefined),
+        { reasonCode: "CANDIDATE_BUSY" },
+        "the authenticated callback retains the native candidate lock",
+      );
+      return workspace.workspaceIdentityDigest;
+    });
+    assert.equal(workspaceIdentity, (await authenticateNoChangeWorkspace(isolated.root, identity)).workspaceIdentityDigest);
+    const workspace = (await currentCandidateWorkspace(isolated.root, identity)).workspace;
+    const runtime = resolve(workspace, ".usf-check-tmp");
+    await mkdir(runtime, { mode: 0o700 });
+    await chmod(runtime, 0o700);
+    await writeFile(resolve(runtime, "interrupted-check-state"), "pending", { mode: 0o600 });
+    await assert.rejects(
+      () => currentCandidateWorkspace(isolated.root, identity),
+      { reasonCode: "CANDIDATE_BASIS_MISMATCH" },
+      "ordinary candidate reads must not admit check runtime contents",
+    );
+    await assert.rejects(
+      () => authenticateNoChangeWorkspace(isolated.root, identity),
+      { reasonCode: "CANDIDATE_BASIS_MISMATCH" },
+      "ordinary no-change authentication must remain strict",
+    );
+    assert.equal((await currentCandidateWorkspaceForCheckRecovery(isolated.root, identity)).workspace, workspace);
+    const recoveryWorkspaceIdentity = await withAuthenticatedNoChangeWorkspaceForCheckRecovery(isolated.root, identity, async (authenticated) => {
+      await assert.rejects(
+        () => withCandidateLock(isolated.root, identity, async () => undefined),
+        { reasonCode: "CANDIDATE_BUSY" },
+        "the recovery callback retains the native candidate lock",
+      );
+      return authenticated.workspaceIdentityDigest;
+    });
+    assert.equal(recoveryWorkspaceIdentity, workspaceIdentity, "the owned runtime is excluded from the authenticated candidate tree");
+    await rm(runtime, { recursive: true, force: true });
+
+    await writeFile(runtime, "not a directory", { mode: 0o700 });
+    await assert.rejects(
+      () => currentCandidateWorkspaceForCheckRecovery(isolated.root, identity),
+      { reasonCode: "CANDIDATE_BASIS_MISMATCH" },
+      "check recovery rejects a non-directory runtime boundary",
+    );
+    await rm(runtime, { force: true });
+    await mkdir(runtime, { mode: 0o700 });
+    await chmod(runtime, 0o755);
+    await assert.rejects(
+      () => currentCandidateWorkspaceForCheckRecovery(isolated.root, identity),
+      { reasonCode: "CANDIDATE_BASIS_MISMATCH" },
+      "check recovery rejects a runtime boundary with non-private mode",
+    );
+    await rm(runtime, { recursive: true, force: true });
+    const runtimeTarget = resolve(isolated.root, ".usf", "runtime-target");
+    await mkdir(runtimeTarget, { recursive: true, mode: 0o700 });
+    await chmod(runtimeTarget, 0o700);
+    await symlink(runtimeTarget, runtime);
+    await assert.rejects(
+      () => currentCandidateWorkspaceForCheckRecovery(isolated.root, identity),
+      { reasonCode: "CANDIDATE_BASIS_MISMATCH" },
+      "check recovery rejects a symlinked runtime boundary",
+    );
+    await unlink(runtime);
+    await rm(runtimeTarget, { recursive: true, force: true });
+    await mkdir(runtime, { mode: 0o700 });
+    await chmod(runtime, 0o700);
+    await mkdir(resolve(workspace, ".usf-check-tmp-other"), { mode: 0o700 });
+    await assert.rejects(
+      () => currentCandidateWorkspaceForCheckRecovery(isolated.root, identity),
+      { reasonCode: "CANDIDATE_BASIS_MISMATCH" },
+      "check recovery does not admit extra workspace paths",
+    );
+    await rm(runtime, { recursive: true, force: true });
+    await rm(resolve(workspace, ".usf-check-tmp-other"), { recursive: true, force: true });
     const expectedObligations = [...(work.realisationAuthority?.completionValidationObligations ?? [])].sort();
     assert.ok(expectedObligations.length > 1, "genuine fixture must have a partial-retention denominator");
     const retainedObligation = expectedObligations[0]!;

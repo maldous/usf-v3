@@ -32,7 +32,7 @@ import {
   authenticateNoChangeWorkspace,
   materialiseNoChangeCandidate,
   deriveNoChangeCandidateIdentity,
-  withCandidateLock,
+  withAuthenticatedNoChangeWorkspaceForCheckRecovery,
   type AuthenticatedNoChangeWorkspace,
 } from "../realisation/index.ts";
 import {
@@ -57,7 +57,7 @@ import {
 } from "../realisation/work-completion.ts";
 import { acquirePrimaryMutationLock } from "../realisation/transition.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
-import { readGraphDerivedCheckReceipt, ensureGraphDerivedCheck, authenticateGraphDerivedCheckIntent, type CheckedCandidateReceipt } from "./check.ts";
+import { readGraphDerivedCheckReceipt, readGraphDerivedCheckReceiptForRecovery, ensureGraphDerivedCheck, authenticateGraphDerivedCheckIntent, type CheckedCandidateReceipt } from "./check.ts";
 import { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } from "./construction-authority.ts";
 import type { CommandHandler, CommandRequest, CommandResult } from "./dispatcher.ts";
 
@@ -418,13 +418,14 @@ async function validationReceiptState(
   root: string,
   packet: WorkPacket,
   workspace: AuthenticatedNoChangeWorkspace,
+  readReceipt: typeof readGraphDerivedCheckReceipt = readGraphDerivedCheckReceipt,
 ): Promise<{ readonly obligations: readonly string[]; readonly references: readonly CompletionValidationReference[]; readonly missing: readonly string[] }> {
   const obligations = [...(packet.realisationAuthority?.completionValidationObligations ?? [])].sort();
   if (obligations.length === 0) refuse("WORK_COMPLETION_VALIDATIONS_MISSING", "The selected work has no completion validation obligations.", exitCodes.CURRENTNESS_FAILURE);
   const references: CompletionValidationReference[] = [];
   const missing: string[] = [];
   for (const obligationIri of obligations) {
-    const loaded = await readGraphDerivedCheckReceipt(root, workspace.candidateDigest, obligationIri);
+    const loaded = await readReceipt(root, workspace.candidateDigest, obligationIri);
     if (loaded === null) {
       missing.push(obligationIri);
       continue;
@@ -588,22 +589,22 @@ export async function prepareCompletionChecks(root: string, request: unknown): P
         refuse("WORK_COMPLETION_CHECK_SET_STALE", "Selected check-set authority changed during authentication.", exitCodes.CURRENTNESS_FAILURE);
       }
     };
-    const readState = () => withCandidateLock(repositoryRoot, candidateDigest, async () => {
+    const readState = () => withAuthenticatedNoChangeWorkspaceForCheckRecovery(repositoryRoot, candidateDigest, async (workspace) => {
       assertCurrent();
-      const workspace = await authenticateNoChangeWorkspace(repositoryRoot, candidateDigest);
       if (workspace.constructionBasis.basisDigest !== basis.basisDigest
         || canonicalJson(workspace.policy) !== canonicalJson(initial.authority.policy)) {
         refuse("WORK_COMPLETION_WORKSPACE_STALE", "The no-change workspace no longer matches current scoped authority.", exitCodes.CURRENTNESS_FAILURE);
       }
-      const state = await validationReceiptState(repositoryRoot, initial.packet, workspace);
+      const state = await validationReceiptState(repositoryRoot, initial.packet, workspace, readGraphDerivedCheckReceiptForRecovery);
+      const reconciliations: string[] = [];
       for (const obligationIri of state.obligations) {
-        await authenticateGraphDerivedCheckIntent(repositoryRoot, candidateDigest, obligationIri);
+        if (await authenticateGraphDerivedCheckIntent(repositoryRoot, candidateDigest, obligationIri) === "STARTED") reconciliations.push(obligationIri);
       }
       assertCurrent();
-      return state;
+      return Object.freeze({ ...state, reconciliations: Object.freeze(reconciliations) });
     });
     const before = await readState();
-    for (const obligationIri of before.obligations) {
+    const ensureMember = async (obligationIri: string) => {
       // Authenticate the entire retained denominator before requesting any effect.
       await readState();
       const checked = await ensureGraphDerivedCheck(repositoryRoot, candidateDigest, obligationIri);
@@ -611,8 +612,11 @@ export async function prepareCompletionChecks(root: string, request: unknown): P
         refuse(checked.reasonCode, "A required graph-derived check refused; no complete set is acknowledged.", exitCodes.CURRENTNESS_FAILURE, { obligationIri });
       }
       await readState();
-    }
+    };
+    for (const obligationIri of before.reconciliations) await ensureMember(obligationIri);
+    for (const obligationIri of (await readState()).missing) await ensureMember(obligationIri);
     const after = await readState();
+    if (after.reconciliations.length !== 0) refuse("WORK_COMPLETION_CHECK_SET_STALE", "Required intent state changed and still needs reconciliation; no complete set is acknowledged.", exitCodes.CURRENTNESS_FAILURE);
     if (after.missing.length !== 0) refuse("WORK_COMPLETION_CHECK_RECEIPT_MISSING", "The required check receipt set is incomplete.", exitCodes.CURRENTNESS_FAILURE, { obligationIri: after.missing[0] });
     const draft = {
       schema: "urn:usf:schema:completion-check-receipt-set-result:1" as const,
