@@ -6,9 +6,14 @@ import type { ProviderRouteConfig } from "../../../src/providers/config.ts";
 import type { ProviderProbeResult } from "../../../src/providers/probe.ts";
 import {
   QualificationError,
+  createHiddenPromptProjections,
   createQualificationPolicy,
   createQualificationSuite,
+  evaluateHiddenHoldout,
+  hiddenEvaluationReceiptDigest,
+  hiddenProviderAnswerObservationDigest,
   qualifySemanticProfile,
+  verifyHiddenEvaluationReceipt,
   verifySemanticQualification,
   type QualificationAgentProfile,
   type QualificationAnswer,
@@ -20,7 +25,7 @@ import {
 } from "../../../src/providers/qualification.ts";
 
 const exactDigest = (value: unknown) => canonicalDigest(value, { rejectAbsolutePaths: true });
-const digest = (character: string) => `sha256:${character.repeat(64)}`;
+const digest = (character: string): `sha256:${string}` => `sha256:${character.repeat(64)}`;
 const dialect = "https://json-schema.org/draft/2020-12/schema";
 
 const route: ProviderRouteConfig = Object.freeze({
@@ -307,4 +312,93 @@ test("qualification and verification enforce observed and expiry currentness plu
   const tampered = { ...result, taskScore: 0 } as SemanticQualificationResult;
   assert.equal(reason(() => verifySemanticQualification(tampered, expected(result), "2026-08-30T00:01:00.000Z")), "QUALIFICATION_RESULT_DIGEST_MISMATCH");
   assert.equal(reason(() => verifySemanticQualification(result, { ...expected(result), providerConfigDigest: digest("0") }, "2026-08-30T00:01:00.000Z")), "QUALIFICATION_RESULT_BINDING_MISMATCH");
+});
+
+test("hidden evaluation exposes one prompt at a time, never graders, and defaults every unmatched answer to unqualified", () => {
+  const selectedSuite = suite();
+  const projections = createHiddenPromptProjections(selectedSuite, "semantic-repair");
+  assert.deepEqual(projections.map((item) => item.caseId), ["evidence", "uncertain"]);
+  for (const projection of projections) {
+    const bytes = JSON.stringify(projection);
+    assert.equal(bytes.includes("grader"), false);
+    assert.equal(bytes.includes("holdout"), false);
+    assert.equal(bytes.includes("dimension"), false);
+    assert.equal(bytes.includes("weight"), false);
+    assert.equal(Object.isFrozen(projection), true);
+  }
+
+  const answerByCase = new Map(allAnswers.map((answer) => [answer.caseId, answer.answer]));
+  const routeMemberDigest = exactDigest(route);
+  const taskProfileDigest = exactDigest(profile);
+  const answers = projections.map((projection) => {
+    const observation = {
+      caseId: projection.caseId,
+      promptProjectionDigest: projection.projectionDigest,
+      routeMemberDigest,
+      taskProfileDigest,
+      answer: answerByCase.get(projection.caseId)!,
+      acquiredAt: "2026-08-30T00:00:10.000Z",
+      expiresAt: "2026-08-30T00:10:00.000Z",
+    };
+    return { ...observation, providerAnswerDigest: hiddenProviderAnswerObservationDigest(observation) };
+  });
+  const hiddenInput = {
+    suite: selectedSuite,
+    taskClass: "semantic-repair",
+    routeMemberDigest,
+    taskProfileDigest,
+    answers,
+    evaluatedAt: "2026-08-30T00:00:30.000Z",
+    validitySeconds: 60,
+  } as const;
+  const rebindAnswer = (value: Omit<(typeof answers)[number], "providerAnswerDigest"> & { readonly providerAnswerDigest?: string }) => {
+    const { providerAnswerDigest: _discarded, ...observation } = value;
+    return { ...observation, providerAnswerDigest: hiddenProviderAnswerObservationDigest(observation) };
+  };
+  const qualified = evaluateHiddenHoldout(hiddenInput);
+  const repeated = evaluateHiddenHoldout(hiddenInput);
+  assert.deepEqual(repeated, qualified);
+  assert.equal(qualified.disposition, "qualified");
+  assert.equal(qualified.unmatchedCount, 0);
+  assert.equal(Object.isFrozen(qualified.scores), true);
+  const receiptDigest = hiddenEvaluationReceiptDigest(qualified);
+  assert.match(receiptDigest, /^sha256:[0-9a-f]{64}$/u);
+  assert.equal(verifyHiddenEvaluationReceipt(qualified, hiddenInput, "2026-08-30T00:01:00.000Z").disposition, "qualified");
+
+  const cases: readonly [string, Parameters<typeof evaluateHiddenHoldout>[0], string, number][] = [
+    ["missing", { ...hiddenInput, answers: answers.slice(0, 1) }, "unqualified", 1],
+    ["projection mismatch", { ...hiddenInput, answers: [rebindAnswer({ ...answers[0]!, promptProjectionDigest: digest("7") }), answers[1]!] }, "unqualified", 1],
+    ["route replay", { ...hiddenInput, answers: [rebindAnswer({ ...answers[0]!, routeMemberDigest: digest("8") }), answers[1]!] }, "unqualified", 1],
+    ["stale answer", { ...hiddenInput, answers: [rebindAnswer({ ...answers[0]!, expiresAt: "2026-08-30T00:00:20.000Z" }), answers[1]!] }, "unqualified", 1],
+  ];
+  for (const [label, value, disposition, unmatched] of cases) {
+    const result = evaluateHiddenHoldout(value);
+    assert.equal(result.disposition, disposition, label);
+    assert.equal(result.unmatchedCount, unmatched, label);
+    assert.ok(Date.parse(result.expiresAt) > Date.parse(result.evaluatedAt), label);
+  }
+  assert.equal(reason(() => evaluateHiddenHoldout({ ...hiddenInput, answers: [answers[0]!, answers[0]!] })), "QUALIFICATION_ANSWER_DUPLICATE");
+  assert.equal(reason(() => evaluateHiddenHoldout({ ...hiddenInput, answers: [rebindAnswer({ ...answers[0]!, caseId: "review-only" })] })), "QUALIFICATION_ANSWER_OUT_OF_SCOPE");
+  assert.equal(reason(() => evaluateHiddenHoldout({
+    ...hiddenInput,
+    answers: [{ ...answers[0]!, answer: "tampered bytes" }, answers[1]!],
+  })), "HIDDEN_EVALUATION_INPUT_INVALID");
+  const alteredAnswer = { ...answers[0]!, answer: "not the accepted evidence statement" };
+  const reboundAnswer = {
+    ...alteredAnswer,
+    providerAnswerDigest: hiddenProviderAnswerObservationDigest(alteredAnswer),
+  };
+  assert.notEqual(
+    evaluateHiddenHoldout({ ...hiddenInput, answers: [reboundAnswer, answers[1]!] }).providerAnswerDigest,
+    qualified.providerAnswerDigest,
+  );
+  const alteredScore = {
+    ...qualified,
+    scores: [{ ...qualified.scores[0]!, score: 0, passed: false }, qualified.scores[1]!],
+    disposition: "unqualified" as const,
+  };
+  assert.equal(reason(() => verifyHiddenEvaluationReceipt(alteredScore, hiddenInput, "2026-08-30T00:01:00.000Z")), "HIDDEN_EVALUATION_RESULT_DIGEST_MISMATCH");
+  for (const field of ["graderPolicyDigest", "thresholdDigest", "producerSeparationDigest"] as const) {
+    assert.equal(reason(() => verifyHiddenEvaluationReceipt({ ...qualified, [field]: digest("9") }, hiddenInput, "2026-08-30T00:01:00.000Z")), "HIDDEN_EVALUATION_RESULT_DIGEST_MISMATCH", field);
+  }
 });

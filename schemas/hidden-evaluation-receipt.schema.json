@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:hidden-evaluation-receipt:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "routeMemberDigest",
+    "providerAnswerDigest",
+    "taskProfileDigest",
+    "suiteDigest",
+    "corpusDigest",
+    "graderPolicyDigest",
+    "thresholdDigest",
+    "evaluatorDigest",
+    "producerSeparationDigest",
+    "scores",
+    "unmatchedCount",
+    "disposition",
+    "evaluatedAt",
+    "expiresAt"
+  ],
+  "properties": {
+    "schema": { "const": "urn:usf:hidden-evaluation-receipt:1" },
+    "version": { "const": 1 },
+    "routeMemberDigest": { "$ref": "#/$defs/digest" },
+    "providerAnswerDigest": { "$ref": "#/$defs/digest" },
+    "taskProfileDigest": { "$ref": "#/$defs/digest" },
+    "suiteDigest": { "$ref": "#/$defs/digest" },
+    "corpusDigest": { "$ref": "#/$defs/digest" },
+    "graderPolicyDigest": { "$ref": "#/$defs/digest" },
+    "thresholdDigest": { "$ref": "#/$defs/digest" },
+    "evaluatorDigest": { "$ref": "#/$defs/digest" },
+    "producerSeparationDigest": { "$ref": "#/$defs/digest" },
+    "scores": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["caseId", "dimension", "answerPresent", "score", "passed"],
+        "properties": {
+          "caseId": { "$ref": "#/$defs/identifier" },
+          "dimension": { "$ref": "#/$defs/identifier" },
+          "answerPresent": { "type": "boolean" },
+          "score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "passed": { "type": "boolean" }
+        }
+      }
+    },
+    "unmatchedCount": { "type": "integer", "minimum": 0 },
+    "disposition": { "enum": ["qualified", "unqualified"] },
+    "evaluatedAt": { "$ref": "#/$defs/instant" },
+    "expiresAt": { "$ref": "#/$defs/instant" }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+~-]{0,191}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    }
+  }
+}

@@ -241,6 +241,72 @@ export interface VerifiedSemanticQualification {
   readonly derivedRoles: readonly QualificationRole[];
 }
 
+/** One ephemeral prompt projection. Graders, holdout labels and expected answers are excluded. */
+export interface HiddenPromptProjection {
+  readonly schema: "urn:usf:hidden-prompt-projection:1";
+  readonly suiteDigest: string;
+  readonly corpusDigest: string;
+  readonly taskClass: string;
+  readonly caseId: string;
+  readonly prompt: string;
+  readonly projectionDigest: string;
+}
+
+export interface HiddenProviderAnswerObservation {
+  readonly caseId: string;
+  readonly promptProjectionDigest: string;
+  readonly routeMemberDigest: string;
+  readonly taskProfileDigest: string;
+  readonly providerAnswerDigest: string;
+  readonly answer: string;
+  readonly acquiredAt: string;
+  readonly expiresAt: string;
+}
+
+export interface HiddenEvaluationInput {
+  readonly suite: QualificationSuiteSnapshot;
+  readonly taskClass: string;
+  readonly routeMemberDigest: string;
+  readonly taskProfileDigest: string;
+  readonly answers: readonly HiddenProviderAnswerObservation[];
+  readonly evaluatedAt: string;
+  readonly validitySeconds: number;
+}
+
+export interface HiddenEvaluationScore {
+  readonly caseId: string;
+  readonly dimension: QualificationDimension;
+  readonly answerPresent: boolean;
+  readonly score: number;
+  readonly passed: boolean;
+}
+
+export interface HiddenEvaluationReceipt {
+  readonly schema: "urn:usf:hidden-evaluation-receipt:1";
+  readonly version: 1;
+  readonly routeMemberDigest: string;
+  readonly providerAnswerDigest: string;
+  readonly taskProfileDigest: string;
+  readonly suiteDigest: string;
+  readonly corpusDigest: string;
+  readonly graderPolicyDigest: string;
+  readonly thresholdDigest: string;
+  readonly evaluatorDigest: string;
+  readonly producerSeparationDigest: string;
+  readonly scores: readonly HiddenEvaluationScore[];
+  readonly unmatchedCount: number;
+  readonly disposition: "qualified" | "unqualified";
+  readonly evaluatedAt: string;
+  readonly expiresAt: string;
+}
+
+export interface VerifiedHiddenEvaluation {
+  readonly current: true;
+  readonly disposition: HiddenEvaluationReceipt["disposition"];
+  readonly receiptDigest: string;
+  readonly expiresAt: string;
+}
+
 export type QualificationReason =
   | "QUALIFICATION_INPUT_INVALID"
   | "QUALIFICATION_SUITE_DIGEST_MISMATCH"
@@ -253,7 +319,11 @@ export type QualificationReason =
   | "QUALIFICATION_ANSWER_OUT_OF_SCOPE"
   | "QUALIFICATION_RESULT_DIGEST_MISMATCH"
   | "QUALIFICATION_RESULT_BINDING_MISMATCH"
-  | "QUALIFICATION_RESULT_STALE";
+  | "QUALIFICATION_RESULT_STALE"
+  | "HIDDEN_EVALUATION_INPUT_INVALID"
+  | "HIDDEN_EVALUATION_RESULT_DIGEST_MISMATCH"
+  | "HIDDEN_EVALUATION_BINDING_MISMATCH"
+  | "HIDDEN_EVALUATION_STALE";
 
 export class QualificationError extends Error {
   readonly reasonCode: QualificationReason;
@@ -987,4 +1057,239 @@ export function verifySemanticQualification(
     validUntil: result.validUntil,
     derivedRoles: [...result.derivedRoles],
   }) as VerifiedSemanticQualification;
+}
+
+function hiddenProjectionWithoutDigest(item: QualificationCase, suite: QualificationSuiteSnapshot): Omit<HiddenPromptProjection, "projectionDigest"> {
+  return {
+    schema: "urn:usf:hidden-prompt-projection:1",
+    suiteDigest: suite.suiteDigest,
+    corpusDigest: suite.corpusDigest,
+    taskClass: item.taskClass,
+    caseId: item.caseId,
+    prompt: item.prompt,
+  };
+}
+
+/**
+ * Build per-case prompt-only projections for the hidden evaluator. The route
+ * receives no suite topology, grader, holdout label, dimension, weight or
+ * expected answer and cannot enumerate sibling cases from one projection.
+ */
+export function createHiddenPromptProjections(
+  suite: QualificationSuiteSnapshot,
+  taskClass: string,
+): readonly HiddenPromptProjection[] {
+  assertSuiteSnapshot(suite);
+  if (!validIdentifier(taskClass)) throw new QualificationError("HIDDEN_EVALUATION_INPUT_INVALID");
+  const cases = suite.corpus.cases
+    .filter((item) => item.taskClass === taskClass && item.holdout)
+    .sort((left, right) => left.caseId.localeCompare(right.caseId));
+  if (cases.length === 0) throw new QualificationError("HIDDEN_EVALUATION_INPUT_INVALID");
+  return deepFreeze(cases.map((item) => {
+    const withoutDigest = hiddenProjectionWithoutDigest(item, suite);
+    return { ...withoutDigest, projectionDigest: exactDigest(withoutDigest) };
+  })) as readonly HiddenPromptProjection[];
+}
+
+function validHiddenAnswer(value: unknown): value is HiddenProviderAnswerObservation {
+  return isRecord(value)
+    && hasExactKeys(value, [
+      "caseId", "promptProjectionDigest", "routeMemberDigest", "taskProfileDigest",
+      "providerAnswerDigest", "answer", "acquiredAt", "expiresAt",
+    ])
+    && validIdentifier(value.caseId)
+    && validDigest(value.promptProjectionDigest)
+    && validDigest(value.routeMemberDigest)
+    && validDigest(value.taskProfileDigest)
+    && validDigest(value.providerAnswerDigest)
+    && validBoundedString(value.answer)
+    && validInstant(value.acquiredAt)
+    && validInstant(value.expiresAt)
+    && Date.parse(value.acquiredAt) < Date.parse(value.expiresAt)
+    && value.providerAnswerDigest === hiddenProviderAnswerObservationDigest(
+      value as unknown as Omit<HiddenProviderAnswerObservation, "providerAnswerDigest">,
+    );
+}
+
+/**
+ * Bind the exact answer bytes and every evaluator-visible provenance field.
+ * Provider provenance itself is established by the separate invocation-stage
+ * verifier; this digest prevents the evaluator from grading different bytes
+ * than that verifier admitted.
+ */
+export function hiddenProviderAnswerObservationDigest(
+  value: Omit<HiddenProviderAnswerObservation, "providerAnswerDigest">,
+): string {
+  return exactDigest({
+    caseId: value.caseId,
+    promptProjectionDigest: value.promptProjectionDigest,
+    routeMemberDigest: value.routeMemberDigest,
+    taskProfileDigest: value.taskProfileDigest,
+    answer: value.answer,
+    acquiredAt: value.acquiredAt,
+    expiresAt: value.expiresAt,
+  });
+}
+
+function hiddenAnswerSetDigest(answers: readonly HiddenProviderAnswerObservation[]): string {
+  return exactDigest([...answers]
+    .sort((left, right) => left.caseId.localeCompare(right.caseId))
+    .map((answer) => ({
+      caseId: answer.caseId,
+      promptProjectionDigest: answer.promptProjectionDigest,
+      providerAnswerDigest: answer.providerAnswerDigest,
+      routeMemberDigest: answer.routeMemberDigest,
+      taskProfileDigest: answer.taskProfileDigest,
+      answer: answer.answer,
+      acquiredAt: answer.acquiredAt,
+      expiresAt: answer.expiresAt,
+    })));
+}
+
+/**
+ * Evaluate only genuine hidden cases from the evaluator-owned suite. Missing,
+ * stale, replayed or basis-mismatched answers score zero and keep the route
+ * unqualified. This pure capability performs no provider or filesystem access.
+ */
+export function evaluateHiddenHoldout(input: HiddenEvaluationInput): HiddenEvaluationReceipt {
+  assertSuiteSnapshot(input.suite);
+  if (!validIdentifier(input.taskClass) || !validDigest(input.routeMemberDigest) || !validDigest(input.taskProfileDigest)
+    || !validInstant(input.evaluatedAt) || !Number.isSafeInteger(input.validitySeconds)
+    || input.validitySeconds < 1 || input.validitySeconds > maximumValiditySeconds || !Array.isArray(input.answers)) {
+    throw new QualificationError("HIDDEN_EVALUATION_INPUT_INVALID");
+  }
+  const projections = createHiddenPromptProjections(input.suite, input.taskClass);
+  if (input.answers.length > projections.length || input.answers.some((answer) => !validHiddenAnswer(answer))) {
+    throw new QualificationError("HIDDEN_EVALUATION_INPUT_INVALID");
+  }
+  const projectionByCase = new Map(projections.map((projection) => [projection.caseId, projection]));
+  const answerByCase = new Map<string, HiddenProviderAnswerObservation>();
+  for (const answer of input.answers) {
+    if (!projectionByCase.has(answer.caseId)) throw new QualificationError("QUALIFICATION_ANSWER_OUT_OF_SCOPE");
+    if (answerByCase.has(answer.caseId)) throw new QualificationError("QUALIFICATION_ANSWER_DUPLICATE");
+    answerByCase.set(answer.caseId, answer);
+  }
+  const casesById = new Map(input.suite.corpus.cases.map((item) => [item.caseId, item]));
+  const evaluatedAtMs = Date.parse(input.evaluatedAt);
+  let unmatchedCount = 0;
+  const scores: HiddenEvaluationScore[] = [];
+  const matchedAnswerExpiries: string[] = [];
+  for (const projection of projections) {
+    const item = casesById.get(projection.caseId)!;
+    const answer = answerByCase.get(projection.caseId);
+    const matched = answer !== undefined
+      && answer.promptProjectionDigest === projection.projectionDigest
+      && answer.routeMemberDigest === input.routeMemberDigest
+      && answer.taskProfileDigest === input.taskProfileDigest
+      && Date.parse(answer.acquiredAt) <= evaluatedAtMs
+      && evaluatedAtMs < Date.parse(answer.expiresAt);
+    if (!matched) unmatchedCount += 1;
+    else matchedAnswerExpiries.push(answer.expiresAt);
+    const score = matched ? gradeCase(item, answer.answer) : 0;
+    scores.push(Object.freeze({
+      caseId: item.caseId,
+      dimension: item.dimension,
+      answerPresent: matched,
+      score,
+      passed: score === 1,
+    }));
+  }
+  const evaluatorExpiry = new Date(evaluatedAtMs + input.validitySeconds * 1_000).toISOString();
+  const expiresAt = [...matchedAnswerExpiries, evaluatorExpiry].sort()[0]!;
+  const graderPolicyDigest = exactDigest({
+    suiteDigest: input.suite.suiteDigest,
+    cases: projections.map((projection) => {
+      const item = casesById.get(projection.caseId)!;
+      return { caseId: item.caseId, grader: item.grader };
+    }),
+  });
+  const thresholdDigest = exactDigest({ rule: "all-hidden-cases-must-pass", passingScore: 1 });
+  const evaluatorDigest = exactDigest({ algorithm: "urn:usf:algorithm:hidden-holdout-evaluator:1", version: 1 });
+  const producerSeparationDigest = exactDigest({
+    mode: "one-prompt-projection-per-answer",
+    projectionDigests: projections.map((projection) => projection.projectionDigest),
+    excludedFields: ["dimension", "expected-answer", "grader", "holdout", "suite-cases", "weight"],
+  });
+  return deepFreeze({
+    schema: "urn:usf:hidden-evaluation-receipt:1" as const,
+    version: 1 as const,
+    routeMemberDigest: input.routeMemberDigest,
+    providerAnswerDigest: hiddenAnswerSetDigest(input.answers),
+    taskProfileDigest: input.taskProfileDigest,
+    suiteDigest: input.suite.suiteDigest,
+    corpusDigest: input.suite.corpusDigest,
+    graderPolicyDigest,
+    thresholdDigest,
+    evaluatorDigest,
+    producerSeparationDigest,
+    scores,
+    unmatchedCount,
+    disposition: unmatchedCount === 0 && scores.every((score) => score.passed) ? "qualified" as const : "unqualified" as const,
+    evaluatedAt: input.evaluatedAt,
+    expiresAt,
+  }) as HiddenEvaluationReceipt;
+}
+
+export function parseHiddenEvaluationReceipt(value: unknown): HiddenEvaluationReceipt {
+  if (!isRecord(value)
+    || !hasExactKeys(value, [
+      "schema", "version", "routeMemberDigest", "providerAnswerDigest", "taskProfileDigest",
+      "suiteDigest", "corpusDigest", "graderPolicyDigest", "thresholdDigest", "evaluatorDigest",
+      "producerSeparationDigest", "scores", "unmatchedCount", "disposition", "evaluatedAt", "expiresAt",
+    ])
+    || value.schema !== "urn:usf:hidden-evaluation-receipt:1" || value.version !== 1
+    || !validDigest(value.routeMemberDigest) || !validDigest(value.providerAnswerDigest)
+    || !validDigest(value.taskProfileDigest) || !validDigest(value.suiteDigest) || !validDigest(value.corpusDigest)
+    || !validDigest(value.graderPolicyDigest) || !validDigest(value.thresholdDigest) || !validDigest(value.evaluatorDigest)
+    || !validDigest(value.producerSeparationDigest) || !Array.isArray(value.scores) || value.scores.length < 1
+    || value.scores.length > maximumCases || typeof value.unmatchedCount !== "number" || !Number.isSafeInteger(value.unmatchedCount) || value.unmatchedCount < 0
+    || value.unmatchedCount > value.scores.length || (value.disposition !== "qualified" && value.disposition !== "unqualified")
+    || !validInstant(value.evaluatedAt) || !validInstant(value.expiresAt)
+    || Date.parse(value.evaluatedAt) >= Date.parse(value.expiresAt)) {
+    throw new QualificationError("HIDDEN_EVALUATION_INPUT_INVALID");
+  }
+  const scores: HiddenEvaluationScore[] = [];
+  for (const score of value.scores) {
+    if (!isRecord(score) || !hasExactKeys(score, ["caseId", "dimension", "answerPresent", "score", "passed"])
+      || !validIdentifier(score.caseId) || typeof score.dimension !== "string" || !dimensionSet.has(score.dimension)
+      || typeof score.answerPresent !== "boolean" || !validScore(score.score) || typeof score.passed !== "boolean"
+      || score.passed !== (score.score === 1) || (!score.answerPresent && score.score !== 0)) {
+      throw new QualificationError("HIDDEN_EVALUATION_INPUT_INVALID");
+    }
+    scores.push(Object.freeze({
+      caseId: score.caseId,
+      dimension: score.dimension as QualificationDimension,
+      answerPresent: score.answerPresent,
+      score: score.score,
+      passed: score.passed,
+    }));
+  }
+  if (new Set(scores.map((score) => score.caseId)).size !== scores.length
+    || [...scores].sort((left, right) => left.caseId.localeCompare(right.caseId)).some((score, index) => score.caseId !== scores[index]!.caseId)
+    || (value.disposition === "qualified") !== (value.unmatchedCount === 0 && scores.every((score) => score.passed))) {
+    throw new QualificationError("HIDDEN_EVALUATION_INPUT_INVALID");
+  }
+  return deepFreeze({ ...value, scores }) as unknown as HiddenEvaluationReceipt;
+}
+
+export function hiddenEvaluationReceiptDigest(value: unknown): string {
+  return exactDigest(parseHiddenEvaluationReceipt(value));
+}
+
+export function verifyHiddenEvaluationReceipt(
+  value: unknown,
+  input: HiddenEvaluationInput,
+  at: string,
+): VerifiedHiddenEvaluation {
+  const receipt = parseHiddenEvaluationReceipt(value);
+  if (!validInstant(at)) throw new QualificationError("HIDDEN_EVALUATION_BINDING_MISMATCH");
+  const expected = evaluateHiddenHoldout(input);
+  const receiptDigest = hiddenEvaluationReceiptDigest(receipt);
+  if (canonicalJson(receipt) !== canonicalJson(expected)) {
+    throw new QualificationError("HIDDEN_EVALUATION_RESULT_DIGEST_MISMATCH");
+  }
+  if (Date.parse(receipt.evaluatedAt) > Date.parse(at) || Date.parse(at) >= Date.parse(receipt.expiresAt)) {
+    throw new QualificationError("HIDDEN_EVALUATION_STALE");
+  }
+  return deepFreeze({ current: true, disposition: receipt.disposition, receiptDigest, expiresAt: receipt.expiresAt }) as VerifiedHiddenEvaluation;
 }
