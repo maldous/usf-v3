@@ -364,7 +364,7 @@ export interface CliTransitionCoverageReport {
   readonly waves: readonly (readonly string[])[];
   readonly topologicalOnly: boolean;
   readonly parallelSafety: CliParallelSafetyAssessment;
-  readonly terminalClosure: { readonly declared: readonly string[]; readonly derived: readonly string[]; readonly equal: boolean };
+  readonly terminalClosure: { readonly declared: readonly string[]; readonly derived: readonly string[]; readonly equal: boolean; readonly assessment: CliTerminalAssessment };
   readonly diagnostics: readonly CliTransitionDiagnostic[];
   readonly complete: boolean;
   readonly reasonCode: "TRANSITION_COVERAGE_COMPLETE" | "TRANSITION_SEMANTICS_INCOMPLETE";
@@ -376,6 +376,7 @@ const P = "urn:usf:predicate:";
 const T = "urn:usf:type:";
 const sorted = (values: readonly string[]): string[] => [...new Set(values)].sort();
 const same = (a: readonly string[], b: readonly string[]): boolean => canonicalJson(a) === canonicalJson(b);
+const consistentArtifactProducer = (declared: readonly string[], observed: readonly string[]): boolean => observed.length === 1 && same(sorted(declared), sorted(observed));
 
 export function deriveCliTransitionContext(graph: SemanticGraph, root: string) {
   const diagnostics: CliTransitionDiagnostic[] = [];
@@ -395,6 +396,146 @@ export function deriveCliTransitionContext(graph: SemanticGraph, root: string) {
   const profile = profileCandidates.length === 1 ? profileCandidates[0]! : null;
   if (profile === null) diagnostics.push({ reasonCode: profileCandidates.length > 1 ? "TRANSITION_PROFILE_AMBIGUOUS" : "TRANSITION_PROFILE_MISSING", subject: root, field: "selectsContract" });
   return immutable({ work, contract, profile, profileCandidates, diagnostics, executionAuthority: "none" as const });
+}
+
+export interface CliTerminalAssessment {
+  readonly declarations: readonly string[];
+  readonly semanticBasis: string;
+  readonly nodes: readonly { readonly identity: string; readonly semanticType: string; readonly sourceDigest: string; readonly state: "unverified" | "missing-semantics" }[];
+  readonly edges: readonly { readonly source: string; readonly predicate: string; readonly target: string; readonly rule: string }[];
+  readonly requiredTransitions: readonly string[];
+  readonly terminalArtifacts: readonly string[];
+  readonly structuralComplete: boolean;
+  readonly satisfaction: "unverified";
+  readonly reasonCodes: readonly string[];
+}
+
+/** Read declared obligation relationships only; source declarations never authenticate satisfaction. */
+export function deriveCliTerminalAssessment(graph: SemanticGraph, root: string): CliTerminalAssessment {
+  const context = deriveCliTransitionContext(graph, root);
+  const reasons = new Set(context.diagnostics.map(d => d.reasonCode));
+  const nodes = new Map<string, CliTerminalAssessment["nodes"][number]>();
+  const edges = new Map<string, CliTerminalAssessment["edges"][number]>();
+  const semanticBasis = canonicalQuadDigest(graph.quads);
+  const rows = new Map<string, typeof graph.quads>();
+  if (graph.quads.length > 100000) throw new RangeError("TRANSITION_INPUT_BOUNDS_EXCEEDED");
+  for (const quad of graph.quads) { const list = rows.get(quad.subject) ?? []; list.push(quad); rows.set(quad.subject, list); }
+  const values = (subject: string, predicate: string): string[] => {
+    const found = (rows.get(subject) ?? []).filter(q => q.predicate === predicate);
+    if (found.some(q => q.objectKind !== "iri")) reasons.add("TRANSITION_TERMINAL_EDGE_KIND_INVALID");
+    return sorted(found.filter(q => q.objectKind === "iri").map(q => q.object));
+  };
+  const typed = (id: string, type: string) => values(id, P + "type").includes(type);
+  const declarations = context.contract === null ? [] : values(context.contract, P + "requires")
+    .filter(id => typed(id, T + "CliTerminalClosureDeclaration"));
+  let terminalArtifacts: string[] = [], requiredTransitions: string[] = [];
+  const finish = (): CliTerminalAssessment => immutable({ declarations, semanticBasis,
+    nodes: [...nodes.values()].sort((a, b) => a.identity < b.identity ? -1 : a.identity > b.identity ? 1 : 0),
+    edges: [...edges.entries()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, edge]) => edge),
+    terminalArtifacts, requiredTransitions, structuralComplete: reasons.size === 0,
+    satisfaction: "unverified", reasonCodes: sorted([...reasons]) });
+  if (context.contract === null || context.work === null || context.profile === null) return finish();
+  if (declarations.length !== 1) { reasons.add("TRANSITION_TERMINAL_DECLARATION_MISSING_OR_AMBIGUOUS"); return finish(); }
+  const specifications = deriveCliRecordSpecifications(graph, { contractIdentity: context.contract });
+  const read = (fragment: string, subject: string): Readonly<Record<string, CliRecordValue>> | null => {
+    const records = specifications.records.filter(r => r.fragment === "/$defs/" + fragment);
+    if (records.length !== 1) { reasons.add("TRANSITION_TERMINAL_SPECIFICATION_MISSING"); return null; }
+    const result = deriveCliRecord(graph, { recordIdentity: records[0]!.id, subjectIdentity: subject }, specifications);
+    for (const gap of result.gaps) reasons.add(gap.reasonCode);
+    return result.valid ? result.value : null;
+  };
+  const iris = (value: unknown): value is string[] => Array.isArray(value) && value.every(v => typeof v === "string" && /^[A-Za-z][A-Za-z0-9+.-]*:[^\s]+$/.test(v));
+  const declaration = read("terminalDeclaration", declarations[0]!);
+  if (!declaration || declaration.work !== context.work || declaration.profile !== context.profile
+    || typeof declaration.closureRule !== "string" || !iris(declaration.roots)
+    || !iris(declaration.transitions) || !iris(declaration.terminalArtifacts)) {
+    reasons.add("TRANSITION_TERMINAL_DECLARATION_INVALID"); return finish();
+  }
+  if (!same(sorted(declaration.roots), sorted([context.work, context.contract]))) reasons.add("TRANSITION_TERMINAL_ROOT_SCOPE_CONFLICT");
+  if (!same(sorted(declaration.transitions), values(context.work, P + "transition"))) reasons.add("TRANSITION_TERMINAL_TRANSITION_DENOMINATOR_CONFLICT");
+  terminalArtifacts = sorted(declaration.terminalArtifacts);
+  if (terminalArtifacts.length === 0) reasons.add("TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING");
+  const policy = read("terminalPolicy", declaration.closureRule);
+  const bound = (value: unknown, maximum: number): value is number => typeof value === "number" && Number.isSafeInteger(value) && value > 0 && value <= maximum;
+  if (!policy || !Array.isArray(policy.edges) || !bound(policy.maxNodes, 1024) || !bound(policy.maxEdges, 1024) || !bound(policy.maxDepth, 32)) {
+    reasons.add("TRANSITION_TERMINAL_POLICY_INVALID"); return finish();
+  }
+  interface EdgeRule { identity: string; sourceType: string; predicate: string; targetType: string; scope: string; required: boolean }
+  const rules: EdgeRule[] = [];
+  const ruleKeys = new Set<string>();
+  for (const value of policy.edges) {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) { reasons.add("TRANSITION_TERMINAL_POLICY_INVALID"); continue; }
+    const rule = value as Readonly<Record<string, CliRecordValue>>;
+    if (![rule.identity, rule.sourceType, rule.predicate, rule.targetType, rule.scope].every(v => typeof v === "string")
+      || typeof rule.required !== "boolean" || !["owner", "work-profile", "contract", "reference"].includes(String(rule.scope))) {
+      reasons.add("TRANSITION_TERMINAL_POLICY_INVALID"); continue;
+    }
+    const typedRule = rule as unknown as EdgeRule, key = canonicalJson([rule.sourceType, rule.predicate]);
+    if (ruleKeys.has(key)) reasons.add("TRANSITION_TERMINAL_EDGE_RULE_AMBIGUOUS");
+    ruleKeys.add(key); rules.push(typedRule);
+  }
+  if (rules.length !== policy.edges.length || rules.length === 0 || ruleKeys.size !== rules.length) return finish();
+  const pending = [
+    { identity: context.work, semanticType: T + "WorkPacket", depth: 0 },
+    { identity: context.contract, semanticType: T + "SemanticContract", depth: 0 },
+    ...declaration.transitions.map(identity => ({ identity, semanticType: T + "CliTransitionDescriptor", depth: 0 })),
+    ...terminalArtifacts.map(identity => ({ identity, semanticType: T + "CliArtifactContract", depth: 0 })),
+  ];
+  for (let index = 0; index < pending.length; index++) {
+    const current = pending[index]!;
+    const previous = nodes.get(current.identity);
+    if (previous) { if (previous.semanticType !== current.semanticType) reasons.add("TRANSITION_TERMINAL_TYPE_CONFLICT"); continue; }
+    if (nodes.size >= policy.maxNodes || current.depth > policy.maxDepth) { reasons.add("TRANSITION_TERMINAL_BOUNDS_EXCEEDED"); break; }
+    const valid = typed(current.identity, current.semanticType);
+    nodes.set(current.identity, { identity: current.identity, semanticType: current.semanticType,
+      sourceDigest: canonicalQuadDigest(rows.get(current.identity) ?? []), state: valid ? "unverified" : "missing-semantics" });
+    if (!valid) { reasons.add("TRANSITION_TERMINAL_NODE_MISSING_OR_WRONG_TYPE"); continue; }
+    if ((current.semanticType === T + "CliArtifactContract"
+      && (!same(values(current.identity, P + "work"), [context.work]) || !same(values(current.identity, P + "profile"), [context.profile])))
+      || (current.semanticType === T + "CliTransitionDescriptor" && !same(values(current.identity, P + "owner"), [context.contract]))) {
+      reasons.add("TRANSITION_TERMINAL_NODE_SCOPE_CONFLICT");
+    }
+    for (const rule of rules.filter(r => r.sourceType === current.semanticType)) {
+      const targets = values(current.identity, rule.predicate);
+      if (rule.required && targets.length === 0) reasons.add("TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING");
+      for (const target of targets) {
+        const edge = { source: current.identity, predicate: rule.predicate, target, rule: rule.identity };
+        if (edges.size >= policy.maxEdges) { reasons.add("TRANSITION_TERMINAL_BOUNDS_EXCEEDED"); return finish(); }
+        edges.set(canonicalJson(edge), edge);
+        const scoped = rule.scope === "reference"
+          || (rule.scope === "owner" && same(values(target, P + "owner"), [context.contract]))
+          || (rule.scope === "contract" && same(values(target, P + "forContract"), [context.contract]))
+          || (rule.scope === "work-profile" && same(values(target, P + "work"), [context.work]) && same(values(target, P + "profile"), [context.profile]));
+        if (!scoped) reasons.add("TRANSITION_TERMINAL_NODE_SCOPE_CONFLICT");
+        pending.push({ identity: target, semanticType: rule.targetType, depth: current.depth + 1 });
+      }
+    }
+  }
+  requiredTransitions = sorted([...nodes.values()].filter(n => n.semanticType === T + "CliTransitionDescriptor").map(n => n.identity));
+  for (const node of nodes.values()) if (node.semanticType === T + "CliArtifactContract") {
+    const producers = requiredTransitions.filter(id => values(id, P + "produces").includes(node.identity));
+    if (!consistentArtifactProducer(values(node.identity, P + "producer"), producers)) reasons.add("TRANSITION_ARTIFACT_PRODUCER_CONFLICT");
+  }
+  // Producer is a reverse lineage assertion, not a dependency ordering edge.
+  const successors = new Map<string, string[]>();
+  for (const edge of edges.values()) if (edge.predicate !== P + "producer") successors.set(edge.source, [...(successors.get(edge.source) ?? []), edge.target]);
+  const indegree = new Map([...nodes.keys()].map(id => [id, 0]));
+  for (const targets of successors.values()) for (const target of targets) indegree.set(target, (indegree.get(target) ?? 0) + 1);
+  const ready = sorted([...indegree.keys()].filter(id => indegree.get(id) === 0));
+  const depth = new Map<string, number>();
+  let visited = 0;
+  for (let index = 0; index < ready.length; index++) {
+    const id = ready[index]!; visited++;
+    for (const target of successors.get(id) ?? []) {
+      const nextDepth = Math.max(depth.get(target) ?? 0, (depth.get(id) ?? 0) + 1);
+      depth.set(target, nextDepth);
+      if (nextDepth > policy.maxDepth) reasons.add("TRANSITION_TERMINAL_BOUNDS_EXCEEDED");
+      indegree.set(target, indegree.get(target)! - 1);
+      if (indegree.get(target) === 0) ready.push(target);
+    }
+  }
+  if (visited !== indegree.size) reasons.add("TRANSITION_TERMINAL_CYCLE");
+  return finish();
 }
 
 export function deriveCliTransitionCoverage(
@@ -503,7 +644,7 @@ export function deriveCliTransitionCoverage(
       if (!typed(artifact, "CliArtifactContract")) issue("TRANSITION_ARTIFACT_TYPE_MISSING", artifact, "type");
       if (!same(values(artifact, "work"), work === null ? [] : [work]) || !same(values(artifact, "profile"), profile === null ? [] : [profile])) issue("TRANSITION_ARTIFACT_SCOPE_CONFLICT", artifact, "work/profile");
       const source = producers.get(artifact) ?? [];
-      if (source.length !== 1 || !same(values(artifact, "producer"), source)) issue("TRANSITION_ARTIFACT_PRODUCER_CONFLICT", artifact, "producer");
+      if (!consistentArtifactProducer(values(artifact, "producer"), source)) issue("TRANSITION_ARTIFACT_PRODUCER_CONFLICT", artifact, "producer");
       if (d.consumes.includes(artifact)) for (const sourceId of source) dependencies.get(d.id)!.add(sourceId);
     }
   }
@@ -522,6 +663,8 @@ export function deriveCliTransitionCoverage(
   // Unconsumed artifacts are only a topological census, not terminal obligation closure.
   const equal = false;
   issue("TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED", root, "terminalArtifact/recovery");
+  const assessment = deriveCliTerminalAssessment(graph, root);
+  for (const reasonCode of assessment.reasonCodes) issue(reasonCode, root, "terminalClosure");
   const uniqueDiagnostics = [...new Map(diagnostics.map(d => [canonicalJson(d), d])).values()].sort((a, b) => canonicalJson(a) < canonicalJson(b) ? -1 : canonicalJson(a) > canonicalJson(b) ? 1 : 0);
   // Bind every selected named-source quad, including referenced semantics not projected above.
   const graphDigest = canonicalQuadDigest(graph.quads);
@@ -530,7 +673,7 @@ export function deriveCliTransitionCoverage(
       assessmentRule: "urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1",
       missingObligations: ["urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1"],
       reasonCodes: ["TRANSITION_PARALLEL_SAFETY_UNAUTHENTICATED"] },
-    terminalClosure: { declared, derived, equal }, diagnostics: uniqueDiagnostics, complete: uniqueDiagnostics.length === 0,
+    terminalClosure: { declared, derived, equal, assessment }, diagnostics: uniqueDiagnostics, complete: uniqueDiagnostics.length === 0,
     reasonCode: uniqueDiagnostics.length === 0 ? "TRANSITION_COVERAGE_COMPLETE" as const : "TRANSITION_SEMANTICS_INCOMPLETE" as const, executionAuthority: "none" as const };
   function freeze<TValue>(value: TValue): TValue {
     if (value !== null && typeof value === "object") { for (const child of Object.values(value)) freeze(child); Object.freeze(value); }

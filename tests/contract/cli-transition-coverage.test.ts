@@ -2,12 +2,88 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { createJsonSchemaValidator } from "../../src/schema/index.ts";
-import { deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
+import { deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
 import type { SemanticGraph } from "../../src/graph/index.ts";
-import { canonicalQuadDigest } from "../../src/graph/nquads.ts";
+import { canonicalQuadDigest, parseStrictNQuads } from "../../src/graph/nquads.ts";
 
 const P = "urn:usf:predicate:", T = "urn:usf:type:";
 const work = "urn:test:work", profile = "urn:test:profile:1", contract = "urn:test:contract:1";
+
+function terminalFixture() {
+  const quads = ["cli-transition-definition", "v3-convention"].flatMap(name =>
+    parseStrictNQuads(readFileSync(new URL("../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
+  const graph = { quads } as SemanticGraph;
+  const root = "urn:usf:work:cli-transition-definition", declaration = "urn:usf:cli-terminal-closure:cli-transition-definition:1";
+  const artifact = "urn:usf:cli-contract:local-preparation-artifact:1";
+  const add = (subject: string, field: string, object: string) => graph.quads.push({ subject, predicate: P + field, object, objectKind: "iri", graph: "urn:test:terminal", canonical: "" });
+  return { graph, root, declaration, artifact, add, run: () => deriveCliTerminalAssessment(graph, root) };
+}
+
+test("terminal census exposes real completion and recovery obligations, not merely sinks", () => {
+  const f = terminalFixture(), before = JSON.stringify(f.graph), result = f.run();
+  for (const id of ["urn:usf:proof:cli-transition-definition:completion", "urn:usf:evidence-requirement:cli-transition-definition:completion", "urn:usf:validation:cli-transition-definition", "urn:usf:rule:local-preparation-replay:1"]) {
+    assert(result.nodes.some(n => n.identity === id), id);
+  }
+  assert(result.edges.some(e => e.predicate === P + "requiresEvidence"));
+  assert(result.edges.some(e => e.predicate === P + "recoveryObligation"));
+  assert(result.reasonCodes.includes("TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING"));
+  assert.equal(result.structuralComplete, false); assert.equal(result.satisfaction, "unverified");
+  assert(result.nodes.every(n => n.state === "unverified"));
+  assert.deepEqual(f.run(), result); assert.equal(JSON.stringify(f.graph), before);
+  const canonical = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
+  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:terminal-assessment:1", $ref: canonical.$id + "#/$defs/terminalAssessment" }, { dependencySchemas: [canonical] });
+  assert.equal(validator.validate(result).valid, true);
+  assert.equal(validator.validate({ ...result, satisfaction: "accepted" }).valid, false);
+  assert.equal(validator.validate({ ...result, fields: { completion: true } }).valid, false);
+  assert(Object.isFrozen(result)); assert(Object.isFrozen(result.nodes));
+});
+
+test("declared terminal artifact can complete structural census without authenticating satisfaction", () => {
+  const f = terminalFixture(); f.add(f.declaration, "terminalArtifact", f.artifact);
+  const result = f.run();
+  assert.deepEqual(result.reasonCodes, []);
+  assert.equal(result.structuralComplete, true); assert.equal(result.satisfaction, "unverified");
+  assert.deepEqual(result.terminalArtifacts, [f.artifact]);
+  assert(result.nodes.every(n => n.state === "unverified"));
+  const moved = structuredClone(f.graph);
+  moved.quads.push({ subject: "urn:test:unrelated", predicate: P + "text", object: "new authority basis", objectKind: "literal", graph: "urn:test:terminal", canonical: "" });
+  const next = deriveCliTerminalAssessment(moved, f.root);
+  assert.notEqual(next.semanticBasis, result.semanticBasis);
+  assert.deepEqual(next.nodes, result.nodes);
+});
+
+test("terminal census refuses missing declarations, hidden obligations, wrong scopes and dependency cycles", () => {
+  const mutations: [string, (f: ReturnType<typeof terminalFixture>) => void][] = [
+    ["TRANSITION_TERMINAL_DECLARATION_MISSING_OR_AMBIGUOUS", f => { f.graph.quads = f.graph.quads.filter(q => !(q.object === f.declaration && q.predicate === P + "requires")); }],
+    ["TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING", f => { f.graph.quads = f.graph.quads.filter(q => !(q.subject === "urn:usf:proof:cli-transition-definition:completion" && q.predicate === P + "requiresEvidence")); }],
+    ["TRANSITION_TERMINAL_NODE_SCOPE_CONFLICT", f => f.add(f.artifact, "work", "urn:test:wrong-work")],
+    ["TRANSITION_TERMINAL_NODE_MISSING_OR_WRONG_TYPE", f => { f.graph.quads = f.graph.quads.filter(q => !(q.subject === "urn:usf:rule:local-preparation-replay:1" && q.predicate === P + "type")); }],
+    ["TRANSITION_TERMINAL_CYCLE", f => f.add("urn:usf:cli-transition:local-contribution-prepare:1", "requiresTransition", "urn:usf:cli-transition:local-contribution-prepare:1")],
+    ["TRANSITION_TERMINAL_TRANSITION_DENOMINATOR_CONFLICT", f => f.add(f.declaration, "transition", "urn:test:hidden-transition")],
+    ["TRANSITION_ARTIFACT_PRODUCER_CONFLICT", f => f.add(f.artifact, "producer", "urn:test:second-producer")],
+    ["TRANSITION_ARTIFACT_PRODUCER_CONFLICT", f => { f.add(f.declaration, "terminalArtifact", f.artifact); f.graph.quads = f.graph.quads.filter(q => !(q.object === f.artifact && q.predicate === P + "produces")); }],
+  ];
+  for (const [reason, mutate] of mutations) {
+    const f = terminalFixture(); mutate(f); const result = f.run();
+    assert(result.reasonCodes.includes(reason), JSON.stringify({ reason, actual: result.reasonCodes }));
+    assert.equal(result.structuralComplete, false); assert.equal(result.satisfaction, "unverified");
+  }
+});
+
+test("seeded foreign artifacts and depth hidden by early discovery refuse", () => {
+  const f = terminalFixture(), foreign = "urn:test:foreign-artifact";
+  for (const q of f.graph.quads.filter(q => q.subject === f.artifact)) f.graph.quads.push({ ...q, subject: foreign, canonical: "" });
+  f.graph.quads = f.graph.quads.filter(q => !(q.subject === foreign && q.predicate === P + "work"));
+  f.add(foreign, "work", "urn:test:foreign-work"); f.add(f.declaration, "terminalArtifact", foreign);
+  assert(f.run().reasonCodes.includes("TRANSITION_TERMINAL_NODE_SCOPE_CONFLICT"));
+  const deep = terminalFixture(); deep.add(deep.declaration, "terminalArtifact", deep.artifact);
+  const limit = deep.graph.quads.find(q => q.subject === "urn:usf:cli-terminal-policy:bounded-obligations:1" && q.predicate === P + "maximumDepth")!;
+  limit.object = "1";
+  assert(deep.run().reasonCodes.includes("TRANSITION_TERMINAL_BOUNDS_EXCEEDED"));
+  const badRule = terminalFixture();
+  badRule.graph.quads = badRule.graph.quads.filter(q => !(q.subject === "urn:usf:cli-terminal-edge:0:1" && q.predicate === P + "traversalPredicate"));
+  assert.equal(badRule.run().structuralComplete, false);
+});
 
 test("context derivation is shared, immutable and refuses mixed-kind or ambiguous selectors", () => {
   const f = fixture([[]]), before = JSON.stringify(f.graph);

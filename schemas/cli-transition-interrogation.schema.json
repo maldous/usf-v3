@@ -20,8 +20,8 @@
     "parallelSafety": {"$ref": "urn:usf:cli-transition-descriptor:1#/$defs/parallelSafety"},
     "terminalClosure": {
       "type": "object", "additionalProperties": false,
-      "required": ["declared", "derived", "equal"],
-      "properties": {"declared": {"$ref": "#/$defs/texts"}, "derived": {"$ref": "#/$defs/texts"}, "equal": {"type": "boolean"}}
+      "required": ["declared", "derived", "equal", "assessment"],
+      "properties": {"declared": {"$ref": "#/$defs/texts"}, "derived": {"$ref": "#/$defs/texts"}, "equal": {"type": "boolean"}, "assessment": {"$ref": "urn:usf:cli-transition-descriptor:1#/$defs/terminalAssessment"}}
     },
     "diagnostics": {"type": "array", "items": {
       "type": "object", "additionalProperties": false,
