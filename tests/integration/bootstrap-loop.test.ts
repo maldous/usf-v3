@@ -65,6 +65,77 @@ function packet(root: string): ProfileBoundWorkPacket {
   return value;
 }
 
+test("work currentness imports WorkPacket content only through explicit predecessors", async (context) => {
+  const root = await fixture(context);
+  const graph = loadSemanticGraph(root, manifestPath);
+  const gateWork = "urn:usf:work:semantic-first-eligibility";
+  const realisationWork = "urn:usf:work:realisation-basis-chain";
+  const lifecycleWork = "urn:usf:work:semantic-first-lifecycle-admission";
+  const siblingWork = "urn:usf:work:repository-path-scope";
+  const policy = "urn:fixture:policy:directional-work-currentness";
+  const identitySource = "urn:usf:requirement:semantic-realisation-basis";
+  const validationSeed = "urn:usf:validation:realisation-basis-chain-focused";
+  const identityPredicate = "urn:usf:predicate:ownerWork";
+  const eligibleWork = "urn:usf:predicate:eligibleWork";
+  const typePredicate = "urn:usf:predicate:type";
+  const workType = "urn:usf:type:WorkPacket";
+  const graphName = "urn:usf:graph:semantic-first";
+  const syntheticGraph = {
+    ...graph,
+    quads: [...graph.quads,
+      { subject: policy, predicate: "urn:usf:predicate:type", object: "urn:usf:type:ConstructionAuthorityPublicationPolicy", objectKind: "iri" as const, graph: graphName, canonical: "planted construction policy type" },
+      ...[realisationWork, lifecycleWork].map((work) => ({ subject: policy, predicate: eligibleWork, object: work, objectKind: "iri" as const, graph: graphName, canonical: `planted eligible work ${work}` })),
+      { subject: identitySource, predicate: identityPredicate, object: lifecycleWork, objectKind: "iri" as const, graph: graphName, canonical: "planted non-predecessor work identity edge" },
+    ],
+  };
+  const derivePacket = (candidateGraph: typeof syntheticGraph) => {
+    const result = deriveWork(candidateGraph, { profile, selector: realisationWork, maxItems: 1 });
+    assert.equal(result.status, "ok");
+    const value = result.items?.[0];
+    assert.ok(value?.realisationBasis);
+    return value;
+  };
+  const workResources = (value: ReturnType<typeof derivePacket>) => value.semanticDependencies
+    .filter((dependency) => dependency.kind === "semantic-resource" && syntheticGraph.quads.some((quad) => quad.subject === dependency.key
+      && quad.predicate === typePredicate && quad.objectKind === "iri" && quad.object === workType))
+    .map((dependency) => dependency.key);
+  const realisation = derivePacket(syntheticGraph);
+  assert.deepEqual(workResources(realisation), [gateWork, realisationWork].sort());
+
+  const changedLifecycleGraph = {
+    ...syntheticGraph,
+    quads: syntheticGraph.quads.map((quad) => quad.subject === lifecycleWork && quad.predicate === "urn:usf:predicate:objective"
+      ? { ...quad, object: quad.object + " changed", canonical: quad.canonical + "|changed-downstream-work" }
+      : quad),
+  };
+  const stableRealisation = derivePacket(changedLifecycleGraph);
+  assert.equal(stableRealisation.scopedDependencyDigest, realisation.scopedDependencyDigest);
+
+  const changedPredecessorGraph = {
+    ...syntheticGraph,
+    quads: syntheticGraph.quads.map((quad) => quad.subject === gateWork && quad.predicate === "urn:usf:predicate:objective"
+      ? { ...quad, object: quad.object + " changed", canonical: quad.canonical + "|changed-explicit-predecessor" }
+      : quad),
+  };
+  const predecessorChangedRealisation = derivePacket(changedPredecessorGraph);
+  assert.notEqual(predecessorChangedRealisation.scopedDependencyDigest, realisation.scopedDependencyDigest);
+
+  const changedPolicyIdentityGraph = {
+    ...syntheticGraph,
+    quads: syntheticGraph.quads.map((quad) => quad.subject === policy && quad.predicate === eligibleWork && quad.object === lifecycleWork
+      ? { ...quad, object: siblingWork, canonical: quad.canonical + "|changed-policy-work-identity" }
+      : quad),
+  };
+  assert.notEqual(derivePacket(changedPolicyIdentityGraph).scopedDependencyDigest, realisation.scopedDependencyDigest);
+
+  const ambiguousSeedGraph = {
+    ...syntheticGraph,
+    quads: [...syntheticGraph.quads,
+      { subject: validationSeed, predicate: typePredicate, object: workType, objectKind: "iri" as const, graph: graphName, canonical: "planted ambiguous WorkPacket seed" },
+    ],
+  };
+  assert.throws(() => derivePacket(ambiguousSeedGraph), new RegExp(`SEMANTIC_WORK_PACKET_SEED_INVALID:${validationSeed}$`));
+});
 test("profile-bound work preserves one current basis through heterogeneous calls and isolated check", async (context) => {
   const root = await fixture(context);
   const work = packet(root);

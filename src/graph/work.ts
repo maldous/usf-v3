@@ -331,27 +331,45 @@ function constructionPolicyForWork(graph: SemanticGraph, work: string): string |
   return policies[0] ?? null;
 }
 
-/** Follow the selected policy without turning its other eligible works into sibling dependencies. */
+/** Follow the selected policy without importing another WorkPacket except through an explicit predecessor edge. */
 function constructionPolicyResources(graph: SemanticGraph, policy: string | null, selectedWork: string, maximum = 1_000): string[] {
   if (policy === null) return [];
-  const visited = new Set<string>();
-  const stack = [policy];
-  while (stack.length > 0) {
-    const subject = stack.pop() as string;
-    if (visited.has(subject)) continue;
-    if (visited.size >= maximum) refuse(`CONSTRUCTION_AUTHORITY_POLICY_CLOSURE_LIMIT:${selectedWork}`);
-    visited.add(subject);
-    for (const quad of objectsFor(graph, subject)) {
-      if (quad.objectKind !== "iri") continue;
-      if (subject === policy && quad.predicate === predicate("eligibleWork") && quad.object !== selectedWork) continue;
-      if (graph.quads.some((candidate) => candidate.subject === quad.object)) stack.push(quad.object);
+  try {
+    return workDependencyResourceIris(graph, [policy, selectedWork], selectedWork, maximum);
+  } catch (error) {
+    if (error instanceof Error && error.message === "SEMANTIC_DEPENDENCY_LIMIT_EXCEEDED") {
+      return refuse(`CONSTRUCTION_AUTHORITY_POLICY_CLOSURE_LIMIT:${selectedWork}`);
     }
+    throw error;
   }
-  return [...visited].sort();
 }
-
 function hasType(graph: SemanticGraph, subject: string, type: string): boolean {
   return objectsFor(graph, subject, typePredicate).some((quad) => quad.objectKind === "iri" && quad.object === type);
+}
+
+/** Follow authored semantics, but import another WorkPacket content only through explicit predecessor edges. */
+function workDependencyResourceIris(graph: SemanticGraph, seeds: Iterable<string>, selectedWork: string, maximum = 1_000): string[] {
+  const initial = [...new Set(seeds)].sort();
+  const ambiguousSeed = initial.find((resource) => resource !== selectedWork && hasType(graph, resource, workType));
+  if (ambiguousSeed !== undefined) throw new Error("SEMANTIC_WORK_PACKET_SEED_INVALID:" + ambiguousSeed);
+  const pending = [...initial];
+  const visited = new Set<string>();
+  while (pending.length > 0) {
+    const resource = pending.shift() as string;
+    if (visited.has(resource)) continue;
+    if (objectsFor(graph, resource).length === 0) throw new Error("SEMANTIC_RESOURCE_UNRESOLVED:" + resource);
+    visited.add(resource);
+    if (visited.size > maximum) throw new Error("SEMANTIC_DEPENDENCY_LIMIT_EXCEEDED");
+    for (const quad of objectsFor(graph, resource)) {
+      if (quad.objectKind !== "iri" || objectsFor(graph, quad.object).length === 0 || visited.has(quad.object)) continue;
+      const targetIsWork = hasType(graph, quad.object, workType);
+      const explicitPredecessor = quad.predicate === predicate("dependsOn") && hasType(graph, resource, workType);
+      if (targetIsWork && quad.object !== selectedWork && !explicitPredecessor) continue;
+      pending.push(quad.object);
+    }
+    pending.sort();
+  }
+  return [...visited].sort();
 }
 
 function iriValues(graph: SemanticGraph, subject: string, name: string, reason: string, reasons: string[]): string[] {
@@ -1203,7 +1221,7 @@ function packetFor(graph: SemanticGraph, id: string, decisionBoundary: DecisionB
   const toolPaths = declaredPaths(graph, pathSubjects, "toolPath");
   const resourceSeeds = [id, contract, ...requirementIds, ...acceptanceIds, ...validationIds, ...proofIds, ...postures.flatMap((posture) => posture.binding === undefined ? [posture.environment] : [posture.binding, posture.environment])];
   const resources = [...new Set([
-    ...transitiveResourceIris(graph, resourceSeeds),
+    ...workDependencyResourceIris(graph, resourceSeeds, id),
     ...constructionPolicyResources(graph, constructionPolicy, id),
   ])];
   // A profile digest binds its exact selection policy, but its other selected
