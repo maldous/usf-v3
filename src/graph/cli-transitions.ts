@@ -749,6 +749,7 @@ export function deriveCliTransitionCoverage(
   const descriptors: Readonly<Record<string, CliRecordValue>>[] = [];
   const operationalUsers = new Map<string, Set<string>>();
   const operationalSupporters = new Map<string, Set<string>>();
+  const authenticatedEvaluators = new Set<string>();
   const operationalObservations: CliOperationalSupport[] = [];
   let allDescriptorsValid = true;
   const topology: CliTransitionTopology[] = ids.map(id => {
@@ -848,6 +849,8 @@ export function deriveCliTransitionCoverage(
                   } : { outcome: support.outcome }),
                 });
                 if (support.outcome === "refused") issue(support.refusalCode, id, "operationalRules");
+                if (support.outcome !== "refused" && requiredKeys.size > 0
+                  && required.every(value => observed.has(key(value)))) authenticatedEvaluators.add(id);
                 for (const field of requiredFields) {
                   if (support.outcome === "refused") continue;
                   const instances = required.filter(value => value.fieldIdentity === field);
@@ -901,6 +904,7 @@ export function deriveCliTransitionCoverage(
   for (const reasonCode of assessment.reasonCodes) issue(reasonCode, root, "terminalClosure");
   // A shared field is supported only when every selected descriptor instance is covered.
   const remainingDiagnostics = diagnostics.filter(diagnostic => {
+    if (diagnostic.reasonCode === "TRANSITION_EVALUATORS_UNAUTHENTICATED") return !authenticatedEvaluators.has(diagnostic.subject);
     if (diagnostic.reasonCode !== "CLI_OPERATIONAL_RULE_UNRESOLVED" || !allDescriptorsValid || ids.length === 0) return true;
     const users = operationalUsers.get(diagnostic.subject), supporters = operationalSupporters.get(diagnostic.subject);
     return users === undefined || users.size === 0 || supporters === undefined || [...users].some(id => !supporters.has(id));

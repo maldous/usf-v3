@@ -1159,7 +1159,8 @@ test("operational support requires exact trace instances for every selected desc
   assert(completeSupport.operationalSupport.every(value => value.lockAvailability === "not-observed"));
   assert.equal(completeSupport.topologicalOnly, true, "unknown lock availability cannot become an execution schedule");
   assert.equal(JSON.stringify(completeSupport).includes("idle"), false, "unknown lock availability cannot be projected as idle");
-  assert(completeSupport.diagnostics.some(d => d.reasonCode === "TRANSITION_EVALUATORS_UNAUTHENTICATED"));
+  assert.equal(completeSupport.diagnostics.some(d => d.reasonCode === "TRANSITION_EVALUATORS_UNAUTHENTICATED"), false,
+    "complete admitted nonparallel traces authenticate evaluators without changing generic schema gaps");
   assert.equal(f.specs().operationalGaps.length, 2, "generic specifications stay conservative despite trusted callback support");
 });
 
@@ -1183,6 +1184,58 @@ test("operational support admission refuses every altered compiled rule binding 
     assert(f.unresolved(report, f.nestedField), name);
     assert.equal(report.executionAuthority, "none");
   }
+});
+
+test("evaluator authentication requires complete admitted nonparallel traces without clearing parallel claims", () => {
+  const evaluatorGap = (report: ReturnType<ReturnType<typeof operationalSupportFixture>["run"]>, transition: string) =>
+    report.diagnostics.some(d => d.reasonCode === "TRANSITION_EVALUATORS_UNAUTHENTICATED" && d.subject === transition);
+  const assertNonclaim = (report: ReturnType<ReturnType<typeof operationalSupportFixture>["run"]>) => {
+    assert.equal(report.executionAuthority, "none");
+    assert.equal(report.parallelSafety.state, "unproven");
+    assert.equal(report.topologicalOnly, true);
+  };
+
+  const currentFixture = operationalSupportFixture();
+  const current = currentFixture.run((_graph, _selection, projection) => currentFixture.support(projection));
+  for (const id of currentFixture.ids) assert.equal(evaluatorGap(current, id), false, `current ${id}`);
+  assert.equal(currentFixture.unresolved(current, currentFixture.field), false);
+  assert.equal(currentFixture.unresolved(current, currentFixture.nestedField), false);
+  assertNonclaim(current);
+
+  const missingFixture = operationalSupportFixture();
+  const missing = missingFixture.run((_graph, _selection, projection) => ({
+    ...missingFixture.support(projection), outcome: "missing-prerequisite" as const,
+    unavailableInputs: [{ factKind: "context", identity: "urn:test:external-input:1", state: "missing", reasonCode: "NATIVE_EXTERNAL_INPUT_MISSING" }],
+  }));
+  for (const id of missingFixture.ids) assert.equal(evaluatorGap(missing, id), false, `missing ${id}`);
+  assert.equal(missingFixture.unresolved(missing, missingFixture.field), false);
+  assert.equal(missingFixture.unresolved(missing, missingFixture.nestedField), false);
+  assertNonclaim(missing);
+
+  const partialFixture = operationalSupportFixture();
+  const partial = partialFixture.run((_graph, _selection, projection) => ({ ...partialFixture.support(projection), derivations: [partialFixture.support(projection).derivations[0]!] }));
+  for (const id of partialFixture.ids) assert.equal(evaluatorGap(partial, id), true, `partial ${id}`);
+  assert(partialFixture.unresolved(partial, partialFixture.nestedField));
+  assertNonclaim(partial);
+
+  const refusedFixture = operationalSupportFixture();
+  const refused = refusedFixture.run((_graph, _selection, projection) => ({
+    ...refusedFixture.support(projection), outcome: "refused" as const, refusalClass: "stale" as const, refusalCode: "NATIVE_CONTEXT_STALE",
+  }));
+  const staleFixture = operationalSupportFixture();
+  const stale = staleFixture.run((_graph, _selection, projection) => ({ ...staleFixture.support(projection), sourceBasis: "sha256:" + "0".repeat(64) }));
+  const unadmittedFixture = operationalSupportFixture();
+  let unadmittedCalls = 0;
+  const unadmitted = unadmittedFixture.run((_graph, _selection, projection) => { unadmittedCalls++; return unadmittedFixture.support(projection); }, null);
+  const errorFixture = operationalSupportFixture();
+  const callbackError = errorFixture.run(() => { throw new Error("test native failure"); });
+  for (const [name, fixture, report] of [
+    ["refused", refusedFixture, refused], ["stale", staleFixture, stale], ["unadmitted", unadmittedFixture, unadmitted], ["callback", errorFixture, callbackError],
+  ] as const) {
+    for (const id of fixture.ids) assert.equal(evaluatorGap(report, id), true, `${name} ${id}`);
+    assertNonclaim(report);
+  }
+  assert.equal(unadmittedCalls, 0);
 });
 
 test("operational support refuses stale foreign duplicate empty-fact and wrong-path traces", () => {
