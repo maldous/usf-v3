@@ -736,3 +736,108 @@ test("downstream discovery excludes other contracts without hiding explicit prer
   assert(explicit.diagnostics.some(d => d.subject === foreign && d.reasonCode === "TRANSITION_OWNER_CONFLICT"));
   assert.equal(explicit.executionAuthority, "none");
 });
+
+test("terminal diagnostics bind the actual missing recovery edge without inventing a target", () => {
+  const f = terminalFixture();
+  const subject = "urn:usf:cli-transition:completion-check-receipts:1", rule = "urn:usf:cli-terminal-edge:9:1";
+  const result = f.run();
+  const diagnostic = result.diagnostics.find(d => d.reasonCode === "TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING" && d.subject === subject && d.predicate === P + "recoveryContract");
+  assert.deepEqual(diagnostic, {
+    reasonCode: "TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING", subject, predicate: P + "recoveryContract",
+    rule, expectedType: T + "CliRecoveryContract", scope: "reference", observedTargets: [],
+    sourceDigest: canonicalQuadDigest(f.graph.quads.filter(q => q.subject === subject)),
+    ruleDigest: canonicalQuadDigest(f.graph.quads.filter(q => q.subject === rule)),
+  });
+  assert.deepEqual(result.reasonCodes, [...new Set(result.diagnostics.map(d => d.reasonCode))].sort());
+  assert.equal(result.satisfaction, "unverified");
+  assert(Object.isFrozen(result.diagnostics));
+  assert(Object.isFrozen(diagnostic!.observedTargets));
+  const absent = result.diagnostics.find(d => d.reasonCode === "TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING")!;
+  assert.equal(absent.subject, f.declaration);
+  assert.equal(absent.predicate, P + "terminalArtifact");
+  assert.deepEqual(absent.observedTargets, []);
+  assert.equal(absent.sourceDigest, canonicalQuadDigest(f.graph.quads.filter(q => q.subject === f.declaration)));
+});
+
+test("terminal diagnostics preserve same-code nodes and bind source and rule movement deterministically", () => {
+  const f = terminalFixture();
+  const subjects = ["urn:usf:cli-transition:no-change-workspace:1", "urn:usf:cli-transition:completion-check-receipts:1"];
+  f.graph.quads = f.graph.quads.filter(q => !(subjects.includes(q.subject) && q.predicate === P + "recoveryContract"));
+  const before = f.run();
+  const selected = before.diagnostics.filter(d => subjects.includes(d.subject) && d.predicate === P + "recoveryContract" && d.reasonCode === "TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING");
+  assert.deepEqual(selected.map(d => d.subject).sort(), [...subjects].sort());
+  const reordered = { ...f.graph, quads: [...f.graph.quads].reverse() };
+  assert.deepEqual(deriveCliTerminalAssessment(reordered, f.root), before);
+  const duplicated = { ...f.graph, quads: [...f.graph.quads, ...f.graph.quads].reverse() };
+  const repeated = deriveCliTerminalAssessment(duplicated, f.root);
+  assert.notEqual(repeated.semanticBasis, before.semanticBasis);
+  const descriptions = (items: typeof repeated.diagnostics) => items.map(({ sourceDigest: _source, ruleDigest: _rule, ...description }) => JSON.stringify(description)).sort();
+  assert.deepEqual(descriptions(repeated.diagnostics), descriptions(before.diagnostics));
+  for (const item of repeated.diagnostics) {
+    assert.equal(item.sourceDigest, canonicalQuadDigest(duplicated.quads.filter(q => q.subject === item.subject)));
+    if (item.rule !== undefined) assert.equal(item.ruleDigest, canonicalQuadDigest(duplicated.quads.filter(q => q.subject === item.rule)));
+  }
+  const source = subjects[0]!, rule = selected[0]!.rule!;
+  f.graph.quads.push({ subject: source, predicate: P + "text", object: "changed subject explanation", objectKind: "literal", graph: "urn:test:terminal", canonical: "" });
+  const changedSource = f.run().diagnostics.find(d => d.subject === source && d.predicate === P + "recoveryContract" && d.reasonCode === "TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING")!;
+  assert.notEqual(changedSource.sourceDigest, selected.find(d => d.subject === source)!.sourceDigest);
+  assert.equal(changedSource.ruleDigest, selected[0]!.ruleDigest);
+  const row = f.graph.quads.find(q => q.subject === rule && q.predicate === P + "text")!;
+  row.object += " Additional rule explanation.";
+  const changedRule = f.run().diagnostics.find(d => d.subject === source && d.predicate === P + "recoveryContract" && d.reasonCode === "TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING")!;
+  assert.equal(changedRule.sourceDigest, changedSource.sourceDigest);
+  assert.notEqual(changedRule.ruleDigest, changedSource.ruleDigest);
+  assert.equal(changedRule.ruleDigest, canonicalQuadDigest(f.graph.quads.filter(q => q.subject === rule)));
+});
+
+test("terminal diagnostics locate missing declaration wrong types scopes and malformed policy", () => {
+  const missing = terminalFixture();
+  missing.graph.quads = missing.graph.quads.filter(q => !(q.predicate === P + "requires" && q.object === missing.declaration));
+  const diagnostic = missing.run().diagnostics.find(d => d.reasonCode === "TRANSITION_TERMINAL_DECLARATION_MISSING_OR_AMBIGUOUS")!;
+  assert.equal(diagnostic.subject, "urn:usf:contract:cli-transition-definition:1");
+  assert.equal(diagnostic.predicate, P + "requires");
+  assert.equal(diagnostic.expectedType, T + "CliTerminalClosureDeclaration");
+  assert.deepEqual(diagnostic.observedTargets, []);
+  const wrong = terminalFixture(), target = "urn:test:wrong-recovery";
+  wrong.add("urn:usf:cli-transition:completion-check-receipts:1", "recoveryContract", target);
+  wrong.add(target, "type", T + "Requirement");
+  const wrongType = wrong.run().diagnostics.find(d => d.subject === target && d.reasonCode === "TRANSITION_TERMINAL_NODE_MISSING_OR_WRONG_TYPE")!;
+  assert.equal(wrongType.expectedType, T + "CliRecoveryContract");
+  assert.deepEqual(wrongType.observedTargets, [T + "Requirement"]);
+  assert.equal(wrongType.sourceDigest, canonicalQuadDigest(wrong.graph.quads.filter(q => q.subject === target)));
+  const scoped = terminalFixture();
+  scoped.add(scoped.artifact, "work", "urn:test:foreign");
+  assert(scoped.run().diagnostics.some(d => d.subject === scoped.artifact && d.reasonCode === "TRANSITION_TERMINAL_NODE_SCOPE_CONFLICT" && d.scope === "work-profile"));
+  const malformed = terminalFixture(), policy = "urn:usf:cli-terminal-policy:bounded-obligations:1";
+  malformed.graph.quads = malformed.graph.quads.filter(q => !(q.subject === policy && q.predicate === P + "maximumDepth"));
+  const policyDiagnostic = malformed.run().diagnostics.find(d => d.subject === policy && d.reasonCode === "TRANSITION_TERMINAL_POLICY_INVALID")!;
+  assert.equal(policyDiagnostic.sourceDigest, canonicalQuadDigest(malformed.graph.quads.filter(q => q.subject === policy)));
+});
+
+test("terminal diagnostic schema rejects opaque authority and invented target properties", () => {
+  const f = terminalFixture(), result = f.run();
+  const canonical = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
+  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:terminal-diagnostics:1", $ref: canonical.$id + "#/$defs/terminalAssessment" }, { dependencySchemas: [canonical] });
+  assert.equal(validator.validate(result).valid, true);
+  const item = result.diagnostics[0]!;
+  for (const extra of [{ fields: {} }, { executionAuthority: "execute" }, { target: "urn:test:invented" }, { assertedTarget: "urn:test:invented" }]) {
+    assert.equal(validator.validate({ ...result, diagnostics: [{ ...item, ...extra }] }).valid, false);
+  }
+  for (const key of ["reasonCode", "subject", "sourceDigest", "observedTargets"]) {
+    const incomplete: Record<string, unknown> = { ...item }; delete incomplete[key];
+    assert.equal(validator.validate({ ...result, diagnostics: [incomplete] }).valid, false, key);
+  }
+});
+
+test("terminal diagnostics refuse record and observed-target overflow instead of truncating", () => {
+  for (const mode of ["records", "targets"]) {
+    const f = terminalFixture(), owner = "urn:usf:contract:cli-transition-definition:1";
+    for (let i = 0; i < 1025; i++) {
+      const id = "urn:test:diagnostic-overflow:" + i;
+      f.add(owner, "requires", id);
+      if (mode === "targets") f.add(id, "type", T + "CliTerminalClosureDeclaration");
+      else f.graph.quads.push({ subject: id, predicate: P + "type", object: "not-an-iri", objectKind: "literal", graph: "urn:test:terminal", canonical: "" });
+    }
+    assert.throws(() => f.run(), { name: "RangeError", message: "TRANSITION_INPUT_BOUNDS_EXCEEDED" }, mode);
+  }
+});
