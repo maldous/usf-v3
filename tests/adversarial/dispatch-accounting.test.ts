@@ -51,6 +51,7 @@ async function graphCommandFixture(selectedAntigravityModels: number): Promise<s
   await writeFile(executionPath, bounded, { mode: 0o600 });
 
   await mkdir(resolve(root, ".usf/catalog"), { recursive: true, mode: 0o700 });
+  await mkdir(resolve(root, ".usf/provider-home"), { mode: 0o700 });
   await chmod(resolve(root, ".usf"), 0o700);
   const raw = await readFile(resolve(repositoryRoot, "tests/fixtures/providers/models-dev.json"));
   await writeFile(resolve(root, ".usf/catalog/models-dev.raw.json"), raw, { mode: 0o600 });
@@ -291,6 +292,7 @@ test("timeout classes share bounded backoff while generic failures and success c
 
 test("the graph command emits no-route, preflight and contacted-refusal accounting without provider contact", async () => {
   const originalFetch = globalThis.fetch;
+  const originalProviderHome = process.env.USF_PROVIDER_HOME;
   let fetchContacts = 0;
   globalThis.fetch = (() => {
     fetchContacts += 1;
@@ -301,6 +303,7 @@ test("the graph command emits no-route, preflight and contacted-refusal accounti
     const execute = async (selectedModels: number, usable: boolean) => {
       const root = await graphCommandFixture(selectedModels);
       roots.push(root);
+      process.env.USF_PROVIDER_HOME = resolve(root, ".usf/provider-home");
       let nativeInvocations = 0;
       const dependencies: GraphExecutionDependencies = Object.freeze({
         observeLocalAgentCapabilities: async (
@@ -402,6 +405,8 @@ test("the graph command emits no-route, preflight and contacted-refusal accounti
     })), Object.freeze({ accounting: hermesAccounting, ...hermesAccounting }));
   } finally {
     globalThis.fetch = originalFetch;
+    if (originalProviderHome === undefined) delete process.env.USF_PROVIDER_HOME;
+    else process.env.USF_PROVIDER_HOME = originalProviderHome;
     for (const root of roots) await rm(root, { recursive: true, force: true });
   }
   assert.equal(fetchContacts, 0);
