@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, unlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
 
@@ -33,6 +35,81 @@ test("provider host help and static wiring remain operator-owned and profile sco
   assert.match(launcher, /\/usr\/bin\/flock --shared --nonblock/u);
   assert.match(launcher, /USF_DYNAMIC_LEAF_LOCK_FD=9/u);
   assert.match(launcher, /exec node -- .*src\/cli\.ts/u);
+});
+
+test("fresh init installs through the frozen closure and preserves the stable launcher lock", async (context) => {
+  const permission = (process as typeof process & { permission?: { has(scope: string): boolean } }).permission;
+  if (permission !== undefined && (!permission.has("child_process") || !permission.has("fs.write"))) {
+    context.skip("confined bootstrap-child-unavailable");
+    return;
+  }
+  const root = await mkdtemp(join(tmpdir(), "usf-fresh-init-"));
+  context.after(async () => await rm(root, { recursive: true, force: true }));
+  const fakeBin = join(root, "fake-bin");
+  await mkdir(join(root, "bin"), { recursive: true });
+  await mkdir(join(root, "scripts"), { recursive: true });
+  await mkdir(fakeBin, { recursive: true });
+  await writeFile(join(root, "bin/usf"), readFileSync(new URL("../../bin/usf", import.meta.url)));
+  for (const name of ["bootstrap.sh", "env.sh", "verify-contained.sh"]) {
+    await writeFile(join(root, "scripts", name), readFileSync(new URL("../../scripts/" + name, import.meta.url)));
+    await chmod(join(root, "scripts", name), 0o755);
+  }
+  await chmod(join(root, "bin/usf"), 0o755);
+  await writeFile(join(root, ".gitignore"), ".usf/\nnode_modules/\nbootstrap.log\nfake-bin/\n");
+  await writeFile(join(root, "package.json"), '{"name":"usf-init-fixture","private":true}\n');
+  await writeFile(join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+  await writeFile(join(root, "pnpm-workspace.yaml"), "packages: []\n");
+  const log = join(root, "bootstrap.log");
+  await writeFile(join(fakeBin, "corepack"), [
+    "#!/bin/sh",
+    "set -eu",
+    "printf '%s\\n' \"$*\" >> \"$USF_BOOTSTRAP_TEST_LOG\"",
+    "mkdir -p node_modules",
+    ": > node_modules/.modules.yaml",
+    "",
+  ].join("\n"));
+  await writeFile(join(fakeBin, "node"), [
+    "#!/bin/sh",
+    "set -eu",
+    "if [ \"$1\" = \"--input-type=module\" ]; then",
+    "  exec " + process.execPath + " \"$@\"",
+    "fi",
+    "printf '%s\\n' \"$*\" >> \"$USF_BOOTSTRAP_TEST_LOG\"",
+    "case \"$*\" in",
+    "  *\"models refresh\"*) mkdir -p .usf/catalog; : > .usf/catalog/models-dev.raw.json; : > .usf/catalog/models-dev.normalized.json ;;",
+    "esac",
+    "",
+  ].join("\n"));
+  await chmod(join(fakeBin, "corepack"), 0o755);
+  await chmod(join(fakeBin, "node"), 0o755);
+  const git = (args: readonly string[]): void => {
+    const result = spawnSync("git", args, { cwd: root, encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+  };
+  git(["init", "-q"]);
+  git(["add", "."]);
+  const environment = { ...process.env, PATH: fakeBin + ":" + (process.env.PATH ?? ""), USF_BOOTSTRAP_TEST_LOG: log };
+  const runInit = () => spawnSync(join(root, "bin/usf"), ["init"], { cwd: root, env: environment, encoding: "utf8" });
+  const first = runInit();
+  assert.equal(first.status, 0, first.stderr);
+  assert.deepEqual(JSON.parse(first.stdout), { schema: "urn:usf:init:1", status: "ok", runtimeRoot: ".usf", providerContacted: false });
+  const lockDirectory = await stat(join(root, ".usf/locks"));
+  const firstLock = await stat(join(root, ".usf/locks/primary-mutation.lock"));
+  assert.equal(lockDirectory.mode & 0o777, 0o700);
+  assert.equal(firstLock.mode & 0o777, 0o600);
+  assert.match(await readFile(log, "utf8"), /pnpm install --frozen-lockfile --prefer-offline/u);
+  assert.match(await readFile(log, "utf8"), /models refresh --timeout-ms 30000 --max-bytes 33554432/u);
+  assert.match(await readFile(log, "utf8"), /query --manifest graph\/manifests\/self-host-provider-v3\.json/u);
+  const second = runInit();
+  assert.equal(second.status, 0, second.stderr);
+  const secondLock = await stat(join(root, ".usf/locks/primary-mutation.lock"));
+  assert.deepEqual([secondLock.dev, secondLock.ino], [firstLock.dev, firstLock.ino], "repeat init preserves the coordination inode");
+  const installCalls = (await readFile(log, "utf8")).split("\n").filter((line) => line.startsWith("pnpm install "));
+  assert.deepEqual(installCalls, [
+    "pnpm install --frozen-lockfile --prefer-offline",
+    "pnpm install --frozen-lockfile --offline",
+  ], "repeat init verifies the frozen closure without registry fallback");
+  assert.match(await readFile(log, "utf8"), /models summary/u);
 });
 
 test("injected fresh-child admission repeats authority and releases both locks before the handler", async () => {

@@ -3,6 +3,10 @@ set -eu
 
 usf_bin_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 
+if [ "$#" -eq 1 ] && [ "$1" = "init" ]; then
+  exec sh "$usf_bin_root/scripts/bootstrap.sh"
+fi
+
 usf_dynamic_leaf=""
 case "${1-}:${2-}" in
   call:parallel|call:compare|providers:host|providers:receipt) usf_dynamic_leaf="${1}:${2}" ;;
