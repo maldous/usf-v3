@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { createJsonSchemaValidator } from "../../src/schema/index.ts";
 import { deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
+import { transitionAdaptersForCoverage } from "../../src/commands/transition.ts";
 import type { SemanticGraph } from "../../src/graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../src/graph/nquads.ts";
 
@@ -840,18 +841,18 @@ test("terminal diagnostics refuse record and observed-target overflow instead of
   }
 });
 
-test("selective receipt declarations are graph-projectable but do not become execution or parallel authority", () => {
+test("selective receipt adapter maps the complete native recovery closure without authority", () => {
   const graph = { quads: [
     ...parseStrictNQuads(readFileSync(new URL("../../graph/cli-transition-definition.nq", import.meta.url), "utf8"), "urn:usf:graph:cli-transition-definition"),
     ...parseStrictNQuads(readFileSync(new URL("../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"),
     ...parseStrictNQuads(readFileSync(new URL("../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"),
   ] } as SemanticGraph;
   const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
-  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, []);
+  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, transitionAdaptersForCoverage());
   const id = "urn:usf:cli-transition:completion-check-receipts:1";
   assert(report.waves.flat().includes(id));
   assert(report.descriptors.some(d => d.identity === id), "shared native-intent semantics permit descriptor projection");
-  assert(report.diagnostics.some(d => d.subject === id && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
+  assert.equal(report.diagnostics.some(d => d.subject === id && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), false);
   assert.equal(report.executionAuthority, "none");
   assert.equal(report.parallelSafety.state, "unproven");
   assert.equal(report.complete, false, "a declared complete-current recovery branch is not execution permission");

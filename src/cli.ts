@@ -47,7 +47,13 @@ const bootstrapHandlers: CommandHandlers = {
     return (await import("./commands/work-completion.ts")).realiseCommandHandler(context);
   },
   apply: async (context) => (await import("./commands/apply.ts")).applyHandler(context),
-  check: async (context) => (await import("./commands/apply.ts")).admissionCheckHandler(context),
+  check: async (context) => {
+    if (context.args[0] === "--input") {
+      const { executeTransitionCommand } = await import("./commands/transition.ts");
+      return executeTransitionCommand(context, "check");
+    }
+    return (await import("./commands/apply.ts")).admissionCheckHandler(context);
+  },
   integrate: (context) => operationalMutation(context.repositoryRoot, async () => (await import("./commands/apply.ts")).integrateCommandHandler(context)),
   "bootstrap-carrier": async (context) => {
     const { bootstrapCarrierCommandHandler } = await import("./commands/bootstrap-carrier.ts");

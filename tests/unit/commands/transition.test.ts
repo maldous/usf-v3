@@ -486,6 +486,59 @@ test("result schema admission refuses unsafe files and malformed schemas without
   } finally { rmSync(parent, { recursive: true, force: true }); }
 });
 
+test("selective check input is root-only and admits the exact shared native-intent closure", async () => {
+  const { createJsonSchemaValidator } = await import("../../../src/schema/index.ts");
+  const canonical = deriveTransitionSchemaResult(actualDescriptorGraph(), { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" }).descriptorSchema!;
+  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:selective-check-input:1", $ref: String(canonical.$id) + "#/$defs/noChangeRequest" }, { dependencySchemas: [canonical] });
+  const input = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  assert.equal(validator.validate(input).valid, true);
+  for (const key of ["candidateDigest", "validationObligations", "receipts", "profile", "basis", "output", "force", "executionAuthority"]) {
+    assert.equal(validator.validate({ ...input, [key]: "caller-override" }).valid, false, key);
+  }
+
+  const graph = actualDescriptorGraph();
+  const selection = { rootIdentity: input.rootIdentity, manifestPath: input.manifestPath };
+  const admitted = inspectTransition(graph, selection, "check");
+  assert.equal(admitted.implementation.effectClass, "check-receipt-persistence");
+  assert.equal(admitted.validator.validate(input).valid, true);
+  assert.deepEqual(admitted.readResultSchema(), {
+    $schema: canonical.$schema,
+    $id: "urn:usf:schema:completion-check-receipt-set-result:1",
+    $ref: String(canonical.$id) + "#/$defs/completionCheckReceiptSet",
+  });
+
+  const admissionRemoved = structuredClone(graph);
+  admissionRemoved.quads = admissionRemoved.quads.filter(q => !(q.subject === "urn:usf:contract:cli-transition-definition:1"
+    && q.predicate === "urn:usf:predicate:admitsEffectAdapter" && q.object === "urn:usf:cli-adapter:completion-check-receipts:1"));
+  assert.throws(() => inspectTransition(admissionRemoved, selection, "check"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+
+  const movedIntent = structuredClone(graph);
+  const intent = movedIntent.quads.find(q => q.subject === "urn:usf:rule:completion-check-receipts-execution-intent:1" && q.predicate === "urn:usf:predicate:text")!;
+  intent.object += " changed";
+  assert.throws(() => inspectTransition(movedIntent, selection, "check"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+
+});
+
+test("completion receipt-set result uses the canonical generated fragment and carries no authority claim", async () => {
+  const { createJsonSchemaValidator } = await import("../../../src/schema/index.ts");
+  const canonical = deriveTransitionSchemaResult(actualDescriptorGraph(), { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" }).descriptorSchema!;
+  const schema = "urn:usf:schema:completion-check-receipt-set-result:1";
+  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: schema, $ref: String(canonical.$id) + "#/$defs/completionCheckReceiptSet" }, { dependencySchemas: [canonical] });
+  const members = ["urn:test:validation:a", "urn:test:validation:b"].map((obligationIri, index) => ({
+    obligationIri, receiptPath: `.usf/receipts/check/sha256:${"a".repeat(64)}/${index}.json`,
+    receiptDigest: "sha256:" + (index ? "b" : "a").repeat(64), validationResultSetDigest: "sha256:" + (index ? "d" : "c").repeat(64),
+  }));
+  const result = {
+    schema, status: "current", workIri: "urn:usf:work:cli-transition-definition", profileIri: "urn:usf:profile:cli-transition-definition:1",
+    candidateDigest: "sha256:" + "a".repeat(64), constructionBasisDigest: "sha256:" + "b".repeat(64),
+    validationObligations: members.map(member => member.obligationIri), receipts: members,
+    receiptSetDigest: "sha256:" + "e".repeat(64), nonClaims: ["completion", "parallel-safety", "partial-set-recovery", "terminal-closure"],
+  };
+  assert.equal(validator.validate(result).valid, true, "the denominator is a dynamic collection, not a fixed receipt total");
+  assert.equal(validator.validate({ ...result, parallelSafety: { state: "proved" } }).valid, false);
+  assert.equal(validator.validate({ ...result, receipts: [members[0]] }).valid, true, "cardinality is structurally bounded; exact denominator equality remains native current authentication");
+});
+
 test("no-change compatibility refuses changed effect recovery and result bindings without invoking producer", () => {
   const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
   for (const [subject, predicate, object] of [
