@@ -50,7 +50,9 @@ import stat
 import sys
 
 WIRE_SWITCH = "--fixture-process-v2"
-WIRE_VERSION = 2
+LEGACY_WIRE_VERSION = 2
+NATIVE_WIRE_VERSION = 3
+NATIVE_EXECUTION_MODE = "urn:usf:mode:confined-fixture-process:2"
 MAX_WIRE_BYTES = 32768
 MAX_ARG_BYTES = 4096
 MAX_FS_PATH_BYTES = 4000
@@ -119,7 +121,20 @@ APPARMOR_STACK_COMMAND = "stack " + APPARMOR_PROFILE
 APPARMOR_MAX_LABEL_BYTES = 512
 APPARMOR_PRIOR_LABELS = ("bwrap", "unpriv_bwrap")
 
-WIRE_KEYS = frozenset({"version", "apparmorProfile", "executables", "nodeArguments"})
+LEGACY_WIRE_KEYS = frozenset(
+    {"version", "apparmorProfile", "executables", "nodeArguments"}
+)
+NATIVE_WIRE_KEYS = frozenset(
+    {
+        "version",
+        "executionMode",
+        "apparmorProfile",
+        "executables",
+        "filesystemReadPaths",
+        "filesystemWritePath",
+        "nodeArguments",
+    }
+)
 EXEC_KEYS = frozenset({"path", "digest"})
 
 REFUSE_USAGE = "USF-FIXTURE-LAUNCH-REFUSED-01-USAGE"
@@ -203,10 +218,10 @@ def _valid_fs_flag(argument, prefix):
     return _safe_segments(value, absolute=True)
 
 
-def _validate_node_arguments(arguments):
+def _checked_argument_list(arguments, minimum):
     if type(arguments) is not list:
         _refuse(REFUSE_WIRE)
-    if not (MIN_NODE_ARGS <= len(arguments) <= MAX_NODE_ARGS):
+    if not (minimum <= len(arguments) <= MAX_NODE_ARGS):
         _refuse(REFUSE_WIRE)
     checked = []
     for item in arguments:
@@ -214,6 +229,11 @@ def _validate_node_arguments(arguments):
         if text is None:
             _refuse(REFUSE_WIRE)
         checked.append(text)
+    return checked
+
+
+def _validate_node_arguments(arguments):
+    checked = _checked_argument_list(arguments, MIN_NODE_ARGS)
     if checked[0] != "--permission":
         _refuse(REFUSE_WIRE)
     if checked[1] != "--allow-child-process":
@@ -266,6 +286,52 @@ def _validate_node_arguments(arguments):
     return checked, tuple(read_values), write_values[0]
 
 
+def _validate_filesystem_paths(read_paths, write_path):
+    if type(read_paths) is not list:
+        _refuse(REFUSE_WIRE)
+    if not (1 <= len(read_paths) <= MAX_FS_READ_FLAGS):
+        _refuse(REFUSE_WIRE)
+    checked_reads = []
+    for item in read_paths:
+        path = _wire_string(item, MAX_FS_PATH_BYTES)
+        if path is None or not _valid_fs_flag(FS_READ_PREFIX + path, FS_READ_PREFIX):
+            _refuse(REFUSE_WIRE)
+        checked_reads.append(path)
+    if len(set(checked_reads)) != len(checked_reads):
+        _refuse(REFUSE_WIRE)
+    checked_write = _wire_string(write_path, MAX_FS_PATH_BYTES)
+    if checked_write is None or not _valid_fs_flag(
+        FS_WRITE_PREFIX + checked_write, FS_WRITE_PREFIX
+    ):
+        _refuse(REFUSE_WIRE)
+    if checked_write in checked_reads:
+        _refuse(REFUSE_WIRE)
+    return tuple(checked_reads), checked_write
+
+
+def _validate_native_node_arguments(arguments):
+    checked = _checked_argument_list(arguments, 4)
+    if checked[0:3] != ["--no-addons", "--test", "--test-isolation=none"]:
+        _refuse(REFUSE_WIRE)
+    index = 3
+    if checked[index].startswith(NAME_PATTERN_PREFIX):
+        pattern = checked[index][len(NAME_PATTERN_PREFIX):]
+        if _NAME_PATTERN_RE.match(pattern) is None:
+            _refuse(REFUSE_WIRE)
+        index += 1
+    targets = checked[index:]
+    if not (1 <= len(targets) <= MAX_TEST_TARGETS):
+        _refuse(REFUSE_WIRE)
+    if len(set(targets)) != len(targets):
+        _refuse(REFUSE_WIRE)
+    for target in targets:
+        if _TEST_TARGET_RE.match(target) is None:
+            _refuse(REFUSE_WIRE)
+        if not _safe_segments(target, absolute=False):
+            _refuse(REFUSE_WIRE)
+    return checked
+
+
 def _parse_wire(payload):
     try:
         raw = payload.encode("utf-8", "strict")
@@ -277,10 +343,22 @@ def _parse_wire(payload):
         document = json.loads(payload, object_pairs_hook=_reject_duplicate_keys)
     except (ValueError, RecursionError):
         _refuse(REFUSE_WIRE)
-    if type(document) is not dict or frozenset(document) != WIRE_KEYS:
+    if type(document) is not dict:
         _refuse(REFUSE_WIRE)
-    version = document["version"]
-    if type(version) is not int or version != WIRE_VERSION:
+    version = document.get("version")
+    if type(version) is not int:
+        _refuse(REFUSE_WIRE)
+    document_keys = frozenset(document)
+    if version == LEGACY_WIRE_VERSION:
+        if document_keys != LEGACY_WIRE_KEYS:
+            _refuse(REFUSE_WIRE)
+    elif version == NATIVE_WIRE_VERSION:
+        if document_keys != NATIVE_WIRE_KEYS:
+            _refuse(REFUSE_WIRE)
+        execution_mode = _wire_string(document["executionMode"], MAX_ARG_BYTES)
+        if execution_mode != NATIVE_EXECUTION_MODE:
+            _refuse(REFUSE_WIRE)
+    else:
         _refuse(REFUSE_WIRE)
     apparmor_profile = _wire_string(document["apparmorProfile"], MAX_ARG_BYTES)
     if apparmor_profile != APPARMOR_PROFILE:
@@ -299,9 +377,15 @@ def _parse_wire(payload):
         if path != expected_path or _DIGEST_RE.match(digest) is None:
             _refuse(REFUSE_WIRE)
         digests.append(digest[len("sha256:"):])
-    node_arguments, fs_read_values, fs_write_value = _validate_node_arguments(
-        document["nodeArguments"]
-    )
+    if version == LEGACY_WIRE_VERSION:
+        node_arguments, fs_read_values, fs_write_value = _validate_node_arguments(
+            document["nodeArguments"]
+        )
+    else:
+        fs_read_values, fs_write_value = _validate_filesystem_paths(
+            document["filesystemReadPaths"], document["filesystemWritePath"]
+        )
+        node_arguments = _validate_native_node_arguments(document["nodeArguments"])
     return digests, node_arguments, fs_read_values, fs_write_value
 
 

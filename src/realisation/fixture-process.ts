@@ -16,6 +16,10 @@ import { objectsFor, resourceDigest, type SemanticGraph } from "../graph/index.t
 import type { Quad } from "../graph/nquads.ts";
 
 const CANONICAL_SHA256 = /^sha256:[0-9a-f]{64}$/;
+const PERMISSION_FIXTURE_PROCESS_MODE_IRI =
+  "urn:usf:mode:confined-fixture-process:1";
+const NATIVE_FIXTURE_PROCESS_MODE_IRI =
+  "urn:usf:mode:confined-fixture-process:2";
 
 export interface FixtureProcessPolicy {
   modeIri: string;
@@ -49,7 +53,13 @@ export function readFixtureProcessPolicy(
   graph: SemanticGraph,
   modeIri: string
 ): FixtureProcessPolicy | null {
-  if (modeIri !== "urn:usf:mode:confined-fixture-process:1") {
+  const expectedVersion =
+    modeIri === PERMISSION_FIXTURE_PROCESS_MODE_IRI
+      ? "1"
+      : modeIri === NATIVE_FIXTURE_PROCESS_MODE_IRI
+        ? "2"
+        : null;
+  if (expectedVersion === null) {
     return null;
   }
 
@@ -72,7 +82,7 @@ export function readFixtureProcessPolicy(
   if (singleIri(modeIri, "urn:usf:predicate:type") !== "urn:usf:type:ExecutionMode") {
     return null;
   }
-  if (singleLiteral(modeIri, "urn:usf:predicate:version") !== "1") {
+  if (singleLiteral(modeIri, "urn:usf:predicate:version") !== expectedVersion) {
     return null;
   }
 
@@ -217,7 +227,10 @@ export function readFixtureProcessPolicy(
   };
 }
 
-const EXPECTED_MODE_IRI = "urn:usf:mode:confined-fixture-process:1";
+const EXPECTED_MODE_IRIS: ReadonlySet<string> = new Set([
+  PERMISSION_FIXTURE_PROCESS_MODE_IRI,
+  NATIVE_FIXTURE_PROCESS_MODE_IRI,
+]);
 const EXPECTED_CONFINEMENT_STRATEGY = "bwrap-apparmor-execute-v1";
 const EXPECTED_PROFILE_NAME = "usf-fixture-process-v1";
 const EXPECTED_PROFILE_ASSET_RELATIVE_PATH =
@@ -316,7 +329,7 @@ function policyShapeIsAuthentic(policy: FixtureProcessPolicy): boolean {
   if (policy === null || typeof policy !== "object") {
     return false;
   }
-  if (policy.modeIri !== EXPECTED_MODE_IRI) {
+  if (!EXPECTED_MODE_IRIS.has(policy.modeIri)) {
     return false;
   }
   if (policy.confinementStrategy !== EXPECTED_CONFINEMENT_STRATEGY) {
@@ -881,7 +894,7 @@ export function fixtureProcessLaunchArguments(
       return null;
     }
     if (
-      policy.modeIri !== EXPECTED_MODE_IRI ||
+      !EXPECTED_MODE_IRIS.has(policy.modeIri) ||
       policy.confinementStrategy !== EXPECTED_CONFINEMENT_STRATEGY ||
       policy.fixtureProfileName !== EXPECTED_PROFILE_NAME ||
       policy.fixtureProfileAssetPath !== EXPECTED_PROFILE_ASSET_RELATIVE_PATH ||
@@ -1233,12 +1246,29 @@ export function fixtureProcessLaunchArguments(
       return null;
     }
 
-    const wire = JSON.stringify({
-      version: 2,
-      apparmorProfile: policy.fixtureProfileName,
-      executables,
-      nodeArguments,
-    });
+    const wire = policy.modeIri === PERMISSION_FIXTURE_PROCESS_MODE_IRI
+      ? JSON.stringify({
+          version: 2,
+          apparmorProfile: policy.fixtureProfileName,
+          executables,
+          nodeArguments,
+        })
+      : JSON.stringify({
+          version: 3,
+          executionMode: NATIVE_FIXTURE_PROCESS_MODE_IRI,
+          apparmorProfile: policy.fixtureProfileName,
+          executables,
+          filesystemReadPaths: [
+            ...reads,
+            "/proc",
+            "/usr/bin",
+          ],
+          filesystemWritePath: writeValue,
+          nodeArguments: [
+            "--no-addons",
+            ...nodeArgs.slice(testIdx),
+          ],
+        });
     if (Buffer.byteLength(wire, "utf8") > MAX_WIRE_BYTES) {
       return null;
     }

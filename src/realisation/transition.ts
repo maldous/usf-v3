@@ -1580,14 +1580,16 @@ function validationAuthorities(root: string, basis: RealisationBasis, phase: "ca
     if (commandTokens.join(" ") !== command || commandTokens.some((token) => token.length === 0)) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     const environmentIri = integrationOne(graph, reference.id, "environment", "iri");
     const executionModeIri = integrationOne(graph, reference.id, "executionMode", "iri");
+    const confinedFixtureProcessMode = executionModeIri === "urn:usf:mode:confined-fixture-process:1"
+      || executionModeIri === "urn:usf:mode:confined-fixture-process:2";
     if (environmentIri !== "urn:usf:environment:hermetic"
-      || (executionModeIri !== "urn:usf:mode:deterministic-test-substitute" && executionModeIri !== "urn:usf:mode:confined-fixture-process:1")) {
+      || (executionModeIri !== "urn:usf:mode:deterministic-test-substitute" && !confinedFixtureProcessMode)) {
       throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     }
-    const fixtureProcessPolicy = executionModeIri === "urn:usf:mode:confined-fixture-process:1"
+    const fixtureProcessPolicy = confinedFixtureProcessMode
       ? readFixtureProcessPolicy(graph, executionModeIri)
       : null;
-    if (executionModeIri === "urn:usf:mode:confined-fixture-process:1" && fixtureProcessPolicy === null) {
+    if (confinedFixtureProcessMode && fixtureProcessPolicy === null) {
       throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     }
     if (fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) {
@@ -1719,7 +1721,8 @@ export async function runIntegrationValidation(input: IntegrationVerifierInput):
         throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
       }
       launch = baseLaunch;
-    } else if (input.authority.executionModeIri === "urn:usf:mode:confined-fixture-process:1") {
+    } else if (input.authority.executionModeIri === "urn:usf:mode:confined-fixture-process:1"
+      || input.authority.executionModeIri === "urn:usf:mode:confined-fixture-process:2") {
       if (input.authority.fixtureProcessPolicy == null) {
         throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
       }

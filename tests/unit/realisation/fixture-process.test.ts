@@ -5,7 +5,9 @@ import { canonicalQuadDigest, parseStrictNQuads } from "../../../src/graph/nquad
 import { authenticateFixtureProcessHostProfile, confinedFixtureProcessLaunch, fixtureProcessLaunchArguments, readFixtureProcessPolicy, validateFixtureProcessHostProfileMetadata } from "../../../src/realisation/fixture-process.ts";
 
 const MODE_IRI = "urn:usf:mode:confined-fixture-process:1";
+const NATIVE_MODE_IRI = "urn:usf:mode:confined-fixture-process:2";
 const MODE = `<${MODE_IRI}>`;
+const NATIVE_MODE = `<${NATIVE_MODE_IRI}>`;
 const GRAPH = "<urn:usf:graph:fixture-process-validation>";
 const NODE_DIGEST = "sha256:b2959781cc5a74c357ffa02367efa8a0330cbb1c9cb347732fdfaaaca381cbcd";
 const GIT_DIGEST = "sha256:2a8c18fbf43da9f692d75474c72bea9dfd796c260b0f3dfe456376abc3bbd668";
@@ -44,6 +46,14 @@ const MODE_LINES: readonly string[] = [
   line(MODE, "version", '"1"'),
 ];
 const BASE_TEXT = `${MODE_LINES.join("\n")}\n`;
+const NATIVE_MODE_LINES: readonly string[] = MODE_LINES.map((entry) =>
+  entry.replaceAll(MODE, NATIVE_MODE)
+).map((entry) =>
+  entry === line(NATIVE_MODE, "version", '"1"')
+    ? line(NATIVE_MODE, "version", '"2"')
+    : entry
+);
+const NATIVE_BASE_TEXT = `${NATIVE_MODE_LINES.join("\n")}\n`;
 
 const graphFromText = (text: string): SemanticGraph => {
   const quads = parseStrictNQuads(text, "urn:usf:graph:fixture-process-validation");
@@ -71,11 +81,35 @@ const loadPolicy = () => {
   assert.ok(policy, "the unmodified fixture mode must parse to a policy");
   return policy;
 };
+const loadNativePolicy = () => {
+  const policy = readFixtureProcessPolicy(
+    graphFromText(NATIVE_BASE_TEXT),
+    NATIVE_MODE_IRI
+  );
+  assert.ok(policy, "the native fixture mode must parse to a policy");
+  return policy;
+};
 
 test("readFixtureProcessPolicy accepts the declared mode and ignores unrelated modes", () => {
   const graph = graphFromText(BASE_TEXT);
   assert.notEqual(readFixtureProcessPolicy(graph, MODE_IRI), null);
   assert.equal(readFixtureProcessPolicy(graph, "urn:usf:mode:unrelated-fixture-process:1"), null);
+});
+
+test("readFixtureProcessPolicy selects only the exact native mode version", () => {
+  const graph = graphFromText(NATIVE_BASE_TEXT);
+  const policy = readFixtureProcessPolicy(graph, NATIVE_MODE_IRI);
+  assert.ok(policy);
+  assert.equal(policy.modeIri, NATIVE_MODE_IRI);
+  assert.equal(readFixtureProcessPolicy(graph, MODE_IRI), null);
+  const wrongVersion = NATIVE_BASE_TEXT.replace(
+    line(NATIVE_MODE, "version", '"2"'),
+    line(NATIVE_MODE, "version", '"1"')
+  );
+  assert.equal(
+    readFixtureProcessPolicy(graphFromText(wrongVersion), NATIVE_MODE_IRI),
+    null
+  );
 });
 
 test("parseStrictNQuads refuses a duplicate canonical N-Quad line", () => {
@@ -235,6 +269,67 @@ test("fixtureProcessLaunchArguments preserves confinement and delegates through 
   }, "the payload carries exactly the v2 protocol, AppArmor profile, raw-pinned node/git/flock executables, and node arguments");
 });
 
+test("fixtureProcessLaunchArguments derives the exact native wire3 interface from the authenticated base launch", () => {
+  const base = baseLaunch();
+  const snapshot = structuredClone(base);
+  const launch = fixtureProcessLaunchArguments(
+    base,
+    loadNativePolicy(),
+    WORKSPACE
+  );
+  assert.ok(launch);
+  assert.deepEqual(base, snapshot, "native derivation does not mutate the authenticated base");
+  assert.equal(launch.executable, "/usr/bin/bwrap");
+  const produced = [...launch.arguments];
+  const separator = produced.indexOf("--");
+  const expectedPrefix = [...baseArguments.slice(0, baseArguments.indexOf("--"))];
+  expectedPrefix[expectedPrefix.indexOf("PATH") + 1] = "/usr/bin";
+  assert.deepEqual(produced.slice(0, separator), expectedPrefix);
+  const tail = produced.slice(separator + 1);
+  assert.deepEqual(tail.slice(0, 6), [
+    "/usr/bin/python3.12",
+    "-I",
+    "-S",
+    "-B",
+    "/fixture/src/realisation/fixture-process-launcher.py",
+    "--fixture-process-v2",
+  ]);
+  assert.equal(tail.length, 7);
+  const payload: unknown = JSON.parse(tail[6]);
+  assert.deepEqual(payload, {
+    version: 3,
+    executionMode: NATIVE_MODE_IRI,
+    apparmorProfile: "usf-fixture-process-v1",
+    executables: [
+      { path: "/usr/bin/node", digest: NODE_DIGEST },
+      { path: "/usr/bin/git", digest: GIT_DIGEST },
+      { path: "/usr/bin/flock", digest: FLOCK_DIGEST },
+    ],
+    filesystemReadPaths: [
+      WORKSPACE,
+      DEPS,
+      CACHE,
+      "/etc/passwd",
+      "/proc/net/route",
+      "/proc",
+      "/usr/bin",
+    ],
+    filesystemWritePath: SCRATCH,
+    nodeArguments: ["--no-addons", "--test", "--test-isolation=none", TEST_PATH],
+  });
+  assert.deepEqual(Object.keys(payload as object), [
+    "version",
+    "executionMode",
+    "apparmorProfile",
+    "executables",
+    "filesystemReadPaths",
+    "filesystemWritePath",
+    "nodeArguments",
+  ], "wire3 has exactly the seven documented keys in producer order");
+  const nativeArguments = (payload as { nodeArguments: string[] }).nodeArguments;
+  assert.equal(nativeArguments.some((argument) => argument === "--permission" || argument.startsWith("--allow-")), false);
+});
+
 const mutated = (mutate: (values: string[]) => void): BaseLaunch => {
   const values = [...baseArguments];
   mutate(values);
@@ -274,6 +369,20 @@ for (const [label, base] of builderRefusals) {
 test("fixtureProcessLaunchArguments refuses workspaces that do not match the confined launch", () => {
   assert.equal(fixtureProcessLaunchArguments(baseLaunch(), loadPolicy(), "fixture"), null, "relative workspace");
   assert.equal(fixtureProcessLaunchArguments(baseLaunch(), loadPolicy(), "/elsewhere"), null, "unrelated absolute workspace");
+});
+
+test("fixtureProcessLaunchArguments requires the strict permission-bearing base before native derivation", () => {
+  const withoutPermission = mutated((values) => removeAt(values, "--permission"));
+  assert.equal(
+    fixtureProcessLaunchArguments(withoutPermission, loadNativePolicy(), WORKSPACE),
+    null
+  );
+});
+
+test("fixtureProcessLaunchArguments refuses arbitrary mode fallback", () => {
+  const policy = structuredClone(loadNativePolicy());
+  policy.modeIri = "urn:usf:mode:confined-fixture-process:3";
+  assert.equal(fixtureProcessLaunchArguments(baseLaunch(), policy, WORKSPACE), null);
 });
 
 const hardeningRefusals: readonly (readonly [string, BaseLaunch])[] = [

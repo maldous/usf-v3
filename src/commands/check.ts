@@ -490,13 +490,15 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
   if (commandTokens.join(" ") !== command || commandTokens.some((token) => token.length === 0)) refuse("CHECK_VALIDATION_COMMAND_UNSUPPORTED");
   const environmentIri = exactGraphValue(graph, validationId, "urn:usf:predicate:environment", "iri", "CHECK_VALIDATION_AUTHORITY_INVALID");
   const executionModeIri = exactGraphValue(graph, validationId, "urn:usf:predicate:executionMode", "iri", "CHECK_VALIDATION_AUTHORITY_INVALID");
+  const confinedFixtureProcessMode = executionModeIri === "urn:usf:mode:confined-fixture-process:1"
+    || executionModeIri === "urn:usf:mode:confined-fixture-process:2";
   if (exactGraphValue(graph, validationId, "urn:usf:predicate:applicability", "literal", "CHECK_VALIDATION_AUTHORITY_INVALID") !== "required"
     || environmentIri !== "urn:usf:environment:hermetic"
-    || (executionModeIri !== "urn:usf:mode:deterministic-test-substitute" && executionModeIri !== "urn:usf:mode:confined-fixture-process:1")) {
+    || (executionModeIri !== "urn:usf:mode:deterministic-test-substitute" && !confinedFixtureProcessMode)) {
     refuse("CHECK_VALIDATION_MODE_UNSUPPORTED");
   }
   let fixtureProcessPolicy: FixtureProcessPolicy | null = null;
-  if (executionModeIri === "urn:usf:mode:confined-fixture-process:1") {
+  if (confinedFixtureProcessMode) {
     fixtureProcessPolicy = readFixtureProcessPolicy(graph, executionModeIri);
     if (fixtureProcessPolicy === null) refuse("CHECK_VALIDATION_MODE_UNSUPPORTED");
     if (!authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
@@ -1154,7 +1156,8 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
       if (validation.executionModeIri === "urn:usf:mode:deterministic-test-substitute") {
         if (validation.fixtureProcessPolicy !== null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
         launch = baseLaunch;
-      } else if (validation.executionModeIri === "urn:usf:mode:confined-fixture-process:1") {
+      } else if (validation.executionModeIri === "urn:usf:mode:confined-fixture-process:1"
+        || validation.executionModeIri === "urn:usf:mode:confined-fixture-process:2") {
         if (validation.fixtureProcessPolicy === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
         launch = confinedFixtureProcessLaunch(baseLaunch, validation.fixtureProcessPolicy, execution.view);
       } else {
