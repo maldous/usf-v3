@@ -280,6 +280,58 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
   assert.equal(authenticatedReadback?.receiptPath, expectedPath);
   assert.deepEqual(authenticatedReadback?.receipt, result.receipt);
 
+
+  const originalReceiptBytes = await readFile(receiptPath);
+  const workspace = join(root, ".usf/workspaces", spec.digest.slice("sha256:".length));
+  const workspaceEntry = await lstat(workspace);
+  const workspaceManifest = await readFile(join(workspace, ".usf-workspace.json"));
+  const workspaceSource = await readFile(join(workspace, targetPath));
+  const workspaceEntries = (await readdir(workspace)).sort();
+  const receiptEntries = (await readdir(join(root, ".usf/receipts/check", spec.digest.slice("sha256:".length)))).sort();
+  const otherDigest = canonicalDigest({ deliberatelyDifferentCurrentnessClaim: true });
+  type ReceiptPatch = Partial<typeof result.receipt>;
+  const patches: Array<readonly [string, ReceiptPatch]> = [];
+  for (const field of [
+    "validationResourceDigest", "validationEnvironmentDigest", "validationExecutionModeDigest",
+    "originalConstructionBasisDigest", "scopedDependencyDigest", "workspaceIdentityDigest",
+    "lineageDigest", "byteDeltaDigest", "fileModeDigest", "candidateTreeDigest", "writeSetDigest",
+  ] as const) patches.push([field, { [field]: otherDigest }]);
+  patches.push(["work", { workIri: "urn:test:other-work" }], ["profile", { explicitProfileIri: "urn:test:other-profile:1" }]);
+  const commandTokens = result.receipt.validationCommandTokens.map((token, index) => index === result.receipt.validationCommandTokens.length - 1 ? "tests/unit/providers/receipt-currentness-mismatch.test.ts" : token);
+  patches.push(["command with consistent digest", { validationCommandTokens: commandTokens, validationCommandDigest: canonicalDigest(commandTokens) }]);
+  patches.push(["environment identity and digest", { validationEnvironmentIri: "urn:test:other-environment", validationEnvironmentDigest: otherDigest }]);
+  patches.push(["mode identity and digest", { validationExecutionModeIri: "urn:test:other-mode", validationExecutionModeDigest: otherDigest }]);
+  const toolDependencies = [...result.receipt.validationToolDependencies, { kind: "basis-input" as const, id: "urn:test:extra-tool", digest: otherDigest }];
+  patches.push(["tool claims with consistent digest", { validationToolDependencies: toolDependencies, validationToolDependencyDigest: canonicalDigest(toolDependencies, { rejectAbsolutePaths: true }) }]);
+  const schemaDependencies = [...result.receipt.validationSchemaDependencies, { id: "urn:test:extra-schema", digest: otherDigest }];
+  patches.push(["schema claims with consistent digest", { validationSchemaDependencies: schemaDependencies, validationSchemaDependencyDigest: canonicalDigest(schemaDependencies, { rejectAbsolutePaths: true }) }]);
+  const authorityDependencies = result.receipt.validationAuthorityDependencies;
+  assert(authorityDependencies.length > 0, "the genuine fixture must contain an out-of-workspace authority input for omission and byte-mismatch coverage");
+  const extraPath = "tests/receipt-currentness-extra-input.txt";
+  assert.equal(authorityDependencies.some(d => d.path === extraPath), false);
+  for (const [label, dependencies] of [
+    ["omitted runtime authority", authorityDependencies.slice(1)],
+    ["extra runtime authority", [...authorityDependencies, { path: extraPath, digest: otherDigest }]],
+    ["wrong runtime authority bytes", authorityDependencies.map((d, i) => i === 0 ? { ...d, digest: otherDigest } : d)],
+  ] as const) patches.push([label, { validationAuthorityDependencies: dependencies, validationAuthorityDependencyDigest: canonicalDigest(dependencies, { rejectAbsolutePaths: true }) }]);
+  try {
+    for (const [label, patch] of patches) {
+      const { receiptDigest: _oldDigest, ...draft } = { ...result.receipt, ...patch };
+      const planted = { ...draft, receiptDigest: canonicalDigest(draft, { rejectAbsolutePaths: true }) };
+      const bytes = canonicalJson(planted, { rejectAbsolutePaths: true });
+      assert.notEqual(bytes, originalReceiptBytes.toString("utf8"), label);
+      await writeFile(receiptPath, bytes, { mode: 0o600 });
+      await assert.rejects(() => readGraphDerivedCheckReceipt(root, spec.digest, validationId), { reasonCode: "CHECK_RECEIPT_INVALID" }, label);
+      assert.equal(await readFile(receiptPath, "utf8"), bytes, label + ": readback must not repair a rejected receipt");
+      assert.equal((await lstat(workspace)).ino, workspaceEntry.ino, label);
+      assert.deepEqual(await readFile(join(workspace, ".usf-workspace.json")), workspaceManifest, label);
+      assert.deepEqual(await readFile(join(workspace, targetPath)), workspaceSource, label);
+      assert.deepEqual((await readdir(workspace)).sort(), workspaceEntries, label);
+      assert.deepEqual((await readdir(join(root, ".usf/receipts/check", spec.digest.slice("sha256:".length)))).sort(), receiptEntries, label);
+    }
+  } finally { await writeFile(receiptPath, originalReceiptBytes, { mode: 0o600 }); }
+  assert.deepEqual((await readGraphDerivedCheckReceipt(root, spec.digest, validationId))?.receipt, result.receipt);
+
   const pendingPath = `${receiptPath}.pending`;
   await link(receiptPath, pendingPath);
   assert.equal((await lstat(receiptPath)).nlink, 2);

@@ -544,6 +544,22 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
   });
 }
 
+function validationReceiptClaims(validation: GraphValidation) {
+  return Object.freeze({
+    validationResourceDigest: validation.resourceDigest,
+    validationCommandTokens: validation.commandTokens,
+    validationCommandDigest: canonicalDigest(validation.commandTokens),
+    validationEnvironmentIri: validation.environmentIri,
+    validationEnvironmentDigest: validation.environmentDigest,
+    validationExecutionModeIri: validation.executionModeIri,
+    validationExecutionModeDigest: validation.executionModeDigest,
+    validationToolDependencies: validation.toolDependencies,
+    validationToolDependencyDigest: canonicalDigest(validation.toolDependencies, { rejectAbsolutePaths: true }),
+    validationSchemaDependencies: validation.schemaDependencies,
+    validationSchemaDependencyDigest: canonicalDigest(validation.schemaDependencies, { rejectAbsolutePaths: true }),
+  });
+}
+
 async function candidateReceiptFacts(root: string, workspace: string, candidateDigest: string, basis: RealisationBasis): Promise<{
   readonly workspaceIdentityDigest: string;
   readonly lineageDigest: string;
@@ -585,6 +601,27 @@ async function writeExecutionViewFile(view: string, repositoryPath: string, byte
   await chmod(target, mode === "100755" ? 0o700 : 0o600);
 }
 
+async function* validationAuthorityFiles(root: string, tree: readonly CandidateTreeEntry[], repositoryReadFiles: readonly string[]) {
+  const candidatePaths = new Set(tree.map((item) => item.path));
+  for (const repositoryPath of repositoryReadFiles) {
+    if (candidatePaths.has(repositoryPath)) continue;
+    const source = resolve(root, repositoryPath);
+    const relation = relative(root, source);
+    if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
+    const { bytes, entry } = await authenticatedContentFile(source, maximumWorkspaceManifestBytes, "CHECK_VALIDATION_AUTHORITY_INVALID");
+    if (realpathSync(source) !== source) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
+    yield { path: repositoryPath, bytes, mode: repositoryMode(entry.mode) };
+  }
+}
+
+async function validationAuthorityDependencies(root: string, workspace: string, repositoryReadFiles: readonly string[]) {
+  const dependencies: Array<{ path: string; digest: string }> = [];
+  for await (const file of validationAuthorityFiles(root, await candidateTree(workspace), repositoryReadFiles)) {
+    dependencies.push({ path: file.path, digest: sha256(file.bytes) });
+  }
+  return dependencies.sort((left, right) => left.path.localeCompare(right.path));
+}
+
 async function prepareCheckExecutionView(
   root: string,
   workspace: string,
@@ -604,17 +641,10 @@ async function prepareCheckExecutionView(
     if (sha256(bytes) !== item.digest) refuse("CANDIDATE_BASIS_MISMATCH");
     await writeExecutionViewFile(view, item.path, bytes, item.mode);
   }
-  const candidatePaths = new Set(tree.map((item) => item.path));
   const authorityDependencies: Array<{ path: string; digest: string }> = [];
-  for (const repositoryPath of repositoryReadFiles) {
-    if (candidatePaths.has(repositoryPath)) continue;
-    const source = resolve(root, repositoryPath);
-    const relation = relative(root, source);
-    if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
-    const { bytes, entry } = await authenticatedContentFile(source, maximumWorkspaceManifestBytes, "CHECK_VALIDATION_AUTHORITY_INVALID");
-    if (realpathSync(source) !== source) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
-    await writeExecutionViewFile(view, repositoryPath, bytes, repositoryMode(entry.mode));
-    authorityDependencies.push({ path: repositoryPath, digest: sha256(bytes) });
+  for await (const file of validationAuthorityFiles(root, tree, repositoryReadFiles)) {
+    await writeExecutionViewFile(view, file.path, file.bytes, file.mode);
+    authorityDependencies.push({ path: file.path, digest: sha256(file.bytes) });
   }
   authorityDependencies.sort((left, right) => left.path.localeCompare(right.path));
   await mkdir(resolve(view, "node_modules"), { mode: 0o700 });
@@ -1018,6 +1048,32 @@ export async function readGraphDerivedCheckReceipt(
   if (receipt === null) return null;
   const current = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
   const validation = graphValidation(canonicalRoot, current.basis, validationId);
+  const facts = await candidateReceiptFacts(canonicalRoot, current.workspace, candidateDigest, current.basis);
+  const authorityDependencies = await validationAuthorityDependencies(canonicalRoot, current.workspace, validation.repositoryReadFiles);
+  const expected = {
+    workIri: current.basis.work.id,
+    explicitProfileIri: current.basis.selection.profile,
+    originalConstructionBasisDigest: current.basis.basisDigest,
+    scopedDependencyDigest: current.basis.work.scopedDependencyDigest,
+    ...facts,
+    ...validationReceiptClaims(validation),
+    validationAuthorityDependencies: authorityDependencies,
+    validationAuthorityDependencyDigest: canonicalDigest(authorityDependencies, { rejectAbsolutePaths: true }),
+  };
+  if (Object.entries(expected).some(([key, value]) => canonicalJson(receipt[key as keyof CheckedCandidateReceipt]) !== canonicalJson(value))) {
+    refuse("CHECK_RECEIPT_INVALID");
+  }
+  // Async reads must not carry an earlier basis, validation or receipt into reuse.
+  const after = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+  const validationAfter = graphValidation(canonicalRoot, after.basis, validationId);
+  if (canonicalJson(current.basis) !== canonicalJson(after.basis)
+    || canonicalJson(validationReceiptClaims(validation)) !== canonicalJson(validationReceiptClaims(validationAfter))
+    || canonicalJson(validation.repositoryReadFiles) !== canonicalJson(validationAfter.repositoryReadFiles)
+    || canonicalJson(authorityDependencies) !== canonicalJson(await validationAuthorityDependencies(canonicalRoot, after.workspace, validationAfter.repositoryReadFiles))
+    || canonicalJson(facts) !== canonicalJson(await candidateReceiptFacts(canonicalRoot, after.workspace, candidateDigest, after.basis))
+    || canonicalJson(receipt) !== canonicalJson(await readExistingReceipt(canonicalRoot, candidateDigest, validationId))) {
+    refuse("CHECK_RECEIPT_INVALID");
+  }
   if (validation.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
   return Object.freeze({ receiptPath: receiptLocation(canonicalRoot, candidateDigest, validationId).repositoryPath, receipt });
 }
@@ -1201,8 +1257,6 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
       if (authenticatedAfter.basis.basisDigest !== basis.basisDigest) refuse("CANDIDATE_BASIS_MISMATCH");
       const after = await candidateReceiptFacts(canonicalRoot, workspace, candidateDigest, basis);
       if (canonicalDigest(before) !== canonicalDigest(after)) refuse("CANDIDATE_BASIS_MISMATCH");
-      const validationToolDependencyDigest = canonicalDigest(validation.toolDependencies, { rejectAbsolutePaths: true });
-      const validationSchemaDependencyDigest = canonicalDigest(validation.schemaDependencies, { rejectAbsolutePaths: true });
       const outputResultDigest = observedOutputResultDigest;
       const validationResultSetDigest = canonicalDigest({ validationObligationIri: validationId, outcome: "pass", outputResultDigest });
       const draft: Omit<CheckedCandidateReceipt, "receiptDigest"> = {
@@ -1214,17 +1268,7 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
         candidateDigest,
         ...after,
         validationObligationIri: validationId,
-        validationResourceDigest: validation.resourceDigest,
-        validationCommandTokens: validation.commandTokens,
-        validationCommandDigest: canonicalDigest(validation.commandTokens),
-        validationEnvironmentIri: validation.environmentIri,
-        validationEnvironmentDigest: validation.environmentDigest,
-        validationExecutionModeIri: validation.executionModeIri,
-        validationExecutionModeDigest: validation.executionModeDigest,
-        validationToolDependencies: validation.toolDependencies,
-        validationToolDependencyDigest,
-        validationSchemaDependencies: validation.schemaDependencies,
-        validationSchemaDependencyDigest,
+        ...validationReceiptClaims(validation),
         validationAuthorityDependencies: execution.authorityDependencies,
         validationAuthorityDependencyDigest: canonicalDigest(execution.authorityDependencies, { rejectAbsolutePaths: true }),
         checkedCandidateSchemaDigest: executionAuthority.schemaDigest,
