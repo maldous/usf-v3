@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { resourceDigest, type SemanticGraph } from "../../../src/graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../../src/graph/nquads.ts";
@@ -454,6 +455,20 @@ test("confinedFixtureProcessLaunch refuses a missing host profile without execut
     WORKSPACE
   );
   assert.equal(refused, null);
+});
+
+test("fixture process AppArmor source permits only peer profile identity reads", () => {
+  const profile = readFileSync(new URL("../../../src/realisation/fixture-process.apparmor", import.meta.url), "utf8");
+  const ptraceRules = profile
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter((line) => /^ptrace\b/u.test(line));
+
+  assert.deepEqual(ptraceRules, ["ptrace (read, readby) peer=@{profile_name},"]);
+  assert.doesNotMatch(profile, /^\s*ptrace\s*,/mu, "unqualified ptrace is forbidden");
+  assert.doesNotMatch(profile, /^\s*ptrace\b[^\n]*\b(?:trace|tracedby)\b/mu, "trace directions are forbidden");
+  assert.doesNotMatch(profile, /^\s*ptrace\b[^\n]*peer\s*=\s*(?:\*|unconfined|bwrap|unpriv_bwrap)\b/mu, "broader peer scopes are forbidden");
+  assert.doesNotMatch(profile, /^\s*capability\s+sys_ptrace\b/mu, "sys_ptrace is forbidden");
 });
 
 test("fixtureProcessLaunchArguments remains a pure default-mode-neutral builder", () => {
