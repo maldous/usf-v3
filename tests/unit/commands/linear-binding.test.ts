@@ -9,6 +9,7 @@ import { access, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } fro
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
+import { bindingSelector } from "../../../src/commands/hermes.ts";
 import {
   LinearBindingError,
   afterHermesResult,
@@ -168,6 +169,39 @@ test("binding extraction is graph-only and preserves modelCapabilities", async (
   const prompt = JSON.parse(result.binding.unit.prompt) as { objective: unknown; fixedPrompt: unknown };
   assert.equal(prompt.objective, result.binding.unit.packet.objective);
   assert.equal(prompt.fixedPrompt, "Use only graph-derived semantic work.");
+
+  const source = await readFile(resolve(selector.repositoryRoot, result.binding.unitPath), "utf8");
+  const graph = `urn:usf:graph:hermes-input:${result.binding.unit.attemptKey}`;
+  const quads = parseStrictNQuads(source, graph);
+  const work = {
+    file: result.binding.unitPath,
+    graph,
+    unitIris: [result.binding.unit.unitIri],
+    quads,
+  };
+  assert.deepEqual(bindingSelector(selector.repositoryRoot, work), selector);
+
+  const bindingIriQuad = `<${result.binding.unit.unitIri}> <urn:usf:predicate:bindingIri> <${selector.bindingIri}> <${graph}> .`;
+  const wrongKindSource = source.replace(
+    bindingIriQuad,
+    `<${result.binding.unit.unitIri}> <urn:usf:predicate:bindingIri> ${JSON.stringify(selector.bindingIri)} <${graph}> .`,
+  );
+  assert.notEqual(wrongKindSource, source);
+  assert.throws(
+    () => bindingSelector(selector.repositoryRoot, { ...work, quads: parseStrictNQuads(wrongKindSource, graph) }),
+    (error: unknown) => (error as { code?: unknown }).code === "HERMES_LINEAR_BINDING_METADATA_INVALID",
+  );
+
+  const extraUnit = "urn:usf:work-unit:mixed-extra";
+  const mixedSource = `${source}<${extraUnit}> <urn:usf:predicate:type> <urn:usf:type:SemanticWorkUnit> <${graph}> .\n`;
+  assert.throws(
+    () => bindingSelector(selector.repositoryRoot, {
+      ...work,
+      unitIris: [result.binding.unit.unitIri, extraUnit],
+      quads: parseStrictNQuads(mixedSource, graph),
+    }),
+    (error: unknown) => (error as { code?: unknown }).code === "HERMES_LINEAR_BINDING_METADATA_INVALID",
+  );
 });
 
 test("caller cannot inject semantic authority fields", async () => {

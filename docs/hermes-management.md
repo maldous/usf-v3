@@ -36,17 +36,27 @@ core-only manifest.
 ## Linear-bound interim procedure
 
 The current bridge follows one bounded sequence: governed semantic authoring,
-`usf linear-binding prepare --manifest PATH --binding IRI`, a Hermes run,
-candidate validation/integration/completion,
+`usf linear-binding prepare --manifest PATH --binding IRI`,
+`usf hermes run --binding IRI --env-file PATH`, candidate acceptance through
+validation/integration/completion, and
 `usf linear-binding settle --manifest PATH --binding IRI --evidence sha256:<64hex>`,
-and then a separate evidence-linked Linear update. The source binding manifest
-and the target work manifest are distinct: the binding graph selects the target
-through `authority.targetManifest`.
+followed by a separate evidence-linked Linear update. The source binding
+manifest and the target work manifest are distinct: the binding graph selects
+the target through `authority.targetManifest`.
+
+The selected run discovers the source binding manifest from native graph
+metadata, rederives the current unit identity, and dispatches only the exact
+current `unitPath` and `unitIri`. Stale prepared projections for an earlier
+scope remain untouched and are excluded; a missing or duplicate current match
+fails closed without falling back to other native work. This may execute an
+explicit bounded acceptance transport probe, but it does not establish product
+completion.
 
 The bridge does not poll Linear, select or fabricate caller work, contact a
 provider while observing status or settling saved evidence, update an issue, or
-prove completion itself. Hermes accepts only the already-materialised native
-one-unit graph, rederives its current binding before dispatch, and correlates a
+prove completion itself. Preparation and selected dispatch create no new
+permission: Hermes accepts only the already-materialised native one-unit graph,
+rederives its current binding before provider contact, and correlates a
 successful native result using the graph execution evidence digest.
 
 After an interruption, recover the saved native result from

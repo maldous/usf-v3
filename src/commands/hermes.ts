@@ -36,13 +36,14 @@ interface ParsedArguments {
   readonly workDirectory: string;
   readonly maximumCycles: number;
   readonly concurrency: number;
+  readonly bindingIri: string | undefined;
 }
 
 function parse(args: readonly string[], requireEnvFile: boolean): ParsedArguments {
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
-    if (!["--env-file", "--work-dir", "--max-cycles", "--concurrency"].includes(option) || values.has(option)) {
+    if (!["--env-file", "--work-dir", "--max-cycles", "--concurrency", "--binding"].includes(option) || values.has(option)) {
       invalid(`Hermes options must be unique and explicit: ${option}`);
     }
     const value = args[++index];
@@ -62,6 +63,7 @@ function parse(args: readonly string[], requireEnvFile: boolean): ParsedArgument
     workDirectory: values.get("--work-dir") ?? ".usf/work",
     maximumCycles,
     concurrency: Number(concurrencyText),
+    bindingIri: values.get("--binding"),
   });
 }
 
@@ -98,19 +100,19 @@ async function discoverWork(repositoryRoot: string, workDirectory: string): Prom
   return Object.freeze(discovered);
 }
 
-function oneLiteral(work: DiscoveredWork, unitIri: string, predicate: string): string | undefined {
+function oneObject(work: DiscoveredWork, unitIri: string, predicate: string, objectKind: "iri" | "literal"): string | undefined {
   const matches = work.quads.filter((quad) => quad.subject === unitIri && quad.predicate === predicate);
   if (matches.length === 0) return undefined;
-  if (matches.length !== 1 || matches[0]!.objectKind !== "literal" || matches[0]!.object.length === 0) {
-    throw new UsfError("HERMES_LINEAR_BINDING_METADATA_INVALID", exitCodes.INVALID_INPUT, "Bound Hermes metadata must contain one non-empty literal per field.");
+  if (matches.length !== 1 || matches[0]!.objectKind !== objectKind || matches[0]!.object.length === 0) {
+    throw new UsfError("HERMES_LINEAR_BINDING_METADATA_INVALID", exitCodes.INVALID_INPUT, `Bound Hermes metadata must contain one non-empty ${objectKind} per field.`);
   }
   return matches[0]!.object;
 }
 
-function bindingSelector(repositoryRoot: string, work: DiscoveredWork): LinearBindingSelector | undefined {
+export function bindingSelector(repositoryRoot: string, work: DiscoveredWork): LinearBindingSelector | undefined {
   const metadata = work.unitIris.map((unitIri) => Object.freeze({
-    bindingIri: oneLiteral(work, unitIri, bindingIriPredicate),
-    manifestPath: oneLiteral(work, unitIri, bindingManifestPathPredicate),
+    bindingIri: oneObject(work, unitIri, bindingIriPredicate, "iri"),
+    manifestPath: oneObject(work, unitIri, bindingManifestPathPredicate, "literal"),
   }));
   const hasBindingMetadata = metadata.some(
     (entry) => entry.bindingIri !== undefined || entry.manifestPath !== undefined,
@@ -127,6 +129,47 @@ function bindingSelector(repositoryRoot: string, work: DiscoveredWork): LinearBi
     manifestPath: boundMetadata.manifestPath,
     bindingIri: boundMetadata.bindingIri,
   });
+}
+
+async function selectCurrentBindingWork(
+  repositoryRoot: string,
+  discovered: readonly DiscoveredWork[],
+  requestedBindingIri: string,
+): Promise<readonly DiscoveredWork[]> {
+  const matchingBinding = discovered.filter((work) => work.quads.some((quad) =>
+    work.unitIris.includes(quad.subject)
+    && quad.predicate === bindingIriPredicate
+    && quad.objectKind === "iri"
+    && quad.object === requestedBindingIri));
+  const current: DiscoveredWork[] = [];
+  for (const work of matchingBinding) {
+    const selector = bindingSelector(repositoryRoot, work);
+    if (selector === undefined || selector.bindingIri !== requestedBindingIri) continue;
+    let observed;
+    try {
+      observed = await observeLinearBinding(selector);
+    } catch (error) {
+      if (error instanceof LinearBindingError) {
+        throw new UsfError(error.reasonCode, exitCodes.DOMAIN_FAILURE, error.reasonCode);
+      }
+      throw error;
+    }
+    if (work.unitIris.length === 1
+      && observed.binding.unit.unitIri === work.unitIris[0]
+      && observed.binding.unit.bindingIri === requestedBindingIri
+      && observed.binding.unit.bindingManifestPath === selector.manifestPath
+      && observed.binding.unitPath === work.file) {
+      current.push(work);
+    }
+  }
+  if (current.length !== 1) {
+    throw new UsfError(
+      "HERMES_LINEAR_BINDING_NOT_CURRENT",
+      exitCodes.DOMAIN_FAILURE,
+      "Hermes requires exactly one prepared graph matching the current derived binding identity.",
+    );
+  }
+  return Object.freeze(current);
 }
 
 async function verifyBoundWork(repositoryRoot: string, work: DiscoveredWork, unitIri: string, selector: LinearBindingSelector) {
@@ -201,7 +244,10 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     }),
   });
 
-  const discovered = await discoverWork(repositoryRoot, parsed.workDirectory);
+  const allDiscovered = await discoverWork(repositoryRoot, parsed.workDirectory);
+  const discovered = operation === "run" && parsed.bindingIri !== undefined
+    ? await selectCurrentBindingWork(repositoryRoot, allDiscovered, parsed.bindingIri)
+    : allDiscovered;
   let state = [...await readStateQuads(repositoryRoot)];
 
   const completedUnits = (): Set<string> => new Set(state
