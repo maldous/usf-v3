@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import test from "node:test";
+import test, { type TestContext } from "node:test";
 
 import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
 import { normalizeModelsDevCatalogue } from "../../src/providers/catalogue.ts";
@@ -14,6 +14,23 @@ import { proposalBasis } from "../fixtures/proposal-packet.ts";
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 const usf = resolve(repositoryRoot, "bin/usf");
 const digest = (character: string) => `sha256:${character.repeat(64)}`;
+
+/**
+ * Every case in this file drives the repository CLI through a real subprocess.
+ * The hermetic validation cage runs Node with `--permission` and grants no
+ * child-process capability, which
+ * urn:usf:environment:bootstrap-carrier-no-network and the invocation-boundary
+ * admission policy both state deliberately: the cage proves in-process
+ * boundaries and the outer authoritative lane separately exercises the scrubbed
+ * child process. Skipping in the cage keeps that separation explicit instead of
+ * widening the sandbox to reach a subprocess.
+ */
+function childProcessUnavailable(context: TestContext): boolean {
+  const permission = (process as typeof process & { permission?: { has(scope: string): boolean } }).permission;
+  if (permission === undefined || permission.has("child_process")) return false;
+  context.skip("the repository CLI subprocess boundary runs in the direct outer authoritative validation");
+  return true;
+}
 const trackedQualificationConfig = JSON.parse(
   readFileSync(resolve(repositoryRoot, "config/qualification.json"), "utf8"),
 ) as { suite: Parameters<typeof createQualificationSuite>[0]; policy: Parameters<typeof createQualificationPolicy>[0] };
@@ -75,7 +92,8 @@ const probeWithoutDigest = {
 };
 const probe = { ...probeWithoutDigest, resultDigest: canonicalDigest(probeWithoutDigest, { rejectAbsolutePaths: true }) };
 
-test("adapter observation binds the exact installed version to its pnpm integrity", async () => {
+test("adapter observation binds the exact installed version to its pnpm integrity", async (t: TestContext) => {
+  if (childProcessUnavailable(t)) return;
   const first = await observeInstalledAdapter(repositoryRoot, "@ai-sdk/groq");
   const second = await observeInstalledAdapter(repositoryRoot, "@ai-sdk/groq");
   assert.deepEqual(first, second);
@@ -84,7 +102,8 @@ test("adapter observation binds the exact installed version to its pnpm integrit
   assert.match(first?.lockDigest ?? "", /^sha256:[0-9a-f]{64}$/u);
 });
 
-test("registered provider census exposes profile-bound routes and distinct host transports without contact", () => {
+test("registered provider census exposes profile-bound routes and distinct host transports without contact", (t: TestContext) => {
+  if (childProcessUnavailable(t)) return;
   withProviderCliFixture((fixtureRoot) => {
     const census = invoke([
       "providers", "census", "--max-items", "12",
@@ -137,7 +156,8 @@ test("registered provider census exposes profile-bound routes and distinct host 
   });
 });
 
-test("registered provider CLI evaluates semantic inputs and routes fixture facts without contact", () => {
+test("registered provider CLI evaluates semantic inputs and routes fixture facts without contact", (t: TestContext) => {
+  if (childProcessUnavailable(t)) return;
   const suite = createQualificationSuite({
     suiteId: "fixture-suite", suiteVersion: "1", corpusId: "fixture-corpus", corpusVersion: "1",
     cases: [{ caseId: "typescript-case", taskClass: "typescript", dimension: "implementation", prompt: "Select the bounded patch.", grader: { kind: "exact", value: "bounded patch" }, holdout: false, weight: 1 }],
@@ -214,7 +234,8 @@ test("registered provider CLI evaluates semantic inputs and routes fixture facts
   assert.equal((routed.assignments as unknown[]).length, 1);
 });
 
-test("availability requires explicit zero-paid contact controls and help describes the subcommands", () => {
+test("availability requires explicit zero-paid contact controls and help describes the subcommands", (t: TestContext) => {
+  if (childProcessUnavailable(t)) return;
   const result = spawnSync(usf, ["probe", "availability"], { cwd: repositoryRoot, encoding: "utf8", timeout: 5_000 });
   assert.equal(result.status, 2);
   const refusal = JSON.parse(String(result.stderr).trim()) as Record<string, unknown>;
@@ -247,7 +268,8 @@ test("availability requires explicit zero-paid contact controls and help describ
   assert.equal(registeredError.reasonCode, "PROVIDERS_RECEIPT_PROOFBLOCKED");
 });
 
-test("availability rejects self-authored account evidence under a sanitized Git environment before contact", () => {
+test("availability rejects self-authored account evidence under a sanitized Git environment before contact", (t: TestContext) => {
+  if (childProcessUnavailable(t)) return;
   const plantedCredential = "must-not-appear-in-output";
   const result = spawnSync(usf, [
     "probe", "availability",
@@ -285,7 +307,8 @@ test("availability rejects self-authored account evidence under a sanitized Git 
   assert.equal(JSON.stringify(refusal).includes(plantedCredential), false);
 });
 
-test("availability containment refusals retain exit 5 before any provider contact", () => {
+test("availability containment refusals retain exit 5 before any provider contact", (t: TestContext) => {
+  if (childProcessUnavailable(t)) return;
   const result = spawnSync(usf, [
     "probe", "availability",
     "--route", "groq-qwen3.6-27b",
@@ -300,7 +323,8 @@ test("availability containment refusals retain exit 5 before any provider contac
   assert.equal(refusal.reasonCode, "PROBE_INPUT_REFUSED");
 });
 
-test("the shell launcher passes --env-file to USF instead of Node", () => {
+test("the shell launcher passes --env-file to USF instead of Node", (t: TestContext) => {
+  if (childProcessUnavailable(t)) return;
   const result = spawnSync(usf, ["help", "--env-file", "/definitely/not/a/usf-env-file"], {
     cwd: repositoryRoot,
     encoding: "utf8",
