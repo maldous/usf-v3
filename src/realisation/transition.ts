@@ -1,6 +1,6 @@
 import { chmodSync, closeSync, constants as fsConstants, existsSync, fstatSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { chmod, link, lstat, mkdir, open, readFile, realpath, rename, rm, rmdir } from "node:fs/promises";
-import { spawn, spawnSync } from "node:child_process";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { loadSemanticGraph, objectValues, objectsFor, resourceDigest, validationRuntimeClosure, type LoadedSemanticGraph, type SemanticGraph } from "../graph/index.ts";
@@ -1983,6 +1983,64 @@ async function integrationDependencyRoots(): Promise<readonly string[]> {
 }
 
 /** Production postimage verifier: exact graph command, private network namespace, bounded output. */
+/** Observe an already-authorized owned child; this primitive grants no launch authority. */
+export function observeIntegrationValidationChild(
+  child: ChildProcess,
+  authority: Pick<IntegrationValidationAuthority, "wallTimeMilliseconds" | "terminationGraceMilliseconds" | "terminationSignal" | "forcedTerminationSignal">,
+): Promise<{ exitCode: number; withinLimit: boolean; timedOut: boolean; timeoutTerminationSignal: "none" | "SIGTERM" | "SIGKILL" }> {
+  return new Promise((finish) => {
+    const groupLeader = child.pid;
+    let bytes = 0, withinLimit = true, timedOut = false, settled = false;
+    let timeoutTerminationSignal: "none" | "SIGTERM" | "SIGKILL" = "none";
+    let wallTimer: NodeJS.Timeout | undefined, graceTimer: NodeJS.Timeout | undefined;
+    const terminateGroup = (signal: "SIGTERM" | "SIGKILL"): boolean => {
+      try {
+        if (groupLeader === undefined) return child.kill(signal);
+        process.kill(-groupLeader, signal);
+        return true;
+      } catch {
+        try { return child.kill(signal); } catch { return false; }
+      }
+    };
+    const settle = (exitCode: number): void => {
+      if (settled) return;
+      settled = true;
+      if (wallTimer !== undefined) clearTimeout(wallTimer);
+      if (graceTimer !== undefined) clearTimeout(graceTimer);
+      child.stdout?.off("data", observe);
+      child.stderr?.off("data", observe);
+      child.stdout?.destroy();
+      child.stderr?.destroy();
+      child.unref();
+      finish({ exitCode, withinLimit, timedOut, timeoutTerminationSignal });
+    };
+    const observe = (chunk: Buffer): void => {
+      bytes += chunk.byteLength;
+      if (bytes > 256 * 1024 && withinLimit) {
+        withinLimit = false;
+        if (terminateGroup("SIGKILL") && timedOut) timeoutTerminationSignal = "SIGKILL";
+        if (!timedOut) settle(1);
+      }
+    };
+    child.stdout?.on("data", observe);
+    child.stderr?.on("data", observe);
+    // Keep this listener through teardown so a late child error is never unhandled.
+    child.on("error", () => { if (!timedOut) settle(1); });
+    child.once("close", (code) => { if (!timedOut) settle(code ?? 1); });
+    wallTimer = setTimeout(() => {
+      if (settled) return;
+      timedOut = true;
+      if (terminateGroup(authority.terminationSignal)) timeoutTerminationSignal = authority.terminationSignal;
+      // Leader exit/stdio close cannot cancel escalation for its remaining process group.
+      graceTimer = setTimeout(() => {
+        if (settled) return;
+        if (terminateGroup(authority.forcedTerminationSignal)) timeoutTerminationSignal = authority.forcedTerminationSignal;
+        settle(1);
+      }, authority.terminationGraceMilliseconds);
+    }, authority.wallTimeMilliseconds);
+  });
+}
+
 export async function runIntegrationValidation(input: IntegrationVerifierInput): Promise<IntegrationVerifierObservation> {
   if (input.phase !== "postimage") throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
   const scratch = resolve(input.repositoryRoot, ".usf", "integration-validation");
@@ -2033,55 +2091,13 @@ export async function runIntegrationValidation(input: IntegrationVerifierInput):
       throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     }
     if (launch === null) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
-    const observed = await new Promise<{ exitCode: number; withinLimit: boolean; timedOut: boolean; timeoutTerminationSignal: "none" | "SIGTERM" | "SIGKILL" }>((finish) => {
-      const child = spawn(launch.executable, launch.arguments, {
-        cwd: input.repositoryRoot,
-        env: {},
-        stdio: ["ignore", "pipe", "pipe"],
-        detached: true,
-      });
-      let bytes = 0;
-      let withinLimit = true;
-      let timedOut = false;
-      let timeoutTerminationSignal: "none" | "SIGTERM" | "SIGKILL" = "none";
-      let settled = false;
-      let graceTimer: NodeJS.Timeout | undefined;
-      let wallTimer: NodeJS.Timeout | undefined;
-      const settle = (exitCode: number): void => {
-        if (settled) return;
-        settled = true;
-        if (wallTimer !== undefined) clearTimeout(wallTimer);
-        if (graceTimer !== undefined) clearTimeout(graceTimer);
-        finish({ exitCode, withinLimit, timedOut, timeoutTerminationSignal });
-      };
-      const terminateTree = (signal: "SIGTERM" | "SIGKILL"): boolean => {
-        try {
-          if (child.pid === undefined) return child.kill(signal);
-          process.kill(-child.pid, signal);
-          return true;
-        } catch {
-          try { return child.kill(signal); } catch { return false; }
-        }
-      };
-      const observe = (chunk: Buffer) => {
-        bytes += chunk.byteLength;
-        if (bytes > 256 * 1024 && withinLimit) { withinLimit = false; terminateTree("SIGKILL"); }
-      };
-      child.stdout?.on("data", observe);
-      child.stderr?.on("data", observe);
-      wallTimer = setTimeout(() => {
-        if (settled) return;
-        timedOut = true;
-        if (terminateTree(input.authority.terminationSignal)) timeoutTerminationSignal = input.authority.terminationSignal;
-        graceTimer = setTimeout(() => {
-          if (settled) return;
-          if (terminateTree(input.authority.forcedTerminationSignal)) timeoutTerminationSignal = input.authority.forcedTerminationSignal;
-          settle(1);
-        }, input.authority.terminationGraceMilliseconds);
-      }, input.authority.wallTimeMilliseconds);
-      child.once("error", () => settle(1));
-      child.once("exit", (code) => settle(code ?? 1));
+    const child = spawn(launch.executable, launch.arguments, {
+      cwd: input.repositoryRoot,
+      env: {},
+      stdio: ["ignore", "pipe", "pipe"],
+      detached: true,
     });
+    const observed = await observeIntegrationValidationChild(child, input.authority);
     if (input.authority.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(input.authority.fixtureProcessPolicy)) {
       throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     }
