@@ -492,6 +492,10 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
   const expectedPath = `.usf/receipts/check/${spec.digest.slice("sha256:".length)}/${canonicalDigest(validationId).slice("sha256:".length)}.json`;
   assert.equal(result.receiptPath, expectedPath);
   const receiptPath = join(root, result.receiptPath);
+  const settledIntentPath = receiptPath.replace(/\.json$/u, ".intent.json");
+  const settledIntent = JSON.parse(await readFile(settledIntentPath, "utf8"));
+  assert.equal(settledIntent.state, "SETTLED");
+  assert.equal(settledIntent.receiptDigest, result.receipt.receiptDigest);
   const receiptEntry = await lstat(receiptPath);
   assert.equal(receiptEntry.isSymbolicLink(), false);
   assert.equal(receiptEntry.isFile(), true);
@@ -579,7 +583,7 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
     assert.equal(outcome.status, "refused");
     if (outcome.status === "refused") assert.equal(outcome.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
   };
-  // Ensure never adopts or repairs an interrupted publication, even with genuine bytes.
+  // A SETTLED receipt must remain a final singleton; planted publication state is preserved.
   await writeFile(pendingPath, originalReceiptBytes, { mode: 0o600 });
   try {
     await ensureUnsafe();
@@ -591,6 +595,18 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
     await ensureUnsafe();
     assert.equal((await lstat(receiptPath)).nlink, 2);
     assert.equal((await lstat(pendingPath)).ino, (await lstat(receiptPath)).ino);
+  } finally { await rm(pendingPath); }
+  const { receiptDigest: _receiptDigest, ...stalePendingDraft } = result.receipt;
+  const stalePending = canonicalJson({
+    ...stalePendingDraft,
+    scopedDependencyDigest: canonicalDigest({ stalePendingCurrentness: true }),
+    receiptDigest: canonicalDigest({ ...stalePendingDraft, scopedDependencyDigest: canonicalDigest({ stalePendingCurrentness: true }) }, { rejectAbsolutePaths: true }),
+  }, { rejectAbsolutePaths: true });
+  await writeFile(pendingPath, stalePending, { mode: 0o600 });
+  try {
+    await ensureUnsafe();
+    assert.equal(await readFile(pendingPath, "utf8"), stalePending);
+    assert.equal(await readFile(receiptPath, "utf8"), originalReceiptBytes.toString("utf8"));
   } finally { await rm(pendingPath); }
   await rm(receiptPath);
   await symlink(join(root, "package.json"), receiptPath);
@@ -606,17 +622,21 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
   await link(receiptPath, pendingPath);
   assert.equal((await lstat(receiptPath)).nlink, 2);
   const linkedRecovery = await runGraphDerivedCheck(root, spec.digest, validationId);
-  assert.equal(linkedRecovery.status, "pass", linkedRecovery.status === "refused" ? linkedRecovery.reasonCode : undefined);
-  assert.equal((await lstat(receiptPath)).nlink, 1);
-  await assert.rejects(() => lstat(pendingPath), { code: "ENOENT" });
+  assert.equal(linkedRecovery.status, "refused");
+  if (linkedRecovery.status === "refused") assert.equal(linkedRecovery.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
+  assert.equal((await lstat(receiptPath)).nlink, 2);
+  assert.equal((await lstat(pendingPath)).ino, (await lstat(receiptPath)).ino);
+  await rm(pendingPath);
 
   await link(receiptPath, pendingPath);
   await rm(receiptPath);
   assert.equal((await lstat(pendingPath)).nlink, 1);
   const pendingRecovery = await runGraphDerivedCheck(root, spec.digest, validationId);
-  assert.equal(pendingRecovery.status, "pass", pendingRecovery.status === "refused" ? pendingRecovery.reasonCode : undefined);
-  assert.equal((await lstat(receiptPath)).nlink, 1);
-  await assert.rejects(() => lstat(pendingPath), { code: "ENOENT" });
+  assert.equal(pendingRecovery.status, "refused");
+  if (pendingRecovery.status === "refused") assert.equal(pendingRecovery.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
+  assert.equal((await lstat(pendingPath)).nlink, 1);
+  await assert.rejects(() => lstat(receiptPath), { code: "ENOENT" });
+  await rename(pendingPath, receiptPath);
 
   const hostileLink = join(root, "hostile-receipt-hardlink");
   await link(receiptPath, hostileLink);
@@ -647,6 +667,32 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
   const substituted = await runGraphDerivedCheck(root, spec.digest, validationId);
   assert.equal(substituted.status, "refused");
   assert.equal(substituted.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
+});
+
+test("legacy current receipt leaves no intent while canonical ensure reuses without a child", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const spec = await candidate(root, "legacy-current-receipt");
+  await materialiseCandidate(root, spec);
+  const validationId = "urn:usf:validation:realisation-basis-chain-focused";
+  const first = await checkSubprocess(root, spec.digest, validationId, "legacy");
+  assert.equal(first.result?.status, "pass", first.result?.reasonCode);
+  assert.equal(first.launches, 1);
+  assert.equal(first.successfulExits, 1);
+  const intentPath = first.receiptPath.replace(/\.json$/u, ".intent.json");
+  const receiptBytes = await readFile(first.receiptPath);
+  await assert.rejects(() => lstat(intentPath), { code: "ENOENT" });
+  const ensured = await checkSubprocess(root, spec.digest, validationId, "ensure");
+  assert.equal(ensured.result?.status, "pass", ensured.result?.reasonCode);
+  assert.equal(ensured.launches, 0, "canonical ensure reuses the existing current receipt");
+  assert.equal(ensured.successfulExits, 0, "canonical ensure launches no replacement child");
+  assert.deepEqual(await readFile(first.receiptPath), receiptBytes);
+  await assert.rejects(() => lstat(intentPath), { code: "ENOENT" });
+  const legacyReplay = await checkSubprocess(root, spec.digest, validationId, "legacy");
+  assert.equal(legacyReplay.result?.status, "pass", legacyReplay.result?.reasonCode);
+  assert.equal(legacyReplay.launches, 1, "legacy keeps its explicit no-intent rerun behavior");
+  assert.equal(legacyReplay.successfulExits, 1, "legacy rerun has one genuine child exit");
+  await assert.rejects(() => lstat(intentPath), { code: "ENOENT" });
 });
 
 test("graph-derived check enforces graph wall time and mints no timeout receipt", async (context) => {

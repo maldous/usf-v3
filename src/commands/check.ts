@@ -104,7 +104,7 @@ const checkedCandidateSchemaIdentity = "urn:usf:checked-candidate-receipt:1" as 
 const checkedCandidateExecutionIntentSchemaIdentity = "urn:usf:checked-candidate-execution-intent:1" as const;
 const checkedCandidateExecutionIntentSchemaIri = "urn:usf:schema:checked-candidate-execution-intent:1";
 const checkedCandidateExecutionIntentRuleIri = "urn:usf:rule:completion-check-receipts-execution-intent:1";
-const checkedCandidateExecutionIntentRuleFingerprint = "sha256:775deab3b2a619f85a27db7ea3b9755c648881a438c15ea7b2efd2c89ee276ce";
+const checkedCandidateExecutionIntentRuleFingerprint = "sha256:d7d74d1382f6fff562bfb92f3c8117a0cb1b5d0de33300a7afb59a878364234a";
 const validationExecutionAuthorityIri = "urn:usf:algorithm:work-integration-transition:2";
 const integrationManifestPath = "graph/manifests/integration.json";
 const checkReceiptRoot = ".usf/receipts/check";
@@ -1128,8 +1128,9 @@ export async function authenticateGraphDerivedCheckIntent(
   const authority = checkedReceiptExecutionAuthority(root);
   const bound = await deriveExecutionIntent(root, candidateDigest, validationId, current, validation, authority);
   const intent = await readExecutionIntent(root, candidateDigest, validationId, bound);
-  const receipt = await readGraphDerivedCheckReceiptForRecovery(root, candidateDigest, validationId);
-  const disposition = executionIntentDisposition(intent, receipt?.receipt ?? null);
+  const snapshot = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery);
+  if (intent?.state === "SETTLED" && snapshot.kind !== "FINAL") refuse("CHECK_RECEIPT_PATH_UNSAFE");
+  const disposition = executionIntentDisposition(intent, snapshot.receipt);
   if (disposition === "UNKNOWN") refuse("CHECK_EXECUTION_OUTCOME_UNKNOWN");
   if (disposition === "RECONCILE") {
     if (intent === null || (intent.state !== "STARTED" && intent.state !== "SETTLED")) refuse("CHECK_EXECUTION_INTENT_INVALID");
@@ -1232,6 +1233,16 @@ function receiptTemporaryPath(finalPath: string): string {
   return `${finalPath}.pending`;
 }
 
+type AuthenticatedReceiptFile = Readonly<{ bytes: Buffer; entry: Stats }>;
+type ReceiptPublicationKind = "ABSENT" | "FINAL" | "PENDING" | "LINKED";
+interface ReceiptPublicationSnapshot {
+  readonly kind: ReceiptPublicationKind;
+  readonly final: AuthenticatedReceiptFile | null;
+  readonly temporary: AuthenticatedReceiptFile | null;
+  readonly receipt: CheckedCandidateReceipt | null;
+  readonly identity: string;
+}
+
 function authenticateReceiptBinding(receipt: CheckedCandidateReceipt, candidateDigest: string, validationId: string): void {
   if (receipt.candidateDigest !== candidateDigest || receipt.validationObligationIri !== validationId) refuse("CHECK_RECEIPT_CONFLICT");
 }
@@ -1254,6 +1265,76 @@ function authenticateReceiptBytes(
   }
   if (expectedBytes !== undefined && !file.bytes.equals(expectedBytes)) refuse("CHECK_RECEIPT_CONFLICT");
   return receipt;
+}
+
+function receiptPublicationIdentity(
+  kind: ReceiptPublicationKind,
+  final: AuthenticatedReceiptFile | null,
+  temporary: AuthenticatedReceiptFile | null,
+): string {
+  const identity = (file: AuthenticatedReceiptFile | null) => file === null ? null : ({
+    bytesDigest: sha256(file.bytes),
+    dev: file.entry.dev,
+    ino: file.entry.ino,
+    uid: file.entry.uid,
+    mode: file.entry.mode,
+    nlink: file.entry.nlink,
+    size: file.entry.size,
+    mtimeMs: file.entry.mtimeMs,
+    ctimeMs: file.entry.ctimeMs,
+  });
+  return canonicalDigest({ kind, final: identity(final), temporary: identity(temporary) });
+}
+
+async function receiptPublicationSnapshot(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  expectedBytes?: Buffer,
+): Promise<ReceiptPublicationSnapshot> {
+  if (!await authenticateReceiptAncestry(root, candidateDigest, false)) {
+    return Object.freeze({ kind: "ABSENT", final: null, temporary: null, receipt: null, identity: receiptPublicationIdentity("ABSENT", null, null) });
+  }
+  const { path } = receiptLocation(root, candidateDigest, validationId);
+  const final = await authenticatedReceiptFile(path, [1, 2]);
+  const temporary = await authenticatedReceiptFile(receiptTemporaryPath(path), [1, 2]);
+  let kind: ReceiptPublicationKind;
+  let source: AuthenticatedReceiptFile | null;
+  if (final === null && temporary === null) {
+    kind = "ABSENT";
+    source = null;
+  } else if (final !== null && temporary === null) {
+    if (final.entry.nlink !== 1) refuse("CHECK_RECEIPT_PATH_UNSAFE");
+    kind = "FINAL";
+    source = final;
+  } else if (final === null && temporary !== null) {
+    if (temporary.entry.nlink !== 1) refuse("CHECK_RECEIPT_PATH_UNSAFE");
+    kind = "PENDING";
+    source = temporary;
+  } else {
+    if (final === null || temporary === null || final.entry.nlink !== 2 || temporary.entry.nlink !== 2
+      || final.entry.dev !== temporary.entry.dev || final.entry.ino !== temporary.entry.ino
+      || final.entry.uid !== temporary.entry.uid || final.entry.mode !== temporary.entry.mode
+      || !final.bytes.equals(temporary.bytes)) {
+      refuse("CHECK_RECEIPT_PATH_UNSAFE");
+    }
+    kind = "LINKED";
+    source = final;
+  }
+  const receipt = source === null ? null : authenticateReceiptBytes(root, source, candidateDigest, validationId, expectedBytes);
+  return Object.freeze({ kind, final, temporary, receipt, identity: receiptPublicationIdentity(kind, final, temporary) });
+}
+
+async function assertSameReceiptPublicationSnapshot(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  expected: ReceiptPublicationSnapshot,
+  expectedBytes?: Buffer,
+): Promise<ReceiptPublicationSnapshot> {
+  const current = await receiptPublicationSnapshot(root, candidateDigest, validationId, expectedBytes);
+  if (current.identity !== expected.identity) refuse("CHECK_RECEIPT_PATH_UNSAFE");
+  return current;
 }
 
 async function unlinkAuthenticatedReceiptFile(
@@ -1280,24 +1361,20 @@ async function recoverReceiptPublication(
   candidateDigest: string,
   validationId: string,
   fixtureProcessPolicy: FixtureProcessPolicy | null,
+  snapshot: ReceiptPublicationSnapshot,
   expectedBytes?: Buffer,
 ): Promise<CheckedCandidateReceipt | null> {
   if (fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
-  if (!await authenticateReceiptAncestry(root, candidateDigest, false)) return null;
   const { path } = receiptLocation(root, candidateDigest, validationId);
   const temporaryPath = receiptTemporaryPath(path);
-  const final = await authenticatedReceiptFile(path, [1, 2]);
-  const temporary = await authenticatedReceiptFile(temporaryPath, [1, 2]);
-  if (final === null && temporary === null) return null;
+  const current = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery, expectedBytes);
+  if (current.identity !== snapshot.identity) refuse("CHECK_RECEIPT_PATH_UNSAFE");
+  if (current.kind === "ABSENT") return null;
+  if (current.kind === "FINAL") return current.receipt;
+  if (current.receipt === null || current.temporary === null) refuse("CHECK_RECEIPT_PATH_UNSAFE");
 
-  if (final !== null && temporary === null) {
-    if (final.entry.nlink !== 1) refuse("CHECK_RECEIPT_PATH_UNSAFE");
-    return authenticateReceiptBytes(root, final, candidateDigest, validationId, expectedBytes);
-  }
-
-  if (final === null && temporary !== null) {
-    if (temporary.entry.nlink !== 1) refuse("CHECK_RECEIPT_PATH_UNSAFE");
-    const receipt = authenticateReceiptBytes(root, temporary, candidateDigest, validationId, expectedBytes);
+  if (current.kind === "PENDING") {
+    await assertSameReceiptPublicationSnapshot(root, candidateDigest, validationId, current, expectedBytes);
     await authenticateReceiptAncestry(root, candidateDigest, false);
     try { await link(temporaryPath, path); } catch { return refuse("CHECK_RECEIPT_PATH_UNSAFE"); }
     await fsyncReceiptDirectory(root, candidateDigest);
@@ -1309,54 +1386,38 @@ async function recoverReceiptPublication(
       refuse("CHECK_RECEIPT_PATH_UNSAFE");
     }
     await unlinkAuthenticatedReceiptFile(root, candidateDigest, temporaryPath, linkedTemporary);
-    const recovered = await authenticatedReceiptFile(path, [1]);
-    if (recovered === null || !recovered.bytes.equals(temporary.bytes)) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
-    return receipt;
+    const recovered = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery, expectedBytes);
+    if (recovered.kind !== "FINAL" || recovered.final === null || !recovered.final.bytes.equals(current.temporary.bytes)) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
+    return current.receipt;
   }
-
-  if (final === null || temporary === null || final.entry.nlink !== 2 || temporary.entry.nlink !== 2
-    || final.entry.dev !== temporary.entry.dev || final.entry.ino !== temporary.entry.ino
-    || final.entry.uid !== temporary.entry.uid || final.entry.mode !== temporary.entry.mode
-    || !final.bytes.equals(temporary.bytes)) {
-    refuse("CHECK_RECEIPT_PATH_UNSAFE");
-  }
-  const receipt = authenticateReceiptBytes(root, final, candidateDigest, validationId, expectedBytes);
-  await unlinkAuthenticatedReceiptFile(root, candidateDigest, temporaryPath, temporary);
-  const recovered = await authenticatedReceiptFile(path, [1]);
-  if (recovered === null || !recovered.bytes.equals(final.bytes)) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
-  return receipt;
+  if (current.kind !== "LINKED" || current.final === null) refuse("CHECK_RECEIPT_PATH_UNSAFE");
+  await assertSameReceiptPublicationSnapshot(root, candidateDigest, validationId, current, expectedBytes);
+  await unlinkAuthenticatedReceiptFile(root, candidateDigest, temporaryPath, current.temporary);
+  const recovered = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery, expectedBytes);
+  if (recovered.kind !== "FINAL" || recovered.final === null || !recovered.final.bytes.equals(current.final.bytes)) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
+  return current.receipt;
 }
 
 async function readExistingReceipt(root: string, candidateDigest: string, validationId: string): Promise<CheckedCandidateReceipt | null> {
-  if (!await authenticateReceiptAncestry(root, candidateDigest, false)) return null;
-  const { path } = receiptLocation(root, candidateDigest, validationId);
-  if (await authenticatedReceiptFile(receiptTemporaryPath(path), [1, 2]) !== null) refuse("CHECK_RECEIPT_PATH_UNSAFE");
-  const final = await authenticatedReceiptFile(path, [1]);
-  if (final === null) return null;
-  const receipt = parseCheckedReceipt(final.bytes);
-  authenticateReceiptBinding(receipt, candidateDigest, validationId);
-  const authority = checkedReceiptExecutionAuthority(root);
-  if (receipt.checkedCandidateSchemaDigest !== authority.schemaDigest
-    || receipt.validationExecutionAuthorityResourceDigest !== authority.resourceDigest
-    || receipt.validationWallTimeMilliseconds !== authority.wallTimeMilliseconds
-    || receipt.validationTerminationGraceMilliseconds !== authority.terminationGraceMilliseconds) {
-    refuse("CHECK_RECEIPT_INVALID");
-  }
-  return receipt;
+  const snapshot = await receiptPublicationSnapshot(root, candidateDigest, validationId);
+  if (snapshot.kind === "PENDING" || snapshot.kind === "LINKED") refuse("CHECK_RECEIPT_PATH_UNSAFE");
+  return snapshot.receipt;
 }
 
 type CandidateCurrentReader = (root: string, candidateDigest: string) => Promise<{ readonly workspace: string; readonly basis: RealisationBasis }>;
 type GraphDerivedCheckReceiptRead = { readonly receiptPath: string; readonly receipt: CheckedCandidateReceipt } | null;
 
-async function readGraphDerivedCheckReceiptCurrent(
+async function readFullyCurrentReceiptPublicationSnapshot(
   root: string,
   candidateDigest: string,
   validationId: string,
   readCurrent: CandidateCurrentReader,
-): Promise<GraphDerivedCheckReceiptRead> {
+  expectedBytes?: Buffer,
+): Promise<ReceiptPublicationSnapshot> {
   const canonicalRoot = await realpath(root);
-  const receipt = await readExistingReceipt(canonicalRoot, candidateDigest, validationId);
-  if (receipt === null) return null;
+  const snapshot = await receiptPublicationSnapshot(canonicalRoot, candidateDigest, validationId, expectedBytes);
+  if (snapshot.receipt === null) return snapshot;
+  const receipt = snapshot.receipt;
   const current = await readCurrent(canonicalRoot, candidateDigest);
   const validation = graphValidation(canonicalRoot, current.basis, validationId);
   const facts = await candidateReceiptFacts(canonicalRoot, current.workspace, candidateDigest, current.basis);
@@ -1382,11 +1443,28 @@ async function readGraphDerivedCheckReceiptCurrent(
     || canonicalJson(validation.repositoryReadFiles) !== canonicalJson(validationAfter.repositoryReadFiles)
     || canonicalJson(authorityDependencies) !== canonicalJson(await validationAuthorityDependencies(canonicalRoot, after.workspace, validationAfter.repositoryReadFiles))
     || canonicalJson(facts) !== canonicalJson(await candidateReceiptFacts(canonicalRoot, after.workspace, candidateDigest, after.basis))
-    || canonicalJson(receipt) !== canonicalJson(await readExistingReceipt(canonicalRoot, candidateDigest, validationId))) {
+    || (await assertSameReceiptPublicationSnapshot(canonicalRoot, candidateDigest, validationId, snapshot, expectedBytes)).identity !== snapshot.identity) {
     refuse("CHECK_RECEIPT_INVALID");
   }
   if (validation.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
-  return Object.freeze({ receiptPath: receiptLocation(canonicalRoot, candidateDigest, validationId).repositoryPath, receipt });
+  return snapshot;
+}
+
+async function readGraphDerivedCheckReceiptCurrent(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  readCurrent: CandidateCurrentReader,
+  recovery: boolean,
+): Promise<GraphDerivedCheckReceiptRead> {
+  const snapshot = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, readCurrent);
+  if (snapshot.kind === "ABSENT") return null;
+  if (snapshot.kind !== "FINAL") {
+    if (recovery) return null;
+    refuse("CHECK_RECEIPT_PATH_UNSAFE");
+  }
+  if (snapshot.receipt === null) refuse("CHECK_RECEIPT_INVALID");
+  return Object.freeze({ receiptPath: receiptLocation(await realpath(root), candidateDigest, validationId).repositoryPath, receipt: snapshot.receipt });
 }
 
 /** Read-only strict receipt accessor; retained focused-check scratch is not admitted. */
@@ -1395,7 +1473,7 @@ export async function readGraphDerivedCheckReceipt(
   candidateDigest: string,
   validationId: string,
 ): Promise<GraphDerivedCheckReceiptRead> {
-  return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, currentCandidateWorkspace);
+  return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, currentCandidateWorkspace, false);
 }
 
 /** Read-only recovery receipt accessor for canonical retained-intent authentication. */
@@ -1404,7 +1482,7 @@ export async function readGraphDerivedCheckReceiptForRecovery(
   candidateDigest: string,
   validationId: string,
 ): Promise<GraphDerivedCheckReceiptRead> {
-  return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery);
+  return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery, true);
 }
 
 async function persistReceipt(root: string, candidateDigest: string, validationId: string, receipt: CheckedCandidateReceipt): Promise<string> {
@@ -1415,7 +1493,8 @@ async function persistReceipt(root: string, candidateDigest: string, validationI
   const location = receiptLocation(root, candidateDigest, validationId);
   const bytes = Buffer.from(canonicalJson(receipt, { rejectAbsolutePaths: true }));
   if (bytes.byteLength > maximumReceiptBytes) refuse("CHECK_RECEIPT_INVALID");
-  const existing = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, bytes);
+  const existingSnapshot = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspace);
+  const existing = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, existingSnapshot, bytes);
   if (existing !== null) {
     if (canonicalJson(existing, { rejectAbsolutePaths: true }) !== bytes.toString("utf8")) refuse("CHECK_RECEIPT_CONFLICT");
     return location.repositoryPath;
@@ -1423,6 +1502,8 @@ async function persistReceipt(root: string, candidateDigest: string, validationI
   const temporary = receiptTemporaryPath(location.path);
   let handle: Awaited<ReturnType<typeof open>> | null = null;
   try {
+    const beforePendingPublication = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspace);
+    if (beforePendingPublication.identity !== existingSnapshot.identity) refuse("CHECK_RECEIPT_PATH_UNSAFE");
     handle = await open(temporary, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW, 0o600);
     await handle.writeFile(bytes);
     await handle.sync();
@@ -1436,9 +1517,14 @@ async function persistReceipt(root: string, candidateDigest: string, validationI
     const authenticatedTemporary = await authenticatedReceiptFile(temporary, [1]);
     if (authenticatedTemporary === null || !authenticatedTemporary.bytes.equals(bytes)) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
     await authenticateReceiptAncestry(root, candidateDigest, false);
+    const pendingSnapshot = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspace, bytes);
+    if (pendingSnapshot.kind !== "PENDING") refuse("CHECK_RECEIPT_PATH_UNSAFE");
+    const beforeFinalPublication = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspace, bytes);
+    if (beforeFinalPublication.identity !== pendingSnapshot.identity) refuse("CHECK_RECEIPT_PATH_UNSAFE");
     try { await link(temporary, location.path); } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "EEXIST") return refuse("CHECK_RECEIPT_PATH_UNSAFE");
-      const raced = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, bytes);
+      const racedSnapshot = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspace);
+      const raced = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, racedSnapshot, bytes);
       if (raced === null || canonicalJson(raced, { rejectAbsolutePaths: true }) !== bytes.toString("utf8")) refuse("CHECK_RECEIPT_CONFLICT");
       return location.repositoryPath;
     }
@@ -1446,7 +1532,8 @@ async function persistReceipt(root: string, candidateDigest: string, validationI
   } finally {
     if (handle !== null) await handle.close().catch(() => undefined);
   }
-  const recovered = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, bytes);
+  const publishedSnapshot = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspace);
+  const recovered = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, publishedSnapshot, bytes);
   if (recovered === null) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
   const readback = await readExistingReceipt(root, candidateDigest, validationId);
   if (readback === null || canonicalJson(readback, { rejectAbsolutePaths: true }) !== bytes.toString("utf8")) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
@@ -1544,14 +1631,21 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
         const initialAuthority = checkedReceiptExecutionAuthority(canonicalRoot);
         intentBound = await deriveExecutionIntent(canonicalRoot, candidateDigest, validationId, initial, initialValidation, initialAuthority);
         retainedIntent = await readExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound);
-        await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId, initialValidation.fixtureProcessPolicy);
-        retainedReceipt = await readGraphDerivedCheckReceiptForRecovery(canonicalRoot, candidateDigest, validationId);
-        const disposition = executionIntentDisposition(retainedIntent, retainedReceipt?.receipt ?? null);
+        const retainedSnapshot = await readFullyCurrentReceiptPublicationSnapshot(canonicalRoot, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery);
+        if (retainedIntent?.state === "SETTLED" && retainedSnapshot.kind !== "FINAL") refuse("CHECK_RECEIPT_PATH_UNSAFE");
+        const disposition = executionIntentDisposition(retainedIntent, retainedSnapshot.receipt);
         if (disposition === "RECONCILE") {
-          if (retainedIntent === null || retainedReceipt === null) refuse("CHECK_EXECUTION_INTENT_INVALID");
+          if (retainedIntent === null || retainedSnapshot.receipt === null) refuse("CHECK_EXECUTION_INTENT_INVALID");
           if (retainedIntent.state === "STARTED") {
+            const recovered = await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId, initialValidation.fixtureProcessPolicy, retainedSnapshot);
+            if (recovered === null || canonicalJson(recovered) !== canonicalJson(retainedSnapshot.receipt)) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
+            retainedReceipt = await readGraphDerivedCheckReceiptForRecovery(canonicalRoot, candidateDigest, validationId);
+            if (retainedReceipt === null) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
             const settled = await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "SETTLED", retainedReceipt.receipt.receiptDigest, retainedIntent);
             if (settled.receiptDigest !== retainedReceipt.receipt.receiptDigest) refuse("CHECK_EXECUTION_INTENT_INVALID");
+          } else {
+            retainedReceipt = await readGraphDerivedCheckReceiptForRecovery(canonicalRoot, candidateDigest, validationId);
+            if (retainedReceipt === null) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
           }
           await resetFocusedCheckTemporary(initial.workspace);
           const strictReadback = await readGraphDerivedCheckReceipt(canonicalRoot, candidateDigest, validationId);
@@ -1567,6 +1661,12 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
         }
       }
       if (reuseCurrent && !retainedIntentPresent) {
+        const existing = await readGraphDerivedCheckReceipt(canonicalRoot, candidateDigest, validationId);
+        if (existing !== null) {
+          const current = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+          basis = current.basis;
+          return { status: "pass", basis, id: validationId, exitCode: 0, ...existing };
+        }
         const strictInitial = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
         basis = strictInitial.basis;
       }
@@ -1580,7 +1680,8 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
       if (intentEnabled && intentBound === null) {
         intentBound = await deriveExecutionIntent(canonicalRoot, candidateDigest, validationId, current, validation, executionAuthority);
       }
-      const existingReceipt = await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId, validation.fixtureProcessPolicy);
+      const publicationSnapshot = await readFullyCurrentReceiptPublicationSnapshot(canonicalRoot, candidateDigest, validationId, currentCandidateWorkspace);
+      const existingReceipt = await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId, validation.fixtureProcessPolicy, publicationSnapshot);
       const workspaceManifestPath = resolve(workspace, workspaceManifestName);
       const workspaceManifestBefore = await authenticatedContentFile(workspaceManifestPath, maximumWorkspaceManifestBytes, "CANDIDATE_BASIS_MISMATCH");
       const before = await candidateReceiptFacts(canonicalRoot, workspace, candidateDigest, basis);

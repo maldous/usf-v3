@@ -3,8 +3,8 @@ import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { existsSync } from "node:fs";
-import { chmod, cp, mkdir, mkdtemp, open, readFile, readdir, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { chmod, cp, lstat, mkdir, mkdtemp, open, readFile, readdir, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import test from "node:test";
 
 import { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } from "../../src/commands/construction-authority.ts";
@@ -31,7 +31,7 @@ import {
   withAuthenticatedNoChangeWorkspaceForCheckRecovery,
   withCandidateLock,
 } from "../../src/realisation/index.ts";
-import { ensureGraphDerivedCheck, readGraphDerivedCheckReceipt, type CheckedCandidateReceipt } from "../../src/commands/check.ts";
+import { ensureGraphDerivedCheck, readGraphDerivedCheckReceipt, readGraphDerivedCheckReceiptForRecovery, type CheckedCandidateReceipt } from "../../src/commands/check.ts";
 import {
   deriveNoChangeCompletionAuthority,
   workCompletionRecordLines,
@@ -541,11 +541,42 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
     assert.ok(expectedObligations.length > 1, "genuine fixture must have a partial-retention denominator");
     const retainedObligation = expectedObligations[0]!;
     const absentObligation = expectedObligations[1]!;
-    const retained = await ensureGraphDerivedCheck(isolated.root, identity, retainedObligation);
-    assert.equal(retained.status, "pass");
-    const retainedBefore = await readGraphDerivedCheckReceipt(isolated.root, identity, retainedObligation);
-    assert.ok(retainedBefore, "retained member must be authenticated through the native receipt reader");
-    const retainedBytes = await readFile(resolve(isolated.root, retainedBefore.receiptPath));
+    const receiptPath = join(isolated.root, ".usf", "receipts", "check", identity.slice("sha256:".length), `${canonicalDigest(retainedObligation).slice("sha256:".length)}.json`);
+    const pendingPath = `${receiptPath}.pending`;
+    const interrupted = spawn(process.execPath, [resolve(canonicalRoot, "tests/fixtures/realisation/check-interruption.ts"),
+      isolated.root, identity, retainedObligation, "pending-synced", pendingPath], {
+      cwd: isolated.root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"],
+    });
+    let launches = 0, successfulExits = 0, reached = false, stdout = "", stderr = "";
+    interrupted.stdout!.on("data", chunk => { stdout += String(chunk); });
+    interrupted.stderr!.on("data", chunk => { stderr += String(chunk); });
+    interrupted.on("message", (message: unknown) => {
+      if (message === null || typeof message !== "object") return;
+      const event = message as Record<string, unknown>;
+      if (event.kind === "validation-spawn") launches++;
+      if (event.kind === "validation-exit" && event.code === 0 && event.signal === null) successfulExits++;
+      if (event.kind === "boundary" && event.boundary === "pending-synced") {
+        reached = true;
+        interrupted.kill("SIGKILL");
+      }
+    });
+    const timeout = setTimeout(() => interrupted.kill("SIGKILL"), 120_000);
+    try {
+      const ended = await new Promise<{ readonly signal: NodeJS.Signals | null }>((accept, reject) => {
+        interrupted.once("error", reject);
+        interrupted.once("close", (_code, signal) => accept({ signal }));
+      });
+      assert.equal(reached, true, stderr);
+      assert.equal(ended.signal, "SIGKILL");
+      assert.equal(stdout, "", stderr);
+    } finally { clearTimeout(timeout); }
+    assert.equal(launches, 1, "pending receipt is produced by one genuine native child");
+    assert.equal(successfulExits, 1, "the retained pending receipt follows a genuine successful child exit");
+    const retainedBytes = await readFile(pendingPath);
+    const retainedIdentity = await lstat(pendingPath);
+    const intentPath = receiptPath.replace(/\.json$/u, ".intent.json");
+    assert.equal(JSON.parse(await readFile(intentPath, "utf8")).state, "STARTED");
+    assert.equal(await readGraphDerivedCheckReceiptForRecovery(isolated.root, identity, retainedObligation), null, "pending publication is not a current receipt before native reconciliation");
     assert.equal(await readGraphDerivedCheckReceipt(isolated.root, identity, absentObligation), null, "only one genuine member is retained before preparation");
 
     const first = await prepareCompletionChecks(isolated.root, request);
@@ -557,7 +588,12 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
     const receipts = first.receipts as readonly { readonly obligationIri: string }[];
     assert.equal(receipts.length, expectedObligations.length, "only the graph-required receipt denominator is acknowledged");
     assert.deepEqual(receipts.map(receipt => receipt.obligationIri).sort(), expectedObligations);
-    assert.deepEqual(await readFile(resolve(isolated.root, retainedBefore.receiptPath)), retainedBytes, "retained current receipt is reconciled without replacement");
+    const retainedAfter = await readGraphDerivedCheckReceipt(isolated.root, identity, retainedObligation);
+    assert.ok(retainedAfter, "the retained member is reconciled through the native primitive");
+    assert.deepEqual(await readFile(resolve(isolated.root, retainedAfter.receiptPath)), retainedBytes, "retained current receipt is reconciled without replacement");
+    assert.equal((await lstat(resolve(isolated.root, retainedAfter.receiptPath))).ino, retainedIdentity.ino, "reconciliation retains the genuine pending receipt identity without redispatch");
+    await assert.rejects(() => lstat(pendingPath), { code: "ENOENT" });
+    assert.equal(JSON.parse(await readFile(intentPath, "utf8")).state, "SETTLED");
     assert.ok(await readGraphDerivedCheckReceipt(isolated.root, identity, absentObligation), "the genuinely absent member is produced through the native primitive");
     const { receiptSetDigest, ...stableSet } = first;
     assert.equal(receiptSetDigest, canonicalDigest(stableSet, { rejectAbsolutePaths: true }));

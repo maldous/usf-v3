@@ -32,7 +32,7 @@ let preSpawnManifestDrifted = false;
 fs.mkdir = (async (...args: Parameters<typeof mkdir>) => {
   const result = await mkdir(...args);
   if (!preSpawnManifestDrifted && boundary === "pre-spawn-manifest-drift"
-    && String(args[0]).endsWith(".usf-check-tmp/.usf-check-runtime")) {
+    && String(args[0]).endsWith(".usf-check-tmp/execution-view/.usf-check-runtime")) {
     const workspace = resolve(root!, ".usf", "workspaces", candidateDigest!.slice("sha256:".length));
     const manifest = resolve(workspace, ".usf-workspace.json");
     await fs.writeFile(manifest, Buffer.concat([await fs.readFile(manifest), Buffer.from("\n")]));
