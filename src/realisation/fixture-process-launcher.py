@@ -95,6 +95,24 @@ SUPPORTED_MACHINES = frozenset({"x86_64", "aarch64"})
 
 PR_SET_NO_NEW_PRIVS = 38
 PR_GET_NO_NEW_PRIVS = 39
+PR_GET_SECCOMP = 21
+PR_SET_SECCOMP = 22
+SECCOMP_MODE_FILTER = 2
+SECCOMP_RET_KILL_PROCESS = 0x80000000
+SECCOMP_RET_ERRNO = 0x00050000
+SECCOMP_RET_ALLOW = 0x7FFF0000
+EPERM = 1
+AUDIT_ARCH_X86_64 = 0xC000003E
+AUDIT_ARCH_AARCH64 = 0xC00000B7
+X32_SYSCALL_BIT = 0x40000000
+BPF_LD_W_ABS = 0x20
+BPF_JMP_JEQ_K = 0x15
+BPF_JMP_JGE_K = 0x35
+BPF_RET_K = 0x06
+SECCOMP_DATA_NR_OFFSET = 0
+SECCOMP_DATA_ARCH_OFFSET = 4
+X86_64_SOCKET_SYSCALLS = (42, 43, 49, 50, 288, 425, 426, 427)
+AARCH64_SOCKET_SYSCALLS = (200, 201, 202, 203, 242, 425, 426, 427)
 APPARMOR_CURRENT_PATH = "/proc/self/attr/current"
 APPARMOR_PROFILE = "usf-fixture-process-v1"
 APPARMOR_STACK_COMMAND = "stack " + APPARMOR_PROFILE
@@ -112,6 +130,7 @@ REFUSE_APPARMOR = "USF-FIXTURE-LAUNCH-REFUSED-05-APPARMOR"
 REFUSE_EXEC = "USF-FIXTURE-LAUNCH-REFUSED-06-EXEC"
 REFUSE_INTERNAL = "USF-FIXTURE-LAUNCH-REFUSED-07-INTERNAL"
 REFUSE_ENVIRONMENT = "USF-FIXTURE-LAUNCH-REFUSED-08-ENVIRONMENT"
+REFUSE_SECCOMP = "USF-FIXTURE-LAUNCH-REFUSED-09-SECCOMP"
 
 _DIGEST_RE = re.compile(r"\Asha256:[0-9a-f]{64}\Z")
 _ABS_PATH_RE = re.compile(r"\A/[A-Za-z0-9._/-]+\Z")
@@ -415,12 +434,12 @@ def _open_verified_tool(path, digest_hex):
     return fd
 
 
-def _load_prctl():
+def _load_prctl(refusal_code=REFUSE_APPARMOR):
     try:
         libc = ctypes.CDLL(None, use_errno=True)
         prctl_fn = libc.prctl
     except (OSError, AttributeError):
-        _refuse(REFUSE_APPARMOR)
+        _refuse(refusal_code)
     prctl_fn.restype = ctypes.c_int
     prctl_fn.argtypes = [
         ctypes.c_int,
@@ -518,6 +537,67 @@ def _apply_apparmor(tool_fds):
             _refuse(REFUSE_APPARMOR)
 
 
+class _SockFilter(ctypes.Structure):
+    _fields_ = [
+        ("code", ctypes.c_ushort),
+        ("jt", ctypes.c_ubyte),
+        ("jf", ctypes.c_ubyte),
+        ("k", ctypes.c_uint32),
+    ]
+
+
+class _SockFprog(ctypes.Structure):
+    _fields_ = [
+        ("len", ctypes.c_ushort),
+        ("filter", ctypes.POINTER(_SockFilter)),
+    ]
+
+
+def _apply_seccomp():
+    """Install the fixed socket and io_uring denial filter before exec."""
+    instructions = [
+        (BPF_LD_W_ABS, 0, 0, SECCOMP_DATA_ARCH_OFFSET),
+        (BPF_JMP_JEQ_K, 2, 0, AUDIT_ARCH_X86_64),
+        (BPF_JMP_JEQ_K, 14, 0, AUDIT_ARCH_AARCH64),
+        (BPF_RET_K, 0, 0, SECCOMP_RET_KILL_PROCESS),
+        (BPF_LD_W_ABS, 0, 0, SECCOMP_DATA_NR_OFFSET),
+        (BPF_JMP_JGE_K, 0, 1, X32_SYSCALL_BIT),
+        (BPF_RET_K, 0, 0, SECCOMP_RET_KILL_PROCESS),
+    ]
+    for index, syscall_number in enumerate(X86_64_SOCKET_SYSCALLS):
+        instructions.append(
+            (BPF_JMP_JEQ_K, len(X86_64_SOCKET_SYSCALLS) - index, 0, syscall_number)
+        )
+    instructions.extend(
+        [
+            (BPF_RET_K, 0, 0, SECCOMP_RET_ALLOW),
+            (BPF_RET_K, 0, 0, SECCOMP_RET_ERRNO | EPERM),
+            (BPF_LD_W_ABS, 0, 0, SECCOMP_DATA_NR_OFFSET),
+        ]
+    )
+    for index, syscall_number in enumerate(AARCH64_SOCKET_SYSCALLS):
+        instructions.append(
+            (BPF_JMP_JEQ_K, len(AARCH64_SOCKET_SYSCALLS) - index, 0, syscall_number)
+        )
+    instructions.extend(
+        [
+            (BPF_RET_K, 0, 0, SECCOMP_RET_ALLOW),
+            (BPF_RET_K, 0, 0, SECCOMP_RET_ERRNO | EPERM),
+        ]
+    )
+    filters = (_SockFilter * len(instructions))(
+        *(_SockFilter(*instruction) for instruction in instructions)
+    )
+    program = _SockFprog(len(instructions), filters)
+    prctl_fn = _load_prctl(REFUSE_SECCOMP)
+    if prctl_fn(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) != 1:
+        _refuse(REFUSE_SECCOMP)
+    if prctl_fn(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, ctypes.addressof(program), 0, 0) != 0:
+        _refuse(REFUSE_SECCOMP)
+    if prctl_fn(PR_GET_SECCOMP, 0, 0, 0, 0) != SECCOMP_MODE_FILTER:
+        _refuse(REFUSE_SECCOMP)
+
+
 def _validated_environment_value(name):
     value = os.environ.get(name)
     text = _wire_string(value, MAX_FS_PATH_BYTES)
@@ -604,6 +684,7 @@ def _main():
         tool_fds.append(_open_verified_tool(tool_path, digest_hex))
     argv = [NODE_ARGV0] + list(node_arguments)
     _apply_apparmor(tool_fds)
+    _apply_seccomp()
     _launch(tool_fds[0], argv, environment)
 
 
