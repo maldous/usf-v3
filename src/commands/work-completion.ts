@@ -909,10 +909,6 @@ export const realiseCommandHandler: CommandHandler = async ({ args, repositoryRo
 
 export const completionAwareEvidenceCommandHandler: CommandHandler = async (command): Promise<CommandResult> => {
   if (command.args[0] !== "completion") return evidenceCommandHandler(command);
-  if (command.args[1] === "--input") {
-    const { observationCommandHandler } = await import("./transition.ts");
-    return observationCommandHandler({ ...command, args: command.args.slice(1) }, "evidence completion");
-  }
   try {
     const request = parseEvidenceRequest(command.args);
     const evidence = await prepareCompletionEvidence(command.repositoryRoot, { work: request.work, profile: request.profile, manifestPath: request.manifestPath, candidateDigest: request.candidateDigest });

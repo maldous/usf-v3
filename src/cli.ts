@@ -49,7 +49,13 @@ const bootstrapHandlers: CommandHandlers = {
       ? operationalMutation(context.repositoryRoot, async () => bootstrapCarrierCommandHandler(context))
       : bootstrapCarrierCommandHandler(context);
   },
-  evidence: async (context) => (await import("./commands/work-completion.ts")).completionAwareEvidenceCommandHandler(context),
+  evidence: async (context) => {
+    if (context.args[0] === "completion" && context.args[1] === "--input") {
+      const { observationCommandHandler } = await import("./commands/transition.ts");
+      return observationCommandHandler({ ...context, args: context.args.slice(1) }, "evidence completion");
+    }
+    return (await import("./commands/work-completion.ts")).completionAwareEvidenceCommandHandler(context);
+  },
   prove: async (context) => (await import("./commands/work-completion.ts")).completionAwareProveCommandHandler(context),
   metrics: async (context) => (await import("./commands/metrics.ts")).metricsCommandHandler(context),
   models: async (context) => {
