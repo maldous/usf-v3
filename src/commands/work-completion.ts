@@ -520,10 +520,48 @@ async function realiseNoChange(root: string, request: RealiseRequest): Promise<R
   return result;
 }
 
-async function produceEvidence(root: string, request: EvidenceRequest): Promise<CompletionEvidenceCandidate> {
-  const graph = loadSemanticGraph(root, request.manifestPath);
-  const packet = exactPacket(graph, request.profile, request.work);
-  return deriveEvidence(root, graph, packet, request.candidateDigest);
+export interface CompletionEvidencePreparationRequest {
+  readonly work: string;
+  readonly profile: string;
+  readonly manifestPath: string;
+  readonly candidateDigest: string;
+}
+
+/** Authenticate a current evidence candidate without persisting or publishing it. */
+export async function prepareCompletionEvidence(root: string, request: CompletionEvidencePreparationRequest): Promise<CompletionEvidenceCandidate> {
+  try {
+    const keys = ["candidateDigest", "manifestPath", "profile", "work"];
+    if (request === null || typeof request !== "object" || Array.isArray(request)
+      || Reflect.ownKeys(request).length !== keys.length
+      || keys.some(key => {
+        const property = Object.getOwnPropertyDescriptor(request, key);
+        return property === undefined || !("value" in property) || typeof property.value !== "string"
+          || property.value.length === 0 || property.value.length > 4096;
+      })) {
+      refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Evidence preparation requires only work, profile, manifestPath and candidateDigest.");
+    }
+    const selected = Object.freeze({ work: request.work, profile: request.profile, manifestPath: request.manifestPath, candidateDigest: request.candidateDigest });
+    if (!digestPattern.test(selected.candidateDigest) || !iriPattern.test(selected.work)) {
+      refuse("WORK_COMPLETION_IDENTITY_INVALID", "Candidate and work identities are invalid.");
+    }
+    assertSelection(selected.profile, selected.manifestPath);
+    const repositoryRoot = realpathSync(resolve(root));
+    const graph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
+    const packet = exactPacket(graph, selected.profile, selected.work);
+    const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
+    const dependencies = workCompletionAuthorityDependencies(graph, authority);
+    const evidence = await deriveEvidence(repositoryRoot, graph, packet, selected.candidateDigest);
+    // Awaited workspace/check authentication must not carry a stale selection into output.
+    const currentGraph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
+    const currentPacket = exactPacket(currentGraph, selected.profile, selected.work);
+    const currentAuthority = deriveNoChangeCompletionAuthority(currentGraph, currentPacket.id);
+    if (canonicalJson(packet.realisationBasis) !== canonicalJson(currentPacket.realisationBasis)
+      || canonicalJson(authority) !== canonicalJson(currentAuthority)
+      || canonicalJson(dependencies) !== canonicalJson(workCompletionAuthorityDependencies(currentGraph, currentAuthority))) {
+      refuse("WORK_COMPLETION_EVIDENCE_NOT_CURRENT", "Evidence preparation authority changed during authentication.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return evidence;
+  } catch (error) { return asUsfError(error, "WORK_COMPLETION_EVIDENCE_REFUSED"); }
 }
 
 async function produceProof(root: string, request: ProofRequest, value: unknown): Promise<CompletionProofBundle> {
@@ -871,9 +909,13 @@ export const realiseCommandHandler: CommandHandler = async ({ args, repositoryRo
 
 export const completionAwareEvidenceCommandHandler: CommandHandler = async (command): Promise<CommandResult> => {
   if (command.args[0] !== "completion") return evidenceCommandHandler(command);
+  if (command.args[1] === "--input") {
+    const { observationCommandHandler } = await import("./transition.ts");
+    return observationCommandHandler({ ...command, args: command.args.slice(1) }, "evidence completion");
+  }
   try {
     const request = parseEvidenceRequest(command.args);
-    const evidence = await produceEvidence(command.repositoryRoot, request);
+    const evidence = await prepareCompletionEvidence(command.repositoryRoot, { work: request.work, profile: request.profile, manifestPath: request.manifestPath, candidateDigest: request.candidateDigest });
     persistCandidate(command.repositoryRoot, request.output, evidence);
     return { output: evidence };
   } catch (error) { return asUsfError(error, "WORK_COMPLETION_EVIDENCE_REFUSED"); }

@@ -40,6 +40,11 @@ test("terminal census exposes real completion and recovery obligations, not mere
 
 test("declared terminal artifact can complete structural census without authenticating satisfaction", () => {
   const f = terminalFixture(); f.add(f.declaration, "terminalArtifact", f.artifact);
+  assert(f.run().reasonCodes.includes("TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING"));
+  // Hypothetical recovery declarations fill structure only; they authenticate no producer behavior.
+  for (const producer of ["no-change-workspace", "completion-check-receipts"]) {
+    f.add(`urn:usf:cli-transition:${producer}:1`, "recoveryContract", "urn:usf:cli-contract:completion-evidence-recovery:1");
+  }
   const result = f.run();
   assert.deepEqual(result.reasonCodes, []);
   assert.equal(result.structuralComplete, true); assert.equal(result.satisfaction, "unverified");

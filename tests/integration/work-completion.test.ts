@@ -8,6 +8,7 @@ import test from "node:test";
 import { admissionCheckHandler } from "../../src/commands/apply.ts";
 import {
   completionAwareEvidenceCommandHandler,
+  prepareCompletionEvidence,
   completionAwareProveCommandHandler,
   completionAwarePublishCommandHandler,
   realiseCommandHandler,
@@ -217,6 +218,8 @@ test("retained real receipt is reauthenticated before no-change completion effec
       { code: "WORK_COMPLETION_CHECK_RECEIPT_MISSING", exitCode: 4 },
     );
 
+    const preparation = { work, profile, manifestPath: manifest, candidateDigest };
+    await assert.rejects(() => prepareCompletionEvidence(isolated.root, preparation), { code: "WORK_COMPLETION_CHECK_RECEIPT_MISSING", exitCode: 4 });
     const evidencePath = ".usf/candidates/work-completion/repository-path-evidence.json";
     const bundlePath = ".usf/candidates/work-completion/repository-path-bundle.json";
     const checkedReceiptPath = await installCheckedReceipt(isolated.root, fixture);
@@ -261,6 +264,18 @@ test("retained real receipt is reauthenticated before no-change completion effec
     }
     await writeFile(checkedReceiptPath, fixture.bytes, { mode: 0o600 });
 
+    const filesBefore = await readdir(isolated.root, { recursive: true });
+    const receiptBefore = await readFile(checkedReceiptPath, "utf8");
+    const graphBefore = loadSemanticGraph(isolated.root, manifest).semanticDigest;
+    const direct = await prepareCompletionEvidence(isolated.root, preparation);
+    assert.deepEqual(await prepareCompletionEvidence(isolated.root, preparation), direct);
+    const noOutput = await completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root, args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest] });
+    assert.deepEqual(noOutput.output, direct);
+    assert.deepEqual(await readdir(isolated.root, { recursive: true }), filesBefore);
+    assert.equal(await readFile(checkedReceiptPath, "utf8"), receiptBefore);
+    assert.equal(loadSemanticGraph(isolated.root, manifest).semanticDigest, graphBefore);
+    assert.equal(existsSync(resolve(isolated.root, evidencePath)), false);
+    assert.notEqual(packet(isolated.root).realisationStage?.completion.verified, true);
     const evidenceResult = await completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root, args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", evidencePath] });
     const evidence = evidenceResult.output as CompletionEvidenceCandidate;
     assert.equal(evidence.disposition, "verified-no-change");
@@ -321,4 +336,16 @@ test("retained real receipt is reauthenticated before no-change completion effec
   } finally {
     await isolated.cleanup();
   }
+});
+
+test("completion evidence preparation refuses nonclosed inputs before repository access", async () => {
+  const valid = { work, profile, manifestPath: manifest, candidateDigest: "sha256:" + "a".repeat(64) };
+  for (const key of ["output", "graph", "packet", "basis"]) {
+    await assert.rejects(() => prepareCompletionEvidence("/missing", { ...valid, [key]: {} }), { code: "WORK_COMPLETION_ARGUMENTS_INVALID" });
+  }
+  for (const value of [null, [], {}, { ...valid, work: 1 }, { ...valid, profile: "x".repeat(4097) }]) {
+    await assert.rejects(() => prepareCompletionEvidence("/missing", value as never), { code: "WORK_COMPLETION_ARGUMENTS_INVALID" });
+  }
+  await assert.rejects(() => prepareCompletionEvidence("/missing", { ...valid, candidateDigest: "sha256:bad" }), { code: "WORK_COMPLETION_IDENTITY_INVALID" });
+  await assert.rejects(() => prepareCompletionEvidence("/missing", { ...valid, manifestPath: "../outside.json" }), { code: "WORK_COMPLETION_SELECTION_INVALID" });
 });

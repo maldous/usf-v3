@@ -1,7 +1,7 @@
 import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { readFileSync } from "node:fs";
 import { createJsonSchemaValidator } from "../schema/index.ts";
-import { deriveCliTransitionContext, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema, type CliTransitionAdapter } from "../graph/cli-transitions.ts";
+import { deriveCliTransitionContext, deriveCliTransitionIds, consistentArtifactProducer, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema, type CliTransitionAdapter } from "../graph/cli-transitions.ts";
 import { canonicalQuadDigest, canonicalQuadLine } from "../graph/nquads.ts";
 import { deriveLinearBindingDeclaration, LinearBindingError } from "../graph/linear-binding.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
@@ -33,16 +33,64 @@ const localObservationRules: Readonly<Record<string, string>> = Object.freeze({
   "urn:usf:rule:local-preparation-terminal:1": "sha256:28748d5c287c49c60426fbebefed8c4dda8ad5fd7cc3f4575a1ffc1b72c5000c"
 });
 
-const observationAdapters = new Map([[
+interface ObservationImplementation {
+  readonly id: string;
+  readonly command: string;
+  readonly algorithm: string;
+  readonly outputSchema: string;
+  readonly rules: Readonly<Record<string, string>>;
+  readonly ruleRoles?: Readonly<Record<string, string | readonly string[]>>;
+  readonly publicationPolicy?: string;
+  readonly consumedSchemas?: readonly string[];
+  prepare(root: string, selection: { rootIdentity: string; manifestPath: string }, input: ObservationObject, profile: string): Promise<unknown>;
+  identity(output: ObservationObject): { work: unknown; profile: unknown };
+}
+
+const completionRule = "urn:usf:rule:completion-evidence-reauthentication:1";
+const completionRuleRoles = Object.freeze({
+  "input.derivationRule": "urn:usf:rule:completion-evidence-input:1",
+  ...Object.fromEntries([
+    "effect.guardRule", "effect.scopeRule", "effect.readbackRule", "effect.safetyRule",
+    "produces.0.basisRule", "produces.0.authenticationRule", "produces.0.digestRule",
+    "consumes.0.basisRule", "consumes.0.authenticationRule", "consumes.0.digestRule",
+    "consumes.1.basisRule", "consumes.1.authenticationRule", "consumes.1.digestRule",
+    "recovery.intentRule", "recovery.boundaryRule", "recovery.unknownOutcomeRule",
+    "recovery.reconciliationRule", "recovery.terminalProofRule",
+  ].map(path => [path, completionRule])),
+  "recovery.obligations": [completionRule],
+});
+
+const observationAdapters = new Map<string, ObservationImplementation>([[
   "resolve prepare-local", {
     id: "urn:usf:cli-adapter:local-contribution-prepare:1",
     command: "urn:usf:command:resolve-prepare-local:1",
     algorithm: "urn:usf:algorithm:local-contribution-preparation:1",
     outputSchema: "urn:usf:local-contribution:1",
     rules: localObservationRules,
-    prepare: prepareLocalContribution,
+    prepare: (root, selection, input) => prepareLocalContribution(root, selection, input.operations),
+    identity(output) {
+      const parsed = parseLocalContribution(output);
+      return { work: parsed.basis.work.id, profile: parsed.basis.selection.profile };
+    },
   },
-]]);
+], ["evidence completion", {
+  id: "urn:usf:cli-adapter:completion-evidence:1",
+  command: "urn:usf:command:evidence-completion:1",
+  algorithm: "urn:usf:algorithm:no-change-completion-evidence:1",
+  outputSchema: "urn:usf:completion-evidence-candidate:1",
+  publicationPolicy: "urn:usf:publication-policy:cli-transition-definition-no-change-completion:1",
+  rules: Object.freeze({
+    "urn:usf:rule:completion-evidence-input:1": "sha256:ca0ba233b9dd322223ecde96bba3aa6de6f1873fa18bfd14528c183161be227f",
+    [completionRule]: "sha256:c3ccd53a6422bc9b051a3e6a94e16adbb4ea249d15a1df7d5f1e89c0e12288c3",
+  }),
+  ruleRoles: completionRuleRoles,
+  consumedSchemas: ["urn:usf:schema:checked-candidate-receipt:1", "urn:usf:schema:no-change-workspace-manifest:1"],
+  async prepare(root, selection, input, profile) {
+    const { prepareCompletionEvidence } = await import("./work-completion.ts");
+    return prepareCompletionEvidence(root, { work: selection.rootIdentity, profile, manifestPath: selection.manifestPath, candidateDigest: input.candidateDigest as string });
+  },
+  identity: output => ({ work: output.workIri, profile: output.profileIri }),
+}]]);
 
 // These bindings describe compiled rule support, not permission or progression.
 const localRuleRoles: Readonly<Record<string, string | readonly string[]>> = Object.freeze({
@@ -63,6 +111,12 @@ const localRuleRoles: Readonly<Record<string, string | readonly string[]>> = Obj
 });
 
 export function validateLocalObservationRoles(descriptor: ObservationObject, transitionIdentity: string): void {
+  validateObservationRoles(descriptor, transitionIdentity, Object.fromEntries(Object.entries(localRuleRoles).map(([path, supported]) => [path,
+    typeof supported === "string" ? `urn:usf:rule:local-preparation-${supported}:1` : supported.map(name => `urn:usf:rule:local-preparation-${name}:1`),
+  ])));
+}
+
+function validateObservationRoles(descriptor: ObservationObject, transitionIdentity: string, roles: Readonly<Record<string, string | readonly string[]>>): void {
   const actualRoles = new Set<string>();
   function collect(value: unknown, path: string, key: string): void {
     if (key.endsWith("Rule") || key === "obligations") { actualRoles.add(path); return; }
@@ -71,16 +125,15 @@ export function validateLocalObservationRoles(descriptor: ObservationObject, tra
     }
   }
   collect(descriptor, "", "");
-  if (actualRoles.size !== Object.keys(localRuleRoles).length || [...actualRoles].some(path => !Object.hasOwn(localRuleRoles, path))) {
+  if (actualRoles.size !== Object.keys(roles).length || [...actualRoles].some(path => !Object.hasOwn(roles, path))) {
     throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "The descriptor declares unsupported operational rule roles.");
   }
-  for (const [path, supported] of Object.entries(localRuleRoles)) {
+  for (const [path, supported] of Object.entries(roles)) {
     let value: unknown = descriptor;
     for (const key of path.split(".")) {
       value = value !== null && typeof value === "object" ? (value as ObservationObject)[key] : undefined;
     }
-    const expected = (typeof supported === "string" ? [supported] : supported)
-      .map(name => `urn:usf:rule:local-preparation-${name}:1`);
+    const expected = typeof supported === "string" ? [supported] : supported;
     const actual = typeof value === "string" ? [value] : value;
     if (!Array.isArray(actual) || actual.length !== expected.length || actual.some((id, index) => id !== expected[index])) {
       throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Compiled rule role does not match the semantic descriptor.", { path });
@@ -133,7 +186,12 @@ export function inspectObservationTransition(graph: SemanticGraph, selection: { 
   const projected = deriveCliRecord(graph, { recordIdentity: rootRecord.id, subjectIdentity: transitions[0]! }, specifications);
   if (!projected.valid || projected.value === null) throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Observation descriptor is incomplete.", { diagnostics: projected.gaps });
   const descriptor = projected.value;
-  validateLocalObservationRoles(descriptor, transitions[0]!);
+  if (implementation.ruleRoles === undefined) validateLocalObservationRoles(descriptor, transitions[0]!);
+  else validateObservationRoles(descriptor, transitions[0]!, implementation.ruleRoles);
+  if (implementation.publicationPolicy === undefined ? descriptor.algorithm !== undefined || descriptor.publicationPolicy !== undefined
+    : descriptor.algorithm !== implementation.algorithm || descriptor.publicationPolicy !== implementation.publicationPolicy) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Algorithm or policy binding does not match compiled observation support.");
+  }
   const declaredOutputs = descriptor.produces;
   if (!Array.isArray(declaredOutputs) || declaredOutputs.length !== 1
     || observationObject(declaredOutputs[0]).schema !== implementation.outputSchema
@@ -142,10 +200,22 @@ export function inspectObservationTransition(graph: SemanticGraph, selection: { 
     throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Declared output does not match the compiled observation work/profile/schema.");
   }
   const effect = observationObject(descriptor.effect), declaredInput = observationObject(descriptor.input);
+  const expectedSchemas = implementation.consumedSchemas ?? [];
+  const consumedSchemas = new Set<string>();
+  const transitionIds = deriveCliTransitionIds([...new Set(graph.quads.map(q => q.subject))], values, context.work, context.contract);
   if (descriptor.owner !== context.contract || effect.effectClass !== "observation" || effect.contact !== "none"
     || !Array.isArray(descriptor.prerequisites) || descriptor.prerequisites.length !== 0
-    || !Array.isArray(descriptor.consumes) || descriptor.consumes.length !== 0) {
-    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "This compiled adapter admits only a prerequisite-free no-effect observation; current construction guards still apply.");
+    || !Array.isArray(descriptor.consumes) || descriptor.consumes.length !== expectedSchemas.length
+    || descriptor.consumes.some(value => {
+      const artifact = observationObject(value);
+      if (typeof artifact.schema !== "string" || !expectedSchemas.includes(artifact.schema) || consumedSchemas.has(artifact.schema)) return true;
+      consumedSchemas.add(artifact.schema);
+      return artifact.work !== selection.rootIdentity || artifact.profile !== context.profile || typeof artifact.producer !== "string"
+        || !values(artifact.producer, "type").includes("urn:usf:type:CliTransitionDescriptor")
+        || values(artifact.producer, "owner").length !== 1 || values(artifact.producer, "owner")[0] !== context.contract
+        || !consistentArtifactProducer([artifact.producer], transitionIds.filter(id => values(id, "produces").includes(artifact.identity as string)));
+    })) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Compiled observation dependencies do not match the semantic contract; runtime artifact authentication remains mandatory.");
   }
   const rules = new Set<string>();
   function collectRules(value: unknown, key = ""): void {
@@ -178,9 +248,10 @@ export async function observationCommandHandler(request: CommandRequest, command
   const { implementation, context, validator } = inspectObservationTransition(graph, selection, commandPath);
   if (!validator.validate(input).valid) throw new UsfError("CLI_TRANSITION_INPUT_INVALID", exitCodes.INVALID_INPUT, "Input violates the graph-generated request schema.");
   try {
-    const output = parseLocalContribution(await implementation.prepare(request.repositoryRoot, selection, input.operations));
-    if (output.schema !== implementation.outputSchema || output.basis.work.id !== selection.rootIdentity
-      || output.basis.selection.profile !== context.profile) {
+    const output = observationObject(await implementation.prepare(request.repositoryRoot, selection, input, context.profile!));
+    const identity = implementation.identity(output);
+    if (output.schema !== implementation.outputSchema || identity.work !== selection.rootIdentity
+      || identity.profile !== context.profile) {
       throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Produced artifact is not the declared work/profile/schema.");
     }
     const current = loadSemanticGraph(request.repositoryRoot, selection.manifestPath);

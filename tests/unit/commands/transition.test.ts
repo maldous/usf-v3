@@ -94,7 +94,7 @@ test("interrogation and preparation share actual graph-bound observation admissi
   const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
   assert.deepEqual(report.descriptors.find(d => d.identity === admitted.descriptor.identity), admitted.descriptor);
   assert.equal(report.diagnostics.some(d => d.subject === admitted.descriptor.identity && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), false);
-  for (const stage of ["evidence", "proof", "publication"]) {
+  for (const stage of ["proof", "publication"]) {
     const identity = `urn:usf:cli-transition:completion-${stage}:1`;
     assert(report.diagnostics.some(d => d.subject === identity && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), identity);
   }
@@ -222,7 +222,8 @@ test("completion lineage remains visible without admitting unmapped execution or
     assert(assessment.edges.some(e => e.source === artifact && e.predicate === "urn:usf:predicate:producer" && e.target === transition));
     assert(assessment.edges.some(e => e.source === transition && e.predicate === "urn:usf:predicate:recoveryContract" && e.target === recovery));
     if (index > 0) assert(assessment.edges.some(e => e.source === transition && e.predicate === "urn:usf:predicate:consumes" && e.target === `urn:usf:cli-contract:completion-${stages[index - 1]}-artifact:1`));
-    assert(report.diagnostics.some(d => d.subject === transition && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
+    if (stage !== "evidence") assert(report.diagnostics.some(d => d.subject === transition && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
+    else assert(!report.diagnostics.some(d => d.subject === transition && d.field === "adapter"));
   }
   assert.equal(assessment.structuralComplete, false);
   assert.equal(assessment.satisfaction, "unverified");
@@ -230,6 +231,40 @@ test("completion lineage remains visible without admitting unmapped execution or
   assert.equal(report.complete, false);
   assert.equal(report.executionAuthority, "none");
   assert.equal(report.parallelSafety.state, "unproven");
+});
+
+test("completion preparation exposes required consumed artifacts and typed canonical input without execution authority", () => {
+  const graph = actualDescriptorGraph();
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const inspected = inspectObservationTransition(graph, selection, "evidence completion");
+  const request = { ...selection, candidateDigest: "sha256:" + "0".repeat(64) };
+  assert.equal(inspected.validator.validate(request).valid, true);
+  for (const key of ["profile", "work", "basis", "graph", "receipts", "output", "executionAuthority", "fields"]) {
+    assert.equal(inspected.validator.validate({ ...request, [key]: "invented" }).valid, false, key);
+  }
+  assert.equal(inspected.validator.validate(selection).valid, false);
+  const consumed = inspected.descriptor.consumes as readonly { identity: string; producer: string }[];
+  assert.deepEqual(consumed.map(value => value.identity), ["urn:usf:cli-contract:completion-check-receipts-artifact:1", "urn:usf:cli-contract:no-change-workspace-artifact:1"]);
+  assert(consumed.every(value => graph.quads.some(q => q.subject === value.producer && q.predicate === "urn:usf:predicate:produces" && q.object === value.identity)));
+  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
+  assert.equal(report.executionAuthority, "none");
+  assert.equal(report.complete, false);
+  assert.equal(report.parallelSafety.state, "unproven");
+  const moved = structuredClone(graph);
+  moved.quads.push({ ...moved.quads[0]!, subject: "urn:usf:rule:completion-evidence-reauthentication:1", predicate: "urn:usf:predicate:text", objectKind: "literal", object: "unimplemented replacement semantics" });
+  assert.throws(() => inspectObservationTransition(moved, selection, "evidence completion"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  const override = structuredClone(graph);
+  override.quads = override.quads.filter(q => !(q.subject === inspected.transitionIdentity && q.predicate === "urn:usf:predicate:publicationPolicy"));
+  assert.throws(() => inspectObservationTransition(override, selection, "evidence completion"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  const multipleOwners = structuredClone(graph);
+  multipleOwners.quads.push({ ...multipleOwners.quads[0]!, subject: consumed[0]!.producer, predicate: "urn:usf:predicate:owner", objectKind: "iri", object: "urn:test:other-owner" });
+  assert.throws(() => inspectObservationTransition(multipleOwners, selection, "evidence completion"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  const competingProducer = structuredClone(graph);
+  for (const [subject, predicate, object] of [
+    [selection.rootIdentity, "transition", "urn:test:competing-producer"],
+    ["urn:test:competing-producer", "produces", consumed[0]!.identity],
+  ]) competingProducer.quads.push({ ...competingProducer.quads[0]!, subject, predicate: "urn:usf:predicate:" + predicate, objectKind: "iri", object });
+  assert.throws(() => inspectObservationTransition(competingProducer, selection, "evidence completion"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
 });
 
 function bindingRows(targetManifest = "graph/target.json") {

@@ -383,7 +383,27 @@ const P = "urn:usf:predicate:";
 const T = "urn:usf:type:";
 const sorted = (values: readonly string[]): string[] => [...new Set(values)].sort();
 const same = (a: readonly string[], b: readonly string[]): boolean => canonicalJson(a) === canonicalJson(b);
-const consistentArtifactProducer = (declared: readonly string[], observed: readonly string[]): boolean => observed.length === 1 && same(sorted(declared), sorted(observed));
+export const consistentArtifactProducer = (declared: readonly string[], observed: readonly string[]): boolean => observed.length === 1 && same(sorted(declared), sorted(observed));
+
+/** Shared structural reachability; this never authenticates execution or artifact state. */
+export function deriveCliTransitionIds(subjects: readonly string[], values: (subject: string, field: string) => string[], work: string | null, contract: string | null): readonly string[] {
+  const reached = new Set(work === null ? [] : values(work, "transition"));
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const subject of subjects) {
+      const parents = values(subject, "requiresTransition");
+      if (reached.has(subject)) for (const parent of parents) if (!reached.has(parent)) { reached.add(parent); changed = true; }
+      if (contract !== null && values(subject, "owner").length === 1
+        && values(subject, "owner")[0] === contract
+        && parents.some(parent => reached.has(parent)) && !reached.has(subject)) {
+        reached.add(subject); changed = true;
+      }
+    }
+    if (reached.size > 1024) throw new RangeError("TRANSITION_DESCRIPTOR_BOUNDS_EXCEEDED");
+  }
+  return Object.freeze(sorted([...reached]));
+}
 
 export function deriveCliTransitionContext(graph: SemanticGraph, root: string) {
   const diagnostics: CliTransitionDiagnostic[] = [];
@@ -606,23 +626,8 @@ export function deriveCliTransitionCoverage(
   const { work, contract, profile, profileCandidates: profiles } = context;
   diagnostics.push(...context.diagnostics);
   const requiredGraphRefs = sorted([...(contract === null ? [] : [contract, ...values(contract, "requires")]), ...(work === null ? [] : values(work, "validation"))]);
-  const reached = new Set(work === null ? [] : values(work, "transition"));
   // Explicit prerequisites remain visible; downstream discovery cannot cross ownership.
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const subject of rows.keys()) {
-      const parents = values(subject, "requiresTransition");
-      if (reached.has(subject)) for (const parent of parents) if (!reached.has(parent)) { reached.add(parent); changed = true; }
-      if (contract !== null && values(subject, "owner").length === 1
-        && values(subject, "owner")[0] === contract
-        && parents.some(parent => reached.has(parent)) && !reached.has(subject)) {
-        reached.add(subject); changed = true;
-      }
-    }
-    if (reached.size > 1024) throw new RangeError("TRANSITION_DESCRIPTOR_BOUNDS_EXCEEDED");
-  }
-  const ids = sorted([...reached]);
+  const ids = deriveCliTransitionIds([...rows.keys()], values, work, contract);
   if (ids.length === 0) issue("TRANSITION_SEMANTICS_INCOMPLETE", root, "transition");
   if (!inventory.complete) issue("TRANSITION_INVENTORY_INCOMPLETE", root, "inventory");
 
