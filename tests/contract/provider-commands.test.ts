@@ -716,10 +716,12 @@ test("provider graph separates fixture capabilities from route-keyed operational
       "urn:usf:type:OperationalContract",
       "urn:usf:type:SemanticContract",
     ]);
-    assert.equal(selectedContracts.has(contract), true, contract);
     assert.equal(implementingWork.length > 0, true, contract);
     for (const work of implementingWork) {
       assert.equal(allWorks.includes(work), true, contract);
+      const primaryContracts = objects(work, "contract");
+      assert.equal(primaryContracts.length, 1, `${work} has no exact primary contract`);
+      assert.equal(selectedContracts.has(primaryContracts[0]!), true, `${work} is not reachable from the selected profile`);
       assert.equal(objects(work, "implementsContract").includes(contract), true, `${work} does not bind ${contract}`);
       assert.equal(
         selectedPackets.get(work)?.semanticDependencies.some((dependency) => dependency.kind === "semantic-resource" && dependency.key === contract),
@@ -749,6 +751,25 @@ test("provider graph separates fixture capabilities from route-keyed operational
     "metrics-or-headers-without-paid-overage-hard-cap-evidence",
     "self-authored-receipt-digest",
   ]);
+  const providerRegistryReservation = "urn:usf:requirement:operator-provider-command-reservation";
+  assert.deepEqual(objects(providerRegistryReservation, "ownerWork"), ["urn:usf:work:operator-observability"]);
+  assert.deepEqual(objects(providerRegistryReservation, "cliPath"), ["src/cli.ts"]);
+  assert.deepEqual(objects(providerRegistryReservation, "dispatcherPath"), ["src/commands/dispatcher.ts"]);
+  assert.deepEqual(objects(providerRegistryReservation, "helpPath"), ["src/commands/help.ts"]);
+  assert.deepEqual(objects(providerRegistryReservation, "providerRegistryPath"), ["src/commands/providers.ts"]);
+  assert.deepEqual(objects(providerRegistryReservation, "registryRoot"), ["providers"]);
+  assert.deepEqual(objects(providerRegistryReservation, "closed"), ["true"]);
+  assert.deepEqual(objects(providerRegistryReservation, "leafImplementationMayRewriteOwnerPath"), ["false"]);
+  assert.deepEqual(objects(providerRegistryReservation, "reservedCommandPath").sort(), [
+    "providers aliases",
+    "providers census",
+    "providers host",
+    "providers host census",
+    "providers receipt",
+    "providers receipt acquire",
+    "providers receipt verify",
+    "providers status",
+  ]);
   const receiptCommand = "urn:usf:command:providers-receipt:1";
   assert.equal(objects(receiptCommand, "type").includes("urn:usf:type:RegisteredCliCommand"), true);
   assert.deepEqual(objects(receiptCommand, "availability"), ["registered"]);
@@ -756,9 +777,11 @@ test("provider graph separates fixture capabilities from route-keyed operational
   assert.deepEqual(objects(receiptCommand, "handlerPath"), ["src/commands/provider-receipts.ts"]);
   assert.deepEqual(objects(receiptCommand, "registryPath"), ["src/commands/providers.ts"]);
   assert.deepEqual(objects(receiptCommand, "helpPath"), ["src/commands/help.ts"]);
+  assert.deepEqual(objects(receiptCommand, "registryReservation"), [providerRegistryReservation]);
   assert.deepEqual(objects(receiptCommand, "refusalCode"), ["PROVIDERS_RECEIPT_PROOFBLOCKED"]);
   assert.deepEqual(objects("urn:usf:contract:provider-account-tier-receipt:1", "registeredCommand"), [receiptCommand]);
   assert.deepEqual(objects("urn:usf:contract:provider-account-receipt-acquisition:1", "registeredCommand"), [receiptCommand]);
+  assert.deepEqual(objects("urn:usf:command:providers-host-census:1", "registryReservation"), [providerRegistryReservation]);
   for (const policy of [
     "urn:usf:publication-policy:provider-pipeline-construction-authority:1",
     "urn:usf:publication-policy:provider-pipeline-no-change-completion:1",

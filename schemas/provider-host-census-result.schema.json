@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:provider-host-census-result:1",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "status",
+    "operation",
+    "externalContact",
+    "authorityEffect",
+    "semanticScope",
+    "source",
+    "observationDigest",
+    "denominators",
+    "truncation",
+    "hosts",
+    "authorizations",
+    "candidates",
+    "nonclaims",
+    "resultDigest"
+  ],
+  "properties": {
+    "schema": { "const": "urn:usf:provider-host-census-result:1" },
+    "version": { "const": 1 },
+    "status": { "const": "ok" },
+    "operation": { "const": "host-census" },
+    "externalContact": { "const": "none" },
+    "authorityEffect": { "const": "none" },
+    "semanticScope": { "$ref": "#/$defs/semanticScope" },
+    "source": { "$ref": "#/$defs/source" },
+    "observationDigest": { "$ref": "#/$defs/digest" },
+    "denominators": { "$ref": "#/$defs/denominators" },
+    "truncation": { "$ref": "#/$defs/truncation" },
+    "hosts": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/host" }
+    },
+    "authorizations": {
+      "type": "array",
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/authorization" }
+    },
+    "candidates": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": { "$ref": "#/$defs/candidate" }
+    },
+    "nonclaims": { "$ref": "#/$defs/stringSet" },
+    "resultDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "count": { "type": "integer", "minimum": 0 },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "instant": { "type": "string", "format": "date-time" },
+    "token": { "type": "string", "minLength": 1 },
+    "nullableToken": { "oneOf": [{ "$ref": "#/$defs/token" }, { "type": "null" }] },
+    "stringSet": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/token" },
+      "maxItems": 4096
+    },
+    "semanticScope": {
+      "type": "object",
+      "required": ["status", "profile", "profileVersion", "product", "foundation", "manifest", "semanticDigest", "work", "contract", "scopedDependencyDigest", "capabilityStage", "completionProofResult"],
+      "properties": {
+        "status": { "const": "selected" },
+        "profile": { "$ref": "#/$defs/token" },
+        "profileVersion": { "$ref": "#/$defs/token" },
+        "product": { "$ref": "#/$defs/token" },
+        "foundation": { "$ref": "#/$defs/token" },
+        "manifest": { "$ref": "#/$defs/token" },
+        "semanticDigest": { "$ref": "#/$defs/digest" },
+        "work": { "const": "urn:usf:work:provider-census" },
+        "contract": { "const": "urn:usf:contract:provider-census:1" },
+        "scopedDependencyDigest": { "$ref": "#/$defs/digest" },
+        "capabilityStage": { "const": "verified-complete" },
+        "completionProofResult": { "$ref": "#/$defs/token" }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["modelsDevRawDigest", "modelsDevNormalizedDigest", "codexModelSurface", "claudeModelSurface"],
+      "properties": {
+        "modelsDevRawDigest": { "$ref": "#/$defs/digest" },
+        "modelsDevNormalizedDigest": { "$ref": "#/$defs/digest" },
+        "codexModelSurface": { "enum": ["frozen-modelsdev-only-app-server-unavailable", "no-network-app-server-complete-page-union-frozen-modelsdev-not-live-entitlement", "no-network-app-server-partial-union-frozen-modelsdev-not-live-entitlement"] },
+        "claudeModelSurface": { "enum": ["frozen-modelsdev-only-cli-help-unavailable", "no-network-installed-cli-help-aliases-union-frozen-modelsdev-non-exhaustive"] }
+      },
+      "additionalProperties": false
+    },
+    "denominators": {
+      "type": "object",
+      "required": ["hostTransports", "authenticatedHosts", "candidateRecords", "modelCandidates", "aliasCandidates", "hostEnumeratedCandidates", "catalogueOnlyCandidates", "exactCatalogueMatches", "unmatchedCandidates", "authorizations", "matchedCandidates", "returnedCandidates"],
+      "properties": {
+        "hostTransports": { "$ref": "#/$defs/count" },
+        "authenticatedHosts": { "$ref": "#/$defs/count" },
+        "candidateRecords": { "$ref": "#/$defs/count" },
+        "modelCandidates": { "$ref": "#/$defs/count" },
+        "aliasCandidates": { "$ref": "#/$defs/count" },
+        "hostEnumeratedCandidates": { "$ref": "#/$defs/count" },
+        "catalogueOnlyCandidates": { "$ref": "#/$defs/count" },
+        "exactCatalogueMatches": { "$ref": "#/$defs/count" },
+        "unmatchedCandidates": { "$ref": "#/$defs/count" },
+        "authorizations": { "$ref": "#/$defs/count" },
+        "matchedCandidates": { "$ref": "#/$defs/count" },
+        "returnedCandidates": { "$ref": "#/$defs/count" }
+      },
+      "additionalProperties": false
+    },
+    "truncation": {
+      "type": "object",
+      "required": ["maxItems", "matchedItems", "returnedItems", "truncated"],
+      "properties": {
+        "maxItems": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "matchedItems": { "$ref": "#/$defs/count" },
+        "returnedItems": { "$ref": "#/$defs/count" },
+        "truncated": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "host": {
+      "type": "object",
+      "required": ["schema", "transport", "provider", "catalogueProvider", "executable", "executableVersion", "observedAt", "status", "failureCode", "authentication", "candidateSurface", "candidateCount", "authorizationDigest", "apiAndCloudCredentialEnvironmentForwarded", "observationDigest", "nonclaims"],
+      "properties": {
+        "schema": { "const": "urn:usf:subscription-host-summary:1" },
+        "transport": { "enum": ["codex-cli-subscription", "claude-cli-subscription"] },
+        "provider": { "enum": ["codex-cli", "claude-cli"] },
+        "catalogueProvider": { "enum": ["openai", "anthropic"] },
+        "executable": { "type": "string", "pattern": "^/[^\\u0000-\\u001f\\u007f]{1,4095}$" },
+        "executableVersion": { "$ref": "#/$defs/nullableToken" },
+        "observedAt": { "$ref": "#/$defs/instant" },
+        "status": { "enum": ["authenticated", "unauthenticated", "unavailable"] },
+        "failureCode": { "oneOf": [{ "enum": ["AUTHENTICATION_NOT_CONFIRMED", "COMMAND_FAILED", "EXECUTABLE_NOT_FOUND", "OUTPUT_BOUND_EXCEEDED", "OUTPUT_INVALID", "PROVIDER_AUTH_FILE_UNAVAILABLE", "TIMEOUT", "VERSION_INVALID"] }, { "type": "null" }] },
+        "authentication": { "$ref": "#/$defs/authentication" },
+        "candidateSurface": { "enum": ["bounded-union", "frozen-catalogue-only", "non-exhaustive"] },
+        "candidateCount": { "$ref": "#/$defs/count" },
+        "authorizationDigest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] },
+        "apiAndCloudCredentialEnvironmentForwarded": { "const": false },
+        "observationDigest": { "$ref": "#/$defs/digest" },
+        "nonclaims": { "$ref": "#/$defs/stringSet" }
+      },
+      "additionalProperties": false
+    },
+    "authorization": {
+      "type": "object",
+      "required": ["schema", "version", "transport", "provider", "catalogueProvider", "executable", "executableVersion", "authenticationDigest", "modelSurfaceDigest", "modelSurfaceCompleteness", "environmentPolicyDigest", "containmentDigest", "observedAt", "expiresAt", "scope", "inferenceAuthorized", "fallbackProhibited", "apiAndCloudCredentialEnvironmentForwarded", "authorizationDisposition", "digest"],
+      "properties": {
+        "schema": { "const": "urn:usf:provider-host-authorization:1" },
+        "version": { "const": 1 },
+        "transport": { "enum": ["codex-cli-subscription", "claude-cli-subscription"] },
+        "provider": { "enum": ["codex-cli", "claude-cli"] },
+        "catalogueProvider": { "enum": ["openai", "anthropic"] },
+        "executable": { "type": "string", "pattern": "^/[^\\u0000-\\u001f\\u007f]{1,4095}$" },
+        "executableVersion": { "$ref": "#/$defs/token" },
+        "authenticationDigest": { "$ref": "#/$defs/digest" },
+        "modelSurfaceDigest": { "$ref": "#/$defs/digest" },
+        "modelSurfaceCompleteness": { "enum": ["bounded-union-not-live-entitlement", "frozen-catalogue-only-not-live-entitlement", "non-exhaustive"] },
+        "environmentPolicyDigest": { "$ref": "#/$defs/digest" },
+        "containmentDigest": { "$ref": "#/$defs/digest" },
+        "observedAt": { "$ref": "#/$defs/instant" },
+        "expiresAt": { "$ref": "#/$defs/instant" },
+        "scope": { "const": "host-status-and-model-census" },
+        "inferenceAuthorized": { "const": false },
+        "fallbackProhibited": { "const": true },
+        "apiAndCloudCredentialEnvironmentForwarded": { "const": false },
+        "authorizationDisposition": { "const": "authorized" },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "authentication": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["authenticated", "authenticationMode", "subscriptionType", "failureCode", "accountIdentityRetained"],
+          "properties": {
+            "authenticated": { "type": "boolean" },
+            "authenticationMode": { "oneOf": [{ "const": "chatgpt" }, { "type": "null" }] },
+            "subscriptionType": { "type": "null" },
+            "failureCode": { "oneOf": [{ "const": "AUTHENTICATION_NOT_CONFIRMED" }, { "type": "null" }] },
+            "accountIdentityRetained": { "const": false }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["authenticated", "authenticationMode", "apiProvider", "subscriptionType", "failureCode", "accountIdentityRetained"],
+          "properties": {
+            "authenticated": { "type": "boolean" },
+            "authenticationMode": { "oneOf": [{ "const": "claude.ai" }, { "type": "null" }] },
+            "apiProvider": { "oneOf": [{ "const": "firstParty" }, { "type": "null" }] },
+            "subscriptionType": { "oneOf": [{ "const": "present" }, { "type": "null" }] },
+            "failureCode": { "oneOf": [{ "const": "AUTHENTICATION_NOT_CONFIRMED" }, { "type": "null" }] },
+            "accountIdentityRetained": { "const": false }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["kind", "transport", "provider", "catalogueProvider", "model", "hostRowIndex", "displayName", "visibility", "source", "discoveryDisposition", "disposition", "availability", "entitlement", "qualification", "apiCompatibilityReportedByHost", "catalogueMatch", "catalogue"],
+      "properties": {
+        "kind": { "enum": ["alias", "model"] },
+        "transport": { "enum": ["codex-cli-subscription", "claude-cli-subscription"] },
+        "provider": { "enum": ["codex-cli", "claude-cli"] },
+        "catalogueProvider": { "enum": ["openai", "anthropic"] },
+        "model": { "$ref": "#/$defs/token" },
+        "hostRowIndex": { "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "displayName": { "$ref": "#/$defs/nullableToken" },
+        "visibility": { "enum": ["visible", "hidden", "not-enumerated-by-host"] },
+        "source": { "enum": ["codex-app-server-model-list", "claude-cli-help-alias", "models.dev/api.json"] },
+        "discoveryDisposition": { "enum": ["visible-unverified", "hidden-unverified", "unverified-non-exhaustive"] },
+        "disposition": { "enum": ["unqualified", "ambiguous"] },
+        "availability": { "const": "unknown" },
+        "entitlement": { "const": "unknown" },
+        "qualification": { "const": "unqualified" },
+        "apiCompatibilityReportedByHost": { "oneOf": [{ "type": "boolean" }, { "type": "null" }] },
+        "catalogueMatch": { "enum": ["exact", "none"] },
+        "catalogue": { "oneOf": [{ "$ref": "#/$defs/catalogueJoin" }, { "type": "null" }] }
+      },
+      "additionalProperties": false
+    },
+    "catalogueJoin": {
+      "type": "object",
+      "required": ["source", "rawDigest", "normalizedDigest", "route", "model"],
+      "properties": {
+        "source": { "const": "models.dev/api.json" },
+        "rawDigest": { "$ref": "#/$defs/digest" },
+        "normalizedDigest": { "$ref": "#/$defs/digest" },
+        "route": {
+          "type": "object",
+          "required": ["provider", "model"],
+          "properties": { "provider": { "$ref": "#/$defs/token" }, "model": { "$ref": "#/$defs/token" } },
+          "additionalProperties": false
+        },
+        "model": { "$ref": "#/$defs/catalogueModel" }
+      },
+      "additionalProperties": false
+    },
+    "catalogueModel": {
+      "type": "object",
+      "required": ["route", "underlying", "name", "nameSource", "capabilities", "capabilityNames", "modalities", "openWeights", "cost", "limits"],
+      "properties": {
+        "route": { "type": "object", "required": ["provider", "model"], "properties": { "provider": { "$ref": "#/$defs/token" }, "model": { "$ref": "#/$defs/token" } }, "additionalProperties": false },
+        "underlying": { "type": "object", "required": ["family", "model"], "properties": { "family": { "$ref": "#/$defs/nullableToken" }, "model": { "$ref": "#/$defs/token" } }, "additionalProperties": false },
+        "name": { "$ref": "#/$defs/token" },
+        "nameSource": { "enum": ["catalogue", "route-id-fallback"] },
+        "capabilities": { "type": "object", "required": ["attachment", "reasoning", "structuredOutput", "temperature", "toolCall"], "properties": { "attachment": { "$ref": "#/$defs/nullableBoolean" }, "reasoning": { "$ref": "#/$defs/nullableBoolean" }, "structuredOutput": { "$ref": "#/$defs/nullableBoolean" }, "temperature": { "$ref": "#/$defs/nullableBoolean" }, "toolCall": { "$ref": "#/$defs/nullableBoolean" } }, "additionalProperties": false },
+        "capabilityNames": { "$ref": "#/$defs/stringSet" },
+        "modalities": { "type": "object", "required": ["input", "output"], "properties": { "input": { "$ref": "#/$defs/nullableStringSet" }, "output": { "$ref": "#/$defs/nullableStringSet" } }, "additionalProperties": false },
+        "openWeights": { "$ref": "#/$defs/nullableBoolean" },
+        "cost": { "type": "object", "required": ["currency", "unit", "input", "output", "reasoning", "cacheRead", "cacheWrite", "inputAudio", "outputAudio"], "properties": { "currency": { "const": "USD" }, "unit": { "const": "per-million-tokens" }, "input": { "$ref": "#/$defs/nullableNumber" }, "output": { "$ref": "#/$defs/nullableNumber" }, "reasoning": { "$ref": "#/$defs/nullableNumber" }, "cacheRead": { "$ref": "#/$defs/nullableNumber" }, "cacheWrite": { "$ref": "#/$defs/nullableNumber" }, "inputAudio": { "$ref": "#/$defs/nullableNumber" }, "outputAudio": { "$ref": "#/$defs/nullableNumber" } }, "additionalProperties": false },
+        "limits": { "type": "object", "required": ["context", "input", "output"], "properties": { "context": { "$ref": "#/$defs/nullableCount" }, "input": { "$ref": "#/$defs/nullableCount" }, "output": { "$ref": "#/$defs/nullableCount" } }, "additionalProperties": false }
+      },
+      "additionalProperties": false
+    },
+    "nullableBoolean": { "oneOf": [{ "type": "boolean" }, { "type": "null" }] },
+    "nullableNumber": { "oneOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+    "nullableCount": { "oneOf": [{ "$ref": "#/$defs/count" }, { "type": "null" }] },
+    "nullableStringSet": { "oneOf": [{ "$ref": "#/$defs/stringSet" }, { "type": "null" }] }
+  }
+}
