@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cp, link, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from "node:fs/promises";
+import { chmod, cp, link, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { join, resolve } from "node:path";
 import test, { type TestContext } from "node:test";
@@ -100,7 +100,7 @@ async function candidate(root: string, nonce: string): Promise<CandidateSpec> {
   };
 }
 
-type InterruptionMode = "before-effect" | "before-persist" | "pending-synced" | "receipt-published" | "before-ack" | "legacy" | "ensure" | "preflight";
+type InterruptionMode = "before-effect" | "before-persist" | "pending-synced" | "receipt-published" | "before-ack" | "pre-spawn-manifest-drift" | "legacy" | "ensure" | "preflight";
 
 async function checkSubprocess(root: string, digest: string, validationId: string, mode: InterruptionMode) {
   const receiptPath = join(root, ".usf/receipts/check", digest.slice(7), `${canonicalDigest(validationId).slice(7)}.json`);
@@ -108,7 +108,7 @@ async function checkSubprocess(root: string, digest: string, validationId: strin
     root, digest, validationId, mode, `${receiptPath}.pending`], {
     cwd: root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"],
   });
-  let reached = false, launches = 0, successfulExits = 0, stderr = "", stdout = "";
+  let reached = false, preSpawnManifestDrifted = false, launches = 0, successfulExits = 0, stderr = "", stdout = "";
   let result: { status: string; reasonCode?: string; receipt?: { receiptDigest: string } } | undefined;
   child.stderr!.on("data", chunk => { stderr += String(chunk); });
   child.stdout!.on("data", chunk => { stdout += String(chunk); });
@@ -118,6 +118,7 @@ async function checkSubprocess(root: string, digest: string, validationId: strin
     if (event.kind === "validation-spawn") launches++;
     if (event.kind === "validation-exit" && event.code === 0 && event.signal === null) successfulExits++;
     if (event.kind === "result" || event.kind === "unexpected-result") result = event.result as typeof result;
+    if (event.kind === "pre-spawn-manifest-drift") preSpawnManifestDrifted = true;
     if (event.kind === "boundary" && event.boundary === mode) {
       reached = true;
       child.kill("SIGKILL");
@@ -130,7 +131,7 @@ async function checkSubprocess(root: string, digest: string, validationId: strin
       child.once("close", (code, signal) => accept({ code, signal }));
     });
     assert.equal(stdout, "", stderr);
-    if (["legacy", "ensure", "preflight"].includes(mode)) {
+    if (["pre-spawn-manifest-drift", "legacy", "ensure", "preflight"].includes(mode)) {
       assert.equal(ended.code, 0, stderr);
       assert.equal(ended.signal, null);
       assert.ok(result, stderr);
@@ -138,7 +139,7 @@ async function checkSubprocess(root: string, digest: string, validationId: strin
       assert.equal(reached, true, JSON.stringify({ mode, result, ended, launches, successfulExits, stderr }));
       assert.equal(ended.signal, "SIGKILL");
     }
-    return { launches, successfulExits, result, receiptPath };
+    return { launches, successfulExits, preSpawnManifestDrifted, result, receiptPath };
   } finally { clearTimeout(timeout); }
 }
 
@@ -159,6 +160,10 @@ test("native check interruption preserves authenticated unknown outcomes and rec
     const receiptPath = interrupted.receiptPath;
     const intentPath = receiptPath.replace(/\.json$/u, ".intent.json");
     const pendingPath = `${receiptPath}.pending`;
+    const scratch = join(workspace, ".usf-check-tmp");
+    const scratchViewTarget = join(scratch, "execution-view", targetPath);
+    const scratchIdentity = boundary === "before-effect" ? await lstat(scratch) : null;
+    const scratchBytes = boundary === "before-effect" ? await readFile(scratchViewTarget) : null;
     const originalIntentBytes = await readFile(intentPath);
     const intent = JSON.parse(originalIntentBytes.toString("utf8"));
     assert.equal(intent.state, boundary === "before-ack" ? "SETTLED" : "STARTED");
@@ -177,6 +182,10 @@ test("native check interruption preserves authenticated unknown outcomes and rec
       assert.equal(preflight.result?.reasonCode, "CHECK_EXECUTION_OUTCOME_UNKNOWN");
       await assert.rejects(() => lstat(receiptPath), { code: "ENOENT" });
       await assert.rejects(() => lstat(pendingPath), { code: "ENOENT" });
+      if (scratchIdentity !== null && scratchBytes !== null) {
+        assert.equal((await lstat(scratch)).ino, scratchIdentity.ino);
+        assert.deepEqual(await readFile(scratchViewTarget), scratchBytes);
+      }
       let unknownBytes: Buffer | undefined;
       for (const mode of ["legacy", "ensure", "legacy", "ensure"] as const) {
         const retry = await checkSubprocess(root, spec.digest, validationId, mode);
@@ -189,6 +198,10 @@ test("native check interruption preserves authenticated unknown outcomes and rec
         if (unknownBytes) assert.deepEqual(bytes, unknownBytes);
         unknownBytes = bytes;
         await assert.rejects(() => lstat(receiptPath), { code: "ENOENT" });
+        if (scratchIdentity !== null && scratchBytes !== null) {
+          assert.equal((await lstat(scratch)).ino, scratchIdentity.ino);
+          assert.deepEqual(await readFile(scratchViewTarget), scratchBytes);
+        }
       }
     } else {
       if (boundary === "pending-synced") {
@@ -245,6 +258,62 @@ test("native check interruption preserves authenticated unknown outcomes and rec
     assert.deepEqual(await readFile(join(workspace, targetPath)), source);
     assert.equal((await lstat(workspace)).ino, workspaceIdentity.ino);
   }
+});
+
+test("retained-intent recovery refuses unsafe scratch roots and sibling runtime entries before dispatch", async (context) => {
+  await assertConfinedNetworkNamespace();
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const validationId = "urn:usf:validation:realisation-basis-chain-focused";
+  for (const scenario of ["unsafe-scratch", "unsafe-scratch-mode", "sibling-runtime"] as const) {
+    const spec = await candidate(root, `recovery-${scenario}`);
+    const { workspace } = await materialiseCandidate(root, spec);
+    const interrupted = await checkSubprocess(root, spec.digest, validationId, "before-effect");
+    assert.equal(interrupted.launches, 0);
+    const intentPath = interrupted.receiptPath.replace(/\.json$/u, ".intent.json");
+    const intentBytes = await readFile(intentPath);
+    const scratch = join(workspace, ".usf-check-tmp");
+    if (scenario === "unsafe-scratch") {
+      const retained = `${scratch}.retained`;
+      await rename(scratch, retained);
+      await symlink(retained, scratch);
+    } else if (scenario === "unsafe-scratch-mode") {
+      await chmod(scratch, 0o755);
+    } else {
+      await mkdir(join(workspace, ".usf-check-runtime-sibling"), { mode: 0o700 });
+    }
+    for (const mode of ["preflight", "ensure"] as const) {
+      const refused = await checkSubprocess(root, spec.digest, validationId, mode);
+      assert.equal(refused.result?.status, "refused");
+      assert.equal(refused.result?.reasonCode, "CANDIDATE_BASIS_MISMATCH");
+      assert.equal(refused.launches, 0);
+      assert.deepEqual(await readFile(intentPath), intentBytes);
+    }
+    if (scenario === "unsafe-scratch") assert.equal((await lstat(scratch)).isSymbolicLink(), true);
+    else if (scenario === "unsafe-scratch-mode") assert.equal((await lstat(scratch)).mode & 0o777, 0o755);
+    else assert.equal((await lstat(join(workspace, ".usf-check-runtime-sibling"))).isDirectory(), true);
+  }
+});
+
+test("native check refuses post-view manifest drift before intent publication or child execution", async (context) => {
+  await assertConfinedNetworkNamespace();
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const spec = await candidate(root, "pre-spawn-manifest-drift");
+  const { workspace } = await materialiseCandidate(root, spec);
+  const manifestPath = join(workspace, ".usf-workspace.json");
+  const manifestBefore = await readFile(manifestPath);
+  const validationId = "urn:usf:validation:realisation-basis-chain-focused";
+
+  const result = await checkSubprocess(root, spec.digest, validationId, "pre-spawn-manifest-drift");
+  assert.equal(result.preSpawnManifestDrifted, true);
+  assert.equal(result.result?.status, "refused");
+  assert.equal(result.result?.reasonCode, "CANDIDATE_BASIS_MISMATCH");
+  assert.equal(result.launches, 0);
+  assert.equal(result.successfulExits, 0);
+  assert.deepEqual(await readFile(manifestPath), Buffer.concat([manifestBefore, Buffer.from("\n")]));
+  await assert.rejects(() => lstat(result.receiptPath), { code: "ENOENT" });
+  await assert.rejects(() => lstat(result.receiptPath.replace(/\.json$/u, ".intent.json")), { code: "ENOENT" });
 });
 test("focused checks rederive the persisted basis before enforcing the command allowlist", async (context) => {
   await assertConfinedNetworkNamespace();
@@ -434,25 +503,21 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
 
 
   const scratch = join(root, ".usf/workspaces", spec.digest.slice("sha256:".length), ".usf-check-tmp");
-  const sentinel = join(scratch, "ensure-reuse-sentinel");
-  await writeFile(sentinel, "retained scratch must not be reset", { mode: 0o600 });
-  const scratchIdentity = await lstat(scratch);
+  const sentinel = join(scratch, "reconcile-cleanup-sentinel");
+  await writeFile(sentinel, "matching receipt requires controlled cleanup", { mode: 0o600 });
   const receiptIdentity = await lstat(receiptPath);
-  const assertNoExecutionCleanup = async () => {
-    assert.equal(await readFile(sentinel, "utf8"), "retained scratch must not be reset");
-    assert.equal((await lstat(scratch)).ino, scratchIdentity.ino);
-  };
+  await assert.rejects(() => readGraphDerivedCheckReceipt(root, spec.digest, validationId));
   for (let replay = 0; replay < 2; replay++) {
     const reused = await ensureGraphDerivedCheck(root, spec.digest, validationId);
     assert.deepEqual(reused, result);
     assert.equal((await lstat(receiptPath)).ino, receiptIdentity.ino);
-    await assertNoExecutionCleanup();
+    await assert.rejects(() => lstat(sentinel), { code: "ENOENT" });
   }
   const reusedBusy = await withCandidateLock(root, spec.digest, () => ensureGraphDerivedCheck(root, spec.digest, validationId));
   assert.equal(reusedBusy.status, "refused");
   if (reusedBusy.status === "refused") assert.equal(reusedBusy.reasonCode, "CANDIDATE_BUSY");
   assert.deepEqual(await ensureGraphDerivedCheck(root, spec.digest, validationId), result);
-  await assertNoExecutionCleanup();
+  await assert.rejects(() => lstat(sentinel), { code: "ENOENT" });
 
   const originalReceiptBytes = await readFile(receiptPath);
   const workspace = join(root, ".usf/workspaces", spec.digest.slice("sha256:".length));
@@ -498,7 +563,6 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
       const ensured = await ensureGraphDerivedCheck(root, spec.digest, validationId);
       assert.equal(ensured.status, "refused", label);
       if (ensured.status === "refused") assert.equal(ensured.reasonCode, "CHECK_RECEIPT_INVALID", label);
-      await assertNoExecutionCleanup();
       assert.equal(await readFile(receiptPath, "utf8"), bytes, label + ": readback must not repair a rejected receipt");
       assert.equal((await lstat(workspace)).ino, workspaceEntry.ino, label);
       assert.deepEqual(await readFile(join(workspace, ".usf-workspace.json")), workspaceManifest, label);
@@ -514,7 +578,6 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
     const outcome = await ensureGraphDerivedCheck(root, spec.digest, validationId);
     assert.equal(outcome.status, "refused");
     if (outcome.status === "refused") assert.equal(outcome.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
-    await assertNoExecutionCleanup();
   };
   // Ensure never adopts or repairs an interrupted publication, even with genuine bytes.
   await writeFile(pendingPath, originalReceiptBytes, { mode: 0o600 });
@@ -539,7 +602,6 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
     await writeFile(receiptPath, originalReceiptBytes, { mode: 0o600 });
   }
   assert.deepEqual(await ensureGraphDerivedCheck(root, spec.digest, validationId), result);
-  await assertNoExecutionCleanup();
 
   await link(receiptPath, pendingPath);
   assert.equal((await lstat(receiptPath)).nlink, 2);

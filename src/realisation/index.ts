@@ -875,7 +875,37 @@ async function directoryLeafDigests(root: string, declaredPath: string): Promise
   return walk(directory);
 }
 
-async function assertWorkspaceCandidateBytes(sourceRoot: string, workspace: string, manifest: WorkspaceManifest): Promise<void> {
+const checkRuntimeDirectory = ".usf-check-tmp";
+
+interface WorkspaceInventoryPolicy {
+  readonly admitsAuthenticatedCheckRuntime: boolean;
+}
+
+const strictWorkspaceInventory = Object.freeze({ admitsAuthenticatedCheckRuntime: false });
+const checkRecoveryWorkspaceInventory = Object.freeze({ admitsAuthenticatedCheckRuntime: true });
+
+async function assertOwnedCheckRuntime(workspace: string): Promise<void> {
+  const runtime = resolve(workspace, checkRuntimeDirectory);
+  let entry: Awaited<ReturnType<typeof lstat>>;
+  try {
+    entry = await lstat(runtime);
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+    throw error;
+  }
+  if (entry.isSymbolicLink() || !entry.isDirectory() || entry.uid !== processUid(entry.uid)
+    || entry.nlink < 2 || (entry.mode & 0o777) !== 0o700 || await realpath(runtime) !== runtime
+    || relative(workspace, runtime).split(sep).join("/") !== checkRuntimeDirectory) {
+    throw new RealisationError("CANDIDATE_BASIS_MISMATCH", "Check recovery runtime boundary is unsafe");
+  }
+}
+
+async function assertWorkspaceCandidateBytesInternal(
+  sourceRoot: string,
+  workspace: string,
+  manifest: WorkspaceManifest,
+  inventoryPolicy: WorkspaceInventoryPolicy,
+): Promise<void> {
   const operations = new Map(manifest.operations.map((operation) => [operation.path, operation]));
   const sourceDigests = new Map<string, string | null>();
   const addSourceDigest = (path: string, sourceDigest: string | null) => {
@@ -919,11 +949,12 @@ async function assertWorkspaceCandidateBytes(sourceRoot: string, workspace: stri
   };
   for (const [path, sourceDigest] of sourceDigests) if (sourceDigest !== null) addAncestors(path);
   for (const path of operations.keys()) addAncestors(path);
-  const allowedDirectories = new Set([...requiredDirectories, ".usf-check-tmp"]);
+  const allowedDirectories = new Set([...requiredDirectories, checkRuntimeDirectory]);
 
   const actualFiles = new Set<string>();
   const actualDirectories = new Set<string>();
   async function inventory(repositoryPath = ""): Promise<void> {
+    if (inventoryPolicy.admitsAuthenticatedCheckRuntime && repositoryPath === checkRuntimeDirectory) return;
     const target = repositoryPath === "" ? workspace : resolve(workspace, repositoryPath);
     const entry = await lstat(target);
     if (entry.isSymbolicLink() || (!entry.isDirectory() && !entry.isFile())) {
@@ -972,6 +1003,15 @@ async function assertWorkspaceCandidateBytes(sourceRoot: string, workspace: stri
   }
 }
 
+async function assertWorkspaceCandidateBytes(sourceRoot: string, workspace: string, manifest: WorkspaceManifest): Promise<void> {
+  await assertWorkspaceCandidateBytesInternal(sourceRoot, workspace, manifest, strictWorkspaceInventory);
+}
+
+async function assertWorkspaceCandidateBytesForCheckRecovery(sourceRoot: string, workspace: string, manifest: WorkspaceManifest): Promise<void> {
+  await assertOwnedCheckRuntime(workspace);
+  await assertWorkspaceCandidateBytesInternal(sourceRoot, workspace, manifest, checkRecoveryWorkspaceInventory);
+}
+
 function freezeCandidate<T>(value: T): T {
   if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
     Object.freeze(value);
@@ -980,16 +1020,17 @@ function freezeCandidate<T>(value: T): T {
   return value;
 }
 
-async function scopedWorkspaceTree(workspace: string): Promise<AuthenticatedTreeEntry[]> {
+async function scopedWorkspaceTree(workspace: string, inventoryPolicy: WorkspaceInventoryPolicy = strictWorkspaceInventory): Promise<AuthenticatedTreeEntry[]> {
   const entries: AuthenticatedTreeEntry[] = [];
   const walk = async (repositoryPath: string): Promise<void> => {
+    if (inventoryPolicy.admitsAuthenticatedCheckRuntime && repositoryPath === checkRuntimeDirectory) return;
     const target = repositoryPath === "" ? workspace : resolve(workspace, repositoryPath);
     const entry = await lstat(target);
     if (entry.isSymbolicLink() || (!entry.isDirectory() && !entry.isFile())) {
       throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace contains a symlink or nonregular entry: ${repositoryPath}`);
     }
     if (entry.isFile()) {
-      if (repositoryPath !== manifestName && !repositoryPath.startsWith(".usf-check-tmp/")) {
+      if (repositoryPath !== manifestName && !repositoryPath.startsWith(`${checkRuntimeDirectory}/`)) {
         entries.push({ path: repositoryPath, digest: digest(await readFile(target)), mode: gitFileMode(entry) });
       }
       return;
@@ -1074,8 +1115,12 @@ export async function authenticateCandidateWorkspace(root: string, candidateDige
   });
 }
 
-/** Authenticate the positive no-change disposition without admitting it to the integration path. */
-export async function authenticateNoChangeWorkspace(root: string, candidateDigest: string): Promise<AuthenticatedNoChangeWorkspace> {
+async function withAuthenticatedNoChangeWorkspaceInternal<T>(
+  root: string,
+  candidateDigest: string,
+  inventoryPolicy: WorkspaceInventoryPolicy,
+  operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>,
+): Promise<T> {
   return withCandidateLock(root, candidateDigest, async (canonicalRoot) => {
     const workspace = workspaceFor(canonicalRoot, candidateDigest);
     const manifest = await loadManifest(canonicalRoot, workspace);
@@ -1083,11 +1128,15 @@ export async function authenticateNoChangeWorkspace(root: string, candidateDiges
       throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate is not an exact no-change workspace");
     }
     const constructionBasis = await currentBasis(canonicalRoot, manifest.basis);
-    await assertWorkspaceCandidateBytes(canonicalRoot, workspace, manifest);
-    const scopedTree = await scopedWorkspaceTree(workspace);
+    if (inventoryPolicy.admitsAuthenticatedCheckRuntime) {
+      await assertWorkspaceCandidateBytesForCheckRecovery(canonicalRoot, workspace, manifest);
+    } else {
+      await assertWorkspaceCandidateBytes(canonicalRoot, workspace, manifest);
+    }
+    const scopedTree = await scopedWorkspaceTree(workspace, inventoryPolicy);
     const candidateTreeDigest = canonicalDigest(scopedTree);
     const writeSet = [...manifest.writeSet];
-    return freezeCandidate({
+    const authenticated = freezeCandidate({
       schema: "urn:usf:authenticated-no-change-workspace:1" as const,
       disposition: "verified-no-change" as const,
       candidateDigest,
@@ -1108,10 +1157,38 @@ export async function authenticateNoChangeWorkspace(root: string, candidateDiges
       scopedTree,
       candidateTreeDigest,
     });
+    return operation(authenticated);
   });
 }
 
-export async function currentCandidateWorkspace(root: string, candidateDigest: string): Promise<{ readonly workspace: string; readonly basis: RealisationBasis }> {
+/** Authenticate and use the positive no-change disposition under one candidate lock. */
+export async function withAuthenticatedNoChangeWorkspace<T>(
+  root: string,
+  candidateDigest: string,
+  operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>,
+): Promise<T> {
+  return withAuthenticatedNoChangeWorkspaceInternal(root, candidateDigest, strictWorkspaceInventory, operation);
+}
+
+/** Authenticate and use a no-change workspace during check recovery under one candidate lock. */
+export async function withAuthenticatedNoChangeWorkspaceForCheckRecovery<T>(
+  root: string,
+  candidateDigest: string,
+  operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>,
+): Promise<T> {
+  return withAuthenticatedNoChangeWorkspaceInternal(root, candidateDigest, checkRecoveryWorkspaceInventory, operation);
+}
+
+/** Authenticate the positive no-change disposition without admitting it to the integration path. */
+export async function authenticateNoChangeWorkspace(root: string, candidateDigest: string): Promise<AuthenticatedNoChangeWorkspace> {
+  return withAuthenticatedNoChangeWorkspace(root, candidateDigest, async (workspace) => workspace);
+}
+
+async function currentCandidateWorkspaceInternal(
+  root: string,
+  candidateDigest: string,
+  inventoryPolicy: WorkspaceInventoryPolicy,
+): Promise<{ readonly workspace: string; readonly basis: RealisationBasis }> {
   const canonicalRoot = await realpath(root);
   const workspace = workspaceFor(canonicalRoot, candidateDigest);
   const manifest = await loadManifest(canonicalRoot, workspace);
@@ -1122,8 +1199,21 @@ export async function currentCandidateWorkspace(root: string, candidateDigest: s
     const actual = await bytesAt(canonicalRoot, path);
     if ((actual === null ? null : digest(actual)) !== expected) throw new RealisationError("STALE_RELEVANT_PREIMAGE", `Relevant pre-image is stale: ${path}`);
   }
-  await assertWorkspaceCandidateBytes(canonicalRoot, workspace, manifest);
+  if (inventoryPolicy.admitsAuthenticatedCheckRuntime) {
+    await assertWorkspaceCandidateBytesForCheckRecovery(canonicalRoot, workspace, manifest);
+  } else {
+    await assertWorkspaceCandidateBytes(canonicalRoot, workspace, manifest);
+  }
   return Object.freeze({ workspace, basis });
+}
+
+export async function currentCandidateWorkspace(root: string, candidateDigest: string): Promise<{ readonly workspace: string; readonly basis: RealisationBasis }> {
+  return currentCandidateWorkspaceInternal(root, candidateDigest, strictWorkspaceInventory);
+}
+
+/** Read a candidate for graph-derived check recovery after authenticating its owned runtime boundary. */
+export async function currentCandidateWorkspaceForCheckRecovery(root: string, candidateDigest: string): Promise<{ readonly workspace: string; readonly basis: RealisationBasis }> {
+  return currentCandidateWorkspaceInternal(root, candidateDigest, checkRecoveryWorkspaceInventory);
 }
 
 export * from "./basis.ts";

@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 
 const [root, candidateDigest, validationId, boundary, pendingPath] = process.argv.slice(2);
 if (!root || !candidateDigest || !validationId || !pendingPath
-  || !["before-effect", "before-persist", "pending-synced", "receipt-published", "before-ack", "legacy", "ensure", "preflight"].includes(boundary ?? "")
+  || !["before-effect", "before-persist", "pending-synced", "receipt-published", "before-ack", "pre-spawn-manifest-drift", "legacy", "ensure", "preflight"].includes(boundary ?? "")
   || !process.send) throw new Error("Invalid interruption fixture invocation");
 
 // Only this tracked test process installs interception. Native calls still run.
@@ -27,6 +27,20 @@ childProcess.spawn = ((...args: Parameters<typeof spawn>) => {
   }
   return spawn(...args);
 }) as typeof spawn;
+const mkdir = fs.mkdir;
+let preSpawnManifestDrifted = false;
+fs.mkdir = (async (...args: Parameters<typeof mkdir>) => {
+  const result = await mkdir(...args);
+  if (!preSpawnManifestDrifted && boundary === "pre-spawn-manifest-drift"
+    && String(args[0]).endsWith(".usf-check-tmp/.usf-check-runtime")) {
+    const workspace = resolve(root!, ".usf", "workspaces", candidateDigest!.slice("sha256:".length));
+    const manifest = resolve(workspace, ".usf-workspace.json");
+    await fs.writeFile(manifest, Buffer.concat([await fs.readFile(manifest), Buffer.from("\n")]));
+    preSpawnManifestDrifted = true;
+    process.send!({ kind: "pre-spawn-manifest-drift" });
+  }
+  return result;
+}) as typeof mkdir;
 const open = fs.open;
 fs.open = (async (...args: Parameters<typeof open>) => {
   const creating = typeof args[1] === "number" && (args[1] & constants.O_CREAT) !== 0;
@@ -68,6 +82,6 @@ if (boundary === "preflight") {
   result = await (boundary === "legacy" ? native.runGraphDerivedCheck : native.ensureGraphDerivedCheck)(root, candidateDigest, validationId);
 }
 if (boundary === "before-ack" && result.status === "pass") stopAtBoundary();
-const expectedReturn = ["legacy", "ensure", "preflight"].includes(boundary!);
+const expectedReturn = ["pre-spawn-manifest-drift", "legacy", "ensure", "preflight"].includes(boundary!);
 process.send({ kind: expectedReturn ? "result" : "unexpected-result", result }, undefined, undefined, () => process.disconnect());
 process.exitCode = expectedReturn ? 0 : 1;

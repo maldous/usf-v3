@@ -2,12 +2,13 @@ import { constants, lstatSync, readdirSync, realpathSync, type Stats } from "nod
 import { chmod, link, lstat, mkdir, open, readdir, realpath, rename, rm, unlink, writeFile } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
-import { candidateWorkspace, currentCandidateWorkspace, RealisationError, stableReason, withCandidateLock } from "../realisation/index.ts";
-import type { RealisationBasis } from "../realisation/basis.ts";
+import { candidateWorkspace, currentCandidateWorkspace, currentCandidateWorkspaceForCheckRecovery, RealisationError, stableReason, withCandidateLock } from "../realisation/index.ts";
+import { assertSameBasis, type RealisationBasis } from "../realisation/basis.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { exitCodes } from "../core/errors.ts";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { loadSemanticGraph, objectsFor, resourceDigest, validationRuntimeClosure, type LoadedSemanticGraph } from "../graph/index.ts";
+import { deriveCurrentRealisationBasis } from "../graph/work.ts";
 import { isOperation, type FileOperation } from "../providers/types.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
 
@@ -455,7 +456,13 @@ async function candidateTree(workspace: string): Promise<readonly CandidateTreeE
     const entry = await lstat(target);
     if (entry.isSymbolicLink() || (!entry.isDirectory() && !entry.isFile())) refuse("CANDIDATE_BASIS_MISMATCH");
     if (entry.isDirectory()) {
-      if (repositoryPath === ".usf-check-tmp") return;
+      if (repositoryPath === ".usf-check-tmp") {
+        const uid = typeof process.getuid === "function" ? process.getuid() : entry.uid;
+        if (entry.uid !== uid || entry.nlink < 2 || (entry.mode & 0o777) !== 0o700 || await realpath(target) !== target) {
+          refuse("CANDIDATE_BASIS_MISMATCH");
+        }
+        return;
+      }
       const children = (await readdir(target)).sort((left, right) => left.localeCompare(right));
       for (const child of children) await inventory(repositoryPath === "" ? child : `${repositoryPath}/${child}`);
       return;
@@ -1093,6 +1100,7 @@ async function persistExecutionIntent(
 }
 
 type ExecutionIntentDisposition = "ABSENT" | "PREPARED" | "RECONCILE" | "UNKNOWN";
+export type AuthenticatedGraphDerivedCheckIntentState = "ABSENT" | "PREPARED" | "STARTED" | "SETTLED";
 
 function executionIntentDisposition(intent: CheckedCandidateExecutionIntent | null, receipt: CheckedCandidateReceipt | null): ExecutionIntentDisposition {
   if (intent === null) return "ABSENT";
@@ -1110,14 +1118,24 @@ function executionIntentDisposition(intent: CheckedCandidateExecutionIntent | nu
  * Lock-free intent preflight for a caller already holding the candidate lock.
  * It never repairs pending publication, writes a state, or dispatches a child.
  */
-export async function authenticateGraphDerivedCheckIntent(root: string, candidateDigest: string, validationId: string): Promise<void> {
-  const current = await currentCandidateWorkspace(root, candidateDigest);
+export async function authenticateGraphDerivedCheckIntent(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+): Promise<AuthenticatedGraphDerivedCheckIntentState> {
+  const current = await currentCandidateWorkspaceForCheckRecovery(root, candidateDigest);
   const validation = graphValidation(root, current.basis, validationId);
   const authority = checkedReceiptExecutionAuthority(root);
   const bound = await deriveExecutionIntent(root, candidateDigest, validationId, current, validation, authority);
   const intent = await readExecutionIntent(root, candidateDigest, validationId, bound);
-  const receipt = await readGraphDerivedCheckReceipt(root, candidateDigest, validationId);
-  if (executionIntentDisposition(intent, receipt?.receipt ?? null) === "UNKNOWN") refuse("CHECK_EXECUTION_OUTCOME_UNKNOWN");
+  const receipt = await readGraphDerivedCheckReceiptForRecovery(root, candidateDigest, validationId);
+  const disposition = executionIntentDisposition(intent, receipt?.receipt ?? null);
+  if (disposition === "UNKNOWN") refuse("CHECK_EXECUTION_OUTCOME_UNKNOWN");
+  if (disposition === "RECONCILE") {
+    if (intent === null || (intent.state !== "STARTED" && intent.state !== "SETTLED")) refuse("CHECK_EXECUTION_INTENT_INVALID");
+    return intent.state;
+  }
+  return disposition;
 }
 
 async function ensureReceiptDirectories(root: string, candidateDigest: string): Promise<void> {
@@ -1327,16 +1345,19 @@ async function readExistingReceipt(root: string, candidateDigest: string, valida
   return receipt;
 }
 
-/** Read-only canonical receipt accessor; absence is null and unsafe/tampered state refuses. */
-export async function readGraphDerivedCheckReceipt(
+type CandidateCurrentReader = (root: string, candidateDigest: string) => Promise<{ readonly workspace: string; readonly basis: RealisationBasis }>;
+type GraphDerivedCheckReceiptRead = { readonly receiptPath: string; readonly receipt: CheckedCandidateReceipt } | null;
+
+async function readGraphDerivedCheckReceiptCurrent(
   root: string,
   candidateDigest: string,
   validationId: string,
-): Promise<{ readonly receiptPath: string; readonly receipt: CheckedCandidateReceipt } | null> {
+  readCurrent: CandidateCurrentReader,
+): Promise<GraphDerivedCheckReceiptRead> {
   const canonicalRoot = await realpath(root);
   const receipt = await readExistingReceipt(canonicalRoot, candidateDigest, validationId);
   if (receipt === null) return null;
-  const current = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+  const current = await readCurrent(canonicalRoot, candidateDigest);
   const validation = graphValidation(canonicalRoot, current.basis, validationId);
   const facts = await candidateReceiptFacts(canonicalRoot, current.workspace, candidateDigest, current.basis);
   const authorityDependencies = await validationAuthorityDependencies(canonicalRoot, current.workspace, validation.repositoryReadFiles);
@@ -1354,7 +1375,7 @@ export async function readGraphDerivedCheckReceipt(
     refuse("CHECK_RECEIPT_INVALID");
   }
   // Async reads must not carry an earlier basis, validation or receipt into reuse.
-  const after = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+  const after = await readCurrent(canonicalRoot, candidateDigest);
   const validationAfter = graphValidation(canonicalRoot, after.basis, validationId);
   if (canonicalJson(current.basis) !== canonicalJson(after.basis)
     || canonicalJson(validationReceiptClaims(validation)) !== canonicalJson(validationReceiptClaims(validationAfter))
@@ -1366,6 +1387,24 @@ export async function readGraphDerivedCheckReceipt(
   }
   if (validation.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
   return Object.freeze({ receiptPath: receiptLocation(canonicalRoot, candidateDigest, validationId).repositoryPath, receipt });
+}
+
+/** Read-only strict receipt accessor; retained focused-check scratch is not admitted. */
+export async function readGraphDerivedCheckReceipt(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+): Promise<GraphDerivedCheckReceiptRead> {
+  return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, currentCandidateWorkspace);
+}
+
+/** Read-only recovery receipt accessor for canonical retained-intent authentication. */
+export async function readGraphDerivedCheckReceiptForRecovery(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+): Promise<GraphDerivedCheckReceiptRead> {
+  return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery);
 }
 
 async function persistReceipt(root: string, candidateDigest: string, validationId: string, receipt: CheckedCandidateReceipt): Promise<string> {
@@ -1493,36 +1532,43 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
   let basis: RealisationBasis | undefined;
   try {
     return await withCandidateLock(root, candidateDigest, async (canonicalRoot) => {
-      const intentEnabled = reuseCurrent || await executionIntentPresent(canonicalRoot, candidateDigest, validationId);
+      const retainedIntentPresent = await executionIntentPresent(canonicalRoot, candidateDigest, validationId);
+      const intentEnabled = reuseCurrent || retainedIntentPresent;
       let intentBound: Omit<CheckedCandidateExecutionIntent, "state" | "intentDigest" | "receiptDigest"> | null = null;
       let retainedIntent: CheckedCandidateExecutionIntent | null = null;
-      let retainedReceipt: Awaited<ReturnType<typeof readGraphDerivedCheckReceipt>> = null;
-      if (intentEnabled) {
-        const initial = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+      let retainedReceipt: Awaited<ReturnType<typeof readGraphDerivedCheckReceiptForRecovery>> = null;
+      if (retainedIntentPresent) {
+        const initial = await currentCandidateWorkspaceForCheckRecovery(canonicalRoot, candidateDigest);
         basis = initial.basis;
         const initialValidation = graphValidation(canonicalRoot, basis, validationId);
         const initialAuthority = checkedReceiptExecutionAuthority(canonicalRoot);
         intentBound = await deriveExecutionIntent(canonicalRoot, candidateDigest, validationId, initial, initialValidation, initialAuthority);
         retainedIntent = await readExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound);
         await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId, initialValidation.fixtureProcessPolicy);
-        retainedReceipt = await readGraphDerivedCheckReceipt(canonicalRoot, candidateDigest, validationId);
+        retainedReceipt = await readGraphDerivedCheckReceiptForRecovery(canonicalRoot, candidateDigest, validationId);
         const disposition = executionIntentDisposition(retainedIntent, retainedReceipt?.receipt ?? null);
         if (disposition === "RECONCILE") {
           if (retainedIntent === null || retainedReceipt === null) refuse("CHECK_EXECUTION_INTENT_INVALID");
-          if (retainedIntent.state === "SETTLED") {
-            return { status: "pass", basis, id: validationId, exitCode: 0, ...retainedReceipt };
+          if (retainedIntent.state === "STARTED") {
+            const settled = await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "SETTLED", retainedReceipt.receipt.receiptDigest, retainedIntent);
+            if (settled.receiptDigest !== retainedReceipt.receipt.receiptDigest) refuse("CHECK_EXECUTION_INTENT_INVALID");
           }
-          const settled = await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "SETTLED", retainedReceipt.receipt.receiptDigest, retainedIntent);
-          if (settled.receiptDigest !== retainedReceipt.receipt.receiptDigest) refuse("CHECK_EXECUTION_INTENT_INVALID");
-          return { status: "pass", basis, id: validationId, exitCode: 0, ...retainedReceipt };
+          await resetFocusedCheckTemporary(initial.workspace);
+          const strictReadback = await readGraphDerivedCheckReceipt(canonicalRoot, candidateDigest, validationId);
+          if (strictReadback === null || strictReadback.receiptPath !== retainedReceipt.receiptPath
+            || canonicalJson(strictReadback.receipt) !== canonicalJson(retainedReceipt.receipt)) {
+            refuse("CHECK_RECEIPT_READBACK_MISMATCH");
+          }
+          return { status: "pass", basis, id: validationId, exitCode: 0, ...strictReadback };
         }
         if (disposition === "UNKNOWN") {
           if (retainedIntent?.state === "STARTED") await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, retainedIntent);
           refuse("CHECK_EXECUTION_OUTCOME_UNKNOWN");
         }
-        if (disposition === "ABSENT" && retainedReceipt !== null) {
-          return { status: "pass", basis, id: validationId, exitCode: 0, ...retainedReceipt };
-        }
+      }
+      if (reuseCurrent && !retainedIntentPresent) {
+        const strictInitial = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+        basis = strictInitial.basis;
       }
       const workspaceBeforeAuthentication = await candidateWorkspace(canonicalRoot, candidateDigest);
       await resetFocusedCheckTemporary(workspaceBeforeAuthentication);
@@ -1531,8 +1577,16 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
       const { workspace } = current;
       const validation = graphValidation(canonicalRoot, basis, validationId);
       const executionAuthority = checkedReceiptExecutionAuthority(canonicalRoot);
+      if (intentEnabled && intentBound === null) {
+        intentBound = await deriveExecutionIntent(canonicalRoot, candidateDigest, validationId, current, validation, executionAuthority);
+      }
       const existingReceipt = await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId, validation.fixtureProcessPolicy);
+      const workspaceManifestPath = resolve(workspace, workspaceManifestName);
+      const workspaceManifestBefore = await authenticatedContentFile(workspaceManifestPath, maximumWorkspaceManifestBytes, "CANDIDATE_BASIS_MISMATCH");
       const before = await candidateReceiptFacts(canonicalRoot, workspace, candidateDigest, basis);
+      if (!(await authenticatedContentFile(workspaceManifestPath, maximumWorkspaceManifestBytes, "CANDIDATE_BASIS_MISMATCH")).bytes.equals(workspaceManifestBefore.bytes)) {
+        refuse("CANDIDATE_BASIS_MISMATCH");
+      }
       const dependencyRoots = await toolDependencyRoots();
       const temporary = resolve(workspace, ".usf-check-tmp");
       const execution = await prepareCheckExecutionView(canonicalRoot, workspace, temporary, validation.repositoryReadFiles);
@@ -1553,7 +1607,21 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
       let startedIntent: CheckedCandidateExecutionIntent | null = null;
       if (intentEnabled) {
         if (intentBound === null) refuse("CHECK_EXECUTION_INTENT_INVALID");
-        const preSpawnCurrent = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+        let preSpawnBasis = basis;
+        try {
+          preSpawnBasis = await deriveCurrentRealisationBasis(canonicalRoot, basis);
+          assertSameBasis(basis, preSpawnBasis);
+        } catch {
+          refuse("CANDIDATE_BASIS_MISMATCH");
+        }
+        const preSpawnManifest = await authenticatedContentFile(workspaceManifestPath, maximumWorkspaceManifestBytes, "CANDIDATE_BASIS_MISMATCH");
+        if (!preSpawnManifest.bytes.equals(workspaceManifestBefore.bytes)) refuse("CANDIDATE_BASIS_MISMATCH");
+        const preSpawnFacts = await candidateReceiptFacts(canonicalRoot, workspace, candidateDigest, preSpawnBasis);
+        if (canonicalDigest(before) !== canonicalDigest(preSpawnFacts)) refuse("CANDIDATE_BASIS_MISMATCH");
+        if (!(await authenticatedContentFile(workspaceManifestPath, maximumWorkspaceManifestBytes, "CANDIDATE_BASIS_MISMATCH")).bytes.equals(preSpawnManifest.bytes)) {
+          refuse("CANDIDATE_BASIS_MISMATCH");
+        }
+        const preSpawnCurrent = Object.freeze({ workspace, basis: preSpawnBasis });
         const preSpawnValidation = graphValidation(canonicalRoot, preSpawnCurrent.basis, validationId);
         const preSpawnAuthority = checkedReceiptExecutionAuthority(canonicalRoot);
         const refreshedBound = await deriveExecutionIntent(canonicalRoot, candidateDigest, validationId, preSpawnCurrent, preSpawnValidation, preSpawnAuthority);
