@@ -586,6 +586,7 @@ test("integration consumes each graph-required validation exactly once in canoni
       "src/core/scope.ts",
       "src/graph/cli-transitions.ts",
       "src/graph/index.ts",
+      "src/graph/linear-binding.ts",
       "src/graph/nquads.ts",
       "src/graph/query.ts",
       "src/graph/work.ts",
