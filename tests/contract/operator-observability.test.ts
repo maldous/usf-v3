@@ -58,6 +58,14 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.ok(workOptions.includes("--stream"));
   assert.ok(workOptions.includes("--shard ID"));
 
+  const hostGroupHelp = helpCommandResult(["providers", "host", "--json"]);
+  assert.equal((hostGroupHelp.output as { command: { availability: string } }).command.availability, "registered");
+  const hostCensusHelp = helpCommandResult(["providers", "host", "census", "--json"]);
+  const hostCensus = (hostCensusHelp.output as { command: { availability: string; externalContact: string; outputSchema: string } }).command;
+  assert.equal(hostCensus.availability, "registered");
+  assert.equal(hostCensus.externalContact, "possible");
+  assert.equal(hostCensus.outputSchema, "urn:usf:provider-host-census-result:1");
+
   const availabilityHelp = helpCommandResult(["probe", "availability", "--json"]);
   const availability = (availabilityHelp.output as { command: { externalContact: string; exitCodes: number[] } }).command;
   assert.equal(availability.externalContact, "none");
