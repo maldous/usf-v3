@@ -142,6 +142,7 @@ async function selectCurrentBindingWork(
     && quad.objectKind === "iri"
     && quad.object === requestedBindingIri));
   const current: DiscoveredWork[] = [];
+  const completedSelectors = new Map<string, LinearBindingSelector>();
   for (const work of matchingBinding) {
     const selector = bindingSelector(repositoryRoot, work);
     if (selector === undefined || selector.bindingIri !== requestedBindingIri) continue;
@@ -154,6 +155,10 @@ async function selectCurrentBindingWork(
       }
       throw error;
     }
+    if (observed.status === "COMPLETED") {
+      completedSelectors.set(canonicalDigest(selector), selector);
+      continue;
+    }
     if (work.unitIris.length === 1
       && observed.binding.unit.unitIri === work.unitIris[0]
       && observed.binding.unit.bindingIri === requestedBindingIri
@@ -162,6 +167,8 @@ async function selectCurrentBindingWork(
       current.push(work);
     }
   }
+  // Completion is terminal and deliberately does not recreate private work.
+  if (completedSelectors.size === 1 && current.length === 0) return Object.freeze([]);
   if (current.length !== 1) {
     throw new UsfError(
       "HERMES_LINEAR_BINDING_NOT_CURRENT",
