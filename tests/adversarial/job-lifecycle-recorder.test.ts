@@ -22,6 +22,23 @@ test("factory is closed, preserves unknown acceptance, and accepts reported fail
   assert.equal(createLifecycleObservation(input("finish", { startedAt: null })).startedAt, null);
   assert.throws(() => createLifecycleObservation({ ...input(), acceptedOutcome: true }), refusal("JOB_LIFECYCLE_RECORDER_INPUT_INVALID"));
   assert.throws(() => createLifecycleObservation(input("finish", { endOffsetNanoseconds: -1 })), refusal("JOB_LIFECYCLE_RECORDER_INPUT_INVALID"));
+  assert.throws(() => createLifecycleObservation(input("finish", { endOffsetNanoseconds: Number.MAX_SAFE_INTEGER + 1 })), refusal("JOB_LIFECYCLE_RECORDER_INPUT_INVALID"));
+});
+
+test("event and byte ledger bounds refuse before mutation", async () => {
+  const repository = root();
+  await assert.rejects(
+    () => appendLifecycleObservation(repository, { ...input(), padding: "x".repeat(16_384) }),
+    refusal("JOB_LIFECYCLE_RECORDER_EVENT_BOUND_EXCEEDED"),
+  );
+  assert.throws(() => lstatSync(join(repository, ".usf")));
+
+  const event = createLifecycleObservation(input());
+  await appendLifecycleObservation(repository, event);
+  const ledger = join(repository, ".usf/metrics/job-lifecycle-v2.jsonl");
+  writeFileSync(ledger, Buffer.alloc(8 * 1024 * 1024 + 1, 0x20), { mode: 0o600 });
+  await assert.rejects(() => appendLifecycleObservation(repository, event), refusal("JOB_LIFECYCLE_RECORDER_PATH_UNSAFE"));
+  assert.equal(lstatSync(ledger).size, 8 * 1024 * 1024 + 1);
 });
 
 test("append is atomic, replay-safe, private, and leaves the default ledger absent", async () => {
@@ -61,6 +78,42 @@ test("real kernel flock contention refuses and release permits replay", async ()
   await appendLifecycleObservation(repository, event); const holder = spawn("/usr/bin/flock", ["--exclusive", "--no-fork", join(locks, "job-lifecycle-recorder.lock"), "/usr/bin/node", "-e", "setTimeout(() => {}, 1000)"], { stdio: "ignore", env: {} });
   await new Promise((resolve) => setTimeout(resolve, 100)); await assert.rejects(() => appendLifecycleObservation(repository, event), refusal("JOB_LIFECYCLE_RECORDER_LOCK_BUSY"));
   await new Promise<void>((resolve) => holder.once("exit", () => resolve())); assert.equal((await appendLifecycleObservation(repository, event)).status, "replayed");
+});
+
+test("concurrent recorder children serialize one append and refuse the overlapping attempt", async () => {
+  const repository = root();
+  const moduleUrl = new URL("../../src/observability/job-lifecycle-recorder.ts", import.meta.url).href;
+  const slowInput = input("start", { attemptIdentity: "slow-attempt", logicalAttemptIdentity: "slow-logical" });
+  const competingInput = input("start", { attemptIdentity: "competing-attempt", logicalAttemptIdentity: "competing-logical" });
+  const preload = join(repository, "delay-rename.cjs");
+  writeFileSync(preload, `const fs=require('node:fs');const m=require('node:module');const rename=fs.renameSync;fs.renameSync=(...args)=>{Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,500);return rename(...args)};m.syncBuiltinESMExports();`, { mode: 0o600 });
+  const script = (value: Record<string, unknown>) => `import { createLifecycleObservation, appendLifecycleObservation } from ${JSON.stringify(moduleUrl)}; await appendLifecycleObservation(${JSON.stringify(repository)},createLifecycleObservation(${JSON.stringify(value)}));`;
+  const slow = spawn("/usr/bin/node", ["--require", preload, "--input-type=module", "--eval", script(slowInput)], { stdio: "ignore", env: {} });
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  const competing = spawnSync("/usr/bin/node", ["--input-type=module", "--eval", script(competingInput)], { encoding: "utf8", env: {} });
+  assert.notEqual(competing.status, 0);
+  await new Promise<void>((resolve) => slow.once("exit", () => resolve()));
+  assert.equal(readFileSync(join(repository, ".usf/metrics/job-lifecycle-v2.jsonl"), "utf8").split("\n").filter(Boolean).length, 1);
+  assert.equal((await appendLifecycleObservation(repository, createLifecycleObservation(competingInput))).status, "appended");
+});
+
+test("owner and opened-versus-named inode mismatches refuse before ledger creation", () => {
+  const moduleUrl = new URL("../../src/observability/job-lifecycle-recorder.ts", import.meta.url).href;
+  const runFault = (repository: string, name: string, body: string): ReturnType<typeof spawnSync> => {
+    const preload = join(repository, `${name}.cjs`);
+    writeFileSync(preload, body, { mode: 0o600 });
+    const script = `import { createLifecycleObservation, appendLifecycleObservation } from ${JSON.stringify(moduleUrl)}; await appendLifecycleObservation(${JSON.stringify(repository)},createLifecycleObservation(${JSON.stringify(input())}));`;
+    return spawnSync("/usr/bin/node", ["--require", preload, "--input-type=module", "--eval", script], { encoding: "utf8", env: {} });
+  };
+  const ownerRoot = root();
+  const owner = runFault(ownerRoot, "wrong-owner", `const fs=require('node:fs');const m=require('node:module');const fstat=fs.fstatSync;fs.fstatSync=(fd)=>{const value=fstat(fd);return new Proxy(value,{get:(target,key)=>key==='uid'?target.uid+1:Reflect.get(target,key)})};m.syncBuiltinESMExports();`);
+  assert.notEqual(owner.status, 0);
+  assert.throws(() => lstatSync(join(ownerRoot, ".usf/metrics/job-lifecycle-v2.jsonl")));
+
+  const inodeRoot = root();
+  const inode = runFault(inodeRoot, "wrong-inode", `const fs=require('node:fs');const m=require('node:module');const lstat=fs.lstatSync;fs.lstatSync=(path)=>{const value=lstat(path);return String(path).endsWith('job-lifecycle-recorder.lock')?new Proxy(value,{get:(target,key)=>key==='ino'?target.ino+1:Reflect.get(target,key)}):value};m.syncBuiltinESMExports();`);
+  assert.notEqual(inode.status, 0);
+  assert.throws(() => lstatSync(join(inodeRoot, ".usf/metrics/job-lifecycle-v2.jsonl")));
 });
 
 test("process death releases the recorder lock and oversized private ledgers are never parsed", async () => {
