@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:semantic-token-comparison:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "workloadDigest",
+    "equivalenceDigest",
+    "baselineRunDigest",
+    "candidateRunDigest",
+    "semanticCacheKeyDigest",
+    "baselineMetrics",
+    "candidateMetrics",
+    "grossTokens",
+    "usefulTokens",
+    "cachedTokens",
+    "avoidedTokens",
+    "cacheReuse",
+    "yield",
+    "elapsedThroughput",
+    "correctnessDisposition",
+    "privacyDisposition",
+    "authorityDisposition",
+    "throughputDisposition",
+    "zeroPaidDisposition",
+    "benefitDisposition"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:semantic-token-comparison:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "workloadDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "equivalenceDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "baselineRunDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "candidateRunDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "semanticCacheKeyDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "baselineMetrics": {
+      "$ref": "#/$defs/comparisonMetrics"
+    },
+    "candidateMetrics": {
+      "$ref": "#/$defs/comparisonMetrics"
+    },
+    "grossTokens": {
+      "$ref": "#/$defs/count"
+    },
+    "usefulTokens": {
+      "$ref": "#/$defs/count"
+    },
+    "cachedTokens": {
+      "$ref": "#/$defs/count"
+    },
+    "avoidedTokens": {
+      "type": "integer",
+      "minimum": -1000000000,
+      "maximum": 1000000000
+    },
+    "cacheReuse": {
+      "$ref": "#/$defs/ratio"
+    },
+    "yield": {
+      "$ref": "#/$defs/ratio"
+    },
+    "elapsedThroughput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baselineElapsedMilliseconds",
+        "candidateElapsedMilliseconds",
+        "baselineTokensPerSecond",
+        "candidateTokensPerSecond"
+      ],
+      "properties": {
+        "baselineElapsedMilliseconds": {
+          "$ref": "#/$defs/count"
+        },
+        "candidateElapsedMilliseconds": {
+          "$ref": "#/$defs/count"
+        },
+        "baselineTokensPerSecond": {
+          "type": "number",
+          "minimum": 0
+        },
+        "candidateTokensPerSecond": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "correctnessDisposition": {
+      "$ref": "#/$defs/regressionDisposition"
+    },
+    "privacyDisposition": {
+      "$ref": "#/$defs/regressionDisposition"
+    },
+    "authorityDisposition": {
+      "$ref": "#/$defs/regressionDisposition"
+    },
+    "throughputDisposition": {
+      "$ref": "#/$defs/regressionDisposition"
+    },
+    "zeroPaidDisposition": {
+      "enum": [
+        "zero-paid",
+        "not-observed",
+        "refused"
+      ]
+    },
+    "benefitDisposition": {
+      "enum": [
+        "SEMANTIC_TOKEN_REDUCTION",
+        "NO_BENEFIT_CLAIM"
+      ]
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000000
+    },
+    "ratio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "regressionDisposition": {
+      "enum": [
+        "no-regression",
+        "regression",
+        "not-observed"
+      ]
+    },
+    "comparisonMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runDigest",
+        "inputTokens",
+        "outputTokens",
+        "totalTokens",
+        "usefulTokens",
+        "elapsedMilliseconds",
+        "acceptedOutputCount",
+        "semanticCacheReuseTokens"
+      ],
+      "properties": {
+        "runDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "inputTokens": {
+          "$ref": "#/$defs/count"
+        },
+        "outputTokens": {
+          "$ref": "#/$defs/count"
+        },
+        "totalTokens": {
+          "$ref": "#/$defs/count"
+        },
+        "usefulTokens": {
+          "$ref": "#/$defs/count"
+        },
+        "elapsedMilliseconds": {
+          "$ref": "#/$defs/count"
+        },
+        "acceptedOutputCount": {
+          "$ref": "#/$defs/count"
+        },
+        "semanticCacheReuseTokens": {
+          "$ref": "#/$defs/count"
+        }
+      }
+    }
+  }
+}

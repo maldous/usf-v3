@@ -1,0 +1,425 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:parallel-provider-run:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "workloadDigest",
+    "profileDigest",
+    "semanticContextDigest",
+    "eligibilitySnapshotDigest",
+    "eligibleCandidateCount",
+    "routeRuns",
+    "excludedCandidates",
+    "startedAt",
+    "endedAt",
+    "routeFamilyCount",
+    "usefulOverlapMilliseconds",
+    "concurrencyMetrics",
+    "tokenMetrics",
+    "costMetrics",
+    "acceptedOutputs",
+    "failures",
+    "zeroPaidDisposition"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:parallel-provider-run:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "workloadDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "profileDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "semanticContextDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "eligibilitySnapshotDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "eligibleCandidateCount": {
+      "$ref": "#/$defs/count"
+    },
+    "routeRuns": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/routeRun"
+      }
+    },
+    "excludedCandidates": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidateMemberDigest",
+          "disposition",
+          "reasonCodes"
+        ],
+        "properties": {
+          "candidateMemberDigest": {
+            "$ref": "#/$defs/digest"
+          },
+          "disposition": {
+            "enum": [
+              "excluded",
+              "deferred"
+            ]
+          },
+          "reasonCodes": {
+            "$ref": "#/$defs/reasonCodes"
+          }
+        }
+      }
+    },
+    "startedAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "endedAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "routeFamilyCount": {
+      "$ref": "#/$defs/count"
+    },
+    "usefulOverlapMilliseconds": {
+      "$ref": "#/$defs/count"
+    },
+    "concurrencyMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostConcurrencyCap",
+        "providerConcurrencyCap",
+        "targetConcurrency",
+        "observedConcurrency",
+        "launchedBeforeFirstSettlement",
+        "dispatchSerialised"
+      ],
+      "properties": {
+        "hostConcurrencyCap": {
+          "$ref": "#/$defs/positiveCount"
+        },
+        "providerConcurrencyCap": {
+          "$ref": "#/$defs/positiveCount"
+        },
+        "targetConcurrency": {
+          "$ref": "#/$defs/positiveCount"
+        },
+        "observedConcurrency": {
+          "$ref": "#/$defs/count"
+        },
+        "launchedBeforeFirstSettlement": {
+          "$ref": "#/$defs/count"
+        },
+        "dispatchSerialised": {
+          "const": false
+        }
+      }
+    },
+    "tokenMetrics": {
+      "$ref": "#/$defs/tokenMetrics"
+    },
+    "costMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "costClass",
+        "observedCostUsd",
+        "paidCostCeiling"
+      ],
+      "properties": {
+        "costClass": {
+          "enum": [
+            "zero-paid",
+            "local"
+          ]
+        },
+        "observedCostUsd": {
+          "const": "0"
+        },
+        "paidCostCeiling": {
+          "const": "0"
+        }
+      }
+    },
+    "acceptedOutputs": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "routeMemberDigest",
+          "outputDigest"
+        ],
+        "properties": {
+          "routeMemberDigest": {
+            "$ref": "#/$defs/digest"
+          },
+          "outputDigest": {
+            "$ref": "#/$defs/digest"
+          }
+        }
+      }
+    },
+    "failures": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "routeMemberDigest",
+          "reasonCodes"
+        ],
+        "properties": {
+          "routeMemberDigest": {
+            "$ref": "#/$defs/digest"
+          },
+          "reasonCodes": {
+            "$ref": "#/$defs/reasonCodes"
+          }
+        }
+      }
+    },
+    "zeroPaidDisposition": {
+      "enum": [
+        "zero-paid",
+        "not-observed",
+        "refused"
+      ]
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000000
+    },
+    "positiveCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1024
+    },
+    "reasonCodes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^[A-Z][A-Z0-9_]{1,95}(?::[^\\s]{1,192})?$"
+      }
+    },
+    "modelIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "family": {
+          "$ref": "#/$defs/identifier"
+        },
+        "provider": {
+          "$ref": "#/$defs/identifier"
+        },
+        "model": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "actualIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "provider",
+        "model",
+        "sdkProvider"
+      ],
+      "properties": {
+        "family": {
+          "$ref": "#/$defs/identifier"
+        },
+        "provider": {
+          "$ref": "#/$defs/identifier"
+        },
+        "model": {
+          "$ref": "#/$defs/identifier"
+        },
+        "sdkProvider": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "tokenMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputTokens",
+        "outputTokens",
+        "totalTokens",
+        "usefulTokens"
+      ],
+      "properties": {
+        "inputTokens": {
+          "$ref": "#/$defs/count"
+        },
+        "outputTokens": {
+          "$ref": "#/$defs/count"
+        },
+        "totalTokens": {
+          "$ref": "#/$defs/count"
+        },
+        "usefulTokens": {
+          "$ref": "#/$defs/count"
+        }
+      }
+    },
+    "routeRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "routeMemberDigest",
+        "routeQualificationDigest",
+        "runAuthorizationDigest",
+        "requestedIdentity",
+        "actualIdentity",
+        "startedAt",
+        "endedAt",
+        "usefulStartedAt",
+        "usefulEndedAt",
+        "usage",
+        "latency",
+        "outcome",
+        "acceptedOutputDigest"
+      ],
+      "properties": {
+        "routeMemberDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "routeQualificationDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "runAuthorizationDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "requestedIdentity": {
+          "$ref": "#/$defs/modelIdentity"
+        },
+        "actualIdentity": {
+          "$ref": "#/$defs/actualIdentity"
+        },
+        "startedAt": {
+          "$ref": "#/$defs/instant"
+        },
+        "endedAt": {
+          "$ref": "#/$defs/instant"
+        },
+        "usefulStartedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usefulEndedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "inputTokens",
+            "outputTokens",
+            "totalTokens"
+          ],
+          "properties": {
+            "inputTokens": {
+              "$ref": "#/$defs/count"
+            },
+            "outputTokens": {
+              "$ref": "#/$defs/count"
+            },
+            "totalTokens": {
+              "$ref": "#/$defs/count"
+            }
+          }
+        },
+        "latency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "milliseconds",
+            "usefulMilliseconds"
+          ],
+          "properties": {
+            "milliseconds": {
+              "$ref": "#/$defs/count"
+            },
+            "usefulMilliseconds": {
+              "$ref": "#/$defs/count"
+            }
+          }
+        },
+        "outcome": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "failed"
+          ]
+        },
+        "acceptedOutputDigest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
