@@ -55,11 +55,24 @@ export function deriveProfileClosure(
   coreGraph: SemanticGraph,
   binding: string,
 ): ProfileClosure {
-  const seeds = many(productGraph, binding, "coreDependencySeed");
+  // The canonical predicate is foundationDependencySeed. coreDependencySeed is a
+  // declared migration alias: the standard retires "core" as a name for the
+  // foundation, and the predicate is referenced by released bindings, so it is
+  // migrated with an alias rather than mutated silently. Declaring both is a
+  // defect and is refused rather than merged -- two names for one dependency
+  // set is the ambiguity the alias exists to avoid, not to introduce.
+  const canonical = many(productGraph, binding, "foundationDependencySeed");
+  const retired = many(productGraph, binding, "coreDependencySeed");
+  if (canonical.length > 0 && retired.length > 0) {
+    throw new UsfError("PROFILE_SEED_PREDICATE_AMBIGUOUS", exitCodes.DOMAIN_FAILURE,
+      "A binding declares both the canonical and the retired seed predicate.",
+      { binding, canonical: canonical.length, retired: retired.length });
+  }
+  const seeds = canonical.length > 0 ? canonical : retired;
   const missing = seeds.filter((seed) => coreGraph.quads.every((quad) => quad.subject !== seed));
   if (missing.length > 0) {
     throw new UsfError("PROFILE_SEED_UNRESOLVED", exitCodes.DOMAIN_FAILURE,
-      "A declared core dependency seed does not exist in the foundation.", { binding, missing });
+      "A declared foundation dependency seed does not exist in the foundation.", { binding, missing });
   }
   const resources = transitiveResourceIris(coreGraph, seeds).sort()
     .map((resource) => Object.freeze({ resource, digest: resourceDigest(coreGraph, resource) }));
