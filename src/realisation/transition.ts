@@ -962,12 +962,14 @@ function verifyTransitionAuthorityGraphCurrentness(
 /* -------------------------------------------------------------------------- */
 
 const integrationManifestIdentity = "graph/manifests/integration.json";
-const integrationAlgorithmIri = "urn:usf:algorithm:work-integration-transition:2";
+const integrationAlgorithmIri = "urn:usf:algorithm:work-integration-transition:3";
+const integrationCheckedExecutionAlgorithmIri = "urn:usf:algorithm:work-integration-transition:2";
 const integrationCheckedSchemaIri = "urn:usf:schema:checked-candidate-receipt:1";
-const integrationMemberSchemaIri = "urn:usf:schema:integration-cohort-member:1";
-const integrationObservationSchemaIri = "urn:usf:schema:integration-observation:1";
-const integrationRequestMembershipIri = "urn:usf:digest-membership:integration-request:1";
-const integrationObservationMembershipIri = "urn:usf:digest-membership:integration-observation:1";
+const integrationMemberSchemaIri = "urn:usf:schema:integration-cohort-member:2";
+const integrationObservationSchemaIri = "urn:usf:schema:integration-observation:2";
+const integrationRequestMembershipIri = "urn:usf:digest-membership:integration-request:2";
+const integrationObservationMembershipIri = "urn:usf:digest-membership:integration-observation:2";
+const integrationCoreCompletionAuthorityIri = "urn:usf:authority:core-completion:2";
 const integrationReceiptBoundaryIri = "urn:usf:receipt-boundary:core-completion:1";
 const integrationSuccessOutcome = "urn:usf:outcome:integration-success";
 const integrationRefusalOutcome = "urn:usf:outcome:integration-refused";
@@ -1082,7 +1084,9 @@ export type CheckedCandidateReceipt = DurableCheckedCandidateReceipt;
 export interface IntegrationCohortMember {
   readonly ordinal: number;
   readonly candidateDigest: string;
-  readonly checkedCandidateReceiptDigest: string;
+  readonly checkedCandidateReceiptDigests: readonly string[];
+  readonly checkedCandidateReceiptSetDigest: string;
+  readonly validationObligationCount: number;
   readonly workIri: string;
   readonly originalConstructionBasisDigest: string;
   readonly lineageDigest: string;
@@ -1147,7 +1151,7 @@ export interface PostimageValidationResult {
 }
 
 export interface PreparedCandidateIntegration {
-  readonly schema: "urn:usf:prepared-candidate-integration:1";
+  readonly schema: "urn:usf:prepared-candidate-integration:2";
   readonly request: IntegrationRequest;
   readonly checkedCandidateReceipts: readonly CheckedCandidateReceipt[];
   readonly cohortMembers: readonly IntegrationCohortMember[];
@@ -1167,7 +1171,7 @@ export interface PreparedCandidateIntegration {
 }
 
 export interface IntegrationObservation extends IntegrationRequest {
-  readonly schema: "urn:usf:integration-observation:1";
+  readonly schema: "urn:usf:integration-observation:2";
   readonly observationDigest: string;
   readonly observationMemberSetDigest: string;
   readonly observationDigestMembershipResourceDigest: string;
@@ -1529,67 +1533,84 @@ function bytesAtIntegrationPath(root: string, repositoryPath: string): Buffer | 
   return mode === null ? null : readFileSync(resolve(root, repositoryPath));
 }
 
-function validationAuthority(root: string, basis: RealisationBasis, phase: "candidate" | "postimage" = "postimage"): IntegrationValidationAuthority {
-  if (basis.trace.validation.length !== 1) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID", "Exactly one graph validation obligation is required");
-  const reference = basis.trace.validation[0]!;
+function validationAuthorities(root: string, basis: RealisationBasis, phase: "candidate" | "postimage" = "postimage"): IntegrationValidationAuthority[] {
   const graph = loadSemanticGraph(root, basis.selection.manifestPath);
   const integrationGraph = loadSemanticGraph(root, integrationManifestIdentity);
-  const validationTypes = objectsFor(graph, reference.id, predicateIri("type"));
-  if (validationTypes.length !== 1 || validationTypes[0]?.objectKind !== "iri" || validationTypes[0].object !== "urn:usf:type:TestObligation"
-    || resourceDigest(graph, reference.id) !== reference.digest
-    || integrationOne(graph, reference.id, "applicability", "literal") !== "required") throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
-  const command = integrationOne(graph, reference.id, "command", "literal");
-  const commandTokens = command.split(" ");
-  if (commandTokens.join(" ") !== command || commandTokens.some((token) => token.length === 0)) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
-  const environmentIri = integrationOne(graph, reference.id, "environment", "iri");
-  const executionModeIri = integrationOne(graph, reference.id, "executionMode", "iri");
-  if (environmentIri !== "urn:usf:environment:hermetic" || executionModeIri !== "urn:usf:mode:deterministic-test-substitute") {
-    throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+  const references = [...basis.trace.validation];
+  const declaredValidationIris = objectValues(graph, basis.work.id, predicateIri("validation"));
+  const referencedValidationIris = references.map((reference) => reference.id);
+  if (references.length < 1 || declaredValidationIris.length < 1
+    || new Set(declaredValidationIris).size !== declaredValidationIris.length
+    || new Set(referencedValidationIris).size !== referencedValidationIris.length
+    || canonicalJson(bytewiseSorted(declaredValidationIris)) !== canonicalJson(bytewiseSorted(referencedValidationIris))) {
+    throw new IntegrationError("INTEGRATION_VALIDATION_INVALID", "Graph-required validation set is missing, extra, empty, or duplicate");
   }
-  const hostTools = objectsFor(graph, reference.id, predicateIri("hostToolDependency"));
-  if (hostTools.length !== 1 || hostTools[0]?.objectKind !== "iri" || hostTools[0].object !== "urn:usf:host-tool:bwrap:0.9.0") {
-    throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+  const orderedReferences = [...references].sort((left, right) => Buffer.compare(Buffer.from(left.id, "utf8"), Buffer.from(right.id, "utf8")));
+  const executionAuthorityIri = phase === "candidate"
+    ? integrationOne(integrationGraph, integrationCheckedSchemaIri, "validationExecutionAuthority", "iri")
+    : integrationAlgorithmIri;
+  if ((phase === "candidate" && executionAuthorityIri !== integrationCheckedExecutionAlgorithmIri)
+    || (phase === "postimage" && executionAuthorityIri !== integrationAlgorithmIri)) {
+    throw new IntegrationError("INTEGRATION_VALIDATION_INVALID", "Validation execution authority is not the graph-selected version");
   }
-  const hostTool = hostTools[0].object;
-  const toolDependencies = [
-    ...basis.inputs.toolDigests.map((dependency) => ({ kind: "basis-input" as const, ...dependency })),
-    { kind: "host-tool" as const, id: hostTool, digest: resourceDigest(graph, hostTool) },
-  ];
-  const schemaDependencies = basis.inputs.schemaDigests.map((dependency) => ({ ...dependency }));
   const wallTimeMilliseconds = Number(integrationOne(
     integrationGraph,
-    integrationAlgorithmIri,
+    executionAuthorityIri,
     phase === "candidate" ? "candidateValidationWallTimeMilliseconds" : "postimageValidationWallTimeMilliseconds",
     "literal",
   ));
-  const terminationGraceMilliseconds = Number(integrationOne(integrationGraph, integrationAlgorithmIri, "validationTerminationGraceMilliseconds", "literal"));
-  const maximumSettlementWallTimeMilliseconds = Number(integrationOne(integrationGraph, integrationAlgorithmIri, "validationMaximumSettlementWallTimeMilliseconds", "literal"));
+  const terminationGraceMilliseconds = Number(integrationOne(integrationGraph, executionAuthorityIri, "validationTerminationGraceMilliseconds", "literal"));
+  const maximumSettlementWallTimeMilliseconds = Number(integrationOne(integrationGraph, executionAuthorityIri, "validationMaximumSettlementWallTimeMilliseconds", "literal"));
   if (wallTimeMilliseconds !== 120_000 || terminationGraceMilliseconds !== 5_000 || maximumSettlementWallTimeMilliseconds !== 125_000
-    || integrationOne(integrationGraph, integrationAlgorithmIri, "validationTerminationSignal", "literal") !== "SIGTERM"
-    || integrationOne(integrationGraph, integrationAlgorithmIri, "validationForcedTerminationSignal", "literal") !== "SIGKILL") {
+    || integrationOne(integrationGraph, executionAuthorityIri, "validationTerminationSignal", "literal") !== "SIGTERM"
+    || integrationOne(integrationGraph, executionAuthorityIri, "validationForcedTerminationSignal", "literal") !== "SIGKILL") {
     throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
   }
-  return deepFreeze({
-    obligationIri: reference.id,
-    command,
-    commandTokens,
-    validationResourceDigest: resourceDigest(graph, reference.id),
-    environmentIri,
-    executionModeIri,
-    commandDigest: canonicalDigest(commandTokens),
-    environmentDigest: resourceDigest(graph, environmentIri),
-    executionModeDigest: resourceDigest(graph, executionModeIri),
-    toolDependencies,
-    toolDependencyDigest: canonicalDigest(toolDependencies, { rejectAbsolutePaths: true }),
-    schemaDependencies,
-    schemaDependencyDigest: canonicalDigest(schemaDependencies, { rejectAbsolutePaths: true }),
-    executionAuthorityResourceDigest: resourceDigest(integrationGraph, integrationAlgorithmIri),
-    wallTimeMilliseconds,
-    terminationGraceMilliseconds,
-    terminationSignal: "SIGTERM" as const,
-    forcedTerminationSignal: "SIGKILL" as const,
-    maximumSettlementWallTimeMilliseconds,
-  });
+  return deepFreeze(orderedReferences.map((reference) => {
+    const validationTypes = objectsFor(graph, reference.id, predicateIri("type"));
+    if (validationTypes.length !== 1 || validationTypes[0]?.objectKind !== "iri" || validationTypes[0].object !== "urn:usf:type:TestObligation"
+      || resourceDigest(graph, reference.id) !== reference.digest
+      || integrationOne(graph, reference.id, "applicability", "literal") !== "required") throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    const command = integrationOne(graph, reference.id, "command", "literal");
+    const commandTokens = command.split(" ");
+    if (commandTokens.join(" ") !== command || commandTokens.some((token) => token.length === 0)) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    const environmentIri = integrationOne(graph, reference.id, "environment", "iri");
+    const executionModeIri = integrationOne(graph, reference.id, "executionMode", "iri");
+    if (environmentIri !== "urn:usf:environment:hermetic" || executionModeIri !== "urn:usf:mode:deterministic-test-substitute") {
+      throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    }
+    const hostTools = objectsFor(graph, reference.id, predicateIri("hostToolDependency"));
+    if (hostTools.length !== 1 || hostTools[0]?.objectKind !== "iri" || hostTools[0].object !== "urn:usf:host-tool:bwrap:0.9.0") {
+      throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    }
+    const hostTool = hostTools[0].object;
+    const toolDependencies = [
+      ...basis.inputs.toolDigests.map((dependency) => ({ kind: "basis-input" as const, ...dependency })),
+      { kind: "host-tool" as const, id: hostTool, digest: resourceDigest(graph, hostTool) },
+    ];
+    const schemaDependencies = basis.inputs.schemaDigests.map((dependency) => ({ ...dependency }));
+    return {
+      obligationIri: reference.id,
+      command,
+      commandTokens,
+      validationResourceDigest: resourceDigest(graph, reference.id),
+      environmentIri,
+      executionModeIri,
+      commandDigest: canonicalDigest(commandTokens),
+      environmentDigest: resourceDigest(graph, environmentIri),
+      executionModeDigest: resourceDigest(graph, executionModeIri),
+      toolDependencies,
+      toolDependencyDigest: canonicalDigest(toolDependencies, { rejectAbsolutePaths: true }),
+      schemaDependencies,
+      schemaDependencyDigest: canonicalDigest(schemaDependencies, { rejectAbsolutePaths: true }),
+      executionAuthorityResourceDigest: resourceDigest(integrationGraph, executionAuthorityIri),
+      wallTimeMilliseconds,
+      terminationGraceMilliseconds,
+      terminationSignal: "SIGTERM" as const,
+      forcedTerminationSignal: "SIGKILL" as const,
+      maximumSettlementWallTimeMilliseconds,
+    };
+  }));
 }
 
 function assertVerifierObservation(observation: IntegrationVerifierObservation, authority: IntegrationValidationAuthority): IntegrationValidationExecutionObservation {
@@ -1787,9 +1808,9 @@ async function authenticatedCheckedReceipt(
   authorityRoot: string,
   authenticated: AuthenticatedCandidateWorkspace,
   expectedSchemaDigest: string,
+  authority: IntegrationValidationAuthority,
 ): Promise<CheckedCandidateReceipt> {
   const basis = authenticated.constructionBasis;
-  const authority = validationAuthority(authorityRoot, basis, "candidate");
   const { readGraphDerivedCheckReceipt } = await import("../commands/check.ts");
   const loaded = await readGraphDerivedCheckReceipt(authorityRoot, authenticated.candidateDigest, authority.obligationIri)
     .catch(() => { throw new IntegrationError("INTEGRATION_CHECK_RECEIPT_INVALID"); });
@@ -1853,11 +1874,42 @@ async function authenticatedCheckedReceipt(
   return deepFreeze(receipt);
 }
 
+async function authenticatedCheckedReceipts(
+  authorityRoot: string,
+  authenticated: AuthenticatedCandidateWorkspace,
+  expectedSchemaDigest: string,
+): Promise<CheckedCandidateReceipt[]> {
+  const authorities = validationAuthorities(authorityRoot, authenticated.constructionBasis, "candidate");
+  const receipts = await Promise.all(authorities.map((authority) => authenticatedCheckedReceipt(
+    authorityRoot,
+    authenticated,
+    expectedSchemaDigest,
+    authority,
+  )));
+  if (receipts.length !== authorities.length
+    || receipts.some((receipt, index) => receipt.validationObligationIri !== authorities[index]!.obligationIri)) {
+    throw new IntegrationError("INTEGRATION_CHECK_RECEIPT_INVALID", "Checked receipt set is missing, extra, duplicate, or noncanonical");
+  }
+  return deepFreeze(receipts);
+}
+
 function integrationAuthority(root: string, explicitProfileIri: string): { graph: LoadedSemanticGraph; binding: IntegrationAuthorityBinding; requestFields: string[]; observationBaseFields: string[]; observationSuccessFields: string[]; observationRefusalFields: string[] } {
   const graph = loadSemanticGraph(root, integrationManifestIdentity);
   const algorithmVersion = integrationOne(graph, integrationAlgorithmIri, "version", "literal");
-  if (algorithmVersion !== "2"
+  const coreAuthorityTypes = objectsFor(graph, integrationCoreCompletionAuthorityIri, predicateIri("type"));
+  if (algorithmVersion !== "3"
+    || coreAuthorityTypes.length !== 1 || coreAuthorityTypes[0]?.objectKind !== "iri"
+    || coreAuthorityTypes[0].object !== "urn:usf:type:CoreCompletionAuthority"
+    || integrationOne(graph, integrationCoreCompletionAuthorityIri, "version", "literal") !== "2"
+    || integrationOne(graph, integrationCoreCompletionAuthorityIri, "integrationTransitionAlgorithm", "iri") !== integrationAlgorithmIri
+    || integrationOne(graph, integrationCoreCompletionAuthorityIri, "receiptBoundary", "iri") !== integrationReceiptBoundaryIri
+    || integrationOne(graph, integrationAlgorithmIri, "authority", "iri") !== integrationCoreCompletionAuthorityIri
+    || integrationOne(graph, integrationAlgorithmIri, "minimumValidationCountPerCandidate", "literal") !== "1"
     || integrationOne(graph, integrationAlgorithmIri, "checkedCandidateSchema", "iri") !== integrationCheckedSchemaIri
+    || integrationOne(graph, integrationCheckedSchemaIri, "validationExecutionAuthority", "iri") !== integrationCheckedExecutionAlgorithmIri
+    || integrationOne(graph, integrationCheckedExecutionAlgorithmIri, "version", "literal") !== "2"
+    || integrationOne(graph, integrationCheckedExecutionAlgorithmIri, "checkedCandidateSchema", "iri") !== integrationCheckedSchemaIri
+    || integrationOne(graph, integrationCheckedExecutionAlgorithmIri, "receiptBoundary", "iri") !== integrationReceiptBoundaryIri
     || integrationOne(graph, integrationAlgorithmIri, "cohortMemberSchema", "iri") !== integrationMemberSchemaIri
     || integrationOne(graph, integrationAlgorithmIri, "integrationObservationSchema", "iri") !== integrationObservationSchemaIri
     || integrationOne(graph, integrationAlgorithmIri, "requestDigestMembership", "iri") !== integrationRequestMembershipIri
@@ -1867,6 +1919,8 @@ function integrationAuthority(root: string, explicitProfileIri: string): { graph
   }
   const dependencyIris = [
     integrationAlgorithmIri,
+    integrationCoreCompletionAuthorityIri,
+    integrationCheckedExecutionAlgorithmIri,
     integrationCheckedSchemaIri,
     integrationMemberSchemaIri,
     integrationObservationSchemaIri,
@@ -1918,19 +1972,28 @@ function integrationAuthority(root: string, explicitProfileIri: string): { graph
   return { graph, binding: deepFreeze(binding), requestFields, observationBaseFields, observationSuccessFields, observationRefusalFields };
 }
 
-function canonicalCohortOrder(graph: SemanticGraph, records: readonly { authenticated: AuthenticatedCandidateWorkspace; receipt: CheckedCandidateReceipt }[]): typeof records[number][] {
-  const byWork = new Map(records.map((record) => [record.receipt.workIri, record]));
+interface AuthenticatedCandidateRecord {
+  readonly authenticated: AuthenticatedCandidateWorkspace;
+  readonly receipts: readonly CheckedCandidateReceipt[];
+}
+
+function candidateReceiptDigestSet(record: AuthenticatedCandidateRecord): string[] {
+  return record.receipts.map((receipt) => receipt.receiptDigest);
+}
+
+function canonicalCohortOrder(graph: SemanticGraph, records: readonly AuthenticatedCandidateRecord[]): AuthenticatedCandidateRecord[] {
+  const byWork = new Map(records.map((record) => [record.authenticated.constructionBasis.work.id, record]));
   const remaining = new Set(byWork.keys());
-  const ordered: typeof records[number][] = [];
+  const ordered: AuthenticatedCandidateRecord[] = [];
   while (remaining.size > 0) {
     const available = [...remaining].filter((work) => objectValues(graph, work, predicateIri("dependsOn")).every((dependency) => !remaining.has(dependency)));
     if (available.length === 0) throw new IntegrationError("INTEGRATION_CALLER_ORDER_INVALID", "Candidate work dependency cycle");
     available.sort((left, right) => {
       const leftRecord = byWork.get(left)!;
       const rightRecord = byWork.get(right)!;
-      return left.localeCompare(right)
-        || leftRecord.receipt.receiptDigest.localeCompare(rightRecord.receipt.receiptDigest)
-        || leftRecord.receipt.candidateDigest.localeCompare(rightRecord.receipt.candidateDigest);
+      return Buffer.compare(Buffer.from(left, "utf8"), Buffer.from(right, "utf8"))
+        || Buffer.compare(Buffer.from(canonicalDigest(candidateReceiptDigestSet(leftRecord)), "utf8"), Buffer.from(canonicalDigest(candidateReceiptDigestSet(rightRecord)), "utf8"))
+        || Buffer.compare(Buffer.from(leftRecord.authenticated.candidateDigest, "utf8"), Buffer.from(rightRecord.authenticated.candidateDigest, "utf8"));
     });
     for (const work of available) {
       ordered.push(byWork.get(work)!);
@@ -1940,19 +2003,25 @@ function canonicalCohortOrder(graph: SemanticGraph, records: readonly { authenti
   return ordered;
 }
 
-function cohortMembers(records: readonly { authenticated: AuthenticatedCandidateWorkspace; receipt: CheckedCandidateReceipt }[]): IntegrationCohortMember[] {
-  return records.map(({ authenticated, receipt }, index) => ({
-    ordinal: index + 1,
-    candidateDigest: receipt.candidateDigest,
-    checkedCandidateReceiptDigest: receipt.receiptDigest,
-    workIri: receipt.workIri,
-    originalConstructionBasisDigest: receipt.originalConstructionBasisDigest,
-    lineageDigest: authenticated.lineageDigest,
-    byteDeltaDigest: authenticated.byteDeltaDigest,
-    fileModeDigest: authenticated.fileModeDigest,
-    candidateTreeDigest: authenticated.candidateTreeDigest,
-    writeSetDigest: authenticated.writeSetDigest,
-  }));
+function cohortMembers(records: readonly AuthenticatedCandidateRecord[]): IntegrationCohortMember[] {
+  return records.map((record, index) => {
+    const { authenticated, receipts } = record;
+    const receiptDigests = candidateReceiptDigestSet(record);
+    return {
+      ordinal: index + 1,
+      candidateDigest: authenticated.candidateDigest,
+      checkedCandidateReceiptDigests: receiptDigests,
+      checkedCandidateReceiptSetDigest: canonicalDigest(receiptDigests),
+      validationObligationCount: receipts.length,
+      workIri: authenticated.constructionBasis.work.id,
+      originalConstructionBasisDigest: authenticated.constructionBasis.basisDigest,
+      lineageDigest: authenticated.lineageDigest,
+      byteDeltaDigest: authenticated.byteDeltaDigest,
+      fileModeDigest: authenticated.fileModeDigest,
+      candidateTreeDigest: authenticated.candidateTreeDigest,
+      writeSetDigest: authenticated.writeSetDigest,
+    };
+  });
 }
 
 function parseRawGitDiff(root: string, base: string, paths: readonly string[], cached = true): AuthoritativeGitPathEffect[] {
@@ -2277,7 +2346,7 @@ function buildObservation(
   };
   const observationDigest = canonicalDigest(selectedFieldMap(digestFields, canonicalObservationMemberSet));
   return deepFreeze({
-    schema: "urn:usf:integration-observation:1" as const,
+    schema: "urn:usf:integration-observation:2" as const,
     ...prepared.request,
     ...digestFields,
     observationDigest,
@@ -2319,7 +2388,7 @@ function buildPreparationRefusalObservation(
     refusalReason,
   };
   return deepFreeze({
-    schema: "urn:usf:integration-observation:1" as const,
+    schema: "urn:usf:integration-observation:2" as const,
     ...request,
     ...members,
     observationDigest: canonicalDigest(selectedFieldMap(members, fields)),
@@ -2403,7 +2472,7 @@ async function readIntegrationObservation(
   }
   if (bytes !== `${canonicalJson(observation, { rejectAbsolutePaths: true })}\n`
     || canonicalJson(bytewiseSorted(Object.keys(observation))) !== canonicalJson(expectedKeys)
-    || observation.schema !== "urn:usf:integration-observation:1" || observation.outcome !== integrationSuccessOutcome
+    || observation.schema !== "urn:usf:integration-observation:2" || observation.outcome !== integrationSuccessOutcome
     || !requestMatches || !payloadMatches || !observedCarrierValid
     || observation.workspaceIdentityDigest !== prepared.workspaceIdentityDigest
     || observation.primaryMutationLockIdentity !== primaryMutationLockIdentity
@@ -2549,15 +2618,17 @@ export async function prepareCandidateIntegration(root: string, options: Candida
   const manifests = [...new Set(authenticated.map((candidate) => candidate.constructionBasis.selection.manifestPath))];
   if (profiles.length !== 1 || manifests.length !== 1) throw new IntegrationError("INTEGRATION_PROFILE_MISMATCH");
   const authority = integrationAuthority(canonicalRoot, profiles[0]!);
-  const receipts = await Promise.all(authenticated.map((candidate) => authenticatedCheckedReceipt(
+  const receiptsByCandidate = await Promise.all(authenticated.map((candidate) => authenticatedCheckedReceipts(
     canonicalRoot,
     candidate,
     authority.binding.checkedCandidateSchemaDigest,
   )));
-  if (new Set(receipts.map((receipt) => receipt.receiptDigest)).size !== receipts.length) throw new IntegrationError("INTEGRATION_DUPLICATE_RECEIPT");
-  if (new Set(receipts.map((receipt) => receipt.workIri)).size !== receipts.length) throw new IntegrationError("INTEGRATION_DUPLICATE_WORK");
+  const allReceiptDigests = receiptsByCandidate.flatMap((receipts) => receipts.map((receipt) => receipt.receiptDigest));
+  if (new Set(allReceiptDigests).size !== allReceiptDigests.length) throw new IntegrationError("INTEGRATION_DUPLICATE_RECEIPT");
+  const workIris = authenticated.map((candidate) => candidate.constructionBasis.work.id);
+  if (new Set(workIris).size !== workIris.length) throw new IntegrationError("INTEGRATION_DUPLICATE_WORK");
   const workGraph = loadSemanticGraph(canonicalRoot, manifests[0]!);
-  const inputRecords = authenticated.map((candidate, index) => ({ authenticated: candidate, receipt: receipts[index]! }));
+  const inputRecords = authenticated.map((candidate, index) => ({ authenticated: candidate, receipts: receiptsByCandidate[index]! }));
   const orderedRecords = canonicalCohortOrder(workGraph, inputRecords);
   if (orderedRecords.some((record, index) => record.authenticated.candidateDigest !== options.candidateDigests[index])) {
     throw new IntegrationError("INTEGRATION_CALLER_ORDER_INVALID");
@@ -2575,7 +2646,8 @@ export async function prepareCandidateIntegration(root: string, options: Candida
     throw new IntegrationError("INTEGRATION_AUTHORITY_INVALID", "Ordinary integration cannot replace its own selected authority");
   }
   const members = cohortMembers(orderedRecords);
-  const checkedCandidateSetDigest = canonicalDigest(bytewiseSorted(orderedRecords.map((record) => record.receipt.receiptDigest)));
+  const orderedReceipts = orderedRecords.flatMap((record) => record.receipts);
+  const checkedCandidateSetDigest = canonicalDigest(orderedReceipts.map((receipt) => receipt.receiptDigest));
   const requestMemberSetDigest = canonicalDigest(authority.requestFields);
   const requestDraft: Record<string, unknown> = {
     ...authority.binding,
@@ -2642,38 +2714,44 @@ export async function prepareCandidateIntegration(root: string, options: Candida
     const preparedCarrierCommit = gitHead(worktree);
     const preparedCarrierTree = gitTree(worktree, preparedCarrierCommit);
     const postimageBases = orderedRecords.map((record) => deriveBasisAt(worktree, record.authenticated.constructionBasis, "INTEGRATION_POSTIMAGE_BASIS_INVALID"));
-    const postimageValidationResults = [];
+    const postimageValidationResults: PostimageValidationResult[] = [];
     for (let index = 0; index < orderedRecords.length; index += 1) {
       const record = orderedRecords[index]!;
       const basis = postimageBases[index]!;
-      const validation = validationAuthority(worktree, basis);
-      const observation = await (options.verifier ?? runIntegrationValidation)({
-        phase: "postimage",
-        repositoryRoot: worktree,
-        candidateDigest: record.authenticated.candidateDigest,
-        workIri: basis.work.id,
-        explicitProfileIri: basis.selection.profile,
-        basis,
-        authority: validation,
-        expectedByteDeltaDigest: record.authenticated.byteDeltaDigest,
-        expectedFileModeDigest: record.authenticated.fileModeDigest,
-        expectedTreeDigest: canonicalDigest(effects),
-      });
-      const execution = assertVerifierObservation(observation, validation);
-      postimageValidationResults.push({
-        workIri: basis.work.id,
-        basisDigest: basis.basisDigest,
-        validationObligationIri: validation.obligationIri,
-        validationCommandDigest: validation.commandDigest,
-        validationEnvironmentDigest: validation.environmentDigest,
-        validationExecutionModeDigest: validation.executionModeDigest,
-        validationToolDependencyDigest: validation.toolDependencyDigest,
-        validationSchemaDependencyDigest: validation.schemaDependencyDigest,
-        validationResultSetDigest: canonicalDigest(observation.resultDigests),
-        timedOut: false as const,
-        timeoutTerminationSignal: "none" as const,
-        outputResultDigest: execution.outputResultDigest,
-      });
+      const validations = validationAuthorities(worktree, basis);
+      if (validations.length !== record.receipts.length
+        || validations.some((validation, validationIndex) => validation.obligationIri !== record.receipts[validationIndex]!.validationObligationIri)) {
+        throw new IntegrationError("INTEGRATION_VALIDATION_INVALID", "Postimage validation set differs from the authenticated candidate set");
+      }
+      for (const validation of validations) {
+        const observation = await (options.verifier ?? runIntegrationValidation)({
+          phase: "postimage",
+          repositoryRoot: worktree,
+          candidateDigest: record.authenticated.candidateDigest,
+          workIri: basis.work.id,
+          explicitProfileIri: basis.selection.profile,
+          basis,
+          authority: validation,
+          expectedByteDeltaDigest: record.authenticated.byteDeltaDigest,
+          expectedFileModeDigest: record.authenticated.fileModeDigest,
+          expectedTreeDigest: canonicalDigest(effects),
+        });
+        const execution = assertVerifierObservation(observation, validation);
+        postimageValidationResults.push({
+          workIri: basis.work.id,
+          basisDigest: basis.basisDigest,
+          validationObligationIri: validation.obligationIri,
+          validationCommandDigest: validation.commandDigest,
+          validationEnvironmentDigest: validation.environmentDigest,
+          validationExecutionModeDigest: validation.executionModeDigest,
+          validationToolDependencyDigest: validation.toolDependencyDigest,
+          validationSchemaDependencyDigest: validation.schemaDependencyDigest,
+          validationResultSetDigest: canonicalDigest(observation.resultDigests),
+          timedOut: false as const,
+          timeoutTerminationSignal: "none" as const,
+          outputResultDigest: execution.outputResultDigest,
+        });
+      }
     }
     if (git(worktree, "status", ["--porcelain=v1", "-z", "--untracked-files=all"]).byteLength !== 0
       || gitHead(worktree) !== preparedCarrierCommit || gitTree(worktree, "HEAD") !== preparedCarrierTree
@@ -2681,9 +2759,9 @@ export async function prepareCandidateIntegration(root: string, options: Candida
       throw new IntegrationError("INTEGRATION_UNDECLARED_EFFECT", "Postimage validation altered the prepared carrier");
     }
     const completedPreparation: PreparedCandidateIntegration = deepFreeze({
-      schema: "urn:usf:prepared-candidate-integration:1" as const,
+      schema: "urn:usf:prepared-candidate-integration:2" as const,
       request,
-      checkedCandidateReceipts: orderedRecords.map((record) => record.receipt),
+      checkedCandidateReceipts: orderedReceipts,
       cohortMembers: members,
       originalConstructionBases: orderedRecords.map((record) => record.authenticated.constructionBasis),
       authoritativeGitDiff: effects,
@@ -2720,7 +2798,7 @@ export async function prepareCandidateIntegration(root: string, options: Candida
         authority,
         request,
         members,
-        orderedRecords.map((record) => record.receipt),
+        orderedReceipts,
         orderedRecords.map((record) => record.authenticated.constructionBasis),
         error.reasonCode,
         error.validationExecution,
@@ -2788,8 +2866,7 @@ export async function integrateCandidates(root: string, options: CandidateIntegr
   let observed: { commit: string; tree: string } | undefined;
   try {
     await assertPreparedCurrent(canonicalRoot, prepared);
-    for (const basis of prepared.cohortMembers.map((member) => prepared.checkedCandidateReceipts.find((receipt) => receipt.candidateDigest === member.candidateDigest)!
-      ).map((receipt) => prepared.independentlyDerivedPostimageBases.find((basis) => basis.work.id === receipt.workIri)!)) {
+    for (const basis of prepared.cohortMembers.map((member) => prepared.independentlyDerivedPostimageBases.find((candidateBasis) => candidateBasis.work.id === member.workIri)!)) {
       if (basis === undefined) throw new IntegrationError("INTEGRATION_POSTIMAGE_BASIS_INVALID");
     }
     git(canonicalRoot, "merge", ["--ff-only", "--no-edit", prepared.preparedCarrierCommit]);

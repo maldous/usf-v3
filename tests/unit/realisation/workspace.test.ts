@@ -357,6 +357,9 @@ test("prepares, fast-forwards and recovers one observed local Git integration wi
   assert.equal(prepared.request.postimageValidationWallTimeMilliseconds, 120_000);
   assert.equal(prepared.request.validationTerminationGraceMilliseconds, 5_000);
   assert.equal(prepared.cohortMembers[0]?.originalConstructionBasisDigest, basis.basisDigest);
+  assert.equal(prepared.cohortMembers[0]?.validationObligationCount, 1);
+  assert.deepEqual(prepared.cohortMembers[0]?.checkedCandidateReceiptDigests, [prepared.checkedCandidateReceipts[0]?.receiptDigest]);
+  assert.equal(prepared.cohortMembers[0]?.checkedCandidateReceiptSetDigest, canonicalDigest(prepared.cohortMembers[0]?.checkedCandidateReceiptDigests));
   assert.notEqual(prepared.independentlyDerivedPostimageBasisDigest, "");
   assert.equal(prepared.authoritativeGitDiff[0]?.path, targetPath);
   assert.equal(prepared.nonClaims.includes("integration-observation-not-completion"), true);
@@ -414,7 +417,7 @@ test("prepares, fast-forwards and recovers one observed local Git integration wi
   assert.equal(git(root, ["rev-parse", "--verify", preparedRef]), prepared.preparedCarrierCommit);
   assert.equal(gitOutcome(root, ["symbolic-ref", "-q", preparedRef]).status, 1, "the prepared carrier uses a direct ref");
 
-  const requestMembershipSubject = "urn:usf:digest-membership:integration-request:1";
+  const requestMembershipSubject = "urn:usf:digest-membership:integration-request:2";
   const memberFieldPredicate = "urn:usf:predicate:memberField";
   const memberIdentity = (): string => canonicalDigest([...objectValues(
     loadSemanticGraph(root, "graph/manifests/integration.json"), requestMembershipSubject, memberFieldPredicate,
@@ -457,7 +460,7 @@ test("prepares, fast-forwards and recovers one observed local Git integration wi
   const observationPath = join(root, ".usf", "receipts", "integration", `${observation.observationDigest.slice("sha256:".length)}.json`);
   assert.equal((await stat(observationPath)).mode & 0o777, 0o600);
   assert.equal((await stat(join(root, ".usf", "locks", "primary-mutation.lock"))).mode & 0o777, 0o600);
-  assert.equal((await JSON.parse(await readFile(observationPath, "utf8"))).schema, "urn:usf:integration-observation:1");
+  assert.equal((await JSON.parse(await readFile(observationPath, "utf8"))).schema, "urn:usf:integration-observation:2");
   const markerPath = join(root, ".usf", "receipts", "integration", "markers", `${observation.requestDigest.slice("sha256:".length)}.json`);
   assert.equal((await stat(markerPath)).mode & 0o777, 0o600);
   assert.equal(JSON.parse(await readFile(markerPath, "utf8")).state, "primary-advanced");
@@ -517,6 +520,84 @@ test("prepares, fast-forwards and recovers one observed local Git integration wi
     (error: unknown) => error instanceof IntegrationError && error.reasonCode === "INTEGRATION_POSTIMAGE_MOVED",
   );
   assert.equal(await readFile(observationPath, "utf8"), historicalObservation, "relevant movement cannot corrupt the historical observation");
+});
+
+test("integration consumes each graph-required validation exactly once in canonical order", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const graph = "urn:usf:graph:semantic-first";
+  const semanticPath = join(root, "graph", "semantic-first.nq");
+  const semantic = await readFile(semanticPath, "utf8");
+  const originalBinding = `<${workId}> <urn:usf:predicate:validation> <urn:usf:validation:realisation-basis-chain-focused> <${graph}> .`;
+  assert.equal(semantic.split(originalBinding).length, 2, "the fixture replaces one exact recursive validation binding");
+  const validations = [
+    {
+      iri: "urn:usf:validation:realisation-basis-chain-focused-primary",
+      command: "node --test --test-isolation=none tests/unit/providers/routing.test.ts",
+    },
+    {
+      iri: "urn:usf:validation:realisation-basis-chain-focused-secondary",
+      command: "node --test --test-isolation=none tests/contract/fake-call-resolve.test.ts",
+    },
+  ];
+  const statements = validations.flatMap(({ iri, command }) => [
+    `<${iri}> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <${graph}> .`,
+    `<${iri}> <urn:usf:predicate:command> ${JSON.stringify(command)} <${graph}> .`,
+    `<${iri}> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <${graph}> .`,
+    `<${iri}> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <${graph}> .`,
+    `<${iri}> <urn:usf:predicate:applicability> "required" <${graph}> .`,
+    `<${iri}> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <${graph}> .`,
+    `<${workId}> <urn:usf:predicate:validation> <${iri}> <${graph}> .`,
+  ]);
+  await writeFile(semanticPath, `${semantic.replace(`${originalBinding}\n`, "").trimEnd()}\n${statements.join("\n")}\n`);
+  initialiseGit(root);
+  const basis = packet(root).realisationBasis;
+  const validationIris = basis.trace.validation.map((reference) => reference.id)
+    .sort((left, right) => Buffer.compare(Buffer.from(left), Buffer.from(right)));
+  assert.equal(validationIris.length, 2);
+
+  const before = await readFile(join(root, targetPath), "utf8");
+  const spec = candidate(basis, `${before}\n// two-validation candidate\n`, "two-validation");
+  await materialiseCandidate(root, spec);
+  await applyCandidateOperations(root, spec.digest, candidateOperations(spec));
+  const firstCheck = await runGraphDerivedCheck(root, spec.digest, validationIris[0]!);
+  assert.equal(firstCheck.status, "pass", firstCheck.status === "refused" ? firstCheck.reasonCode : undefined);
+  await assert.rejects(
+    () => prepareCandidateIntegration(root, { candidateDigests: [spec.digest] }),
+    (error: unknown) => error instanceof IntegrationError && error.reasonCode === "INTEGRATION_CHECK_RECEIPT_MISSING",
+    "one receipt cannot stand in for the complete graph-required validation set",
+  );
+  const secondCheck = await runGraphDerivedCheck(root, spec.digest, validationIris[1]!);
+  assert.equal(secondCheck.status, "pass", secondCheck.status === "refused" ? secondCheck.reasonCode : undefined);
+
+  const duplicateResult = canonicalDigest("duplicate-postimage-result");
+  await assert.rejects(
+    () => prepareCandidateIntegration(root, {
+      candidateDigests: [spec.digest],
+      verifier: async () => ({ outcome: "pass", resultDigests: [duplicateResult, duplicateResult] }),
+    }),
+    (error: unknown) => error instanceof IntegrationError && error.reasonCode === "INTEGRATION_VALIDATION_FAILED",
+    "duplicate verifier results cannot inflate or satisfy the required validation set",
+  );
+
+  const observedAuthorities: Array<{ obligation: string; executionAuthority: string }> = [];
+  const prepared = await prepareCandidateIntegration(root, {
+    candidateDigests: [spec.digest],
+    verifier: async ({ authority }) => {
+      observedAuthorities.push({ obligation: authority.obligationIri, executionAuthority: authority.executionAuthorityResourceDigest });
+      return { outcome: "pass", resultDigests: [canonicalDigest({ obligation: authority.obligationIri })] };
+    },
+  });
+  assert.equal(prepared.schema, "urn:usf:prepared-candidate-integration:2");
+  assert.equal(prepared.request.algorithmVersion, "3");
+  assert.deepEqual(prepared.checkedCandidateReceipts.map((receipt) => receipt.validationObligationIri), validationIris);
+  assert.deepEqual(prepared.cohortMembers[0]?.checkedCandidateReceiptDigests, prepared.checkedCandidateReceipts.map((receipt) => receipt.receiptDigest));
+  assert.equal(prepared.cohortMembers[0]?.validationObligationCount, 2);
+  assert.equal(prepared.request.checkedCandidateSetDigest, canonicalDigest(prepared.checkedCandidateReceipts.map((receipt) => receipt.receiptDigest)));
+  assert.deepEqual(prepared.postimageValidationResults.map((result) => result.validationObligationIri), validationIris);
+  assert.deepEqual(observedAuthorities.map(({ obligation }) => obligation), validationIris);
+  assert.equal(observedAuthorities.every(({ executionAuthority }) => executionAuthority === prepared.request.algorithmResourceDigest), true);
+  assert.equal(prepared.checkedCandidateReceipts.every((receipt) => receipt.validationExecutionAuthorityResourceDigest !== prepared.request.algorithmResourceDigest), true);
 });
 
 test("integration cohort ingress refuses invalid bounds and duplicate locators before preparation", async (context) => {
