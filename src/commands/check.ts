@@ -2,7 +2,7 @@ import { constants, lstatSync, readdirSync, realpathSync, type Stats } from "nod
 import { chmod, link, lstat, mkdir, open, readdir, realpath, rename, rm, unlink, writeFile } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
-import { candidateWorkspace, currentCandidateWorkspace, currentCandidateWorkspaceForCheckRecovery, RealisationError, stableReason, withCandidateLock } from "../realisation/index.ts";
+import { candidateWorkspace, currentCandidateWorkspace, currentCandidateWorkspaceForCheckRecovery, maximumWorkspaceManifestBytes, RealisationError, stableReason, withCandidateLock } from "../realisation/index.ts";
 import { assertSameBasis, type RealisationBasis } from "../realisation/basis.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { exitCodes } from "../core/errors.ts";
@@ -122,7 +122,7 @@ const validationExecutionAuthorityIri = "urn:usf:algorithm:work-integration-tran
 const integrationManifestPath = "graph/manifests/integration.json";
 const checkReceiptRoot = ".usf/receipts/check";
 const workspaceManifestName = ".usf-workspace.json";
-const maximumWorkspaceManifestBytes = 512 * 1024;
+const maximumValidationAuthorityFileBytes = 512 * 1024;
 const maximumCandidateTreeEntries = 8_192;
 const maximumCandidateTreeBytes = 64 * 1024 * 1024;
 const maximumCheckOutputBytes = 256 * 1024;
@@ -661,7 +661,7 @@ async function* validationAuthorityFiles(root: string, tree: readonly CandidateT
     const source = resolve(root, repositoryPath);
     const relation = relative(root, source);
     if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
-    const { bytes, entry } = await authenticatedContentFile(source, maximumWorkspaceManifestBytes, "CHECK_VALIDATION_AUTHORITY_INVALID");
+    const { bytes, entry } = await authenticatedContentFile(source, maximumValidationAuthorityFileBytes, "CHECK_VALIDATION_AUTHORITY_INVALID");
     if (realpathSync(source) !== source) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
     yield { path: repositoryPath, bytes, mode: repositoryMode(entry.mode) };
   }

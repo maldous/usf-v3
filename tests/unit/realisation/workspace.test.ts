@@ -13,7 +13,7 @@ import {
   registrationFeaturePostimageSet,
   registrationFeaturePostimageSetDigest,
 } from "../../../src/collaboration/resolve.ts";
-import { runGraphDerivedCheck } from "../../../src/commands/check.ts";
+import { authenticateGraphDerivedCheckIntent, runGraphDerivedCheck } from "../../../src/commands/check.ts";
 import { loadSemanticGraph, objectValues } from "../../../src/graph/index.ts";
 import { deriveWork, type WorkPacket } from "../../../src/graph/work.ts";
 import {
@@ -26,6 +26,7 @@ import {
   deriveNoChangeCandidateIdentity,
   materialiseCandidate,
   materialiseNoChangeCandidate,
+  maximumWorkspaceManifestBytes,
   RealisationError,
   withCandidateLock,
   type CandidateSpec,
@@ -239,12 +240,54 @@ test("basis-bound materialisation refuses missing, fabricated, stale and out-of-
   );
 });
 
+test("roundtrips a workspace manifest above the old bound through native and check-intent readers", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const basis = packet(root).realisationBasis;
+  const content = "/*" + "x".repeat(Math.floor(maximumWorkspaceManifestBytes * 3 / 4)) + "*/\n";
+  const spec = candidate(basis, content, "large-manifest-roundtrip");
+  const materialised = await materialiseCandidate(root, spec);
+  const manifestFile = join(materialised.workspace, ".usf-workspace.json");
+  const manifestBytes = await readFile(manifestFile);
+  assert.ok(manifestBytes.byteLength > 512 * 1024, "fixture must cross the previous serialized manifest limit");
+  assert.ok(manifestBytes.byteLength <= maximumWorkspaceManifestBytes);
+  assert.equal(JSON.parse(manifestBytes.toString("utf8")).digest, spec.digest);
+  await applyCandidateOperations(root, spec.digest, candidateOperations(spec));
+  assert.equal(await readFile(join(materialised.workspace, targetPath), "utf8"), content);
+  const authenticated = await authenticateCandidateWorkspace(root, spec.digest);
+  assert.equal(authenticated.candidateDigest, spec.digest);
+  assert.equal((await currentCandidateWorkspace(root, spec.digest)).basis.basisDigest, basis.basisDigest);
+  await withCandidateLock(root, spec.digest, async () => {
+    const before = await stat(manifestFile);
+    assert.equal(await authenticateGraphDerivedCheckIntent(root, spec.digest, basis.trace.validation[0]!.id), "ABSENT",
+      "the real check-intent preflight must read the large manifest without running or fabricating a check");
+    assert.deepEqual(await readFile(manifestFile), manifestBytes);
+    const after = await stat(manifestFile);
+    assert.equal(after.ino, before.ino);
+    assert.equal(after.mtimeMs, before.mtimeMs);
+    assert.equal(after.ctimeMs, before.ctimeMs);
+  });
+  const ordinary = candidate(basis, "ordinary retained manifest\n", "small-manifest-replay");
+  const small = await materialiseCandidate(root, ordinary);
+  await applyCandidateOperations(root, ordinary.digest, candidateOperations(ordinary));
+  const smallPath = join(small.workspace, ".usf-workspace.json");
+  const smallBytes = await readFile(smallPath);
+  assert.deepEqual(await currentCandidateWorkspace(root, ordinary.digest), await currentCandidateWorkspace(root, ordinary.digest));
+  assert.deepEqual(await readFile(smallPath), smallBytes, "small retained manifest bytes and identities must remain unchanged");
+  context.diagnostic(JSON.stringify({ workspaceManifestCapacity: { serializedBytes: manifestBytes.byteLength,
+    maximumBytes: maximumWorkspaceManifestBytes, previousMaximumBytes: 512 * 1024,
+    smallSerializedBytes: smallBytes.byteLength, checkIntent: "ABSENT", candidateDigest: spec.digest } }));
+});
+
 test("preflights an oversized workspace manifest before changing an existing workspace", async (context) => {
   if (lockProcessUnavailable(context)) return;
   const root = await fixture(context);
   const basis = packet(root).realisationBasis;
-  const oversized = candidate(basis, "x".repeat(600 * 1024), "manifest-oversize");
+  const oversized = candidate(basis, "x".repeat(maximumWorkspaceManifestBytes), "manifest-oversize");
   const workspace = join(root, ".usf", "workspaces", oversized.digest.slice("sha256:".length));
+  await assert.rejects(() => materialiseCandidate(root, oversized),
+    (error: unknown) => error instanceof RealisationError && error.reasonCode === "INVALID_WORKSPACE_MANIFEST");
+  await assert.rejects(() => stat(workspace), { code: "ENOENT" });
   await mkdir(workspace, { recursive: true, mode: 0o700 });
   const sentinel = join(workspace, "preserved-before-preflight");
   await writeFile(sentinel, "unchanged\n", { mode: 0o600 });
@@ -268,13 +311,16 @@ test("preflights an oversized no-change workspace manifest before changing an ex
   const work = packet(root);
   assert.equal(work.realisationBasis.authority.effectiveAuthority, "active-permission");
   const policy = {
-    iri: `urn:usf:policy:workspace-manifest-preflight-test:${"x".repeat(600 * 1024)}`,
+    iri: `urn:usf:policy:workspace-manifest-preflight-test:${"x".repeat(maximumWorkspaceManifestBytes)}`,
     algorithmIri: "urn:usf:algorithm:workspace-manifest-preflight-test",
     resourceDigest: `sha256:${"a".repeat(64)}`,
     algorithmResourceDigest: `sha256:${"b".repeat(64)}`,
   } as const;
   const candidateDigest = await deriveNoChangeCandidateIdentity(root, work.realisationBasis, policy);
   const workspace = join(root, ".usf", "workspaces", candidateDigest.slice("sha256:".length));
+  await assert.rejects(() => materialiseNoChangeCandidate(root, work.realisationBasis, policy),
+    (error: unknown) => error instanceof RealisationError && error.reasonCode === "INVALID_WORKSPACE_MANIFEST");
+  await assert.rejects(() => stat(workspace), { code: "ENOENT" });
   await mkdir(workspace, { recursive: true, mode: 0o700 });
   const sentinel = join(workspace, "preserved-before-preflight");
   await writeFile(sentinel, "unchanged\n", { mode: 0o600 });
