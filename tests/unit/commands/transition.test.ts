@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
+import { loadTransitionContextGraph, observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { SemanticGraph } from "../../../src/graph/index.ts";
-import { parseStrictNQuads } from "../../../src/graph/nquads.ts";
-import { deriveCliTransitionCoverage } from "../../../src/graph/cli-transitions.ts";
+import { canonicalQuadLine, parseStrictNQuads } from "../../../src/graph/nquads.ts";
+import { deriveCliTransitionContext, deriveCliTransitionCoverage } from "../../../src/graph/cli-transitions.ts";
 import { findHelpTopic, transitionInterrogationContract, transitionSchemaContract } from "../../../src/commands/help.ts";
 import { canonicalDigest } from "../../../src/core/canonical.ts";
 
@@ -75,6 +75,16 @@ test("schema bounds use the same typed CLI refusal as interrogation", () => {
   const graph = actualDescriptorGraph();
   graph.quads = [...graph.quads, ...Array.from({ length: 100001 }, () => graph.quads[0]!)];
   assert.throws(() => deriveTransitionSchemaResult(graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" }), { code: "CLI_SPECIFICATION_BOUNDS", exitCode: 2 });
+});
+
+test("binding prompt allowance does not widen unrelated graph literal bounds", () => {
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" };
+  for (const length of [4097, 16385]) {
+    const graph = actualDescriptorGraph();
+    graph.quads.push({ ...graph.quads[0]!, subject: "urn:test:unrelated", predicate: "urn:usf:predicate:fixedPrompt", objectKind: "literal", object: "x".repeat(length) });
+    assert.throws(() => deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, []), /TRANSITION_INPUT_BOUNDS_EXCEEDED/);
+    if (length > 16384) assert.throws(() => deriveTransitionSchemaResult(graph, selection), { code: "CLI_SPECIFICATION_BOUNDS", exitCode: 2 });
+  }
 });
 
 test("interrogation and preparation share actual graph-bound observation admission", () => {
@@ -220,4 +230,91 @@ test("completion lineage remains visible without admitting unmapped execution or
   assert.equal(report.complete, false);
   assert.equal(report.executionAuthority, "none");
   assert.equal(report.parallelSafety.state, "unproven");
+});
+
+function bindingRows(targetManifest = "graph/target.json") {
+  const id = "urn:test:binding", graph = "urn:test:bindings";
+  const fields = [
+    ["type", "urn:usf:type:LinearIssueWorkBinding", "iri"],
+    ["issueWorkspace", "maldous", "literal"],
+    ["issueUuid", "11111111-1111-4111-8111-111111111111", "literal"],
+    ["owningModel", "USF", "literal"],
+    ["selectedProfile", "urn:usf:profile:cli-transition-definition:1", "iri"],
+    ["targetManifest", targetManifest, "literal"],
+    ["workIri", "urn:usf:work:cli-transition-definition", "iri"],
+    ["fixedPrompt", "Bounded retained context ".repeat(1000), "literal"],
+    ["maximumPromptTokens", "10000", "literal"],
+  ] as const;
+  return fields.map(([field, object, objectKind]) => ({ subject: id, predicate: "urn:usf:predicate:" + field, object, objectKind, graph, canonical: "" }));
+}
+
+test("binding context uses the declared profile and never admits observation execution", () => {
+  const graph = actualDescriptorGraph();
+  graph.quads.push(...bindingRows());
+  graph.quads.push(
+    { subject: "urn:test:other-profile", predicate: "urn:usf:predicate:type", object: "urn:usf:type:RealisationProfile", objectKind: "iri", graph: "urn:test:g", canonical: "" },
+    { subject: "urn:test:other-profile", predicate: "urn:usf:predicate:selectsContract", object: "urn:usf:contract:cli-transition-definition:1", objectKind: "iri", graph: "urn:test:g", canonical: "" },
+  );
+  const context = deriveCliTransitionContext(graph, "urn:test:binding");
+  assert.equal(context.work, "urn:usf:work:cli-transition-definition");
+  assert.equal(context.profile, "urn:usf:profile:cli-transition-definition:1");
+  assert.deepEqual(context.diagnostics, []);
+  assert.equal(context.binding?.targetManifest, "graph/target.json");
+  assert.equal(context.executionAuthority, "none");
+  assert.equal(deriveCliTransitionContext(graph, context.work!).profile, null);
+  assert.throws(() => inspectObservationTransition(graph, { rootIdentity: "urn:test:binding", manifestPath: "graph/bindings.json" }, "resolve prepare-local"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  for (const [field, object, objectKind] of [
+    ["type", "urn:usf:type:WorkPacket", "iri"],
+    ["selectedProfile", "urn:test:other-profile", "iri"],
+    ["workIri", "urn:test:other-work", "literal"],
+  ] as const) {
+    const bad = structuredClone(graph);
+    bad.quads.push({ subject: "urn:test:binding", predicate: "urn:usf:predicate:" + field, object, objectKind, graph: "urn:test:g", canonical: "" });
+    const refused = deriveCliTransitionContext(bad, "urn:test:binding");
+    assert(refused.diagnostics.length > 0);
+    assert.equal(refused.executionAuthority, "none");
+  }
+  const absent = structuredClone(graph);
+  absent.quads = absent.quads.filter(q => q.subject !== context.work);
+  assert(deriveCliTransitionContext(absent, "urn:test:binding").diagnostics.some(d => d.reasonCode === "TRANSITION_BOUND_WORK_MISSING"));
+  const wrongProfile = structuredClone(graph);
+  wrongProfile.quads.find(q => q.subject === "urn:test:binding" && q.predicate === "urn:usf:predicate:selectedProfile")!.object = "urn:test:absent-profile";
+  assert(deriveCliTransitionContext(wrongProfile, "urn:test:binding").diagnostics.some(d => d.reasonCode === "TRANSITION_BINDING_PROFILE_MISMATCH"));
+});
+
+test("CLI binding reads follow only the selected target manifest without runtime effects", () => {
+  const root = mkdtempSync(join(tmpdir(), "usf-binding-context-"));
+  try {
+    mkdirSync(join(root, "graph"));
+    const source = actualDescriptorGraph();
+    const names = ["urn:usf:graph:cli-transition-definition", "urn:usf:graph:v3-convention"];
+    const sources = names.map((graph, i) => {
+      const path = `graph/source-${i}.nq`;
+      writeFileSync(join(root, path), source.quads.filter(q => q.graph === graph).map(canonicalQuadLine).join("\n") + "\n");
+      return { path, graph, format: "application/n-quads", role: "contract", validationProfile: "bootstrap-nquads-v1" };
+    });
+    writeFileSync(join(root, "graph/target.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources }));
+    writeFileSync(join(root, "graph/bindings.nq"), bindingRows().map(canonicalQuadLine).join("\n") + "\n");
+    writeFileSync(join(root, "graph/bindings.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [{ path: "graph/bindings.nq", graph: "urn:test:bindings", format: "application/n-quads", role: "contract", validationProfile: "bootstrap-nquads-v1" }] }));
+    const selection = { rootIdentity: "urn:test:binding", manifestPath: "graph/bindings.json" };
+    const closure = loadTransitionContextGraph(root, selection);
+    assert.equal(closure.quads.filter(q => q.subject === selection.rootIdentity).length, bindingRows().length);
+    const request = { command: "transition" as const, repositoryRoot: root, args: ["inspect", "--root", selection.rootIdentity, "--manifest", selection.manifestPath] };
+    const result = transitionCommandHandler(request, []);
+    const output = result.output as { rootIdentity: string; manifestPath: string; work: string; complete: boolean; executionAuthority: string; parallelSafety: { state: string } };
+    assert.equal(output.rootIdentity, selection.rootIdentity);
+    assert.equal(output.manifestPath, selection.manifestPath);
+    assert.equal(output.work, "urn:usf:work:cli-transition-definition");
+    assert.equal(output.complete, false);
+    assert.equal(output.executionAuthority, "none");
+    assert.equal(output.parallelSafety.state, "unproven");
+    assert.deepEqual(transitionCommandHandler(request, []), result);
+    assert.equal(transitionCommandHandler({ ...request, args: ["schema", ...request.args.slice(1)] }, []).exitCode, 0);
+    assert.deepEqual(readdirSync(root), ["graph"]);
+    for (const target of ["../outside.json", "/outside.json", "graph/missing.json"]) {
+      writeFileSync(join(root, "graph/bindings.nq"), bindingRows(target).map(canonicalQuadLine).join("\n") + "\n");
+      assert.throws(() => loadTransitionContextGraph(root, selection), target);
+    }
+    assert.deepEqual(readdirSync(root), ["graph"]);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

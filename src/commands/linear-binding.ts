@@ -1,3 +1,5 @@
+import { deriveLinearBindingDeclaration, LinearBindingError, type LinearBindingAuthority, type OwningModel } from "../graph/linear-binding.ts";
+export { LinearBindingError, type LinearBindingAuthority, type OwningModel } from "../graph/linear-binding.ts";
 import { createHash, randomUUID } from "node:crypto";
 import { constants } from "node:fs";
 import { link, lstat, mkdir, open, realpath, rename, unlink } from "node:fs/promises";
@@ -9,36 +11,17 @@ import { deriveWork, type WorkPacket } from "../graph/work.ts";
 import { assertBasisMatchesPacket, assertRealisationBasis, type RealisationBasis } from "../realisation/basis.ts";
 
 const P = "urn:usf:predicate:";
-const BINDING_TYPE = "urn:usf:type:LinearIssueWorkBinding";
-const OWNERS = new Set<OwningModel>(["ANQR", "USF", "UXF", "UIF"]);
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
-const SAFE_PART = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
 const privateDirectoryMode = 0o700;
 const privateFileMode = 0o600;
 const maximumRecordBytes = 4 * 1024 * 1024;
 
-export type OwningModel = "ANQR" | "USF" | "UXF" | "UIF";
 export type LinearAttemptState = "PREPARED" | "STARTED" | "SETTLED" | "UNKNOWN";
 
 export interface LinearBindingSelector {
   readonly repositoryRoot: string;
   readonly manifestPath: string;
   readonly bindingIri: string;
-}
-
-export interface LinearBindingAuthority {
-  readonly bindingIri: string;
-  readonly locator: string;
-  readonly workspace: string;
-  readonly issueUuid: string;
-  readonly owner: OwningModel;
-  readonly profile: string;
-  readonly targetManifest: string;
-  readonly workIri: string;
-  readonly fixedPrompt: string;
-  readonly maximumPromptTokens: number;
-  readonly supersedes: string | null;
 }
 
 export interface BoundSemanticWorkUnit {
@@ -143,16 +126,6 @@ export type LinearBindingResult =
   | { readonly status: "PREPARED" | "STARTED" | "SETTLED" | "UNKNOWN"; readonly binding: PreparedLinearBinding }
   | { readonly status: "COMPLETED"; readonly binding: PreparedLinearBinding; readonly integrationReceipt: string; readonly evidence: string; readonly proofResult: string };
 
-export class LinearBindingError extends Error {
-  readonly reasonCode: string;
-
-  constructor(reasonCode: string) {
-    super(reasonCode);
-    this.name = "LinearBindingError";
-    this.reasonCode = reasonCode;
-  }
-}
-
 function refuse(reasonCode: string): never { throw new LinearBindingError(reasonCode); }
 function exactKeys(value: object, expected: readonly string[]): boolean {
   return Object.keys(value).sort().join(",") === [...expected].sort().join(",");
@@ -160,47 +133,6 @@ function exactKeys(value: object, expected: readonly string[]): boolean {
 function assertSelector(value: LinearBindingSelector): void {
   if (!value || typeof value !== "object" || !exactKeys(value, ["repositoryRoot", "manifestPath", "bindingIri"])) refuse("LINEAR_BINDING_CALLER_AUTHORITY_REFUSED");
   if (typeof value.repositoryRoot !== "string" || typeof value.manifestPath !== "string" || typeof value.bindingIri !== "string" || !value.bindingIri.startsWith("urn:")) refuse("LINEAR_BINDING_SELECTOR_INVALID");
-}
-function objects(graph: SemanticGraph, subject: string, localPredicate: string): string[] {
-  return graph.quads.filter((quad) => quad.subject === subject && quad.predicate === `${P}${localPredicate}`).map((quad) => quad.object);
-}
-function exactlyOne(graph: SemanticGraph, subject: string, predicate: string, reason: string): string {
-  const values = objects(graph, subject, predicate);
-  if (values.length !== 1 || values[0] === undefined || values[0].length === 0) refuse(reason);
-  return values[0];
-}
-function optionalOne(graph: SemanticGraph, subject: string, predicate: string, reason: string): string | null {
-  const values = objects(graph, subject, predicate);
-  if (values.length > 1) refuse(reason);
-  return values[0] ?? null;
-}
-function extractAuthority(graph: SemanticGraph, bindingIri: string): LinearBindingAuthority {
-  const types = objects(graph, bindingIri, "type");
-  if (types.length !== 1 || types[0] !== BINDING_TYPE) refuse("LINEAR_BINDING_GRAPH_BINDING_MISSING");
-  const workspace = exactlyOne(graph, bindingIri, "issueWorkspace", "LINEAR_BINDING_LOCATOR_INVALID");
-  const issueUuid = exactlyOne(graph, bindingIri, "issueUuid", "LINEAR_BINDING_LOCATOR_INVALID").toLowerCase();
-  if (!SAFE_PART.test(workspace) || !UUID.test(issueUuid)) refuse("LINEAR_BINDING_LOCATOR_INVALID");
-  const locator = `${workspace}:${issueUuid}`;
-  const declaredLocator = optionalOne(graph, bindingIri, "canonicalIssueLocator", "LINEAR_BINDING_LOCATOR_INVALID");
-  if (declaredLocator !== null && declaredLocator !== locator) refuse("LINEAR_BINDING_LOCATOR_INVALID");
-  const ownerValue = exactlyOne(graph, bindingIri, "owningModel", "LINEAR_BINDING_OWNER_INVALID");
-  if (!OWNERS.has(ownerValue as OwningModel)) refuse("LINEAR_BINDING_OWNER_INVALID");
-  const maximumPromptTokensText = exactlyOne(graph, bindingIri, "maximumPromptTokens", "LINEAR_BINDING_PROMPT_POLICY_INVALID");
-  const maximumPromptTokens = Number(maximumPromptTokensText);
-  if (!Number.isSafeInteger(maximumPromptTokens) || maximumPromptTokens < 1) refuse("LINEAR_BINDING_PROMPT_POLICY_INVALID");
-  return Object.freeze({
-    bindingIri,
-    locator,
-    workspace,
-    issueUuid,
-    owner: ownerValue as OwningModel,
-    profile: exactlyOne(graph, bindingIri, "selectedProfile", "LINEAR_BINDING_PROFILE_MISSING"),
-    targetManifest: exactlyOne(graph, bindingIri, "targetManifest", "LINEAR_BINDING_MANIFEST_MISSING"),
-    workIri: exactlyOne(graph, bindingIri, "workIri", "LINEAR_BINDING_WORK_MISSING"),
-    fixedPrompt: exactlyOne(graph, bindingIri, "fixedPrompt", "LINEAR_BINDING_PROMPT_POLICY_INVALID"),
-    maximumPromptTokens,
-    supersedes: optionalOne(graph, bindingIri, "supersedesBinding", "LINEAR_BINDING_SUPERSESSION_INVALID"),
-  });
 }
 function derivePacket(graph: SemanticGraph, authority: LinearBindingAuthority): WorkPacket {
   const result = deriveWork(graph, { selector: authority.workIri, profile: authority.profile });
@@ -414,7 +346,7 @@ async function freshlyDerived(selector: LinearBindingSelector): Promise<Prepared
   assertSelector(selector);
   const repositoryRoot = await realpath(selector.repositoryRoot).catch(() => refuse("LINEAR_BINDING_REPOSITORY_UNREADABLE"));
   const bindingGraph = loadSemanticGraph(repositoryRoot, selector.manifestPath);
-  const authority = extractAuthority(bindingGraph, selector.bindingIri);
+  const authority = deriveLinearBindingDeclaration(bindingGraph, selector.bindingIri);
   const workGraph = loadSemanticGraph(repositoryRoot, authority.targetManifest);
   const packet = derivePacket(workGraph, authority);
   const { unit, attempt } = records(authority, packet, selector.manifestPath);

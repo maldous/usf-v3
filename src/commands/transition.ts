@@ -2,7 +2,8 @@ import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { readFileSync } from "node:fs";
 import { createJsonSchemaValidator } from "../schema/index.ts";
 import { deriveCliTransitionContext, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema, type CliTransitionAdapter } from "../graph/cli-transitions.ts";
-import { canonicalQuadDigest } from "../graph/nquads.ts";
+import { canonicalQuadDigest, canonicalQuadLine } from "../graph/nquads.ts";
+import { deriveLinearBindingDeclaration, LinearBindingError } from "../graph/linear-binding.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
 import { parseCommandInput, readCommandInput } from "./command-input.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
@@ -108,6 +109,9 @@ export function inspectObservationTransition(graph: SemanticGraph, selection: { 
     const found = values(subject, predicate, kind);
     if (found.length !== 1 || found[0] !== expected) throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Compiled observation binding does not match semantic authority.", { subject, predicate });
   };
+  if (context.work !== selection.rootIdentity) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Binding-root execution is not admitted by this observation adapter.");
+  }
   const { id: adapter, command } = implementation;
   if (!values(context.contract, "admitsObservationAdapter").includes(adapter)) {
     throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "The selected contract does not admit this observation adapter.");
@@ -276,9 +280,34 @@ export function deriveTransitionSchemaResult(graph: SemanticGraph, selection: { 
   });
 }
 
+/** Follow only the selected binding's declared target; retain actual source rows, never synthetic authority. */
+export function loadTransitionContextGraph(repositoryRoot: string, selection: { readonly rootIdentity: string; readonly manifestPath: string }): SemanticGraph {
+  const discovery = loadSemanticGraph(repositoryRoot, selection.manifestPath);
+  const selectedRows = discovery.quads.filter(q => q.subject === selection.rootIdentity);
+  if (!selectedRows.some(q => q.predicate === "urn:usf:predicate:type" && q.objectKind === "iri" && q.object === "urn:usf:type:LinearIssueWorkBinding")) return discovery;
+  let binding;
+  try { binding = deriveLinearBindingDeclaration(discovery, selection.rootIdentity); }
+  catch (error) {
+    if (!(error instanceof LinearBindingError)) throw error;
+    throw new UsfError(error.reasonCode, exitCodes.DOMAIN_FAILURE, "Selected binding declaration is invalid.");
+  }
+  if (binding.targetManifest === selection.manifestPath) return discovery;
+  const target = loadSemanticGraph(repositoryRoot, binding.targetManifest);
+  const currentRows = loadSemanticGraph(repositoryRoot, selection.manifestPath).quads.filter(q => q.subject === selection.rootIdentity);
+  if (canonicalQuadDigest(currentRows) !== canonicalQuadDigest(selectedRows)) {
+    throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Selected binding changed while deriving its target closure.");
+  }
+  const quads = [...new Map([...target.quads, ...selectedRows].map(q => [canonicalQuadLine(q), q])).values()];
+  if (quads.length > 100000) throw new UsfError("TRANSITION_INPUT_BOUNDS_EXCEEDED", exitCodes.INVALID_INPUT, "Selected binding closure exceeds the graph bound.");
+  const graphs = [...new Set(quads.map(q => q.graph))];
+  return { ...target, quads, semanticDigest: canonicalQuadDigest(quads),
+    graphDigests: Object.fromEntries(graphs.map(id => [id, canonicalQuadDigest(quads.filter(q => q.graph === id))])),
+    sourceDigests: { ...discovery.sourceDigests, ...target.sourceDigests } };
+}
+
 export function transitionCommandHandler(request: CommandRequest, installedCommands: readonly string[]): CommandResult {
   const selection = parseTransitionInterrogation(request.args);
-  const graph = loadSemanticGraph(request.repositoryRoot, selection.manifestPath);
+  const graph = loadTransitionContextGraph(request.repositoryRoot, selection);
   if (request.args[0] === transitionSchemaContract.path[1]) {
     return { output: deriveTransitionSchemaResult(graph, selection), exitCode: exitCodes.SUCCESS };
   }

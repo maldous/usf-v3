@@ -1,6 +1,13 @@
 import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import type { SemanticGraph } from "./index.ts";
 import { canonicalQuadDigest } from "./nquads.ts";
+import { deriveLinearBindingDeclaration, LinearBindingError, type LinearBindingAuthority } from "./linear-binding.ts";
+
+function boundedBindingPrompt(graph: SemanticGraph, quad: SemanticGraph["quads"][number]): boolean {
+  if (quad.objectKind !== "literal" || quad.predicate !== "urn:usf:predicate:fixedPrompt") return false;
+  try { return deriveLinearBindingDeclaration(graph, quad.subject).fixedPrompt === quad.object; }
+  catch (error) { if (error instanceof LinearBindingError) return false; throw error; }
+}
 
 export interface CliFieldSpecification {
   readonly id: string; readonly property: string; readonly predicate: string | null; readonly kind: string;
@@ -152,7 +159,7 @@ export function deriveCliRecord(
 /** Interpret field-specification primitives, never domain operational rules or modules. */
 export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: { readonly contractIdentity: string }): CliRecordSpecifications {
   const prefix = "urn:usf:cli-field-specification:";
-  if (graph.quads.length > 100000 || selection.contractIdentity.length > 4096 || graph.quads.some(q => [q.subject, q.predicate, q.object, q.graph].some(v => v.length > 16384))) throw new RangeError("CLI_SPECIFICATION_BOUNDS");
+  if (graph.quads.length > 100000 || selection.contractIdentity.length > 4096 || graph.quads.some(q => [q.subject, q.predicate, q.graph].some(v => v.length > 16384) || (q.object.length > 16384 && !boundedBindingPrompt(graph, q)))) throw new RangeError("CLI_SPECIFICATION_BOUNDS");
   const gaps: CliTransitionDiagnostic[] = [], operationalGaps: CliTransitionDiagnostic[] = [];
   const bad = (subject: string, field: string, reasonCode = "CLI_SPECIFICATION_INVALID"): void => { gaps.push({ subject, field, reasonCode }); };
   const index = new Map<string, typeof graph.quads>();
@@ -385,17 +392,36 @@ export function deriveCliTransitionContext(graph: SemanticGraph, root: string) {
     if (rows.some(q => q.objectKind !== "iri")) diagnostics.push({ reasonCode: "TRANSITION_FIELD_KIND_INVALID", subject, field });
     return sorted(rows.filter(q => q.objectKind === "iri").map(q => q.object));
   };
-  const work = values(root, "type").includes(T + "WorkPacket") ? root : null;
+  const types = values(root, "type");
+  let binding: LinearBindingAuthority | null = null;
+  let work: string | null = types.includes(T + "WorkPacket") ? root : null;
+  if (types.includes(T + "LinearIssueWorkBinding")) {
+    if (work !== null) {
+      work = null;
+      diagnostics.push({ reasonCode: "TRANSITION_ROOT_AMBIGUOUS", subject: root, field: "type" });
+    } else {
+      try {
+        binding = deriveLinearBindingDeclaration(graph, root);
+        work = values(binding.workIri, "type").includes(T + "WorkPacket") ? binding.workIri : null;
+        if (work === null) diagnostics.push({ reasonCode: "TRANSITION_BOUND_WORK_MISSING", subject: binding.workIri, field: "type" });
+      } catch (error) {
+        if (!(error instanceof LinearBindingError)) throw error;
+        diagnostics.push({ reasonCode: error.reasonCode, subject: root, field: "binding" });
+      }
+    }
+  }
   if (work === null) diagnostics.push({ reasonCode: graph.quads.some(q => q.subject === root) ? "TRANSITION_ROOT_UNINTERPRETABLE" : "TRANSITION_ROOT_MISSING", subject: root, field: "type" });
   const contracts = work === null ? [] : values(work, "contract");
   const contract = contracts.length === 1 ? contracts[0]! : null;
-  if (work !== null && contract === null) diagnostics.push({ reasonCode: contracts.length > 1 ? "TRANSITION_FIELD_AMBIGUOUS" : "TRANSITION_FIELD_MISSING", subject: root, field: "contract" });
+  if (work !== null && contract === null) diagnostics.push({ reasonCode: contracts.length > 1 ? "TRANSITION_FIELD_AMBIGUOUS" : "TRANSITION_FIELD_MISSING", subject: work, field: "contract" });
   const candidates = sorted(graph.quads.filter(q => q.predicate === P + "selectsContract" && q.objectKind === "iri" && q.object === contract).map(q => q.subject));
   const profileCandidates = candidates.filter(s => values(s, "type").includes(T + "RealisationProfile"));
   for (const candidate of profileCandidates) values(candidate, "selectsContract");
-  const profile = profileCandidates.length === 1 ? profileCandidates[0]! : null;
-  if (profile === null) diagnostics.push({ reasonCode: profileCandidates.length > 1 ? "TRANSITION_PROFILE_AMBIGUOUS" : "TRANSITION_PROFILE_MISSING", subject: root, field: "selectsContract" });
-  return immutable({ work, contract, profile, profileCandidates, diagnostics, executionAuthority: "none" as const });
+  const profile = binding === null
+    ? profileCandidates.length === 1 ? profileCandidates[0]! : null
+    : profileCandidates.includes(binding.profile) ? binding.profile : null;
+  if (profile === null) diagnostics.push({ reasonCode: binding !== null ? "TRANSITION_BINDING_PROFILE_MISMATCH" : profileCandidates.length > 1 ? "TRANSITION_PROFILE_AMBIGUOUS" : "TRANSITION_PROFILE_MISSING", subject: root, field: "selectsContract" });
+  return immutable({ work, contract, profile, profileCandidates, binding, diagnostics, executionAuthority: "none" as const });
 }
 
 export interface CliTerminalAssessment {
@@ -550,7 +576,7 @@ export function deriveCliTransitionCoverage(
     || inventory.leaves.some(l => l.path.length === 0 || l.path.length > 32 || l.path.some(p => !boundedText(p)) || (l.owner !== null && !boundedText(l.owner)) || (l.parserOwner !== null && !boundedText(l.parserOwner)))
     || adapters.some(a => !boundedText(a.id) || !boundedText(a.effectClass))
     || graph.quads.some(q => [q.subject, q.predicate, q.graph].some(v => !boundedText(v))
-      || (q.objectKind === "literal" ? typeof q.object !== "string" || q.object.length > 4096 : q.objectKind !== "iri" || !boundedText(q.object)))) {
+      || (q.objectKind === "literal" ? typeof q.object !== "string" || (q.object.length > 4096 && !boundedBindingPrompt(graph, q)) : q.objectKind !== "iri" || !boundedText(q.object)))) {
     throw new RangeError("TRANSITION_INPUT_BOUNDS_EXCEEDED");
   }
   const diagnostics: CliTransitionDiagnostic[] = [];
