@@ -5,24 +5,22 @@ import type { Candidate as ResolvedCandidate, Resolution } from "../collaboratio
 import { exitCodes, type ExitCode, UsfError } from "../core/errors.ts";
 import { isOperation } from "../providers/types.ts";
 import {
-  applyCandidateOperations,
-  candidateOperations,
   candidateScope,
   deriveCandidatePreimages,
   integrateCandidates,
   IntegrationError,
-  materialiseCandidate,
+  applyResolvedCandidate,
   prepareCandidateIntegration,
   RealisationError,
   stableReason,
 } from "../realisation/index.ts";
-import type { CandidateSpec } from "../realisation/index.ts";
+import type { ByteDelta, CandidateSpec } from "../realisation/index.ts";
 import { parseRealisationBasis, type RealisationBasis } from "../realisation/basis.ts";
 import { checkHandler, runGraphDerivedCheck } from "./check.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 
 export interface ApplyInput { readonly candidate: CandidateSpec; }
-export type ApplyResult = { readonly status: "applied"; readonly basis: RealisationBasis; readonly workspace: string; readonly delta: Awaited<ReturnType<typeof applyCandidateOperations>> } | { readonly status: "refused"; readonly reasonCode: string };
+export type ApplyResult = { readonly status: "applied"; readonly basis: RealisationBasis; readonly workspace: string; readonly delta: readonly ByteDelta[] } | { readonly status: "refused"; readonly reasonCode: string };
 
 const maximumApplyInputBytes = 4 * 1024 * 1024;
 const digestPattern = /^sha256:[a-f0-9]{64}$/u;
@@ -244,10 +242,8 @@ async function applyInput(root: string, value: unknown): Promise<ApplyInput> {
 /** Command-facing wrapper. It deliberately has no primary-tree write path. */
 export async function apply(root: string, input: ApplyInput): Promise<ApplyResult> {
   try {
-    const resolvedRoot = await realpath(root);
-    const materialised = await materialiseCandidate(resolvedRoot, input.candidate);
-    const delta = await applyCandidateOperations(resolvedRoot, input.candidate.digest, candidateOperations(input.candidate));
-    return { status: "applied", basis: materialised.basis, workspace: materialised.workspace, delta };
+    const applied = await applyResolvedCandidate(root, input.candidate);
+    return { status: "applied", basis: applied.basis, workspace: applied.workspace, delta: applied.delta };
   } catch (error) {
     return { status: "refused", reasonCode: stableReason(error) ?? "INVALID_OPERATION" };
   }

@@ -77,6 +77,12 @@ export interface MaterialisedCandidate {
   readonly preimages: Readonly<Record<string, string | null>>;
 }
 
+export interface AppliedResolvedCandidate extends MaterialisedCandidate {
+  readonly delta: readonly ByteDelta[];
+  /** Whether operations were applied or an authenticated complete post-image was reused. */
+  readonly disposition: "applied" | "reused";
+}
+
 export interface NoChangePolicyBinding {
   readonly iri: string;
   readonly resourceDigest: string;
@@ -658,51 +664,110 @@ async function validateCandidate(root: string, candidate: CandidateSpec): Promis
   return { basis, operations, scope, writeSet, preimages };
 }
 
+type OrdinaryWorkspacePhase = "preimage" | "postimage";
+
+interface PreparedOrdinaryCandidate {
+  readonly materialised: MaterialisedCandidate;
+  readonly manifest: ChangeWorkspaceManifest;
+}
+
+function ordinaryManifest(
+  candidate: CandidateSpec,
+  validated: Awaited<ReturnType<typeof validateCandidate>>,
+): ChangeWorkspaceManifest {
+  return {
+    schema: "urn:usf:workspace-manifest:1",
+    digest: candidate.digest,
+    basis: validated.basis,
+    operations: validated.operations,
+    lineage: { acceptedContributionDigests: [...candidate.lineage.acceptedContributionDigests], rejected: [] },
+    scope: validated.scope,
+    writeSet: validated.writeSet,
+    preimages: validated.preimages,
+  };
+}
+
+async function assertManifestPreimagesCurrent(root: string, manifest: ChangeWorkspaceManifest): Promise<void> {
+  await currentBasis(root, manifest.basis);
+  for (const [path, expected] of Object.entries(manifest.preimages)) {
+    const bytes = await bytesAt(root, path);
+    if ((bytes === null ? null : digest(bytes)) !== expected) {
+      throw new RealisationError("STALE_RELEVANT_PREIMAGE", `Relevant pre-image is stale: ${path}`);
+    }
+  }
+}
+
+function isWorkspacePhaseMismatch(error: unknown): error is RealisationError {
+  return error instanceof RealisationError && error.reasonCode === "CANDIDATE_BASIS_MISMATCH";
+}
+
+async function classifyOrdinaryWorkspacePhase(
+  root: string,
+  workspace: string,
+  manifest: ChangeWorkspaceManifest,
+): Promise<OrdinaryWorkspacePhase> {
+  // Fully-applied bytes take precedence: no-op operations can have identical pre- and post-images.
+  try {
+    await assertWorkspaceCandidateBytesForPhase(root, workspace, manifest, "postimage");
+    return "postimage";
+  } catch (error) {
+    if (!isWorkspacePhaseMismatch(error)) throw error;
+  }
+  await assertWorkspaceCandidateBytesForPhase(root, workspace, manifest, "preimage");
+  return "preimage";
+}
+
+async function materialiseCandidateLocked(root: string, candidate: CandidateSpec): Promise<PreparedOrdinaryCandidate> {
+  const validated = await validateCandidate(root, candidate);
+  const manifest = freezeCandidate(ordinaryManifest(candidate, validated));
+  const manifestBytes = serializedWorkspaceManifest(manifest, false);
+  const workspace = workspaceFor(root, candidate.digest);
+  const materialised: MaterialisedCandidate = Object.freeze({ workspace, basis: validated.basis, preimages: validated.preimages });
+  await assertManifestPreimagesCurrent(root, manifest);
+  await assertPrivateUsfDirectory(root, ".usf", true);
+  await assertPrivateUsfDirectory(root, ".usf/workspaces", true);
+
+  let retained = false;
+  try {
+    await lstat(workspace);
+    retained = true;
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  if (retained) {
+    await assertPrivateWorkspaceRoot(root, workspace);
+    const existing = await loadManifest(root, workspace);
+    if (existing.schema !== manifest.schema || canonicalJson(existing) !== canonicalJson(manifest)) {
+      throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Existing workspace does not exactly match the requested candidate manifest");
+    }
+    await assertManifestPreimagesCurrent(root, existing);
+    await classifyOrdinaryWorkspacePhase(root, workspace, existing);
+    await assertManifestPreimagesCurrent(root, existing);
+    return Object.freeze({ materialised, manifest });
+  }
+
+  await mkdir(workspace, { mode: 0o700 });
+  await assertPrivateWorkspaceRoot(root, workspace);
+  try {
+    for (const path of manifest.scope) await copyRegularTree(root, workspace, path);
+    await writeAtomically(resolve(workspace, manifestName), manifestBytes);
+    const readback = await loadManifest(root, workspace);
+    if (readback.schema !== manifest.schema || canonicalJson(readback) !== canonicalJson(manifest)) {
+      throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "New workspace manifest readback did not match the requested candidate");
+    }
+    await assertManifestPreimagesCurrent(root, readback);
+    await assertWorkspaceCandidateBytesForPhase(root, workspace, readback, "preimage");
+    return Object.freeze({ materialised, manifest });
+  } catch (error) {
+    await rm(workspace, { recursive: true, force: true });
+    throw error;
+  }
+}
+
 /** Copy only declared regular-file scope into an isolated, Git-less workspace. */
 export async function materialiseCandidate(root: string, candidate: CandidateSpec): Promise<MaterialisedCandidate> {
-  return withCandidateLock(root, candidate.digest, async (canonicalRoot) => {
-    const validated = await validateCandidate(canonicalRoot, candidate);
-    const workspace = workspaceFor(canonicalRoot, candidate.digest);
-    const { basis, scope, writeSet, preimages: declaredPreimages } = validated;
-    const preimagePaths = Object.keys(declaredPreimages).sort();
-    for (const path of preimagePaths) {
-      const bytes = await bytesAt(canonicalRoot, path);
-      const actual = bytes === null ? null : digest(bytes);
-      if (Object.hasOwn(declaredPreimages, path) && declaredPreimages[path] !== actual) {
-        throw new RealisationError("STALE_RELEVANT_PREIMAGE", `Relevant pre-image is stale: ${path}`);
-      }
-    }
-    const manifest: WorkspaceManifest = {
-      schema: "urn:usf:workspace-manifest:1",
-      digest: candidate.digest,
-      basis,
-      operations: validated.operations,
-      lineage: { acceptedContributionDigests: [...candidate.lineage.acceptedContributionDigests], rejected: [] },
-      scope,
-      writeSet,
-      preimages: declaredPreimages,
-    };
-    const manifestBytes = serializedWorkspaceManifest(manifest, false);
-    await assertPrivateUsfDirectory(canonicalRoot, ".usf", true);
-    await assertPrivateUsfDirectory(canonicalRoot, ".usf/workspaces", true);
-    try {
-      await lstat(workspace);
-      await assertPrivateWorkspaceRoot(canonicalRoot, workspace);
-    } catch (error: unknown) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    }
-    await rm(workspace, { recursive: true, force: true });
-    await mkdir(workspace, { mode: 0o700 });
-    await assertPrivateWorkspaceRoot(canonicalRoot, workspace);
-    try {
-      for (const path of scope) await copyRegularTree(canonicalRoot, workspace, path);
-      await writeAtomically(resolve(workspace, manifestName), manifestBytes);
-      return { workspace, basis, preimages: declaredPreimages };
-    } catch (error) {
-      await rm(workspace, { recursive: true, force: true });
-      throw error;
-    }
-  });
+  return withCandidateLock(root, candidate.digest, async (canonicalRoot) =>
+    (await materialiseCandidateLocked(canonicalRoot, candidate)).materialised);
 }
 
 interface PreparedNoChangeCandidateIdentity {
@@ -817,52 +882,104 @@ export async function materialiseNoChangeCandidate(
   });
 }
 
+function validateApplyOperations(manifest: ChangeWorkspaceManifest, operations: readonly FileOperation[]): FileOperation[] {
+  const validated = operations.map((operation) => {
+    const path = checkRelative(operation.path);
+    if (!manifest.writeSet.includes(path)) throw new RealisationError("UNDECLARED_WRITE", `Write outside candidate write set: ${path}`);
+    if (operation.kind === "write" && !/^[A-Za-z0-9+/]*={0,2}$/.test(operation.bytes)) throw new RealisationError("INVALID_OPERATION", "Write bytes must be base64");
+    if (operation.kind !== "write" && operation.kind !== "delete") throw new RealisationError("INVALID_OPERATION", "Unknown typed operation");
+    return { ...operation, path };
+  });
+  if (canonicalDigest(validated, { rejectAbsolutePaths: true }) !== canonicalDigest(candidateOperations(manifest), { rejectAbsolutePaths: true })) {
+    throw new RealisationError("CANDIDATE_BASIS_MISMATCH", "Applied operations do not match the resolved candidate identity");
+  }
+  return validated;
+}
+
+async function originalCandidateDelta(
+  root: string,
+  workspace: string,
+  manifest: ChangeWorkspaceManifest,
+  operations: readonly FileOperation[],
+): Promise<readonly ByteDelta[]> {
+  const changed = [...new Set(operations.map((operation) => operation.path))].sort();
+  const operationsByPath = new Map(operations.map((operation) => [operation.path, operation] as const));
+  const delta = Object.freeze(await Promise.all(changed.map(async (path) => {
+    const before = await bytesAt(root, path);
+    const after = await bytesAt(workspace, path);
+    const beforeDigest = before === null ? null : digest(before);
+    const afterDigest = after === null ? null : digest(after);
+    const operation = operationsByPath.get(path);
+    if (operation === undefined || !Object.hasOwn(manifest.preimages, path) || beforeDigest !== manifest.preimages[path]) {
+      throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Captured delta pre-image does not match the candidate manifest: ${path}`);
+    }
+    const expectedAfter = operation.kind === "write" ? Buffer.from(operation.bytes, "base64") : null;
+    const expectedAfterDigest = expectedAfter === null ? null : digest(expectedAfter);
+    if (afterDigest !== expectedAfterDigest || (after === null) !== (expectedAfter === null)
+      || (after !== null && expectedAfter !== null && !after.equals(expectedAfter))) {
+      throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Captured delta post-image does not match the resolved operation: ${path}`);
+    }
+    return Object.freeze({
+      path,
+      before: toSnapshot(before),
+      after: toSnapshot(after),
+      beforeDigest,
+      afterDigest,
+    });
+  })));
+  await assertWorkspaceCandidateBytesForPhase(root, workspace, manifest, "postimage");
+  await assertManifestPreimagesCurrent(root, manifest);
+  return delta;
+}
+
+async function applyCandidateOperationsLocked(
+  root: string,
+  candidateDigest: string,
+  operations: readonly FileOperation[],
+): Promise<{ readonly delta: readonly ByteDelta[]; readonly disposition: "applied" | "reused" }> {
+  const workspace = workspaceFor(root, candidateDigest);
+  const manifest = await loadManifest(root, workspace);
+  if (manifest.schema === "urn:usf:no-change-workspace-manifest:1") {
+    throw new RealisationError("INVALID_OPERATION", "A no-change workspace cannot accept file operations");
+  }
+  const fullDigest = digestPattern.test(candidateDigest) ? candidateDigest : `sha256:${candidateDigest}`;
+  if (manifest.digest !== fullDigest) throw new RealisationError("MISSING_WORKSPACE", "Workspace digest does not match its location");
+  await assertManifestPreimagesCurrent(root, manifest);
+  const validated = validateApplyOperations(manifest, operations);
+  const phase = await classifyOrdinaryWorkspacePhase(root, workspace, manifest);
+  await assertManifestPreimagesCurrent(root, manifest);
+  if (phase === "postimage") {
+    return Object.freeze({ delta: await originalCandidateDelta(root, workspace, manifest, validated), disposition: "reused" });
+  }
+  const beforeModes = new Map<string, GitFileMode | null>();
+  for (const operation of validated) beforeModes.set(operation.path, await modeAt(workspace, operation.path));
+  for (const operation of validated) {
+    const target = await assertNoSymlink(workspace, operation.path);
+    if (operation.kind === "write") await writeAtomically(
+      target,
+      Buffer.from(operation.bytes, "base64"),
+      permissionMode(beforeModes.get(operation.path) ?? "100644"),
+    );
+    else await rm(target, { force: true });
+  }
+  await assertWorkspaceCandidateBytesForPhase(root, workspace, manifest, "postimage");
+  await assertManifestPreimagesCurrent(root, manifest);
+  return Object.freeze({ delta: await originalCandidateDelta(root, workspace, manifest, validated), disposition: "applied" });
+}
+
 /** Apply already-resolved typed operations in the isolated tree and derive byte deltas. */
 export async function applyCandidateOperations(root: string, candidateDigest: string, operations: readonly FileOperation[]): Promise<readonly ByteDelta[]> {
-  return withCandidateLock(root, candidateDigest, async (canonicalRoot) => {
-    const workspace = workspaceFor(canonicalRoot, candidateDigest);
-    const manifest = await loadManifest(canonicalRoot, workspace);
-    if (manifest.schema === "urn:usf:no-change-workspace-manifest:1") {
-      throw new RealisationError("INVALID_OPERATION", "A no-change workspace cannot accept file operations");
-    }
-    const fullDigest = digestPattern.test(candidateDigest) ? candidateDigest : `sha256:${candidateDigest}`;
-    if (manifest.digest !== fullDigest) throw new RealisationError("MISSING_WORKSPACE", "Workspace digest does not match its location");
-    await currentBasis(canonicalRoot, manifest.basis);
-    for (const [path, expected] of Object.entries(manifest.preimages)) {
-      const actualBytes = await bytesAt(canonicalRoot, path);
-      if ((actualBytes === null ? null : digest(actualBytes)) !== expected) throw new RealisationError("STALE_RELEVANT_PREIMAGE", `Relevant pre-image is stale: ${path}`);
-    }
-    const validated = operations.map((operation) => {
-      const path = checkRelative(operation.path);
-      if (!manifest.writeSet.includes(path)) throw new RealisationError("UNDECLARED_WRITE", `Write outside candidate write set: ${path}`);
-      if (operation.kind === "write" && !/^[A-Za-z0-9+/]*={0,2}$/.test(operation.bytes)) throw new RealisationError("INVALID_OPERATION", "Write bytes must be base64");
-      if (operation.kind !== "write" && operation.kind !== "delete") throw new RealisationError("INVALID_OPERATION", "Unknown typed operation");
-      return { ...operation, path };
-    });
-    if (canonicalDigest(validated, { rejectAbsolutePaths: true }) !== canonicalDigest(candidateOperations(manifest), { rejectAbsolutePaths: true })) {
-      throw new RealisationError("CANDIDATE_BASIS_MISMATCH", "Applied operations do not match the resolved candidate identity");
-    }
-    const changed = [...new Set(validated.map((operation) => operation.path))].sort();
-    const before = new Map<string, Buffer | null>();
-    const beforeModes = new Map<string, GitFileMode | null>();
-    for (const path of changed) {
-      before.set(path, await bytesAt(workspace, path));
-      beforeModes.set(path, await modeAt(workspace, path));
-    }
-    for (const operation of validated) {
-      const target = await assertNoSymlink(workspace, operation.path);
-      if (operation.kind === "write") await writeAtomically(
-        target,
-        Buffer.from(operation.bytes, "base64"),
-        permissionMode(beforeModes.get(operation.path) ?? "100644"),
-      );
-      else await rm(target, { force: true });
-    }
-    return Promise.all(changed.map(async (path) => {
-      const beforeBytes = before.get(path) ?? null;
-      const afterBytes = await bytesAt(workspace, path);
-      return { path, before: toSnapshot(beforeBytes), after: toSnapshot(afterBytes), beforeDigest: beforeBytes === null ? null : digest(beforeBytes), afterDigest: afterBytes === null ? null : digest(afterBytes) };
-    }));
+  return withCandidateLock(root, candidateDigest, async (canonicalRoot) =>
+    (await applyCandidateOperationsLocked(canonicalRoot, candidateDigest, operations)).delta);
+}
+
+/** Materialise and apply one resolved ordinary candidate while owning its existing candidate lock once. */
+export async function applyResolvedCandidate(root: string, candidate: CandidateSpec): Promise<AppliedResolvedCandidate> {
+  const snapshot = freezeCandidate(structuredClone(candidate));
+  return withCandidateLock(root, snapshot.digest, async (canonicalRoot) => {
+    const prepared = await materialiseCandidateLocked(canonicalRoot, snapshot);
+    const applied = await applyCandidateOperationsLocked(canonicalRoot, prepared.manifest.digest, candidateOperations(prepared.manifest));
+    return Object.freeze({ ...prepared.materialised, delta: applied.delta, disposition: applied.disposition });
   });
 }
 
@@ -923,6 +1040,7 @@ async function assertWorkspaceCandidateBytesInternal(
   workspace: string,
   manifest: WorkspaceManifest,
   inventoryPolicy: WorkspaceInventoryPolicy,
+  phase: OrdinaryWorkspacePhase = "postimage",
 ): Promise<void> {
   const operations = new Map(manifest.operations.map((operation) => [operation.path, operation]));
   const sourceDigests = new Map<string, string | null>();
@@ -956,6 +1074,10 @@ async function assertWorkspaceCandidateBytesInternal(
   const expectedFiles = new Set<string>();
   for (const [path, sourceDigest] of sourceDigests) {
     const operation = operations.get(path);
+    if (phase === "preimage") {
+      if (sourceDigest !== null) expectedFiles.add(path);
+      continue;
+    }
     if (operation?.kind === "delete") continue;
     if (operation?.kind === "write" || sourceDigest !== null) expectedFiles.add(path);
   }
@@ -966,7 +1088,7 @@ async function assertWorkspaceCandidateBytesInternal(
     for (let index = 1; index < parts.length; index += 1) requiredDirectories.add(parts.slice(0, index).join("/"));
   };
   for (const [path, sourceDigest] of sourceDigests) if (sourceDigest !== null) addAncestors(path);
-  for (const path of operations.keys()) addAncestors(path);
+  if (phase === "postimage") for (const path of operations.keys()) addAncestors(path);
   const allowedDirectories = new Set([...requiredDirectories, checkRuntimeDirectory]);
 
   const actualFiles = new Set<string>();
@@ -1007,7 +1129,14 @@ async function assertWorkspaceCandidateBytesInternal(
     const sourceMode = await modeAt(sourceRoot, path);
     const workspaceMode = await modeAt(workspace, path);
     const operation = operations.get(path);
-    if (operation?.kind === "write") {
+    if (phase === "preimage") {
+      if ((bytes === null ? null : digest(bytes)) !== sourceDigest) {
+        throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace pre-image does not match its basis: ${path}`);
+      }
+      if (workspaceMode !== sourceMode) {
+        throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace has an undeclared mode effect: ${path}`);
+      }
+    } else if (operation?.kind === "write") {
       const expected = operation.encoding === "base64" ? Buffer.from(operation.content ?? "", "base64") : Buffer.from(operation.content ?? "");
       if (bytes === null || !bytes.equals(expected)) throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace post-image does not match resolved operation: ${path}`);
       if (workspaceMode !== (sourceMode ?? "100644")) throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace has an undeclared mode effect: ${path}`);
@@ -1023,6 +1152,30 @@ async function assertWorkspaceCandidateBytesInternal(
 
 async function assertWorkspaceCandidateBytes(sourceRoot: string, workspace: string, manifest: WorkspaceManifest): Promise<void> {
   await assertWorkspaceCandidateBytesInternal(sourceRoot, workspace, manifest, strictWorkspaceInventory);
+}
+
+async function assertOrdinaryWorkspaceFilesUnlinked(workspace: string, repositoryPath = ""): Promise<void> {
+  const target = repositoryPath === "" ? workspace : resolve(workspace, repositoryPath);
+  const entry = await lstat(target);
+  if (entry.isSymbolicLink() || (!entry.isDirectory() && !entry.isFile())) {
+    throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace contains a non-regular entry: ${repositoryPath}`);
+  }
+  if (entry.isFile()) {
+    if (entry.nlink !== 1) throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace candidate file is hardlinked: ${repositoryPath}`);
+    return;
+  }
+  await Promise.all((await readdir(target)).map((child) =>
+    assertOrdinaryWorkspaceFilesUnlinked(workspace, repositoryPath === "" ? child : `${repositoryPath}/${child}`)));
+}
+
+async function assertWorkspaceCandidateBytesForPhase(
+  sourceRoot: string,
+  workspace: string,
+  manifest: ChangeWorkspaceManifest,
+  phase: OrdinaryWorkspacePhase,
+): Promise<void> {
+  await assertOrdinaryWorkspaceFilesUnlinked(workspace);
+  await assertWorkspaceCandidateBytesInternal(sourceRoot, workspace, manifest, strictWorkspaceInventory, phase);
 }
 
 async function assertWorkspaceCandidateBytesForCheckRecovery(sourceRoot: string, workspace: string, manifest: WorkspaceManifest): Promise<void> {

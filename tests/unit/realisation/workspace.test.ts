@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { chmod, cp, link, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import test, { type TestContext } from "node:test";
@@ -14,10 +14,12 @@ import {
   registrationFeaturePostimageSetDigest,
 } from "../../../src/collaboration/resolve.ts";
 import { authenticateGraphDerivedCheckIntent, runGraphDerivedCheck } from "../../../src/commands/check.ts";
+import { apply } from "../../../src/commands/apply.ts";
 import { loadSemanticGraph, objectValues } from "../../../src/graph/index.ts";
 import { deriveWork, type WorkPacket } from "../../../src/graph/work.ts";
 import {
   applyCandidateOperations,
+  applyResolvedCandidate,
   authenticateCandidateWorkspace,
   candidateScope,
   candidateOperations,
@@ -92,6 +94,147 @@ function candidate(basis: RealisationBasis, content: string, nonce: string): Can
   };
 }
 
+async function twoOperationCandidate(root: string, basis: RealisationBasis, nonce: string): Promise<CandidateSpec> {
+  const first = targetPath;
+  const second = "tests/fixtures/providers/ordinary-recovery-generated.json";
+  const before = await readFile(join(root, first), "utf8");
+  const operations = [
+    { kind: "write" as const, path: second, content: "{\"ordinaryRecovery\":true}\n" },
+    { kind: "write" as const, path: first, content: `${before}\n// ordinary recovery first effect\n` },
+  ];
+  const acceptedContributionDigests = [canonicalDigest({ nonce })];
+  return {
+    digest: candidateArtifactDigest({ basisDigest: basis.basisDigest, operations, acceptedContributionDigests }),
+    basis,
+    operations,
+    lineage: { acceptedContributionDigests, rejected: [] },
+    scope: candidateScope(basis),
+    writeSet: operations.map(operation => operation.path),
+    preimages: await deriveCandidatePreimages(root, basis, operations.map(operation => operation.path)),
+  };
+}
+
+type WorkspaceInterruptionBoundary = "beforemanifest" | "aftermanifest" | "betweeneffects" | "afterfinal";
+
+async function expectedDeltaBytes(root: string, spec: CandidateSpec): Promise<Readonly<Record<string, string | null>>> {
+  return Object.fromEntries(await Promise.all(candidateOperations(spec).map(async operation => [
+    operation.path,
+    (await readFile(join(root, operation.path)).catch((error: unknown) => {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw error;
+    }))?.toString("base64") ?? null,
+  ])));
+}
+
+function assertOriginalDelta(
+  delta: readonly { readonly path: string; readonly before: string | null; readonly after: string | null }[],
+  spec: CandidateSpec,
+  before: Readonly<Record<string, string | null>>,
+): void {
+  const expected = candidateOperations(spec).map(operation => ({
+    path: operation.path,
+    before: before[operation.path]!,
+    after: operation.kind === "write" ? operation.bytes : null,
+  })).sort((left, right) => left.path.localeCompare(right.path));
+  assert.deepEqual(delta.map(({ path, before: prior, after }) => ({ path, before: prior, after })), expected);
+}
+
+async function interruptResolvedCandidate(root: string, spec: CandidateSpec, boundary: WorkspaceInterruptionBoundary): Promise<void> {
+  const input = join(root, "..", `ordinary-recovery-${boundary}.json`);
+  await writeFile(input, JSON.stringify(spec), { mode: 0o600 });
+  const child = spawn(process.execPath, [resolve(sourceRoot, "tests/fixtures/realisation/workspace-interruption.ts"),
+    root, sourceRoot, input, boundary], { cwd: root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"] });
+  let reached: { readonly boundary: WorkspaceInterruptionBoundary; readonly completedOperations: number } | null = null;
+  let stdout = "";
+  let stderr = "";
+  let outputOverflow = false;
+  const collect = (current: string, chunk: unknown): string => {
+    const next = `${current}${String(chunk)}`;
+    if (next.length > 16_384) {
+      outputOverflow = true;
+      child.kill("SIGKILL");
+    }
+    return next.slice(0, 16_384);
+  };
+  child.stdout!.on("data", chunk => { stdout = collect(stdout, chunk); });
+  child.stderr!.on("data", chunk => { stderr = collect(stderr, chunk); });
+  child.on("message", message => {
+    if (message !== null && typeof message === "object" && (message as { kind?: string; boundary?: unknown; completedOperations?: unknown }).kind === "boundary") {
+      const observed = message as { readonly boundary?: unknown; readonly completedOperations?: unknown };
+      if (observed.boundary === boundary && Number.isSafeInteger(observed.completedOperations)) {
+        reached = { boundary, completedOperations: observed.completedOperations as number };
+      }
+      child.kill("SIGKILL");
+    }
+  });
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  try {
+    const ended = await new Promise<{ readonly signal: NodeJS.Signals | null }>((accept, reject) => {
+      child.once("error", reject);
+      child.once("close", (_code, signal) => accept({ signal }));
+    });
+    assert.equal(outputOverflow, false, `fixture output exceeded bound\nstdout: ${stdout}\nstderr: ${stderr}`);
+    assert.ok(reached, `fixture did not report the requested boundary\nstdout: ${stdout}\nstderr: ${stderr}`);
+    const observedBoundary = reached as { readonly boundary: WorkspaceInterruptionBoundary; readonly completedOperations: number };
+    assert.equal(observedBoundary.boundary, boundary);
+    assert.equal(observedBoundary.completedOperations, boundary === "betweeneffects" ? 1 : boundary === "afterfinal" ? 2 : 0);
+    assert.equal(ended.signal, "SIGKILL");
+  } finally {
+    clearTimeout(timeout);
+    await unlink(input).catch(() => undefined);
+  }
+}
+
+async function driftPrimaryDuringDeltaReadback(root: string, spec: CandidateSpec): Promise<void> {
+  const input = join(root, "..", "ordinary-recovery-delta-readback.json");
+  await writeFile(input, JSON.stringify(spec), { mode: 0o600 });
+  const child = spawn(process.execPath, [resolve(sourceRoot, "tests/fixtures/realisation/workspace-interruption.ts"),
+    root, sourceRoot, input, "deltareadback"], { cwd: root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"] });
+  let stdout = "";
+  let stderr = "";
+  let overflow = false;
+  let reached = false;
+  let failure: { readonly reasonCode?: unknown } | null = null;
+  const collect = (current: string, chunk: unknown): string => {
+    const next = `${current}${String(chunk)}`;
+    if (next.length > 16_384) {
+      overflow = true;
+      child.kill("SIGKILL");
+    }
+    return next.slice(0, 16_384);
+  };
+  child.stdout!.on("data", chunk => { stdout = collect(stdout, chunk); });
+  child.stderr!.on("data", chunk => { stderr = collect(stderr, chunk); });
+  child.on("message", async message => {
+    if (message !== null && typeof message === "object" && (message as { kind?: unknown }).kind === "boundary") {
+      const observed = message as { readonly boundary?: unknown; readonly completedOperations?: unknown };
+      if (observed.boundary !== "deltareadback" || observed.completedOperations !== 2) return;
+      reached = true;
+      const primary = await readFile(join(root, targetPath), "utf8");
+      await writeFile(join(root, targetPath), `${primary}\n// drift after delta capture\n`, { mode: 0o644 });
+      child.send({ kind: "continue" });
+    }
+    if (message !== null && typeof message === "object" && (message as { kind?: unknown }).kind === "error") {
+      failure = message as { readonly reasonCode?: unknown };
+    }
+  });
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  try {
+    const ended = await new Promise<{ readonly code: number | null; readonly signal: NodeJS.Signals | null }>((accept, reject) => {
+      child.once("error", reject);
+      child.once("close", (code, signal) => accept({ code, signal }));
+    });
+    assert.equal(overflow, false, `fixture output exceeded bound\nstdout: ${stdout}\nstderr: ${stderr}`);
+    assert.equal(reached, true, `fixture did not reach delta readback\nstdout: ${stdout}\nstderr: ${stderr}`);
+    assert.equal(ended.signal, null);
+    assert.equal(ended.code, 0);
+    assert.equal((failure as { readonly reasonCode?: unknown } | null)?.reasonCode, "STALE_REALISATION_BASIS");
+  } finally {
+    clearTimeout(timeout);
+    await unlink(input).catch(() => undefined);
+  }
+}
+
 function git(root: string, args: readonly string[]): string {
   const result = spawnSync("/usr/bin/git", ["-c", "user.name=USF Test", "-c", "user.email=test@invalid.local", "-C", root, ...args], {
     env: { PATH: "/usr/bin:/bin", LANG: "C", LC_ALL: "C", HOME: root, GIT_CONFIG_NOSYSTEM: "1", GIT_CONFIG_GLOBAL: "/dev/null", GIT_TERMINAL_PROMPT: "0" },
@@ -112,6 +255,15 @@ function initialiseGit(root: string): void {
   git(root, ["init", "-b", "main"]);
   git(root, ["add", "--all"]);
   git(root, ["commit", "-m", "fixture"]);
+}
+
+function cliApply(root: string, input: string): ReturnType<typeof spawnSync> {
+  return spawnSync("/bin/sh", [resolve(sourceRoot, "bin/usf"), "apply", "--input", input], {
+    cwd: root,
+    env: { PATH: "/usr/bin:/bin", LANG: "C", LC_ALL: "C", HOME: root, GIT_CONFIG_NOSYSTEM: "1", GIT_CONFIG_GLOBAL: "/dev/null", GIT_TERMINAL_PROMPT: "0" },
+    encoding: "utf8",
+    timeout: 30_000,
+  });
 }
 
 test("materialises one basis-bound candidate and applies only its exact byte delta", async (context) => {
@@ -186,6 +338,217 @@ test("materialises one basis-bound candidate and applies only its exact byte del
   assert.equal(currentDirectoryCandidate.basis.basisDigest, basis.basisDigest);
   assert.equal(await readFile(join(directoryCandidate.workspace, directoryTarget), "utf8"), "{\"generated\":true}\n");
   await assert.rejects(() => readFile(join(root, directoryTarget)), { code: "ENOENT" });
+});
+
+test("ordinary candidate recovery classifies absent, materialised and fully applied states without rebuilding retained bytes", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const basis = packet(root).realisationBasis;
+
+  const absent = await twoOperationCandidate(root, basis, "ordinary-absent");
+  const absentBefore = await expectedDeltaBytes(root, absent);
+  const commandResult = await apply(root, { candidate: absent });
+  assert.equal(commandResult.status, "applied");
+  if (commandResult.status !== "applied") throw new Error("Apply command wrapper unexpectedly refused the resolved candidate");
+  const created = commandResult;
+  assertOriginalDelta(created.delta, absent, absentBefore);
+  const appliedManifest = await readFile(join(created.workspace, ".usf-workspace.json"));
+  const appliedTarget = await stat(join(created.workspace, targetPath));
+  const replay = await applyResolvedCandidate(root, absent);
+  assert.equal(replay.disposition, "reused");
+  assert.deepEqual(replay.delta, created.delta, "replay returns the original primary-to-postimage delta");
+  assert.deepEqual(await readFile(join(replay.workspace, ".usf-workspace.json")), appliedManifest);
+  assert.equal((await stat(join(replay.workspace, targetPath))).ino, appliedTarget.ino, "fully applied replay must not rewrite retained bytes");
+
+  initialiseGit(root);
+  const cliInput = ".usf/inputs/ordinary-cli-replay.json";
+  await mkdir(join(root, ".usf", "inputs"), { recursive: true, mode: 0o700 });
+  await writeFile(join(root, cliInput), JSON.stringify({ candidate: absent }), { mode: 0o600 });
+  try {
+    const cli = cliApply(root, cliInput);
+    assert.equal(cli.status, 0, String(cli.stderr ?? ""));
+    const output = JSON.parse(String(cli.stdout ?? "")) as { readonly schema?: unknown; readonly status?: unknown; readonly delta?: unknown; readonly workspace?: unknown };
+    assert.equal(output.schema, "urn:usf:apply-result:1");
+    assert.equal(output.status, "applied");
+    assert.deepEqual(output.delta, created.delta);
+    assert.equal(output.workspace, `.usf/workspaces/${absent.digest.slice("sha256:".length)}`);
+    assert.deepEqual(await readFile(join(created.workspace, ".usf-workspace.json")), appliedManifest);
+    assert.equal((await stat(join(created.workspace, targetPath))).ino, appliedTarget.ino, "CLI replay must not rewrite the retained workspace");
+  } finally {
+    await unlink(join(root, cliInput)).catch(() => undefined);
+  }
+
+  const callerMutation = await twoOperationCandidate(root, basis, "ordinary-caller-mutation");
+  const callerSnapshot = structuredClone(callerMutation) as CandidateSpec;
+  const pendingCallerMutation = applyResolvedCandidate(root, callerMutation);
+  const mutableOperations = callerMutation.operations as unknown as Array<{ kind: "write"; path: string; content: string }>;
+  mutableOperations[0] = { ...mutableOperations[0]!, content: "caller-mutated-after-invocation\n" };
+  const callerApplied = await pendingCallerMutation;
+  assert.equal(callerApplied.disposition, "applied");
+  assertOriginalDelta(callerApplied.delta, callerSnapshot, await expectedDeltaBytes(root, callerSnapshot));
+
+  const materialisedSpec = await twoOperationCandidate(root, basis, "ordinary-materialised");
+  const materialisedBefore = await expectedDeltaBytes(root, materialisedSpec);
+  const materialised = await materialiseCandidate(root, materialisedSpec);
+  const manifest = await readFile(join(materialised.workspace, ".usf-workspace.json"));
+  const workspace = await stat(materialised.workspace);
+  const continued = await applyResolvedCandidate(root, materialisedSpec);
+  assert.equal(continued.disposition, "applied");
+  assertOriginalDelta(continued.delta, materialisedSpec, materialisedBefore);
+  assert.equal((await stat(continued.workspace)).ino, workspace.ino, "materialised recovery must retain the original workspace directory");
+  assert.deepEqual(await readFile(join(continued.workspace, ".usf-workspace.json")), manifest);
+
+  const partialSpec = await twoOperationCandidate(root, basis, "ordinary-partial");
+  const partial = await materialiseCandidate(root, partialSpec);
+  const first = partialSpec.operations[0]!;
+  if (first.kind !== "write" || first.content === undefined) throw new Error("partial recovery requires an exact write operation");
+  await writeFile(join(partial.workspace, first.path), first.content, { mode: 0o644 });
+  const retained = await readFile(join(partial.workspace, first.path));
+  await assert.rejects(
+    () => applyResolvedCandidate(root, partialSpec),
+    (error: unknown) => error instanceof RealisationError && error.reasonCode === "CANDIDATE_BASIS_MISMATCH",
+  );
+  assert.deepEqual(await readFile(join(partial.workspace, first.path)), retained, "mixed postimages must be preserved, not repaired");
+
+  const partialCliInput = ".usf/inputs/ordinary-cli-partial.json";
+  await writeFile(join(root, partialCliInput), JSON.stringify({ candidate: partialSpec }), { mode: 0o600 });
+  try {
+    const cli = cliApply(root, partialCliInput);
+    assert.notEqual(cli.status, 0);
+    const output = JSON.parse(String(cli.stdout ?? "")) as { readonly schema?: unknown; readonly status?: unknown; readonly reasonCode?: unknown };
+    assert.equal(output.schema, "urn:usf:apply-result:1");
+    assert.equal(output.status, "refused");
+    assert.equal(output.reasonCode, "CANDIDATE_BASIS_MISMATCH");
+  } finally {
+    await unlink(join(root, partialCliInput)).catch(() => undefined);
+  }
+
+  const manifestOnlySpec = await twoOperationCandidate(root, basis, "ordinary-manifest-only");
+  const manifestOnly = await materialiseCandidate(root, manifestOnlySpec);
+  const manifestOnlyBytes = await readFile(join(manifestOnly.workspace, ".usf-workspace.json"));
+  await rm(manifestOnly.workspace, { recursive: true, force: true });
+  await mkdir(manifestOnly.workspace, { mode: 0o700 });
+  await writeFile(join(manifestOnly.workspace, ".usf-workspace.json"), manifestOnlyBytes, { mode: 0o600 });
+  await assert.rejects(
+    () => applyResolvedCandidate(root, manifestOnlySpec),
+    (error: unknown) => error instanceof RealisationError && error.reasonCode === "CANDIDATE_BASIS_MISMATCH",
+  );
+  assert.deepEqual(await readFile(join(manifestOnly.workspace, ".usf-workspace.json")), manifestOnlyBytes);
+
+  const driftRoot = await fixture(context);
+  const driftSpec = await twoOperationCandidate(driftRoot, packet(driftRoot).realisationBasis, "ordinary-delta-readback");
+  await driftPrimaryDuringDeltaReadback(driftRoot, driftSpec);
+  const driftWorkspace = join(driftRoot, ".usf", "workspaces", driftSpec.digest.slice("sha256:".length));
+  await stat(join(driftWorkspace, ".usf-workspace.json"));
+});
+
+test("ordinary candidate recovery preserves genuine SIGKILL boundaries and releases the candidate lock", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  for (const boundary of ["beforemanifest", "aftermanifest", "betweeneffects", "afterfinal"] as const) {
+    const root = await fixture(context);
+    const basis = packet(root).realisationBasis;
+    const spec = await twoOperationCandidate(root, basis, `ordinary-interruption-${boundary}`);
+    const before = await expectedDeltaBytes(root, spec);
+    await interruptResolvedCandidate(root, spec, boundary);
+    await withCandidateLock(root, spec.digest, async () => undefined);
+
+    const workspace = join(root, ".usf", "workspaces", spec.digest.slice("sha256:".length));
+    const manifest = join(workspace, ".usf-workspace.json");
+    if (boundary === "beforemanifest") await assert.rejects(() => readFile(manifest), { code: "ENOENT" });
+    else await stat(manifest);
+    if (boundary === "beforemanifest" || boundary === "betweeneffects") {
+      const before = await readdir(workspace);
+      await assert.rejects(
+        () => applyResolvedCandidate(root, spec),
+        (error: unknown) => error instanceof RealisationError && error.reasonCode === (boundary === "beforemanifest" ? "INVALID_WORKSPACE_MANIFEST" : "CANDIDATE_BASIS_MISMATCH"),
+        boundary,
+      );
+      assert.deepEqual(await readdir(workspace), before, `${boundary} refusal must preserve the retained workspace inventory`);
+      continue;
+    }
+
+    const recovered = await applyResolvedCandidate(root, spec);
+    assert.equal(recovered.disposition, boundary === "aftermanifest" ? "applied" : "reused");
+    assertOriginalDelta(recovered.delta, spec, before);
+  }
+});
+
+test("ordinary candidate recovery preserves invalid retained states and never steals a busy lock", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const basis = packet(root).realisationBasis;
+  for (const scenario of ["manifest-missing", "extra", "temporary", "mode"] as const) {
+    const spec = await twoOperationCandidate(root, basis, `ordinary-invalid-${scenario}`);
+    const materialised = await materialiseCandidate(root, spec);
+    const manifest = join(materialised.workspace, ".usf-workspace.json");
+    const existingScopedOperation = spec.operations.find(operation => operation.path === targetPath);
+    assert.ok(existingScopedOperation, "the ordinary recovery matrix requires one existing scoped file");
+    const first = join(materialised.workspace, existingScopedOperation.path);
+    const extra = join(materialised.workspace, "unexpected-retained-byte");
+    if (scenario === "manifest-missing") await unlink(manifest);
+    if (scenario === "extra") await writeFile(extra, "preserve extra\n", { mode: 0o600 });
+    if (scenario === "temporary") await writeFile(`${manifest}.usf-interrupted`, "preserve temporary\n", { mode: 0o600 });
+    if (scenario === "mode") await chmod(first, 0o755);
+    const retained = scenario === "manifest-missing" ? null : await readFile(manifest).catch(() => null);
+    await assert.rejects(
+      () => applyResolvedCandidate(root, spec),
+      (error: unknown) => error instanceof RealisationError && error.reasonCode === (scenario === "manifest-missing" ? "INVALID_WORKSPACE_MANIFEST" : "CANDIDATE_BASIS_MISMATCH"),
+      scenario,
+    );
+    if (retained === null) await assert.rejects(() => readFile(manifest), { code: "ENOENT" });
+    else assert.deepEqual(await readFile(manifest), retained);
+    if (scenario === "extra") assert.equal(await readFile(extra, "utf8"), "preserve extra\n");
+    if (scenario === "temporary") assert.equal(await readFile(`${manifest}.usf-interrupted`, "utf8"), "preserve temporary\n");
+    if (scenario === "mode") assert.equal((await stat(first)).mode & 0o777, 0o755);
+  }
+
+  const hardlinked = await twoOperationCandidate(root, basis, "ordinary-hardlink");
+  const hardlinkedWorkspace = await materialiseCandidate(root, hardlinked);
+  const hardlinkedOperation = hardlinked.operations.find(operation => operation.path === targetPath);
+  assert.ok(hardlinkedOperation, "the ordinary recovery matrix requires one existing scoped file");
+  const hardlinkedTarget = join(hardlinkedWorkspace.workspace, hardlinkedOperation.path);
+  const retainedHardlink = join(root, "ordinary-retained-hardlink");
+  await link(hardlinkedTarget, retainedHardlink);
+  try {
+    assert.ok((await stat(hardlinkedTarget)).nlink > 1, "the scoped workspace file must have a retained external hardlink");
+    await assert.rejects(
+      () => applyResolvedCandidate(root, hardlinked),
+      (error: unknown) => error instanceof RealisationError && error.reasonCode === "CANDIDATE_BASIS_MISMATCH",
+      "a regular scoped file with multiple links is not an authenticated retained workspace byte",
+    );
+    assert.ok((await stat(hardlinkedTarget)).nlink > 1, "hardlink refusal must preserve the retained workspace");
+  } finally {
+    await unlink(retainedHardlink).catch(() => undefined);
+  }
+
+  const stale = await twoOperationCandidate(root, basis, "ordinary-stale");
+  const staleWorkspace = await materialiseCandidate(root, stale);
+  const primary = await readFile(join(root, targetPath), "utf8");
+  await writeFile(join(root, targetPath), `${primary}\n// stale primary\n`);
+  const retainedManifest = await readFile(join(staleWorkspace.workspace, ".usf-workspace.json"));
+  await assert.rejects(
+    () => applyResolvedCandidate(root, stale),
+    (error: unknown) => error instanceof RealisationError && error.reasonCode === "STALE_REALISATION_BASIS",
+  );
+  assert.deepEqual(await readFile(join(staleWorkspace.workspace, ".usf-workspace.json")), retainedManifest);
+
+  const busyRoot = await fixture(context);
+  const busy = await twoOperationCandidate(busyRoot, packet(busyRoot).realisationBasis, "ordinary-busy");
+  let entered!: () => void;
+  let release!: () => void;
+  const acquired = new Promise<void>(resolve => { entered = resolve; });
+  const held = new Promise<void>(resolve => { release = resolve; });
+  const lock = withCandidateLock(busyRoot, busy.digest, async () => { entered(); await held; });
+  await acquired;
+  try {
+    await assert.rejects(
+      () => applyResolvedCandidate(busyRoot, busy),
+      (error: unknown) => error instanceof RealisationError && error.reasonCode === "CANDIDATE_BUSY",
+    );
+  } finally {
+    release();
+    await lock;
+  }
 });
 
 test("basis-bound materialisation refuses missing, fabricated, stale and out-of-scope authority", async (context) => {
