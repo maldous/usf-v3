@@ -3,6 +3,10 @@ profile usf-fixture-process-v1 flags=(attach_disconnected,mediate_deleted) {
 
   signal,
 
+  unix (create, getattr) type=stream addr=none,
+  unix (send, receive) type=stream addr=none peer=(label=@{profile_name},addr=none),
+  unix (send, receive) type=stream addr=none peer=(label=unconfined,addr=none),
+
   /usr/bin/node ix,
   /usr/bin/git ix,
   /usr/bin/flock ix,
