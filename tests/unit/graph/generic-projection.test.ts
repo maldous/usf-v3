@@ -102,7 +102,7 @@ function onlyPacket(graph = fixtureGraph()): WorkPacket {
 }
 
 test("the manifest loader composes more than one declared named graph", (context) => {
-  const temporaryParent = resolve(root, ".usf/tmp");
+  const temporaryParent = process.env.TMPDIR ?? resolve(root, ".usf/tmp");
   mkdirSync(temporaryParent, { recursive: true, mode: 0o700 });
   const temporaryRoot = mkdtempSync(resolve(temporaryParent, "graph-manifest-"));
   context.after(() => rmSync(temporaryRoot, { recursive: true, force: true }));
@@ -126,7 +126,7 @@ test("the manifest loader composes more than one declared named graph", (context
 });
 
 test("v2 import expansion deduplicates diamonds and exact sources while bounding count, depth and aggregate bytes", (context) => {
-  const temporaryParent = resolve(root, ".usf/tmp");
+  const temporaryParent = process.env.TMPDIR ?? resolve(root, ".usf/tmp");
   mkdirSync(temporaryParent, { recursive: true, mode: 0o700 });
   const temporaryRoot = mkdtempSync(resolve(temporaryParent, "graph-imports-"));
   context.after(() => rmSync(temporaryRoot, { recursive: true, force: true }));
@@ -160,7 +160,7 @@ test("v2 import expansion deduplicates diamonds and exact sources while bounding
 });
 
 test("self, direct and indirect import cycles plus manifest symlinks fail closed", (context) => {
-  const temporaryParent = resolve(root, ".usf/tmp");
+  const temporaryParent = process.env.TMPDIR ?? resolve(root, ".usf/tmp");
   mkdirSync(temporaryParent, { recursive: true, mode: 0o700 });
   const temporaryRoot = mkdtempSync(resolve(temporaryParent, "graph-cycles-"));
   context.after(() => rmSync(temporaryRoot, { recursive: true, force: true }));
@@ -279,4 +279,54 @@ test("global environment status cannot substitute for a contract applicability b
     },
   ]);
   assert.throws(() => deriveWork(graph, { selector: "contract:urn:fixture:contract:health" }), /CONTRACT_ENVIRONMENT_APPLICABILITY_REQUIRED/);
+});
+
+
+test("explicit no-task-class work keeps validation obligations and scoped identity", () => {
+  const graph = fixtureGraph((quads) => [
+    ...quads.filter((quad) => quad.predicate !== "urn:usf:predicate:modelCapability"),
+    ...parseStrictNQuads(nq("urn:fixture:work:health", "taskClassRequirement", "none", serviceGraph, true) + "\n", serviceGraph),
+  ]);
+  const packet = onlyPacket(graph);
+  const original = onlyPacket();
+  assert.deepEqual(packet.modelCapabilities, []);
+  assert.deepEqual(packet.validationPlan, original.validationPlan);
+  assert.deepEqual(packet.acceptanceCriteria, original.acceptanceCriteria);
+  assert.notEqual(packet.scopedDependencyDigest, original.scopedDependencyDigest);
+  assert.ok(packet.semanticDependencies.some((entry) => entry.key === "urn:fixture:work:health"));
+});
+
+test("missing task-class authoring stays distinct from explicit none", () => {
+  const omitted = fixtureGraph((quads) => quads.filter((quad) => quad.predicate !== "urn:usf:predicate:modelCapability"));
+  assert.throws(() => deriveWork(omitted), /MODEL_CAPABILITY_REQUIRED:urn:fixture:work:health/);
+  const contractOnly = fixtureGraph((quads) => [
+    ...quads.filter((quad) => quad.predicate !== "urn:usf:predicate:modelCapability"),
+    ...parseStrictNQuads(nq("urn:fixture:contract:health", "taskClassRequirement", "none", serviceGraph, true) + "\n", serviceGraph),
+  ]);
+  assert.throws(() => deriveWork(contractOnly), /MODEL_CAPABILITY_REQUIRED:urn:fixture:work:health/);
+});
+
+test("malformed or multiple task-class dispositions refuse", () => {
+  for (const lines of [
+    [nq("urn:fixture:work:health", "taskClassRequirement", "optional", serviceGraph, true)],
+    [nq("urn:fixture:work:health", "taskClassRequirement", "urn:fixture:none", serviceGraph)],
+    [nq("urn:fixture:work:health", "taskClassRequirement", "none", serviceGraph, true), nq("urn:fixture:work:health", "taskClassRequirement", "optional", serviceGraph, true)],
+  ]) {
+    const graph = fixtureGraph((quads) => [
+      ...quads.filter((quad) => quad.predicate !== "urn:usf:predicate:modelCapability"),
+      ...parseStrictNQuads(lines.join("\n") + "\n", serviceGraph),
+    ]);
+    assert.throws(() => deriveWork(graph), /TASK_CLASS_REQUIREMENT_INVALID:urn:fixture:work:health/);
+  }
+});
+
+test("explicit none cannot erase work or contract capability requirements", () => {
+  for (const subject of ["urn:fixture:work:health", "urn:fixture:contract:health"]) {
+    const graph = fixtureGraph((quads) => [
+      ...quads.filter((quad) => quad.predicate !== "urn:usf:predicate:modelCapability" || quad.subject === subject),
+      ...parseStrictNQuads(nq("urn:fixture:work:health", "taskClassRequirement", "none", serviceGraph, true) + "\n", serviceGraph),
+    ]);
+    assert.throws(() => deriveWork(graph), /TASK_CLASS_REQUIREMENT_CONFLICT:urn:fixture:work:health/);
+  }
+  assert.deepEqual(onlyPacket().modelCapabilities, ["json-schema", "typescript"]);
 });

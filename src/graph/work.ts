@@ -1373,7 +1373,13 @@ function packetFor(graph: SemanticGraph, id: string, decisionBoundary: DecisionB
     ...objectValues(graph, id, predicate("modelCapability")),
     ...artifacts.flatMap((artifact) => artifact.modelCapabilities),
   ])].sort();
-  if (modelCapabilities.length === 0) refuse(`MODEL_CAPABILITY_REQUIRED:${id}`);
+  const taskClassDisposition = objectsFor(graph, id).filter((quad) => quad.predicate === predicate("taskClassRequirement"));
+  if (taskClassDisposition.length > 0 && (taskClassDisposition.length !== 1
+      || taskClassDisposition[0]?.objectKind !== "literal" || taskClassDisposition[0]?.object !== "none")) {
+    refuse(`TASK_CLASS_REQUIREMENT_INVALID:${id}`);
+  }
+  if (taskClassDisposition.length === 1 && modelCapabilities.length > 0) refuse(`TASK_CLASS_REQUIREMENT_CONFLICT:${id}`);
+  if (modelCapabilities.length === 0 && taskClassDisposition.length === 0) refuse(`MODEL_CAPABILITY_REQUIRED:${id}`);
   const privacy = one(graph, contract, "privacy");
   if (!privacyClasses.includes(privacy as PrivacyClassification)) refuse(`PRIVACY_CLASSIFICATION_INVALID:${contract}`);
 
