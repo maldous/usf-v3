@@ -61,6 +61,17 @@ const localRuleRoles: Readonly<Record<string, string | readonly string[]>> = Obj
 });
 
 export function validateLocalObservationRoles(descriptor: ObservationObject, transitionIdentity: string): void {
+  const actualRoles = new Set<string>();
+  function collect(value: unknown, path: string, key: string): void {
+    if (key.endsWith("Rule") || key === "obligations") { actualRoles.add(path); return; }
+    if (value !== null && typeof value === "object") {
+      for (const [name, child] of Object.entries(value)) collect(child, path ? `${path}.${name}` : name, name);
+    }
+  }
+  collect(descriptor, "", "");
+  if (actualRoles.size !== Object.keys(localRuleRoles).length || [...actualRoles].some(path => !Object.hasOwn(localRuleRoles, path))) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "The descriptor declares unsupported operational rule roles.");
+  }
   for (const [path, supported] of Object.entries(localRuleRoles)) {
     let value: unknown = descriptor;
     for (const key of path.split(".")) {

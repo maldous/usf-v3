@@ -23,6 +23,9 @@ test("compiled observation admission binds each rule role and output producer", 
   const missing = structuredClone(descriptor);
   delete (missing.recovery as Record<string, unknown>).unknownOutcomeRule;
   assert.throws(() => validateLocalObservationRoles(missing, transition), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  const extended = structuredClone(descriptor);
+  (extended.effect as Record<string, unknown>).additionalGuardRule = rule("guard");
+  assert.throws(() => validateLocalObservationRoles(extended, transition), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
 });
 
 test("observation adapter refuses unknown commands and transport overrides before graph access", async () => {

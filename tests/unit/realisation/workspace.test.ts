@@ -569,6 +569,7 @@ test("integration consumes each graph-required validation exactly once in canoni
       "src/commands/graph-leaf-dispatch.ts",
       "src/commands/provider-leaf-dispatch.ts",
       "src/collaboration/local-contribution.ts",
+      "src/realisation/fixture-process.ts",
       "src/commands/transition.ts",
       "src/graph/cli-transitions.ts",
       "schemas/cli-transition-descriptor.schema.json",
