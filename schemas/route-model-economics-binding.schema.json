@@ -1,0 +1,430 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:route-model-economics-binding:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "catalogueRawDigest",
+    "catalogueNormalizedDigest",
+    "candidateSourceSetDigest",
+    "candidateMemberDigest",
+    "configuredRouteMemberDigest",
+    "provider",
+    "requestedModel",
+    "underlyingModel",
+    "transport",
+    "adapterPackage",
+    "sourceEvidenceKind",
+    "accountSourceUseAuthorizationDigest",
+    "accountObservationDigest",
+    "accountAttemptDigest",
+    "hostAuthorizationDigest",
+    "credentialSourceIdentityDigest",
+    "cataloguePrice",
+    "unsupportedPriceMembers",
+    "conditionalPricing",
+    "entitlementDisposition",
+    "quotaDisposition",
+    "serviceTier",
+    "serviceTierSourceDigest",
+    "paidUsageEnabled",
+    "automaticOverageEnabled",
+    "automaticTopUpEnabled",
+    "spendCap",
+    "fallbackProhibited",
+    "observedAt",
+    "expiresAt",
+    "economicsDisposition",
+    "reasonCodes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:route-model-economics-binding:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "catalogueRawDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "catalogueNormalizedDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "candidateSourceSetDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "candidateMemberDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "configuredRouteMemberDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "provider": {
+      "$ref": "#/$defs/identifier"
+    },
+    "requestedModel": {
+      "$ref": "#/$defs/identifier"
+    },
+    "underlyingModel": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/identifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "transport": {
+      "enum": [
+        "direct-sdk",
+        "openrouter",
+        "codex-cli",
+        "claude-cli"
+      ]
+    },
+    "adapterPackage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/identifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sourceEvidenceKind": {
+      "enum": [
+        "account-observation",
+        "host-source-identity",
+        "none"
+      ]
+    },
+    "accountSourceUseAuthorizationDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "accountObservationDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "accountAttemptDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "hostAuthorizationDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "credentialSourceIdentityDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cataloguePrice": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/price"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "unsupportedPriceMembers": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/identifier"
+      }
+    },
+    "conditionalPricing": {
+      "type": "boolean"
+    },
+    "entitlementDisposition": {
+      "enum": [
+        "entitled",
+        "not-entitled",
+        "not-observed",
+        "refused"
+      ]
+    },
+    "quotaDisposition": {
+      "enum": [
+        "available",
+        "exhausted",
+        "not-observed",
+        "refused"
+      ]
+    },
+    "serviceTier": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._+:/-]{0,127}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "serviceTierSourceDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "paidUsageEnabled": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "automaticOverageEnabled": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "automaticTopUpEnabled": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "spendCap": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "amount",
+            "currency",
+            "enforced"
+          ],
+          "properties": {
+            "amount": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/decimal"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "currency": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/identifier"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "enforced": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "fallbackProhibited": {
+      "const": true
+    },
+    "observedAt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/instant"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "expiresAt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/instant"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "economicsDisposition": {
+      "enum": [
+        "zero-paid",
+        "paid",
+        "conflict-ineligible",
+        "not-observed",
+        "refused"
+      ]
+    },
+    "reasonCodes": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/reasonCode"
+      }
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "iri": {
+      "type": "string",
+      "minLength": 5,
+      "pattern": "^urn:[^<>\\s]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "credentialName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z_][A-Z0-9_]{0,127}$"
+    },
+    "decimal": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z][A-Z0-9_]{1,95}(?::[^\\s]{1,192})?$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]{0,127}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "price": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputPerMillion",
+        "outputPerMillion",
+        "currency",
+        "knownMembers"
+      ],
+      "properties": {
+        "inputPerMillion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/decimal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outputPerMillion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/decimal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "knownMembers": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        }
+      }
+    }
+  }
+}

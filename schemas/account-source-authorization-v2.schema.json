@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:account-source-authorization:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "accountSourceKeyDigest",
+    "sourceKind",
+    "transport",
+    "provider",
+    "controlPlaneIdentity",
+    "responseMappingDigest",
+    "credentialMode",
+    "credentialName",
+    "credentialSourceIdentityDigest",
+    "profileDigest",
+    "effectivePolicyDigest",
+    "privacyProjectionDigest",
+    "accountSourceProtocolDigest",
+    "operationalActivationDigest",
+    "authorizationFreshnessPolicyDigest",
+    "maximumResponseBytes",
+    "timeoutMilliseconds",
+    "issuedAt",
+    "expiresAt",
+    "inferenceProhibited",
+    "fallbackProhibited"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:account-source-authorization:2"
+    },
+    "version": {
+      "const": 1
+    },
+    "accountSourceKeyDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "sourceKind": {
+      "enum": [
+        "api-key",
+        "subscription-host"
+      ]
+    },
+    "transport": {
+      "enum": [
+        "direct-sdk",
+        "openrouter",
+        "codex-cli",
+        "claude-cli"
+      ]
+    },
+    "provider": {
+      "$ref": "#/$defs/identifier"
+    },
+    "controlPlaneIdentity": {
+      "type": "string",
+      "minLength": 9,
+      "pattern": "^https://"
+    },
+    "responseMappingDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "credentialMode": {
+      "enum": [
+        "repository-env-file",
+        "host-authenticated"
+      ]
+    },
+    "credentialName": {
+      "$ref": "#/$defs/credentialName"
+    },
+    "credentialSourceIdentityDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "profileDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "effectivePolicyDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "privacyProjectionDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "accountSourceProtocolDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "operationalActivationDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "authorizationFreshnessPolicyDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "maximumResponseBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576
+    },
+    "timeoutMilliseconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60000
+    },
+    "issuedAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "expiresAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "inferenceProhibited": {
+      "const": true
+    },
+    "fallbackProhibited": {
+      "const": true
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "iri": {
+      "type": "string",
+      "minLength": 5,
+      "pattern": "^urn:[^<>\\s]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "credentialName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z_][A-Z0-9_]{0,127}$"
+    },
+    "decimal": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z][A-Z0-9_]{1,95}(?::[^\\s]{1,192})?$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]{0,127}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "accountSourceKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceKind",
+        "transport",
+        "provider",
+        "controlPlaneIdentity",
+        "responseMappingDigest",
+        "credentialMode",
+        "credentialName",
+        "credentialSourceIdentityDigest",
+        "accountSourceProtocolDigest"
+      ],
+      "properties": {
+        "sourceKind": {
+          "enum": [
+            "api-key",
+            "subscription-host"
+          ]
+        },
+        "transport": {
+          "enum": [
+            "direct-sdk",
+            "openrouter",
+            "codex-cli",
+            "claude-cli"
+          ]
+        },
+        "provider": {
+          "$ref": "#/$defs/identifier"
+        },
+        "controlPlaneIdentity": {
+          "type": "string",
+          "minLength": 9,
+          "pattern": "^https://"
+        },
+        "responseMappingDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "credentialMode": {
+          "enum": [
+            "repository-env-file",
+            "host-authenticated"
+          ]
+        },
+        "credentialName": {
+          "$ref": "#/$defs/credentialName"
+        },
+        "credentialSourceIdentityDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "accountSourceProtocolDigest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    }
+  }
+}

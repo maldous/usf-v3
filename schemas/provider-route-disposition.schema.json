@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:provider-route-disposition:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "catalogueRawDigest",
+    "catalogueNormalizedDigest",
+    "candidateSourceSetDigest",
+    "candidateMemberDigest",
+    "configuredRouteMemberDigest",
+    "provider",
+    "model",
+    "transport",
+    "configurationDisposition",
+    "adapterDisposition",
+    "credentialDisposition",
+    "accountDisposition",
+    "sourceConflictDisposition",
+    "economicsDisposition",
+    "serviceTierDisposition",
+    "availabilityDisposition",
+    "qualificationDisposition",
+    "allocationDisposition",
+    "reasonCodes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:provider-route-disposition:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "catalogueRawDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "catalogueNormalizedDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "candidateSourceSetDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "candidateMemberDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "configuredRouteMemberDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "provider": {
+      "$ref": "#/$defs/identifier"
+    },
+    "model": {
+      "$ref": "#/$defs/identifier"
+    },
+    "transport": {
+      "enum": [
+        "direct-sdk",
+        "openrouter",
+        "codex-cli",
+        "claude-cli"
+      ]
+    },
+    "configurationDisposition": {
+      "enum": [
+        "configured",
+        "unconfigured",
+        "ambiguous"
+      ]
+    },
+    "adapterDisposition": {
+      "enum": [
+        "installed",
+        "absent",
+        "unmapped"
+      ]
+    },
+    "credentialDisposition": {
+      "enum": [
+        "present",
+        "absent",
+        "unverified",
+        "refused"
+      ]
+    },
+    "accountDisposition": {
+      "enum": [
+        "observed",
+        "not-observed",
+        "deferred",
+        "conflict-ineligible",
+        "refused"
+      ]
+    },
+    "sourceConflictDisposition": {
+      "enum": [
+        "single-source",
+        "conflict-ineligible",
+        "not-observed"
+      ]
+    },
+    "economicsDisposition": {
+      "enum": [
+        "zero-paid",
+        "paid",
+        "conflict-ineligible",
+        "not-observed",
+        "refused"
+      ]
+    },
+    "serviceTierDisposition": {
+      "enum": [
+        "observed",
+        "not-observed",
+        "conflict-ineligible",
+        "refused"
+      ]
+    },
+    "availabilityDisposition": {
+      "enum": [
+        "available",
+        "unavailable",
+        "not-observed"
+      ]
+    },
+    "qualificationDisposition": {
+      "enum": [
+        "qualified",
+        "unqualified",
+        "not-observed"
+      ]
+    },
+    "allocationDisposition": {
+      "enum": [
+        "allocatable",
+        "not-allocatable",
+        "not-observed"
+      ]
+    },
+    "reasonCodes": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/reasonCode"
+      }
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "iri": {
+      "type": "string",
+      "minLength": 5,
+      "pattern": "^urn:[^<>\\s]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "credentialName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z_][A-Z0-9_]{0,127}$"
+    },
+    "decimal": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z][A-Z0-9_]{1,95}(?::[^\\s]{1,192})?$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]{0,127}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    }
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:provider-account-receipt-acquisition-activation:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "ownerWork",
+    "ownerWorkDigest",
+    "ownerContract",
+    "ownerContractDigest",
+    "ownerRealisationPermission",
+    "ownerRealisationPermissionDigest",
+    "operationalProtocol",
+    "operationalProtocolDigest",
+    "profile",
+    "profileDigest",
+    "manifestPath",
+    "manifestDigest",
+    "ownerConstructionEvidenceDigest",
+    "ownerConstructionProofDigest",
+    "ownerConstructionGrantDigest",
+    "workCompletionEvidenceDigest",
+    "workCompletionProofDigest",
+    "integrationReceiptDigest",
+    "completionBasisDigest",
+    "activationMode",
+    "activationModeDigest",
+    "activationAlgorithm",
+    "activationAlgorithmDigest",
+    "receiptCommand",
+    "receiptCommandDigest",
+    "receiptRuntimeClosureDigest",
+    "effectivePolicyDigest",
+    "privacyProjectionDigest",
+    "effectiveActivationState",
+    "maximumThrough",
+    "nonClaims"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:provider-account-receipt-acquisition-activation:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "ownerWork": {
+      "$ref": "#/$defs/iri"
+    },
+    "ownerWorkDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "ownerContract": {
+      "$ref": "#/$defs/iri"
+    },
+    "ownerContractDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "ownerRealisationPermission": {
+      "$ref": "#/$defs/iri"
+    },
+    "ownerRealisationPermissionDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "operationalProtocol": {
+      "$ref": "#/$defs/iri"
+    },
+    "operationalProtocolDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "profile": {
+      "$ref": "#/$defs/iri"
+    },
+    "profileDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "manifestPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^graph/[A-Za-z0-9._/-]{1,191}\\.json$"
+    },
+    "manifestDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "ownerConstructionEvidenceDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "ownerConstructionProofDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "ownerConstructionGrantDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "workCompletionEvidenceDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "workCompletionProofDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "integrationReceiptDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "completionBasisDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "activationMode": {
+      "enum": [
+        "activate"
+      ]
+    },
+    "activationModeDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "activationAlgorithm": {
+      "$ref": "#/$defs/iri"
+    },
+    "activationAlgorithmDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "receiptCommand": {
+      "$ref": "#/$defs/iri"
+    },
+    "receiptCommandDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "receiptRuntimeClosureDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "effectivePolicyDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "privacyProjectionDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "effectiveActivationState": {
+      "enum": [
+        "urn:usf:contract-state:active"
+      ]
+    },
+    "maximumThrough": {
+      "enum": [
+        "check",
+        "integrate",
+        "publish",
+        "runtime",
+        "call",
+        "route"
+      ]
+    },
+    "nonClaims": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "iri": {
+      "type": "string",
+      "minLength": 5,
+      "pattern": "^urn:[^<>\\s]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "credentialName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z_][A-Z0-9_]{0,127}$"
+    },
+    "decimal": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z][A-Z0-9_]{1,95}(?::[^\\s]{1,192})?$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]{0,127}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    }
+  }
+}

@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:account-observation:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "accountSourceKeyDigest",
+    "acquisitionAuthorizationDigest",
+    "credentialSourceIdentityDigest",
+    "accountSourceProtocolDigest",
+    "responseMappingDigest",
+    "observationFreshnessPolicyDigest",
+    "rawProviderResponseDigest",
+    "authenticatedAccountIdentityDigest",
+    "transport",
+    "provider",
+    "controlPlaneIdentity",
+    "acquiredAt",
+    "providerCredentialExpiresAt",
+    "expiresAt",
+    "serviceTier",
+    "entitlementDisposition",
+    "paidUsageEnabled",
+    "automaticOverageEnabled",
+    "automaticTopUpEnabled",
+    "spendCap",
+    "quota",
+    "usage",
+    "costDisposition",
+    "verificationDisposition",
+    "nonClaims"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:account-observation:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "accountSourceKeyDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "acquisitionAuthorizationDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "credentialSourceIdentityDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "accountSourceProtocolDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "responseMappingDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "observationFreshnessPolicyDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "rawProviderResponseDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "authenticatedAccountIdentityDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "transport": {
+      "enum": [
+        "direct-sdk",
+        "openrouter",
+        "codex-cli",
+        "claude-cli"
+      ]
+    },
+    "provider": {
+      "$ref": "#/$defs/identifier"
+    },
+    "controlPlaneIdentity": {
+      "type": "string",
+      "minLength": 9,
+      "pattern": "^https://"
+    },
+    "acquiredAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "providerCredentialExpiresAt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/instant"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "expiresAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "serviceTier": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._+:/-]{0,127}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "entitlementDisposition": {
+      "enum": [
+        "entitled",
+        "not-entitled",
+        "not-observed",
+        "refused"
+      ]
+    },
+    "paidUsageEnabled": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "automaticOverageEnabled": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "automaticTopUpEnabled": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "spendCap": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "amount",
+            "currency",
+            "enforced"
+          ],
+          "properties": {
+            "amount": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/decimal"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "currency": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/identifier"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "enforced": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "quota": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "limit",
+        "remaining",
+        "resetAt",
+        "availability"
+      ],
+      "properties": {
+        "limit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/count"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "remaining": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/count"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resetAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "availability": {
+          "enum": [
+            "available",
+            "exhausted",
+            "not-observed",
+            "refused"
+          ]
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amount",
+        "currency",
+        "periodStartedAt",
+        "periodEndsAt"
+      ],
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/decimal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodStartedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodEndsAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "costDisposition": {
+      "enum": [
+        "zero-paid",
+        "paid",
+        "unknown",
+        "refused"
+      ]
+    },
+    "verificationDisposition": {
+      "enum": [
+        "verified",
+        "stale",
+        "mismatch",
+        "untrusted",
+        "refused"
+      ]
+    },
+    "nonClaims": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "iri": {
+      "type": "string",
+      "minLength": 5,
+      "pattern": "^urn:[^<>\\s]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "credentialName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z_][A-Z0-9_]{0,127}$"
+    },
+    "decimal": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z][A-Z0-9_]{1,95}(?::[^\\s]{1,192})?$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]{0,127}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    }
+  }
+}

@@ -2,6 +2,25 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { sha256 } from "../../../src/core/canonical.ts";
 import {
+  AccountSourceError,
+  accountSourceKeyDigest,
+  authorizationUseDisposition,
+  observationUseDisposition,
+  parseAccountObservation,
+  parseAccountSourceAuthorizationV2,
+  parseAccountSourceKey,
+} from "../../../src/providers/account-sources.ts";
+import { credentialSourceIdentityDigest, HostSourceIdentityError } from "../../../src/providers/host-source-identities.ts";
+import {
+  candidateDisposition,
+  candidatePrefix,
+  economicsBuckets,
+  economicsListCursor,
+  economicsListCursorMatches,
+  projectCandidateDispositions,
+  reduceCandidateSource,
+} from "../../../src/providers/disposition.ts";
+import {
   accountSourceAuthorizationDigest,
   accountTierReceiptDigest,
   evaluateZeroPaidEconomics,
@@ -397,4 +416,244 @@ test("OpenRouter account receipt verification derives source facts but refuses t
       : overrides;
     assert.equal(verify(auth, record, effectiveOverrides).code, expected, label);
   }
+});
+
+// Receipt v2 no-contact source domain. Each case below is one rule family with
+// planted defects, not a provider matrix: the modules under test perform no
+// contact, so the interesting behaviour is entirely in what they refuse.
+
+const d = (seed: string): string => sha256(seed);
+const instant = (iso: string): string => iso;
+
+const apiKey = {
+  sourceKind: "api-key" as const,
+  transport: "openrouter" as const,
+  provider: "openrouter",
+  controlPlaneIdentity: "https://openrouter.ai/api/v1/key",
+  responseMappingDigest: d("mapping"),
+  credentialMode: "repository-env-file" as const,
+  credentialName: "OPENROUTER_API_KEY",
+  credentialSourceIdentityDigest: d("credential-source"),
+  accountSourceProtocolDigest: d("protocol"),
+};
+
+test("the factual account-source key is profile-independent and rejects crossed source kinds", () => {
+  const key = parseAccountSourceKey(apiKey);
+  const digest = accountSourceKeyDigest(key);
+
+  // Profile, policy and privacy bind in the authorization, never in the key, so
+  // one factual observation is reusable across profiles without a second call.
+  assert.equal(accountSourceKeyDigest(parseAccountSourceKey({ ...apiKey })), digest);
+  // Any member of the key does move it.
+  assert.notEqual(accountSourceKeyDigest(parseAccountSourceKey({ ...apiKey, credentialSourceIdentityDigest: d("rotated") })), digest);
+
+  // A host-authenticated API key, or a repository-env-file subscription host,
+  // would let one source kind borrow the other's evidence.
+  for (const crossed of [
+    { ...apiKey, credentialMode: "host-authenticated" as const },
+    { ...apiKey, sourceKind: "subscription-host" as const },
+  ]) {
+    assert.throws(() => parseAccountSourceKey(crossed), (error: unknown) => error instanceof AccountSourceError && error.code === "ACCOUNT_SOURCE_RECORD_MALFORMED");
+  }
+});
+
+test("authorization and observation reconstruct their own identities and honour explicit instants", () => {
+  const key = parseAccountSourceKey(apiKey);
+  const authorization = {
+    schema: "urn:usf:account-source-authorization:2", version: 1,
+    accountSourceKeyDigest: accountSourceKeyDigest(key), ...apiKey,
+    profileDigest: d("profile"), effectivePolicyDigest: d("policy"), privacyProjectionDigest: d("privacy"),
+    operationalActivationDigest: d("activation"), authorizationFreshnessPolicyDigest: d("freshness"),
+    maximumResponseBytes: 65536, timeoutMilliseconds: 10000,
+    issuedAt: instant("2026-09-01T00:00:00.000Z"), expiresAt: instant("2026-09-01T01:00:00.000Z"),
+    inferenceProhibited: true, fallbackProhibited: true,
+  };
+  const parsed = parseAccountSourceAuthorizationV2(authorization);
+  assert.equal(parsed.accountSourceKeyDigest, accountSourceKeyDigest(key));
+
+  // The caller does not get to name the key: a declared digest that does not
+  // reconstruct from the record's own members is refused.
+  assert.throws(
+    () => parseAccountSourceAuthorizationV2({ ...authorization, accountSourceKeyDigest: d("claimed") }),
+    (error: unknown) => error instanceof AccountSourceError && error.code === "ACCOUNT_SOURCE_KEY_MISMATCH",
+  );
+
+  // The evaluation instant is supplied, never read from the clock, so a
+  // projection and the decision it informs cannot disagree about "now".
+  assert.equal(authorizationUseDisposition(parsed, "2026-09-01T00:30:00.000Z", apiKey.credentialSourceIdentityDigest), "current");
+  assert.equal(authorizationUseDisposition(parsed, "2026-08-31T23:00:00.000Z", apiKey.credentialSourceIdentityDigest), "not-yet-valid");
+  assert.equal(authorizationUseDisposition(parsed, "2026-09-01T01:00:00.000Z", apiKey.credentialSourceIdentityDigest), "expired");
+  // Credential rotation immediately invalidates stale economics authority.
+  assert.equal(authorizationUseDisposition(parsed, "2026-09-01T00:30:00.000Z", d("rotated")), "credential-identity-moved");
+
+  const observation = {
+    schema: "urn:usf:account-observation:1", version: 1,
+    accountSourceKeyDigest: accountSourceKeyDigest(key), acquisitionAuthorizationDigest: d("auth"),
+    credentialSourceIdentityDigest: apiKey.credentialSourceIdentityDigest,
+    accountSourceProtocolDigest: d("protocol"), responseMappingDigest: d("mapping"),
+    observationFreshnessPolicyDigest: d("obs-freshness"), rawProviderResponseDigest: d("raw"),
+    authenticatedAccountIdentityDigest: d("account"), transport: "openrouter", provider: "openrouter",
+    controlPlaneIdentity: "https://openrouter.ai/api/v1/key",
+    acquiredAt: instant("2026-09-01T00:00:00.000Z"), providerCredentialExpiresAt: null,
+    expiresAt: instant("2026-09-01T01:00:00.000Z"), serviceTier: "free",
+    entitlementDisposition: "entitled", paidUsageEnabled: false, automaticOverageEnabled: false,
+    automaticTopUpEnabled: false, spendCap: null,
+    quota: { limit: 100, remaining: 100, resetAt: null, availability: "available" },
+    usage: { amount: null, currency: null, periodStartedAt: null, periodEndsAt: null },
+    costDisposition: "zero-paid", verificationDisposition: "verified", nonClaims: [],
+  };
+  assert.equal(observationUseDisposition(parseAccountObservation(observation), "2026-09-01T00:30:00.000Z"), "current");
+
+  // Provider-owned credential expiry caps observation expiry: an observation may
+  // never outlive the credential that produced it.
+  assert.throws(
+    () => parseAccountObservation({ ...observation, providerCredentialExpiresAt: instant("2026-09-01T00:30:00.000Z") }),
+    (error: unknown) => error instanceof AccountSourceError && error.code === "ACCOUNT_SOURCE_RECORD_MALFORMED",
+  );
+});
+
+test("a host source without a stable identity stays ineligible rather than keying on an expiring authorization", () => {
+  const stable = {
+    transport: "codex-cli" as const, provider: "openai", mappingDigest: d("host-mapping"),
+    credentialFileIdentityDigest: d("credential-file"), executableIdentityDigest: d("executable"),
+    authenticationModeDigest: d("auth-mode"),
+  };
+  const identity = credentialSourceIdentityDigest(stable);
+  // Routine host re-authentication must not move the source key, so nothing
+  // time-varying participates in it.
+  assert.equal(credentialSourceIdentityDigest({ ...stable }), identity);
+  // A substituted credential file or executable does move it.
+  assert.notEqual(credentialSourceIdentityDigest({ ...stable, credentialFileIdentityDigest: d("other-file") }), identity);
+  assert.notEqual(credentialSourceIdentityDigest({ ...stable, executableIdentityDigest: d("other-exe") }), identity);
+
+  assert.throws(
+    () => credentialSourceIdentityDigest({ ...stable, credentialFileIdentityDigest: null, executableIdentityDigest: null }),
+    (error: unknown) => error instanceof HostSourceIdentityError && error.code === "HOST_SOURCE_IDENTITY_UNSTABLE",
+  );
+});
+
+test("candidate reduction never chooses implicitly and the projection stays total", () => {
+  const at = "2026-09-01T00:30:00.000Z";
+  const candidate = {
+    candidateMemberDigest: d("candidate"), sourceKind: "models-dev-route" as const,
+    provider: "openrouter", model: "some-model", transport: "openrouter" as const,
+    configuredRouteMemberDigest: null, adapterPackage: "@openrouter/ai-sdk-provider",
+    adapterInstalled: true, conditionalPricing: false, unsupportedPriceMembers: [],
+    cataloguePriceZero: true,
+  };
+  const source = (credentialSeed: string) => ({
+    key: parseAccountSourceKey({ ...apiKey, credentialSourceIdentityDigest: d(credentialSeed) }),
+    observation: null, hostIdentity: null, attempt: null, useAuthorization: null,
+  });
+
+  // Zero applicable sources is not-observed, never an optimistic default.
+  const none = reduceCandidateSource(candidate, [], at);
+  assert.equal(none.accountDisposition, "not-observed");
+  assert.deepEqual(none.reasonCodes, ["ACCOUNT_SOURCE_NOT_OBSERVED"]);
+
+  // Two competing applicable sources must refuse rather than pick by array
+  // order, latency, price or provider preference.
+  const conflicted = reduceCandidateSource(candidate, [source("one"), source("two")], at);
+  assert.equal(conflicted.accountDisposition, "conflict-ineligible");
+  assert.equal(conflicted.sourceConflictDisposition, "conflict-ineligible");
+  assert.equal(conflicted.selected, null);
+
+  // A mapping applies only when provider and transport both match; provider
+  // alone would let an OpenRouter account speak for a direct-SDK route.
+  const otherTransport = { ...candidate, transport: "direct-sdk" as const };
+  assert.equal(reduceCandidateSource(otherTransport, [source("one")], at).applicableCount, 0);
+
+  // Totality: every candidate receives exactly one disposition, in canonical
+  // candidate order.
+  const many = [candidate, { ...candidate, candidateMemberDigest: d("candidate-2") }, { ...candidate, candidateMemberDigest: d("candidate-3") }];
+  const projected = projectCandidateDispositions(many, [], at);
+  assert.equal(projected.length, many.length);
+  assert.deepEqual([...projected].map((row) => row.candidateMemberDigest), [...many].map((row) => row.candidateMemberDigest).sort());
+  for (const row of projected) assert.equal(row.economicsDisposition, "not-observed");
+});
+
+test("zero-paid requires every control to be explicitly disabled and every price member represented", () => {
+  const at = "2026-09-01T00:30:00.000Z";
+  const key = parseAccountSourceKey(apiKey);
+  const observationOf = (overrides: Record<string, unknown>) => parseAccountObservation({
+    schema: "urn:usf:account-observation:1", version: 1,
+    accountSourceKeyDigest: accountSourceKeyDigest(key), acquisitionAuthorizationDigest: d("auth"),
+    credentialSourceIdentityDigest: apiKey.credentialSourceIdentityDigest,
+    accountSourceProtocolDigest: d("protocol"), responseMappingDigest: d("mapping"),
+    observationFreshnessPolicyDigest: d("obs-freshness"), rawProviderResponseDigest: d("raw"),
+    authenticatedAccountIdentityDigest: d("account"), transport: "openrouter", provider: "openrouter",
+    controlPlaneIdentity: "https://openrouter.ai/api/v1/key",
+    acquiredAt: "2026-09-01T00:00:00.000Z", providerCredentialExpiresAt: null,
+    expiresAt: "2026-09-01T01:00:00.000Z", serviceTier: "free",
+    entitlementDisposition: "entitled", paidUsageEnabled: false, automaticOverageEnabled: false,
+    automaticTopUpEnabled: false, spendCap: null,
+    quota: { limit: 100, remaining: 100, resetAt: null, availability: "available" },
+    usage: { amount: null, currency: null, periodStartedAt: null, periodEndsAt: null },
+    costDisposition: "zero-paid", verificationDisposition: "verified", nonClaims: [],
+    ...overrides,
+  });
+  const candidate = {
+    candidateMemberDigest: d("candidate"), sourceKind: "models-dev-route" as const,
+    provider: "openrouter", model: "some-model", transport: "openrouter" as const,
+    configuredRouteMemberDigest: null, adapterPackage: "@openrouter/ai-sdk-provider",
+    adapterInstalled: true, conditionalPricing: false, unsupportedPriceMembers: [] as readonly string[],
+    cataloguePriceZero: true,
+  };
+  const dispositionFor = (candidateOverrides: Record<string, unknown>, observation: unknown) => {
+    const merged = { ...candidate, ...candidateOverrides };
+    const sources = [{ key, observation, hostIdentity: null, attempt: null, useAuthorization: null }];
+    return candidateDisposition(merged as never, reduceCandidateSource(merged as never, sources as never, at), at);
+  };
+
+  assert.equal(dispositionFor({}, observationOf({})).economicsDisposition, "zero-paid");
+
+  const cases: readonly [string, Record<string, unknown>, Record<string, unknown>, string, string][] = [
+    ["paid usage enabled", {}, { paidUsageEnabled: true }, "paid", "ACCOUNT_PAID_CONTROLS_ENABLED"],
+    ["automatic overage enabled", {}, { automaticOverageEnabled: true }, "paid", "ACCOUNT_PAID_CONTROLS_ENABLED"],
+    ["automatic top-up enabled", {}, { automaticTopUpEnabled: true }, "paid", "ACCOUNT_PAID_CONTROLS_ENABLED"],
+    ["an unknown control", {}, { automaticTopUpEnabled: null }, "not-observed", "ACCOUNT_PAID_CONTROLS_UNKNOWN"],
+    ["a conditional price", { conditionalPricing: true }, {}, "not-observed", "CATALOGUE_PRICE_COMPLETENESS_UNKNOWN"],
+    ["an unrepresented price member", { unsupportedPriceMembers: ["cache_read"] }, {}, "not-observed", "CATALOGUE_PRICE_COMPLETENESS_UNKNOWN"],
+    ["a non-zero catalogue price", { cataloguePriceZero: false }, {}, "not-observed", "CATALOGUE_PRICE_NOT_ZERO"],
+    ["no entitlement", {}, { entitlementDisposition: "not-observed" }, "not-observed", "ACCOUNT_NOT_ENTITLED"],
+    ["exhausted quota", {}, { quota: { limit: 100, remaining: 0, resetAt: null, availability: "exhausted" } }, "not-observed", "ACCOUNT_QUOTA_UNAVAILABLE"],
+  ];
+  for (const [label, candidateOverrides, observationOverrides, expected, reason] of cases) {
+    const result = dispositionFor(candidateOverrides, observationOf(observationOverrides));
+    assert.equal(result.economicsDisposition, expected, label);
+    assert.ok(result.reasonCodes.includes(reason), `${label}: expected ${reason}, saw ${result.reasonCodes.join(",")}`);
+    assert.notEqual(result.economicsDisposition, "zero-paid", label);
+  }
+
+  // An expired observation is not current evidence, whatever it says.
+  assert.equal(dispositionFor({}, observationOf({})).economicsDisposition, "zero-paid");
+  const expired = candidateDisposition(candidate as never, reduceCandidateSource(candidate as never, [{ key, observation: observationOf({}), hostIdentity: null, attempt: null, useAuthorization: null }] as never, "2026-09-01T02:00:00.000Z"), "2026-09-01T02:00:00.000Z");
+  assert.equal(expired.economicsDisposition, "not-observed");
+  assert.ok(expired.reasonCodes.includes("ACCOUNT_OBSERVATION_EXPIRED"));
+});
+
+test("economics buckets and list cursors bind their exact context", () => {
+  const members = [d("a"), d("b"), d("c")];
+  const buckets = economicsBuckets("route-model-economics-binding", members);
+  assert.equal(buckets.reduce((sum, bucket) => sum + bucket.memberCount, 0), members.length);
+  for (const bucket of buckets) {
+    assert.match(bucket.prefix, /^[0-9a-f]{2}$/u);
+    for (const digest of bucket.members) assert.equal(candidatePrefix(digest), bucket.prefix);
+  }
+
+  const context = {
+    projectionDigest: d("projection"), recordKind: "route-model-economics-binding" as const,
+    aggregateRootDigest: d("root"), providerFilter: null, modelFilter: null,
+    lastCandidateMemberDigest: d("last"),
+  };
+  const cursor = economicsListCursor(context);
+  assert.equal(economicsListCursorMatches(cursor, context), true);
+  // Any context movement must refuse the cursor rather than silently paginate
+  // across two different denominators.
+  for (const moved of [
+    { ...context, projectionDigest: d("moved") },
+    { ...context, aggregateRootDigest: d("moved") },
+    { ...context, recordKind: "provider-route-disposition" as const },
+    { ...context, providerFilter: "groq" },
+  ]) assert.equal(economicsListCursorMatches(cursor, moved), false);
 });

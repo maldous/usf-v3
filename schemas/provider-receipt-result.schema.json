@@ -1,0 +1,338 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:provider-receipt-result:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "status",
+    "mode",
+    "operationalActivationDigest",
+    "selectedAccountSourceKeyDigest",
+    "sourceStateManifestDigest",
+    "accountAttemptDigest",
+    "sourceStateHeadSetRecordDigest",
+    "economicsProjectionDigest",
+    "economicsProjection",
+    "selectedRouteModelBindings",
+    "selectedRouteDispositions",
+    "reasonCodes",
+    "nonClaims"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:provider-receipt-result:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "deferred",
+        "refused"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "activate",
+        "acquire",
+        "verify",
+        "reduce"
+      ]
+    },
+    "operationalActivationDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "selectedAccountSourceKeyDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sourceStateManifestDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "accountAttemptDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sourceStateHeadSetRecordDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "economicsProjectionDigest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "economicsProjection": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/economicsProjectionRecord"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "selectedRouteModelBindings": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 1024,
+      "items": {
+        "$ref": "#/$defs/digest"
+      }
+    },
+    "selectedRouteDispositions": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 1024,
+      "items": {
+        "$ref": "#/$defs/digest"
+      }
+    },
+    "reasonCodes": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/reasonCode"
+      }
+    },
+    "nonClaims": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "iri": {
+      "type": "string",
+      "minLength": 5,
+      "pattern": "^urn:[^<>\\s]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "credentialName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z_][A-Z0-9_]{0,127}$"
+    },
+    "decimal": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z][A-Z0-9_]{1,95}(?::[^\\s]{1,192})?$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]{0,127}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "economicsProjectionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "version",
+        "catalogueRawDigest",
+        "catalogueNormalizedDigest",
+        "hostCensusDigest",
+        "sourceStateManifestDigest",
+        "sourceSetDigest",
+        "bindingSetDigest",
+        "dispositionSetDigest",
+        "bindingBucketDigests",
+        "dispositionBucketDigests",
+        "accountSourceAuthorizationDigests",
+        "accountObservationDigests",
+        "accountSourceAttemptDigests",
+        "hostSourceIdentityDigests",
+        "hostAuthorizationDigests",
+        "providerCount",
+        "sourceCount",
+        "candidateCount",
+        "configuredRouteCount",
+        "generatedAt",
+        "nonClaims"
+      ],
+      "properties": {
+        "schema": {
+          "const": "urn:usf:provider-economics-projection:1"
+        },
+        "version": {
+          "const": 1
+        },
+        "catalogueRawDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "catalogueNormalizedDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "hostCensusDigest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceStateManifestDigest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceSetDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "bindingSetDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "dispositionSetDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "bindingBucketDigests": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "dispositionBucketDigests": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "accountSourceAuthorizationDigests": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "accountObservationDigests": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "accountSourceAttemptDigests": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "hostSourceIdentityDigests": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "hostAuthorizationDigests": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "providerCount": {
+          "$ref": "#/$defs/count"
+        },
+        "sourceCount": {
+          "$ref": "#/$defs/count"
+        },
+        "candidateCount": {
+          "$ref": "#/$defs/count"
+        },
+        "configuredRouteCount": {
+          "$ref": "#/$defs/count"
+        },
+        "generatedAt": {
+          "$ref": "#/$defs/instant"
+        },
+        "nonClaims": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/claim"
+          }
+        }
+      }
+    }
+  }
+}

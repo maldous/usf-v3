@@ -25,6 +25,13 @@ import {
   type AccountSourceAuthorization,
   type AccountTierReceipt,
 } from "../providers/economics.ts";
+import type { AccountSourceTransport } from "../providers/account-sources.ts";
+import { credentialSourceIdentityDigest, HostSourceIdentityError } from "../providers/host-source-identities.ts";
+import {
+  candidatePrefix,
+  projectCandidateDispositions,
+  type EconomicsCandidate,
+} from "../providers/disposition.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 
 const workIri = "urn:usf:work:provider-account-tier-receipt";
@@ -385,6 +392,91 @@ function verifyReceipt(root: string, request: ParsedRequest, graph: SemanticGrap
   return receipt;
 }
 
+const hostTransports = new Set<AccountSourceTransport>(["codex-cli", "claude-cli"]);
+
+/**
+ * Project the shared account-source key domain and the terminal economics
+ * disposition for the exact verified route.
+ *
+ * This is deliberately conservative about what v1 evidence can support. A v1
+ * account-tier receipt retains no credential-source identity, so the factual
+ * account-source key is genuinely not derivable from it, and a host route
+ * additionally needs a stable host-source identity that this path never
+ * observes. Both cases report a null key with an explicit reason rather than
+ * inventing one, because a fabricated source key would silently let one
+ * account's economics stand in for another's.
+ *
+ * The disposition is computed over an empty factual source set, which is the
+ * truth: no v2 observation exists. Totality still holds, so the route receives
+ * an explicit `not-observed` rather than no answer.
+ */
+function routeAccountSourceProjection(
+  route: ProviderRouteConfig,
+  mapping: Readonly<{ endpoint: string; credentialName: string; mappingDigest: string; protocolDigest: string }>,
+  observedAt: string,
+): Readonly<Record<string, unknown>> {
+  const transport: AccountSourceTransport = route.adapterPackage === "@openrouter/ai-sdk-provider"
+    ? "openrouter"
+    : hostTransports.has(route.family as AccountSourceTransport) ? route.family as AccountSourceTransport : "direct-sdk";
+  const sourceKind = hostTransports.has(transport) ? "subscription-host" as const : "models-dev-route" as const;
+  const candidateMemberDigest = canonicalDigest({
+    kind: "provider-candidate-member",
+    sourceKind, provider: route.provider, model: route.model, transport,
+  });
+
+  const keyReasonCodes: string[] = [];
+  const derivedAccountSourceKeyDigest: string | null = null;
+  if (sourceKind === "subscription-host") {
+    // Ask the host-identity rule directly rather than assuming its answer. With
+    // no observed credential-file or executable identity it refuses as unstable,
+    // which is the correct route-level reason: a host source must stay
+    // ineligible rather than key itself on an expiring authorization.
+    try {
+      credentialSourceIdentityDigest({
+        transport, provider: route.provider, mappingDigest: mapping.mappingDigest,
+        credentialFileIdentityDigest: null, executableIdentityDigest: null,
+        authenticationModeDigest: mapping.protocolDigest,
+      });
+      keyReasonCodes.push("ACCOUNT_SOURCE_HOST_IDENTITY_NOT_OBSERVED");
+    } catch (error) {
+      if (!(error instanceof HostSourceIdentityError)) throw error;
+      keyReasonCodes.push(error.code);
+    }
+  } else {
+    // The v1 receipt chain retains no non-secret credential-source identity, so
+    // the profile-independent factual key cannot be reconstructed from it.
+    keyReasonCodes.push("ACCOUNT_SOURCE_CREDENTIAL_IDENTITY_NOT_RETAINED_BY_V1");
+  }
+
+  const candidate: EconomicsCandidate = Object.freeze({
+    candidateMemberDigest,
+    sourceKind,
+    provider: route.provider,
+    model: route.model,
+    transport,
+    configuredRouteMemberDigest: null,
+    adapterPackage: route.adapterPackage,
+    adapterInstalled: false,
+    conditionalPricing: false,
+    unsupportedPriceMembers: Object.freeze([]),
+    cataloguePriceZero: null,
+  });
+  const [disposition] = projectCandidateDispositions([candidate], [], observedAt);
+  return Object.freeze({
+    candidateMemberDigest,
+    candidatePrefix: candidatePrefix(candidateMemberDigest),
+    sourceKind,
+    transport,
+    controlPlaneIdentity: mapping.endpoint,
+    responseMappingDigest: mapping.mappingDigest,
+    accountSourceProtocolDigest: mapping.protocolDigest,
+    credentialName: mapping.credentialName,
+    accountSourceKeyDigest: derivedAccountSourceKeyDigest,
+    accountSourceKeyReasonCodes: Object.freeze([...keyReasonCodes].sort()),
+    disposition,
+  });
+}
+
 export const providerReceiptsCommandHandler: CommandHandler = ({ args, repositoryRoot }) => {
   const request = parseRequest(args);
   const graph = semanticAuthority(repositoryRoot, request);
@@ -395,5 +487,20 @@ export const providerReceiptsCommandHandler: CommandHandler = ({ args, repositor
   const matching = routes.filter((route) => route.id === request.route);
   if (matching.length !== 1) refuse("PROVIDERS_RECEIPT_ROUTE_UNKNOWN", exitCodes.INVALID_INPUT, "The selected route is not uniquely configured.");
   const route = matching[0]!;
-  return { output: verifyReceipt(repositoryRoot, request, graph, route) };
+  const receipt = verifyReceipt(repositoryRoot, request, graph, route);
+  const observedAt = new Date().toISOString().replace(/\.[0-9]+Z$/u, ".000Z");
+  return {
+    output: Object.freeze({
+      ...receipt,
+      accountSourceProjection: routeAccountSourceProjection(route, mappingForRoute(graph, route), observedAt),
+      nonClaims: Object.freeze([
+        ...receipt.nonClaims,
+        "account-source-key-domain-is-projected-not-acquired",
+        "no-live-account-source-contact-was-performed",
+        "no-copy-on-write-source-state-head-set-was-written",
+        "no-retry-attempt-was-recorded",
+        "no-bucketed-economics-projection-was-persisted",
+      ]),
+    }),
+  };
 };
