@@ -6,6 +6,7 @@ import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { loadSemanticGraph, objectValues, objectsFor, resourceDigest, validationRuntimeClosure, type LoadedSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { deriveCurrentRealisationBasis, deriveWork } from "../graph/work.ts";
 import type { CheckedCandidateReceipt as DurableCheckedCandidateReceipt } from "../commands/check.ts";
+import type { FixtureProcessPolicy } from "./fixture-process.ts";
 import { canonicalQuadLine, parseStrictNQuads } from "../graph/nquads.ts";
 import { assertRealisationBasis, parseRealisationBasis, type RealisationBasis } from "./basis.ts";
 import type { AuthenticatedCandidateWorkspace, GitFileMode } from "./index.ts";
@@ -1038,6 +1039,7 @@ export interface IntegrationValidationAuthority {
   readonly environmentDigest: string;
   readonly executionModeDigest: string;
   readonly toolDependencies: readonly Readonly<{ kind: "basis-input" | "host-tool"; id: string; digest: string }>[];
+  readonly fixtureProcessPolicy?: FixtureProcessPolicy | null;
   readonly toolDependencyDigest: string;
   readonly schemaDependencies: readonly Readonly<{ id: string; digest: string }>[];
   readonly schemaDependencyDigest: string;
@@ -1510,6 +1512,8 @@ function assertTouchedPrimaryClean(root: string, paths: readonly string[]): void
   }
 }
 
+import { readFixtureProcessPolicy, confinedFixtureProcessLaunch } from "./fixture-process.ts";
+
 function fileModeAt(root: string, repositoryPath: string): GitFileMode | null {
   const path = safeRepositoryPath(repositoryPath);
   let cursor = root;
@@ -1576,7 +1580,14 @@ function validationAuthorities(root: string, basis: RealisationBasis, phase: "ca
     if (commandTokens.join(" ") !== command || commandTokens.some((token) => token.length === 0)) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     const environmentIri = integrationOne(graph, reference.id, "environment", "iri");
     const executionModeIri = integrationOne(graph, reference.id, "executionMode", "iri");
-    if (environmentIri !== "urn:usf:environment:hermetic" || executionModeIri !== "urn:usf:mode:deterministic-test-substitute") {
+    if (environmentIri !== "urn:usf:environment:hermetic"
+      || (executionModeIri !== "urn:usf:mode:deterministic-test-substitute" && executionModeIri !== "urn:usf:mode:confined-fixture-process:1")) {
+      throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    }
+    const fixtureProcessPolicy = executionModeIri === "urn:usf:mode:confined-fixture-process:1"
+      ? readFixtureProcessPolicy(graph, executionModeIri)
+      : null;
+    if (executionModeIri === "urn:usf:mode:confined-fixture-process:1" && fixtureProcessPolicy === null) {
       throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     }
     const hostTools = objectsFor(graph, reference.id, predicateIri("hostToolDependency"));
@@ -1587,6 +1598,7 @@ function validationAuthorities(root: string, basis: RealisationBasis, phase: "ca
     const toolDependencies = [
       ...basis.inputs.toolDigests.map((dependency) => ({ kind: "basis-input" as const, ...dependency })),
       { kind: "host-tool" as const, id: hostTool, digest: resourceDigest(graph, hostTool) },
+      ...(fixtureProcessPolicy === null ? [] : fixtureProcessPolicy.toolDependencies.map((dependency) => ({ ...dependency }))),
     ];
     const schemaDependencies = basis.inputs.schemaDigests.map((dependency) => ({ ...dependency }));
     return {
@@ -1601,6 +1613,7 @@ function validationAuthorities(root: string, basis: RealisationBasis, phase: "ca
       executionModeDigest: resourceDigest(graph, executionModeIri),
       toolDependencies,
       toolDependencyDigest: canonicalDigest(toolDependencies, { rejectAbsolutePaths: true }),
+      fixtureProcessPolicy,
       schemaDependencies,
       schemaDependencyDigest: canonicalDigest(schemaDependencies, { rejectAbsolutePaths: true }),
       executionAuthorityResourceDigest: resourceDigest(integrationGraph, executionAuthorityIri),
@@ -1695,7 +1708,22 @@ export async function runIntegrationValidation(input: IntegrationVerifierInput):
     const cacheRoot = dependencyRoots[1]!;
     const dependencyRepository = resolve(cacheRoot, "../..");
     assertPrivateUsfDirectorySync(realpathSync(dependencyRepository), ".usf/cache", false);
-    const launch = confinedNodeTestLaunch(input.repositoryRoot, scratch, dependencyRoots, input.authority.commandTokens);
+    const baseLaunch = confinedNodeTestLaunch(input.repositoryRoot, scratch, dependencyRoots, input.authority.commandTokens);
+    if (baseLaunch === null) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    let launch;
+    if (input.authority.executionModeIri === "urn:usf:mode:deterministic-test-substitute") {
+      if (input.authority.fixtureProcessPolicy != null) {
+        throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+      }
+      launch = baseLaunch;
+    } else if (input.authority.executionModeIri === "urn:usf:mode:confined-fixture-process:1") {
+      if (input.authority.fixtureProcessPolicy == null) {
+        throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+      }
+      launch = confinedFixtureProcessLaunch(baseLaunch, input.authority.fixtureProcessPolicy, input.repositoryRoot);
+    } else {
+      throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    }
     if (launch === null) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     const observed = await new Promise<{ exitCode: number; withinLimit: boolean; timedOut: boolean; timeoutTerminationSignal: "none" | "SIGTERM" | "SIGKILL" }>((finish) => {
       const child = spawn(launch.executable, launch.arguments, {

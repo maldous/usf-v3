@@ -369,6 +369,7 @@ interface GraphValidation {
   readonly executionModeIri: string;
   readonly executionModeDigest: string;
   readonly toolDependencies: readonly Readonly<{ kind: "basis-input" | "host-tool"; id: string; digest: string }>[];
+  readonly fixtureProcessPolicy: FixtureProcessPolicy | null;
   readonly schemaDependencies: readonly Readonly<{ id: string; digest: string }>[];
   readonly repositoryReadFiles: readonly string[];
 }
@@ -468,6 +469,8 @@ function graphRepositoryPath(value: string): string {
   return value;
 }
 
+import { readFixtureProcessPolicy, confinedFixtureProcessLaunch, type FixtureProcessPolicy } from "../realisation/fixture-process.ts";
+
 function graphValidation(root: string, basis: RealisationBasis, validationId: string): GraphValidation {
   let graph: LoadedSemanticGraph;
   try { graph = loadSemanticGraph(root, basis.selection.manifestPath); } catch { return refuse("CHECK_VALIDATION_AUTHORITY_INVALID"); }
@@ -489,8 +492,13 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
   const executionModeIri = exactGraphValue(graph, validationId, "urn:usf:predicate:executionMode", "iri", "CHECK_VALIDATION_AUTHORITY_INVALID");
   if (exactGraphValue(graph, validationId, "urn:usf:predicate:applicability", "literal", "CHECK_VALIDATION_AUTHORITY_INVALID") !== "required"
     || environmentIri !== "urn:usf:environment:hermetic"
-    || executionModeIri !== "urn:usf:mode:deterministic-test-substitute") {
+    || (executionModeIri !== "urn:usf:mode:deterministic-test-substitute" && executionModeIri !== "urn:usf:mode:confined-fixture-process:1")) {
     refuse("CHECK_VALIDATION_MODE_UNSUPPORTED");
+  }
+  let fixtureProcessPolicy: FixtureProcessPolicy | null = null;
+  if (executionModeIri === "urn:usf:mode:confined-fixture-process:1") {
+    fixtureProcessPolicy = readFixtureProcessPolicy(graph, executionModeIri);
+    if (fixtureProcessPolicy === null) refuse("CHECK_VALIDATION_MODE_UNSUPPORTED");
   }
   exactGraphType(graph, environmentIri, "urn:usf:type:Environment", "CHECK_VALIDATION_AUTHORITY_INVALID");
   exactGraphType(graph, executionModeIri, "urn:usf:type:ExecutionMode", "CHECK_VALIDATION_AUTHORITY_INVALID");
@@ -522,7 +530,12 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
     environmentDigest: resourceDigest(graph, environmentIri),
     executionModeIri,
     executionModeDigest: resourceDigest(graph, executionModeIri),
-    toolDependencies: Object.freeze([...basisTools, { kind: "host-tool" as const, id: hostTool, digest: resourceDigest(graph, hostTool) }]),
+    toolDependencies: Object.freeze([
+      ...basisTools,
+      { kind: "host-tool" as const, id: hostTool, digest: resourceDigest(graph, hostTool) },
+      ...(fixtureProcessPolicy === null ? [] : fixtureProcessPolicy.toolDependencies.map((dependency) => ({ ...dependency }))),
+    ]),
+    fixtureProcessPolicy,
     schemaDependencies: Object.freeze(schemaDependencies),
     repositoryReadFiles: Object.freeze(repositoryReadFiles),
   });
@@ -1125,7 +1138,18 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
       const dependencyRoots = await toolDependencyRoots();
       const temporary = resolve(workspace, ".usf-check-tmp");
       const execution = await prepareCheckExecutionView(canonicalRoot, workspace, temporary, validation.repositoryReadFiles);
-      const launch = confinedNodeTestLaunch(execution.view, execution.runtime, dependencyRoots, validation.commandTokens);
+      const baseLaunch = confinedNodeTestLaunch(execution.view, execution.runtime, dependencyRoots, validation.commandTokens);
+      if (baseLaunch === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+      let launch;
+      if (validation.executionModeIri === "urn:usf:mode:deterministic-test-substitute") {
+        if (validation.fixtureProcessPolicy !== null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+        launch = baseLaunch;
+      } else if (validation.executionModeIri === "urn:usf:mode:confined-fixture-process:1") {
+        if (validation.fixtureProcessPolicy === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+        launch = confinedFixtureProcessLaunch(baseLaunch, validation.fixtureProcessPolicy, execution.view);
+      } else {
+        refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+      }
       if (launch === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
       let observation: ValidationExecutionObservation;
       try {
