@@ -3,7 +3,7 @@ profile usf-fixture-process-v1 flags=(attach_disconnected,mediate_deleted) {
 
   signal,
 
-  ptrace (read, readby) peer=@{profile_name},
+  ptrace (read, readby) peer="bwrap//&unpriv_bwrap//&usf-fixture-process-v1",
 
   unix (create, getattr, getopt, shutdown) type=stream addr=none,
   unix (send, receive) type=stream addr=none peer=(label=@{profile_name},addr=none),

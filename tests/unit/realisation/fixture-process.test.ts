@@ -464,10 +464,10 @@ test("fixture process AppArmor source permits only peer profile identity reads",
     .map((line) => line.trim())
     .filter((line) => /^ptrace\b/u.test(line));
 
-  assert.deepEqual(ptraceRules, ["ptrace (read, readby) peer=@{profile_name},"]);
+  assert.deepEqual(ptraceRules, ["ptrace (read, readby) peer=\"bwrap//&unpriv_bwrap//&usf-fixture-process-v1\","]);
   assert.doesNotMatch(profile, /^\s*ptrace\s*,/mu, "unqualified ptrace is forbidden");
   assert.doesNotMatch(profile, /^\s*ptrace\b[^\n]*\b(?:trace|tracedby)\b/mu, "trace directions are forbidden");
-  assert.doesNotMatch(profile, /^\s*ptrace\b[^\n]*peer\s*=\s*(?:\*|unconfined|bwrap|unpriv_bwrap)\b/mu, "broader peer scopes are forbidden");
+  assert.doesNotMatch(profile, /^\s*ptrace\b[^\n]*peer\s*=\s*"?(?:\*|unconfined|bwrap|unpriv_bwrap|@\{profile_name\})"?\s*,\s*$/mu, "bare, wildcard, or private-component-only peer scopes are forbidden");
   assert.doesNotMatch(profile, /^\s*capability\s+sys_ptrace\b/mu, "sys_ptrace is forbidden");
 });
 
