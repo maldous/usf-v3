@@ -91,9 +91,22 @@ interface CheckedCandidateExecutionIntent {
   readonly receiptDigest: string | null;
 }
 
+export type CheckConfinementFailure =
+  | "BASE_LAUNCH_UNAVAILABLE"
+  | "MODE_POLICY_MISMATCH"
+  | "FIXTURE_POLICY_MISSING"
+  | "FIXTURE_POLICY_AUTHENTICATION_FAILED"
+  | "EXECUTION_MODE_UNSUPPORTED"
+  | "FIXTURE_LAUNCH_UNAVAILABLE"
+  | "HOST_PROFILE_AUTHORITY_READ_FAILED"
+  | "HOST_PROFILE_RECOVERY_FAILED"
+  | "HOST_PROFILE_RECEIPT_READBACK_FAILED"
+  | "HOST_PROFILE_POST_EXECUTION_FAILED"
+  | "EXECUTION_VIEW_PATH_INVALID";
+
 export type GraphDerivedCheckResult =
   | { readonly status: "pass"; readonly basis: RealisationBasis; readonly id: string; readonly exitCode: 0; readonly receiptPath: string; readonly receipt: CheckedCandidateReceipt }
-  | { readonly status: "refused"; readonly basis?: RealisationBasis; readonly reasonCode: string; readonly id: string; readonly exitCode?: number;
+  | { readonly status: "refused"; readonly basis?: RealisationBasis; readonly reasonCode: string; readonly id: string; readonly exitCode?: number; readonly confinementFailure?: CheckConfinementFailure;
     readonly validationExecutionAuthorityResourceDigest?: string; readonly validationWallTimeMilliseconds?: number;
     readonly validationTerminationGraceMilliseconds?: number; readonly validationTimedOut?: true;
     readonly validationTimeoutTerminationSignal?: "none" | "SIGTERM" | "SIGKILL"; readonly outputResultDigest?: string };
@@ -118,14 +131,16 @@ const digestPattern = /^sha256:[0-9a-f]{64}$/u;
 
 class CheckRefusal extends Error {
   readonly reasonCode: string;
-  constructor(reasonCode: string) {
+  readonly confinementFailure?: CheckConfinementFailure;
+  constructor(reasonCode: string, confinementFailure?: CheckConfinementFailure) {
     super(reasonCode);
     this.name = "CheckRefusal";
     this.reasonCode = reasonCode;
+    this.confinementFailure = confinementFailure;
   }
 }
 
-function refuse(reasonCode: string): never { throw new CheckRefusal(reasonCode); }
+function refuse(reasonCode: string, confinementFailure?: CheckConfinementFailure): never { throw new CheckRefusal(reasonCode, confinementFailure); }
 
 function exactKeys(value: object, expected: readonly string[]): boolean {
   const actual = Object.keys(value).sort();
@@ -507,7 +522,7 @@ function graphRepositoryPath(value: string): string {
   return value;
 }
 
-import { authenticateFixtureProcessHostProfile, readFixtureProcessPolicy, confinedFixtureProcessLaunch, type FixtureProcessPolicy } from "../realisation/fixture-process.ts";
+import { authenticateFixtureProcessHostProfile, authenticateFixtureProcessPolicy, readFixtureProcessPolicy, confinedFixtureProcessLaunch, type FixtureProcessPolicy } from "../realisation/fixture-process.ts";
 
 function graphValidation(root: string, basis: RealisationBasis, validationId: string): GraphValidation {
   let graph: LoadedSemanticGraph;
@@ -539,7 +554,7 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
   if (confinedFixtureProcessMode) {
     fixtureProcessPolicy = readFixtureProcessPolicy(graph, executionModeIri);
     if (fixtureProcessPolicy === null) refuse("CHECK_VALIDATION_MODE_UNSUPPORTED");
-    if (!authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+    if (!authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "HOST_PROFILE_AUTHORITY_READ_FAILED");
   }
   exactGraphType(graph, environmentIri, "urn:usf:type:Environment", "CHECK_VALIDATION_AUTHORITY_INVALID");
   exactGraphType(graph, executionModeIri, "urn:usf:type:ExecutionMode", "CHECK_VALIDATION_AUTHORITY_INVALID");
@@ -633,7 +648,7 @@ async function candidateReceiptFacts(root: string, workspace: string, candidateD
 async function writeExecutionViewFile(view: string, repositoryPath: string, bytes: Buffer, mode: "100644" | "100755"): Promise<void> {
   const target = resolve(view, repositoryPath);
   const relation = relative(view, target);
-  if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+  if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "EXECUTION_VIEW_PATH_INVALID");
   await mkdir(dirname(target), { recursive: true, mode: 0o700 });
   await writeFile(target, bytes, { flag: "wx", mode: mode === "100755" ? 0o700 : 0o600 });
   await chmod(target, mode === "100755" ? 0o700 : 0o600);
@@ -1364,7 +1379,7 @@ async function recoverReceiptPublication(
   snapshot: ReceiptPublicationSnapshot,
   expectedBytes?: Buffer,
 ): Promise<CheckedCandidateReceipt | null> {
-  if (fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+  if (fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "HOST_PROFILE_RECOVERY_FAILED");
   const { path } = receiptLocation(root, candidateDigest, validationId);
   const temporaryPath = receiptTemporaryPath(path);
   const current = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery, expectedBytes);
@@ -1446,7 +1461,7 @@ async function readFullyCurrentReceiptPublicationSnapshot(
     || (await assertSameReceiptPublicationSnapshot(canonicalRoot, candidateDigest, validationId, snapshot, expectedBytes)).identity !== snapshot.identity) {
     refuse("CHECK_RECEIPT_INVALID");
   }
-  if (validation.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+  if (validation.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "HOST_PROFILE_RECEIPT_READBACK_FAILED");
   return snapshot;
 }
 
@@ -1692,19 +1707,22 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
       const temporary = resolve(workspace, ".usf-check-tmp");
       const execution = await prepareCheckExecutionView(canonicalRoot, workspace, temporary, validation.repositoryReadFiles);
       const baseLaunch = confinedNodeTestLaunch(execution.view, execution.runtime, dependencyRoots, validation.commandTokens);
-      if (baseLaunch === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+      if (baseLaunch === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "BASE_LAUNCH_UNAVAILABLE");
       let launch;
       if (validation.executionModeIri === "urn:usf:mode:deterministic-test-substitute") {
-        if (validation.fixtureProcessPolicy !== null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+        if (validation.fixtureProcessPolicy !== null) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "MODE_POLICY_MISMATCH");
         launch = baseLaunch;
       } else if (validation.executionModeIri === "urn:usf:mode:confined-fixture-process:1"
         || validation.executionModeIri === "urn:usf:mode:confined-fixture-process:2") {
-        if (validation.fixtureProcessPolicy === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+        if (validation.fixtureProcessPolicy === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "FIXTURE_POLICY_MISSING");
+        if (!authenticateFixtureProcessPolicy(validation.fixtureProcessPolicy, execution.view)) {
+          refuse("CHECK_CONFINEMENT_UNAVAILABLE", "FIXTURE_POLICY_AUTHENTICATION_FAILED");
+        }
         launch = confinedFixtureProcessLaunch(baseLaunch, validation.fixtureProcessPolicy, execution.view);
       } else {
-        refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+        refuse("CHECK_CONFINEMENT_UNAVAILABLE", "EXECUTION_MODE_UNSUPPORTED");
       }
-      if (launch === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+      if (launch === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "FIXTURE_LAUNCH_UNAVAILABLE");
       let startedIntent: CheckedCandidateExecutionIntent | null = null;
       if (intentEnabled) {
         if (intentBound === null) refuse("CHECK_EXECUTION_INTENT_INVALID");
@@ -1735,7 +1753,7 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
       let observation: ValidationExecutionObservation;
       try {
         observation = await executeBoundedCheck(launch.executable, launch.arguments, execution.view, executionAuthority);
-        if (validation.fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+        if (validation.fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "HOST_PROFILE_POST_EXECUTION_FAILED");
       } catch (error) {
         if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
         throw error;
@@ -1825,7 +1843,8 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
     });
   } catch (error) {
     const reasonCode = error instanceof CheckRefusal ? error.reasonCode : stableReason(error) ?? "CHECK_CONFINEMENT_UNAVAILABLE";
-    return { status: "refused", ...(basis === undefined ? {} : { basis }), reasonCode, id: validationId };
+    return { status: "refused", ...(basis === undefined ? {} : { basis }), reasonCode, id: validationId,
+      ...(error instanceof CheckRefusal && error.confinementFailure !== undefined ? { confinementFailure: error.confinementFailure } : {}) };
   }
 }
 

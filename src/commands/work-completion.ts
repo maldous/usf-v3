@@ -27,7 +27,7 @@ import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { parseRepositoryPath } from "../core/scope.ts";
 import { loadSemanticGraph, objectValues, type LoadedSemanticGraph } from "../graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../graph/nquads.ts";
-import { deriveWork, type WorkPacket } from "../graph/work.ts";
+import { deriveWork, evaluateCurrentNoChangeCompletion, type WorkPacket } from "../graph/work.ts";
 import { deriveCliTransitionContext } from "../graph/cli-transitions.ts";
 import {
   authenticateNoChangeWorkspace,
@@ -42,7 +42,6 @@ import {
   createCompletionProofBundle,
   createWorkCompletionPublicationReceipt,
   deriveNoChangeCompletionAuthority,
-  evaluateNoChangeCompletionRecords,
   validateCompletionBundleShape,
   validateCompletionEvidenceShape,
   validateWorkCompletionReceiptShape,
@@ -623,7 +622,10 @@ export async function prepareCompletionChecks(root: string, request: unknown): P
       await readState();
       const checked = await ensureGraphDerivedCheck(repositoryRoot, candidateDigest, obligationIri);
       if (checked.status !== "pass") {
-        refuse(checked.reasonCode, "A required graph-derived check refused; no complete set is acknowledged.", exitCodes.CURRENTNESS_FAILURE, { obligationIri });
+        refuse(checked.reasonCode, "A required graph-derived check refused; no complete set is acknowledged.", exitCodes.CURRENTNESS_FAILURE, {
+          obligationIri,
+          ...(checked.confinementFailure === undefined ? {} : { confinementFailure: checked.confinementFailure }),
+        });
       }
       await readState();
     };
@@ -790,7 +792,7 @@ export function evaluateCanonicalCompletionTerminal(root: string, request: Canon
       || canonicalJson(ruleValues("publicationPolicy")) !== canonicalJson([authority.policy.iri])) {
       refuse("WORK_COMPLETION_TERMINAL_EVALUATOR_INVALID", "Terminal evaluator does not select the native publication authority.", exitCodes.CURRENTNESS_FAILURE);
     }
-    const result = evaluateNoChangeCompletionRecords(graph, packet, basis);
+    const result = evaluateCurrentNoChangeCompletion(graph, { workIri: packet.id, profileIri: context.profile });
     const artifacts: Record<string, unknown>[] = [];
     if (packet.realisationStage?.stage === "verified-complete" && packet.realisationStage.completion.verified
       && result.verified && result.authenticatedPublication !== undefined && result.receiptDependency !== undefined
@@ -810,7 +812,7 @@ export function evaluateCanonicalCompletionTerminal(root: string, request: Canon
       const expected: Record<string, string> = { type: "urn:usf:type:CliArtifactContract",
         producer: "urn:usf:cli-transition:completion-publication:1", schema: authority.publicationReceiptSchemaIri,
         work: packet.id, profile: context.profile, proofObligation: packet.realisationAuthority!.completionProofObligation! };
-      if (canonicalQuadDigest(artifactRows) !== "sha256:1ea9688a98576163138e88b34e199d03982468c75fe12b78f8c33374d18ea412"
+      if (canonicalQuadDigest(artifactRows) !== "sha256:d09e7915796bd640dda4332327d2f26710358a0088fa742b085c4314786f5981"
         || Object.entries(expected).some(([name, value]) => canonicalJson(artifactRows.filter(q => q.predicate === predicate(name) && q.objectKind === "iri").map(q => q.object)) !== canonicalJson([value]))
         || canonicalJson(graph.quads.filter(q => q.subject === expected.producer && q.predicate === predicate("produces") && q.objectKind === "iri").map(q => q.object)) !== canonicalJson(declarations)) {
         refuse("WORK_COMPLETION_TERMINAL_ARTIFACT_INVALID", "Artifact contract or native producer lineage differs from the compiled semantic boundary.", exitCodes.CURRENTNESS_FAILURE);
@@ -1007,12 +1009,12 @@ function authenticateExistingReceipt(
   } finally { if (descriptor !== undefined) closeSync(descriptor); }
   if (!validateWorkCompletionReceiptShape(root, value, authority)) refuse("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID", "Existing completion receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
   const receipt = value as WorkCompletionPublicationReceipt;
-  const expectedValidationDigest = canonicalDigest({
-    members: receipt.members.map(({ workIri, realisationDigest, evidenceDigest, proofDigest }) => ({ workIri, realisationDigest, evidenceDigest, proofDigest })),
-    operationCount: receipt.operations.length,
-    authorityDependencyDigest: receipt.authorityDependencyDigest,
-    resultingSemanticDigest: receipt.resultingSemanticDigest,
-  }, { rejectAbsolutePaths: true });
+  const expectedValidationDigest = createWorkCompletionPublicationReceipt({
+    ...receipt,
+    authority,
+    manifestDigest: receipt.schema === "urn:usf:work-completion-publication-receipt:1"
+      ? receipt.manifestDigest : receipt.members[0]!.manifestDigest,
+  }).validationResultDigest;
   if (`${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n` !== bytes.toString("utf8")
     || canonicalDigest(receiptWithoutDigest(receipt), { rejectAbsolutePaths: true }) !== receipt.receiptDigest
     || receipt.publicationIntentDigest !== expectedIntent || receipt.publicationReceiptPath !== path
