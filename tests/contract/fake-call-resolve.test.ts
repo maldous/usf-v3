@@ -16,7 +16,7 @@ test("resolve CLI preserves local lineage without creating provider success obse
     trace: { ...draft.trace, requirements: [...draft.trace.requirements, ...requirements] },
     work: { ...draft.work, dependencies: [...draft.work.dependencies, ...requirements.map(r => ({ kind: "semantic-resource" as const, key: r.id, digest: r.digest }))] },
     scope: { readSet: [], writeSet: ["src/local.ts", "src/provider.ts"], preimages: { "src/local.ts": null, "src/provider.ts": null } } });
-  const local = createLocalContribution(basis, [{ kind: "write", path: "src/local.ts", content: "export {};\n" }]);
+  const local = createLocalContribution(basis, [{ kind: "write", path: "src/local.ts", content: "/** opaque source */\nexport {};\n" }]);
   const invoke = async (value: unknown) => resolveCommandHandler({ command: "resolve", repositoryRoot: "/unused", args: [JSON.stringify(value)] });
   const first = await invoke(local), replay = await invoke(local);
   assert.equal(first.exitCode, 0);
@@ -34,6 +34,8 @@ test("resolve CLI preserves local lineage without creating provider success obse
     limits: { maxTurns: 1, maxWallTimeMs: 100, maxInputTokens: 100, maxOutputTokens: 100, maxToolCalls: 0, maxRetries: 0 },
     packet: proposalPacket(basis.work.id, "fixture", ["src/provider.ts"], [{ kind: "write", path: "src/provider.ts", content: "export {};\n" }]),
   }]);
+  const provider = batch.contributions[0]!;
+  await assert.rejects(() => invoke([{ ...provider, payload: { operations: [{ ...provider.payload.operations[0]!, content: "/provider-boundary-unchanged" }] } }]), { code: "ABSOLUTE_PATH_FORBIDDEN" });
   const mixed = await invoke([local, ...batch.contributions]);
   assert.equal(mixed.exitCode, 0);
   assert.equal((mixed.output as ReturnType<typeof resolveCommand>).candidate?.payload.operations.length, 2);

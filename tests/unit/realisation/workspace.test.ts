@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { chmod, cp, link, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import test, { type TestContext } from "node:test";
+import { candidateArtifactDigest } from "../../../src/providers/types.ts";
 import { canonicalDigest, canonicalJson } from "../../../src/core/canonical.ts";
 import {
   RegistrationFeatureError,
@@ -76,7 +77,7 @@ function packet(root: string): ProfileBoundPacket {
 function candidate(basis: RealisationBasis, content: string, nonce: string): CandidateSpec {
   const operations = [{ kind: "write" as const, path: targetPath, content }];
   const acceptedContributionDigests = [canonicalDigest({ nonce })];
-  const digest = canonicalDigest({ basisDigest: basis.basisDigest, operations, acceptedContributionDigests }, { rejectAbsolutePaths: true });
+  const digest = candidateArtifactDigest({ basisDigest: basis.basisDigest, operations, acceptedContributionDigests });
   return {
     digest,
     basis,
@@ -115,7 +116,8 @@ test("materialises one basis-bound candidate and applies only its exact byte del
   const root = await fixture(context);
   const basis = packet(root).realisationBasis;
   const before = await readFile(join(root, targetPath), "utf8");
-  const spec = candidate(basis, `${before}\n// isolated candidate byte\n`, "happy");
+  const content = `/** Opaque source content, not a filesystem path. */\n${before}\n// isolated candidate byte\n`;
+  const spec = candidate(basis, content, "happy");
   const materialised = await materialiseCandidate(root, spec);
   let signalHeld!: () => void;
   let release!: () => void;
@@ -141,7 +143,7 @@ test("materialises one basis-bound candidate and applies only its exact byte del
   assert.equal(materialised.basis.basisDigest, basis.basisDigest);
   assert.equal(delta.length, 1);
   assert.equal(await readFile(join(root, targetPath), "utf8"), before, "primary bytes remain unchanged");
-  assert.equal(await readFile(join(materialised.workspace, targetPath), "utf8"), `${before}\n// isolated candidate byte\n`);
+  assert.equal(await readFile(join(materialised.workspace, targetPath), "utf8"), content);
 
   const manifestFile = join(materialised.workspace, ".usf-workspace.json");
   const candidateLocks = join(root, ".usf", "locks", "candidates");

@@ -10,7 +10,7 @@ import { spawn } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import { deriveCurrentRealisationBasis } from "../graph/work.ts";
-import { isOperation, type FileOperation as ResolvedFileOperation } from "../providers/types.ts";
+import { candidateArtifactDigest, isOperation, type FileOperation as ResolvedFileOperation } from "../providers/types.ts";
 import {
   assertRealisationBasis,
   assertSameBasis,
@@ -549,11 +549,11 @@ function expectedCandidateDigest(candidate: Pick<CandidateSpec, "basis" | "linea
   if (new Set(ordered).size !== ordered.length || ordered.some((entry, index) => entry !== candidate.lineage.acceptedContributionDigests[index])) {
     throw new RealisationError("CANDIDATE_BASIS_MISMATCH", "Candidate lineage is not in deterministic resolver order");
   }
-  return canonicalDigest({
+  return candidateArtifactDigest({
     basisDigest: candidate.basis.basisDigest,
     operations,
     acceptedContributionDigests: candidate.lineage.acceptedContributionDigests,
-  }, { rejectAbsolutePaths: true });
+  });
 }
 
 async function currentBasis(root: string, value: unknown): Promise<RealisationBasis> {

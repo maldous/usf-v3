@@ -1,4 +1,4 @@
-import { type Contribution, type FileOperation, contributionDigest, digest, immutable, isOperation } from "../providers/types.ts";
+import { type Contribution, type FileOperation, contributionDigest, candidateArtifactDigest, digest, immutable, isOperation } from "../providers/types.ts";
 import { canonicalDigest } from "../core/canonical.ts";
 import { assertRealisationBasis, assertSameBasis, type RealisationBasis } from "../realisation/basis.ts";
 import { parseLocalContribution, type LocalContribution } from "./local-contribution.ts";
@@ -74,7 +74,7 @@ export function resolveContributions(contributions: readonly ResolvableContribut
   }).map((operation) => ({ ...operation }));
   const candidateBasis = { basisDigest: basis.basisDigest, operations, acceptedContributionDigests: acceptedDigests };
   const candidate: Candidate = immutable({
-    schema: "urn:usf:candidate:1", kind: "candidate", status: "resolved", basis, identity: { artifactDigest: digest(candidateBasis), basisDigest: basis.basisDigest },
+    schema: "urn:usf:candidate:1", kind: "candidate", status: "resolved", basis, identity: { artifactDigest: candidateArtifactDigest(candidateBasis), basisDigest: basis.basisDigest },
     payload: { operations }, lineage: { acceptedContributionDigests: acceptedDigests, rejected: [] },
     claims: ["disjoint-contributions-deterministically-merged"],
     nonclaims: ["not-written-to-repository", "not-validated", "not-integrated"],

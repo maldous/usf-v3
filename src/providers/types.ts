@@ -1,4 +1,5 @@
 import { canonicalDigest, canonicalJson as coreCanonicalJson } from "../core/canonical.ts";
+import { UsfError, exitCodes } from "../core/errors.ts";
 import { isRepositoryRelativePath } from "../core/scope.ts";
 import type { ArtifactProjection, DecisionBoundary, RequirementProjection, WorkPacket } from "../graph/work.ts";
 import type { RealisationBasis } from "../realisation/basis.ts";
@@ -152,4 +153,20 @@ export function eligibleZeroCost(route: FakeRoute): boolean {
 
 export function contributionDigest(contribution: Pick<Contribution, "assignment" | "requested" | "actual" | "cost" | "usage" | "payload">): string {
   return digest({ assignment: contribution.assignment, requested: contribution.requested, actual: contribution.actual, cost: contribution.cost, usage: contribution.usage, payload: contribution.payload });
+}
+
+/** Write content is opaque; every other candidate identity value retains path guards. */
+export function candidateArtifactDigest(identity: {
+  readonly basisDigest: string;
+  readonly operations: readonly FileOperation[];
+  readonly acceptedContributionDigests: readonly string[];
+}): string {
+  if (!Array.isArray(identity.operations) || !identity.operations.every(isOperation)) {
+    throw new UsfError("MALFORMED_FILE_OPERATION", exitCodes.INVALID_INPUT, "Candidate identity requires valid repository-relative file operations.");
+  }
+  canonicalDigest({
+    ...identity,
+    operations: identity.operations.map(operation => operation.kind === "write" ? { ...operation, content: "" } : operation),
+  }, { rejectAbsolutePaths: true });
+  return canonicalDigest(identity);
 }

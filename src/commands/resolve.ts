@@ -82,7 +82,10 @@ export const resolveCommandHandler: CommandHandler = async (request) => {
   }
   let output: Resolution;
   try { output = resolveCommand(contributions); }
-  catch { throw new UsfError("RESOLVE_BASIS_INVALID", exitCodes.INVALID_INPUT, "Contribution bases could not be resolved as one immutable basis."); }
+  catch (error) {
+    if (error instanceof UsfError) throw error;
+    throw new UsfError("RESOLVE_BASIS_INVALID", exitCodes.INVALID_INPUT, "Contribution bases could not be resolved as one immutable basis.");
+  }
   if (!resolveResultValidator.validate(output).valid) throw new UsfError("RESOLVE_RESULT_INVALID", exitCodes.DOMAIN_FAILURE, "The resolve result does not satisfy its closed result schema.");
   return { output, exitCode: output.status === "refused" ? exitCodes.INTEGRATION_CONFLICT : exitCodes.SUCCESS };
 };
