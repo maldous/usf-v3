@@ -622,6 +622,168 @@ test("fixture-process-native-metadata", async () => {
   await rm(renamedPath);
 });
 
+test("fixture-process-peer-identity", async () => {
+  assert.equal("permission" in process, false, "native Node must not expose process.permission");
+
+  const uidMapRows = (await readFile("/proc/self/uid_map", "utf8"))
+    .trim()
+    .split("\n")
+    .map((line) => line.trim().split(/\s+/).map(Number));
+  assert.deepEqual(uidMapRows, [[1000, 0, 1]]);
+  assert.equal(process.pid, 2);
+  assert.equal(process.ppid, 1);
+
+  const { linuxProcessInspector } = await import("../../src/continuous/lifecycle.ts");
+  const parentIdentity = await linuxProcessInspector.current();
+  assert.equal(parentIdentity.pid, process.pid);
+
+  await assert.rejects(
+    () => linuxProcessInspector.inspect(1),
+    (error: unknown) => {
+      const code = error instanceof Error && "code" in error ? String(error.code) : "";
+      return code === "EACCES" || code === "EPERM";
+    },
+    "the private namespace-init PID 1 must reject inspector reads with EACCES or EPERM",
+  );
+
+  const lifecycleModuleUrl = new URL(
+    "../../src/continuous/lifecycle.ts",
+    import.meta.url,
+  ).href;
+  const childScript = [
+    "const moduleUrl=process.argv[1];",
+    "const {linuxProcessInspector}=await import(moduleUrl);",
+    "let release='';",
+    "process.stdin.setEncoding('utf8');",
+    "process.stdin.on('data',(chunk)=>{release+=chunk;if(release.length>1)process.exitCode=91;});",
+    "process.stdin.once('end',()=>{if(release!=='\\n')process.exitCode=92;});",
+    "const current=await linuxProcessInspector.current();",
+    "const parent=await linuxProcessInspector.inspect(process.ppid);",
+    "process.stdout.write(JSON.stringify({current,parent})+'\\n');",
+  ].join("");
+  const child = spawn(
+    "/usr/bin/node",
+    ["--no-addons", "--input-type=module", "--eval", childScript, lifecycleModuleUrl],
+    { stdio: ["pipe", "pipe", "pipe"] },
+  );
+
+  const maximumOutputBytes = 16 * 1024;
+  let stdout = "";
+  let stderr = "";
+  let childSettled = false;
+  let reportSettled = false;
+  let rejectReport: (reason?: unknown) => void = () => undefined;
+
+  const completion = new Promise<
+    | { readonly kind: "exit"; readonly code: number | null; readonly signal: NodeJS.Signals | null }
+    | { readonly kind: "error"; readonly error: Error }
+  >((resolve) => {
+    child.once("error", (error) => {
+      childSettled = true;
+      resolve({ kind: "error", error });
+    });
+    child.once("exit", (code, signal) => {
+      childSettled = true;
+      resolve({ kind: "exit", code, signal });
+    });
+  });
+
+  const report = new Promise<unknown>((resolve, reject) => {
+    rejectReport = reject;
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", (chunk: string) => {
+      stdout += chunk;
+      if (Buffer.byteLength(stdout) > maximumOutputBytes) {
+        stdout = stdout.slice(0, maximumOutputBytes);
+        child.kill("SIGKILL");
+        reject(new Error("fixture child stdout exceeded 16 KiB"));
+        return;
+      }
+      const newline = stdout.indexOf("\n");
+      if (!reportSettled && newline !== -1) {
+        reportSettled = true;
+        if (newline !== stdout.length - 1) {
+          reject(new Error("fixture child emitted more than one bounded JSON line"));
+          return;
+        }
+        try {
+          resolve(JSON.parse(stdout.slice(0, newline)));
+        } catch (error: unknown) {
+          reject(error);
+        }
+      }
+    });
+  });
+
+  child.stderr.setEncoding("utf8");
+  child.stderr.on("data", (chunk: string) => {
+    stderr += chunk;
+    if (Buffer.byteLength(stderr) > maximumOutputBytes) {
+      stderr = stderr.slice(0, maximumOutputBytes);
+      child.kill("SIGKILL");
+      rejectReport(new Error("fixture child stderr exceeded 16 KiB"));
+    }
+  });
+
+  const withinFiveSeconds = async <T>(promise: Promise<T>, phase: string): Promise<T> => {
+    let deadline: NodeJS.Timeout | undefined;
+    return Promise.race([
+      promise,
+      new Promise<never>((_resolve, reject) => {
+        deadline = setTimeout(() => {
+          reject(new Error(`${phase} exceeded 5000ms; stdout=${stdout}; stderr=${stderr}`));
+        }, 5_000);
+      }),
+    ]).finally(() => {
+      if (deadline !== undefined) clearTimeout(deadline);
+    });
+  };
+
+  try {
+    const childPid = child.pid;
+    if (childPid === undefined) {
+      throw new Error(`fixture child must have a PID; stderr=${stderr}`);
+    }
+    const reported = await withinFiveSeconds(report, "fixture child identity report") as {
+      readonly current: unknown;
+      readonly parent: unknown;
+    };
+    assert.deepEqual(reported.parent, parentIdentity);
+
+    const observedChild = await withinFiveSeconds(
+      linuxProcessInspector.inspect(childPid),
+      "live fixture child inspection",
+    );
+    if (observedChild === null) {
+      throw new Error(`fixture child must remain live; stdout=${stdout}; stderr=${stderr}`);
+    }
+    assert.deepEqual(reported.current, observedChild);
+    assert.equal(observedChild.pid, childPid);
+    assert.equal(observedChild.uid, parentIdentity.uid);
+
+    await withinFiveSeconds(
+      new Promise<void>((resolve, reject) => {
+        child.stdin.once("error", reject);
+        child.stdin.end("\n", resolve);
+      }),
+      "fixture child exact release",
+    );
+    const result = await withinFiveSeconds(completion, "fixture child exit");
+    assert.deepEqual(
+      result,
+      { kind: "exit", code: 0, signal: null },
+      `fixture child must exit zero after exact release; stdout=${stdout}; stderr=${stderr}`,
+    );
+    assert.equal(stdout, `${JSON.stringify(reported)}\n`, "fixture child must emit exactly one JSON line");
+    assert.equal(stderr, "", "fixture child stderr must remain empty");
+  } finally {
+    if (!childSettled) child.kill("SIGKILL");
+    if (!childSettled) {
+      await withinFiveSeconds(completion, "fixture child owned cleanup");
+    }
+  }
+});
+
 test("fixture-process-default-denial", () => {
   assert.equal(process.permission.has("child_process"), false);
   assert.throws(
