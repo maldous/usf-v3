@@ -17,6 +17,10 @@ export interface CliExternalSchemaReference {
   readonly repositoryPath: string;
   readonly schemaFragment: string;
 }
+export interface CliSchemaAlias {
+  readonly alias: string;
+  readonly reference: CliExternalSchemaReference;
+}
 
 export interface CliFieldSpecification {
   readonly id: string; readonly property: string; readonly predicate: string | null; readonly kind: string;
@@ -37,14 +41,191 @@ export interface CliRecordSpecification {
 export interface CliRecordSpecifications {
   readonly contractIdentity: string; readonly sourceBasis: string;
   readonly records: readonly CliRecordSpecification[];
+  readonly schemaAliases: readonly CliSchemaAlias[];
   readonly gaps: readonly CliTransitionDiagnostic[];
   readonly operationalGaps: readonly CliTransitionDiagnostic[];
   readonly structuralComplete: boolean; readonly executionAuthority: "none";
 }
 
+export type CliTransitionSchemaModule = "parserCoverage" | "parallelSafety" | "operationalSupport";
+export interface CliTransitionSchemaModuleValidator {
+  readonly schemaId: string | null;
+  validate(value: unknown): unknown;
+}
+export interface AuthenticatedCliTransitionSchemaModule {
+  readonly schemaIdentity: string;
+  readonly repositoryPath: string;
+  readonly schemaFragment: string;
+  readonly schemaDigest: string;
+  readonly sourceBasis: string;
+  readonly validator: CliTransitionSchemaModuleValidator;
+  readonly specifications: CliRecordSpecifications;
+}
+export interface CliTransitionSchemaModules {
+  readonly parserCoverage?: AuthenticatedCliTransitionSchemaModule;
+  readonly parallelSafety?: AuthenticatedCliTransitionSchemaModule;
+  readonly operationalSupport?: AuthenticatedCliTransitionSchemaModule;
+}
+export interface CliTransitionSchemaModuleResolution {
+  readonly module: AuthenticatedCliTransitionSchemaModule;
+  readonly specifications: CliRecordSpecifications;
+  /** The exact module root; callers form a validator reference from these fields. */
+  readonly record: CliRecordSpecification;
+}
+
+type CliTransitionSchemaModuleDefinition = Readonly<{
+  contractIdentity: string; recordIdentity: string; schemaIdentity: string; repositoryPath: string; sourceType: string;
+}>;
+const cliTransitionSchemaModules: Readonly<Record<CliTransitionSchemaModule, CliTransitionSchemaModuleDefinition>> = Object.freeze({
+  parserCoverage: {
+    contractIdentity: "urn:usf:contract:cli-parser-coverage-schema:1",
+    recordIdentity: "urn:usf:cli-field-specification:record-parser-coverage:1",
+    schemaIdentity: "urn:usf:cli-parser-coverage:1",
+    repositoryPath: "schemas/cli-parser-coverage.schema.json",
+    sourceType: "urn:usf:type:CliParserCoverage:1",
+  },
+  parallelSafety: {
+    contractIdentity: "urn:usf:contract:cli-parallel-safety-schema:1",
+    recordIdentity: "urn:usf:cli-field-specification:record-parallel-safety:1",
+    schemaIdentity: "urn:usf:cli-parallel-safety:1",
+    repositoryPath: "schemas/cli-parallel-safety.schema.json",
+    sourceType: "urn:usf:type:CliParallelSafetyAssessment",
+  },
+  operationalSupport: {
+    contractIdentity: "urn:usf:contract:cli-operational-support-schema:1",
+    recordIdentity: "urn:usf:cli-field-specification:record-operational-support:1",
+    schemaIdentity: "urn:usf:cli-operational-support:1",
+    repositoryPath: "schemas/cli-operational-support.schema.json",
+    sourceType: "urn:usf:type:OperationalSupport:1",
+  },
+});
+
+/** Classify only the three semantically admitted module documents. */
+export function classifyCliTransitionSchemaModule(
+  context: AuthenticatedCliTransitionSchemaModule,
+): CliTransitionSchemaModule | null {
+  const matches = (Object.entries(cliTransitionSchemaModules) as Array<[CliTransitionSchemaModule, CliTransitionSchemaModuleDefinition]>)
+    .filter(([, expected]) => context.schemaIdentity === expected.schemaIdentity && context.repositoryPath === expected.repositoryPath);
+  return matches.length === 1 ? matches[0]![0] : null;
+}
+
+/** Assemble command-authenticated module documents without a second compatibility table. */
+export function assembleCliTransitionSchemaModules(
+  contexts: readonly AuthenticatedCliTransitionSchemaModule[],
+): CliTransitionSchemaModules | null {
+  if (contexts.length !== 3) return null;
+  const modules: Partial<Record<CliTransitionSchemaModule, AuthenticatedCliTransitionSchemaModule>> = Object.create(null);
+  for (const context of contexts) {
+    const module = classifyCliTransitionSchemaModule(context);
+    if (module === null || modules[module] !== undefined) return null;
+    modules[module] = context;
+  }
+  const assembled: CliTransitionSchemaModules = modules;
+  for (const module of ["parserCoverage", "parallelSafety", "operationalSupport"] as const) {
+    if (resolveCliTransitionSchemaModule(assembled, module) === null) return null;
+  }
+  return immutable(assembled);
+}
+
+/**
+ * Select a command-authenticated schema module without loading files or
+ * reinterpreting its graph. A supplied but malformed module is unavailable;
+ * callers may use the root schema only by omitting module context entirely.
+ */
+export function resolveCliTransitionSchemaModule(
+  modules: CliTransitionSchemaModules | undefined,
+  module: CliTransitionSchemaModule,
+): CliTransitionSchemaModuleResolution | null {
+  if (modules === undefined) return null;
+  const context = modules[module];
+  const expected = cliTransitionSchemaModules[module];
+  if (context === undefined || context.schemaIdentity !== expected.schemaIdentity || context.repositoryPath !== expected.repositoryPath
+    || context.schemaFragment !== "" || !/^sha256:[a-f0-9]{64}$/.test(context.schemaDigest)
+    || !/^sha256:[a-f0-9]{64}$/.test(context.sourceBasis) || context.validator.schemaId !== context.schemaIdentity
+    || context.specifications.sourceBasis !== context.sourceBasis) return null;
+  const specifications = context.specifications;
+  if (specifications.contractIdentity !== expected.contractIdentity
+    || specifications.gaps.length !== 0
+    || !specifications.structuralComplete || specifications.executionAuthority !== "none"
+    || specifications.records.some(record => record.schemaIdentity !== expected.schemaIdentity)) return null;
+  const roots = specifications.records.filter(record => record.fragment === "");
+  if (roots.length !== 1) return null;
+  const root = roots[0]!;
+  if (root.id !== expected.recordIdentity || root.schemaIdentity !== expected.schemaIdentity || root.sourceType !== expected.sourceType) return null;
+  return immutable({ module: context, specifications, record: root });
+}
+
+/** Compatibility selection for consumers that only need field specifications. */
+export function lookupCliTransitionSchemaModule(
+  modules: CliTransitionSchemaModules | undefined,
+  module: CliTransitionSchemaModule,
+): CliRecordSpecifications | null {
+  return resolveCliTransitionSchemaModule(modules, module)?.specifications ?? null;
+}
+
 function immutable<TValue>(value: TValue): TValue {
   if (value !== null && typeof value === "object") { for (const child of Object.values(value)) immutable(child); Object.freeze(value); }
   return value;
+}
+
+export interface CliExternalSchemaReferences {
+  readonly references: readonly CliExternalSchemaReference[];
+  readonly aliases: readonly CliSchemaAlias[];
+  readonly gaps: readonly CliTransitionDiagnostic[];
+  readonly valid: boolean;
+}
+
+/** Decode graph-declared schema metadata without reading its repository path. */
+export function deriveCliExternalSchemaReferences(graph: SemanticGraph, subject: string): CliExternalSchemaReferences {
+  const predicate = "urn:usf:predicate:", type = "urn:usf:type:";
+  type ReferenceQuad = Readonly<{ subject: string; predicate: string; object: string; objectKind: "iri" | "literal" }>;
+  const gaps: CliTransitionDiagnostic[] = [];
+  const bad = (identity: string, field: string, reasonCode = "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID") => gaps.push({ subject: identity, field, reasonCode });
+  if (subject.length === 0 || subject.length > 4096 || graph.quads.length > 100000) {
+    bad(subject || "urn:usf:cli", "externalSchema");
+    return immutable({ references: [], aliases: [], gaps, valid: false });
+  }
+  const rows = (identity: string, field: string): ReferenceQuad[] => graph.quads
+    .filter(quad => quad.subject === identity && quad.predicate === predicate + field) as ReferenceQuad[];
+  const one = (identity: string, field: string, kind: "iri" | "literal") => {
+    const values = rows(identity, field);
+    if (values.some(value => value.objectKind !== kind)) bad(identity, field);
+    const distinct = [...new Set(values.filter(value => value.objectKind === kind).map(value => value.object))];
+    if (distinct.length !== 1) { bad(identity, field); return ""; }
+    return distinct[0]!;
+  };
+  const externalRows = rows(subject, "externalSchema");
+  if (externalRows.length > 32 || externalRows.some(row => row.objectKind !== "iri")) bad(subject, "externalSchema");
+  const identities = externalRows.filter(row => row.objectKind === "iri").map(row => row.object).sort();
+  const references: CliExternalSchemaReference[] = [];
+  const aliases: CliSchemaAlias[] = [];
+  for (const identity of [...new Set(identities)]) {
+    const recordType = one(identity, "type", "iri");
+    const version = one(identity, "version", "literal");
+    const schemaIdentity = one(identity, "schemaIdentity", "iri");
+    const repositoryPath = one(identity, "repositoryPath", "literal");
+    const schemaFragment = one(identity, "schemaFragment", "literal");
+    if (recordType !== type + "SemanticRecordSchema" || version !== "1"
+      || !/^[A-Za-z][A-Za-z0-9+.-]*:[^\s#]+$/.test(schemaIdentity)
+      || !/^(?:[A-Za-z0-9][A-Za-z0-9._-]*\/)*[A-Za-z0-9][A-Za-z0-9._-]*$/.test(repositoryPath)
+      || repositoryPath.split("/").some(segment => segment === "." || segment === "..")
+      || !(schemaFragment === "" || /^\/(?:[^~/]|~[01])+(?:\/(?:[^~/]|~[01])+)*$/.test(schemaFragment))) bad(identity, "schemaIdentity/repositoryPath/schemaFragment");
+    const reference = { identity, schemaIdentity, repositoryPath, schemaFragment };
+    references.push(reference);
+    const aliasRows = rows(identity, "schemaAlias");
+    if (aliasRows.length > 0) {
+      if (aliasRows.some(row => row.objectKind !== "literal")) bad(identity, "schemaAlias");
+      const values = [...new Set(aliasRows.filter(row => row.objectKind === "literal").map(row => row.object))];
+      const alias = values.length === 1 ? values[0]! : "";
+      if (!/^[A-Za-z][A-Za-z0-9]*$/.test(alias) || ["constructor", "prototype"].includes(alias)) bad(identity, "schemaAlias");
+      else aliases.push({ alias, reference });
+    }
+  }
+  const aliasNames = aliases.map(alias => alias.alias);
+  if (new Set(aliasNames).size !== aliasNames.length) bad(subject, "schemaAlias", "CLI_SPECIFICATION_SCHEMA_ALIAS_CONFLICT");
+  const unique = [...new Map(gaps.map(gap => [canonicalJson(gap), gap])).entries()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, gap]) => gap);
+  return immutable({ references: references.sort((left, right) => left.identity < right.identity ? -1 : left.identity > right.identity ? 1 : 0),
+    aliases: aliases.sort((left, right) => left.alias < right.alias ? -1 : left.alias > right.alias ? 1 : 0), gaps: unique, valid: unique.length === 0 });
 }
 
 export interface CliFieldDerivation {
@@ -204,6 +385,12 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
     for (const q of index.get(subject) ?? []) if (q.objectKind === "iri" && index.has(q.object) && !requiredClosure.has(q.object)) pending.push(q.object);
   }
   for (const id of ids) if (!requiredClosure.has(id)) bad(id, "recordSpecification", "CLI_SPECIFICATION_OUTSIDE_REQUIRED_CLOSURE");
+  const decodedContractSchemas = deriveCliExternalSchemaReferences(graph, selection.contractIdentity);
+  gaps.push(...decodedContractSchemas.gaps);
+  for (const reference of decodedContractSchemas.references) {
+    if (!requiredClosure.has(reference.identity)) bad(selection.contractIdentity, "externalSchema", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_UNRESOLVED");
+  }
+  const schemaAliases = [...decodedContractSchemas.aliases];
   const records: CliRecordSpecification[] = [];
   let fieldCount = 0;
   for (const id of ids.slice(0, 64)) {
@@ -273,24 +460,13 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
       }
       const refs = many(fieldId, "recordSpecification");
       if ((kind === "record" && (refs.length !== 1 || !ids.includes(refs[0]!))) || (kind !== "record" && refs.length > 0)) bad(fieldId, "recordSpecification");
-      const externalSchemas: CliExternalSchemaReference[] = [];
-      const externalIds = many(fieldId, "externalSchema");
+      const decodedExternalSchemas = deriveCliExternalSchemaReferences(graph, fieldId);
+      gaps.push(...decodedExternalSchemas.gaps);
+      const externalSchemas = [...decodedExternalSchemas.references];
+      const externalIds = externalSchemas.map(reference => reference.identity);
       if (externalSchema !== (externalIds.length > 0)) bad(fieldId, "externalSchema", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID");
-      if (externalIds.length > 32 || new Set(externalIds).size !== externalIds.length) bad(fieldId, "externalSchema", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID");
       for (const externalId of externalIds) {
         if (!requiredClosure.has(externalId)) bad(fieldId, "externalSchema", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_UNRESOLVED");
-        typed(externalId, "SemanticRecordSchema");
-        if (single(externalId, "version", "literal") !== "1") bad(externalId, "version", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID");
-        const schemaIdentity = single(externalId, "schemaIdentity");
-        const repositoryPath = single(externalId, "repositoryPath", "literal");
-        const schemaFragment = single(externalId, "schemaFragment", "literal");
-        if (!/^[A-Za-z][A-Za-z0-9+.-]*:[^\s#]+$/.test(schemaIdentity)
-          || !/^(?:[A-Za-z0-9][A-Za-z0-9._-]*\/)*[A-Za-z0-9][A-Za-z0-9._-]*$/.test(repositoryPath)
-          || repositoryPath.split("/").some(segment => segment === "." || segment === "..")
-          || !(schemaFragment === "" || /^\/(?:[^~/]|~[01])+(?:\/(?:[^~/]|~[01])+)*$/.test(schemaFragment))) {
-          bad(externalId, "schemaIdentity/repositoryPath/schemaFragment", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID");
-        }
-        externalSchemas.push({ identity: externalId, schemaIdentity, repositoryPath, schemaFragment });
       }
       const dependencies = many(fieldId, "derivationDependency");
       if (dependencies.length === 0) bad(fieldId, "derivationDependency");
@@ -337,7 +513,11 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
   const rootRecords = records.filter(r => r.fragment === "");
   if (rootRecords.length !== 1 || new Set(records.map(r => r.fragment)).size !== records.length || new Set(records.map(r => r.schemaIdentity)).size !== 1) bad(selection.contractIdentity, "schemaIdentity/schemaFragment");
   for (const r of records) if ((r.fragment !== "" && !/^\/\$defs\/[A-Za-z][A-Za-z0-9]*$/.test(r.fragment)) || !/^[A-Za-z][A-Za-z0-9+.-]*:[^\s#]+$/.test(r.schemaIdentity)) bad(r.id, "schemaIdentity/schemaFragment");
-  return immutable({ ...selection, sourceBasis: canonicalQuadDigest(graph.quads), records, gaps, operationalGaps, structuralComplete: gaps.length === 0, executionAuthority: "none" as const });
+  const localDefinitionNames = new Set(records.filter(record => record.fragment !== "").map(record => record.fragment.slice("/$defs/".length)));
+  for (const alias of schemaAliases) {
+    if (localDefinitionNames.has(alias.alias)) bad(alias.reference.identity, "schemaAlias", "CLI_SPECIFICATION_SCHEMA_ALIAS_CONFLICT");
+  }
+  return immutable({ ...selection, sourceBasis: canonicalQuadDigest(graph.quads), records, schemaAliases, gaps, operationalGaps, structuralComplete: gaps.length === 0, executionAuthority: "none" as const });
 }
 
 export function deriveCliSchemas(specifications: CliRecordSpecifications): Readonly<{
@@ -373,7 +553,12 @@ export function deriveCliSchemas(specifications: CliRecordSpecifications): Reado
     shapes.set(r.id, { type: "object", additionalProperties: false, properties, required: r.fields.filter(f => f.collection || f.minimum > 0).map(f => f.property) });
   }
   const root = specifications.records.find(r => r.fragment === "")!;
-  const defs = Object.fromEntries(specifications.records.filter(r => r.fragment !== "").map(r => [r.fragment.slice("/$defs/".length), shapes.get(r.id)]).sort(([a], [b]) => String(a).localeCompare(String(b))));
+  const defs = Object.fromEntries([
+    ...specifications.records.filter(r => r.fragment !== "").map(r => [r.fragment.slice("/$defs/".length), shapes.get(r.id)] as const),
+    ...specifications.schemaAliases.map(alias => [alias.alias, {
+      $ref: alias.reference.schemaIdentity + (alias.reference.schemaFragment === "" ? "" : "#" + alias.reference.schemaFragment),
+    }] as const),
+  ].sort(([a], [b]) => String(a).localeCompare(String(b))));
   const descriptorSchema = JSON.parse(canonicalJson({ $schema: "https://json-schema.org/draft/2020-12/schema", $id: root.schemaIdentity, ...shapes.get(root.id), $defs: defs })) as Record<string, unknown>;
   return immutable({ ...common, descriptorSchema, interrogationDescriptorReference: { $ref: root.schemaIdentity }, digest: canonicalDigest(descriptorSchema) });
 }
@@ -431,7 +616,8 @@ export interface CliParserCoverage {
 }
 
 export function deriveCliParserCoverage(graph: SemanticGraph, contract: string | null, source?: CliCanonicalParserSource,
-  specifications = contract === null ? null : deriveCliRecordSpecifications(graph, { contractIdentity: contract })): CliParserCoverage {
+  specifications = contract === null ? null : deriveCliRecordSpecifications(graph, { contractIdentity: contract }),
+  modules?: CliTransitionSchemaModules): CliParserCoverage {
   const p = "urn:usf:predicate:", t = "urn:usf:type:";
   const diagnostics: CliTransitionDiagnostic[] = [];
   const matchedSelectors: Array<CliCanonicalParserBinding & { sourcePath: string; parserExport: string }> = [];
@@ -447,18 +633,19 @@ export function deriveCliParserCoverage(graph: SemanticGraph, contract: string |
   const ids = sorted(graph.quads.filter(q => q.predicate === p + "type" && q.objectKind === "iri"
     && q.object === t + "CliCanonicalParserContract" && contract !== null && values(q.subject, "forContract").includes(contract)).map(q => q.subject));
   const sourceBasis = canonicalQuadDigest(graph.quads);
-  const record = specifications?.records.find(item => item.fragment === "/$defs/parserCoverage");
+  const moduleSpecifications = modules === undefined ? specifications : resolveCliTransitionSchemaModule(modules, "parserCoverage")?.specifications ?? null;
+  const record = moduleSpecifications?.records.find(item => item.fragment === (modules === undefined ? "/$defs/parserCoverage" : ""));
   const selectorField = record?.fields.find(field => field.property === "matchedSelectors");
   const regionField = record?.fields.find(field => field.property === "unresolvedRegions");
   const diagnosticField = record?.fields.find(field => field.property === "diagnostics");
-  const selectorRecord = specifications?.records.find(item => item.id === selectorField?.record);
+  const selectorRecord = moduleSpecifications?.records.find(item => item.id === selectorField?.record);
   const tokenField = selectorRecord?.fields.find(field => field.property === "canonicalSelectorTokens");
   const offsetField = selectorRecord?.fields.find(field => field.property === "forwardedArgumentOffset");
   const versionField = selectorRecord?.fields.find(field => field.property === "version");
   const fallbackField = selectorRecord?.fields.find(field => field.property === "fallbackRegion");
-  const fallbackRecord = specifications?.records.find(item => item.id === fallbackField?.record);
+  const fallbackRecord = moduleSpecifications?.records.find(item => item.id === fallbackField?.record);
   const surfaceField = fallbackRecord?.fields.find(field => field.property === "sourceDispatchSurfaceToken");
-  if (!specifications || specifications.gaps.length > 0 || !selectorField || !regionField || !diagnosticField || !tokenField || !offsetField || !versionField
+  if (!moduleSpecifications || !selectorField || !regionField || !diagnosticField || !tokenField || !offsetField || !versionField
     || !surfaceField || selectorField.maximum < 1 || diagnosticField.maximum < 1 || offsetField.minimumValue === null || offsetField.maximumValue === null) {
     return immutable({ sourceBasis, status: "unavailable", matchedSelectors: [], unresolvedRegions: [],
       diagnostics: [{ subject: contract ?? "urn:usf:cli", field: "parserCoverage", reasonCode: "CLI_PARSER_CENSUS_SCHEMA_UNAVAILABLE" }] });
@@ -572,6 +759,7 @@ export interface CliOperationalSupportDefinition {
 /** Shared admission for native observation and its later coverage projection. */
 export function inspectCliOperationalSupportAdmission(
   graph: SemanticGraph, adapterIdentity: string, definition: CliOperationalSupportDefinition | undefined,
+  modules?: CliTransitionSchemaModules,
 ): readonly CliTransitionDiagnostic[] {
   const refused = (field: string): CliTransitionDiagnostic => ({
     reasonCode: "TRANSITION_OPERATIONAL_SUPPORT_UNADMITTED", subject: adapterIdentity, field,
@@ -591,7 +779,20 @@ export function inspectCliOperationalSupportAdmission(
   expect(definition.identity, "type", "iri", ["urn:usf:type:OperationalSatisfactionRule"]);
   expect(definition.identity, "version", "literal", [definition.version]);
   expect(definition.identity, "operationalOutputSchema", "iri", [definition.outputSchema]);
-  expect(definition.identity, "recordSpecification", "iri", [definition.recordIdentity]);
+  if (modules === undefined) {
+    expect(definition.identity, "recordSpecification", "iri", [definition.recordIdentity]);
+  } else {
+    expect(definition.identity, "recordSpecification", "iri", []);
+    const module = resolveCliTransitionSchemaModule(modules, "operationalSupport");
+    const rows = graph.quads.filter(row => row.subject === definition.identity && row.predicate === "urn:usf:predicate:externalSchema");
+    const references = deriveCliExternalSchemaReferences(graph, definition.identity);
+    const reference = references.references.length === 1 ? references.references[0]! : null;
+    if (module === null || rows.length !== 1 || rows[0]!.objectKind !== "iri" || !references.valid || reference === null
+      || reference.schemaIdentity !== module.module.schemaIdentity
+      || reference.repositoryPath !== module.module.repositoryPath
+      || reference.schemaFragment !== module.module.schemaFragment
+      || module.record.id !== definition.recordIdentity) diagnostics.push(refused("externalSchema"));
+  }
   expect(definition.identity, "implementationPath", "literal", definition.implementationPaths);
   return diagnostics;
 }
@@ -935,6 +1136,7 @@ export function deriveCliTransitionCoverage(
   selection: { readonly rootIdentity: string; readonly manifestPath: string },
   inventory: CliTransitionInventory,
   adapters: readonly CliTransitionAdapter[],
+  modules?: CliTransitionSchemaModules,
 ): CliTransitionCoverageReport {
   const boundedText = (value: string): boolean => typeof value === "string" && value.length > 0 && value.length <= 4096;
   if (!boundedText(selection.rootIdentity) || !boundedText(selection.manifestPath)
@@ -978,7 +1180,14 @@ export function deriveCliTransitionCoverage(
   if (!inventory.complete) issue("TRANSITION_INVENTORY_INCOMPLETE", root, "inventory");
 
   const specifications = contract === null ? null : deriveCliRecordSpecifications(graph, { contractIdentity: contract });
-  const parserCoverage = deriveCliParserCoverage(graph, contract, inventory.parserSource, specifications);
+  if (modules !== undefined) {
+    for (const module of ["parserCoverage", "parallelSafety", "operationalSupport"] as const) {
+      const resolution = resolveCliTransitionSchemaModule(modules, module);
+      if (resolution === null) issue("CLI_TRANSITION_SCHEMA_MODULE_UNAVAILABLE", contract ?? root, module);
+      else diagnostics.push(...resolution.specifications.operationalGaps);
+    }
+  }
+  const parserCoverage = deriveCliParserCoverage(graph, contract, inventory.parserSource, specifications, modules);
   diagnostics.push(...parserCoverage.diagnostics);
   const descriptorRecord = specifications?.records.find(record => record.fragment === "");
   const descriptors: Readonly<Record<string, CliRecordValue>>[] = [];
@@ -1024,7 +1233,7 @@ export function deriveCliTransitionCoverage(
         diagnostics.push(...inspected);
         if (inspected.length === 0 && projection?.valid && adapter.operationalSupport !== undefined) {
           try {
-            const admission = inspectCliOperationalSupportAdmission(graph, adapter.id, adapter.operationalSupportDefinition);
+            const admission = inspectCliOperationalSupportAdmission(graph, adapter.id, adapter.operationalSupportDefinition, modules);
             diagnostics.push(...admission);
             const support = admission.length === 0 ? adapter.operationalSupport(graph, selection, projection) : null;
             if (support !== null) {

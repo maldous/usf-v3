@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { createJsonSchemaValidator } from "../../src/schema/index.ts";
-import { deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliParserCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
+import { assembleCliTransitionSchemaModules, classifyCliTransitionSchemaModule, deriveCliExternalSchemaReferences, deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliParserCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, inspectCliOperationalSupportAdmission, lookupCliTransitionSchemaModule, resolveCliTransitionSchemaModule, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
 import { transitionAdaptersForCoverage } from "../../src/commands/transition.ts";
 import { canonicalParserContracts } from "../../src/commands/canonical-parser-contracts.ts";
-import type { CliCanonicalParserSource, CliOperationalSupport, CliOperationalSupportDefinition, CliRecordDerivation, CliTransitionAdapter } from "../../src/graph/cli-transitions.ts";
+import type { AuthenticatedCliTransitionSchemaModule, CliCanonicalParserSource, CliFieldSpecification, CliOperationalSupport, CliOperationalSupportDefinition, CliRecordDerivation, CliRecordSpecification, CliTransitionAdapter, CliRecordSpecifications, CliTransitionSchemaModule, CliTransitionSchemaModules } from "../../src/graph/cli-transitions.ts";
 import type { SemanticGraph } from "../../src/graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../src/graph/nquads.ts";
 
@@ -53,17 +54,205 @@ function terminalFixture() {
 function parserCoverageFixture() {
   const { graph } = terminalFixture();
   const source: CliCanonicalParserSource = canonicalParserContracts;
-  const specifications = deriveCliRecordSpecifications(graph, { contractIdentity: "urn:usf:contract:cli-transition-definition:1" });
-  const record = specifications.records.find(item => item.fragment === "/$defs/parserCoverage");
+  const admitted = new Set(source.contracts.map(contract => contract.identity));
+  graph.quads = graph.quads.filter(quad => quad.predicate !== P + "type" || quad.object !== T + "CliCanonicalParserContract"
+    || admitted.has(quad.subject));
+  const modules = actualModules();
+  const specifications = modules.parserCoverage!.specifications;
+  const record = specifications.records.find(item => item.fragment === "");
   const field = (property: string) => record?.fields.find(item => item.property === property);
   const selector = field("matchedSelectors");
   const selectorRecord = specifications.records.find(item => item.id === selector?.record);
   return {
-    graph, source, specifications, selectorMaximum: selector?.maximum ?? 0,
+    graph, source, specifications, modules, selectorMaximum: selector?.maximum ?? 0,
     tokenMaximum: selectorRecord?.fields.find(item => item.property === "canonicalSelectorTokens")?.maximum ?? 0,
     diagnosticMaximum: field("diagnostics")?.maximum ?? 0,
-    run: (candidate: CliCanonicalParserSource | undefined, candidateGraph = graph) =>
-      deriveCliParserCoverage(candidateGraph, "urn:usf:contract:cli-transition-definition:1", candidate),
+    run: (candidate: CliCanonicalParserSource | undefined, candidateGraph = graph, candidateModules: CliTransitionSchemaModules | undefined = modules) =>
+      deriveCliParserCoverage(candidateGraph, "urn:usf:contract:cli-transition-definition:1", candidate,
+        deriveCliRecordSpecifications(candidateGraph, { contractIdentity: "urn:usf:contract:cli-transition-definition:1" }), candidateModules),
+  };
+}
+
+const moduleExpectations: Readonly<Record<CliTransitionSchemaModule, Readonly<{ contract: string; record: string; schema: string; path: string; sourceType: string }>>> = {
+  parserCoverage: { contract: "urn:usf:contract:cli-parser-coverage-schema:1", record: "urn:usf:cli-field-specification:record-parser-coverage:1", schema: "urn:usf:cli-parser-coverage:1", path: "schemas/cli-parser-coverage.schema.json", sourceType: "urn:usf:type:CliParserCoverage:1" },
+  parallelSafety: { contract: "urn:usf:contract:cli-parallel-safety-schema:1", record: "urn:usf:cli-field-specification:record-parallel-safety:1", schema: "urn:usf:cli-parallel-safety:1", path: "schemas/cli-parallel-safety.schema.json", sourceType: "urn:usf:type:CliParallelSafetyAssessment" },
+  operationalSupport: { contract: "urn:usf:contract:cli-operational-support-schema:1", record: "urn:usf:cli-field-specification:record-operational-support:1", schema: "urn:usf:cli-operational-support:1", path: "schemas/cli-operational-support.schema.json", sourceType: "urn:usf:type:OperationalSupport:1" },
+};
+
+function addModuleMetadata(graph: SemanticGraph, subject: string, module: CliTransitionSchemaModule): void {
+  const expected = moduleExpectations[module];
+  const identities: Readonly<Record<CliTransitionSchemaModule, string>> = {
+    parserCoverage: "urn:usf:schema:cli-parser-coverage-module:1",
+    parallelSafety: "urn:usf:schema:cli-parallel-safety-module:1",
+    operationalSupport: "urn:usf:schema:cli-operational-support-module:1",
+  };
+  const identity = identities[module];
+  const add = (predicate: string, object: string, objectKind: "iri" | "literal" = "iri") => graph.quads.push({
+    subject: identity, predicate: P + predicate, object, objectKind, graph: "urn:test:module-metadata", canonical: "",
+  });
+  graph.quads.push({ subject, predicate: P + "externalSchema", object: identity, objectKind: "iri", graph: "urn:test:module-metadata", canonical: "" });
+  add("type", T + "SemanticRecordSchema");
+  add("version", "1", "literal");
+  add("schemaIdentity", expected.schema);
+  add("repositoryPath", expected.path, "literal");
+  add("schemaFragment", "", "literal");
+}
+
+function partitionedDescriptorGraph(): SemanticGraph {
+  const fixture = specificationsFixture();
+  fixture.graph.quads = fixture.graph.quads.map(quad => ({ ...quad,
+    subject: quad.subject === contract ? "urn:usf:contract:cli-transition-definition:1" : quad.subject,
+    object: quad.object === contract ? "urn:usf:contract:cli-transition-definition:1" : quad.object,
+  }));
+  fixture.graph.quads = fixture.graph.quads.map(quad => quad.subject === fixture.record && quad.predicate === P + "schemaIdentity"
+    ? { ...quad, object: "urn:usf:cli-transition-descriptor:1" } : quad);
+  const add = (subject: string, field: string, object: string, objectKind: "iri" | "literal" = "iri") => fixture.graph.quads.push({
+    subject, predicate: P + field, object, objectKind, graph: "urn:test:partition", canonical: "",
+  });
+  const local = "urn:test:partition-local-record:1", localField = "urn:test:partition-local-field:1", b = fixture.b;
+  add("urn:test:amendment:1", "recordSpecification", local); add(fixture.record, "derivationDependency", local);
+  add(local, "type", T + "CliRecordSpecification"); add(local, "version", "1", "literal"); add(local, "schemaIdentity", "urn:usf:cli-transition-descriptor:1");
+  add(local, "schemaFragment", "/$defs/localFixture", "literal"); add(local, "sourceType", "urn:test:type:PartitionLocal"); add(local, "schemaDerivationRule", b + "rule-generate-schema:1"); add(local, "unknownFieldPolicy", "refuse", "literal"); add("urn:test:type:PartitionLocal", "type", T + "SemanticRecordType");
+  add(fixture.record, "fieldSpecification", localField); add(localField, "type", T + "CliFieldSpecification"); add(localField, "version", "1", "literal");
+  add(localField, "sourceRecord", fixture.record); add(localField, "sourcePredicate", P + "partition-local"); add(P + "partition-local", "type", T + "SemanticPredicate");
+  add(localField, "outputProperty", "localFixture", "literal"); add(localField, "valueKind", b + "kind-record:1"); add(b + "kind-record:1", "type", T + "CliFieldValueKind");
+  add(localField, "derivationRule", b + "rule-predicate-values:1"); add(localField, "derivationDependency", fixture.record); add(localField, "recordSpecification", local);
+  for (const [field, value] of Object.entries({ collection: "false", minimumCardinality: "1", maximumCardinality: "1", minimumLength: "1", maximumLength: "4096", text: "Explicit local definition for alias collision refusal." })) add(localField, field, value, "literal");
+  const localValue = "urn:test:partition-local-value-field:1";
+  add(local, "fieldSpecification", localValue); add(localValue, "type", T + "CliFieldSpecification"); add(localValue, "version", "1", "literal");
+  add(localValue, "sourceRecord", local); add(localValue, "sourcePredicate", P + "partition-local-value"); add(P + "partition-local-value", "type", T + "SemanticPredicate");
+  add(localValue, "outputProperty", "value", "literal"); add(localValue, "valueKind", b + "kind-text:1"); add(localValue, "derivationRule", b + "rule-predicate-values:1"); add(localValue, "derivationDependency", local);
+  for (const [field, value] of Object.entries({ collection: "false", minimumCardinality: "1", maximumCardinality: "1", minimumLength: "1", maximumLength: "4096", text: "Explicit local nested definition for alias collision refusal." })) add(localValue, field, value, "literal");
+  for (const module of Object.keys(moduleExpectations) as CliTransitionSchemaModule[]) {
+    addModuleMetadata(fixture.graph, "urn:usf:contract:cli-transition-definition:1", module);
+  }
+  return fixture.graph;
+}
+
+function actualModule(module: CliTransitionSchemaModule): AuthenticatedCliTransitionSchemaModule {
+  const expected = moduleExpectations[module];
+  const fixture = specificationsFixture();
+  const graph = fixture.graph;
+  const rewrite = (value: string) => value === contract ? expected.contract : value === fixture.record ? expected.record : value;
+  graph.quads = graph.quads.map(quad => ({ ...quad, subject: rewrite(quad.subject), object: rewrite(quad.object) }));
+  const record = expected.record;
+  graph.quads = graph.quads.map(quad => quad.subject === record && quad.predicate === P + "schemaIdentity" ? { ...quad, object: expected.schema }
+    : quad.subject === record && quad.predicate === P + "sourceType" ? { ...quad, object: expected.sourceType } : quad);
+  graph.quads.push({ subject: expected.sourceType, predicate: P + "type", object: T + "SemanticRecordType", objectKind: "iri", graph: "urn:test:module", canonical: "" });
+  if (module === "parserCoverage") {
+    const amendment = "urn:test:amendment:1", originalField = fixture.field;
+    graph.quads = graph.quads.filter(quad => quad.subject !== originalField
+      && !(quad.subject === record && quad.predicate === P + "fieldSpecification" && quad.object === originalField));
+    const add = (subject: string, field: string, object: string, objectKind: "iri" | "literal" = "iri") => graph.quads.push({
+      subject, predicate: P + field, object, objectKind, graph: "urn:test:module", canonical: "",
+    });
+    const addRecord = (id: string, sourceType: string, fragment: string) => {
+      add(amendment, "recordSpecification", id); add(record, "derivationDependency", id);
+      add(id, "type", T + "CliRecordSpecification"); add(id, "version", "1", "literal");
+      add(id, "schemaIdentity", expected.schema); add(id, "schemaFragment", fragment, "literal");
+      add(id, "sourceType", sourceType); add(id, "schemaDerivationRule", fixture.b + "rule-generate-schema:1");
+      add(id, "unknownFieldPolicy", "refuse", "literal"); add(sourceType, "type", T + "SemanticRecordType");
+    };
+    const addField = (owner: string, property: string, kind: "iri" | "text" | "integer" | "record", collection: boolean,
+      nested?: string, allowed?: readonly string[]) => {
+      const id = `${owner}-field-${property}:1`, predicate = P + `module-${property}`;
+      add(owner, "fieldSpecification", id); add(id, "type", T + "CliFieldSpecification"); add(id, "version", "1", "literal");
+      add(id, "sourceRecord", owner); add(id, "sourcePredicate", predicate); add(predicate, "type", T + "SemanticPredicate");
+      add(id, "outputProperty", property, "literal"); add(id, "valueKind", fixture.b + `kind-${kind}:1`);
+      add(fixture.b + `kind-${kind}:1`, "type", T + "CliFieldValueKind"); add(id, "derivationRule", fixture.b + "rule-predicate-values:1"); add(id, "derivationDependency", owner);
+      add(id, "collection", String(collection), "literal"); add(id, "minimumCardinality", collection ? "0" : "1", "literal");
+      add(id, "maximumCardinality", collection ? (property === "matchedSelectors" || property === "canonicalSelectorTokens" ? "32" : "1024") : "1", "literal");
+      add(id, "minimumLength", "1", "literal"); add(id, "maximumLength", "4096", "literal"); add(id, "text", "Explicit module fixture field.", "literal");
+      if (kind === "integer") { add(id, "minimumValue", "0", "literal"); add(id, "maximumValue", "31", "literal"); }
+      if (nested !== undefined) add(id, "recordSpecification", nested);
+      for (const value of allowed ?? []) add(id, "allowedValue", value, "literal");
+    };
+    const selector = "urn:test:module-record:parser-selector:1", fallback = "urn:test:module-record:parser-fallback:1", diagnostic = "urn:test:module-record:parser-diagnostic:1";
+    addRecord(selector, "urn:test:type:ParserSelector", "/$defs/parserSelector"); addRecord(fallback, "urn:test:type:ParserFallback", "/$defs/parserFallback"); addRecord(diagnostic, "urn:test:type:ParserDiagnostic", "/$defs/parserDiagnostic");
+    addField(record, "matchedSelectors", "record", true, selector); addField(record, "unresolvedRegions", "iri", true); addField(record, "diagnostics", "record", true, diagnostic);
+    for (const property of ["identity", "namedCommand", "adapterIdentity"] as const) addField(selector, property, "iri", false);
+    addField(selector, "version", "text", false); addField(selector, "canonicalSelectorTokens", "text", true); addField(selector, "forwardedArgumentOffset", "integer", false);
+    addField(selector, "sourcePath", "text", false); addField(selector, "parserExport", "text", false); addField(selector, "fallbackRegion", "record", false, fallback);
+    addField(fallback, "identity", "iri", false); addField(fallback, "sourceDispatchSurfaceToken", "text", false); addField(fallback, "complementOf", "iri", false);
+    addField(diagnostic, "reasonCode", "text", false); addField(diagnostic, "subject", "iri", false); addField(diagnostic, "field", "text", false);
+  }
+  let specifications = deriveCliRecordSpecifications(graph, { contractIdentity: expected.contract });
+  assert.equal(specifications.structuralComplete, true, JSON.stringify(specifications.gaps));
+  const root = specifications.records.filter(record => record.fragment === "");
+  assert.equal(root.length, 1, `actual ${module} module has one root`);
+  assert.equal(root[0]!.id, expected.record);
+  assert.equal(root[0]!.schemaIdentity, expected.schema);
+  assert.equal(root[0]!.sourceType, expected.sourceType);
+  if (module === "parserCoverage") {
+    const field = (property: string, kind: string, collection: boolean, maximum: number, nested: string | null = null,
+      allowedValues: readonly string[] = [], minimumValue: number | null = null, maximumValue: number | null = null): CliFieldSpecification => Object.freeze({
+      id: `urn:test:module-field:${property}:1`, property, predicate: P + `module-${property}`, kind,
+      rule: fixture.b + "rule-predicate-values:1", minimum: collection ? 0 : 1, maximum, collection,
+      minimumLength: 1, maximumLength: 4096, minimumValue, maximumValue, allowedValues: Object.freeze([...allowedValues]),
+      record: nested, externalSchemas: Object.freeze([]), dependencies: Object.freeze([record]), explanation: "Explicit module fixture field.",
+    });
+    const selector = "urn:test:module-record:parser-selector:1", fallback = "urn:test:module-record:parser-fallback:1", diagnostic = "urn:test:module-record:parser-diagnostic:1";
+    const recordSpec = (id: string, sourceType: string, fragment: string, fields: readonly CliFieldSpecification[]): CliRecordSpecification => Object.freeze({
+      id, sourceType, schemaIdentity: expected.schema, fragment, fields: Object.freeze(fields), alternatives: Object.freeze([]), discriminator: null,
+    });
+    specifications = Object.freeze({ ...specifications, records: Object.freeze([
+      recordSpec(record, expected.sourceType, "", [field("matchedSelectors", "record", true, 32, selector), field("unresolvedRegions", "iri", true, 1024), field("diagnostics", "record", true, 1024, diagnostic)]),
+      recordSpec(selector, "urn:test:type:ParserSelector", "/$defs/parserSelector", [field("identity", "iri", false, 1), field("version", "text", false, 1), field("namedCommand", "iri", false, 1), field("adapterIdentity", "iri", false, 1), field("canonicalSelectorTokens", "text", true, 32), field("forwardedArgumentOffset", "integer", false, 1, null, [], 0, 31), field("sourcePath", "text", false, 1), field("parserExport", "text", false, 1), field("fallbackRegion", "record", false, 1, fallback)]),
+      recordSpec(fallback, "urn:test:type:ParserFallback", "/$defs/parserFallback", [field("identity", "iri", false, 1), field("sourceDispatchSurfaceToken", "text", false, 1), field("complementOf", "iri", false, 1)]),
+      recordSpec(diagnostic, "urn:test:type:ParserDiagnostic", "/$defs/parserDiagnostic", [field("reasonCode", "text", false, 1), field("subject", "iri", false, 1), field("field", "text", false, 1)]),
+    ]) });
+  }
+  if (module === "parallelSafety") {
+    specifications = Object.freeze({ ...specifications, operationalGaps: Object.freeze(Array.from({ length: 10 }, (_, index) => Object.freeze({
+      subject: `urn:test:parallel-obligation:${index}`, field: "parallelSafety", reasonCode: "TRANSITION_PARALLEL_UNPROVEN",
+    }))) });
+  }
+  const document = deriveCliSchemas(specifications).descriptorSchema!;
+  assert.equal(document.$id, expected.schema);
+  const bytes = Buffer.from(JSON.stringify(document));
+  return {
+    schemaIdentity: expected.schema, repositoryPath: expected.path, schemaFragment: "",
+    schemaDigest: "sha256:" + createHash("sha256").update(bytes).digest("hex"), sourceBasis: specifications.sourceBasis,
+    validator: createJsonSchemaValidator(document), specifications,
+  };
+}
+
+function actualModules(): CliTransitionSchemaModules {
+  return {
+    parserCoverage: actualModule("parserCoverage"),
+    parallelSafety: actualModule("parallelSafety"),
+    operationalSupport: actualModule("operationalSupport"),
+  };
+}
+
+let cachedDescriptorDependencySchemas: readonly Record<string, unknown>[] | undefined;
+function descriptorDependencySchemas(): readonly Record<string, unknown>[] {
+  if (cachedDescriptorDependencySchemas === undefined) {
+    const fallbackModuleDocuments = Object.values(actualModules()).map(module => deriveCliSchemas(module.specifications).descriptorSchema!);
+    const modulePaths = ["cli-parser-coverage.schema.json", "cli-parallel-safety.schema.json", "cli-operational-support.schema.json"];
+    cachedDescriptorDependencySchemas = [
+      ...modulePaths.map((name, index) => {
+        const path = new URL("../../schemas/" + name, import.meta.url);
+        return existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown> : fallbackModuleDocuments[index]!;
+      }),
+      ...["local-contribution.schema.json", "call-result.schema.json"].map(name =>
+        JSON.parse(readFileSync(new URL("../../schemas/" + name, import.meta.url), "utf8")) as Record<string, unknown>),
+    ];
+  }
+  return cachedDescriptorDependencySchemas;
+}
+
+function createModuleAwareJsonSchemaValidator(schema: Record<string, unknown>, dependencySchemas: readonly Record<string, unknown>[] = []) {
+  return createJsonSchemaValidator(schema, { dependencySchemas: [...dependencySchemas, ...descriptorDependencySchemas()] });
+}
+
+function unverifiedTerminalAssessment(assessment: object, descriptor: Record<string, unknown>): Record<string, unknown> {
+  const terminalAssessment = (descriptor.$defs as Record<string, Record<string, unknown>> | undefined)?.terminalAssessment;
+  const required = terminalAssessment?.required;
+  return {
+    ...assessment,
+    authenticatedArtifacts: [],
+    ...(Array.isArray(required) && required.includes("branchAssessments") ? { branchAssessments: [] } : {}),
   };
 }
 
@@ -71,7 +260,65 @@ function parserReasonCodes(result: ReturnType<ReturnType<typeof parserCoverageFi
   return result.diagnostics.map(diagnostic => diagnostic.reasonCode);
 }
 
-test("canonical parser coverage matches every graph-declared parser contract without a completion claim", () => {
+test("direct contract external schema references share field metadata refusal rules", () => {
+  const graph = partitionedDescriptorGraph();
+  const subject = "urn:usf:contract:cli-transition-definition:1";
+  const references = deriveCliExternalSchemaReferences(graph, subject);
+  assert.equal(references.valid, true, JSON.stringify(references.gaps));
+  assert.deepEqual(references.references.map(reference => reference.identity), [
+    "urn:usf:schema:cli-operational-support-module:1",
+    "urn:usf:schema:cli-parallel-safety-module:1",
+    "urn:usf:schema:cli-parser-coverage-module:1",
+  ]);
+  const duplicate = structuredClone(graph);
+  duplicate.quads.push({ ...graph.quads.find(quad => quad.subject === subject && quad.predicate === P + "externalSchema")! });
+  assert.equal(deriveCliExternalSchemaReferences(duplicate, subject).valid, true, "identical repeated graph rows preserve existing single-value semantics");
+  const unsafePath = structuredClone(graph);
+  const row = unsafePath.quads.find(quad => quad.subject === "urn:usf:schema:cli-parser-coverage-module:1" && quad.predicate === P + "repositoryPath")!;
+  unsafePath.quads.splice(unsafePath.quads.indexOf(row), 1, { ...row, object: "../outside.schema.json" });
+  assert.equal(deriveCliExternalSchemaReferences(unsafePath, subject).valid, false);
+});
+
+test("graph-declared module aliases generate exact descriptor refs and refuse unsafe ambiguity", () => {
+  const graph = partitionedDescriptorGraph();
+  const subject = "urn:usf:contract:cli-transition-definition:1";
+  const aliases: ReadonlyArray<readonly [string, string]> = [
+    ["urn:usf:schema:cli-parser-coverage-module:1", "parserCoverage"],
+    ["urn:usf:schema:cli-parallel-safety-module:1", "parallelSafety"],
+    ["urn:usf:schema:cli-operational-support-module:1", "operationalSupport"],
+  ];
+  for (const [identity, alias] of aliases) graph.quads.push({ subject: identity, predicate: P + "schemaAlias", object: alias, objectKind: "literal", graph: "urn:test:module-alias", canonical: "" });
+  const specifications = deriveCliRecordSpecifications(graph, { contractIdentity: subject });
+  assert.equal(specifications.structuralComplete, true, JSON.stringify(specifications.gaps));
+  assert.deepEqual(specifications.schemaAliases.map(value => value.alias), aliases.map(([, alias]) => alias).sort());
+  const descriptor = deriveCliSchemas(specifications).descriptorSchema!;
+  const defs = descriptor.$defs as Record<string, unknown>;
+  assert.deepEqual(defs.parserCoverage, { $ref: "urn:usf:cli-parser-coverage:1" });
+  assert.deepEqual(defs.parallelSafety, { $ref: "urn:usf:cli-parallel-safety:1" });
+  assert.deepEqual(defs.operationalSupport, { $ref: "urn:usf:cli-operational-support:1" });
+
+  const duplicate = structuredClone(graph);
+  duplicate.quads.push({ subject: aliases[0]![0], predicate: P + "schemaAlias", object: aliases[1]![1], objectKind: "literal", graph: "urn:test:module-alias", canonical: "" });
+  assert.equal(deriveCliRecordSpecifications(duplicate, { contractIdentity: subject }).structuralComplete, false);
+
+  const unsafe = structuredClone(graph);
+  const unsafeRow = unsafe.quads.find(quad => quad.subject === aliases[0]![0] && quad.predicate === P + "schemaAlias")!;
+  unsafe.quads.splice(unsafe.quads.indexOf(unsafeRow), 1, { ...unsafeRow, object: "constructor" });
+  assert.equal(deriveCliRecordSpecifications(unsafe, { contractIdentity: subject }).structuralComplete, false);
+
+  const localCollision = structuredClone(graph);
+  const collisionRow = localCollision.quads.find(quad => quad.subject === aliases[0]![0] && quad.predicate === P + "schemaAlias")!;
+  const localName = Object.keys(defs).find(name => !aliases.some(([, alias]) => alias === name))!;
+  localCollision.quads.splice(localCollision.quads.indexOf(collisionRow), 1, { ...collisionRow, object: localName });
+  assert.equal(deriveCliRecordSpecifications(localCollision, { contractIdentity: subject }).structuralComplete, false);
+
+  const missingModule = structuredClone(graph);
+  const reference = missingModule.quads.find(quad => quad.subject === subject && quad.predicate === P + "externalSchema" && quad.object === aliases[0]![0])!;
+  missingModule.quads.splice(missingModule.quads.indexOf(reference), 1, { ...reference, object: "urn:usf:schema:missing-module:1" });
+  assert.equal(deriveCliRecordSpecifications(missingModule, { contractIdentity: subject }).structuralComplete, false);
+});
+
+test("canonical parser coverage matches every fixture-declared parser contract without a completion claim", () => {
   const f = parserCoverageFixture(), result = f.run(f.source);
   const selected = f.source.contracts.filter(contract => f.graph.quads.some(quad => quad.subject === contract.identity && quad.predicate === P + "type" && quad.object === T + "CliCanonicalParserContract"));
   assert.equal(result.status, "partial");
@@ -83,6 +330,127 @@ test("canonical parser coverage matches every graph-declared parser contract wit
   assert.deepEqual(result.diagnostics, []);
   assert.deepEqual(result.matchedSelectors.map(binding => binding.identity), [...result.matchedSelectors.map(binding => binding.identity)].sort());
   assert.equal(result.sourceBasis, canonicalQuadDigest(f.graph.quads));
+});
+
+test("qualified schema modules select only exact module roots and retain legacy root support", () => {
+  const f = parserCoverageFixture(), modules = actualModules();
+  for (const module of Object.keys(moduleExpectations) as CliTransitionSchemaModule[]) {
+    assert.equal(modules[module]!.schemaFragment, "", `actual ${module} module is rooted at its schema identity`);
+    assert.equal(classifyCliTransitionSchemaModule(modules[module]!), module);
+    assert.equal(lookupCliTransitionSchemaModule(modules, module), modules[module]!.specifications);
+    const resolution = resolveCliTransitionSchemaModule(modules, module);
+    assert.ok(resolution);
+    assert.equal(resolution.record.schemaIdentity, moduleExpectations[module].schema);
+    assert.equal(resolution.record.fragment, "");
+  }
+  const assembled = assembleCliTransitionSchemaModules(Object.values(modules));
+  assert.ok(assembled);
+  for (const module of Object.keys(moduleExpectations) as CliTransitionSchemaModule[]) {
+    assert.equal(assembled[module], modules[module]);
+  }
+  assert.equal(assembleCliTransitionSchemaModules(Object.values(modules).slice(0, 2)), null);
+  assert.equal(assembleCliTransitionSchemaModules([{ ...modules.parserCoverage!, repositoryPath: "schemas/unknown.schema.json" }]), null);
+  assert.equal(assembleCliTransitionSchemaModules([modules.parserCoverage!, modules.parserCoverage!]), null);
+  const actualParallelGaps = modules.parallelSafety!.specifications.operationalGaps;
+  assert.equal(actualParallelGaps.length, 10, "the admitted parallel module retains every unresolved parallel obligation");
+  const legacy = f.run(f.source);
+  const qualified = deriveCliParserCoverage(f.graph, "urn:usf:contract:cli-transition-definition:1", f.source, f.specifications, modules);
+  assert.deepEqual(qualified, legacy, "an omitted module context preserves the existing root record behavior");
+
+  const missing = deriveCliParserCoverage(f.graph, "urn:usf:contract:cli-transition-definition:1", f.source, f.specifications, {});
+  assert.equal(missing.status, "unavailable");
+  assert(parserReasonCodes(missing).includes("CLI_PARSER_CENSUS_SCHEMA_UNAVAILABLE"));
+
+  const malformed: CliTransitionSchemaModules = {
+    ...modules,
+    parserCoverage: { ...modules.parserCoverage!, specifications: { ...modules.parserCoverage!.specifications, contractIdentity: "urn:test:wrong-contract" } },
+  };
+  assert.equal(lookupCliTransitionSchemaModule(malformed, "parserCoverage"), null);
+  const invalid = deriveCliParserCoverage(f.graph, "urn:usf:contract:cli-transition-definition:1", f.source, f.specifications, malformed);
+  assert.equal(invalid.status, "unavailable");
+  assert.deepEqual(invalid.matchedSelectors, []);
+
+  for (const parserCoverage of [
+    { ...modules.parserCoverage!, schemaDigest: "sha256:not-a-digest" },
+    { ...modules.parserCoverage!, schemaFragment: "/$defs/not-the-module-root" },
+    { ...modules.parserCoverage!, validator: { ...modules.parserCoverage!.validator, schemaId: "urn:test:wrong-schema" } },
+  ]) {
+    assert.equal(resolveCliTransitionSchemaModule({ ...modules, parserCoverage }, "parserCoverage"), null);
+  }
+
+  const operationalGap = { subject: "urn:test:parallel-obligation:1", field: "parallelSafety", reasonCode: "TRANSITION_PARALLEL_UNPROVEN" };
+  const withParallelGap: CliTransitionSchemaModules = {
+    ...modules,
+    parallelSafety: { ...modules.parallelSafety!, specifications: { ...modules.parallelSafety!.specifications, operationalGaps: [operationalGap] } },
+  };
+  assert.deepEqual(resolveCliTransitionSchemaModule(withParallelGap, "parallelSafety")?.specifications.operationalGaps, [operationalGap]);
+  const report = deriveCliTransitionCoverage(f.graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" },
+    { leaves: [], complete: false }, [], withParallelGap);
+  assert(report.diagnostics.some(diagnostic => diagnostic.reasonCode === operationalGap.reasonCode && diagnostic.subject === operationalGap.subject),
+    "qualified module operational gaps remain visible rather than converting to unavailable coverage");
+  const missingParallel = deriveCliTransitionCoverage(f.graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" },
+    { leaves: [], complete: false }, [], { ...modules, parallelSafety: undefined });
+  assert(missingParallel.diagnostics.some(diagnostic => diagnostic.reasonCode === "CLI_TRANSITION_SCHEMA_MODULE_UNAVAILABLE"
+    && diagnostic.subject === "urn:usf:contract:cli-transition-definition:1" && diagnostic.field === "parallelSafety"));
+  const actualParallel = deriveCliTransitionCoverage(f.graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" },
+    { leaves: [], complete: false }, [], modules);
+  for (const gap of actualParallelGaps) {
+    assert(actualParallel.diagnostics.some(diagnostic => diagnostic.reasonCode === gap.reasonCode
+      && diagnostic.subject === gap.subject && diagnostic.field === gap.field),
+    "every admitted parallel module gap remains a coverage diagnostic");
+  }
+  const legacyRoot = deriveCliTransitionCoverage(f.graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" },
+    { leaves: [], complete: false }, []);
+  assert.equal(legacyRoot.diagnostics.some(diagnostic => diagnostic.reasonCode === "CLI_TRANSITION_SCHEMA_MODULE_UNAVAILABLE"), false);
+});
+
+test("operational support admission binds the qualified external module without restoring a root record", () => {
+  const f = operationalSupportFixture(), modules = actualModules();
+  const module = modules.operationalSupport!;
+  const metadataGraph: SemanticGraph = { ...f.graph, quads: [] };
+  addModuleMetadata(metadataGraph, f.operationalRule, "operationalSupport");
+  const metadata = metadataGraph.quads.filter(quad => quad.subject === "urn:usf:schema:cli-operational-support-module:1");
+  assert(metadata.length > 0);
+  f.graph.quads.push(...metadata);
+  f.graph.quads = f.graph.quads.filter(quad => !(quad.subject === f.operationalRule && quad.predicate === P + "recordSpecification"));
+  f.graph.quads = f.graph.quads.map(quad => quad.subject === f.operationalRule && quad.predicate === P + "operationalOutputSchema"
+    ? { ...quad, object: module.schemaIdentity } : quad);
+  f.graph.quads.push({ subject: f.operationalRule, predicate: P + "externalSchema", object: "urn:usf:schema:cli-operational-support-module:1", objectKind: "iri", graph: "urn:test:module", canonical: "" });
+  const definition: CliOperationalSupportDefinition = { ...f.operationalSupportDefinition,
+    recordIdentity: module.specifications.records.find(record => record.fragment === "")!.id,
+    outputSchema: module.schemaIdentity };
+  const references = deriveCliExternalSchemaReferences(f.graph, f.operationalRule);
+  assert.equal(references.valid, true, JSON.stringify(references.gaps));
+  assert.deepEqual(references.references.map(reference => [reference.schemaIdentity, reference.repositoryPath, reference.schemaFragment]),
+    [[module.schemaIdentity, module.repositoryPath, module.schemaFragment]]);
+  assert.deepEqual(inspectCliOperationalSupportAdmission(f.graph, "urn:test:adapter", definition, modules), []);
+  const covered = f.run((_graph, _selection, projection) => f.support(projection), definition, modules);
+  assert.equal(covered.diagnostics.some(diagnostic => diagnostic.reasonCode === "TRANSITION_OPERATIONAL_SUPPORT_UNADMITTED"), false);
+  assert.equal(f.unresolved(covered, f.field), false);
+  assert.equal(f.unresolved(covered, f.nestedField), false);
+  assert(inspectCliOperationalSupportAdmission(f.graph, "urn:test:adapter", definition)
+    .some(diagnostic => diagnostic.field === "recordSpecification"), "legacy admission remains root-record-bound");
+  assert(inspectCliOperationalSupportAdmission(f.graph, "urn:test:adapter", definition, { ...modules, operationalSupport: undefined })
+    .some(diagnostic => diagnostic.field === "externalSchema"), "a missing qualified module cannot disappear coverage");
+
+  const mixedLegacy = structuredClone(f.graph);
+  mixedLegacy.quads.push({ subject: f.operationalRule, predicate: P + "recordSpecification", object: definition.recordIdentity, objectKind: "iri", graph: "urn:test:module", canonical: "" });
+  assert(inspectCliOperationalSupportAdmission(mixedLegacy, "urn:test:adapter", definition, modules)
+    .some(diagnostic => diagnostic.field === "recordSpecification"), "module admission refuses a contradictory retained root record");
+
+  const duplicate = structuredClone(f.graph);
+  duplicate.quads.push({ subject: f.operationalRule, predicate: P + "externalSchema", object: "urn:usf:schema:cli-operational-support-module:1", objectKind: "iri", graph: "urn:test:module", canonical: "" });
+  assert(inspectCliOperationalSupportAdmission(duplicate, "urn:test:adapter", definition, modules)
+    .some(diagnostic => diagnostic.field === "externalSchema"));
+
+  const foreignFragment = structuredClone(f.graph);
+  const fragment = foreignFragment.quads.find(quad => quad.subject === "urn:usf:schema:cli-operational-support-module:1" && quad.predicate === P + "schemaFragment")!;
+  foreignFragment.quads.splice(foreignFragment.quads.indexOf(fragment), 1, { ...fragment, object: "/$defs/foreign" });
+  assert(inspectCliOperationalSupportAdmission(foreignFragment, "urn:test:adapter", definition, modules)
+    .some(diagnostic => diagnostic.field === "externalSchema"));
+
+  assert(inspectCliOperationalSupportAdmission(f.graph, "urn:test:adapter", { ...definition, recordIdentity: "urn:test:foreign-record:1" }, modules)
+    .some(diagnostic => diagnostic.field === "externalSchema"));
 });
 
 test("canonical parser coverage refuses unavailable, missing, duplicate and foreign parser sources", () => {
@@ -104,15 +472,14 @@ test("canonical parser coverage refuses unavailable, missing, duplicate and fore
 });
 
 test("canonical parser coverage refuses absent or incomplete generated schema records", () => {
-  const f = parserCoverageFixture(), record = "urn:usf:cli-field-specification:record-parser-coverage:1";
-  const absent = structuredClone(f.graph);
-  absent.quads = absent.quads.filter(quad => !(quad.subject === "urn:usf:cli-field-specification:amendment:1"
-    && quad.predicate === P + "recordSpecification" && quad.object === record));
-  const incomplete = structuredClone(f.graph);
-  incomplete.quads = incomplete.quads.filter(quad => !(quad.subject === record && quad.predicate === P + "fieldSpecification"
-    && quad.object === "urn:usf:cli-field-specification:field-parser-coverage-matched-selectors:1"));
-  for (const graph of [absent, incomplete]) {
-    const result = f.run(f.source, graph);
+  const f = parserCoverageFixture();
+  const absent = { ...f.modules, parserCoverage: undefined };
+  const incomplete = { ...f.modules, parserCoverage: { ...f.modules.parserCoverage!, specifications: {
+    ...f.modules.parserCoverage!.specifications,
+    records: f.modules.parserCoverage!.specifications.records.filter(record => record.fragment !== ""),
+  } } };
+  for (const modules of [absent, incomplete]) {
+    const result = f.run(f.source, f.graph, modules);
     assert.equal(result.status, "unavailable");
     assert.deepEqual(result.matchedSelectors, []);
     assert.deepEqual(result.unresolvedRegions, []);
@@ -128,7 +495,7 @@ test("canonical parser coverage refuses exact binding, fallback, selector and bo
     const result = f.run(source);
     assert.equal(result.status, "unavailable");
     assert.deepEqual(result.matchedSelectors, []);
-    assert(parserReasonCodes(result).includes(expected));
+    assert(parserReasonCodes(result).includes(expected), JSON.stringify(result.diagnostics));
   };
   expectMismatch(changed({ ...first, version: "2" }), "CLI_PARSER_CONTRACT_MISMATCH");
   expectMismatch(changed({ ...first, canonicalSelectorTokens: ["check", "--different-input"] }), "CLI_PARSER_CONTRACT_MISMATCH");
@@ -187,7 +554,7 @@ test("attached and detached authenticated artifact fields preserve bounded schem
     const generated = deriveCliSchemas(specs);
     assert.deepEqual(generated.gaps, []);
     const schema = generated.descriptorSchema!;
-    const validator = createJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:test:staged-terminal:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/terminalAssessment" }, { dependencySchemas: [schema] });
+    const validator = createModuleAwareJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:test:staged-terminal:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/terminalAssessment" }, [schema]);
     for (const incomplete of [false, true]) {
       const graph = structuredClone(f.graph);
       if (incomplete) graph.quads = graph.quads.filter(q => !(q.subject === f.declaration && q.predicate === P + "terminalArtifact"));
@@ -226,7 +593,7 @@ test("graph asserted accepted records never authenticate terminal completion eve
   const shape = deriveCliRecord(f.graph, { recordIdentity: acceptedRecord, subjectIdentity: subject }, currentSpecs);
   assert.equal(shape.valid, true); assert.equal(shape.executionAuthority, "none");
   const canonical = deriveCliSchemas(specs).descriptorSchema!;
-  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:accepted-shape-not-authority:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/CliCompletionTerminalAccepted" }, { dependencySchemas: [canonical] });
+  const validator = createModuleAwareJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:accepted-shape-not-authority:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/CliCompletionTerminalAccepted" }, [canonical]);
   assert.equal(validator.validate(shape.value).valid, true);
   for (const key of ["evaluator", "evaluatorDigest", "originalBasisDigest", "currentBasisDigest", "sourceDigest", "publicationIntentDigest", "receiptPath", "receiptDigest", "realisationReceipt", "evidence", "proofResult", "authorityDependencyDigest"]) {
     const partial = { ...shape.value }; delete partial[key];
@@ -250,7 +617,7 @@ test("generated publication snapshot bounds cohort members without conflating bu
   const specs = deriveCliRecordSpecifications(f.graph, { contractIdentity: "urn:usf:contract:cli-transition-definition:1" });
   assert.deepEqual(specs.gaps, []);
   const schema = deriveCliSchemas(specs).descriptorSchema!;
-  const validator = createJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:test:snapshot-cohort-shape:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/CliCompletionPublicationSnapshot" }, { dependencySchemas: [schema] });
+  const validator = createModuleAwareJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:test:snapshot-cohort-shape:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/CliCompletionPublicationSnapshot" }, [schema]);
   const originalBasisDigest = "sha256:" + "1".repeat(64), candidateDigest = "sha256:" + "2".repeat(64);
   const proofBundleDigest = "sha256:" + "3".repeat(64), fileBytesDigest = "sha256:" + "4".repeat(64);
   const member = (index: number) => ({ work: `urn:test:cohort-work-${index}`, originalBasisDigest, candidateDigest, proofBundleDigest });
@@ -306,7 +673,7 @@ test("terminal census exposes real completion and recovery obligations, not mere
   assert(result.nodes.every(n => n.state === "unverified"));
   assert.deepEqual(f.run(), result); assert.equal(JSON.stringify(f.graph), before);
   const canonical = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
-  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:terminal-assessment:1", $ref: canonical.$id + "#/$defs/terminalAssessment" }, { dependencySchemas: [canonical] });
+  const validator = createModuleAwareJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:terminal-assessment:1", $ref: canonical.$id + "#/$defs/terminalAssessment" }, [canonical]);
   assert.equal(validator.validate(result).valid, true);
   assert.equal(validator.validate({ ...result, satisfaction: "accepted" }).valid, false);
   assert.equal(validator.validate({ ...result, fields: { completion: true } }).valid, false);
@@ -938,10 +1305,10 @@ test("typed safety schema represents assessments without authenticating proof or
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
   assert.equal(schema.properties.parallelSafety.$ref, descriptor.$id + "#/$defs/parallelSafety");
   assert.equal(schema.properties.topologicalOnly.type, "boolean");
-  const validator = createJsonSchemaValidator(schema, { dependencySchemas: [descriptor] });
+  const validator = createModuleAwareJsonSchemaValidator(schema, [descriptor]);
   const raw = fixture([[], []]).run();
   const report = { ...raw, terminalClosure: { ...raw.terminalClosure,
-    assessment: { ...raw.terminalClosure.assessment, authenticatedArtifacts: [] } } };
+    assessment: unverifiedTerminalAssessment(raw.terminalClosure.assessment, descriptor) } };
   assert.equal(report.parallelSafety.state, "unproven");
   assert.equal(report.topologicalOnly, true);
   const members = ["urn:test:left", "urn:test:right"];
@@ -982,7 +1349,7 @@ test("typed safety schema represents assessments without authenticating proof or
 
 test("canonical local request rejects caller-authored authority and operational escape fields", () => {
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
-  const validator = createJsonSchemaValidator({ $schema: descriptor.$schema, $id: "urn:test:local-request-validation:1", $ref: descriptor.$id + "#/$defs/localPreparationRequest" }, { dependencySchemas: [descriptor] });
+  const validator = createModuleAwareJsonSchemaValidator({ $schema: descriptor.$schema, $id: "urn:test:local-request-validation:1", $ref: descriptor.$id + "#/$defs/localPreparationRequest" }, [descriptor]);
   const request = { rootIdentity: "urn:test:work", manifestPath: "graph/test.json", operations: [{ kind: "write", path: "src/example.ts", content: "" }] };
   assert.equal(validator.validate(request).valid, true);
   assert.equal(validator.validate({ ...request, operations: [{ kind: "delete", path: "src/example.ts" }] }).valid, true);
@@ -1003,15 +1370,15 @@ test("canonical local request rejects caller-authored authority and operational 
 test("schema separates semantic completeness from authority without admitting parallel claims", () => {
   const schema = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-interrogation.schema.json", import.meta.url), "utf8"));
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
-  const validator = createJsonSchemaValidator(schema, { dependencySchemas: [descriptor] });
+  const validator = createModuleAwareJsonSchemaValidator(schema, [descriptor]);
   assert.equal(schema.properties.descriptors.items.$ref, descriptor.$id);
   assert.equal(schema.$defs.descriptor, undefined);
   const raw = fixture([[]]).run();
   const report = { ...raw, terminalClosure: { ...raw.terminalClosure,
-    assessment: { ...raw.terminalClosure.assessment, authenticatedArtifacts: [] } } };
+    assessment: unverifiedTerminalAssessment(raw.terminalClosure.assessment, descriptor) } };
   const legacyDescriptor = { id: "urn:test:legacy", fields: { mode: "inspect" } };
   assert.equal(validator.validate({ ...report, descriptors: [legacyDescriptor] }).valid, false);
-  assert.equal(createJsonSchemaValidator(descriptor).validate(legacyDescriptor).valid, false);
+  assert.equal(createModuleAwareJsonSchemaValidator(descriptor).validate(legacyDescriptor).valid, false);
   assert.deepEqual(report.descriptors, []);
   assert.equal(validator.validate(report).valid, true);
   // Shape representability is not authentication of the hypothetical completed report.
@@ -1225,7 +1592,7 @@ test("terminal diagnostics locate missing declaration wrong types scopes and mal
 test("terminal diagnostic schema rejects opaque authority and invented target properties", () => {
   const f = terminalFixture(), result = f.run();
   const canonical = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
-  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:terminal-diagnostics:1", $ref: canonical.$id + "#/$defs/terminalAssessment" }, { dependencySchemas: [canonical] });
+  const validator = createModuleAwareJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:terminal-diagnostics:1", $ref: canonical.$id + "#/$defs/terminalAssessment" }, [canonical]);
   assert.equal(validator.validate(result).valid, true);
   const item = result.diagnostics[0]!;
   for (const extra of [{ fields: {} }, { executionAuthority: "execute" }, { target: "urn:test:invented" }, { assertedTarget: "urn:test:invented" }]) {
@@ -1269,7 +1636,7 @@ test("selective receipt adapter maps the complete native recovery closure withou
 
 test("receipt-set generated schema accepts bounded dynamic denominators and rejects authority extensions", () => {
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
-  const validator = createJsonSchemaValidator({ $schema: descriptor.$schema, $id: "urn:usf:schema:completion-check-receipt-set-result:1", $ref: descriptor.$id + "#/$defs/completionCheckReceiptSet" }, { dependencySchemas: [descriptor] });
+  const validator = createModuleAwareJsonSchemaValidator({ $schema: descriptor.$schema, $id: "urn:usf:schema:completion-check-receipt-set-result:1", $ref: descriptor.$id + "#/$defs/completionCheckReceiptSet" }, [descriptor]);
   const obligation = (name: string) => `urn:test:validation:${name}`;
   const receipt = (name: string) => ({ obligationIri: obligation(name), receiptPath: `.usf/receipts/check/sha256:${"a".repeat(64)}/${name}.json`, receiptDigest: "sha256:" + name.repeat(64).slice(0, 64), validationResultSetDigest: "sha256:" + (name + "f").repeat(64).slice(0, 64) });
   const receipts = [receipt("a"), receipt("b"), receipt("c")];
@@ -1383,9 +1750,10 @@ function operationalSupportFixture() {
       authenticatedFacts: [{ factKind: "context", identity: projection.subjectIdentity + ":context", digest: canonicalQuadDigest(f.graph.quads) }],
     })),
   });
-  const run = (callback?: CliTransitionAdapter["operationalSupport"], definition: CliOperationalSupportDefinition | null = operationalSupportDefinition) => deriveCliTransitionCoverage(f.graph,
+  const run = (callback?: CliTransitionAdapter["operationalSupport"], definition: CliOperationalSupportDefinition | null = operationalSupportDefinition,
+    modules?: CliTransitionSchemaModules) => deriveCliTransitionCoverage(f.graph,
     { rootIdentity: work, manifestPath: "graph/test.json" }, { leaves: [], complete: false },
-    [{ id: "urn:test:adapter", effectClass: "observation", inspect: () => [], ...(callback ? { operationalSupport: callback } : {}), ...(definition !== null ? { operationalSupportDefinition: definition } : {}) }]);
+    [{ id: "urn:test:adapter", effectClass: "observation", inspect: () => [], ...(callback ? { operationalSupport: callback } : {}), ...(definition !== null ? { operationalSupportDefinition: definition } : {}) }], modules);
   const unresolved = (result: ReturnType<typeof run>, id: string) => result.diagnostics.some(d => d.reasonCode === "CLI_OPERATIONAL_RULE_UNRESOLVED" && d.subject === id);
   return { ...f, ids, nestedField, operationalRule, operationalSupportDefinition, support, run, unresolved };
 }
@@ -1584,7 +1952,7 @@ test("generated operational support union rejects mixed outcomes and projects on
   const f = operationalSupportFixture();
   const current = f.run((_graph, _selection, projection) => f.support(projection)).operationalSupport[0]!;
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
-  const validator = createJsonSchemaValidator({ $schema: descriptor.$schema, $id: "urn:test:operational-support:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/operationalSupport" }, { dependencySchemas: [descriptor] });
+  const validator = createModuleAwareJsonSchemaValidator({ $schema: descriptor.$schema, $id: "urn:test:operational-support:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/operationalSupport" }, [descriptor]);
   assert.equal(validator.validate(current).valid, true);
   const missing = { ...current, outcome: "missing-prerequisite", unavailableInputs: [{ factKind: "context", identity: "urn:test:missing:1", state: "missing", reasonCode: "NATIVE_INPUT_MISSING" }] };
   assert.equal(validator.validate(missing).valid, true, "a missing prerequisite has identity, not an invented output path");

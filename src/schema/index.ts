@@ -389,6 +389,8 @@ export function createJsonSchemaValidator<T = unknown>(
   });
 }
 
+export const maximumRegisteredSchemaDocuments = 32;
+
 /**
  * Compose graph-selected external references against an already authenticated
  * in-memory registry. Repository paths remain provenance metadata, never I/O.
@@ -398,7 +400,7 @@ export function createRegisteredJsonSchemaValidator<T = unknown>(
   options: RegisteredValidatorOptions,
 ): JsonSchemaValidator<T> {
   if (!Array.isArray(options.externalSchemas) || !Array.isArray(options.registry)
-    || options.externalSchemas.length > 32 || options.registry.length > 32) {
+    || options.externalSchemas.length > maximumRegisteredSchemaDocuments || options.registry.length > maximumRegisteredSchemaDocuments) {
     throw new SchemaPolicyError("SCHEMA_REGISTRY_BOUNDS", "#/externalSchemas");
   }
   const registry = new Map<string, RegisteredSchemaDocument>();

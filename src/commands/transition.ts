@@ -2,9 +2,10 @@ import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { readFileSync, realpathSync, lstatSync, openSync, fstatSync, readSync, closeSync, constants } from "node:fs";
 import { resolve } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
-import { createJsonSchemaValidator, createRegisteredJsonSchemaValidator, type RegisteredSchemaDocument, type RegisteredSchemaReference } from "../schema/index.ts";
+import { createJsonSchemaValidator, createRegisteredJsonSchemaValidator, maximumRegisteredSchemaDocuments, type RegisteredSchemaDocument, type RegisteredSchemaReference } from "../schema/index.ts";
 import { deriveCliTransitionContext, deriveCliTransitionIds, consistentArtifactProducer, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, inspectCliOperationalSupportAdmission, verifyCliDescriptorSchema, type CliTransitionAdapter, type CliOperationalSupport, type CliOperationalSupportDefinition, type CliRecordDerivation, type CliTransitionDiagnostic } from "../graph/cli-transitions.ts";
 import { canonicalParserContracts } from "./canonical-parser-contracts.ts";
+import { assembleCliTransitionSchemaModules, resolveCliTransitionSchemaModule, deriveCliExternalSchemaReferences, type AuthenticatedCliTransitionSchemaModule, type CliTransitionSchemaModules } from "../graph/cli-transitions.ts";
 import { canonicalQuadDigest, canonicalQuadLine } from "../graph/nquads.ts";
 import { deriveLinearBindingDeclaration, LinearBindingError } from "../graph/linear-binding.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
@@ -64,41 +65,61 @@ interface TransitionImplementation {
 interface AuthenticatedSchemaRegistry {
   readonly externalSchemas: readonly RegisteredSchemaReference[];
   readonly registry: readonly RegisteredSchemaDocument[];
+  readonly modules: CliTransitionSchemaModules | undefined;
   readonly digest: string;
 }
 
-function readRegisteredSchemaDocument(root: string, reference: RegisteredSchemaReference): RegisteredSchemaDocument & { readonly digest: string } {
+function readRegisteredSourceBytes(root: string, repositoryPath: string, maximumBytes = maximumCommandInputBytes): Buffer {
   let fd: number | undefined;
   try {
     const canonicalRoot = realpathSync(root);
-    const path = resolve(canonicalRoot, reference.repositoryPath);
-    if (path !== `${canonicalRoot}/${reference.repositoryPath}`) throw new Error("Schema path escapes repository.");
+    const path = resolve(canonicalRoot, repositoryPath);
+    if (path !== `${canonicalRoot}/${repositoryPath}`) throw new Error("Schema path escapes repository.");
     const before = lstatSync(path);
     if (!constants.O_NOFOLLOW || realpathSync(path) !== path || !before.isFile() || before.isSymbolicLink()
-      || before.nlink !== 1 || before.size > maximumCommandInputBytes) throw new Error("Unsafe registered schema source.");
+      || before.nlink !== 1 || before.size > maximumBytes) throw new Error("Unsafe registered schema source.");
     fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
     const opened = fstatSync(fd);
     const same = (value: typeof before) => value.isFile() && !value.isSymbolicLink() && value.nlink === 1
       && value.dev === before.dev && value.ino === before.ino && value.size === before.size
       && value.mtimeMs === before.mtimeMs && value.ctimeMs === before.ctimeMs;
     if (!same(opened)) throw new Error("Registered schema changed while opening.");
-    const bytes = Buffer.alloc(maximumCommandInputBytes + 1);
+    const bytes = Buffer.alloc(maximumBytes + 1);
     let total = 0;
     while (total < bytes.length) {
       const count = readSync(fd, bytes, total, bytes.length - total, null);
       if (count === 0) break;
       total += count;
     }
-    if (total > maximumCommandInputBytes || !same(fstatSync(fd)) || !same(lstatSync(path)) || realpathSync(path) !== path) {
+    if (total > maximumBytes || !same(fstatSync(fd)) || !same(lstatSync(path)) || realpathSync(path) !== path) {
       throw new Error("Registered schema changed or exceeded the read bound.");
     }
-    const document = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(0, total))) as unknown;
-    if (document === null || typeof document !== "object" || Array.isArray(document)
-      || (document as { $id?: unknown }).$id !== reference.schemaIdentity) throw new Error("Registered schema identity mismatch.");
-    return Object.freeze({ ...reference, document, digest: sha256(bytes.subarray(0, total)) });
+    return bytes.subarray(0, total);
   } catch {
     throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "A graph-registered external schema is unavailable or incompatible.");
   } finally { if (fd !== undefined) closeSync(fd); }
+}
+
+function readRegisteredSchemaDocument(root: string, reference: RegisteredSchemaReference): RegisteredSchemaDocument & { readonly digest: string } {
+  try {
+    const bytes = readRegisteredSourceBytes(root, reference.repositoryPath);
+    const document = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
+    if (document === null || typeof document !== "object" || Array.isArray(document)
+      || (document as { $id?: unknown }).$id !== reference.schemaIdentity) throw new Error("Registered schema identity mismatch.");
+    return Object.freeze({ ...reference, document, digest: sha256(bytes) });
+  } catch {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "A graph-registered external schema is unavailable or incompatible.");
+  }
+}
+
+function readAdmittedSchemaModule(root: string, manifestPath: string, readPaths: ReadonlySet<string>) {
+  const graph = loadSemanticGraph(root, manifestPath, {}, { admittedReadPaths: [...readPaths] });
+  const expected = new Map([...Object.entries(graph.sourceDigests), ...graph.manifests.map(item => [item.path, item.digest] as const)]);
+  if ([...expected].some(([path, digest]) => sha256(readRegisteredSourceBytes(root, path)) !== digest)) {
+    throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Schema module dependencies changed during authentication.");
+  }
+  return { graph, files: Object.freeze([...expected].sort(([left], [right]) => left.localeCompare(right))
+    .map(([path, digest]) => Object.freeze({ path, digest }))) };
 }
 
 function authenticatedSchemaRegistry(
@@ -106,7 +127,11 @@ function authenticatedSchemaRegistry(
   context: ReturnType<typeof deriveCliTransitionContext>,
   specifications: ReturnType<typeof deriveCliRecordSpecifications>,
 ): AuthenticatedSchemaRegistry {
-  const declared = specifications.records.flatMap(record => record.fields.flatMap(field => field.externalSchemas));
+  const contractReferences = deriveCliExternalSchemaReferences(graph, specifications.contractIdentity);
+  if (!contractReferences.valid) {
+    throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Contract schema references are incomplete.", { diagnostics: contractReferences.gaps });
+  }
+  const declared = [...contractReferences.references, ...specifications.records.flatMap(record => record.fields.flatMap(field => field.externalSchemas))];
   const unique = new Map<string, RegisteredSchemaReference>();
   for (const reference of declared) {
     const existing = unique.get(reference.identity);
@@ -119,21 +144,67 @@ function authenticatedSchemaRegistry(
     .filter(row => row.subject === context.work && row.predicate === "urn:usf:predicate:readPath" && row.objectKind === "literal")
     .map(row => row.object);
   const externalSchemas = [...unique.values()].sort((left, right) => left.identity.localeCompare(right.identity));
+  if (externalSchemas.length > maximumRegisteredSchemaDocuments) {
+    throw new UsfError("SCHEMA_REGISTRY_BOUNDS", exitCodes.DOMAIN_FAILURE, "The selected schema registry exceeds its document bound.");
+  }
   if (externalSchemas.some(reference => !readPaths.includes(reference.repositoryPath))) {
     throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "The selected work does not admit a graph-registered external schema read.");
   }
   const registry = externalSchemas.map(reference => readRegisteredSchemaDocument(graph.repositoryRoot, reference));
+  const modules: AuthenticatedCliTransitionSchemaModule[] = [];
+  const moduleProvenance: unknown[] = [];
+  const moduleIdentities = new Set<string>();
+  for (const reference of registry) {
+    const declarations = graph.quads.filter(row => row.subject === reference.identity && row.predicate === "urn:usf:predicate:moduleManifestPath");
+    if (declarations.length === 0) continue;
+    const paths = [...new Set(declarations.map(row => row.object))];
+    if (paths.length !== 1 || declarations.some(row => row.objectKind !== "literal")) {
+      throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "One schema module requires one exact manifest path.");
+    }
+    if (moduleIdentities.has(reference.schemaIdentity)) {
+      throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Schema module identity is duplicated.");
+    }
+    moduleIdentities.add(reference.schemaIdentity);
+    const loaded = readAdmittedSchemaModule(graph.repositoryRoot, paths[0]!, new Set(readPaths));
+    const exact = (subject: string, predicate: string, expected: string | null): boolean => {
+      const rows = loaded.graph.quads.filter(row => row.subject === subject && row.predicate === `urn:usf:predicate:${predicate}`);
+      return rows.length > 0 && rows.every(row => row.objectKind === "iri" && row.object === expected);
+    };
+    const contracts = [...new Set(loaded.graph.quads.filter(row => row.predicate === "urn:usf:predicate:type"
+      && row.objectKind === "iri" && row.object === "urn:usf:type:SemanticContract").map(row => row.subject))]
+      .filter(subject => exact(subject, "forContract", context.contract) && exact(subject, "schemaIdentity", reference.schemaIdentity));
+    if (contracts.length !== 1) {
+      throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Schema module must identify one exact owner and parent contract.");
+    }
+    const moduleSpecifications = deriveCliRecordSpecifications(loaded.graph, { contractIdentity: contracts[0]! });
+    const generated = deriveCliSchemas(moduleSpecifications);
+    if (!moduleSpecifications.structuralComplete || generated.descriptorSchema === null || generated.digest === null
+      || moduleSpecifications.records.some(record => record.fields.some(field => field.externalSchemas.length > 0))
+      || canonicalJson(generated.descriptorSchema) !== canonicalJson(reference.document)) {
+      throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Registered schema module does not match its complete generated authority.");
+    }
+    modules.push(Object.freeze({ schemaIdentity: reference.schemaIdentity, repositoryPath: reference.repositoryPath,
+      schemaFragment: reference.schemaFragment, schemaDigest: reference.digest, sourceBasis: moduleSpecifications.sourceBasis,
+      validator: createJsonSchemaValidator(reference.document), specifications: moduleSpecifications }));
+    moduleProvenance.push({ identity: reference.identity, manifestPath: paths[0], contract: contracts[0], files: loaded.files,
+      sourceBasis: moduleSpecifications.sourceBasis, generatedSchemaDigest: generated.digest });
+  }
+  const assembled = modules.length === 0 ? undefined : assembleCliTransitionSchemaModules(modules);
+  if (assembled === null) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Generated schema modules do not match their admitted record contracts.");
+  }
   return Object.freeze({
     externalSchemas: Object.freeze(externalSchemas),
     registry: Object.freeze(registry),
-    digest: canonicalDigest(registry.map(({ identity, schemaIdentity, repositoryPath, schemaFragment, digest }) =>
-      ({ identity, schemaIdentity, repositoryPath, schemaFragment, digest }))),
+    modules: assembled,
+    digest: canonicalDigest({ schemas: registry.map(({ identity, schemaIdentity, repositoryPath, schemaFragment, digest }) =>
+      ({ identity, schemaIdentity, repositoryPath, schemaFragment, digest })), modules: moduleProvenance }),
   });
 }
 
 function selectedSchemaRegistry(graph: SemanticGraph, selection: { readonly rootIdentity: string }): AuthenticatedSchemaRegistry {
   const context = deriveCliTransitionContext(graph, selection.rootIdentity);
-  if (context.contract === null) return Object.freeze({ externalSchemas: Object.freeze([]), registry: Object.freeze([]), digest: canonicalDigest([]) });
+  if (context.contract === null) return Object.freeze({ externalSchemas: Object.freeze([]), registry: Object.freeze([]), modules: undefined, digest: canonicalDigest({ schemas: [], modules: [] }) });
   const specifications = deriveCliRecordSpecifications(graph, { contractIdentity: context.contract });
   return authenticatedSchemaRegistry(graph, context, specifications);
 }
@@ -1040,13 +1111,20 @@ async function operationalSupportForCoverage(repositoryRoot: string, graph: Sema
   const supports = new Map<string, CliOperationalSupport>();
   const adapterDiagnostics = new Map<string, readonly CliTransitionDiagnostic[]>();
   const schema = deriveTransitionSchemaResult(graph, selection).descriptorSchema;
-  const validator = createRegisteredJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:usf:cli-transition-operational-support-runtime:1", $ref: `${String(schema.$id)}#/$defs/operationalSupport` }, { ...authenticatedSchemaRegistry(graph, context, specifications), dependencySchemas: [schema] });
+  const registry = authenticatedSchemaRegistry(graph, context, specifications);
+  const module = resolveCliTransitionSchemaModule(registry.modules, "operationalSupport");
+  if (registry.modules !== undefined && module === null) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Operational support schema module is unavailable.");
+  }
+  const reference = module === null ? `${String(schema.$id)}#/$defs/operationalSupport`
+    : `${module.record.schemaIdentity}#${module.record.fragment}`;
+  const validator = createRegisteredJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:usf:cli-transition-operational-support-runtime:1", $ref: reference }, { ...registry, dependencySchemas: [schema] });
   for (const [path, implementation] of transitionAdapters) {
     if (implementation.nativePreflight === undefined || ![...selected].some(id => values(id, "command").includes(implementation.command))) continue;
     let admitted: ReturnType<typeof inspectTransition>;
     try { admitted = inspectTransition(graph, selection, path); }
     catch { continue; }
-    const admission = inspectCliOperationalSupportAdmission(graph, admitted.implementation.id, nativeOperationalSupportDefinition);
+    const admission = inspectCliOperationalSupportAdmission(graph, admitted.implementation.id, nativeOperationalSupportDefinition, registry.modules);
     if (admission.length !== 0) {
       adapterDiagnostics.set(path, admission);
       continue;
@@ -1088,8 +1166,9 @@ export async function transitionCommandHandler(request: CommandRequest, installe
       parserOwner: path.join(" ") === transitionInterrogationContract.path.join(" ") ? "src/commands/help.ts#transitionInterrogationContract" : null,
     })),
   };
+  const registry = selectedSchemaRegistry(graph, selection);
   const preflight = await operationalSupportForCoverage(request.repositoryRoot, graph, selection);
-  let output = boundedTransitionRead(() => deriveCliTransitionCoverage(graph, selection, inventory, transitionAdaptersForCoverage(preflight.supports, preflight.adapterDiagnostics)));
+  let output = boundedTransitionRead(() => deriveCliTransitionCoverage(graph, selection, inventory, transitionAdaptersForCoverage(preflight.supports, preflight.adapterDiagnostics), registry.modules));
   const schema = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-interrogation.schema.json", import.meta.url), "utf8"));
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
   if ("contract" in output && typeof output.contract === "string") {
@@ -1099,7 +1178,11 @@ export async function transitionCommandHandler(request: CommandRequest, installe
     }
   }
   output = attachAuthenticatedTerminalArtifacts(request.repositoryRoot, graph, selection, output, descriptor);
-  const validation = createRegisteredJsonSchemaValidator(schema, { ...selectedSchemaRegistry(graph, selection), dependencySchemas: [descriptor] }).validate(output);
+  const currentRegistry = selectedSchemaRegistry(loadTransitionContextGraph(request.repositoryRoot, selection), selection);
+  if (currentRegistry.digest !== registry.digest) {
+    throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Schema module authority changed during transition interrogation.");
+  }
+  const validation = createRegisteredJsonSchemaValidator(schema, { ...registry, dependencySchemas: [descriptor] }).validate(output);
   if (!validation.valid) {
     throw new UsfError("CLI_TRANSITION_OUTPUT_INVALID", exitCodes.DOMAIN_FAILURE, "Transition output does not match its canonical schema.", { errors: validation.errors });
   }

@@ -6,6 +6,9 @@ import { queryGraph } from "../../../src/graph/query.ts";
 import { deriveWork, type WorkPacket } from "../../../src/graph/work.ts";
 import { GraphLoadError, loadSemanticGraph, type GraphManifest, type SemanticGraph } from "../../../src/graph/index.ts";
 import { resolve } from "node:path";
+import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+import type { TestContext } from "node:test";
 
 const root = resolve(import.meta.dirname, "../../..");
 const serviceGraph = "urn:fixture:graph:service";
@@ -100,6 +103,111 @@ function onlyPacket(graph = fixtureGraph()): WorkPacket {
   assert.equal(result.items?.length, 1);
   return result.items?.[0] as WorkPacket;
 }
+
+function restrictedReadFixture(context: TestContext) {
+  const parent = process.env.TMPDIR ?? resolve(root, ".usf/tmp");
+  mkdirSync(parent, { recursive: true, mode: 0o700 });
+  const directory = mkdtempSync(resolve(parent, "graph-admitted-read-"));
+  context.after(() => rmSync(directory, { recursive: true, force: true }));
+  mkdirSync(resolve(directory, "graph"));
+  const child = (path = "graph/a.nq") => ({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [
+    { path, format: "application/n-quads", graph: "urn:fixture:graph:a", role: "contract", validationProfile: "bootstrap-nquads-v1" },
+  ] });
+  writeFileSync(resolve(directory, "graph/manifest.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2,
+    imports: ["graph/child.json"], sources: [] }));
+  writeFileSync(resolve(directory, "graph/child.json"), JSON.stringify(child()));
+  writeFileSync(resolve(directory, "graph/a.nq"), `${nq("urn:fixture:a", "text", "a", "urn:fixture:graph:a", true)}\n`);
+  return { directory, child, paths: ["graph/manifest.json", "graph/child.json", "graph/a.nq"] };
+}
+
+test("restricted graph reads preserve legacy results and refuse every unadmitted open", context => {
+  const { directory, paths } = restrictedReadFixture(context);
+  assert.deepEqual(loadSemanticGraph(directory, undefined, {}, { admittedReadPaths: paths }), loadSemanticGraph(directory));
+  const original = fs.openSync;
+  const opened: string[] = [];
+  fs.openSync = ((...args: Parameters<typeof fs.openSync>) => {
+    opened.push(String(args[0]));
+    return original(...args);
+  }) as typeof fs.openSync;
+  syncBuiltinESMExports();
+  try {
+    for (const missing of paths) {
+      opened.length = 0;
+      assert.throws(() => loadSemanticGraph(directory, undefined, {}, { admittedReadPaths: paths.filter(path => path !== missing) }),
+        (error: unknown) => error instanceof GraphLoadError && error.reasonCode === "GRAPH_READ_PATH_UNADMITTED" && error.details?.path === missing);
+      assert.equal(opened.includes(resolve(directory, missing)), false, missing);
+    }
+  } finally { fs.openSync = original; syncBuiltinESMExports(); }
+});
+
+test("restricted graph reads snapshot caller paths and deny a changed manifest's new source", context => {
+  const { directory, paths, child } = restrictedReadFixture(context);
+  writeFileSync(resolve(directory, "graph/unadmitted.nq"), `${nq("urn:fixture:b", "text", "b", "urn:fixture:graph:a", true)}\n`);
+  const originalRealpath = fs.realpathSync, originalOpen = fs.openSync;
+  const opened: string[] = [];
+  let changed = false;
+  fs.realpathSync = ((...args: Parameters<typeof fs.realpathSync>) => {
+    if (!changed) {
+      changed = true;
+      paths.push("graph/unadmitted.nq");
+      writeFileSync(resolve(directory, "graph/child.json"), JSON.stringify(child("graph/unadmitted.nq")));
+    }
+    return originalRealpath(...args);
+  }) as typeof fs.realpathSync;
+  fs.openSync = ((...args: Parameters<typeof fs.openSync>) => {
+    opened.push(String(args[0]));
+    return originalOpen(...args);
+  }) as typeof fs.openSync;
+  syncBuiltinESMExports();
+  try {
+    assert.throws(() => loadSemanticGraph(directory, undefined, {}, { admittedReadPaths: paths }),
+      (error: unknown) => error instanceof GraphLoadError && error.reasonCode === "GRAPH_READ_PATH_UNADMITTED"
+        && error.details?.path === "graph/unadmitted.nq");
+    assert.equal(opened.includes(resolve(directory, "graph/unadmitted.nq")), false);
+  } finally { fs.realpathSync = originalRealpath; fs.openSync = originalOpen; syncBuiltinESMExports(); }
+});
+
+test("restricted graph reads reject malformed selections without invoking accessors", context => {
+  const { directory, paths } = restrictedReadFixture(context);
+  let invoked = false;
+  const accessor = Object.defineProperty({}, "admittedReadPaths", { get() { invoked = true; return paths; } });
+  const indexAccessor = [paths[0]];
+  Object.defineProperty(indexAccessor, "0", { get() { invoked = true; return paths[0]; } });
+  for (const value of [null, {}, [], accessor, { admittedReadPaths: [] }, { admittedReadPaths: ["../outside"] },
+    { admittedReadPaths: [...paths, paths[0]] }, { admittedReadPaths: indexAccessor }, { admittedReadPaths: paths, extra: true },
+    { admittedReadPaths: new Array(1) }]) {
+    assert.throws(() => loadSemanticGraph(directory, undefined, {}, value as Parameters<typeof loadSemanticGraph>[3]),
+      (error: unknown) => error instanceof GraphLoadError && error.reasonCode === "GRAPH_READ_SELECTION_INVALID");
+  }
+  assert.equal(invoked, false);
+});
+
+test("restricted graph reads refuse hardlinks symlinks and opened-file movement", context => {
+  const { directory, paths } = restrictedReadFixture(context);
+  const source = resolve(directory, "graph/a.nq"), alias = resolve(directory, "graph/alias.nq");
+  fs.linkSync(source, alias);
+  assert.throws(() => loadSemanticGraph(directory, undefined, {}, { admittedReadPaths: paths }),
+    (error: unknown) => error instanceof GraphLoadError && error.reasonCode === "GRAPH_READ_SOURCE_CHANGED");
+  fs.unlinkSync(alias);
+  fs.renameSync(source, alias);
+  symlinkSync(alias, source);
+  assert.throws(() => loadSemanticGraph(directory, undefined, {}, { admittedReadPaths: paths }),
+    (error: unknown) => error instanceof GraphLoadError && error.reasonCode === "MANIFEST_SOURCE_PATH_ESCAPE");
+  fs.unlinkSync(source);
+  fs.renameSync(alias, source);
+  const original = fs.openSync;
+  let moved = false;
+  fs.openSync = ((...args: Parameters<typeof fs.openSync>) => {
+    const descriptor = original(...args);
+    if (!moved && String(args[0]) === source) { moved = true; fs.appendFileSync(source, "\n"); }
+    return descriptor;
+  }) as typeof fs.openSync;
+  syncBuiltinESMExports();
+  try {
+    assert.throws(() => loadSemanticGraph(directory, undefined, {}, { admittedReadPaths: paths }),
+      (error: unknown) => error instanceof GraphLoadError && error.reasonCode === "GRAPH_READ_SOURCE_CHANGED");
+  } finally { fs.openSync = original; syncBuiltinESMExports(); }
+});
 
 test("the manifest loader composes more than one declared named graph", (context) => {
   const temporaryParent = process.env.TMPDIR ?? resolve(root, ".usf/tmp");

@@ -1,4 +1,4 @@
-import { lstatSync, readFileSync, realpathSync } from "node:fs";
+import { lstatSync, readFileSync, realpathSync, openSync, fstatSync, readSync, closeSync, constants } from "node:fs";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalQuadDigest, parseStrictNQuads, sha256, type Quad } from "./nquads.ts";
 
@@ -28,6 +28,32 @@ export interface GraphLoadLimits {
   maxSourceBytes: number;
   maxTotalSourceBytes: number;
   maxDatasetQuads: number;
+}
+
+export interface GraphReadSelection {
+  readonly admittedReadPaths: readonly string[];
+}
+
+function snapshotReadSelection(selection: GraphReadSelection | undefined): ReadonlySet<string> | undefined {
+  if (selection === undefined) return undefined;
+  const invalid = (): never => refuse("GRAPH_READ_SELECTION_INVALID");
+  if (selection === null || typeof selection !== "object" || Array.isArray(selection)
+    || Reflect.ownKeys(selection).length !== 1) return invalid();
+  const descriptor = Object.getOwnPropertyDescriptor(selection, "admittedReadPaths");
+  if (descriptor === undefined || !Object.hasOwn(descriptor, "value") || !Array.isArray(descriptor.value)) return invalid();
+  const paths = descriptor.value as unknown[];
+  if (paths.length === 0 || paths.length > defaultGraphLoadLimits.maxManifestCount + defaultGraphLoadLimits.maxSourceCount
+    || Reflect.ownKeys(paths).length !== paths.length + 1) return invalid();
+  const admitted = new Set<string>();
+  for (let index = 0; index < paths.length; index += 1) {
+    const item = Object.getOwnPropertyDescriptor(paths, String(index));
+    if (item === undefined || !Object.hasOwn(item, "value") || typeof item.value !== "string"
+      || item.value.length > 4096 || admitted.has(item.value)) return invalid();
+    const path = repositoryRelativePath(item.value, "GRAPH_READ_SELECTION_INVALID");
+    if (path !== item.value) return invalid();
+    admitted.add(path);
+  }
+  return admitted;
 }
 
 export const defaultGraphLoadLimits: Readonly<GraphLoadLimits> = {
@@ -149,12 +175,41 @@ function readBoundedFile(
   tooLargeReason: string,
   aggregateRemainingBytes: number,
   aggregateTooLargeReason: string,
+  admittedReadPaths?: ReadonlySet<string>,
 ): Buffer {
+  if (admittedReadPaths !== undefined && !admittedReadPaths.has(repositoryPath)) {
+    refuse("GRAPH_READ_PATH_UNADMITTED", { path: repositoryPath });
+  }
   const absolute = containedPath(root, repositoryPath, escapeReason, unreadableReason);
   let status: ReturnType<typeof lstatSync>;
   try { status = lstatSync(absolute); } catch { return refuse(unreadableReason, { path: repositoryPath }); }
   if (status.size > maximumBytes) refuse(tooLargeReason, { path: repositoryPath, bytes: status.size, maximumBytes });
   if (status.size > aggregateRemainingBytes) refuse(aggregateTooLargeReason, { path: repositoryPath, bytes: status.size, aggregateRemainingBytes });
+  if (admittedReadPaths !== undefined) {
+    let descriptor: number | undefined;
+    const changed = (): never => refuse("GRAPH_READ_SOURCE_CHANGED", { path: repositoryPath });
+    const same = (observed: typeof status): boolean => observed.isFile() && !observed.isSymbolicLink() && observed.nlink === 1
+      && observed.dev === status.dev && observed.ino === status.ino && observed.mode === status.mode
+      && observed.size === status.size && observed.mtimeMs === status.mtimeMs && observed.ctimeMs === status.ctimeMs;
+    if (!constants.O_NOFOLLOW || !same(status)) return changed();
+    try {
+      descriptor = openSync(absolute, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+      if (!same(fstatSync(descriptor))) return changed();
+      const bytes = Buffer.alloc(status.size + 1);
+      let total = 0;
+      while (total < bytes.length) {
+        const count = readSync(descriptor, bytes, total, bytes.length - total, null);
+        if (count === 0) break;
+        total += count;
+      }
+      if (total !== status.size || !same(fstatSync(descriptor)) || !same(lstatSync(absolute))
+        || containedPath(root, repositoryPath, escapeReason, unreadableReason) !== absolute) return changed();
+      return bytes.subarray(0, total);
+    } catch (error) {
+      if (error instanceof GraphLoadError) throw error;
+      return refuse(unreadableReason, { path: repositoryPath });
+    } finally { if (descriptor !== undefined) closeSync(descriptor); }
+  }
   let content: Buffer;
   try { content = readFileSync(absolute); } catch { return refuse(unreadableReason, { path: repositoryPath }); }
   if (content.byteLength > maximumBytes) refuse(tooLargeReason, { path: repositoryPath, bytes: content.byteLength, maximumBytes });
@@ -183,7 +238,8 @@ function sameSource(left: GraphManifestSource, right: GraphManifestSource): bool
     && left.validationProfile === right.validationProfile;
 }
 
-export function loadSemanticGraph(repositoryRoot: string, manifestPath = "graph/manifest.json", limitOverrides: Partial<GraphLoadLimits> = {}): LoadedSemanticGraph {
+export function loadSemanticGraph(repositoryRoot: string, manifestPath = "graph/manifest.json", limitOverrides: Partial<GraphLoadLimits> = {}, readSelection?: GraphReadSelection): LoadedSemanticGraph {
+  const admittedReadPaths = snapshotReadSelection(readSelection);
   let root: string;
   try { root = realpathSync(resolve(repositoryRoot)); } catch { return refuse("REPOSITORY_ROOT_UNREADABLE"); }
   const limits = checkedLimits(limitOverrides);
@@ -228,6 +284,7 @@ export function loadSemanticGraph(repositoryRoot: string, manifestPath = "graph/
       "MANIFEST_TOO_LARGE",
       limits.maxTotalManifestBytes - totalManifestBytes,
       "MANIFEST_TOTAL_BYTES_EXCEEDED",
+      admittedReadPaths,
     );
     totalManifestBytes += bytes.byteLength;
     if (totalManifestBytes > limits.maxTotalManifestBytes) refuse("MANIFEST_TOTAL_BYTES_EXCEEDED");
@@ -264,6 +321,7 @@ export function loadSemanticGraph(repositoryRoot: string, manifestPath = "graph/
       "MANIFEST_SOURCE_TOO_LARGE",
       limits.maxTotalSourceBytes - totalSourceBytes,
       "MANIFEST_SOURCE_TOTAL_BYTES_EXCEEDED",
+      admittedReadPaths,
     );
     totalSourceBytes += bytes.byteLength;
     if (totalSourceBytes > limits.maxTotalSourceBytes) refuse("MANIFEST_SOURCE_TOTAL_BYTES_EXCEEDED");
