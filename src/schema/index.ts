@@ -4,6 +4,7 @@ import {
   type ErrorObject,
   type ValidateFunction,
 } from "ajv/dist/2020.js";
+import { canonicalJson } from "../core/canonical.ts";
 
 const DIALECT = "https://json-schema.org/draft/2020-12/schema";
 const DEFAULT_MAX_ERRORS = 8;
@@ -49,6 +50,10 @@ export type SchemaPolicyReason =
   | "SCHEMA_REGISTRY_BOUNDS"
   | "SCHEMA_ID_INVALID"
   | "SCHEMA_ID_DUPLICATE"
+  | "SCHEMA_PATH_INVALID"
+  | "SCHEMA_FRAGMENT_INVALID"
+  | "SCHEMA_REGISTRY_UNKNOWN"
+  | "SCHEMA_REGISTRY_DUPLICATE"
   | "SCHEMA_REF_UNRESOLVED"
   | "SCHEMA_FORMAT_UNSUPPORTED"
   | "SCHEMA_COMPILE_FAILED";
@@ -86,8 +91,69 @@ export interface ValidatorOptions {
   readonly dependencySchemas?: readonly unknown[];
 }
 
+/** Metadata is graph-derived; this module never opens the declared repository path. */
+export interface RegisteredSchemaReference {
+  readonly identity: string;
+  readonly schemaIdentity: string;
+  readonly repositoryPath: string;
+  readonly schemaFragment: string;
+}
+
+export interface RegisteredSchemaDocument extends RegisteredSchemaReference {
+  readonly document: unknown;
+}
+
+export interface RegisteredValidatorOptions {
+  readonly maxErrors?: number;
+  readonly externalSchemas: readonly RegisteredSchemaReference[];
+  readonly registry: readonly RegisteredSchemaDocument[];
+  /**
+   * Already authenticated command-local dependencies, such as the generated
+   * descriptor schema. They share the ordinary bounded registry with the
+   * graph-selected external documents.
+   */
+  readonly dependencySchemas?: readonly unknown[];
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isSchemaIdentity(value: string): boolean {
+  return /^[A-Za-z][A-Za-z0-9+.-]*:[^\s#]+$/.test(value);
+}
+
+function isRepositoryPath(value: string): boolean {
+  return /^(?:[A-Za-z0-9][A-Za-z0-9._-]*\/)*[A-Za-z0-9][A-Za-z0-9._-]*$/.test(value)
+    && !value.split("/").some(segment => segment === "." || segment === "..");
+}
+
+function isSchemaFragment(value: string): boolean {
+  return value === "" || /^\/(?:[^~/]|~[01])+(?:\/(?:[^~/]|~[01])+)*$/.test(value);
+}
+
+function assertReference(reference: RegisteredSchemaReference): void {
+  if (!isSchemaIdentity(reference.identity) || !isSchemaIdentity(reference.schemaIdentity)) {
+    throw new SchemaPolicyError("SCHEMA_ID_INVALID", "#/externalSchemas");
+  }
+  if (!isRepositoryPath(reference.repositoryPath)) throw new SchemaPolicyError("SCHEMA_PATH_INVALID", "#/externalSchemas");
+  if (!isSchemaFragment(reference.schemaFragment)) throw new SchemaPolicyError("SCHEMA_FRAGMENT_INVALID", "#/externalSchemas");
+}
+
+function schemaFragmentExists(document: unknown, fragment: string): boolean {
+  if (fragment === "") return typeof document === "boolean" || isRecord(document);
+  let current: unknown = document;
+  for (const segment of fragment.slice(1).split("/")) {
+    const key = segment.replaceAll("~1", "/").replaceAll("~0", "~");
+    if (!isRecord(current) || !Object.hasOwn(current, key)) return false;
+    current = current[key];
+  }
+  return typeof current === "boolean" || isRecord(current);
+}
+
+function canonicalSchemaDocument(document: unknown): string {
+  try { return canonicalJson(document); }
+  catch { throw new SchemaPolicyError("SCHEMA_NOT_JSON", "#/registry"); }
 }
 
 function pointerSegment(value: string): string {
@@ -320,5 +386,66 @@ export function createJsonSchemaValidator<T = unknown>(
         truncatedErrors: Math.max(0, normalized.length - errors.length),
       });
     },
+  });
+}
+
+/**
+ * Compose graph-selected external references against an already authenticated
+ * in-memory registry. Repository paths remain provenance metadata, never I/O.
+ */
+export function createRegisteredJsonSchemaValidator<T = unknown>(
+  schema: unknown,
+  options: RegisteredValidatorOptions,
+): JsonSchemaValidator<T> {
+  if (!Array.isArray(options.externalSchemas) || !Array.isArray(options.registry)
+    || options.externalSchemas.length > 32 || options.registry.length > 32) {
+    throw new SchemaPolicyError("SCHEMA_REGISTRY_BOUNDS", "#/externalSchemas");
+  }
+  const registry = new Map<string, RegisteredSchemaDocument>();
+  const documentsByIdentity = new Map<string, { readonly document: unknown; readonly content: string }>();
+  for (const entry of options.registry) {
+    assertReference(entry);
+    if (registry.has(entry.identity)) throw new SchemaPolicyError("SCHEMA_REGISTRY_DUPLICATE", "#/registry");
+    if (!isRecord(entry.document) || entry.document.$id !== entry.schemaIdentity) {
+      throw new SchemaPolicyError("SCHEMA_ID_INVALID", "#/registry");
+    }
+    let content: string;
+    try { content = JSON.stringify(entry.document); }
+    catch { throw new SchemaPolicyError("SCHEMA_NOT_JSON", "#/registry"); }
+    const existing = documentsByIdentity.get(entry.schemaIdentity);
+    if (existing !== undefined && existing.content !== content) throw new SchemaPolicyError("SCHEMA_REGISTRY_DUPLICATE", "#/registry");
+    registry.set(entry.identity, entry);
+    documentsByIdentity.set(entry.schemaIdentity, existing ?? { document: entry.document, content });
+  }
+  const selected: RegisteredSchemaDocument[] = [];
+  const references = new Set<string>();
+  for (const reference of options.externalSchemas) {
+    assertReference(reference);
+    if (references.has(reference.identity)) throw new SchemaPolicyError("SCHEMA_REGISTRY_DUPLICATE", "#/externalSchemas");
+    references.add(reference.identity);
+    const entry = registry.get(reference.identity);
+    if (entry === undefined
+      || entry.schemaIdentity !== reference.schemaIdentity
+      || entry.repositoryPath !== reference.repositoryPath
+      || entry.schemaFragment !== reference.schemaFragment) {
+      throw new SchemaPolicyError("SCHEMA_REGISTRY_UNKNOWN", "#/externalSchemas");
+    }
+    if (!schemaFragmentExists(entry.document, reference.schemaFragment)) {
+      throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", "#/externalSchemas");
+    }
+    selected.push(entry);
+  }
+  const rootIdentity = isRecord(schema) && typeof schema.$id === "string" ? schema.$id : null;
+  const documents = [...new Set(selected.map(entry => entry.schemaIdentity))].flatMap(identity => {
+    const document = documentsByIdentity.get(identity)!.document;
+    if (identity !== rootIdentity) return [document];
+    if (canonicalSchemaDocument(schema) !== canonicalSchemaDocument(document)) {
+      throw new SchemaPolicyError("SCHEMA_REGISTRY_DUPLICATE", "#/$id");
+    }
+    return [];
+  });
+  return createJsonSchemaValidator<T>(schema, {
+    maxErrors: options.maxErrors,
+    dependencySchemas: [...documents, ...(options.dependencySchemas ?? [])],
   });
 }

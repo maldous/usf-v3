@@ -3,10 +3,19 @@ import type { SemanticGraph } from "./index.ts";
 import { canonicalQuadDigest } from "./nquads.ts";
 import { deriveLinearBindingDeclaration, LinearBindingError, type LinearBindingAuthority } from "./linear-binding.ts";
 
+const EXTERNAL_SCHEMA_RULE = "urn:usf:rule:ordinary-boundary-external-schema:1";
+
 function boundedBindingPrompt(graph: SemanticGraph, quad: SemanticGraph["quads"][number]): boolean {
   if (quad.objectKind !== "literal" || quad.predicate !== "urn:usf:predicate:fixedPrompt") return false;
   try { return deriveLinearBindingDeclaration(graph, quad.subject).fixedPrompt === quad.object; }
   catch (error) { if (error instanceof LinearBindingError) return false; throw error; }
+}
+
+export interface CliExternalSchemaReference {
+  readonly identity: string;
+  readonly schemaIdentity: string;
+  readonly repositoryPath: string;
+  readonly schemaFragment: string;
 }
 
 export interface CliFieldSpecification {
@@ -17,7 +26,8 @@ export interface CliFieldSpecification {
   readonly minimumLength: number; readonly maximumLength: number;
   readonly minimumValue: number | null; readonly maximumValue: number | null;
   readonly allowedValues: readonly string[];
-  readonly record: string | null; readonly dependencies: readonly string[]; readonly explanation: string;
+  readonly record: string | null; readonly externalSchemas: readonly CliExternalSchemaReference[];
+  readonly dependencies: readonly string[]; readonly explanation: string;
 }
 export interface CliRecordSpecification {
   readonly id: string; readonly sourceType: string; readonly schemaIdentity: string; readonly fragment: string;
@@ -103,6 +113,10 @@ export function deriveCliRecord(
     for (const field of record.fields) {
       if (field.collectionOrderingRule !== undefined) {
         bad(subject, field.id, "CLI_RECORD_ORDERED_SOURCE_UNAVAILABLE");
+        continue;
+      }
+      if (field.kind === "external-schema") {
+        bad(subject, field.id, "CLI_RECORD_EXTERNAL_SCHEMA_UNAVAILABLE");
         continue;
       }
       const subjectSource = field.rule === "urn:usf:cli-field-specification:rule-subject-identity:1";
@@ -218,12 +232,15 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
       if (!/^[A-Za-z][A-Za-z0-9]*$/.test(property) || properties.has(property)) bad(fieldId, "outputProperty", "CLI_SPECIFICATION_PROPERTY_CONFLICT");
       properties.add(property);
       const kindId = single(fieldId, "valueKind"); typed(kindId, "CliFieldValueKind");
-      const kinds = ["iri", "text", "integer", "boolean", "record"];
+      const kinds = ["iri", "text", "integer", "boolean", "record", "external-schema"];
       const kind = kinds.find(k => kindId === prefix + "kind-" + k + ":1") ?? "unknown";
       if (kind === "unknown") bad(fieldId, "valueKind", "CLI_SPECIFICATION_KIND_UNKNOWN");
       const rule = single(fieldId, "derivationRule"); typed(rule, "CliFieldDerivationRule");
       const subjectSource = rule === prefix + "rule-subject-identity:1";
-      if (rule !== prefix + "rule-predicate-values:1" && !subjectSource) bad(fieldId, "derivationRule", "CLI_SPECIFICATION_RULE_UNKNOWN");
+      const externalSchema = kind === "external-schema";
+      if (externalSchema ? rule !== EXTERNAL_SCHEMA_RULE : rule !== prefix + "rule-predicate-values:1" && !subjectSource) {
+        bad(fieldId, "derivationRule", "CLI_SPECIFICATION_RULE_UNKNOWN");
+      }
       const collectionValue = single(fieldId, "collection", "literal"), collection = collectionValue === "true";
       if (collectionValue !== "true" && collectionValue !== "false") bad(fieldId, "collection");
       const orderingRules = many(fieldId, "collectionOrderingRule");
@@ -256,6 +273,25 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
       }
       const refs = many(fieldId, "recordSpecification");
       if ((kind === "record" && (refs.length !== 1 || !ids.includes(refs[0]!))) || (kind !== "record" && refs.length > 0)) bad(fieldId, "recordSpecification");
+      const externalSchemas: CliExternalSchemaReference[] = [];
+      const externalIds = many(fieldId, "externalSchema");
+      if (externalSchema !== (externalIds.length > 0)) bad(fieldId, "externalSchema", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID");
+      if (externalIds.length > 32 || new Set(externalIds).size !== externalIds.length) bad(fieldId, "externalSchema", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID");
+      for (const externalId of externalIds) {
+        if (!requiredClosure.has(externalId)) bad(fieldId, "externalSchema", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_UNRESOLVED");
+        typed(externalId, "SemanticRecordSchema");
+        if (single(externalId, "version", "literal") !== "1") bad(externalId, "version", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID");
+        const schemaIdentity = single(externalId, "schemaIdentity");
+        const repositoryPath = single(externalId, "repositoryPath", "literal");
+        const schemaFragment = single(externalId, "schemaFragment", "literal");
+        if (!/^[A-Za-z][A-Za-z0-9+.-]*:[^\s#]+$/.test(schemaIdentity)
+          || !/^(?:[A-Za-z0-9][A-Za-z0-9._-]*\/)*[A-Za-z0-9][A-Za-z0-9._-]*$/.test(repositoryPath)
+          || repositoryPath.split("/").some(segment => segment === "." || segment === "..")
+          || !(schemaFragment === "" || /^\/(?:[^~/]|~[01])+(?:\/(?:[^~/]|~[01])+)*$/.test(schemaFragment))) {
+          bad(externalId, "schemaIdentity/repositoryPath/schemaFragment", "CLI_SPECIFICATION_EXTERNAL_SCHEMA_INVALID");
+        }
+        externalSchemas.push({ identity: externalId, schemaIdentity, repositoryPath, schemaFragment });
+      }
       const dependencies = many(fieldId, "derivationDependency");
       if (dependencies.length === 0) bad(fieldId, "derivationDependency");
       for (const requirement of many(fieldId, "semanticRuleRequirement")) {
@@ -270,7 +306,8 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
       } else if (predicate === null || !index.has(predicate)) bad(fieldId, "sourcePredicate", "CLI_SPECIFICATION_SOURCE_UNRESOLVED");
       fields.push({ id: fieldId, property, predicate, rule, kind, minimum, maximum, collection,
         ...(orderingRules.length === 1 ? { collectionOrderingRule: orderingRules[0]! } : {}),
-        minimumLength, maximumLength, minimumValue, maximumValue, allowedValues, record: refs[0] ?? null, dependencies, explanation });
+        minimumLength, maximumLength, minimumValue, maximumValue, allowedValues, record: refs[0] ?? null,
+        externalSchemas, dependencies, explanation });
     }
     records.push({ id, sourceType: single(id, "sourceType"), schemaIdentity: single(id, "schemaIdentity"), fragment: single(id, "schemaFragment", "literal"), alternatives, discriminator: discriminators[0] ?? null, fields: fields.sort((a, b) => a.property < b.property ? -1 : a.property > b.property ? 1 : 0) });
   }
@@ -319,7 +356,11 @@ export function deriveCliSchemas(specifications: CliRecordSpecifications): Reado
     const properties: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
     for (const f of r.fields) {
       let shape: Record<string, unknown>;
-      if (f.kind === "record") shape = { $ref: "#" + records.get(f.record!)!.fragment };
+      if (f.kind === "external-schema") {
+        const references = f.externalSchemas.map(reference => ({ $ref: reference.schemaIdentity + (reference.schemaFragment === "" ? "" : "#" + reference.schemaFragment) }));
+        shape = references.length === 1 ? references[0]! : { oneOf: references };
+      }
+      else if (f.kind === "record") shape = { $ref: "#" + records.get(f.record!)!.fragment };
       else if (f.kind === "integer") shape = { type: "integer", minimum: f.minimumValue, maximum: f.maximumValue };
       else if (f.kind === "boolean") shape = { type: "boolean" };
       else shape = { type: "string", minLength: f.minimumLength, maxLength: f.maximumLength, ...(f.kind === "iri" ? { pattern: "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$" } : {}) };
@@ -665,6 +706,8 @@ export interface CliTerminalDiagnostic {
 export interface CliTerminalAssessment {
   /** Present only when the selected generated terminal record declares the native attachment field. */
   readonly authenticatedArtifacts?: readonly CliRecordValue[];
+  /** Present only when the selected generated terminal record declares branch assessments. */
+  readonly branchAssessments?: readonly CliRecordValue[];
   readonly declarations: readonly string[];
   readonly semanticBasis: string;
   readonly diagnostics: readonly CliTerminalDiagnostic[];
@@ -714,9 +757,20 @@ export function deriveCliTerminalAssessment(graph: SemanticGraph, root: string):
     && attachmentCandidates[0]!.collection && attachmentCandidates[0]!.minimum === 0
     && attachmentCandidates[0]!.kind === "record" && attachmentCandidates[0]!.record !== null
     ? attachmentCandidates[0]!.property : null;
-  let terminalArtifacts: string[] = [], requiredTransitions: string[] = [];
+  const branchAssessmentCandidates = terminalRecord?.fields.filter(field => field.predicate === P + "terminalBranchAssessment") ?? [];
+  const branchAssessmentProperty = branchAssessmentCandidates.length === 1
+    && branchAssessmentCandidates[0]!.property === "branchAssessments"
+    && branchAssessmentCandidates[0]!.collection && branchAssessmentCandidates[0]!.minimum === 0
+    && branchAssessmentCandidates[0]!.kind === "record" && branchAssessmentCandidates[0]!.record !== null
+    ? branchAssessmentCandidates[0]!.property : null;
+  if (branchAssessmentCandidates.length > 0 && branchAssessmentProperty === null) {
+    note("TRANSITION_TERMINAL_BRANCH_ASSESSMENT_FIELD_INVALID", terminalRecord?.id ?? root, { property: "branchAssessments" });
+  }
+  let terminalArtifacts: string[] = [], branchTerminalArtifacts: string[] = [], branchProofObligations: string[] = [], requiredTransitions: string[] = [];
+  let branchAssessments: CliRecordValue[] = [];
   const finish = (): CliTerminalAssessment => immutable({ declarations, semanticBasis,
     ...(detachedAttachment === null ? {} : { [detachedAttachment]: [] }),
+    ...(branchAssessmentProperty === null ? {} : { [branchAssessmentProperty]: branchAssessments }),
     nodes: [...nodes.values()].sort((a, b) => a.identity < b.identity ? -1 : a.identity > b.identity ? 1 : 0),
     edges: [...edges.entries()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, edge]) => edge),
     terminalArtifacts, requiredTransitions, structuralComplete: diagnostics.size === 0,
@@ -738,9 +792,57 @@ export function deriveCliTerminalAssessment(graph: SemanticGraph, root: string):
     || !iris(declaration.transitions) || !iris(declaration.terminalArtifacts)) {
     note("TRANSITION_TERMINAL_DECLARATION_INVALID", declarations[0]!, { property: "terminalDeclaration" }); return finish();
   }
+  terminalArtifacts = sorted(declaration.terminalArtifacts);
+  if (branchAssessmentProperty !== null) {
+    if (!Array.isArray(declaration.branches)) {
+      note("TRANSITION_TERMINAL_BRANCH_DECLARATION_INVALID", declarations[0]!, { property: "branches" });
+      return finish();
+    }
+    const branchTransitions = new Set<string>(), branchArtifacts = new Set<string>(), branchProofs = new Set<string>();
+    for (const candidate of declaration.branches) {
+      if (candidate === null || typeof candidate !== "object" || Array.isArray(candidate)) {
+        note("TRANSITION_TERMINAL_BRANCH_DECLARATION_INVALID", declarations[0]!, { property: "branches" });
+        continue;
+      }
+      const branch = candidate as Readonly<Record<string, CliRecordValue>>;
+      const transitions = iris(branch.transitions) ? branch.transitions : null;
+      const artifacts = iris(branch.terminalArtifacts) ? branch.terminalArtifacts : null;
+      if (typeof branch.identity !== "string" || typeof branch.work !== "string" || typeof branch.profile !== "string"
+        || typeof branch.proofObligation !== "string" || typeof branch.terminalAssessmentRule !== "string"
+        || transitions === null || artifacts === null || artifacts.length === 0
+        || branch.work !== context.work || branch.profile !== context.profile) {
+        note("TRANSITION_TERMINAL_BRANCH_DECLARATION_INVALID", typeof branch.identity === "string" ? branch.identity : declarations[0]!, { property: "branches" });
+        continue;
+      }
+      for (const transition of transitions) branchTransitions.add(transition);
+      for (const artifact of artifacts) branchArtifacts.add(artifact);
+      branchProofs.add(branch.proofObligation);
+      const branchSourceDigest = canonicalQuadDigest(rows.get(branch.identity) ?? []);
+      const evaluatorDigest = canonicalQuadDigest(rows.get(branch.terminalAssessmentRule) ?? []);
+      const reasonCodes = ["TERMINAL_BRANCH_EVALUATOR_UNAVAILABLE"];
+      const obligations: CliRecordValue[] = [
+        { obligationIdentity: branch.proofObligation, obligationKind: "proof", outcome: "unknown", sourceDigest: branchSourceDigest, reasonCodes },
+        ...artifacts.map(artifact => ({ obligationIdentity: artifact, obligationKind: "artifact", outcome: "unknown", sourceDigest: branchSourceDigest, artifactIdentity: artifact, reasonCodes })),
+      ];
+      branchAssessments.push({ branchIdentity: branch.identity, work: branch.work, profile: branch.profile,
+        semanticBasis, branchSourceDigest, derivationRule: branch.terminalAssessmentRule, evaluatorDigest,
+        applicability: "unknown", outcome: "unknown", obligations, nativeFactDigests: [], reasonCodes });
+    }
+    branchAssessments = branchAssessments.sort((left, right) => {
+      const a = String((left as Readonly<Record<string, CliRecordValue>>).branchIdentity);
+      const b = String((right as Readonly<Record<string, CliRecordValue>>).branchIdentity);
+      return a < b ? -1 : a > b ? 1 : 0;
+    });
+    branchTerminalArtifacts = sorted([...branchArtifacts]);
+    branchProofObligations = sorted([...branchProofs]);
+    if (branchAssessments.length !== declaration.branches.length
+      || !same(sorted([...branchTransitions]), sorted(declaration.transitions))
+      || !same(sorted([...branchTransitions]), values(context.work, P + "transition"))) {
+      note("TRANSITION_TERMINAL_BRANCH_CLOSURE_MISMATCH", declarations[0]!, { property: "branches" });
+    }
+  }
   if (!same(sorted(declaration.roots), sorted([context.work, context.contract]))) note("TRANSITION_TERMINAL_ROOT_SCOPE_CONFLICT", declarations[0]!, { predicate: P + "closureRoot", observedTargets: declaration.roots });
   if (!same(sorted(declaration.transitions), values(context.work, P + "transition"))) note("TRANSITION_TERMINAL_TRANSITION_DENOMINATOR_CONFLICT", declarations[0]!, { predicate: P + "transition", observedTargets: declaration.transitions });
-  terminalArtifacts = sorted(declaration.terminalArtifacts);
   if (terminalArtifacts.length === 0) note("TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING", declarations[0]!, { predicate: P + "terminalArtifact", expectedType: T + "CliArtifactContract", rule: declaration.closureRule });
   const policy = read("terminalPolicy", declaration.closureRule);
   const bound = (value: unknown, maximum: number): value is number => typeof value === "number" && Number.isSafeInteger(value) && value > 0 && value <= maximum;
@@ -767,6 +869,8 @@ export function deriveCliTerminalAssessment(graph: SemanticGraph, root: string):
     { identity: context.contract, semanticType: T + "SemanticContract", depth: 0 },
     ...declaration.transitions.map(identity => ({ identity, semanticType: T + "CliTransitionDescriptor", depth: 0 })),
     ...terminalArtifacts.map(identity => ({ identity, semanticType: T + "CliArtifactContract", depth: 0 })),
+    ...branchTerminalArtifacts.map(identity => ({ identity, semanticType: T + "CliArtifactContract", depth: 0 })),
+    ...branchProofObligations.map(identity => ({ identity, semanticType: T + "ProofObligation", depth: 0 })),
   ];
   for (let index = 0; index < pending.length; index++) {
     const current = pending[index]!;
@@ -1027,11 +1131,14 @@ export function deriveCliTransitionCoverage(
   const declared = work === null ? [] : values(work, "terminalArtifact");
   const consumed = new Set(topology.flatMap(d => [...d.consumes]));
   const derived = sorted([...producers.keys()].filter(id => !consumed.has(id)));
-  if (!(declared.length > 0 && same(declared, derived) && visited.size === ids.length && ids.length > 0)) issue("TRANSITION_TERMINAL_CLOSURE_MISMATCH", root, "terminalArtifact");
-  // Unconsumed artifacts are only a topological census, not terminal obligation closure.
-  const equal = false;
-  issue("TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED", root, "terminalArtifact/recovery");
   const assessment = deriveCliTerminalAssessment(graph, root);
+  const declaredBranchClosure = assessment.branchAssessments !== undefined
+    && assessment.branchAssessments.length > 0 && assessment.structuralComplete;
+  const legacySinkClosure = declared.length > 0 && same(declared, derived) && visited.size === ids.length && ids.length > 0;
+  if (!(declaredBranchClosure || legacySinkClosure)) issue("TRANSITION_TERMINAL_CLOSURE_MISMATCH", root, "terminalArtifact");
+  // Neither a graph branch declaration nor an unconsumed-artifact census authenticates obligations.
+  const equal = declaredBranchClosure;
+  issue("TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED", root, "terminalArtifact/recovery");
   for (const reasonCode of assessment.reasonCodes) issue(reasonCode, root, "terminalClosure");
   // A shared field is supported only when every selected descriptor instance is covered.
   const remainingDiagnostics = diagnostics.filter(diagnostic => {

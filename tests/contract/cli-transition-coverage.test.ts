@@ -71,11 +71,12 @@ function parserReasonCodes(result: ReturnType<ReturnType<typeof parserCoverageFi
   return result.diagnostics.map(diagnostic => diagnostic.reasonCode);
 }
 
-test("canonical parser coverage matches all five graph-declared parser contracts without a completion claim", () => {
+test("canonical parser coverage matches every graph-declared parser contract without a completion claim", () => {
   const f = parserCoverageFixture(), result = f.run(f.source);
+  const selected = f.source.contracts.filter(contract => f.graph.quads.some(quad => quad.subject === contract.identity && quad.predicate === P + "type" && quad.object === T + "CliCanonicalParserContract"));
   assert.equal(result.status, "partial");
-  assert.equal(result.matchedSelectors.length, 5);
-  assert.equal(result.unresolvedRegions.length, 5);
+  assert.deepEqual(result.matchedSelectors.map(binding => binding.identity), selected.map(contract => contract.identity).sort());
+  assert.equal(result.unresolvedRegions.length, selected.length);
   assert.equal(f.selectorMaximum, 32);
   assert.equal(f.tokenMaximum, 32);
   assert.equal(f.diagnosticMaximum, 1024);
@@ -327,6 +328,79 @@ test("declared terminal artifact can complete structural census without authenti
   const next = deriveCliTerminalAssessment(moved, f.root);
   assert.notEqual(next.semanticBasis, result.semanticBasis);
   assert.deepEqual(next.nodes, result.nodes);
+});
+
+function terminalBranchFixture() {
+  const fixture = terminalFixture();
+  const existing = fixture.graph.quads.find(quad => quad.subject === fixture.declaration && quad.predicate === P + "branchContract" && quad.objectKind === "iri")?.object;
+  if (existing !== undefined) return { ...fixture, branch: existing };
+  const contractIdentity = "urn:usf:contract:cli-transition-definition:1";
+  const amendment = fixture.graph.quads.find(quad => quad.predicate === P + "forContract" && quad.object === contractIdentity
+    && fixture.graph.quads.some(candidate => candidate.subject === quad.subject && candidate.predicate === P + "type" && candidate.object === T + "CliFieldSpecificationAmendment"))?.subject;
+  const declarationRecord = fixture.graph.quads.find(quad => quad.predicate === P + "schemaFragment" && quad.object === "/$defs/terminalDeclaration")?.subject;
+  const assessmentRecord = fixture.graph.quads.find(quad => quad.predicate === P + "schemaFragment" && quad.object === "/$defs/terminalAssessment")?.subject;
+  assert.notEqual(amendment, undefined); assert.notEqual(declarationRecord, undefined); assert.notEqual(assessmentRecord, undefined);
+  const branch = "urn:test:terminal-branch:1", branchRecord = "urn:test:terminal-branch-record:1", assessmentRecordId = "urn:test:terminal-branch-assessment-record:1";
+  const add = (subject: string, predicate: string, object: string, objectKind: "iri" | "literal" = "iri") => fixture.graph.quads.push({ subject, predicate: P + predicate, object, objectKind, graph: "urn:test:terminal-branch", canonical: "" });
+  const field = (record: string, id: string, predicate: string, property: string, collection = false, nested: string | null = null) => {
+    add(id, "type", T + "CliFieldSpecification"); add(id, "version", "1", "literal"); add(id, "sourceRecord", record);
+    add(id, "sourcePredicate", P + predicate); add(id, "outputProperty", property, "literal"); add(id, "valueKind", nested === null ? "urn:usf:cli-field-specification:kind-iri:1" : "urn:usf:cli-field-specification:kind-record:1");
+    add(id, "derivationRule", "urn:usf:cli-field-specification:rule-predicate-values:1"); add(id, "derivationDependency", record);
+    add(id, "collection", String(collection), "literal"); add(id, "minimumCardinality", collection ? "0" : "1", "literal"); add(id, "maximumCardinality", collection ? "64" : "1", "literal");
+    add(id, "minimumLength", "1", "literal"); add(id, "maximumLength", "4096", "literal"); add(id, "text", "Self-contained terminal branch fixture field.", "literal");
+    if (nested !== null) add(id, "recordSpecification", nested); add(record, "fieldSpecification", id);
+  };
+  for (const record of [branchRecord, assessmentRecordId]) {
+    add(record, "type", T + "CliRecordSpecification"); add(record, "version", "1", "literal"); add(record, "schemaIdentity", "urn:usf:cli-transition-descriptor:1");
+    add(record, "schemaFragment", record === branchRecord ? "/$defs/testTerminalBranch" : "/$defs/testTerminalBranchAssessment", "literal"); add(record, "schemaDerivationRule", "urn:usf:cli-field-specification:rule-generate-schema:1"); add(record, "unknownFieldPolicy", "refuse", "literal"); add(amendment!, "recordSpecification", record);
+  }
+  add(T + "TestTerminalBranch", "type", T + "SemanticRecordType");
+  add(T + "TestTerminalBranchAssessment", "type", T + "SemanticRecordType");
+  for (const predicate of ["branchContract", "terminalBranchAssessment", "terminalArtifacts", "terminalAssessmentRule", "transitions"]) {
+    add(P + predicate, "type", T + "SemanticPredicate");
+  }
+  add(branchRecord, "sourceType", T + "TestTerminalBranch");
+  add(assessmentRecordId, "sourceType", T + "TestTerminalBranchAssessment");
+  field(declarationRecord!, "urn:test:field:terminal-branches:1", "branchContract", "branches", true, branchRecord);
+  field(assessmentRecord!, "urn:test:field:terminal-branch-assessments:1", "terminalBranchAssessment", "branchAssessments", true, assessmentRecordId);
+  field(assessmentRecordId, "urn:test:field:terminal-branch-assessment-identity:1", "identity", "identity");
+  for (const [name, predicate, collection] of [["identity", "identity", false], ["work", "work", false], ["profile", "profile", false], ["proof", "proofObligation", false], ["rule", "terminalAssessmentRule", false], ["transitions", "transitions", true], ["artifacts", "terminalArtifacts", true]] as const) field(branchRecord, "urn:test:field:branch-" + name + ":1", predicate, name === "proof" ? "proofObligation" : name === "rule" ? "terminalAssessmentRule" : name === "artifacts" ? "terminalArtifacts" : name, collection);
+  add(fixture.declaration, "branchContract", branch); add(branch, "type", T + "TestTerminalBranch"); add(branch, "identity", branch); add(branch, "work", fixture.root); add(branch, "profile", "urn:usf:profile:cli-transition-definition:1");
+  add(branch, "proofObligation", "urn:usf:proof:cli-transition-definition:completion"); add(branch, "terminalAssessmentRule", "urn:usf:cli-terminal-closure:cli-transition-definition:1");
+  for (const transition of fixture.graph.quads.filter(quad => quad.subject === fixture.declaration && quad.predicate === P + "transition" && quad.objectKind === "iri").map(quad => quad.object)) add(branch, "transitions", transition);
+  for (const artifact of fixture.graph.quads.filter(quad => quad.subject === fixture.declaration && quad.predicate === P + "terminalArtifact" && quad.objectKind === "iri").map(quad => quad.object)) add(branch, "terminalArtifacts", artifact);
+  return { ...fixture, branch };
+}
+
+test("declared branch closure refuses omitted branch terminal and recovery obligations without authenticating execution", () => {
+  const f = terminalBranchFixture(), construction = f.branch;
+  const coverage = (graph: SemanticGraph) => deriveCliTransitionCoverage(graph,
+    { rootIdentity: f.root, manifestPath: "graph/manifests/cli-transition-definition.json" }, { leaves: [], complete: false }, []);
+  const initial = f.run();
+  assert((initial.branchAssessments?.length ?? 0) > 0, JSON.stringify({ reasonCodes: initial.reasonCodes, diagnostics: initial.diagnostics }));
+  assert.equal(coverage(f.graph).terminalClosure.equal, true);
+  assert.equal(initial.satisfaction, "unverified");
+  assert(coverage(f.graph).diagnostics.some(diagnostic => diagnostic.reasonCode === "TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED"));
+
+  const omittedTerminal = structuredClone(f.graph);
+  omittedTerminal.quads = omittedTerminal.quads.filter(quad => !(quad.subject === construction && quad.predicate === P + "terminalArtifacts"));
+  const terminalResult = deriveCliTerminalAssessment(omittedTerminal, f.root);
+  assert.equal(terminalResult.structuralComplete, false);
+  assert.equal(terminalResult.satisfaction, "unverified");
+  assert.equal(coverage(omittedTerminal).terminalClosure.equal, false);
+
+  const transitions = f.graph.quads.filter(quad => quad.subject === construction && quad.predicate === P + "transitions" && quad.objectKind === "iri").map(quad => quad.object);
+  const recoveryTransition = transitions.find(transition => f.graph.quads.some(quad => quad.subject === transition && quad.predicate === P + "recoveryContract"));
+  assert.notEqual(recoveryTransition, undefined);
+  const omittedRecovery = structuredClone(f.graph);
+  omittedRecovery.quads = omittedRecovery.quads.filter(quad => !(quad.subject === recoveryTransition && quad.predicate === P + "recoveryContract"));
+  const recoveryResult = deriveCliTerminalAssessment(omittedRecovery, f.root);
+  assert.equal(recoveryResult.structuralComplete, false);
+  assert.equal(recoveryResult.satisfaction, "unverified");
+  const recoveryCoverage = coverage(omittedRecovery);
+  assert.equal(recoveryCoverage.terminalClosure.equal, false);
+  assert(recoveryCoverage.diagnostics.some(diagnostic => diagnostic.reasonCode === "TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED"));
+  assert.equal(recoveryCoverage.executionAuthority, "none");
 });
 
 test("terminal census refuses missing declarations, hidden obligations, wrong scopes and dependency cycles", () => {
@@ -597,6 +671,58 @@ test("graph specifications generate deterministic properties and semantic change
   f.graph.quads.reverse(); assert.equal(deriveCliSchemas(f.specs()).digest, generated.digest);
   f.graph.quads = f.graph.quads.map(q => q.subject === f.field && q.predicate === P + "outputProperty" ? { ...q, object: "renamed" } : q);
   assert.notEqual(deriveCliSchemas(f.specs()).digest, generated.digest);
+});
+
+test("external schema fields generate only graph-registered explicit references", () => {
+  const f = specificationsFixture();
+  const schemas = [
+    ["urn:test:schema:local:1", "urn:test:local-contribution:1", "schemas/local-contribution.schema.json", ""],
+    ["urn:test:schema:provider:1", "urn:test:call-result:1", "schemas/call-result.schema.json", "/$defs/contribution"],
+  ] as const;
+  f.add(f.b + "kind-external-schema:1", "type", T + "CliFieldValueKind");
+  f.add("urn:usf:rule:ordinary-boundary-external-schema:1", "type", T + "CliFieldDerivationRule");
+  f.graph.quads.splice(0, f.graph.quads.length, ...f.graph.quads.map(quad => quad.subject === f.field && quad.predicate === P + "valueKind"
+    ? { ...quad, object: f.b + "kind-external-schema:1" }
+    : quad.subject === f.field && quad.predicate === P + "derivationRule"
+      ? { ...quad, object: "urn:usf:rule:ordinary-boundary-external-schema:1" }
+      : quad.subject === f.field && quad.predicate === P + "collection"
+        ? { ...quad, object: "true" }
+        : quad.subject === f.field && quad.predicate === P + "maximumCardinality"
+          ? { ...quad, object: "64" }
+      : quad));
+  for (const [identity, schemaIdentity, repositoryPath, schemaFragment] of schemas) {
+    f.add(contract, "requires", identity);
+    f.add(identity, "type", T + "SemanticRecordSchema");
+    f.add(identity, "version", "1", "literal");
+    f.add(identity, "schemaIdentity", schemaIdentity);
+    f.add(identity, "repositoryPath", repositoryPath, "literal");
+    f.add(identity, "schemaFragment", schemaFragment, "literal");
+    f.add(f.field, "externalSchema", identity);
+  }
+  const specifications = f.specs();
+  assert.equal(specifications.structuralComplete, true, JSON.stringify(specifications.gaps));
+  const field = specifications.records[0]!.fields[0]!;
+  assert.deepEqual(field.externalSchemas.map(reference => [reference.schemaIdentity, reference.repositoryPath, reference.schemaFragment]), [
+    ["urn:test:local-contribution:1", "schemas/local-contribution.schema.json", ""],
+    ["urn:test:call-result:1", "schemas/call-result.schema.json", "/$defs/contribution"],
+  ]);
+  const schema = deriveCliSchemas(specifications).descriptorSchema!;
+  assert.deepEqual((schema.properties as Record<string, Record<string, unknown>>).example, {
+    type: "array", minItems: 1, maxItems: 64, uniqueItems: true,
+    items: { oneOf: [{ $ref: "urn:test:local-contribution:1" }, { $ref: "urn:test:call-result:1#/$defs/contribution" }] },
+    description: "Graph supplied field explanation.",
+  });
+  for (const [predicate, value] of [["schemaIdentity", "not an IRI"], ["repositoryPath", "../outside.json"], ["schemaFragment", "#/$defs/contribution"]] as const) {
+    const altered = structuredClone(f.graph);
+    altered.quads = altered.quads.map(quad => quad.subject === schemas[0][0] && quad.predicate === P + predicate ? { ...quad, object: value } : quad);
+    assert.equal(deriveCliRecordSpecifications(altered, { contractIdentity: contract }).structuralComplete, false, predicate);
+  }
+  const unresolved = structuredClone(f.graph);
+  unresolved.quads = unresolved.quads.filter(quad => !(quad.subject === f.field && quad.predicate === P + "externalSchema"));
+  assert.equal(deriveCliRecordSpecifications(unresolved, { contractIdentity: contract }).structuralComplete, false);
+  const staleVersion = structuredClone(f.graph);
+  staleVersion.quads = staleVersion.quads.map(quad => quad.subject === schemas[0][0] && quad.predicate === P + "version" ? { ...quad, object: "2" } : quad);
+  assert.equal(deriveCliRecordSpecifications(staleVersion, { contractIdentity: contract }).structuralComplete, false);
 });
 
 test("schema equality rederives graph authority and catches hand edits and stale semantics", () => {
