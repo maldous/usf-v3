@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { createHermesFeedback, type FeedbackEvent, type FeedbackPolicy } from "../../../src/observability/hermes-feedback.ts";
+import { createHermesFeedback, type FeedbackEvent, type FeedbackPolicy } from "../../../src/commands/hermes-feedback.ts";
 
 // Read only the admitted semantic assets; the helper itself receives values.
 const schema = JSON.parse(readFileSync("schemas/hermes-feedback-event.schema.json", "utf8"));
