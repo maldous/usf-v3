@@ -14,6 +14,11 @@ import {
 } from "../../../src/providers/qualification.ts";
 import {
   createRoutingSemanticBinding,
+  deriveQualificationCohort,
+  evaluateRouteMemberCurrentness,
+  evaluateWorkloadReadiness,
+  parseRouteQualificationReceipt,
+  routeQualificationReceiptDigest,
   routeWork as routeWorkCore,
   type ConfiguredRouteForRouting,
   type EffectiveRoutingPolicy,
@@ -21,6 +26,9 @@ import {
   type RoutingInput,
   type RoutingSemanticBinding,
   type SemanticQualificationForRouting,
+  type QualificationCandidateForCohort,
+  type RouteMemberCurrentness,
+  type RouteQualificationExpectedBases,
   type SemanticQualificationReplaySourceForRouting,
   type TrustedSemanticQualificationAuthorityForRouting,
 } from "../../../src/providers/routing.ts";
@@ -499,4 +507,359 @@ test("routing validates strategy and runtime numeric fields before selection", (
   assert.throws(() => routeWork({ ...value, probes: value.probes.map((probe) => ({ ...probe, latencyMs: Number.NaN })) }), /ROUTE_PROBE_INVALID/);
   assert.throws(() => routeWork({ ...value, routes: value.routes.map((item) => ({ ...item, concurrency: Infinity })) }), /ROUTE_CONFIG_INVALID/);
   assert.throws(() => routeWork({ ...value, catalogue: value.catalogue.map((fact) => ({ ...fact, prices: { ...fact.prices, input: -1 } })) }), /ROUTE_CATALOGUE_INVALID/);
+});
+
+// ---------------------------------------------------------------------------
+// Route-member qualification receipts, lazy fair cohorts and aggregate
+// workload readiness. One table-driven case per rule family with planted
+// defects, rather than a provider/model matrix.
+// ---------------------------------------------------------------------------
+
+const receiptSchemaPath = fileURLToPath(new URL("../../../schemas/route-qualification-receipt.schema.json", import.meta.url));
+const receiptSchemaDocument = JSON.parse(readFileSync(receiptSchemaPath, "utf8")) as { required: readonly string[]; $id: string };
+const receiptValidator = createJsonSchemaValidator(receiptSchemaDocument);
+
+const instant = (minute: number) => `2026-09-01T00:${String(minute).padStart(2, "0")}:00.000Z`;
+
+const qualifiedReceipt = Object.freeze({
+  schema: "urn:usf:route-qualification-receipt:1" as const,
+  version: 1 as const,
+  routeMemberDigest: digest("a"),
+  candidateMemberDigest: digest("b"),
+  taskProfileDigest: digest("c"),
+  accountObservationDigest: digest("d"),
+  routeModelEconomicsBindingDigest: digest("e"),
+  adapterPreflightDigest: digest("f"),
+  providerAnswerDigest: digest("0"),
+  hiddenEvaluationDigest: digest("1"),
+  requestedIdentity: Object.freeze({ family: "qwen", provider: "groq", model: "qwen3.6-27b" }),
+  actualIdentity: Object.freeze({ family: "qwen", provider: "groq", model: "qwen3.6-27b", sdkProvider: "groq.chat" }),
+  roles: Object.freeze(["PATCH_PRODUCER", "READ_ONLY_ANALYST"]),
+  disposition: "QUALIFIED" as const,
+  reasonCodes: Object.freeze([]),
+  qualifiedAt: instant(0),
+  expiresAt: instant(30),
+});
+
+const expectedBases: RouteQualificationExpectedBases = Object.freeze({
+  routeMemberDigest: qualifiedReceipt.routeMemberDigest,
+  candidateMemberDigest: qualifiedReceipt.candidateMemberDigest,
+  taskProfileDigest: qualifiedReceipt.taskProfileDigest,
+  accountObservationDigest: qualifiedReceipt.accountObservationDigest,
+  routeModelEconomicsBindingDigest: qualifiedReceipt.routeModelEconomicsBindingDigest,
+  adapterPreflightDigest: qualifiedReceipt.adapterPreflightDigest,
+  providerAnswerDigest: qualifiedReceipt.providerAnswerDigest,
+  hiddenEvaluationDigest: qualifiedReceipt.hiddenEvaluationDigest,
+  requestedIdentity: qualifiedReceipt.requestedIdentity,
+});
+
+test("the route-qualification receipt is a closed record matching its declared field set", () => {
+  assert.equal(receiptSchemaDocument.$id, "urn:usf:route-qualification-receipt:1");
+  assert.deepEqual([...receiptSchemaDocument.required].sort(), Object.keys(qualifiedReceipt).sort());
+  assert.equal(receiptValidator.validate(qualifiedReceipt).valid, true);
+  assert.deepEqual(parseRouteQualificationReceipt(qualifiedReceipt), qualifiedReceipt);
+
+  for (const field of receiptSchemaDocument.required) {
+    const { [field]: removed, ...incomplete } = qualifiedReceipt as Record<string, unknown>;
+    assert.equal(receiptValidator.validate(incomplete).valid, false, field);
+    assert.throws(() => parseRouteQualificationReceipt(incomplete), /ROUTE_QUALIFICATION_RECORD_INVALID/u, field);
+  }
+
+  const planted: readonly (readonly [string, unknown])[] = [
+    ["unexpected extra member", { ...qualifiedReceipt, extra: true }],
+    ["QUALIFIED carrying a reason code", { ...qualifiedReceipt, reasonCodes: ["ROUTE_QUALIFICATION_EXPIRED"] }],
+    ["UNQUALIFIED carrying no reason", { ...qualifiedReceipt, disposition: "UNQUALIFIED" }],
+    ["unknown role", { ...qualifiedReceipt, roles: ["ARCHITECT"] }],
+    ["the UNQUALIFIED sentinel as a role", { ...qualifiedReceipt, roles: ["UNQUALIFIED"] }],
+    ["duplicate roles", { ...qualifiedReceipt, roles: ["REVIEWER", "REVIEWER"] }],
+    ["unsorted roles", { ...qualifiedReceipt, roles: ["READ_ONLY_ANALYST", "PATCH_PRODUCER"] }],
+    ["an empty role set", { ...qualifiedReceipt, roles: [] }],
+    ["expiry at or before qualification", { ...qualifiedReceipt, expiresAt: qualifiedReceipt.qualifiedAt }],
+    ["a non-millisecond instant", { ...qualifiedReceipt, qualifiedAt: "2026-09-01T00:00:00Z" }],
+    ["a malformed digest", { ...qualifiedReceipt, providerAnswerDigest: "sha256:zz" }],
+    ["an actual identity missing sdkProvider", { ...qualifiedReceipt, actualIdentity: qualifiedReceipt.requestedIdentity }],
+  ];
+  for (const [label, value] of planted) {
+    assert.throws(() => parseRouteQualificationReceipt(value), /ROUTE_QUALIFICATION_RECORD_INVALID/u, label);
+  }
+
+  assert.notEqual(
+    routeQualificationReceiptDigest(qualifiedReceipt),
+    routeQualificationReceiptDigest({ ...qualifiedReceipt, roles: ["REVIEWER"] }),
+  );
+});
+
+test("route-member currentness fails closed per member and never poisons a sibling", () => {
+  const current = evaluateRouteMemberCurrentness(qualifiedReceipt, expectedBases, instant(10));
+  assert.equal(current.disposition, "QUALIFIED");
+  assert.deepEqual(current.reasonCodes, []);
+  assert.deepEqual([...current.roles].sort(), ["PATCH_PRODUCER", "READ_ONLY_ANALYST"]);
+
+  const staleBases: readonly (readonly [keyof RouteQualificationExpectedBases, string])[] = [
+    ["routeMemberDigest", "ROUTE_QUALIFICATION_ROUTE_MEMBER_MISMATCH"],
+    ["candidateMemberDigest", "ROUTE_QUALIFICATION_CANDIDATE_MEMBER_MISMATCH"],
+    ["taskProfileDigest", "ROUTE_QUALIFICATION_TASK_PROFILE_MISMATCH"],
+    ["accountObservationDigest", "ROUTE_QUALIFICATION_ACCOUNT_OBSERVATION_MISMATCH"],
+    ["routeModelEconomicsBindingDigest", "ROUTE_QUALIFICATION_ECONOMICS_BINDING_MISMATCH"],
+    ["adapterPreflightDigest", "ROUTE_QUALIFICATION_ADAPTER_PREFLIGHT_MISMATCH"],
+    ["providerAnswerDigest", "ROUTE_QUALIFICATION_PROVIDER_ANSWER_MISMATCH"],
+    ["hiddenEvaluationDigest", "ROUTE_QUALIFICATION_HIDDEN_EVALUATION_MISMATCH"],
+  ];
+  for (const [field, reason] of staleBases) {
+    const moved = evaluateRouteMemberCurrentness(qualifiedReceipt, { ...expectedBases, [field]: digest("9") }, instant(10));
+    assert.equal(moved.disposition, "UNQUALIFIED", field);
+    assert.deepEqual(moved.reasonCodes, [reason], field);
+    assert.deepEqual(moved.roles, [], field);
+  }
+
+  const requested = evaluateRouteMemberCurrentness(
+    qualifiedReceipt,
+    { ...expectedBases, requestedIdentity: { ...qualifiedReceipt.requestedIdentity, model: "other" } },
+    instant(10),
+  );
+  assert.deepEqual(requested.reasonCodes, ["ROUTE_QUALIFICATION_REQUESTED_IDENTITY_MISMATCH"]);
+
+  // A substituted actual identity stops the route and never falls back.
+  const substituted = evaluateRouteMemberCurrentness(
+    { ...qualifiedReceipt, actualIdentity: { ...qualifiedReceipt.actualIdentity, model: "silently-swapped" } },
+    expectedBases,
+    instant(10),
+  );
+  assert.equal(substituted.disposition, "UNQUALIFIED");
+  assert.deepEqual(substituted.reasonCodes, ["ROUTE_QUALIFICATION_ACTUAL_IDENTITY_SUBSTITUTED"]);
+
+  assert.deepEqual(evaluateRouteMemberCurrentness(qualifiedReceipt, expectedBases, instant(30)).reasonCodes, ["ROUTE_QUALIFICATION_EXPIRED"]);
+  assert.deepEqual(evaluateRouteMemberCurrentness(qualifiedReceipt, expectedBases, instant(0)).reasonCodes, []);
+
+  // Model-local currentness: the sibling keeps its exact disposition while the
+  // first member is stale.
+  const sibling = { ...qualifiedReceipt, routeMemberDigest: digest("7"), roles: Object.freeze(["REVIEWER"]) };
+  const siblingBases = { ...expectedBases, routeMemberDigest: sibling.routeMemberDigest };
+  const poisoned = evaluateRouteMemberCurrentness(qualifiedReceipt, { ...expectedBases, adapterPreflightDigest: digest("9") }, instant(10));
+  const unaffected = evaluateRouteMemberCurrentness(sibling, siblingBases, instant(10));
+  assert.equal(poisoned.disposition, "UNQUALIFIED");
+  assert.equal(unaffected.disposition, "QUALIFIED");
+  assert.deepEqual(unaffected.roles, ["REVIEWER"]);
+});
+
+const cohortCandidate = (
+  id: string,
+  provider: string,
+  model: string,
+  costPerMillion: string | null,
+  offeredRoles: readonly string[],
+  eligible = true,
+): QualificationCandidateForCohort => Object.freeze({
+  candidateMemberDigest: digest(id),
+  provider,
+  identity: Object.freeze({ family: "family", provider, model }),
+  offeredRoles: Object.freeze(offeredRoles) as QualificationCandidateForCohort["offeredRoles"],
+  costPerMillion,
+  eligible,
+  ineligibleReason: eligible ? null : "COHORT_CANDIDATE_ADAPTER_MISSING",
+});
+
+test("qualification cohorts are bounded, cheapest-first, and dispose of every candidate", () => {
+  const candidates = [
+    cohortCandidate("a", "groq", "cheap", "0", ["READ_ONLY_ANALYST"]),
+    cohortCandidate("b", "cerebras", "mid", "0.5", ["PATCH_PRODUCER"]),
+    cohortCandidate("c", "groq", "dear", "10", ["REVIEWER"]),
+    cohortCandidate("d", "cerebras", "unknown-cost", null, ["REVIEWER"]),
+    cohortCandidate("e", "groq", "blocked", "0", ["REVIEWER"], false),
+  ];
+  const plan = deriveQualificationCohort({
+    requiredRoles: ["READ_ONLY_ANALYST", "PATCH_PRODUCER", "REVIEWER"],
+    coveredRoles: [],
+    candidates,
+    maximumCohortSize: 8,
+    countedModelDigests: [],
+    drainCursor: null,
+  });
+
+  assert.deepEqual(plan.uncoveredRoles, ["PATCH_PRODUCER", "READ_ONLY_ANALYST", "REVIEWER"]);
+  assert.equal(plan.rolesFullyCovered, true);
+  // Cheapest first: the two zero/low-cost members precede the expensive one.
+  assert.deepEqual(plan.cohort.map((member) => member.identity.model), ["cheap", "mid", "dear"]);
+
+  // Every configured candidate keeps exactly one terminal disposition.
+  assert.equal(plan.dispositions.length, candidates.length);
+  const byId = new Map(plan.dispositions.map((row) => [row.candidateMemberDigest, row]));
+  assert.equal(byId.get(digest("a"))!.disposition, "selected");
+  assert.equal(byId.get(digest("c"))!.disposition, "selected");
+  // Unknown catalogue cost defers and never becomes free.
+  assert.equal(byId.get(digest("d"))!.disposition, "deferred");
+  assert.deepEqual(byId.get(digest("d"))!.reasonCodes, ["COHORT_CATALOGUE_COST_UNKNOWN"]);
+  assert.equal(byId.get(digest("e"))!.disposition, "excluded");
+  assert.deepEqual(byId.get(digest("e"))!.reasonCodes, ["COHORT_CANDIDATE_ADAPTER_MISSING"]);
+
+  // Determinism: the same input yields the identical plan digest.
+  const repeat = deriveQualificationCohort({
+    requiredRoles: ["REVIEWER", "READ_ONLY_ANALYST", "PATCH_PRODUCER"],
+    coveredRoles: [],
+    candidates,
+    maximumCohortSize: 8,
+    countedModelDigests: [],
+    drainCursor: null,
+  });
+  assert.equal(repeat.planDigest, plan.planDigest);
+
+  // Only uncovered roles are qualified.
+  const partiallyCovered = deriveQualificationCohort({
+    requiredRoles: ["READ_ONLY_ANALYST", "PATCH_PRODUCER", "REVIEWER"],
+    coveredRoles: ["READ_ONLY_ANALYST", "REVIEWER"],
+    candidates,
+    maximumCohortSize: 8,
+    countedModelDigests: [],
+    drainCursor: null,
+  });
+  assert.deepEqual(partiallyCovered.uncoveredRoles, ["PATCH_PRODUCER"]);
+  assert.deepEqual(partiallyCovered.cohort.map((member) => member.identity.model), ["mid"]);
+  assert.equal(byId.get(digest("a"))!.disposition, "selected");
+  assert.equal(
+    partiallyCovered.dispositions.find((row) => row.candidateMemberDigest === digest("a"))!.disposition,
+    "excluded",
+  );
+
+  // The bound is respected and the excess defers rather than disappearing.
+  const bounded = deriveQualificationCohort({
+    requiredRoles: ["READ_ONLY_ANALYST", "PATCH_PRODUCER", "REVIEWER"],
+    coveredRoles: [],
+    candidates,
+    maximumCohortSize: 1,
+    countedModelDigests: [],
+    drainCursor: null,
+  });
+  assert.equal(bounded.cohort.length, 1);
+  assert.equal(bounded.rolesFullyCovered, false);
+  assert.equal(bounded.dispositions.length, candidates.length);
+
+  assert.throws(() => deriveQualificationCohort({
+    requiredRoles: ["REVIEWER"], coveredRoles: [], candidates, maximumCohortSize: 0,
+    countedModelDigests: [], drainCursor: null,
+  }), /ROUTE_QUALIFICATION_RECORD_INVALID/u);
+  assert.throws(() => deriveQualificationCohort({
+    requiredRoles: ["REVIEWER"], coveredRoles: [],
+    candidates: [cohortCandidate("f", "groq", "bad-cost", "1.", ["REVIEWER"])],
+    maximumCohortSize: 4, countedModelDigests: [], drainCursor: null,
+  }), /ROUTE_QUALIFICATION_RECORD_INVALID/u);
+});
+
+test("each exact model identity is counted once per authorization and providers drain fairly", () => {
+  const shared = cohortCandidate("a", "groq", "shared", "0", ["READ_ONLY_ANALYST"]);
+  const duplicate = { ...cohortCandidate("b", "groq", "shared", "0", ["REVIEWER"]) };
+  const plan = deriveQualificationCohort({
+    requiredRoles: ["READ_ONLY_ANALYST", "REVIEWER"],
+    coveredRoles: [],
+    candidates: [shared, duplicate],
+    maximumCohortSize: 8,
+    countedModelDigests: [],
+    drainCursor: null,
+  });
+  // The same exact model identity appears once, even across two candidate rows.
+  assert.equal(plan.cohort.length, 1);
+  assert.equal(plan.rolesFullyCovered, false);
+  const duplicateRow = plan.dispositions.find((row) => row.candidateMemberDigest === digest("b"))!;
+  assert.deepEqual(duplicateRow.reasonCodes, ["COHORT_MODEL_IDENTITY_ALREADY_COUNTED"]);
+
+  // An identity already counted against this authorization is excluded outright.
+  const alreadyCounted = deriveQualificationCohort({
+    requiredRoles: ["READ_ONLY_ANALYST"],
+    coveredRoles: [],
+    candidates: [shared],
+    maximumCohortSize: 8,
+    countedModelDigests: [plan.cohort[0]!.modelIdentityDigest],
+    drainCursor: null,
+  });
+  assert.deepEqual(alreadyCounted.cohort, []);
+  assert.deepEqual(alreadyCounted.dispositions[0]!.reasonCodes, ["COHORT_MODEL_IDENTITY_ALREADY_COUNTED"]);
+
+  // Fair draining: with equal cost, rotating the cursor past groq lets the
+  // cerebras queue go first on the next bounded run.
+  const equalCost = [
+    cohortCandidate("c", "groq", "g1", "0", ["READ_ONLY_ANALYST", "REVIEWER"]),
+    cohortCandidate("d", "cerebras", "c1", "0", ["READ_ONLY_ANALYST", "REVIEWER"]),
+  ];
+  const firstRun = deriveQualificationCohort({
+    requiredRoles: ["READ_ONLY_ANALYST", "REVIEWER"], coveredRoles: [], candidates: equalCost,
+    maximumCohortSize: 1, countedModelDigests: [], drainCursor: null,
+  });
+  assert.equal(firstRun.cohort[0]!.provider, "cerebras");
+  const secondRun = deriveQualificationCohort({
+    requiredRoles: ["READ_ONLY_ANALYST", "REVIEWER"], coveredRoles: [], candidates: equalCost,
+    maximumCohortSize: 1, countedModelDigests: [], drainCursor: firstRun.nextDrainCursor,
+  });
+  assert.equal(secondRun.cohort[0]!.provider, "groq");
+  assert.notEqual(firstRun.planDigest, secondRun.planDigest);
+});
+
+test("aggregate workload readiness requires one current qualification per graph-required family", () => {
+  const member = (routeMemberDigest: string, disposition: RouteMemberCurrentness["disposition"], roles: readonly string[]): RouteMemberCurrentness =>
+    Object.freeze({
+      routeMemberDigest,
+      disposition,
+      roles: Object.freeze(roles) as RouteMemberCurrentness["roles"],
+      reasonCodes: Object.freeze(disposition === "QUALIFIED" ? [] : ["ROUTE_QUALIFICATION_EXPIRED"]),
+    });
+
+  const ready = evaluateWorkloadReadiness({
+    requiredFamilies: ["qwen", "gpt-oss"],
+    requiredRoles: ["PATCH_PRODUCER"],
+    members: [member(digest("a"), "QUALIFIED", ["PATCH_PRODUCER"]), member(digest("b"), "QUALIFIED", ["PATCH_PRODUCER"])],
+    memberFamilies: [{ routeMemberDigest: digest("a"), family: "qwen" }, { routeMemberDigest: digest("b"), family: "gpt-oss" }],
+  });
+  assert.equal(ready.disposition, "READY");
+  assert.deepEqual(ready.reasonCodes, []);
+  assert.equal(ready.rosterPolicy, "derive-per-workload-no-permanent-roster");
+
+  // One stale family makes the workload NOT_READY without hiding the other.
+  const oneStale = evaluateWorkloadReadiness({
+    requiredFamilies: ["qwen", "gpt-oss"],
+    requiredRoles: ["PATCH_PRODUCER"],
+    members: [member(digest("a"), "QUALIFIED", ["PATCH_PRODUCER"]), member(digest("b"), "UNQUALIFIED", [])],
+    memberFamilies: [{ routeMemberDigest: digest("a"), family: "qwen" }, { routeMemberDigest: digest("b"), family: "gpt-oss" }],
+  });
+  assert.equal(oneStale.disposition, "NOT_READY");
+  assert.deepEqual(oneStale.reasonCodes, ["WORKLOAD_FAMILY_NOT_READY:gpt-oss"]);
+  assert.equal(oneStale.families.find((row) => row.family === "qwen")!.disposition, "READY");
+  assert.deepEqual(
+    oneStale.families.find((row) => row.family === "gpt-oss")!.reasonCodes,
+    ["WORKLOAD_FAMILY_NO_CURRENT_QUALIFICATION"],
+  );
+
+  // Missing evidence for a required family is NOT_READY, not vacuous success.
+  const missing = evaluateWorkloadReadiness({
+    requiredFamilies: ["qwen", "absent-family"],
+    requiredRoles: ["PATCH_PRODUCER"],
+    members: [member(digest("a"), "QUALIFIED", ["PATCH_PRODUCER"])],
+    memberFamilies: [{ routeMemberDigest: digest("a"), family: "qwen" }],
+  });
+  assert.equal(missing.disposition, "NOT_READY");
+  assert.deepEqual(
+    missing.families.find((row) => row.family === "absent-family")!.reasonCodes,
+    ["WORKLOAD_FAMILY_EVIDENCE_MISSING"],
+  );
+
+  // A qualification that does not cover every required role does not count.
+  const partialRoles = evaluateWorkloadReadiness({
+    requiredFamilies: ["qwen"],
+    requiredRoles: ["PATCH_PRODUCER", "REVIEWER"],
+    members: [member(digest("a"), "QUALIFIED", ["PATCH_PRODUCER"])],
+    memberFamilies: [{ routeMemberDigest: digest("a"), family: "qwen" }],
+  });
+  assert.equal(partialRoles.disposition, "NOT_READY");
+
+  // An explicit empty required set denies rather than passing vacuously.
+  assert.equal(evaluateWorkloadReadiness({
+    requiredFamilies: [], requiredRoles: ["PATCH_PRODUCER"], members: [], memberFamilies: [],
+  }).reasonCodes.includes("WORKLOAD_REQUIRED_FAMILY_SET_EMPTY"), true);
+  assert.equal(evaluateWorkloadReadiness({
+    requiredFamilies: ["qwen"], requiredRoles: [], members: [], memberFamilies: [],
+  }).reasonCodes.includes("WORKLOAD_REQUIRED_ROLE_SET_EMPTY"), true);
+
+  // Conflicting family claims for one route member refuse.
+  assert.throws(() => evaluateWorkloadReadiness({
+    requiredFamilies: ["qwen"], requiredRoles: ["PATCH_PRODUCER"],
+    members: [member(digest("a"), "QUALIFIED", ["PATCH_PRODUCER"])],
+    memberFamilies: [{ routeMemberDigest: digest("a"), family: "qwen" }, { routeMemberDigest: digest("a"), family: "other" }],
+  }), /ROUTE_QUALIFICATION_RECORD_INVALID/u);
 });

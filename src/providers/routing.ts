@@ -10,6 +10,7 @@ import {
   type QualificationPolicySnapshot,
   type QualificationRole,
   type QualificationSuiteSnapshot,
+  type QualifiedRole,
 } from "./qualification.ts";
 import type { ProviderRouteConfig } from "./config.ts";
 import type { ProviderProbeResult } from "./probe.ts";
@@ -999,4 +1000,554 @@ export function routeWork(input: RoutingInput, trustedAuthority: TrustedSemantic
     nonclaims: Object.freeze(["routing-consumes-semantic-qualification-it-does-not-create-semantic-authority", "text-generation-is-mechanical-probe-capability", "eligible-route-is-time-scoped-not-future-availability", "assignment-is-not-provider-contact-contribution-acceptance-or-proof"]),
   };
   return Object.freeze({ ...basis, resultDigest: exactDigest(basis) });
+}
+
+// ---------------------------------------------------------------------------
+// Route-member qualification receipts, lazy fair cohorts and aggregate
+// workload readiness. urn:usf:provider-stage:route-qualification:1 keeps
+// currentness model-local: a stale predecessor digest, a substituted actual
+// identity or a passed expiry makes exactly one route member UNQUALIFIED and
+// never poisons a sibling. urn:usf:provider-operation:workload-readiness:1
+// derives its family set per workload and retains no permanent roster.
+// ---------------------------------------------------------------------------
+
+export type RouteQualificationDisposition = "QUALIFIED" | "UNQUALIFIED" | "DEFERRED";
+
+export interface RouteQualificationIdentity {
+  readonly family: string;
+  readonly provider: string;
+  readonly model: string;
+}
+
+export interface RouteQualificationActualIdentity extends RouteQualificationIdentity {
+  readonly sdkProvider: string;
+}
+
+export interface RouteQualificationReceipt {
+  readonly schema: "urn:usf:route-qualification-receipt:1";
+  readonly version: 1;
+  readonly routeMemberDigest: string;
+  readonly candidateMemberDigest: string;
+  readonly taskProfileDigest: string;
+  readonly accountObservationDigest: string;
+  readonly routeModelEconomicsBindingDigest: string;
+  readonly adapterPreflightDigest: string;
+  readonly providerAnswerDigest: string;
+  readonly hiddenEvaluationDigest: string;
+  readonly requestedIdentity: Readonly<RouteQualificationIdentity>;
+  readonly actualIdentity: Readonly<RouteQualificationActualIdentity>;
+  readonly roles: readonly QualifiedRole[];
+  readonly disposition: RouteQualificationDisposition;
+  readonly reasonCodes: readonly string[];
+  readonly qualifiedAt: string;
+  readonly expiresAt: string;
+}
+
+/** The exact predecessor bases a receipt must still match to stay current. */
+export interface RouteQualificationExpectedBases {
+  readonly routeMemberDigest: string;
+  readonly candidateMemberDigest: string;
+  readonly taskProfileDigest: string;
+  readonly accountObservationDigest: string;
+  readonly routeModelEconomicsBindingDigest: string;
+  readonly adapterPreflightDigest: string;
+  readonly providerAnswerDigest: string;
+  readonly hiddenEvaluationDigest: string;
+  readonly requestedIdentity: Readonly<RouteQualificationIdentity>;
+}
+
+export interface RouteMemberCurrentness {
+  readonly routeMemberDigest: string;
+  readonly disposition: RouteQualificationDisposition;
+  readonly roles: readonly QualifiedRole[];
+  readonly reasonCodes: readonly string[];
+}
+
+const routeQualificationDigestPattern = /^sha256:[0-9a-f]{64}$/u;
+const routeQualificationIdentifierPattern = /^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$/u;
+const routeQualificationRolePattern = /^[A-Z][A-Z0-9_]{1,63}$/u;
+const routeQualificationReasonPattern = /^[A-Z][A-Z0-9_]{1,95}(?::[^\s]{1,192})?$/u;
+const routeQualificationInstantPattern = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$/u;
+const routeQualificationDispositions = new Set<string>(["QUALIFIED", "UNQUALIFIED", "DEFERRED"]);
+const routeQualificationQualifiedRoles = new Set<string>(qualificationRoles.slice(1));
+
+const routeQualificationReceiptKeys = Object.freeze([
+  "schema", "version", "routeMemberDigest", "candidateMemberDigest", "taskProfileDigest",
+  "accountObservationDigest", "routeModelEconomicsBindingDigest", "adapterPreflightDigest",
+  "providerAnswerDigest", "hiddenEvaluationDigest", "requestedIdentity", "actualIdentity",
+  "roles", "disposition", "reasonCodes", "qualifiedAt", "expiresAt",
+]);
+
+export class RouteQualificationError extends Error {
+  readonly reasonCode: "ROUTE_QUALIFICATION_RECORD_INVALID";
+  constructor(reasonCode: "ROUTE_QUALIFICATION_RECORD_INVALID") {
+    super(reasonCode);
+    this.name = "RouteQualificationError";
+    this.reasonCode = reasonCode;
+  }
+}
+
+function routeQualificationInvalid(): never {
+  throw new RouteQualificationError("ROUTE_QUALIFICATION_RECORD_INVALID");
+}
+
+function routeQualificationRecord(value: unknown): Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) routeQualificationInvalid();
+  return value as Record<string, unknown>;
+}
+
+function routeQualificationExactKeys(value: Record<string, unknown>, keys: readonly string[]): void {
+  const actual = Object.keys(value).sort();
+  const expected = [...keys].sort();
+  if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) routeQualificationInvalid();
+}
+
+function routeQualificationDigestValue(value: unknown): string {
+  if (typeof value !== "string" || !routeQualificationDigestPattern.test(value)) routeQualificationInvalid();
+  return value;
+}
+
+function routeQualificationIdentifier(value: unknown): string {
+  if (typeof value !== "string" || !routeQualificationIdentifierPattern.test(value)) routeQualificationInvalid();
+  return value;
+}
+
+function routeQualificationInstant(value: unknown): string {
+  if (typeof value !== "string" || !routeQualificationInstantPattern.test(value)
+    || !Number.isFinite(Date.parse(value)) || new Date(Date.parse(value)).toISOString() !== value) {
+    routeQualificationInvalid();
+  }
+  return value;
+}
+
+function routeQualificationIdentity(value: unknown): Readonly<RouteQualificationIdentity> {
+  const identity = routeQualificationRecord(value);
+  routeQualificationExactKeys(identity, ["family", "provider", "model"]);
+  return Object.freeze({
+    family: routeQualificationIdentifier(identity.family),
+    provider: routeQualificationIdentifier(identity.provider),
+    model: routeQualificationIdentifier(identity.model),
+  });
+}
+
+function routeQualificationActualIdentity(value: unknown): Readonly<RouteQualificationActualIdentity> {
+  const identity = routeQualificationRecord(value);
+  routeQualificationExactKeys(identity, ["family", "provider", "model", "sdkProvider"]);
+  return Object.freeze({
+    family: routeQualificationIdentifier(identity.family),
+    provider: routeQualificationIdentifier(identity.provider),
+    model: routeQualificationIdentifier(identity.model),
+    sdkProvider: routeQualificationIdentifier(identity.sdkProvider),
+  });
+}
+
+/**
+ * Parse one closed route-qualification receipt. UNQUALIFIED and DEFERRED must
+ * carry at least one reason code and QUALIFIED must carry none, so a receipt
+ * can never assert a refusal without saying why or a pass with a stale excuse.
+ */
+export function parseRouteQualificationReceipt(value: unknown): RouteQualificationReceipt {
+  const receipt = routeQualificationRecord(value);
+  routeQualificationExactKeys(receipt, routeQualificationReceiptKeys);
+  if (receipt.schema !== "urn:usf:route-qualification-receipt:1" || receipt.version !== 1) routeQualificationInvalid();
+
+  if (typeof receipt.disposition !== "string" || !routeQualificationDispositions.has(receipt.disposition)) routeQualificationInvalid();
+  const disposition = receipt.disposition as RouteQualificationDisposition;
+
+  if (!Array.isArray(receipt.roles) || receipt.roles.length < 1 || receipt.roles.length > 64) routeQualificationInvalid();
+  const roles: string[] = [];
+  for (const role of receipt.roles) {
+    if (typeof role !== "string" || !routeQualificationRolePattern.test(role)
+      || !routeQualificationQualifiedRoles.has(role) || roles.includes(role)) routeQualificationInvalid();
+    roles.push(role);
+  }
+  if (roles.some((role, index) => index > 0 && role <= roles[index - 1]!)) routeQualificationInvalid();
+
+  if (!Array.isArray(receipt.reasonCodes) || receipt.reasonCodes.length > 64) routeQualificationInvalid();
+  const reasonCodes: string[] = [];
+  for (const reason of receipt.reasonCodes) {
+    if (typeof reason !== "string" || !routeQualificationReasonPattern.test(reason) || reasonCodes.includes(reason)) routeQualificationInvalid();
+    reasonCodes.push(reason);
+  }
+  if (reasonCodes.some((reason, index) => index > 0 && reason <= reasonCodes[index - 1]!)) routeQualificationInvalid();
+  if ((disposition === "QUALIFIED") !== (reasonCodes.length === 0)) routeQualificationInvalid();
+
+  const qualifiedAt = routeQualificationInstant(receipt.qualifiedAt);
+  const expiresAt = routeQualificationInstant(receipt.expiresAt);
+  if (Date.parse(qualifiedAt) >= Date.parse(expiresAt)) routeQualificationInvalid();
+
+  return Object.freeze({
+    schema: "urn:usf:route-qualification-receipt:1",
+    version: 1,
+    routeMemberDigest: routeQualificationDigestValue(receipt.routeMemberDigest),
+    candidateMemberDigest: routeQualificationDigestValue(receipt.candidateMemberDigest),
+    taskProfileDigest: routeQualificationDigestValue(receipt.taskProfileDigest),
+    accountObservationDigest: routeQualificationDigestValue(receipt.accountObservationDigest),
+    routeModelEconomicsBindingDigest: routeQualificationDigestValue(receipt.routeModelEconomicsBindingDigest),
+    adapterPreflightDigest: routeQualificationDigestValue(receipt.adapterPreflightDigest),
+    providerAnswerDigest: routeQualificationDigestValue(receipt.providerAnswerDigest),
+    hiddenEvaluationDigest: routeQualificationDigestValue(receipt.hiddenEvaluationDigest),
+    requestedIdentity: routeQualificationIdentity(receipt.requestedIdentity),
+    actualIdentity: routeQualificationActualIdentity(receipt.actualIdentity),
+    roles: Object.freeze(roles as QualifiedRole[]),
+    disposition,
+    reasonCodes: Object.freeze(reasonCodes),
+    qualifiedAt,
+    expiresAt,
+  });
+}
+
+export function routeQualificationReceiptDigest(value: unknown): `sha256:${string}` {
+  return canonicalDigest(parseRouteQualificationReceipt(value), { rejectAbsolutePaths: true });
+}
+
+/**
+ * Re-evaluate one route member against the exact current predecessor bases.
+ * Every mismatch is reported rather than short-circuited, so an operator sees
+ * the complete reason set for that member; the result is scoped to this member
+ * alone and carries no sibling effect.
+ */
+export function evaluateRouteMemberCurrentness(
+  value: unknown,
+  expected: RouteQualificationExpectedBases,
+  at: string,
+): RouteMemberCurrentness {
+  const receipt = parseRouteQualificationReceipt(value);
+  const observedAt = routeQualificationInstant(at);
+  const reasonCodes = new Set<string>(receipt.reasonCodes);
+
+  const compare: readonly (readonly [keyof RouteQualificationExpectedBases, string])[] = [
+    ["routeMemberDigest", "ROUTE_QUALIFICATION_ROUTE_MEMBER_MISMATCH"],
+    ["candidateMemberDigest", "ROUTE_QUALIFICATION_CANDIDATE_MEMBER_MISMATCH"],
+    ["taskProfileDigest", "ROUTE_QUALIFICATION_TASK_PROFILE_MISMATCH"],
+    ["accountObservationDigest", "ROUTE_QUALIFICATION_ACCOUNT_OBSERVATION_MISMATCH"],
+    ["routeModelEconomicsBindingDigest", "ROUTE_QUALIFICATION_ECONOMICS_BINDING_MISMATCH"],
+    ["adapterPreflightDigest", "ROUTE_QUALIFICATION_ADAPTER_PREFLIGHT_MISMATCH"],
+    ["providerAnswerDigest", "ROUTE_QUALIFICATION_PROVIDER_ANSWER_MISMATCH"],
+    ["hiddenEvaluationDigest", "ROUTE_QUALIFICATION_HIDDEN_EVALUATION_MISMATCH"],
+  ];
+  for (const [field, reason] of compare) {
+    if (receipt[field] !== routeQualificationDigestValue(expected[field])) reasonCodes.add(reason);
+  }
+
+  const expectedRequested = routeQualificationIdentity(expected.requestedIdentity);
+  if (receipt.requestedIdentity.family !== expectedRequested.family
+    || receipt.requestedIdentity.provider !== expectedRequested.provider
+    || receipt.requestedIdentity.model !== expectedRequested.model) {
+    reasonCodes.add("ROUTE_QUALIFICATION_REQUESTED_IDENTITY_MISMATCH");
+  }
+  // A substituted actual identity stops the route; it never falls back to the
+  // requested identity.
+  if (receipt.actualIdentity.family !== receipt.requestedIdentity.family
+    || receipt.actualIdentity.provider !== receipt.requestedIdentity.provider
+    || receipt.actualIdentity.model !== receipt.requestedIdentity.model) {
+    reasonCodes.add("ROUTE_QUALIFICATION_ACTUAL_IDENTITY_SUBSTITUTED");
+  }
+
+  if (Date.parse(observedAt) >= Date.parse(receipt.expiresAt)) reasonCodes.add("ROUTE_QUALIFICATION_EXPIRED");
+  if (Date.parse(observedAt) < Date.parse(receipt.qualifiedAt)) reasonCodes.add("ROUTE_QUALIFICATION_NOT_YET_VALID");
+
+  const failed = reasonCodes.size > 0;
+  const disposition: RouteQualificationDisposition = failed
+    ? (receipt.disposition === "DEFERRED" ? "DEFERRED" : "UNQUALIFIED")
+    : "QUALIFIED";
+
+  return Object.freeze({
+    routeMemberDigest: receipt.routeMemberDigest,
+    disposition,
+    roles: disposition === "QUALIFIED" ? receipt.roles : Object.freeze([] as QualifiedRole[]),
+    reasonCodes: Object.freeze([...reasonCodes].sort()),
+  });
+}
+
+export type QualificationCohortDisposition = "selected" | "deferred" | "excluded";
+
+export interface QualificationCandidateForCohort {
+  readonly candidateMemberDigest: string;
+  readonly provider: string;
+  readonly identity: Readonly<RouteQualificationIdentity>;
+  /** Roles this candidate could cover if it were qualified. */
+  readonly offeredRoles: readonly QualifiedRole[];
+  /** Canonical decimal string, or null when the catalogue price is unknown. */
+  readonly costPerMillion: string | null;
+  readonly eligible: boolean;
+  readonly ineligibleReason: string | null;
+}
+
+export interface QualificationCohortInput {
+  readonly requiredRoles: readonly QualifiedRole[];
+  /** Roles already covered by a current qualification; never re-qualified. */
+  readonly coveredRoles: readonly QualifiedRole[];
+  readonly candidates: readonly QualificationCandidateForCohort[];
+  readonly maximumCohortSize: number;
+  /** Exact model identities already counted against this authorization. */
+  readonly countedModelDigests: readonly string[];
+  /** Provider drained last, so repeated bounded runs rotate fairly. */
+  readonly drainCursor: string | null;
+}
+
+export interface QualificationCohortMember {
+  readonly candidateMemberDigest: string;
+  readonly provider: string;
+  readonly identity: Readonly<RouteQualificationIdentity>;
+  readonly modelIdentityDigest: string;
+  /** Only the still-uncovered roles this member is being qualified for. */
+  readonly coveringRoles: readonly QualifiedRole[];
+}
+
+export interface QualificationCandidateDisposition {
+  readonly candidateMemberDigest: string;
+  readonly disposition: QualificationCohortDisposition;
+  readonly reasonCodes: readonly string[];
+}
+
+export interface QualificationCohortPlan {
+  readonly uncoveredRoles: readonly QualifiedRole[];
+  readonly cohort: readonly QualificationCohortMember[];
+  /** One terminal disposition for every configured candidate identity. */
+  readonly dispositions: readonly QualificationCandidateDisposition[];
+  readonly nextDrainCursor: string | null;
+  readonly rolesFullyCovered: boolean;
+  readonly planDigest: string;
+}
+
+function cohortModelIdentityDigest(identity: Readonly<RouteQualificationIdentity>): `sha256:${string}` {
+  return canonicalDigest({
+    family: identity.family, provider: identity.provider, model: identity.model,
+  }, { rejectAbsolutePaths: true });
+}
+
+/** Compare canonical non-negative decimal strings without floating point. */
+function compareDecimalStrings(left: string, right: string): number {
+  const [leftWhole, leftFraction = ""] = left.split(".");
+  const [rightWhole, rightFraction = ""] = right.split(".");
+  const leftTrimmed = leftWhole!.replace(/^0+(?=\d)/u, "");
+  const rightTrimmed = rightWhole!.replace(/^0+(?=\d)/u, "");
+  if (leftTrimmed.length !== rightTrimmed.length) return leftTrimmed.length - rightTrimmed.length;
+  if (leftTrimmed !== rightTrimmed) return leftTrimmed < rightTrimmed ? -1 : 1;
+  const width = Math.max(leftFraction.length, rightFraction.length);
+  const leftPadded = leftFraction.padEnd(width, "0");
+  const rightPadded = rightFraction.padEnd(width, "0");
+  if (leftPadded === rightPadded) return 0;
+  return leftPadded < rightPadded ? -1 : 1;
+}
+
+const cohortDecimalPattern = /^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u;
+
+/**
+ * Derive one bounded deterministic cheapest-first qualification cohort.
+ *
+ * Only currently uncovered roles are qualified, each exact model identity is
+ * counted at most once per authorization, and every configured candidate keeps
+ * an explicit terminal disposition. Unknown catalogue cost defers rather than
+ * excludes and never becomes free. Providers are rotated from `drainCursor` so
+ * repeated bounded runs drain eligible provider queues fairly instead of
+ * starving the tail of a stable sort.
+ */
+export function deriveQualificationCohort(input: QualificationCohortInput): QualificationCohortPlan {
+  if (!Number.isSafeInteger(input.maximumCohortSize) || input.maximumCohortSize < 1 || input.maximumCohortSize > 64) {
+    routeQualificationInvalid();
+  }
+  for (const candidate of input.candidates) {
+    if (candidate.costPerMillion !== null && !cohortDecimalPattern.test(candidate.costPerMillion)) routeQualificationInvalid();
+  }
+
+  const covered = new Set<string>(input.coveredRoles);
+  const uncovered = [...new Set(input.requiredRoles)].filter((role) => !covered.has(role)).sort();
+  const counted = new Set<string>(input.countedModelDigests);
+
+  const dispositions: QualificationCandidateDisposition[] = [];
+  const eligible: (QualificationCandidateForCohort & { readonly modelIdentityDigest: string; readonly coveringRoles: readonly QualifiedRole[] })[] = [];
+
+  for (const candidate of input.candidates) {
+    const reasons = new Set<string>();
+    const modelIdentityDigest = cohortModelIdentityDigest(candidate.identity);
+    const coveringRoles = [...new Set(candidate.offeredRoles)].filter((role) => uncovered.includes(role)).sort();
+
+    if (!candidate.eligible) reasons.add(candidate.ineligibleReason ?? "COHORT_CANDIDATE_INELIGIBLE");
+    if (coveringRoles.length === 0) reasons.add("COHORT_NO_UNCOVERED_ROLE");
+    if (counted.has(modelIdentityDigest)) reasons.add("COHORT_MODEL_IDENTITY_ALREADY_COUNTED");
+
+    if (reasons.size > 0) {
+      dispositions.push(Object.freeze({
+        candidateMemberDigest: candidate.candidateMemberDigest,
+        disposition: "excluded" as const,
+        reasonCodes: Object.freeze([...reasons].sort()),
+      }));
+      continue;
+    }
+    if (candidate.costPerMillion === null) {
+      dispositions.push(Object.freeze({
+        candidateMemberDigest: candidate.candidateMemberDigest,
+        disposition: "deferred" as const,
+        reasonCodes: Object.freeze(["COHORT_CATALOGUE_COST_UNKNOWN"]),
+      }));
+      continue;
+    }
+    eligible.push({ ...candidate, modelIdentityDigest, coveringRoles });
+  }
+
+  // Cheapest first, then a stable identity order so the plan is deterministic.
+  eligible.sort((left, right) => compareDecimalStrings(left.costPerMillion!, right.costPerMillion!)
+    || (left.provider < right.provider ? -1 : left.provider > right.provider ? 1 : 0)
+    || (left.identity.model < right.identity.model ? -1 : left.identity.model > right.identity.model ? 1 : 0)
+    || (left.candidateMemberDigest < right.candidateMemberDigest ? -1 : left.candidateMemberDigest > right.candidateMemberDigest ? 1 : 0));
+
+  // Fair draining: rotate the provider order so the provider after the cursor
+  // is offered its cheapest candidate first on this run.
+  const providerOrder = [...new Set(eligible.map((candidate) => candidate.provider))];
+  if (input.drainCursor !== null) {
+    const cursorIndex = providerOrder.indexOf(input.drainCursor);
+    if (cursorIndex >= 0) providerOrder.push(...providerOrder.splice(0, cursorIndex + 1));
+  }
+
+  const queues = new Map<string, typeof eligible>();
+  for (const provider of providerOrder) queues.set(provider, eligible.filter((candidate) => candidate.provider === provider));
+
+  const cohort: QualificationCohortMember[] = [];
+  const remaining = new Set<string>(uncovered);
+  const selected = new Set<string>();
+  const cohortCounted = new Set<string>(counted);
+
+  let progressed = true;
+  while (progressed && cohort.length < input.maximumCohortSize && remaining.size > 0) {
+    progressed = false;
+    for (const provider of providerOrder) {
+      if (cohort.length >= input.maximumCohortSize || remaining.size === 0) break;
+      const queue = queues.get(provider)!;
+      while (queue.length > 0) {
+        const candidate = queue.shift()!;
+        if (cohortCounted.has(candidate.modelIdentityDigest)) continue;
+        const covering = candidate.coveringRoles.filter((role) => remaining.has(role));
+        if (covering.length === 0) continue;
+        cohort.push(Object.freeze({
+          candidateMemberDigest: candidate.candidateMemberDigest,
+          provider: candidate.provider,
+          identity: candidate.identity,
+          modelIdentityDigest: candidate.modelIdentityDigest,
+          coveringRoles: Object.freeze(covering),
+        }));
+        cohortCounted.add(candidate.modelIdentityDigest);
+        selected.add(candidate.candidateMemberDigest);
+        for (const role of covering) remaining.delete(role);
+        progressed = true;
+        break;
+      }
+    }
+  }
+
+  for (const candidate of eligible) {
+    if (selected.has(candidate.candidateMemberDigest)) {
+      dispositions.push(Object.freeze({
+        candidateMemberDigest: candidate.candidateMemberDigest,
+        disposition: "selected" as const,
+        reasonCodes: Object.freeze([] as string[]),
+      }));
+      continue;
+    }
+    dispositions.push(Object.freeze({
+      candidateMemberDigest: candidate.candidateMemberDigest,
+      disposition: "deferred" as const,
+      reasonCodes: Object.freeze([
+        cohortCounted.has(candidate.modelIdentityDigest) && !selected.has(candidate.candidateMemberDigest)
+          ? "COHORT_MODEL_IDENTITY_ALREADY_COUNTED"
+          : "COHORT_BOUND_REACHED",
+      ]),
+    }));
+  }
+  dispositions.sort((left, right) => left.candidateMemberDigest < right.candidateMemberDigest ? -1
+    : left.candidateMemberDigest > right.candidateMemberDigest ? 1 : 0);
+
+  const plan = {
+    uncoveredRoles: Object.freeze(uncovered),
+    cohort: Object.freeze(cohort),
+    dispositions: Object.freeze(dispositions),
+    nextDrainCursor: cohort.length > 0 ? cohort[cohort.length - 1]!.provider : input.drainCursor,
+    rolesFullyCovered: remaining.size === 0,
+  };
+  return Object.freeze({ ...plan, planDigest: canonicalDigest(plan, { rejectAbsolutePaths: true }) });
+}
+
+export interface WorkloadFamilyReadiness {
+  readonly family: string;
+  readonly disposition: "READY" | "NOT_READY";
+  readonly qualifyingRouteMemberDigests: readonly string[];
+  readonly reasonCodes: readonly string[];
+}
+
+export interface WorkloadReadinessInput {
+  /**
+   * The exact graph-required provider families of the selected workload and
+   * profile. Derived per workload; no permanent roster is retained.
+   */
+  readonly requiredFamilies: readonly string[];
+  readonly requiredRoles: readonly QualifiedRole[];
+  readonly members: readonly RouteMemberCurrentness[];
+  /** Family of each evaluated route member, keyed by route-member digest. */
+  readonly memberFamilies: readonly Readonly<{ routeMemberDigest: string; family: string }>[];
+}
+
+export interface WorkloadReadinessResult {
+  readonly schema: "urn:usf:workload-readiness:1";
+  readonly disposition: "READY" | "NOT_READY";
+  readonly rosterPolicy: "derive-per-workload-no-permanent-roster";
+  readonly families: readonly WorkloadFamilyReadiness[];
+  readonly reasonCodes: readonly string[];
+  readonly readinessDigest: string;
+}
+
+/**
+ * Aggregate per urn:usf:provider-operation:workload-readiness:1: every
+ * graph-required family needs at least one exact current route qualification
+ * covering every required role. Missing evidence is NOT_READY, and an empty
+ * required-family set denies rather than vacuously passing.
+ */
+export function evaluateWorkloadReadiness(input: WorkloadReadinessInput): WorkloadReadinessResult {
+  const familyByMember = new Map<string, string>();
+  for (const entry of input.memberFamilies) {
+    if (familyByMember.has(entry.routeMemberDigest) && familyByMember.get(entry.routeMemberDigest) !== entry.family) {
+      routeQualificationInvalid();
+    }
+    familyByMember.set(entry.routeMemberDigest, entry.family);
+  }
+
+  const requiredRoles = [...new Set(input.requiredRoles)].sort();
+  const reasonCodes = new Set<string>();
+  const requiredFamilies = [...new Set(input.requiredFamilies)].sort();
+  if (requiredFamilies.length === 0) reasonCodes.add("WORKLOAD_REQUIRED_FAMILY_SET_EMPTY");
+  if (requiredRoles.length === 0) reasonCodes.add("WORKLOAD_REQUIRED_ROLE_SET_EMPTY");
+
+  const families: WorkloadFamilyReadiness[] = [];
+  for (const family of requiredFamilies) {
+    const qualifying = input.members
+      .filter((member) => member.disposition === "QUALIFIED"
+        && familyByMember.get(member.routeMemberDigest) === family
+        && requiredRoles.every((role) => member.roles.includes(role)))
+      .map((member) => member.routeMemberDigest)
+      .sort();
+    const familyReasons = new Set<string>();
+    if (requiredRoles.length === 0) familyReasons.add("WORKLOAD_REQUIRED_ROLE_SET_EMPTY");
+    if (qualifying.length === 0) {
+      familyReasons.add(input.members.some((member) => familyByMember.get(member.routeMemberDigest) === family)
+        ? "WORKLOAD_FAMILY_NO_CURRENT_QUALIFICATION"
+        : "WORKLOAD_FAMILY_EVIDENCE_MISSING");
+    }
+    const ready = familyReasons.size === 0;
+    if (!ready) reasonCodes.add(`WORKLOAD_FAMILY_NOT_READY:${family}`);
+    families.push(Object.freeze({
+      family,
+      disposition: ready ? "READY" as const : "NOT_READY" as const,
+      qualifyingRouteMemberDigests: Object.freeze(qualifying),
+      reasonCodes: Object.freeze([...familyReasons].sort()),
+    }));
+  }
+
+  const result = {
+    schema: "urn:usf:workload-readiness:1" as const,
+    disposition: reasonCodes.size === 0 ? "READY" as const : "NOT_READY" as const,
+    rosterPolicy: "derive-per-workload-no-permanent-roster" as const,
+    families: Object.freeze(families),
+    reasonCodes: Object.freeze([...reasonCodes].sort()),
+  };
+  return Object.freeze({ ...result, readinessDigest: canonicalDigest(result, { rejectAbsolutePaths: true }) });
 }
