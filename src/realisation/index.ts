@@ -688,12 +688,22 @@ export async function materialiseCandidate(root: string, candidate: CandidateSpe
   });
 }
 
-/** Materialise an exact current scope without inventing a resolver operation or contribution lineage. */
-export async function materialiseNoChangeCandidate(
+interface PreparedNoChangeCandidateIdentity {
+  readonly canonicalRoot: string;
+  readonly basis: RealisationBasis;
+  readonly policy: NoChangePolicyBinding;
+  readonly scope: readonly string[];
+  readonly writeSet: readonly string[];
+  readonly preimages: Readonly<Record<string, string | null>>;
+  readonly draft: Omit<NoChangeWorkspaceManifest, "digest">;
+  readonly candidateDigest: string;
+}
+
+async function prepareNoChangeCandidateIdentity(
   root: string,
   suppliedBasis: RealisationBasis,
   suppliedPolicy: NoChangePolicyBinding,
-): Promise<MaterialisedNoChangeCandidate> {
+): Promise<PreparedNoChangeCandidateIdentity> {
   const canonicalRoot = await realpath(root);
   const basis = await currentBasis(canonicalRoot, suppliedBasis);
   if (basis.authority.effectiveAuthority !== "active-permission" || basis.authority.permissionState !== "urn:usf:contract-state:active") {
@@ -719,6 +729,26 @@ export async function materialiseNoChangeCandidate(
     preimages: Object.freeze(preimages),
   };
   const candidateDigest = canonicalDigest(draft, { rejectAbsolutePaths: true });
+  return Object.freeze({ canonicalRoot, basis, policy, scope, writeSet, preimages, draft, candidateDigest });
+}
+
+/** Derive the exact current no-change identity without creating or authenticating a workspace. */
+export async function deriveNoChangeCandidateIdentity(
+  root: string,
+  suppliedBasis: RealisationBasis,
+  suppliedPolicy: NoChangePolicyBinding,
+): Promise<string> {
+  return (await prepareNoChangeCandidateIdentity(root, suppliedBasis, suppliedPolicy)).candidateDigest;
+}
+
+/** Materialise an exact current scope without inventing a resolver operation or contribution lineage. */
+export async function materialiseNoChangeCandidate(
+  root: string,
+  suppliedBasis: RealisationBasis,
+  suppliedPolicy: NoChangePolicyBinding,
+): Promise<MaterialisedNoChangeCandidate> {
+  const { canonicalRoot, basis, policy, scope, writeSet, preimages, draft, candidateDigest } =
+    await prepareNoChangeCandidateIdentity(root, suppliedBasis, suppliedPolicy);
   return withCandidateLock(canonicalRoot, candidateDigest, async (lockedRoot) => {
     await currentBasis(lockedRoot, basis);
     const workspace = workspaceFor(lockedRoot, candidateDigest);

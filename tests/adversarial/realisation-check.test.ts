@@ -104,7 +104,7 @@ type InterruptionMode = "before-effect" | "before-persist" | "pending-synced" | 
 
 async function checkSubprocess(root: string, digest: string, validationId: string, mode: InterruptionMode) {
   const receiptPath = join(root, ".usf/receipts/check", digest.slice(7), `${canonicalDigest(validationId).slice(7)}.json`);
-  const child = spawn(process.execPath, [join(root, "tests/fixtures/realisation/check-interruption.ts"),
+  const child = spawn(process.execPath, [join(sourceRoot, "tests/fixtures/realisation/check-interruption.ts"),
     root, digest, validationId, mode, `${receiptPath}.pending`], {
     cwd: root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"],
   });
@@ -117,7 +117,7 @@ async function checkSubprocess(root: string, digest: string, validationId: strin
     const event = message as Record<string, unknown>;
     if (event.kind === "validation-spawn") launches++;
     if (event.kind === "validation-exit" && event.code === 0 && event.signal === null) successfulExits++;
-    if (event.kind === "result") result = event.result as typeof result;
+    if (event.kind === "result" || event.kind === "unexpected-result") result = event.result as typeof result;
     if (event.kind === "boundary" && event.boundary === mode) {
       reached = true;
       child.kill("SIGKILL");
@@ -135,7 +135,7 @@ async function checkSubprocess(root: string, digest: string, validationId: strin
       assert.equal(ended.signal, null);
       assert.ok(result, stderr);
     } else {
-      assert.equal(reached, true, stderr);
+      assert.equal(reached, true, JSON.stringify({ mode, result, ended, launches, successfulExits, stderr }));
       assert.equal(ended.signal, "SIGKILL");
     }
     return { launches, successfulExits, result, receiptPath };

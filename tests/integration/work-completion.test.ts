@@ -15,12 +15,15 @@ import {
   prepareCompletionEvidence,
   completionAwareProveCommandHandler,
   completionAwarePublishCommandHandler,
+  prepareCompletionChecks,
   realiseCommandHandler,
+  realiseNoChangeWork,
 } from "../../src/commands/work-completion.ts";
 import { loadSemanticGraph } from "../../src/graph/index.ts";
 import { deriveWork } from "../../src/graph/work.ts";
 import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
-import type { CheckedCandidateReceipt } from "../../src/commands/check.ts";
+import { deriveNoChangeCandidateIdentity } from "../../src/realisation/index.ts";
+import { ensureGraphDerivedCheck, readGraphDerivedCheckReceipt, type CheckedCandidateReceipt } from "../../src/commands/check.ts";
 import {
   deriveNoChangeCompletionAuthority,
   workCompletionRecordLines,
@@ -419,6 +422,69 @@ function runNoChangeCli(root: string) {
   return JSON.parse(execFileSync(process.execPath, [resolve(root, "src/cli.ts"), "realise", "no-change", "--input", canonicalNoChangeInput],
     { cwd: root, encoding: "utf8", timeout: 60_000, maxBuffer: 4 * 1024 * 1024 })) as { candidateDigest: string; workspacePath: string; status: string };
 }
+
+test("root-derived completion checks derive no-effect identity and reconcile a genuine retained set", {
+  skip: isConfinedFixtureProcess && "the direct lane owns the graph-derived check fixture",
+}, async () => {
+  const isolated = await canonicalNoChangeFixture();
+  try {
+    const request = {
+      work: canonicalNoChangeSelection.rootIdentity,
+      profile: canonicalNoChangeProfile,
+      manifestPath: canonicalNoChangeSelection.manifestPath,
+    };
+    const graph = loadSemanticGraph(isolated.root, request.manifestPath);
+    const selected = deriveWork(graph, { profile: request.profile, selector: request.work, maxItems: 1 });
+    assert.equal(selected.status, "ok");
+    const work = selected.items?.[0];
+    assert.ok(work?.realisationBasis, "genuine fixture must derive a current no-change basis");
+    const authority = deriveNoChangeCompletionAuthority(graph, request.work);
+    const identity = await deriveNoChangeCandidateIdentity(isolated.root, work.realisationBasis, authority.policy);
+    assert.equal(existsSync(resolve(isolated.root, ".usf/workspaces")), false, "identity derivation must not materialise a workspace");
+    assert.equal(existsSync(resolve(isolated.root, ".usf/locks/candidates")), false, "identity derivation must not acquire a candidate lock");
+    const stale = Object.entries(work.realisationBasis.scope.preimages).find(([, digest]) => digest !== null);
+    assert.ok(stale, "genuine fixture must expose a concrete scoped preimage");
+    const [stalePath] = stale;
+    const staleBytes = await readFile(resolve(isolated.root, stalePath));
+    await writeFile(resolve(isolated.root, stalePath), Buffer.concat([staleBytes, Buffer.from("\n")]), { mode: 0o600 });
+    await assert.rejects(
+      () => deriveNoChangeCandidateIdentity(isolated.root, work.realisationBasis!, authority.policy),
+      { code: "STALE_REALISATION_BASIS" },
+    );
+    await writeFile(resolve(isolated.root, stalePath), staleBytes, { mode: 0o600 });
+    assert.equal(await deriveNoChangeCandidateIdentity(isolated.root, work.realisationBasis, authority.policy), identity);
+
+    const native = await realiseNoChangeWork(isolated.root, request);
+    assert.equal(native.candidateDigest, identity, "identity must match the native no-change result");
+    const expectedObligations = [...(work.realisationAuthority?.completionValidationObligations ?? [])].sort();
+    assert.ok(expectedObligations.length > 1, "genuine fixture must have a partial-retention denominator");
+    const retainedObligation = expectedObligations[0]!;
+    const absentObligation = expectedObligations[1]!;
+    const retained = await ensureGraphDerivedCheck(isolated.root, identity, retainedObligation);
+    assert.equal(retained.status, "pass");
+    const retainedBefore = await readGraphDerivedCheckReceipt(isolated.root, identity, retainedObligation);
+    assert.ok(retainedBefore, "retained member must be authenticated through the native receipt reader");
+    const retainedBytes = await readFile(resolve(isolated.root, retainedBefore.receiptPath));
+    assert.equal(await readGraphDerivedCheckReceipt(isolated.root, identity, absentObligation), null, "only one genuine member is retained before preparation");
+
+    const first = await prepareCompletionChecks(isolated.root, request);
+    assert.equal(first.status, "current");
+    assert.equal(first.workIri, request.work);
+    assert.equal(first.profileIri, request.profile);
+    assert.equal(first.candidateDigest, identity);
+    assert.deepEqual(first.validationObligations, expectedObligations);
+    const receipts = first.receipts as readonly { readonly obligationIri: string }[];
+    assert.equal(receipts.length, expectedObligations.length, "only the graph-required receipt denominator is acknowledged");
+    assert.deepEqual(receipts.map(receipt => receipt.obligationIri).sort(), expectedObligations);
+    assert.deepEqual(await readFile(resolve(isolated.root, retainedBefore.receiptPath)), retainedBytes, "retained current receipt is reconciled without replacement");
+    assert.ok(await readGraphDerivedCheckReceipt(isolated.root, identity, absentObligation), "the genuinely absent member is produced through the native primitive");
+    const { receiptSetDigest, ...stableSet } = first;
+    assert.equal(receiptSetDigest, canonicalDigest(stableSet, { rejectAbsolutePaths: true }));
+
+    const replay = await prepareCompletionChecks(isolated.root, request);
+    assert.deepEqual(replay, first, "a complete retained set has stable readback after native per-member reconciliation");
+  } finally { await isolated.cleanup(); }
+});
 
 // Test-only fault boundary: kill after the native effect returns but before stdout acknowledgement.
 async function interruptNoChange(root: string, boundary: "before" | "after"): Promise<void> {

@@ -53,11 +53,12 @@ fs.open = (async (...args: Parameters<typeof open>) => {
   return handle;
 }) as typeof open;
 syncBuiltinESMExports();
-const native = await import(pathToFileURL(resolve(root, "src/commands/check.ts")).href);
+const sourceRoot = resolve(import.meta.dirname, "../../..");
+const native = await import(pathToFileURL(resolve(sourceRoot, "src/commands/check.ts")).href);
 let result;
 if (boundary === "preflight") {
   try {
-    const { withCandidateLock } = await import(pathToFileURL(resolve(root, "src/realisation/index.ts")).href);
+    const { withCandidateLock } = await import(pathToFileURL(resolve(sourceRoot, "src/realisation/index.ts")).href);
     await withCandidateLock(root, candidateDigest, () => native.authenticateGraphDerivedCheckIntent(root, candidateDigest, validationId));
     result = { status: "authenticated" };
   } catch (error) {
