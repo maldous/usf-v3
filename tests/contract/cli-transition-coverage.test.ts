@@ -10,8 +10,35 @@ import { canonicalQuadDigest, parseStrictNQuads } from "../../src/graph/nquads.t
 const P = "urn:usf:predicate:", T = "urn:usf:type:";
 const work = "urn:test:work", profile = "urn:test:profile:1", contract = "urn:test:contract:1";
 
+test("partitioned specifications retain multiplicity and bind named-source provenance", () => {
+  const f = terminalFixture(), owner = "urn:usf:contract:cli-transition-definition:1";
+  const names = ["cli-transition-record-specifications", "cli-transition-field-specifications", "cli-transition-completion-field-specifications"];
+  const specs = deriveCliRecordSpecifications(f.graph, { contractIdentity: owner });
+  assert.equal(specs.structuralComplete, true, JSON.stringify(specs.gaps));
+  const combined = structuredClone(f.graph);
+  combined.quads = combined.quads.map(q => names.some(name => q.graph === "urn:usf:graph:" + name) ? { ...q, graph: "urn:usf:graph:cli-transition-definition" } : q);
+  const tripleRows = (graph: SemanticGraph) => graph.quads.map(q => JSON.stringify([q.subject, q.predicate, q.object, q.objectKind])).sort();
+  assert.deepEqual(tripleRows(combined), tripleRows(f.graph));
+  assert.notEqual(canonicalQuadDigest(combined.quads), canonicalQuadDigest(f.graph.quads));
+  const previous = deriveCliRecordSpecifications(combined, { contractIdentity: owner });
+  assert.notEqual(previous.sourceBasis, specs.sourceBasis);
+  assert.deepEqual(deriveCliSchemas(previous).descriptorSchema, deriveCliSchemas(specs).descriptorSchema);
+  const duplicate = structuredClone(f.graph);
+  duplicate.quads.push({ ...duplicate.quads.find(q => q.graph === "urn:usf:graph:" + names[0])! });
+  assert.equal(duplicate.quads.length, f.graph.quads.length + 1);
+  assert.notEqual(canonicalQuadDigest(duplicate.quads), canonicalQuadDigest(f.graph.quads));
+  for (const name of names) {
+    const missing = structuredClone(f.graph);
+    missing.quads = missing.quads.filter(q => q.graph !== "urn:usf:graph:" + name);
+    const refused = deriveCliRecordSpecifications(missing, { contractIdentity: owner });
+    assert.equal(refused.structuralComplete, false, name);
+    assert.equal(deriveCliSchemas(refused).descriptorSchema, null);
+    assert.equal(refused.executionAuthority, "none");
+  }
+});
+
 function terminalFixture() {
-  const quads = ["cli-transition-definition", "v3-convention"].flatMap(name =>
+  const quads = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications","v3-convention"].flatMap(name =>
     parseStrictNQuads(readFileSync(new URL("../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
   const graph = { quads } as SemanticGraph;
@@ -28,8 +55,10 @@ test("terminal census exposes real completion and recovery obligations, not mere
   }
   assert(result.edges.some(e => e.predicate === P + "requiresEvidence"));
   assert(result.edges.some(e => e.predicate === P + "recoveryObligation"));
-  assert(result.reasonCodes.includes("TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING"));
-  assert.equal(result.structuralComplete, false); assert.equal(result.satisfaction, "unverified");
+  const declared = f.graph.quads.filter(q => q.subject === f.declaration && q.predicate === P + "terminalArtifact" && q.objectKind === "iri").map(q => q.object);
+  assert(declared.length > 0);
+  assert.deepEqual(result.terminalArtifacts, [...new Set(declared)].sort());
+  assert.equal(result.satisfaction, "unverified");
   assert(result.nodes.every(n => n.state === "unverified"));
   assert.deepEqual(f.run(), result); assert.equal(JSON.stringify(f.graph), before);
   const canonical = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
@@ -41,12 +70,14 @@ test("terminal census exposes real completion and recovery obligations, not mere
 });
 
 test("declared terminal artifact can complete structural census without authenticating satisfaction", () => {
-  const f = terminalFixture(); f.add(f.declaration, "terminalArtifact", f.artifact);
+  const f = terminalFixture();
+  const declared = f.graph.quads.filter(q => q.subject === f.declaration && q.predicate === P + "terminalArtifact" && q.objectKind === "iri").map(q => q.object);
+  f.add(f.declaration, "terminalArtifact", f.artifact);
   assert.equal(f.run().reasonCodes.includes("TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING"), false);
   const result = f.run();
   assert.deepEqual(result.reasonCodes, []);
   assert.equal(result.structuralComplete, true); assert.equal(result.satisfaction, "unverified");
-  assert.deepEqual(result.terminalArtifacts, [f.artifact]);
+  assert.deepEqual(result.terminalArtifacts, [...new Set([...declared, f.artifact])].sort());
   assert(result.nodes.every(n => n.state === "unverified"));
   const moved = structuredClone(f.graph);
   moved.quads.push({ subject: "urn:test:unrelated", predicate: P + "text", object: "new authority basis", objectKind: "literal", graph: "urn:test:terminal", canonical: "" });
@@ -751,11 +782,16 @@ test("terminal diagnostics bind an omitted native-intent rule without inventing 
   assert.equal(result.satisfaction, "unverified");
   assert(Object.isFrozen(result.diagnostics));
   assert(Object.isFrozen(diagnostic!.observedTargets));
-  const absent = result.diagnostics.find(d => d.reasonCode === "TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING")!;
-  assert.equal(absent.subject, f.declaration);
-  assert.equal(absent.predicate, P + "terminalArtifact");
+  const missing = terminalFixture();
+  missing.graph.quads = missing.graph.quads.filter(q => !(q.subject === missing.declaration && q.predicate === P + "terminalArtifact"));
+  const refused = missing.run();
+  const absent = refused.diagnostics.find(d => d.reasonCode === "CLI_RECORD_CARDINALITY" && d.subject === missing.declaration)!;
+  assert.ok(absent);
+  assert.equal(absent.property, "urn:usf:cli-field-specification:field-terminal-declaration-terminal-artifacts:1");
   assert.deepEqual(absent.observedTargets, []);
-  assert.equal(absent.sourceDigest, canonicalQuadDigest(f.graph.quads.filter(q => q.subject === f.declaration)));
+  assert.equal(absent.sourceDigest, canonicalQuadDigest(missing.graph.quads.filter(q => q.subject === missing.declaration)));
+  assert.equal(refused.structuralComplete, false);
+  assert.equal(refused.satisfaction, "unverified");
 });
 
 test("terminal diagnostics preserve same-code nodes and bind source and rule movement deterministically", () => {
@@ -843,7 +879,7 @@ test("terminal diagnostics refuse record and observed-target overflow instead of
 
 test("selective receipt adapter maps the complete native recovery closure without authority", () => {
   const graph = { quads: [
-    ...parseStrictNQuads(readFileSync(new URL("../../graph/cli-transition-definition.nq", import.meta.url), "utf8"), "urn:usf:graph:cli-transition-definition"),
+    ...["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name)),
     ...parseStrictNQuads(readFileSync(new URL("../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"),
     ...parseStrictNQuads(readFileSync(new URL("../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"),
   ] } as SemanticGraph;
@@ -869,4 +905,39 @@ test("receipt-set generated schema accepts bounded dynamic denominators and reje
   assert.equal(validator.validate({ ...result, provider: "invented" }).valid, false);
   assert.equal(validator.validate({ ...result, executionAuthority: "execute" }).valid, false);
   assert.equal(validator.validate({ ...result, parallelSafety: { state: "proved" } }).valid, false);
+});
+
+test("integer value bounds support 16 MiB without widening structural bounds", () => {
+  const f = specificationsFixture(), subject = "urn:test:bounded-byte-length";
+  f.add(f.b + "kind-integer:1", "type", T + "CliFieldValueKind");
+  replaceSpecificationValue(f, f.field, "valueKind", f.b + "kind-integer:1");
+  replaceSpecificationValue(f, f.field, "maximumLength", "8");
+  f.add(f.field, "minimumValue", "0", "literal");
+  f.add(f.field, "maximumValue", "16777216", "literal");
+  f.add(subject, "type", T + "Example");
+  f.add(subject, "example", "0", "literal");
+  for (const value of [0, 16777216, -1, 16777217, 0.5]) {
+    replaceSpecificationValue(f, subject, "example", String(value));
+    const specs = f.specs();
+    assert.equal(specs.structuralComplete, true, JSON.stringify(specs.gaps));
+    const schema = deriveCliSchemas(specs).descriptorSchema;
+    assert.ok(schema);
+    const valid = value === 0 || value === 16777216;
+    assert.equal(createJsonSchemaValidator(schema).validate({ example: value }).valid, valid);
+    const result = deriveCliRecord(f.graph, { recordIdentity: f.record, subjectIdentity: subject }, specs);
+    if (valid) {
+      assert.deepEqual(result.value, { example: value });
+      assert.equal(result.valid, true);
+    } else {
+      assert.equal(result.valid, false);
+      assert(result.gaps.some(g => g.reasonCode === "CLI_RECORD_VALUE_BOUNDS"));
+    }
+  }
+  for (const property of ["maximumValue", "maximumLength", "maximumCardinality"]) {
+    const altered = structuredClone(f.graph);
+    altered.quads = altered.quads.map(q => q.subject === f.field && q.predicate === P + property ? { ...q, object: "16777217" } : q);
+    const refused = deriveCliRecordSpecifications(altered, { contractIdentity: contract });
+    assert.equal(refused.structuralComplete, false, property);
+    assert.equal(deriveCliSchemas(refused).descriptorSchema, null);
+  }
 });

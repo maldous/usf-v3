@@ -12,7 +12,7 @@ import { findHelpTopic, transitionInterrogationContract, transitionSchemaContrac
 import { canonicalDigest } from "../../../src/core/canonical.ts";
 
 function actualDescriptorGraph(): SemanticGraph {
-  const quads = parseStrictNQuads(readFileSync(new URL("../../../graph/cli-transition-definition.nq", import.meta.url), "utf8"), "urn:usf:graph:cli-transition-definition");
+  const quads = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
   const selected = new Set(["urn:usf:schema:no-change-realisation-result:1", "urn:usf:schema:completion-evidence-candidate:1", "urn:usf:command:realise-no-change:1"]);
@@ -61,7 +61,7 @@ test("schema handler loads declared sources, emits a reproducible candidate and 
   const root = mkdtempSync(join(tmpdir(), "usf-schema-cli-"));
   try {
     mkdirSync(join(root, "graph"));
-    const names = ["cli-transition-definition", "v3-convention"];
+    const names = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications","v3-convention"];
     for (const name of names) writeFileSync(join(root, "graph", name + ".nq"), readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url)));
     writeFileSync(join(root, "graph", "test.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: names.map(name => ({
       path: "graph/" + name + ".nq", format: "application/n-quads", graph: "urn:usf:graph:" + name, role: "contract", validationProfile: "bootstrap-nquads-v1",
@@ -229,9 +229,12 @@ test("completion lineage remains visible without admitting unmapped execution or
     if (stage !== "evidence") assert(report.diagnostics.some(d => d.subject === transition && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
     else assert(!report.diagnostics.some(d => d.subject === transition && d.field === "adapter"));
   }
-  assert.equal(assessment.structuralComplete, false);
+  const declared = graph.quads.filter(q =>
+    q.subject === "urn:usf:cli-terminal-closure:cli-transition-definition:1" &&
+    q.predicate === "urn:usf:predicate:terminalArtifact" && q.objectKind === "iri").map(q => q.object);
+  assert(declared.length > 0);
+  assert.deepEqual(assessment.terminalArtifacts, [...new Set(declared)].sort());
   assert.equal(assessment.satisfaction, "unverified");
-  assert(assessment.reasonCodes.includes("TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING"));
   assert.equal(report.complete, false);
   assert.equal(report.executionAuthority, "none");
   assert.equal(report.parallelSafety.state, "unproven");
@@ -327,7 +330,7 @@ test("CLI binding reads follow only the selected target manifest without runtime
   try {
     mkdirSync(join(root, "graph"));
     const source = actualDescriptorGraph();
-    const names = ["urn:usf:graph:cli-transition-definition", "urn:usf:graph:v3-convention"];
+    const names = ["cli-transition-definition", "cli-transition-record-specifications", "cli-transition-field-specifications", "cli-transition-completion-field-specifications", "v3-convention"].map(name => "urn:usf:graph:" + name);
     const sources = names.map((graph, i) => {
       const path = `graph/source-${i}.nq`;
       writeFileSync(join(root, path), source.quads.filter(q => q.graph === graph).map(canonicalQuadLine).join("\n") + "\n");

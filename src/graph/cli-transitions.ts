@@ -171,7 +171,7 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
   };
   const single = (s: string, p: string, kind: "iri" | "literal" = "iri"): string => { const vs = many(s, p, kind); if (vs.length !== 1) bad(s, p); return vs[0] ?? ""; };
   const typed = (s: string, t: string): void => { if (!many(s, "type").includes(T + t)) bad(s, "type"); };
-  const number = (s: string, p: string): number => { const v = single(s, p, "literal"); if (!/^(0|[1-9][0-9]*)$/.test(v) || !Number.isSafeInteger(Number(v)) || Number(v) > 1048576) { bad(s, p); return 0; } return Number(v); };
+  const number = (s: string, p: string, maximum = 1048576): number => { const v = single(s, p, "literal"); if (!/^(0|[1-9][0-9]*)$/.test(v) || !Number.isSafeInteger(Number(v)) || Number(v) > maximum) { bad(s, p); return 0; } return Number(v); };
   typed(selection.contractIdentity, "SemanticContract");
   const roots = [...index.keys()].filter(s => many(s, "forContract").includes(selection.contractIdentity) && many(s, "type").includes(T + "CliFieldSpecificationAmendment"));
   const ids = sorted(roots.flatMap(s => many(s, "recordSpecification")));
@@ -231,8 +231,8 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
           || allowedValues.some(v => v.length === 0 || [...v].length < minimumLength || [...v].length > maximumLength
             || (kind === "iri" && !/^[A-Za-z][A-Za-z0-9+.-]*:[^\s]+$/.test(v)))) bad(fieldId, "allowedValue", "CLI_SPECIFICATION_ALLOWED_VALUES_INVALID");
       }
-      const minimumValue = kind === "integer" ? number(fieldId, "minimumValue") : null;
-      const maximumValue = kind === "integer" ? number(fieldId, "maximumValue") : null;
+      const minimumValue = kind === "integer" ? number(fieldId, "minimumValue", 16_777_216) : null;
+      const maximumValue = kind === "integer" ? number(fieldId, "maximumValue", 16_777_216) : null;
       if (minimumValue !== null && maximumValue !== null && minimumValue > maximumValue) bad(fieldId, "numericBounds");
       if ((kind === "boolean" && (minimumLength > 4 || maximumLength < 5))
         || (kind === "integer" && minimumValue !== null && maximumValue !== null
@@ -458,6 +458,8 @@ export interface CliTerminalDiagnostic {
 }
 
 export interface CliTerminalAssessment {
+  /** Present only when the selected generated terminal record declares the native attachment field. */
+  readonly authenticatedArtifacts?: readonly CliRecordValue[];
   readonly declarations: readonly string[];
   readonly semanticBasis: string;
   readonly diagnostics: readonly CliTerminalDiagnostic[];
@@ -500,16 +502,23 @@ export function deriveCliTerminalAssessment(graph: SemanticGraph, root: string):
   const typed = (id: string, type: string) => values(id, P + "type").includes(type);
   const declarations = context.contract === null ? [] : values(context.contract, P + "requires")
     .filter(id => typed(id, T + "CliTerminalClosureDeclaration"));
+  const specifications = context.contract === null ? null : deriveCliRecordSpecifications(graph, { contractIdentity: context.contract });
+  const terminalRecord = specifications?.records.find(record => record.fragment === "/$defs/terminalAssessment");
+  const attachmentCandidates = terminalRecord?.fields.filter(field => field.predicate === P + "authenticatedTerminalArtifact") ?? [];
+  const detachedAttachment = attachmentCandidates.length === 1
+    && attachmentCandidates[0]!.collection && attachmentCandidates[0]!.minimum === 0
+    && attachmentCandidates[0]!.kind === "record" && attachmentCandidates[0]!.record !== null
+    ? attachmentCandidates[0]!.property : null;
   let terminalArtifacts: string[] = [], requiredTransitions: string[] = [];
   const finish = (): CliTerminalAssessment => immutable({ declarations, semanticBasis,
+    ...(detachedAttachment === null ? {} : { [detachedAttachment]: [] }),
     nodes: [...nodes.values()].sort((a, b) => a.identity < b.identity ? -1 : a.identity > b.identity ? 1 : 0),
     edges: [...edges.entries()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, edge]) => edge),
     terminalArtifacts, requiredTransitions, structuralComplete: diagnostics.size === 0,
     diagnostics: [...diagnostics.entries()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, diagnostic]) => diagnostic),
     satisfaction: "unverified", reasonCodes: sorted([...diagnostics.values()].map(diagnostic => diagnostic.reasonCode)) });
-  if (context.contract === null || context.work === null || context.profile === null) return finish();
+  if (context.contract === null || context.work === null || context.profile === null || specifications === null) return finish();
   if (declarations.length !== 1) { note("TRANSITION_TERMINAL_DECLARATION_MISSING_OR_AMBIGUOUS", context.contract, { predicate: P + "requires", expectedType: T + "CliTerminalClosureDeclaration", observedTargets: declarations }); return finish(); }
-  const specifications = deriveCliRecordSpecifications(graph, { contractIdentity: context.contract });
   const read = (fragment: string, subject: string): Readonly<Record<string, CliRecordValue>> | null => {
     const records = specifications.records.filter(r => r.fragment === "/$defs/" + fragment);
     if (records.length !== 1) { note("TRANSITION_TERMINAL_SPECIFICATION_MISSING", subject, { property: fragment, expectedType: T + "CliRecordSpecification" }); return null; }
