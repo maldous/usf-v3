@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { canonicalDigest, canonicalJson } from "../../../src/core/canonical.ts";
 import { deriveWork } from "../../../src/graph/work.ts";
 import { loadSemanticGraph, validationRuntimeClosure } from "../../../src/graph/index.ts";
+import { deriveConstructionAuthority } from "../../../src/realisation/construction-authority.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../../src/graph/nquads.ts";
 import { constructionAwarePublishCommandHandler, evidenceCommandHandler, proveCommandHandler } from "../../../src/commands/construction-authority.ts";
 import { access, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
@@ -90,6 +91,15 @@ async function fixtureRoot(): Promise<string> {
     await mkdir(resolve(root, path, ".."), { recursive: true });
     await writeFile(resolve(root, path), bytes);
   }
+
+  const { sourcePath: grantsSourcePath, targetGraphIri } = deriveConstructionAuthority(graph, work, manifestPath);
+  // Imported grant records without their matching receipt cannot seed a fixture.
+  await writeFile(resolve(root, grantsSourcePath), [
+    `<urn:usf:record:linear-work-binding-grants-empty> <urn:usf:predicate:forContract> <urn:usf:contract:linear-work-binding:1> <${targetGraphIri}> .`,
+    `<urn:usf:record:linear-work-binding-grants-empty> <urn:usf:predicate:text> "No construction or completion authority is published in this source." <${targetGraphIri}> .`,
+    `<urn:usf:record:linear-work-binding-grants-empty> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <${targetGraphIri}> .`,
+    "",
+  ].join("\n"));
 
   const evidencePath = ".usf/candidates/construction-authority/linear-binding-evidence.json";
   const bundlePath = ".usf/candidates/construction-authority/linear-binding-bundle.json";
