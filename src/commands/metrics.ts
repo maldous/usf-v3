@@ -10,6 +10,7 @@ import {
   type MetricView,
 } from "../observability/metrics.ts";
 import type { CommandHandler } from "./dispatcher.ts";
+import { summarizeJobLifecycle, type LifecycleSource } from "../observability/job-lifecycle.ts";
 
 const views = new Set<MetricView>([
   "summary",
@@ -315,14 +316,9 @@ export const metricsCommandHandler: CommandHandler = async ({
     parsed.explicitInput,
     parsed.maxEvents,
   );
-  const report = aggregateMetrics(source.records, {
-    ...parsed.options,
-    sourceTruncated: source.truncated,
-  });
-  return {
-    output: {
-      ...report,
-      source: {
+  const lifecycleSelection = parsed.view === "summary" && parsed.explicitInput && (parsed.input === "-" || source.records.length === 0 || source.records.every((row) => typeof row === "object" && row !== null && (row as Record<string, unknown>).schema === "urn:usf:job-lifecycle-metric-event:2"));
+  if (parsed.explicitInput && source.records.some((row) => typeof row === "object" && row !== null && (row as Record<string, unknown>).schema === "urn:usf:job-lifecycle-metric-event:2") && !lifecycleSelection) invalidArguments("Lifecycle metrics support only explicit summary input without v1 filters.");
+  const sourceDetails: LifecycleSource = {
         status: source.missing ? "not-observed" : "observed",
         kind: parsed.input === "-" ? "stdin" : "repository-relative-jsonl",
         path: parsed.input === "-" ? null : parsed.input,
@@ -335,7 +331,11 @@ export const metricsCommandHandler: CommandHandler = async ({
             ? null
             : `sha256:${createHash("sha256").update(source.raw).digest("hex")}`,
         digestBasis: source.raw === null ? "not-observed" : "raw-input-bytes",
-      },
-    },
   };
+  if (lifecycleSelection) {
+    if (parsed.options.since !== undefined || parsed.options.until !== undefined || parsed.options.run !== undefined || parsed.options.provider !== undefined || parsed.options.model !== undefined) invalidArguments("Lifecycle metrics do not support v1 filters.");
+    return { output: summarizeJobLifecycle(source.records, { source: sourceDetails, maxItems: parsed.options.maxItems ?? 20 }) };
+  }
+  const report = aggregateMetrics(source.records, { ...parsed.options, sourceTruncated: source.truncated });
+  return { output: { ...report, source: sourceDetails } };
 };

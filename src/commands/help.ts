@@ -52,7 +52,7 @@ function topic(path: readonly string[], input: Omit<HelpTopic, "path">): HelpTop
 }
 
 const metricOptions = Object.freeze([
-  { syntax: "--input .usf/metrics/FILE.jsonl|-", description: "Read one explicit local JSONL source or bounded stdin; default is .usf/metrics/events.jsonl." },
+  { syntax: "--input .usf/metrics/FILE.jsonl|-", description: "Read one explicit local JSONL source or bounded stdin; `metrics summary --input` may select the read-only lifecycle-v2 report. Default remains .usf/metrics/events.jsonl." },
   { syntax: "--max-events N", description: "Read at most N local event records (default 10000; maximum 100000)." },
   { syntax: "--max-items N", description: "Return at most N named groups plus an explicit overflow group (default 20; maximum 100)." },
   { syntax: "--since RFC3339 | --until RFC3339", description: "Bound the observed time range." },
