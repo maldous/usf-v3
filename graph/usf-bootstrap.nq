@@ -585,3 +585,54 @@
 <urn:usf:validation-runtime-closure:provider-qualification-v2:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/providers/probe.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:provider-qualification-v2:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/providers/qualification-assets.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:provider-qualification-v2:1> <urn:usf:predicate:authorityRule> "Supply exactly the eleven repository files that the eight-file provider-qualification-v2 validation command opens at runtime but that fall outside the work's candidate scope, which is readSet union writeSet union fileDependencies. The work declares an empty readSet, so five of its eight named test files, their non-candidate value imports and three fixture/schema reads were unreachable and the confined launcher could not prove containment. The relation is inbound, so admitting this closure does not rewrite the validation's resource identity or the work packet that selected it, and it grants no account, credential, adapter or provider-contact authority." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:commandPath> "status" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:commandGroup> "inspect" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:purpose> "Report a broad, bounded current operational summary; use the lifecycle topic for one named process instance." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:synopsis> "usf status [--profile URN --manifest PATH] [--detail summary|full] [--max-items N] [--instance NAME]" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:handlerPath> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:helpPath> "src/commands/help.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:resultSchemaIdentifier> "urn:usf:status-result:1" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:errorSchema> <urn:usf:cli-error:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:authorityEffect> "Read-only local observation; no semantic mutation, commit, push, provider contact or authority effect." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:nonClaim> "status-is-observation-not-semantic-authority" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:nonClaim> "The urn:usf:status-result:1 envelope identifier is named here but is not yet a registered closed SemanticRecordSchema; no schemaPath exists for it." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:command:status:1> <urn:usf:predicate:nonClaim> "Registering this command does not add, alter or activate any behaviour; the implementation and its help text already existed." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:closure-satisfiability:1> <urn:usf:predicate:type> <urn:usf:type:OperationalStatusProjection> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:closure-satisfiability:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:closure-satisfiability:1> <urn:usf:predicate:forCommand> <urn:usf:command:status:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:closure-satisfiability:1> <urn:usf:predicate:projectionKey> "closureSatisfiability" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:closure-satisfiability:1> <urn:usf:predicate:implementationPath> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:closure-satisfiability:1> <urn:usf:predicate:statusVocabulary> "satisfiable|unsatisfiable" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:closure-satisfiability:1> <urn:usf:predicate:derivationRule> "For every graph-typed ProductionLeafRuntimeClosure, compare the declared closureMemberCount with its runtimePath row count and require every member to exist as a same-root regular file. Report one row per closure with its ownerWork and entryModulePath, and name every owner whose closure the repository cannot honour in blockedWorks." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:closure-satisfiability:1> <urn:usf:predicate:nonClaim> "closure-satisfiability-is-file-presence-not-byte-authentication" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:publication-policy-coverage:1> <urn:usf:predicate:type> <urn:usf:type:OperationalStatusProjection> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:publication-policy-coverage:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:publication-policy-coverage:1> <urn:usf:predicate:forCommand> <urn:usf:command:status:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:publication-policy-coverage:1> <urn:usf:predicate:projectionKey> "publicationPolicyCoverage" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:publication-policy-coverage:1> <urn:usf:predicate:implementationPath> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:publication-policy-coverage:1> <urn:usf:predicate:statusVocabulary> "covered|at-risk" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:publication-policy-coverage:1> <urn:usf:predicate:derivationRule> "For each selected work, resolve the construction-authority and no-change-completion publication policies whose eligibleWork enumerates it. Exactly one of each is required: zero yields CONSTRUCTION_WORK_NOT_ELIGIBLE or WORK_COMPLETION_NOT_ELIGIBLE and more than one yields an ambiguity risk code. Both are graph-closure defects rather than retry conditions." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:publication-policy-coverage:1> <urn:usf:predicate:nonClaim> "policy-coverage-is-admission-eligibility-not-construction-activation" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:policy-blast-radius:1> <urn:usf:predicate:type> <urn:usf:type:OperationalStatusProjection> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:policy-blast-radius:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:policy-blast-radius:1> <urn:usf:predicate:forCommand> <urn:usf:command:status:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:policy-blast-radius:1> <urn:usf:predicate:projectionKey> "policyBlastRadius" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:policy-blast-radius:1> <urn:usf:predicate:implementationPath> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:policy-blast-radius:1> <urn:usf:predicate:statusVocabulary> "observed" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:policy-blast-radius:1> <urn:usf:predicate:derivationRule> "For each publication policy, derive the works its resource digest would stale from actual scoped-dependency-closure membership rather than from the policy's declared eligibleWork list. The two sets genuinely differ: a policy can sit inside the closure of a work it does not enumerate. Report stalesOnChange with each work's stage and current authority, plus currentGrantsAtRisk and currentCompletionsAtRisk." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:policy-blast-radius:1> <urn:usf:predicate:nonClaim> "blast-radius-is-a-projection-not-a-performed-policy-change" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:type> <urn:usf:type:OperationalStatusProjection> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:forCommand> <urn:usf:command:status:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:projectionKey> "carrier" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:implementationPath> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:statusVocabulary> "observed|not-observed" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:derivationRule> "Project local worktree kind, detached HEAD, branch, origin presence, the selected profile semantic digest and upstream ahead/behind distance from already-fetched local refs only. Contact no remote. Report comparisonScope as this-checkout-only." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:nonClaim> "carrier-observation-covers-exactly-this-checkout-not-sibling-clones" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:status-projection:carrier:1> <urn:usf:predicate:nonClaim> "upstream-distance-is-derived-from-local-refs-only-and-may-be-stale" <urn:usf:graph:usf-bootstrap> .
