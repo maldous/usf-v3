@@ -9,6 +9,7 @@ import { acquireStewardActivity, acquireSupervisorLifetimeLock } from "../contin
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
+import { assertHermesDispatchAccounting } from "../providers/dispatch-accounting.ts";
 import type { CommandResult } from "./dispatcher.ts";
 
 /**
@@ -703,6 +704,31 @@ interface CycleProjection {
   readonly lastReason: string;
 }
 
+const implementationAccountingNames = Object.freeze([
+  "plannedUnits", "eligibleUnits", "attemptedUnits", "contactedUnits", "contactedAttempts",
+  "successfulUnits", "structurallyAcceptedUnits", "refusedUnits", "reusedUnits",
+  "dispatchedUnits", "modelInvocations", "cacheHits", "acceptedResults",
+] as const);
+
+/** Copy current counters without recomputing them; retain the legacy-only shape for old records. */
+export function projectImplementationDispatchAccounting(
+  implementation: Readonly<Record<string, unknown>>,
+): Readonly<Record<string, unknown>> {
+  if (implementation.accounting === undefined) {
+    return Object.freeze(Object.fromEntries([
+      "dispatchedUnits", "modelInvocations", "cacheHits", "acceptedResults",
+    ].map((name) => [name, implementation[name]])));
+  }
+  const accounting = assertHermesDispatchAccounting(implementation.accounting);
+  for (const name of implementationAccountingNames) {
+    if (implementation[name] !== accounting[name]) {
+      throw new UsfError("HERMES_CYCLE_ACCOUNTING_INVALID", exitCodes.DOMAIN_FAILURE,
+        "The implementation result's top-level accounting aliases disagree with its sealed accounting.", { counter: name });
+    }
+  }
+  return Object.freeze({ accounting, ...accounting });
+}
+
 async function stopRequested(repositoryRoot: string, supervisorId: string): Promise<boolean> {
   const request = await readJson<{ supervisorId?: unknown }>(repositoryRoot, stopRequestRecord);
   return request !== null && (request.supervisorId === supervisorId || request.supervisorId === undefined);
@@ -930,10 +956,7 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
           modulesLanded: implementation.modulesLanded,
           conformanceTestsLanded: implementation.conformanceTestsLanded,
           awaitingConformanceCheck: implementation.awaitingConformanceCheck,
-          dispatchedUnits: implementation.dispatchedUnits,
-          modelInvocations: implementation.modelInvocations,
-          cacheHits: implementation.cacheHits,
-          acceptedResults: implementation.acceptedResults,
+          ...projectImplementationDispatchAccounting(implementation),
           conformanceRuns: implementation.conformanceRuns,
         }),
         manifest: parsed.manifest,

@@ -6,7 +6,9 @@ import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
 import { readDependencyGraph } from "../graph/work-dependency.ts";
-import { invokeAntigravityCli, invokeClaudeCli, invokeCodexCli } from "../providers/cli-transports.ts";
+import {
+  invokeAntigravityCli, invokeClaudeCli, invokeCodexCli, type CliInvocationResult,
+} from "../providers/cli-transports.ts";
 import { CredentialEnvError, loadCredentialEnvFile } from "../providers/config.ts";
 import { parseExecutionEconomicAuthorizations, type EffectiveCostPolicy } from "../providers/execution-economics.ts";
 import { verifyEconomicsProjection } from "../providers/economics-projection.ts";
@@ -16,7 +18,9 @@ import {
 } from "../providers/route-universe.ts";
 import { readAuthoritySnapshot, snapshotDifference, type AuthoritySnapshot } from "../providers/authority-snapshot.ts";
 import { observeQualifiedTaskClasses } from "../providers/capabilities.ts";
-import { localAgentTransportIds, observeTransportCapability } from "../providers/transports.ts";
+import {
+  localAgentTransportIds, observeTransportCapability, type AuthenticatedTransportCapability,
+} from "../providers/transports.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { languageModelFor, parseEffectiveCostPolicy } from "./execute.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
@@ -28,6 +32,10 @@ import {
   applyRouteOutcomes, deferredCandidateIds, readRouteDeferrals, routeProductivity, writeRouteDeferrals,
   type ObservedRouteOutcome,
 } from "../providers/route-deferral.ts";
+import {
+  deriveGraphDispatchAccounting,
+  type DispatchAttemptPhase, type GraphDispatchAccounting, type GraphDispatchUnitObservation,
+} from "../providers/dispatch-accounting.ts";
 
 const typePredicate = "urn:usf:predicate:type";
 const workUnitType = "urn:usf:type:SemanticWorkUnit";
@@ -216,6 +224,10 @@ interface UnitAttempt {
   readonly transport: string;
   readonly provider: string;
   readonly model: string | null;
+  readonly requestedModel: string | null;
+  readonly actualModel: string | null;
+  readonly phase: DispatchAttemptPhase;
+  readonly contacted: boolean;
   readonly startedAt: string;
   readonly latencyMs: number;
   readonly outcome: "ok" | "refused";
@@ -223,6 +235,11 @@ interface UnitAttempt {
   readonly statusCode: number | null;
   readonly retryAfter: string | null;
   readonly costIncurred: boolean;
+  readonly usage: Readonly<{
+    inputTokens: number | null; outputTokens: number | null; totalTokens: number | null;
+    cacheReadTokens: number | null; cacheWriteTokens: number | null;
+  }> | null;
+  readonly transportReportedCostUsd: number | null;
   /** The provider's own refusal text, bounded and token-redacted. */
   readonly providerDetail?: string | null;
 }
@@ -231,7 +248,9 @@ interface UnitOutcome {
   readonly unit: SemanticWorkUnit;
   readonly candidatesConsidered: number;
   readonly attempts: readonly UnitAttempt[];
+  readonly eligible: boolean;
   readonly status: "ok" | "refused";
+  readonly reasonCode: string;
   readonly selected: ExecutionCandidate | null;
   readonly actualModel: string | null;
   readonly invocationIdentity: string | null;
@@ -246,7 +265,67 @@ interface UnitOutcome {
   readonly endedAtMs: number;
 }
 
-export async function graphExecuteCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
+/** Command-level projection shared by live evidence and the confined fixture. */
+export function projectGraphDispatchAccounting(
+  units: readonly GraphDispatchUnitObservation[],
+): GraphDispatchAccounting {
+  return deriveGraphDispatchAccounting(units);
+}
+
+export function sdkPreflightRefusal(input: Readonly<{
+  adapterPackage: string | null;
+  model: string | null;
+  credential: string | undefined;
+}>): "ADAPTER_PACKAGE_ABSENT" | "MODEL_IDENTITY_REQUIRED" | "CREDENTIAL_ABSENT" | null {
+  return input.adapterPackage === null ? "ADAPTER_PACKAGE_ABSENT"
+    : input.model === null ? "MODEL_IDENTITY_REQUIRED"
+    : input.credential === undefined || input.credential.length === 0 ? "CREDENTIAL_ABSENT"
+    : null;
+}
+
+export interface GraphExecutionDependencies {
+  readonly observeLocalAgentCapabilities: (input: Readonly<{
+    repositoryRoot: string;
+    observedAt: string;
+    suppliedCredentialNames: readonly string[];
+  }>) => Promise<readonly AuthenticatedTransportCapability[]>;
+  readonly invokeCli: (input: Readonly<{
+    candidate: ExecutionCandidate;
+    prompt: string;
+    timeoutMs: number;
+  }>) => Promise<CliInvocationResult>;
+}
+
+const productionGraphExecutionDependencies: GraphExecutionDependencies = Object.freeze({
+  observeLocalAgentCapabilities: async (
+    { repositoryRoot, observedAt, suppliedCredentialNames }:
+    Parameters<GraphExecutionDependencies["observeLocalAgentCapabilities"]>[0],
+  ) =>
+    Object.freeze(await Promise.all(localAgentTransportIds.map((transport) => observeTransportCapability(transport, {
+      repositoryRoot,
+      homeDirectory: homedir(),
+      observedAt,
+      suppliedCredentialNames,
+      requiredCredentialName: null,
+      adapterInstalled: false,
+    })))),
+  invokeCli: async (
+    { candidate, prompt, timeoutMs }: Parameters<GraphExecutionDependencies["invokeCli"]>[0],
+  ) => candidate.transport === "claude-cli"
+    ? invokeClaudeCli(prompt, timeoutMs, candidate.model)
+    : candidate.transport === "codex-cli"
+      ? invokeCodexCli(prompt, timeoutMs, candidate.model)
+      : candidate.transport === "antigravity-cli"
+        ? invokeAntigravityCli(prompt, candidate.model ?? "", timeoutMs)
+        : Promise.reject(new UsfError("GRAPH_EXECUTE_TRANSPORT_INVALID", exitCodes.DOMAIN_FAILURE,
+            "The CLI invocation dependency received a non-CLI transport.")),
+});
+
+export async function graphExecuteCommand(
+  repositoryRoot: string,
+  args: readonly string[],
+  dependencies: GraphExecutionDependencies = productionGraphExecutionDependencies,
+): Promise<CommandResult> {
   // Dispatch concurrency comes from graph authority when the corpus declares
   // it. An unreadable or undeclaring corpus falls back to the compiled value
   // deliberately rather than by accident.
@@ -350,16 +429,9 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     const value = environment.getCredential(name);
     return typeof value === "string" && value.length > 0;
   }).sort());
-  const localAgentCapabilities = Object.freeze(await Promise.all(
-    localAgentTransportIds.map((transport) => observeTransportCapability(transport, {
-      repositoryRoot,
-      homeDirectory: homedir(),
-      observedAt,
-      suppliedCredentialNames,
-      requiredCredentialName: null,
-      adapterInstalled: false,
-    })),
-  ));
+  const localAgentCapabilities = Object.freeze(await dependencies.observeLocalAgentCapabilities({
+    repositoryRoot, observedAt, suppliedCredentialNames,
+  }));
   const observedRoutes = (await observeAvailableRoutes(repositoryRoot)).routeIds;
 
   /**
@@ -381,12 +453,9 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     for (const adapterPackage of adapterPackages) {
       if (await observeInstalledAdapter(repositoryRoot, adapterPackage) !== undefined) currentAdapters.push(adapterPackage);
     }
-    const currentCapabilities = await Promise.all(
-      localAgentTransportIds.map((transport) => observeTransportCapability(transport, {
-        repositoryRoot, homeDirectory: homedir(), observedAt,
-        suppliedCredentialNames, requiredCredentialName: null, adapterInstalled: false,
-      })),
-    );
+    const currentCapabilities = await dependencies.observeLocalAgentCapabilities({
+      repositoryRoot, observedAt, suppliedCredentialNames,
+    });
     return readAuthoritySnapshot({
       catalogueRawDigest: catalogue.snapshot.rawDigest,
       catalogueNormalizedDigest: await catalogueFingerprint(),
@@ -477,13 +546,16 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       const moved = snapshotDifference(authoritySnapshot, beforeDispatch);
       attempts.push(Object.freeze({
         candidateId: ordered[0]?.candidateId ?? "(none)", transport: "(none)", provider: "(none)",
-        model: null, startedAt: new Date().toISOString(), latencyMs: 0,
+        model: null, requestedModel: null, actualModel: null,
+        phase: "preflight" as const, contacted: false,
+        startedAt: new Date().toISOString(), latencyMs: 0,
         outcome: "refused" as const, reasonCode: `AUTHORITY_MOVED:${moved.join("+")}`,
-        statusCode: null, retryAfter: null, costIncurred: false,
+        statusCode: null, retryAfter: null, costIncurred: false, usage: null, transportReportedCostUsd: null,
       }));
       return Object.freeze({
         unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
-        status: "refused" as const, selected: null, actualModel: null, invocationIdentity: null,
+        eligible: ordered.length > 0, status: "refused" as const,
+        reasonCode: "AUTHORITY_MOVED", selected: null, actualModel: null, invocationIdentity: null,
         text: null, usage: null, transportReportedCostUsd: null, startedAtMs, endedAtMs: Date.now(),
       });
     }
@@ -491,23 +563,43 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     for (const candidate of ordered.slice(0, maximumCandidateAttempts)) {
       const attemptStartedAt = new Date().toISOString();
       const attemptStarted = performance.now();
+      let invocationStarted = false;
       try {
         if (candidate.transport === "claude-cli" || candidate.transport === "codex-cli"
           || candidate.transport === "antigravity-cli") {
+          if (candidate.transport === "antigravity-cli"
+            && (candidate.model === null || candidate.model.length === 0 || candidate.model === "default")) {
+            attempts.push(Object.freeze({
+              candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
+              model: candidate.model, requestedModel: candidate.model, actualModel: null,
+              phase: "preflight" as const, contacted: false, startedAt: attemptStartedAt, latencyMs: 0,
+              outcome: "refused" as const, reasonCode: "TRANSPORT_MODEL_IDENTITY_REQUIRED",
+              statusCode: null, retryAfter: null, costIncurred: false, usage: null,
+              transportReportedCostUsd: null,
+            }));
+            observedRouteOutcomes.push(Object.freeze({
+              candidateId: candidate.candidateId, outcome: "refused" as const,
+              reasonCode: "TRANSPORT_MODEL_IDENTITY_REQUIRED",
+            }));
+            continue;
+          }
           const hostTimeoutMs = invocationTimeoutFor(candidate, productivity);
-          const produced = candidate.transport === "claude-cli"
-            ? await invokeClaudeCli(unit.prompt, hostTimeoutMs, candidate.model)
-            : candidate.transport === "codex-cli"
-              ? await invokeCodexCli(unit.prompt, hostTimeoutMs, candidate.model)
-              // Antigravity requires an explicit model identity; the candidate
-              // carries none until its catalogue can be enumerated.
-              : await invokeAntigravityCli(unit.prompt, candidate.model ?? "", hostTimeoutMs);
+          invocationStarted = true;
+          const produced = await dependencies.invokeCli({ candidate, prompt: unit.prompt, timeoutMs: hostTimeoutMs });
           const elapsed = Math.round(performance.now() - attemptStarted);
+          const usable = produced.outcome === "ok" && produced.text !== null && produced.text.trim().length > 0;
           attempts.push(Object.freeze({
             candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
-            model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
-            outcome: produced.outcome, reasonCode: produced.reasonCode, statusCode: null,
+            model: candidate.model, requestedModel: candidate.model, actualModel: produced.actualModel,
+            phase: "invocation" as const, contacted: true, startedAt: attemptStartedAt, latencyMs: elapsed,
+            outcome: usable ? "ok" as const : "refused" as const,
+            reasonCode: produced.reasonCode, statusCode: null,
             retryAfter: produced.retryAfter, costIncurred: false,
+            usage: Object.freeze({
+              inputTokens: produced.inputTokens, outputTokens: produced.outputTokens, totalTokens: produced.totalTokens,
+              cacheReadTokens: produced.cacheReadTokens, cacheWriteTokens: produced.cacheWriteTokens,
+            }),
+            transportReportedCostUsd: produced.transportReportedCostUsd,
             // Twelve failures of a host route once left nothing behind but a
             // reason code; the CLI's own words are the diagnosis. Same
             // redaction discipline as the SDK path below.
@@ -516,13 +608,14 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           }));
           observedRouteOutcomes.push(Object.freeze({
             candidateId: candidate.candidateId,
-            outcome: produced.outcome === "ok" && produced.text !== null && produced.text.trim().length > 0 ? "ok" : "refused",
+            outcome: usable ? "ok" : "refused",
             reasonCode: produced.reasonCode, latencyMs: elapsed,
           }));
-          if (produced.outcome === "ok" && produced.text !== null && produced.text.trim().length > 0) {
+          if (usable) {
             return Object.freeze({
               unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
-              status: "ok" as const, selected: candidate, actualModel: produced.actualModel,
+              eligible: true, status: "ok" as const, reasonCode: produced.reasonCode,
+              selected: candidate, actualModel: produced.actualModel,
               invocationIdentity: produced.invocationIdentity, text: produced.text,
               usage: Object.freeze({
                 inputTokens: produced.inputTokens, outputTokens: produced.outputTokens, totalTokens: produced.totalTokens,
@@ -535,16 +628,30 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           continue;
         }
         const credential = candidate.credentialName === null ? undefined : environment.getCredential(candidate.credentialName);
-        if (credential === undefined || credential.length === 0 || candidate.adapterPackage === null || candidate.model === null) {
+        const preflightReason = sdkPreflightRefusal({
+          adapterPackage: candidate.adapterPackage, model: candidate.model, credential,
+        });
+        if (preflightReason !== null) {
           attempts.push(Object.freeze({
             candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
-            model: candidate.model, startedAt: attemptStartedAt, latencyMs: 0,
-            outcome: "refused" as const, reasonCode: "CREDENTIAL_ABSENT", statusCode: null, retryAfter: null, costIncurred: false,
+            model: candidate.model, requestedModel: candidate.model, actualModel: null,
+            phase: "preflight" as const, contacted: false, startedAt: attemptStartedAt, latencyMs: 0,
+            outcome: "refused" as const, reasonCode: preflightReason, statusCode: null,
+            retryAfter: null, costIncurred: false, usage: null, transportReportedCostUsd: null,
           }));
-          observedRouteOutcomes.push(Object.freeze({ candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode: "CREDENTIAL_ABSENT" }));
+          observedRouteOutcomes.push(Object.freeze({
+            candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode: preflightReason,
+          }));
           continue;
         }
-        const model = await languageModelFor(candidate.adapterPackage, candidate.model, credential, candidate.baseUrl);
+        const adapterPackage = candidate.adapterPackage;
+        const requestedModel = candidate.model;
+        if (adapterPackage === null || requestedModel === null || credential === undefined || credential.length === 0) {
+          throw new UsfError("GRAPH_EXECUTE_PREFLIGHT_INVARIANT", exitCodes.DOMAIN_FAILURE,
+            "An SDK invocation crossed preflight without its adapter, model and credential.");
+        }
+        const model = await languageModelFor(adapterPackage, requestedModel, credential, candidate.baseUrl);
+        invocationStarted = true;
         const produced = await generateText({
           model: model as Parameters<typeof generateText>[0]["model"],
           prompt: unit.prompt,
@@ -563,9 +670,19 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         if (produced.finishReason === "length" && produced.text.trim().length > 0) {
           attempts.push(Object.freeze({
             candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
-            model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
+            model: candidate.model, requestedModel: candidate.model,
+            actualModel: produced.response?.modelId ?? null, phase: "invocation" as const, contacted: true,
+            startedAt: attemptStartedAt, latencyMs: elapsed,
             outcome: "refused" as const, reasonCode: "PROVIDER_TRUNCATED_RESULT",
             statusCode: 200, retryAfter: null, costIncurred: false,
+            usage: Object.freeze({
+              inputTokens: produced.usage?.inputTokens ?? null,
+              outputTokens: produced.usage?.outputTokens ?? null,
+              totalTokens: produced.usage?.totalTokens ?? null,
+              cacheReadTokens: produced.usage?.inputTokenDetails?.cacheReadTokens ?? null,
+              cacheWriteTokens: produced.usage?.inputTokenDetails?.cacheWriteTokens ?? null,
+            }),
+            transportReportedCostUsd: null,
           }));
           observedRouteOutcomes.push(Object.freeze({
             candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode: "PROVIDER_TRUNCATED_RESULT",
@@ -575,9 +692,19 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         if (produced.text.trim().length === 0) {
           attempts.push(Object.freeze({
             candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
-            model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
+            model: candidate.model, requestedModel: candidate.model,
+            actualModel: produced.response?.modelId ?? null, phase: "invocation" as const, contacted: true,
+            startedAt: attemptStartedAt, latencyMs: elapsed,
             outcome: "refused" as const, reasonCode: `PROVIDER_EMPTY_RESULT:${produced.finishReason ?? "unknown"}`,
             statusCode: 200, retryAfter: null, costIncurred: false,
+            usage: Object.freeze({
+              inputTokens: produced.usage?.inputTokens ?? null,
+              outputTokens: produced.usage?.outputTokens ?? null,
+              totalTokens: produced.usage?.totalTokens ?? null,
+              cacheReadTokens: produced.usage?.inputTokenDetails?.cacheReadTokens ?? null,
+              cacheWriteTokens: produced.usage?.inputTokenDetails?.cacheWriteTokens ?? null,
+            }),
+            transportReportedCostUsd: null,
           }));
           observedRouteOutcomes.push(Object.freeze({
             candidateId: candidate.candidateId, outcome: "refused" as const,
@@ -587,15 +714,26 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         }
         attempts.push(Object.freeze({
           candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
-          model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
-          outcome: "ok" as const, reasonCode: "INVOCATION_OK", statusCode: 200, retryAfter: null, costIncurred: false,
+          model: candidate.model, requestedModel: candidate.model,
+          actualModel: produced.response?.modelId ?? null, phase: "invocation" as const, contacted: true,
+          startedAt: attemptStartedAt, latencyMs: elapsed,
+          outcome: "ok" as const, reasonCode: "INVOCATION_OK", statusCode: 200,
+          retryAfter: null, costIncurred: false,
+          usage: Object.freeze({
+            inputTokens: produced.usage?.inputTokens ?? null,
+            outputTokens: produced.usage?.outputTokens ?? null,
+            totalTokens: produced.usage?.totalTokens ?? null,
+            cacheReadTokens: produced.usage?.inputTokenDetails?.cacheReadTokens ?? null,
+            cacheWriteTokens: produced.usage?.inputTokenDetails?.cacheWriteTokens ?? null,
+          }),
+          transportReportedCostUsd: null,
         }));
         observedRouteOutcomes.push(Object.freeze({
           candidateId: candidate.candidateId, outcome: "ok" as const, reasonCode: "INVOCATION_OK", latencyMs: elapsed,
         }));
         return Object.freeze({
           unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
-          status: "ok" as const, selected: candidate,
+          eligible: true, status: "ok" as const, reasonCode: "INVOCATION_OK", selected: candidate,
           actualModel: produced.response?.modelId ?? null, invocationIdentity: null,
           text: produced.text,
           usage: Object.freeze({
@@ -624,7 +762,8 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         // the provider's own words are the only place a rate limit or a retired
         // model is still visible. Classifying from them keeps the deferral
         // proportionate: a rate limit clears in minutes, a retired model does not.
-        const reasonCode = status === 402 ? "PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED"
+        const reasonCode = !invocationStarted ? "ADAPTER_PREFLIGHT_REFUSED"
+          : status === 402 ? "PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED"
           : status === 429 || /rate.?limit/iu.test(detail) ? "PROVIDER_RATE_LIMITED"
           : status === 401 || status === 403 ? "PROVIDER_AUTHENTICATION_REFUSED"
           : status === 404 || status === 410 ? "PROVIDER_MODEL_NOT_SERVED"
@@ -632,8 +771,11 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           : "PROVIDER_INVOCATION_FAILED";
         attempts.push(Object.freeze({
           candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
-          model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
-          outcome: "refused" as const, reasonCode, statusCode: status, retryAfter: null, costIncurred: false,
+          model: candidate.model, requestedModel: candidate.model, actualModel: null,
+          phase: invocationStarted ? "invocation" as const : "preflight" as const,
+          contacted: invocationStarted, startedAt: attemptStartedAt, latencyMs: elapsed,
+          outcome: "refused" as const, reasonCode, statusCode: status,
+          retryAfter: null, costIncurred: false, usage: null, transportReportedCostUsd: null,
           providerDetail: detail.length === 0 ? null : detail,
         }));
         observedRouteOutcomes.push(Object.freeze({
@@ -641,10 +783,15 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         }));
       }
     }
+    const lastContacted = [...attempts].reverse().find((attempt) => attempt.contacted);
     return Object.freeze({
       unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
-      status: "refused" as const, selected: null, actualModel: null, invocationIdentity: null,
-      text: null, usage: null, transportReportedCostUsd: null, startedAtMs, endedAtMs: Date.now(),
+      eligible: ordered.length > 0, status: "refused" as const,
+      reasonCode: ordered.length === 0 ? "NO_ELIGIBLE_ROUTE" : attempts.at(-1)?.reasonCode ?? "NO_ELIGIBLE_ROUTE",
+      selected: null, actualModel: null, invocationIdentity: null,
+      text: null, usage: lastContacted?.usage ?? null,
+      transportReportedCostUsd: lastContacted?.transportReportedCostUsd ?? null,
+      startedAtMs, endedAtMs: Date.now(),
     });
   }
 
@@ -694,6 +841,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     quad(resultIri, "urn:usf:predicate:sourceAssertionDigest", outcome.unit.sourceAssertionDigest, "literal");
     quad(resultIri, "urn:usf:predicate:sourceGraphDigest", sourceGraphDigest, "literal");
     quad(resultIri, "urn:usf:predicate:executionStatus", outcome.status, "literal");
+    quad(resultIri, "urn:usf:predicate:executionReason", outcome.reasonCode, "literal");
     for (const dependency of dependencyGraph.dependencies.get(outcome.unit.iri) ?? []) {
       quad(resultIri, "urn:usf:predicate:satisfiedDependency", dependency, "iri");
     }
@@ -719,12 +867,22 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     }
     for (const attempt of outcome.attempts) {
       quad(resultIri, "urn:usf:predicate:attemptDisposition", `${attempt.candidateId}=${attempt.reasonCode}`, "literal");
+      quad(resultIri, "urn:usf:predicate:attemptPhaseContact",
+        `${attempt.candidateId}=${attempt.phase}:${String(attempt.contacted)}`, "literal");
     }
   }
   const resultGraphDigest = canonicalQuadDigest(resultQuads);
   const resultGraphText = `${resultQuads.map((entry) => entry.canonical).sort().join("\n")}\n`;
 
   const succeeded = ordered.filter((outcome) => outcome.status === "ok").length;
+  const accounting = projectGraphDispatchAccounting(ordered.map((outcome) => Object.freeze({
+    unit: outcome.unit.iri,
+    eligible: outcome.eligible,
+    attempts: outcome.attempts,
+    status: outcome.status,
+    reasonCode: outcome.reasonCode,
+    resultText: outcome.text,
+  })));
   const evidence = Object.freeze({
     schema: "urn:usf:graph-execution-evidence:1" as const,
     version: 1 as const,
@@ -742,6 +900,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     selectedUnits: parsed.only,
     externallySatisfiedDependencies: parsed.satisfiedDependencies,
     succeededCount: succeeded,
+    accounting,
     authoritySnapshot,
     catalogue: Object.freeze({
       rawDigest: catalogue.snapshot.rawDigest,
@@ -774,7 +933,9 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       requiredCapabilities: outcome.unit.requiredCapabilities,
       candidatesConsidered: outcome.candidatesConsidered,
       attempts: outcome.attempts,
+      eligible: outcome.eligible,
       status: outcome.status,
+      reasonCode: outcome.reasonCode,
       selectedCandidateId: outcome.selected?.candidateId ?? null,
       transport: outcome.selected?.transport ?? null,
       actualModel: outcome.actualModel,
@@ -792,6 +953,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       "Every dispatch was preceded by a re-read of the semantic authority the route was derived from. A unit refused with AUTHORITY_MOVED was never dispatched on a stale selection.",
       "A provider detail is the provider's own refusal text, bounded and redacted of token-shaped substrings. It is a provider claim, not an independently verified fact.",
       "A deferred route is one this repository observed refusing recently. The deferral is local, bounded, self-expiring and per exact route; it is not a provider-family disablement and asserts nothing about the provider.",
+      "One recorded contacted attempt is one observable CLI or SDK invocation. Retries internal to an SDK are not observable here and are not estimated.",
     ]),
     deferredRouteCount: deferred.size,
   });

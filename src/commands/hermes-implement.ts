@@ -20,9 +20,13 @@ import {
   exportedNames,
 } from "../providers/implementation-work.ts";
 import {
-  lookupSemanticResult, recordSemanticReuse, semanticCacheStatistics, storeSemanticResult,
+  lookupSemanticResult, recordSemanticReuse, semanticCacheKey, semanticCacheStatistics, storeSemanticResult,
   type SemanticWorkIdentity,
 } from "../providers/semantic-cache.ts";
+import {
+  deriveDispatchLineage, deriveHermesDispatchAccounting,
+  type GraphDispatchUnitObservation,
+} from "../providers/dispatch-accounting.ts";
 import type { CommandResult } from "./dispatcher.ts";
 
 /**
@@ -162,6 +166,39 @@ interface DispatchEntry {
   readonly prompt: string;
   readonly identity: SemanticWorkIdentity;
   readonly outputTokens: number;
+}
+
+interface OutcomeContext {
+  readonly workIdentityDigest: string;
+  readonly repairRound: number;
+  readonly repairBasisDigest: string | null;
+  readonly parentWorkIdentityDigest: string | null;
+  readonly parentExecutionEvidenceDigest: string | null;
+  readonly cacheEvidenceDigests: readonly string[];
+}
+
+/** Project the graph command's additive unit records into the Hermes counters. */
+export function projectHermesDispatchAccounting(input: Readonly<{
+  plannedUnits: readonly string[];
+  graphRecords: readonly Readonly<Record<string, unknown>>[];
+  terminalOutcomes: readonly Readonly<Record<string, unknown>>[];
+}>): ReturnType<typeof deriveHermesDispatchAccounting> {
+  const graphUnits: GraphDispatchUnitObservation[] = input.graphRecords.map((record) => Object.freeze({
+    unit: record.unit as string,
+    eligible: record.eligible as boolean,
+    attempts: record.attempts as GraphDispatchUnitObservation["attempts"],
+    status: record.status as GraphDispatchUnitObservation["status"],
+    reasonCode: record.reasonCode as string,
+    resultText: (record.resultText ?? null) as string | null,
+  }));
+  return deriveHermesDispatchAccounting({
+    plannedUnits: input.plannedUnits,
+    graphUnits,
+    terminalOutcomes: input.terminalOutcomes.map((outcome) => Object.freeze({
+      unit: outcome.unit as string,
+      outcome: outcome.outcome as "accepted" | "output-refused" | "refused" | "reused",
+    })),
+  });
 }
 
 /**
@@ -437,8 +474,6 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   // ---- dispatch the ready frontier -------------------------------------------
   const accepted: Accepted[] = [];
   const outcomes: Array<Readonly<Record<string, unknown>>> = [];
-  let cacheHits = 0;
-  let dispatched = 0;
   // Interleave the stages rather than taking the frontier in name order.
   //
   // Slicing an ordered frontier starves whichever stage sorts late. Observed:
@@ -463,6 +498,24 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     if (selected.length === before) break;
   }
   const pending: DispatchEntry[] = [];
+  const outcomeContexts = new Map<string, OutcomeContext>();
+  const contextFor = (
+    unit: ImplementationWorkUnit,
+    identity: SemanticWorkIdentity,
+    cacheEvidenceDigests: readonly string[] = Object.freeze([]),
+  ): OutcomeContext => {
+    const parent = rounds[unit.need.capability];
+    const currentBasis = unit.repairRound === 0 ? null : repairBasis(unit.need);
+    const applicableParent = unit.repairRound > 0 && parent?.basis === currentBasis ? parent : null;
+    return Object.freeze({
+      workIdentityDigest: semanticCacheKey(identity),
+      repairRound: unit.repairRound,
+      repairBasisDigest: currentBasis,
+      parentWorkIdentityDigest: applicableParent?.priorWorkIdentityDigest ?? null,
+      parentExecutionEvidenceDigest: applicableParent?.priorExecutionEvidenceDigest ?? null,
+      cacheEvidenceDigests: Object.freeze([...cacheEvidenceDigests]),
+    });
+  };
 
   for (const unit of selected) {
     // The artefact being rewritten is shown whole; the module a test binds to
@@ -471,7 +524,15 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     const existingTarget = await inspectRepositoryFile(unitRoot, unit.targetPath, maximumRewriteBytes);
     const moduleSource = unit.stage === "conformance"
       ? await inspectRepositoryFile(unitRoot, unit.need.modulePath, maximumRewriteBytes) : null;
-    if (unit.stage === "conformance" && moduleSource === null) continue;
+    if (unit.stage === "conformance" && moduleSource === null) {
+      const identity = identityFor(unit, "PRECONDITION_REFUSAL:MISSING_MODULE", Object.freeze([]), policyDigest);
+      outcomeContexts.set(unit.unit, contextFor(unit, identity));
+      outcomes.push(Object.freeze({
+        unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName,
+        outcome: "refused", reason: "MISSING_MODULE",
+      }));
+      continue;
+    }
     const specifier = importSpecifierFor(unit.need);
     const priorFailure = candidateFailures[unit.need.capability];
     const carried: readonly FailingRequirement[] = unit.repairs.length > 0 ? unit.repairs
@@ -497,6 +558,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     ];
     const outputTokens = outputBudgetFor(Math.max(existingTarget?.length ?? 0, moduleSource?.length ?? 0));
     const identity = identityFor(unit, prompt, inputDigests, policyDigest);
+    outcomeContexts.set(unit.unit, contextFor(unit, identity));
     const lookup = await lookupSemanticResult(repositoryRoot, identity);
     if (lookup.hit && lookup.entry !== null) {
       const checked = unit.stage === "implementation"
@@ -511,14 +573,17 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       const identicalToLanded = checked.accepted && landedDigest !== null
         && checked.contentDigest === landedDigest;
       if (checked.accepted && !identicalToLanded) {
-        cacheHits += 1;
         await recordSemanticReuse(repositoryRoot, lookup.entry);
+        outcomeContexts.set(unit.unit, contextFor(unit, identity, lookup.entry.executionEvidenceDigests));
         accepted.push(Object.freeze({
           path: unit.targetPath, content: checked.content,
           repository: unit.need.sourceRepository,
           preimageDigest: await preimageDigestOf(unitRoot, unit.targetPath),
         }));
-        outcomes.push(Object.freeze({ unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "reused" }));
+        outcomes.push(Object.freeze({
+          unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "reused",
+          usage: null, transportReportedCostUsd: null,
+        }));
         continue;
       }
     }
@@ -528,6 +593,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   let evidenceDigest: string | null = null;
 
   let dispatchConcurrency: Record<string, unknown> | null = null;
+  let graphRecords: Record<string, unknown>[] = [];
   if (pending.length > 0 && parsed.envFile !== null) {
     const workGraph = "urn:usf:graph:implementation-realisation";
     const quads = pending.flatMap(({ unit, prompt, outputTokens }) => [
@@ -553,6 +619,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     evidenceDigest = typeof result.evidenceDigest === "string" ? result.evidenceDigest : null;
     dispatchConcurrency = (result.concurrency as Record<string, unknown> | undefined) ?? null;
     const records = Array.isArray(result.units) ? result.units as Record<string, unknown>[] : [];
+    graphRecords = records;
     const byUnit = new Map(records.map((record) => [record.unit as string, record] as const));
     // Admission verdicts fold back into route history after the loop: the
     // transport layer knows a route answered, only this layer knows whether the
@@ -577,7 +644,6 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         }));
         continue;
       }
-      dispatched += 1;
       const specifier = importSpecifierFor(unit.need);
       const checked = unit.stage === "implementation"
         ? validateImplementationOutput(record.resultText)
@@ -668,6 +734,44 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     }
   }
 
+  if (pending.length > 0 && parsed.envFile === null) {
+    for (const { unit } of pending) {
+      outcomes.push(Object.freeze({
+        unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName,
+        outcome: "refused", reason: "EXECUTION_NOT_CONFIGURED",
+      }));
+    }
+  }
+
+  const graphByUnit = new Map(graphRecords.map((record) => [record.unit as string, record] as const));
+  const terminalOutcomes: readonly Readonly<Record<string, unknown>>[] = outcomes.map((outcome) => {
+    const unit = outcome.unit as string;
+    const context = outcomeContexts.get(unit);
+    if (context === undefined) {
+      throw new UsfError("HERMES_DISPATCH_ACCOUNTING_INVALID", exitCodes.DOMAIN_FAILURE,
+        "A terminal implementation outcome has no semantic work identity.", { unit });
+    }
+    const graphRecord = graphByUnit.get(unit);
+    const lineage = deriveDispatchLineage({
+      ...context,
+      executionEvidenceDigest: graphRecord === undefined ? null : evidenceDigest,
+    });
+    return Object.freeze({
+      ...outcome,
+      transport: outcome.transport ?? graphRecord?.transport ?? null,
+      actualModel: outcome.actualModel ?? graphRecord?.actualModel ?? null,
+      attempts: graphRecord?.attempts ?? Object.freeze([]),
+      usage: outcome.usage ?? graphRecord?.usage ?? null,
+      transportReportedCostUsd: graphRecord?.transportReportedCostUsd ?? null,
+      ...lineage,
+    });
+  });
+  const accounting = projectHermesDispatchAccounting({
+    plannedUnits: selected.map((unit) => unit.unit),
+    graphRecords,
+    terminalOutcomes,
+  });
+
   // A repair attempt is counted whether or not it produced a result, so a
   // capability that no provider can complete still reaches its bound.
   const advanced = { ...rounds };
@@ -678,9 +782,16 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   }
   for (const unit of selected) {
     if (unit.repairs.length === 0) continue;
+    const context = outcomeContexts.get(unit.unit);
+    if (context === undefined) continue;
     // The advanced count records which requirement set earned it, so it cannot
     // later be spent against a different one.
-    advanced[unit.need.capability] = Object.freeze({ round: unit.repairRound + 1, basis: repairBasis(unit.need) });
+    advanced[unit.need.capability] = Object.freeze({
+      round: unit.repairRound + 1,
+      basis: repairBasis(unit.need),
+      priorWorkIdentityDigest: context.workIdentityDigest,
+      priorExecutionEvidenceDigest: graphByUnit.has(unit.unit) ? evidenceDigest : null,
+    });
   }
   if (Object.keys(advanced).length > 0 || Object.keys(rounds).length > 0) await writeRepairRounds(repositoryRoot, advanced);
   await writeCandidateFailures(repositoryRoot, candidateFailures);
@@ -733,19 +844,17 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       // Derived after this invocation's conformance runs, so a check that just
       // passed is visible in the same cycle that produced it.
       facets: await summariseCurrentFacets(),
-      tokenUsage: summariseTokenUsage(outcomes),
+      tokenUsage: summariseTokenUsage(terminalOutcomes),
       // GOAL 14.3 evidence: observed, target and utilisation for this dispatch.
       dispatchConcurrency,
       targetRepository: convention.productRepository,
       realisationRoot: convention.productRepository === null ? "." : realisationRoot,
-      dispatchedUnits: pending.length,
-      modelInvocations: dispatched,
-      cacheHits,
-      acceptedResults: accepted.length,
+      accounting,
+      ...accounting,
       proposalPath,
       proposals: Object.freeze(proposals),
       executionEvidenceDigest: evidenceDigest,
-      outcomes: Object.freeze(outcomes),
+      outcomes: Object.freeze(terminalOutcomes),
       cache: await semanticCacheStatistics(repositoryRoot),
       nonClaims: Object.freeze([
         "An accepted result is model output that satisfied a structural admission check. It is not evidence that any requirement is met.",
@@ -774,9 +883,14 @@ function repairBasis(need: CapabilityImplementationNeed): string {
   return canonicalDigest([...need.requirements.map((requirement) => requirement.facet)].sort().join("\n"));
 }
 
-interface RepairRound { readonly round: number; readonly basis: string | null; }
+export interface RepairRound {
+  readonly round: number;
+  readonly basis: string | null;
+  readonly priorWorkIdentityDigest: string | null;
+  readonly priorExecutionEvidenceDigest: string | null;
+}
 
-async function readRepairRounds(repositoryRoot: string): Promise<Record<string, RepairRound>> {
+export async function readRepairRounds(repositoryRoot: string): Promise<Record<string, RepairRound>> {
   const bytes = await readFile(resolve(repositoryRoot, repairRoundsPath), "utf8").catch(() => undefined);
   if (bytes === undefined) return {};
   try {
@@ -787,15 +901,24 @@ async function readRepairRounds(repositoryRoot: string): Promise<Record<string, 
       // nothing can establish that it applies to the current one. It is read
       // with a null basis, which every comparison treats as not applicable.
       if (typeof value === "number" && Number.isInteger(value) && value >= 0) {
-        rounds[capability] = Object.freeze({ round: value, basis: null });
+        rounds[capability] = Object.freeze({
+          round: value, basis: null, priorWorkIdentityDigest: null, priorExecutionEvidenceDigest: null,
+        });
         continue;
       }
       if (value === null || typeof value !== "object") continue;
-      const entry = value as { round?: unknown; basis?: unknown };
+      const entry = value as {
+        round?: unknown; basis?: unknown;
+        priorWorkIdentityDigest?: unknown; priorExecutionEvidenceDigest?: unknown;
+      };
       if (typeof entry.round !== "number" || !Number.isInteger(entry.round) || entry.round < 0) continue;
       rounds[capability] = Object.freeze({
         round: entry.round,
         basis: typeof entry.basis === "string" ? entry.basis : null,
+        priorWorkIdentityDigest: typeof entry.priorWorkIdentityDigest === "string"
+          ? entry.priorWorkIdentityDigest : null,
+        priorExecutionEvidenceDigest: typeof entry.priorExecutionEvidenceDigest === "string"
+          ? entry.priorExecutionEvidenceDigest : null,
       });
     }
     return rounds;
@@ -812,10 +935,10 @@ function roundsAgainstCurrentRequirements(
   return entry.round;
 }
 
-async function writeRepairRounds(repositoryRoot: string, rounds: Record<string, RepairRound>): Promise<void> {
+export async function writeRepairRounds(repositoryRoot: string, rounds: Record<string, RepairRound>): Promise<void> {
   await mkdir(resolve(repositoryRoot, ".usf", "hermes"), { recursive: true, mode: 0o700 });
   await writeFile(resolve(repositoryRoot, repairRoundsPath),
-    `${JSON.stringify({ schema: "urn:usf:hermes-repair-rounds:1", version: 1, rounds }, null, 1)}\n`, { mode: 0o600 });
+    `${JSON.stringify({ schema: "urn:usf:hermes-repair-rounds:2", version: 2, rounds }, null, 1)}\n`, { mode: 0o600 });
 }
 
 /**
