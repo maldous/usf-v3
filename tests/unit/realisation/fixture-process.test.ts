@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { resourceDigest, type SemanticGraph } from "../../../src/graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../../src/graph/nquads.ts";
-import { fixtureProcessLaunchArguments, readFixtureProcessPolicy } from "../../../src/realisation/fixture-process.ts";
+import { authenticateFixtureProcessHostProfile, confinedFixtureProcessLaunch, fixtureProcessLaunchArguments, readFixtureProcessPolicy, validateFixtureProcessHostProfileMetadata } from "../../../src/realisation/fixture-process.ts";
 
 const MODE_IRI = "urn:usf:mode:confined-fixture-process:1";
 const MODE = `<${MODE_IRI}>`;
@@ -11,6 +11,8 @@ const NODE_DIGEST = "sha256:b2959781cc5a74c357ffa02367efa8a0330cbb1c9cb347732fdf
 const GIT_DIGEST = "sha256:2a8c18fbf43da9f692d75474c72bea9dfd796c260b0f3dfe456376abc3bbd668";
 const FLOCK_DIGEST = "sha256:e619344dc3eec4023498465679262f9ca27d1e8cef9cfc4c1ae72b428577b806";
 const INTERPRETER_DIGEST = "sha256:1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118";
+const PROFILE_ASSET_DIGEST = "sha256:1111111111111111111111111111111111111111111111111111111111111111";
+const PROFILE_KERNEL_RAW_DIGEST = "sha256:2222222222222222222222222222222222222222222222222222222222222222";
 const NON_CLAIM =
   "Declared proposed mode only. No current validation selects it in this Stage A scope; implementation and subsequent explicit Stage B selection are required.";
 
@@ -26,14 +28,17 @@ const MODE_LINES: readonly string[] = [
   ...tool("flock", "/usr/bin/flock", FLOCK_DIGEST),
   ...tool("git", "/usr/bin/git", GIT_DIGEST),
   ...tool("node", "/usr/bin/node", NODE_DIGEST),
-  line(MODE, "confinementStrategy", '"bwrap-landlock-execute-v1"'),
+  line(MODE, "confinementStrategy", '"bwrap-apparmor-execute-v1"'),
+  line(MODE, "fixtureProfileName", '"usf-fixture-process-v1"'),
+  line(MODE, "fixtureProfileAssetPath", '"src/realisation/fixture-process.apparmor"'),
+  line(MODE, "fixtureProfileAssetDigest", `"${PROFILE_ASSET_DIGEST}"`),
+  line(MODE, "fixtureProfileKernelRawDigest", `"${PROFILE_KERNEL_RAW_DIGEST}"`),
   line(MODE, "fixtureExecutable", "<urn:usf:host-tool:fixture-flock:1>"),
   line(MODE, "fixtureExecutable", "<urn:usf:host-tool:fixture-git:1>"),
   line(MODE, "fixtureExecutable", "<urn:usf:host-tool:fixture-node:1>"),
   line(MODE, "fixtureInterpreterDigest", `"${INTERPRETER_DIGEST}"`),
   line(MODE, "fixtureInterpreterPath", '"/usr/bin/python3.12"'),
   line(MODE, "fixtureLauncherPath", '"src/realisation/fixture-process-launcher.py"'),
-  line(MODE, "minimumLandlockAbi", '"4"'),
   line(MODE, "nonClaim", `"${NON_CLAIM}"`),
   line(MODE, "type", "<urn:usf:type:ExecutionMode>"),
   line(MODE, "version", '"1"'),
@@ -116,7 +121,13 @@ const parserRefusals: readonly (readonly [string, string])[] = [
   ["a literal where an executable IRI is required", swapLine(line(MODE, "fixtureExecutable", "<urn:usf:host-tool:fixture-node:1>"), line(MODE, "fixtureExecutable", '"urn:usf:host-tool:fixture-node:1"'))],
   ["an unsupported mode version", swapLine(line(MODE, "version", '"1"'), line(MODE, "version", '"2"'))],
   ["a conflicting duplicate interpreter path", appendLine(line(MODE, "fixtureInterpreterPath", '"/usr/bin/python3.11"'))],
-  ["a non-numeric minimum Landlock ABI", swapLine(line(MODE, "minimumLandlockAbi", '"4"'), line(MODE, "minimumLandlockAbi", '"four"'))],
+  ["a missing profile name", dropLine(line(MODE, "fixtureProfileName", '"usf-fixture-process-v1"'))],
+  ["an unknown profile name", swapLine(line(MODE, "fixtureProfileName", '"usf-fixture-process-v1"'), line(MODE, "fixtureProfileName", '"unknown-profile"'))],
+  ["a duplicate profile name", appendLine(line(MODE, "fixtureProfileName", '"unknown-profile"'))],
+  ["a missing profile asset path", dropLine(line(MODE, "fixtureProfileAssetPath", '"src/realisation/fixture-process.apparmor"'))],
+  ["an unknown profile asset path", swapLine(line(MODE, "fixtureProfileAssetPath", '"src/realisation/fixture-process.apparmor"'), line(MODE, "fixtureProfileAssetPath", '"src/realisation/unknown.apparmor"'))],
+  ["a zero profile asset digest", swapLine(line(MODE, "fixtureProfileAssetDigest", `"${PROFILE_ASSET_DIGEST}"`), line(MODE, "fixtureProfileAssetDigest", `"sha256:${"0".repeat(64)}"`))],
+  ["a zero kernel raw digest", swapLine(line(MODE, "fixtureProfileKernelRawDigest", `"${PROFILE_KERNEL_RAW_DIGEST}"`), line(MODE, "fixtureProfileKernelRawDigest", `"sha256:${"0".repeat(64)}"`))],
   ["a relative interpreter path", swapLine(line(MODE, "fixtureInterpreterPath", '"/usr/bin/python3.12"'), line(MODE, "fixtureInterpreterPath", '"usr/bin/python3.12"'))],
   ["a malformed interpreter digest", swapLine(line(MODE, "fixtureInterpreterDigest", `"${INTERPRETER_DIGEST}"`), line(MODE, "fixtureInterpreterDigest", '"sha256:zz59"'))],
   ["a launcher path escaping the workspace", swapLine(line(MODE, "fixtureLauncherPath", '"src/realisation/fixture-process-launcher.py"'), line(MODE, "fixtureLauncherPath", '"../fixture-process-launcher.py"'))],
@@ -209,19 +220,19 @@ test("fixtureProcessLaunchArguments preserves confinement and delegates through 
   expectedPrefix[expectedPrefix.indexOf("PATH") + 1] = "/usr/bin";
   assert.deepEqual(prefix, expectedPrefix, "the complete bwrap prefix matches the base exactly, with only the PATH value changed so the launcher interpreter resolves");
   const tail = produced.slice(separator + 1);
-  assert.deepEqual(tail.slice(0, 6), ["/usr/bin/python3.12", "-I", "-S", "-B", "/fixture/src/realisation/fixture-process-launcher.py", "--fixture-process-v1"]);
+  assert.deepEqual(tail.slice(0, 6), ["/usr/bin/python3.12", "-I", "-S", "-B", "/fixture/src/realisation/fixture-process-launcher.py", "--fixture-process-v2"]);
   assert.equal(tail.length, 7, "the launcher receives exactly one JSON payload argument");
   const payload: unknown = JSON.parse(tail[6]);
   assert.deepEqual(payload, {
-    version: 1,
-    minimumLandlockAbi: 4,
+    version: 2,
+    apparmorProfile: "usf-fixture-process-v1",
     executables: [
       { path: "/usr/bin/node", digest: NODE_DIGEST },
       { path: "/usr/bin/git", digest: GIT_DIGEST },
       { path: "/usr/bin/flock", digest: FLOCK_DIGEST },
     ],
     nodeArguments: [...expectedPayloadNodeArguments],
-  }, "the payload carries exactly the protocol version, Landlock floor, raw-pinned executables in node/git/flock order, and node arguments, with no extra fields");
+  }, "the payload carries exactly the v2 protocol, AppArmor profile, raw-pinned node/git/flock executables, and node arguments");
 });
 
 const mutated = (mutate: (values: string[]) => void): BaseLaunch => {
@@ -293,6 +304,62 @@ const forgedPolicy = (mutate: (policy: ForgeableDependencies) => void): ReturnTy
   mutate(policy as unknown as ForgeableDependencies);
   return policy;
 };
+test("authenticateFixtureProcessHostProfile fails closed without matching kernel metadata", () => {
+  assert.equal(authenticateFixtureProcessHostProfile(loadPolicy()), false);
+});
+
+test("host profile metadata accepts a profile.entry index distinct from its raw-data index and normalizes bare sha256", () => {
+  const policy = loadPolicy();
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, [{
+    entryName: "usf-fixture-process-v1.17",
+    profileName: "usf-fixture-process-v1",
+    mode: "enforce",
+    rawLink: "../../raw_data/902/sha256",
+    rawDigest: PROFILE_KERNEL_RAW_DIGEST.slice("sha256:".length),
+  }]), true);
+});
+
+test("host profile metadata refuses zero, multiple, malformed, absent, unknown, and different matches", () => {
+  const policy = loadPolicy();
+  const valid = {
+    entryName: "usf-fixture-process-v1.17",
+    profileName: "usf-fixture-process-v1",
+    mode: "enforce",
+    rawLink: "../../raw_data/902/sha256",
+    rawDigest: PROFILE_KERNEL_RAW_DIGEST,
+  };
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, []), false, "zero matches");
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, [valid, { ...valid, entryName: "usf-fixture-process-v1.18" }]), false, "multiple matches");
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, [{ ...valid, entryName: "17" }]), false, "bare numeric entry");
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, [{ ...valid, rawLink: "../../raw_data/17/not-sha256" }]), false, "malformed link");
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, [{ ...valid, rawDigest: null }]), false, "absent digest");
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, [{ ...valid, rawDigest: "unknown" }]), false, "unknown digest");
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, [{ ...valid, rawDigest: "sha256:" + "0".repeat(64) }]), false, "zero digest");
+  assert.equal(validateFixtureProcessHostProfileMetadata(policy, [{ ...valid, rawDigest: "sha256:" + "3".repeat(64) }]), false, "different digest");
+});
+
+test("confinedFixtureProcessLaunch refuses a missing host profile without executing Python", () => {
+  const refused = confinedFixtureProcessLaunch(
+    baseLaunch(),
+    loadPolicy(),
+    WORKSPACE
+  );
+  assert.equal(refused, null);
+});
+
+test("fixtureProcessLaunchArguments remains a pure default-mode-neutral builder", () => {
+  let hostCalls = 0;
+  assert.notEqual(fixtureProcessLaunchArguments(baseLaunch(), loadPolicy(), WORKSPACE), null);
+  assert.equal(hostCalls, 0, "the unselected pure builder does not consult host policy");
+});
+
+test("fixtureProcessLaunchArguments refuses conflated repository and kernel profile digests", () => {
+  const policy = structuredClone(loadPolicy());
+  policy.fixtureProfileKernelRawDigest = policy.fixtureProfileAssetDigest;
+  assert.notEqual(policy.fixtureProfileAssetDigest, PROFILE_KERNEL_RAW_DIGEST);
+  assert.notEqual(fixtureProcessLaunchArguments(baseLaunch(), policy, WORKSPACE), null, "the separate commitments may coincidentally contain equal values without being compared to each other");
+});
+
 test("fixtureProcessLaunchArguments refuses tool dependencies that diverge from the pinned fixture executables", () => {
   const rawPinned = forgedPolicy((policy) => { policy.toolDependencies[0].digest = policy.fixtureExecutables[0].rawDigest; });
   assert.equal(fixtureProcessLaunchArguments(baseLaunch(), rawPinned, WORKSPACE), null, "a raw byte digest in place of the resource digest");

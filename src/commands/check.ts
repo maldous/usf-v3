@@ -469,7 +469,7 @@ function graphRepositoryPath(value: string): string {
   return value;
 }
 
-import { readFixtureProcessPolicy, confinedFixtureProcessLaunch, type FixtureProcessPolicy } from "../realisation/fixture-process.ts";
+import { authenticateFixtureProcessHostProfile, readFixtureProcessPolicy, confinedFixtureProcessLaunch, type FixtureProcessPolicy } from "../realisation/fixture-process.ts";
 
 function graphValidation(root: string, basis: RealisationBasis, validationId: string): GraphValidation {
   let graph: LoadedSemanticGraph;
@@ -499,6 +499,7 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
   if (executionModeIri === "urn:usf:mode:confined-fixture-process:1") {
     fixtureProcessPolicy = readFixtureProcessPolicy(graph, executionModeIri);
     if (fixtureProcessPolicy === null) refuse("CHECK_VALIDATION_MODE_UNSUPPORTED");
+    if (!authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
   }
   exactGraphType(graph, environmentIri, "urn:usf:type:Environment", "CHECK_VALIDATION_AUTHORITY_INVALID");
   exactGraphType(graph, executionModeIri, "urn:usf:type:ExecutionMode", "CHECK_VALIDATION_AUTHORITY_INVALID");
@@ -938,8 +939,10 @@ async function recoverReceiptPublication(
   root: string,
   candidateDigest: string,
   validationId: string,
+  fixtureProcessPolicy: FixtureProcessPolicy | null,
   expectedBytes?: Buffer,
 ): Promise<CheckedCandidateReceipt | null> {
+  if (fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
   if (!await authenticateReceiptAncestry(root, candidateDigest, false)) return null;
   const { path } = receiptLocation(root, candidateDigest, validationId);
   const temporaryPath = receiptTemporaryPath(path);
@@ -1010,15 +1013,22 @@ export async function readGraphDerivedCheckReceipt(
 ): Promise<{ readonly receiptPath: string; readonly receipt: CheckedCandidateReceipt } | null> {
   const canonicalRoot = await realpath(root);
   const receipt = await readExistingReceipt(canonicalRoot, candidateDigest, validationId);
-  return receipt === null ? null : Object.freeze({ receiptPath: receiptLocation(canonicalRoot, candidateDigest, validationId).repositoryPath, receipt });
+  if (receipt === null) return null;
+  const current = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+  const validation = graphValidation(canonicalRoot, current.basis, validationId);
+  if (validation.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+  return Object.freeze({ receiptPath: receiptLocation(canonicalRoot, candidateDigest, validationId).repositoryPath, receipt });
 }
 
 async function persistReceipt(root: string, candidateDigest: string, validationId: string, receipt: CheckedCandidateReceipt): Promise<string> {
+  const current = await currentCandidateWorkspace(root, candidateDigest);
+  const validation = graphValidation(root, current.basis, validationId);
+  const fixtureProcessPolicy = validation.fixtureProcessPolicy;
   await ensureReceiptDirectories(root, candidateDigest);
   const location = receiptLocation(root, candidateDigest, validationId);
   const bytes = Buffer.from(canonicalJson(receipt, { rejectAbsolutePaths: true }));
   if (bytes.byteLength > maximumReceiptBytes) refuse("CHECK_RECEIPT_INVALID");
-  const existing = await recoverReceiptPublication(root, candidateDigest, validationId, bytes);
+  const existing = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, bytes);
   if (existing !== null) {
     if (canonicalJson(existing, { rejectAbsolutePaths: true }) !== bytes.toString("utf8")) refuse("CHECK_RECEIPT_CONFLICT");
     return location.repositoryPath;
@@ -1041,7 +1051,7 @@ async function persistReceipt(root: string, candidateDigest: string, validationI
     await authenticateReceiptAncestry(root, candidateDigest, false);
     try { await link(temporary, location.path); } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "EEXIST") return refuse("CHECK_RECEIPT_PATH_UNSAFE");
-      const raced = await recoverReceiptPublication(root, candidateDigest, validationId, bytes);
+      const raced = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, bytes);
       if (raced === null || canonicalJson(raced, { rejectAbsolutePaths: true }) !== bytes.toString("utf8")) refuse("CHECK_RECEIPT_CONFLICT");
       return location.repositoryPath;
     }
@@ -1049,7 +1059,7 @@ async function persistReceipt(root: string, candidateDigest: string, validationI
   } finally {
     if (handle !== null) await handle.close().catch(() => undefined);
   }
-  const recovered = await recoverReceiptPublication(root, candidateDigest, validationId, bytes);
+  const recovered = await recoverReceiptPublication(root, candidateDigest, validationId, fixtureProcessPolicy, bytes);
   if (recovered === null) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
   const readback = await readExistingReceipt(root, candidateDigest, validationId);
   if (readback === null || canonicalJson(readback, { rejectAbsolutePaths: true }) !== bytes.toString("utf8")) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
@@ -1133,7 +1143,7 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
       const { workspace } = current;
       const validation = graphValidation(canonicalRoot, basis, validationId);
       const executionAuthority = checkedReceiptExecutionAuthority(canonicalRoot);
-      const existingReceipt = await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId);
+      const existingReceipt = await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId, validation.fixtureProcessPolicy);
       const before = await candidateReceiptFacts(canonicalRoot, workspace, candidateDigest, basis);
       const dependencyRoots = await toolDependencyRoots();
       const temporary = resolve(workspace, ".usf-check-tmp");
@@ -1154,6 +1164,7 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
       let observation: ValidationExecutionObservation;
       try {
         observation = await executeBoundedCheck(launch.executable, launch.arguments, execution.view, executionAuthority);
+        if (validation.fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
       } finally {
         await resetFocusedCheckTemporary(workspace);
       }

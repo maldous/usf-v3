@@ -6,6 +6,8 @@ import {
   readSync,
   closeSync,
   constants,
+  readdirSync,
+  readlinkSync,
   type BigIntStats,
 } from "node:fs";
 import { createHash } from "node:crypto";
@@ -18,7 +20,10 @@ const CANONICAL_SHA256 = /^sha256:[0-9a-f]{64}$/;
 export interface FixtureProcessPolicy {
   modeIri: string;
   confinementStrategy: string;
-  minimumLandlockAbi: number;
+  fixtureProfileName: string;
+  fixtureProfileAssetPath: string;
+  fixtureProfileAssetDigest: string;
+  fixtureProfileKernelRawDigest: string;
   fixtureExecutables: Array<{
     iri: string;
     path: string;
@@ -75,14 +80,42 @@ export function readFixtureProcessPolicy(
     modeIri,
     "urn:usf:predicate:confinementStrategy"
   );
-  if (confinementStrategy !== "bwrap-landlock-execute-v1") {
+  if (confinementStrategy !== "bwrap-apparmor-execute-v1") {
     return null;
   }
 
-  if (singleLiteral(modeIri, "urn:usf:predicate:minimumLandlockAbi") !== "4") {
+  const fixtureProfileName = singleLiteral(
+    modeIri,
+    "urn:usf:predicate:fixtureProfileName"
+  );
+  if (fixtureProfileName !== "usf-fixture-process-v1") {
     return null;
   }
-  const minimumLandlockAbi = 4;
+  const fixtureProfileAssetPath = singleLiteral(
+    modeIri,
+    "urn:usf:predicate:fixtureProfileAssetPath"
+  );
+  if (fixtureProfileAssetPath !== "src/realisation/fixture-process.apparmor") {
+    return null;
+  }
+  const fixtureProfileAssetDigest = singleLiteral(
+    modeIri,
+    "urn:usf:predicate:fixtureProfileAssetDigest"
+  );
+  const fixtureProfileKernelRawDigest = singleLiteral(
+    modeIri,
+    "urn:usf:predicate:fixtureProfileKernelRawDigest"
+  );
+  if (
+    fixtureProfileAssetDigest === null ||
+    fixtureProfileKernelRawDigest === null ||
+    !CANONICAL_SHA256.test(fixtureProfileAssetDigest) ||
+    !CANONICAL_SHA256.test(fixtureProfileKernelRawDigest) ||
+    fixtureProfileAssetDigest === "sha256:" + "0".repeat(64) ||
+    fixtureProfileKernelRawDigest === "sha256:" + "0".repeat(64)
+  ) {
+    return null;
+  }
 
   const fixtureInterpreterPath = singleLiteral(
     modeIri,
@@ -172,7 +205,10 @@ export function readFixtureProcessPolicy(
   return {
     modeIri,
     confinementStrategy,
-    minimumLandlockAbi,
+    fixtureProfileName,
+    fixtureProfileAssetPath,
+    fixtureProfileAssetDigest,
+    fixtureProfileKernelRawDigest,
     fixtureExecutables,
     toolDependencies,
     fixtureInterpreterPath,
@@ -182,8 +218,25 @@ export function readFixtureProcessPolicy(
 }
 
 const EXPECTED_MODE_IRI = "urn:usf:mode:confined-fixture-process:1";
-const EXPECTED_CONFINEMENT_STRATEGY = "bwrap-landlock-execute-v1";
-const EXPECTED_MINIMUM_LANDLOCK_ABI = 4;
+const EXPECTED_CONFINEMENT_STRATEGY = "bwrap-apparmor-execute-v1";
+const EXPECTED_PROFILE_NAME = "usf-fixture-process-v1";
+const EXPECTED_PROFILE_ASSET_RELATIVE_PATH =
+  "src/realisation/fixture-process.apparmor";
+const ZERO_SHA256 = "sha256:" + "0".repeat(64);
+const APPARMOR_POLICY_PATH = "/sys/kernel/security/apparmor/policy";
+const APPARMOR_PROFILES_PATH = APPARMOR_POLICY_PATH + "/profiles";
+const MAX_APPARMOR_PROFILE_ENTRIES = 4096;
+const APPARMOR_PROFILE_ENTRY = /^usf-fixture-process-v1\.([0-9]+)$/;
+const APPARMOR_RAW_LINK = /^\.\.\/\.\.\/raw_data\/([0-9]+)\/sha256$/;
+
+export interface FixtureProcessHostProfileMetadata {
+  entryName: string;
+  profileName: string | null;
+  mode: string | null;
+  rawLink: string | null;
+  rawDigest: string | null;
+}
+const MAX_APPARMOR_METADATA_BYTES = 4096;
 const EXPECTED_INTERPRETER_PATH = "/usr/bin/python3.12";
 const EXPECTED_LAUNCHER_RELATIVE_PATH =
   "src/realisation/fixture-process-launcher.py";
@@ -237,12 +290,23 @@ export function authenticateFixtureProcessPolicy(
     }
 
     if (
+      !authenticateWorkspaceFile(
+        workspace,
+        policy.fixtureProfileAssetPath,
+        policy.fixtureProfileAssetDigest,
+        currentUid
+      )
+    ) {
+      return false;
+    }
+
+    if (
       !authenticateLauncher(workspace, policy.fixtureLauncherPath, currentUid)
     ) {
       return false;
     }
 
-    return true;
+    return authenticateFixtureProcessHostProfile(policy);
   } catch {
     return false;
   }
@@ -258,7 +322,18 @@ function policyShapeIsAuthentic(policy: FixtureProcessPolicy): boolean {
   if (policy.confinementStrategy !== EXPECTED_CONFINEMENT_STRATEGY) {
     return false;
   }
-  if (policy.minimumLandlockAbi !== EXPECTED_MINIMUM_LANDLOCK_ABI) {
+  if (policy.fixtureProfileName !== EXPECTED_PROFILE_NAME) {
+    return false;
+  }
+  if (policy.fixtureProfileAssetPath !== EXPECTED_PROFILE_ASSET_RELATIVE_PATH) {
+    return false;
+  }
+  if (
+    !CANONICAL_SHA256.test(policy.fixtureProfileAssetDigest) ||
+    !CANONICAL_SHA256.test(policy.fixtureProfileKernelRawDigest) ||
+    policy.fixtureProfileAssetDigest === ZERO_SHA256 ||
+    policy.fixtureProfileKernelRawDigest === ZERO_SHA256
+  ) {
     return false;
   }
   if (policy.fixtureInterpreterPath !== EXPECTED_INTERPRETER_PATH) {
@@ -486,6 +561,180 @@ function statsMatch(a: BigIntStats, b: BigIntStats): boolean {
   );
 }
 
+function authenticateWorkspaceFile(
+  workspace: string,
+  relativePath: string,
+  expectedDigest: string,
+  currentUid: bigint
+): boolean {
+  if (relativePath !== EXPECTED_PROFILE_ASSET_RELATIVE_PATH) {
+    return false;
+  }
+  const absolutePath = resolve(workspace, relativePath);
+  if (absolutePath !== workspace + "/" + relativePath) {
+    return false;
+  }
+  const segments = relativePath.split("/");
+  let current = workspace;
+  for (let i = 0; i < segments.length - 1; i++) {
+    current += "/" + segments[i];
+    if (!authenticateDirectory(current, [currentUid])) {
+      return false;
+    }
+  }
+  const stat = lstatSync(absolutePath, { bigint: true });
+  if (
+    stat.isSymbolicLink() ||
+    !stat.isFile() ||
+    realpathSync(absolutePath) !== absolutePath ||
+    stat.uid !== currentUid ||
+    stat.nlink !== 1n ||
+    (stat.mode & UNSAFE_MODE_BITS) !== 0n
+  ) {
+    return false;
+  }
+  return hashOpenedFileMatches(absolutePath, stat, expectedDigest);
+}
+
+function readBoundedVirtualText(path: string): string | null {
+  const stat = lstatSync(path, { bigint: true });
+  if (
+    stat.isSymbolicLink() ||
+    !stat.isFile() ||
+    stat.uid !== 0n ||
+    (stat.mode & 0o7777n) !== 0o444n
+  ) {
+    return null;
+  }
+  const fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | O_CLOEXEC_LINUX);
+  try {
+    const opened = fstatSync(fd, { bigint: true });
+    if (
+      !opened.isFile() ||
+      opened.dev !== stat.dev ||
+      opened.ino !== stat.ino ||
+      opened.uid !== stat.uid ||
+      opened.mode !== stat.mode
+    ) {
+      return null;
+    }
+    const chunks: Buffer[] = [];
+    let total = 0;
+    const chunk = Buffer.alloc(256);
+    for (;;) {
+      const bytesRead = readSync(fd, chunk, 0, chunk.length, null);
+      if (bytesRead === 0) {
+        break;
+      }
+      total += bytesRead;
+      if (total > MAX_APPARMOR_METADATA_BYTES) {
+        return null;
+      }
+      chunks.push(Buffer.from(chunk.subarray(0, bytesRead)));
+    }
+    const after = fstatSync(fd, { bigint: true });
+    if (
+      after.dev !== opened.dev ||
+      after.ino !== opened.ino ||
+      after.uid !== opened.uid ||
+      after.mode !== opened.mode
+    ) {
+      return null;
+    }
+    return Buffer.concat(chunks).toString("utf8").trimEnd();
+  } finally {
+    closeSync(fd);
+  }
+}
+
+function normalizeKernelSha256(value: string | null): string | null {
+  if (value === null) {
+    return null;
+  }
+  if (/^[0-9a-f]{64}$/.test(value)) {
+    return "sha256:" + value;
+  }
+  return CANONICAL_SHA256.test(value) ? value : null;
+}
+
+export function validateFixtureProcessHostProfileMetadata(
+  policy: FixtureProcessPolicy,
+  metadata: readonly FixtureProcessHostProfileMetadata[]
+): boolean {
+  if (!policyShapeIsAuthentic(policy)) {
+    return false;
+  }
+  const matches = metadata.filter(
+    (candidate) =>
+      APPARMOR_PROFILE_ENTRY.test(candidate.entryName) &&
+      candidate.profileName === policy.fixtureProfileName
+  );
+  if (matches.length !== 1) {
+    return false;
+  }
+  const match = matches[0];
+  if (match.mode !== "enforce" || match.rawLink === null) {
+    return false;
+  }
+  const linkMatch = APPARMOR_RAW_LINK.exec(match.rawLink);
+  if (linkMatch === null) {
+    return false;
+  }
+  const normalized = normalizeKernelSha256(match.rawDigest);
+  return normalized !== null && normalized !== ZERO_SHA256 &&
+    normalized === policy.fixtureProfileKernelRawDigest;
+}
+
+export function authenticateFixtureProcessHostProfile(
+  policy: FixtureProcessPolicy
+): boolean {
+  try {
+    if (process.platform !== "linux" || !policyShapeIsAuthentic(policy)) {
+      return false;
+    }
+    const entries = readdirSync(APPARMOR_PROFILES_PATH, { withFileTypes: true });
+    if (entries.length > MAX_APPARMOR_PROFILE_ENTRIES) {
+      return false;
+    }
+    const metadata: FixtureProcessHostProfileMetadata[] = [];
+    for (const entry of entries) {
+      const entryMatch = APPARMOR_PROFILE_ENTRY.exec(entry.name);
+      if (entryMatch === null) {
+        continue;
+      }
+      if (!entry.isDirectory()) {
+        return false;
+      }
+      const root = APPARMOR_PROFILES_PATH + "/" + entry.name;
+      const digestPath = root + "/raw_sha256";
+      const digestStat = lstatSync(digestPath, { bigint: true });
+      if (
+        !digestStat.isSymbolicLink() ||
+        digestStat.uid !== 0n ||
+        (digestStat.mode & 0o7777n) !== 0o444n
+      ) {
+        return false;
+      }
+      const rawLink = readlinkSync(digestPath);
+      const linkMatch = APPARMOR_RAW_LINK.exec(rawLink);
+      if (linkMatch === null) {
+        return false;
+      }
+      const rawTarget = APPARMOR_POLICY_PATH + "/raw_data/" + linkMatch[1] + "/sha256";
+      metadata.push({
+        entryName: entry.name,
+        profileName: readBoundedVirtualText(root + "/name"),
+        mode: readBoundedVirtualText(root + "/mode"),
+        rawLink,
+        rawDigest: readBoundedVirtualText(rawTarget),
+      });
+    }
+    return validateFixtureProcessHostProfileMetadata(policy, metadata);
+  } catch {
+    return false;
+  }
+}
+
 function authenticateLauncher(
   workspace: string,
   relativeLauncherPath: string,
@@ -634,7 +883,8 @@ export function fixtureProcessLaunchArguments(
     if (
       policy.modeIri !== EXPECTED_MODE_IRI ||
       policy.confinementStrategy !== EXPECTED_CONFINEMENT_STRATEGY ||
-      policy.minimumLandlockAbi !== EXPECTED_MINIMUM_LANDLOCK_ABI ||
+      policy.fixtureProfileName !== EXPECTED_PROFILE_NAME ||
+      policy.fixtureProfileAssetPath !== EXPECTED_PROFILE_ASSET_RELATIVE_PATH ||
       policy.fixtureInterpreterPath !== EXPECTED_INTERPRETER_PATH ||
       policy.fixtureLauncherPath !== EXPECTED_LAUNCHER_RELATIVE_PATH
     ) {
@@ -984,8 +1234,8 @@ export function fixtureProcessLaunchArguments(
     }
 
     const wire = JSON.stringify({
-      version: 1,
-      minimumLandlockAbi: EXPECTED_MINIMUM_LANDLOCK_ABI,
+      version: 2,
+      apparmorProfile: policy.fixtureProfileName,
       executables,
       nodeArguments,
     });
@@ -1006,7 +1256,7 @@ export function fixtureProcessLaunchArguments(
         "-S",
         "-B",
         workspace + "/" + EXPECTED_LAUNCHER_RELATIVE_PATH,
-        "--fixture-process-v1",
+        "--fixture-process-v2",
         wire,
       ]),
     });

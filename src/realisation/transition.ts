@@ -1512,7 +1512,7 @@ function assertTouchedPrimaryClean(root: string, paths: readonly string[]): void
   }
 }
 
-import { readFixtureProcessPolicy, confinedFixtureProcessLaunch } from "./fixture-process.ts";
+import { authenticateFixtureProcessHostProfile, readFixtureProcessPolicy, confinedFixtureProcessLaunch } from "./fixture-process.ts";
 
 function fileModeAt(root: string, repositoryPath: string): GitFileMode | null {
   const path = safeRepositoryPath(repositoryPath);
@@ -1588,6 +1588,9 @@ function validationAuthorities(root: string, basis: RealisationBasis, phase: "ca
       ? readFixtureProcessPolicy(graph, executionModeIri)
       : null;
     if (executionModeIri === "urn:usf:mode:confined-fixture-process:1" && fixtureProcessPolicy === null) {
+      throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    }
+    if (fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(fixtureProcessPolicy)) {
       throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
     }
     const hostTools = objectsFor(graph, reference.id, predicateIri("hostToolDependency"));
@@ -1774,6 +1777,9 @@ export async function runIntegrationValidation(input: IntegrationVerifierInput):
       child.once("error", () => settle(1));
       child.once("exit", (code) => settle(code ?? 1));
     });
+    if (input.authority.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(input.authority.fixtureProcessPolicy)) {
+      throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
+    }
     const deterministicResult = canonicalDigest({
       exitCode: observed.exitCode,
       outputWithinLimit: observed.withinLimit,
@@ -1839,6 +1845,9 @@ async function authenticatedCheckedReceipt(
   authority: IntegrationValidationAuthority,
 ): Promise<CheckedCandidateReceipt> {
   const basis = authenticated.constructionBasis;
+  if (authority.fixtureProcessPolicy != null && !authenticateFixtureProcessHostProfile(authority.fixtureProcessPolicy)) {
+    throw new IntegrationError("INTEGRATION_CHECK_RECEIPT_INVALID");
+  }
   const { readGraphDerivedCheckReceipt } = await import("../commands/check.ts");
   const loaded = await readGraphDerivedCheckReceipt(authorityRoot, authenticated.candidateDigest, authority.obligationIri)
     .catch(() => { throw new IntegrationError("INTEGRATION_CHECK_RECEIPT_INVALID"); });

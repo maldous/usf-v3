@@ -1,4 +1,4 @@
-"""Confined fixture-process launcher for USF fixture validation (wire v1).
+"""Confined fixture-process launcher for USF fixture validation (wire v2).
 
 Invoked by the TypeScript fixture validator inside the existing bwrap
 isolation (user/PID/network namespaces, read-only tool/view/dependency
@@ -6,7 +6,7 @@ mounts, scratch-only write, cleared environment) as:
 
     /usr/bin/python3.12 -I -S -B \
         <execution-view>/src/realisation/fixture-process-launcher.py \
-        --fixture-process-v1 '<strict JSON>'
+        --fixture-process-v2 '<strict JSON>'
 
 Behaviour, in order, all fail-closed:
 
@@ -22,15 +22,16 @@ Behaviour, in order, all fail-closed:
      proven by reading a bounded /proc/self/uid_map and requiring
      exactly the measured mapping `1000 0 1`; no environment marker is
      ever accepted as evidence.
-  3. Install a Landlock ruleset (kernel ABI >= 4) restricting native
-     EXECUTE to exactly those three already-opened inodes.  No rule is
-     ever added for Python, a shell, a loader, or any directory.
-  4. Set PR_SET_NO_NEW_PRIVS, enforce the ruleset, close every file
-     descriptor other than stdio and the verified Node descriptor, then
-     replace this process with the verified Node inode via fd-execve on
-     the still-open verified descriptor (re-fstat-compared against the
-     pre-hash identity snapshot), so no path is re-resolved between
-     hashing and execution.  Only the fixed, individually validated
+  3. Read and authenticate the bounded current AppArmor label as exactly
+     the enforcing bwrap and unpriv_bwrap stack, set PR_SET_NO_NEW_PRIVS,
+     and request a stack-only transition to usf-fixture-process-v1 through
+     /proc/self/attr/current.  Readback must retain both prior labels, add
+     exactly the requested profile, and remain enforcing.
+  4. Close every file descriptor other than stdio and the verified Node
+     descriptor, then replace this process with the verified Node inode
+     via fd-execve on the still-open verified descriptor (re-fstat-compared
+     against the pre-hash identity snapshot), so no path is re-resolved
+     between hashing and execution.  Only the fixed, individually validated
      environment keys required by the fixtures are propagated.
 
 Every refusal prints one fixed bounded code to stderr and exits
@@ -46,11 +47,10 @@ import json
 import os
 import re
 import stat
-import struct
 import sys
 
-WIRE_SWITCH = "--fixture-process-v1"
-WIRE_VERSION = 1
+WIRE_SWITCH = "--fixture-process-v2"
+WIRE_VERSION = 2
 MAX_WIRE_BYTES = 32768
 MAX_ARG_BYTES = 4096
 MAX_FS_PATH_BYTES = 4000
@@ -93,24 +93,22 @@ NODE_ARGV0 = "/usr/bin/node"
 
 SUPPORTED_MACHINES = frozenset({"x86_64", "aarch64"})
 
-LANDLOCK_MIN_ABI = 4
-LANDLOCK_MAX_DECLARED_ABI = 64
-SYS_LANDLOCK_CREATE_RULESET = 444
-SYS_LANDLOCK_ADD_RULE = 445
-SYS_LANDLOCK_RESTRICT_SELF = 446
-LANDLOCK_CREATE_RULESET_VERSION = 1
-LANDLOCK_ACCESS_FS_EXECUTE = 1
-LANDLOCK_RULE_PATH_BENEATH = 1
 PR_SET_NO_NEW_PRIVS = 38
+PR_GET_NO_NEW_PRIVS = 39
+APPARMOR_CURRENT_PATH = "/proc/self/attr/current"
+APPARMOR_PROFILE = "usf-fixture-process-v1"
+APPARMOR_STACK_COMMAND = "stack " + APPARMOR_PROFILE
+APPARMOR_MAX_LABEL_BYTES = 512
+APPARMOR_PRIOR_LABELS = ("bwrap", "unpriv_bwrap")
 
-WIRE_KEYS = frozenset({"version", "minimumLandlockAbi", "executables", "nodeArguments"})
+WIRE_KEYS = frozenset({"version", "apparmorProfile", "executables", "nodeArguments"})
 EXEC_KEYS = frozenset({"path", "digest"})
 
 REFUSE_USAGE = "USF-FIXTURE-LAUNCH-REFUSED-01-USAGE"
 REFUSE_WIRE = "USF-FIXTURE-LAUNCH-REFUSED-02-WIRE"
 REFUSE_PLATFORM = "USF-FIXTURE-LAUNCH-REFUSED-03-PLATFORM"
 REFUSE_IDENTITY = "USF-FIXTURE-LAUNCH-REFUSED-04-TOOL-IDENTITY"
-REFUSE_LANDLOCK = "USF-FIXTURE-LAUNCH-REFUSED-05-LANDLOCK"
+REFUSE_APPARMOR = "USF-FIXTURE-LAUNCH-REFUSED-05-APPARMOR"
 REFUSE_EXEC = "USF-FIXTURE-LAUNCH-REFUSED-06-EXEC"
 REFUSE_INTERNAL = "USF-FIXTURE-LAUNCH-REFUSED-07-INTERNAL"
 REFUSE_ENVIRONMENT = "USF-FIXTURE-LAUNCH-REFUSED-08-ENVIRONMENT"
@@ -265,10 +263,8 @@ def _parse_wire(payload):
     version = document["version"]
     if type(version) is not int or version != WIRE_VERSION:
         _refuse(REFUSE_WIRE)
-    minimum_abi = document["minimumLandlockAbi"]
-    if type(minimum_abi) is not int:
-        _refuse(REFUSE_WIRE)
-    if not (LANDLOCK_MIN_ABI <= minimum_abi <= LANDLOCK_MAX_DECLARED_ABI):
+    apparmor_profile = _wire_string(document["apparmorProfile"], MAX_ARG_BYTES)
+    if apparmor_profile != APPARMOR_PROFILE:
         _refuse(REFUSE_WIRE)
     executables = document["executables"]
     if type(executables) is not list or len(executables) != len(TOOL_PATHS):
@@ -287,7 +283,7 @@ def _parse_wire(payload):
     node_arguments, fs_read_values, fs_write_value = _validate_node_arguments(
         document["nodeArguments"]
     )
-    return minimum_abi, digests, node_arguments, fs_read_values, fs_write_value
+    return digests, node_arguments, fs_read_values, fs_write_value
 
 
 def _read_uid_map():
@@ -419,14 +415,12 @@ def _open_verified_tool(path, digest_hex):
     return fd
 
 
-def _load_libc():
+def _load_prctl():
     try:
         libc = ctypes.CDLL(None, use_errno=True)
-        syscall_fn = libc.syscall
         prctl_fn = libc.prctl
     except (OSError, AttributeError):
-        _refuse(REFUSE_LANDLOCK)
-    syscall_fn.restype = ctypes.c_long
+        _refuse(REFUSE_APPARMOR)
     prctl_fn.restype = ctypes.c_int
     prctl_fn.argtypes = [
         ctypes.c_int,
@@ -435,70 +429,93 @@ def _load_libc():
         ctypes.c_ulong,
         ctypes.c_ulong,
     ]
-    return syscall_fn, prctl_fn
+    return prctl_fn
 
 
-def _raw_syscall(syscall_fn, number, arg1, arg2, arg3, arg4=0):
-    ctypes.set_errno(0)
-    result = syscall_fn(
-        ctypes.c_long(number),
-        ctypes.c_long(arg1),
-        ctypes.c_long(arg2),
-        ctypes.c_long(arg3),
-        ctypes.c_long(arg4),
-    )
-    return int(result)
-
-
-def _apply_landlock(minimum_abi, tool_fds):
-    syscall_fn, prctl_fn = _load_libc()
-    required_abi = minimum_abi if minimum_abi > LANDLOCK_MIN_ABI else LANDLOCK_MIN_ABI
-    abi = _raw_syscall(
-        syscall_fn,
-        SYS_LANDLOCK_CREATE_RULESET,
-        0,
-        0,
-        LANDLOCK_CREATE_RULESET_VERSION,
-    )
-    if abi < required_abi:
-        _refuse(REFUSE_LANDLOCK)
-    ruleset_attr = struct.pack("=Q", LANDLOCK_ACCESS_FS_EXECUTE)
-    attr_buffer = ctypes.create_string_buffer(ruleset_attr, len(ruleset_attr))
-    ruleset_fd = _raw_syscall(
-        syscall_fn,
-        SYS_LANDLOCK_CREATE_RULESET,
-        ctypes.addressof(attr_buffer),
-        len(ruleset_attr),
-        0,
-    )
-    if ruleset_fd < 0:
-        _refuse(REFUSE_LANDLOCK)
-    for tool_fd in tool_fds:
-        rule = struct.pack("=Qi", LANDLOCK_ACCESS_FS_EXECUTE, tool_fd)
-        rule_buffer = ctypes.create_string_buffer(rule, len(rule))
-        added = _raw_syscall(
-            syscall_fn,
-            SYS_LANDLOCK_ADD_RULE,
-            ruleset_fd,
-            LANDLOCK_RULE_PATH_BENEATH,
-            ctypes.addressof(rule_buffer),
-            0,
+def _read_apparmor_current():
+    try:
+        fd = os.open(
+            APPARMOR_CURRENT_PATH,
+            os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
         )
-        if added != 0:
-            _refuse(REFUSE_LANDLOCK)
+    except OSError:
+        _refuse(REFUSE_APPARMOR)
+    data = b""
+    while len(data) <= APPARMOR_MAX_LABEL_BYTES:
+        try:
+            chunk = os.read(fd, APPARMOR_MAX_LABEL_BYTES + 1)
+        except OSError:
+            _refuse(REFUSE_APPARMOR)
+        if not chunk:
+            break
+        data += chunk
+    try:
+        os.close(fd)
+    except OSError:
+        _refuse(REFUSE_APPARMOR)
+    if not data or len(data) > APPARMOR_MAX_LABEL_BYTES:
+        _refuse(REFUSE_APPARMOR)
+    try:
+        text = data.decode("ascii", "strict").strip()
+    except UnicodeDecodeError:
+        _refuse(REFUSE_APPARMOR)
+    return text
+
+
+def _parse_enforcing_apparmor_stack(text):
+    suffix = " (enforce)"
+    if not text.endswith(suffix):
+        _refuse(REFUSE_APPARMOR)
+    label_text = text[:-len(suffix)]
+    labels = label_text.split("//&")
+    if not labels or any(not label for label in labels):
+        _refuse(REFUSE_APPARMOR)
+    if len(labels) != len(set(labels)):
+        _refuse(REFUSE_APPARMOR)
+    for label in labels:
+        if re.fullmatch(r"[A-Za-z0-9._-]{1,128}", label) is None:
+            _refuse(REFUSE_APPARMOR)
+    return tuple(labels)
+
+
+def _apply_apparmor(tool_fds):
+    before = _parse_enforcing_apparmor_stack(_read_apparmor_current())
+    if before != APPARMOR_PRIOR_LABELS:
+        _refuse(REFUSE_APPARMOR)
+    prctl_fn = _load_prctl()
+    inherited_no_new_privs = prctl_fn(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0)
+    if inherited_no_new_privs not in (0, 1):
+        _refuse(REFUSE_APPARMOR)
+    if prctl_fn(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0:
+        _refuse(REFUSE_APPARMOR)
+    if prctl_fn(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) != 1:
+        _refuse(REFUSE_APPARMOR)
+    try:
+        fd = os.open(
+            APPARMOR_CURRENT_PATH,
+            os.O_WRONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+        )
+    except OSError:
+        _refuse(REFUSE_APPARMOR)
+    command = APPARMOR_STACK_COMMAND.encode("ascii")
+    try:
+        written = os.write(fd, command)
+    except OSError:
+        _refuse(REFUSE_APPARMOR)
+    if written != len(command):
+        _refuse(REFUSE_APPARMOR)
+    try:
+        os.close(fd)
+    except OSError:
+        _refuse(REFUSE_APPARMOR)
+    after = _parse_enforcing_apparmor_stack(_read_apparmor_current())
+    if after != before + (APPARMOR_PROFILE,):
+        _refuse(REFUSE_APPARMOR)
     for extra_fd in tool_fds[1:]:
         try:
             os.close(extra_fd)
         except OSError:
-            _refuse(REFUSE_LANDLOCK)
-    if prctl_fn(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0:
-        _refuse(REFUSE_LANDLOCK)
-    if _raw_syscall(syscall_fn, SYS_LANDLOCK_RESTRICT_SELF, ruleset_fd, 0, 0) != 0:
-        _refuse(REFUSE_LANDLOCK)
-    try:
-        os.close(ruleset_fd)
-    except OSError:
-        _refuse(REFUSE_LANDLOCK)
+            _refuse(REFUSE_APPARMOR)
 
 
 def _validated_environment_value(name):
@@ -579,14 +596,14 @@ def _main():
     if len(sys.argv) != 3 or sys.argv[1] != WIRE_SWITCH:
         _refuse(REFUSE_USAGE)
     parsed = _parse_wire(sys.argv[2])
-    minimum_abi, digests, node_arguments, fs_read_values, fs_write_value = parsed
+    digests, node_arguments, fs_read_values, fs_write_value = parsed
     _authenticate_platform()
     environment = _build_environment(fs_read_values, fs_write_value)
     tool_fds = []
     for tool_path, digest_hex in zip(TOOL_PATHS, digests):
         tool_fds.append(_open_verified_tool(tool_path, digest_hex))
     argv = [NODE_ARGV0] + list(node_arguments)
-    _apply_landlock(minimum_abi, tool_fds)
+    _apply_apparmor(tool_fds)
     _launch(tool_fds[0], argv, environment)
 
 
