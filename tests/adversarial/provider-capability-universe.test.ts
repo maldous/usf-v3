@@ -463,14 +463,14 @@ test("every subcommand the dispatcher accepts is presented, and every presented 
  */
 test("every constructed provider argv names only flags and values the CLI documents", () => {
   const claude = claudeCliArguments("work", "claude-haiku-4-5-20251001");
-  assert.deepEqual([...claude], ["-p", "work", "--output-format", "json", "--model", "claude-haiku-4-5-20251001"]);
+  assert.deepEqual([...claude], ["-p", "work", "--output-format", "json", "--safe-mode", "--tools", "", "--strict-mcp-config", "--model", "claude-haiku-4-5-20251001"]);
   // json is one of exactly text, json and stream-json; --max-turns is not a flag
   // this CLI has, and reintroducing it would fail the route.
   assert.equal(claude.includes("--max-turns"), false);
   assert.equal(claude[claude.indexOf("--output-format") + 1], "json");
   // Omitting the model is permitted by the CLI and refused here: the transport's
   // default carries its own quota and is not the model the operator chose.
-  assert.deepEqual([...claudeCliArguments("work", null)], ["-p", "work", "--output-format", "json"]);
+  assert.deepEqual([...claudeCliArguments("work", null)], ["-p", "work", "--output-format", "json", "--safe-mode", "--tools", "", "--strict-mcp-config"]);
 
   const agy = antigravityCliArguments("work", "gpt-oss-120b-medium");
   assert.equal(agy[agy.indexOf("--mode") + 1], "accept-edits");

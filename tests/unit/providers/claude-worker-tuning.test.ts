@@ -15,8 +15,10 @@ import {
  * Both recorded failures of this route came from one omission: without --model
  * the CLI inherits the operator's interactive default, which is a heavyweight
  * reasoning configuration -- the supervisor's own -- so worker units drew the
- * wrong model and died at the timeout. And without --max-turns the print mode
- * may run an agentic session where one bounded generation was wanted.
+ * wrong model and died at the timeout. This build has no --max-turns flag,
+ * so the argv bounds the turn by restriction instead: --safe-mode, exactly one
+ * empty --tools set and --strict-mcp-config strip built-in tools and ambient
+ * MCP customisation while keeping subscription authentication.
  */
 test("a worker turn pins its model and carries only flags the binary supports", () => {
   // --max-turns was here once, from stale knowledge of a different build; the
@@ -26,8 +28,37 @@ test("a worker turn pins its model and carries only flags the binary supports", 
   assert.deepEqual([...argv], [
     "-p", "write the module",
     "--output-format", "json",
+    "--safe-mode",
+    "--tools", "",
+    "--strict-mcp-config",
     "--model", "claude-haiku-4-5-20251001",
   ]);
+});
+
+test("prompt and model stay single data arguments and the restricted surface holds", () => {
+  // The constructor must never let a prompt or model string that looks like
+  // flags become new flags: each stays one argv element of pure data.
+  const hostile = claudeCliArguments("--dangerously-skip-permissions --bare", "--fallback-model");
+  assert.equal(hostile[hostile.indexOf("-p") + 1], "--dangerously-skip-permissions --bare");
+  assert.equal(hostile[hostile.indexOf("--model") + 1], "--fallback-model");
+  assert.equal(hostile.length, claudeCliArguments("work", "m").length);
+
+  for (const argv of [
+    claudeCliArguments("work", "claude-haiku-4-5-20251001"),
+    claudeCliArguments("work", null),
+  ]) {
+    // Exactly one --tools flag carrying exactly one empty built-in tool set,
+    // whether or not a model is selected.
+    assert.equal(argv.filter((a) => a === "--tools").length, 1);
+    assert.equal(argv[argv.indexOf("--tools") + 1], "");
+    assert.ok(argv.includes("--safe-mode"));
+    assert.ok(argv.includes("--strict-mcp-config"));
+    // Forbidden surfaces: bare mode, permission bypass, paid fallback,
+    // API-key mode and the nonexistent turn flag must never appear.
+    for (const forbidden of ["--bare", "--dangerously-skip-permissions", "--permission-mode", "--fallback-model", "--api-key", "--max-turns"]) {
+      assert.equal(argv.includes(forbidden), false);
+    }
+  }
 });
 
 test("without a declared model no --model flag is passed, never an empty one", () => {

@@ -68,6 +68,12 @@ export function claudeCliArguments(prompt: string, model: string | null): readon
   return Object.freeze([
     "-p", prompt,
     "--output-format", "json",
+    // Restrict the surface while keeping subscription authentication: no
+    // built-in tools (one empty --tools set), no ambient MCP servers or
+    // customisations. The turn is bounded by restriction, not by a turn flag.
+    "--safe-mode",
+    "--tools", "",
+    "--strict-mcp-config",
     ...(model === null || model.length === 0 ? [] : ["--model", model]),
   ]);
 }
