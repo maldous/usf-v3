@@ -124,6 +124,7 @@ export interface NoChangeCompletionAuthority {
   readonly schemaPaths: readonly string[];
   readonly toolPaths: readonly string[];
   readonly commands: readonly string[];
+  readonly semanticDependencies: readonly string[];
   readonly workspaceSchemaIri: string;
   readonly workspaceSchemaPath: string;
   readonly realisationResultSchemaIri: string;
@@ -222,6 +223,7 @@ export function deriveNoChangeCompletionAuthority(
   const proofBundleSchema = completionSchemaBinding(graph, policyIri, "proofBundleSchema", schemaPaths);
   const publicationReceiptSchema = completionSchemaBinding(graph, policyIri, "publicationReceiptSchema", schemaPaths);
   const publicationResultSchema = completionSchemaBinding(graph, policyIri, "publicationResultSchema", schemaPaths);
+  const semanticDependencies = exactValues(graph, workIri, "semanticDependency", "iri");
   return Object.freeze({
     policy: Object.freeze({
       iri: policyIri,
@@ -246,6 +248,7 @@ export function deriveNoChangeCompletionAuthority(
     schemaPaths: Object.freeze(schemaPaths),
     toolPaths: Object.freeze(toolPaths),
     commands: Object.freeze(commands),
+    semanticDependencies: Object.freeze(semanticDependencies),
     workspaceSchemaIri: workspaceSchema.iri,
     workspaceSchemaPath: workspaceSchema.path,
     realisationResultSchemaIri: realisationResultSchema.iri,
@@ -648,6 +651,8 @@ export function workCompletionRecordLines(
     publicationPolicyIri: authority.policy.iri,
     publicationPolicyDigest: authority.policy.resourceDigest,
     publicationIntentDigest,
+    ...(authority.semanticDependencies.length === 0
+      ? {} : { semanticDependencies: authority.semanticDependencies }),
   };
   const realisationDigest = canonicalDigest(realisationDraft, { rejectAbsolutePaths: true });
   const lines = [
@@ -671,6 +676,8 @@ export function workCompletionRecordLines(
     quad(realisationReceiptIri, "publicationPolicy", authority.policy.iri, "iri"),
     quad(realisationReceiptIri, "publicationPolicyDigest", authority.policy.resourceDigest, "literal"),
     quad(realisationReceiptIri, "publicationIntentDigest", publicationIntentDigest, "literal"),
+    ...authority.semanticDependencies.map((dependency) =>
+      quad(realisationReceiptIri, "semanticDependency", dependency, "iri")),
     quad(realisationReceiptIri, "contentDigest", realisationDigest, "literal"),
     quad(evidence.evidenceIri, "type", "urn:usf:type:Evidence", "iri"),
     quad(evidence.evidenceIri, "forWork", evidence.workIri, "iri"),
@@ -976,9 +983,12 @@ export function evaluateNoChangeCompletionRecords(
     publicationPolicyIri: exactRecordValue(graph, realisationReceipt, "publicationPolicy", "iri"),
     publicationPolicyDigest: exactRecordValue(graph, realisationReceipt, "publicationPolicyDigest", "literal"),
     publicationIntentDigest: exactRecordValue(graph, realisationReceipt, "publicationIntentDigest", "literal"),
+    ...(authority.semanticDependencies.length === 0
+      ? {} : { semanticDependencies: exactRecordValues(graph, realisationReceipt, "semanticDependency", "iri") }),
   };
   const realisationDigest = exactRecordValue(graph, realisationReceipt, "contentDigest", "literal");
   const requiredRealisationValues = Object.values(realisationFields);
+  const scalarRealisationValues = requiredRealisationValues.filter((value): value is string => typeof value === "string");
   if (requiredRealisationValues.some((value) => value === null) || realisationDigest === null
     || realisationFields.schema !== authority.realisationReceiptSchemaIri
     || realisationFields.state !== "accepted-no-change" || realisationFields.disposition !== "verified-no-change"
@@ -988,8 +998,10 @@ export function evaluateNoChangeCompletionRecords(
     || realisationFields.scopedDependencyDigest !== basis.work.scopedDependencyDigest
     || realisationFields.publicationPolicyIri !== authority.policy.iri
     || realisationFields.publicationPolicyDigest !== authority.policy.resourceDigest
-    || !requiredRealisationValues.filter((value): value is string => value !== null)
-      .filter((value) => value.startsWith("sha256:")).every((value) => digestPattern.test(value))
+    || (authority.semanticDependencies.length > 0
+      && !sameSet(realisationFields.semanticDependencies ?? [], authority.semanticDependencies))
+    || !scalarRealisationValues.filter((value) => value.startsWith("sha256:"))
+      .every((value) => digestPattern.test(value))
     || !digestPattern.test(realisationDigest)
     || canonicalDigest(realisationFields, { rejectAbsolutePaths: true }) !== realisationDigest) {
     reasons.push(`WORK_COMPLETION_NO_CHANGE_RECEIPT_INVALID:${realisationReceipt}`);

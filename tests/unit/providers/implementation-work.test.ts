@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { SemanticGraph } from "../../../src/graph/index.ts";
+import { resourceDigest, type SemanticGraph } from "../../../src/graph/index.ts";
+import { canonicalDigest } from "../../../src/core/canonical.ts";
 import { canonicalQuadLine, type Quad } from "../../../src/graph/nquads.ts";
 import { allEvidenceClasses, evaluateFacets, type EvidenceIndex } from "../../../src/providers/facet-evaluation.ts";
 import { parseSpecOutcomes } from "../../../src/providers/implementation-conformance.ts";
 import {
   deriveCapabilityImplementationNeeds, deriveConformancePrompt, deriveImplementationPrompt,
   deriveImplementationWorkUnits, importSpecifierFor, maximumRepairRounds, readImplementationConvention,
+  productDependencyAdoptionForNeed, readProductDependencyAdoptions, selectProductDependencyAdoption,
   validateConformanceOutput, validateImplementationOutput,
 } from "../../../src/providers/implementation-work.ts";
 
@@ -62,6 +64,60 @@ function capabilityQuads(): Quad[] {
     ...facet("policygatecontract", contract, "realized-artefact"),
     ...facet("policygateui", contract, "implementation-conformance", "NOT_APPLICABLE"),
   ];
+}
+
+function adoptionGraph(overrides: Readonly<{
+  closureDigest?: string; duplicate?: boolean; omitPackageIntegrity?: boolean;
+  wrongKindPackageName?: boolean; version?: string;
+}> = {}): Readonly<{
+  graph: SemanticGraph;
+  capability: string;
+  productProfile: string;
+  implementationConvention: string;
+}> {
+  const capability = "urn:usf:delivery-capability:pngdecode";
+  const profile = "urn:usf:product-profile:reader:1";
+  const convention = "urn:usf:capability-implementation-convention:reader:1";
+  const binding = "urn:usf:profile-foundation-binding:reader:1";
+  const seed = "urn:usf:contract:reader-foundation:1";
+  const base = [
+    quad(binding, `${P}type`, "urn:usf:type:ProfileFoundationBinding", "iri"),
+    quad(binding, `${P}boundProfileRevision`, profile, "iri"),
+    quad(binding, `${P}foundationDependencySeed`, seed, "iri"),
+    quad(seed, `${P}type`, "urn:usf:type:Contract", "iri"),
+  ];
+  const baseGraph = graphOf(base);
+  const closureDigest = overrides.closureDigest ?? canonicalDigest([
+    { resource: seed, digest: resourceDigest(baseGraph, seed) },
+  ]);
+  const record = (adoption: string): Quad[] => [
+    quad(adoption, `${P}type`, "urn:usf:type:ProductDependencyAdoption", "iri"),
+    quad(adoption, `${P}adoptsCapability`, capability, "iri"),
+    quad(adoption, `${P}adoptsProductProfile`, profile, "iri"),
+    quad(adoption, `${P}adoptsProfileClosureDigest`, closureDigest),
+    quad(adoption, `${P}packageName`, "png-decoder"),
+    quad(adoption, `${P}resolvedPackageVersion`, overrides.version ?? "1.2.3"),
+    ...overrides.omitPackageIntegrity ? [] : [quad(adoption, `${P}packageIntegrity`, `sha256:${"a".repeat(64)}`)],
+    quad(adoption, `${P}packageLockIdentity`, `sha256:${"b".repeat(64)}`),
+    quad(adoption, `${P}transitiveLockClosureDigest`, `sha256:${"c".repeat(64)}`),
+    quad(adoption, `${P}permittedImportSpecifier`, "png-decoder"),
+    quad(adoption, `${P}permittedImportSpecifier`, "png-decoder/png"),
+    quad(adoption, `${P}sourceProvenance`, "registry metadata and immutable package archive"),
+    quad(adoption, `${P}licenseProvenance`, "verified SPDX metadata"),
+    quad(adoption, `${P}platformScope`, "node"),
+    quad(adoption, `${P}buildScope`, "production"),
+    quad(adoption, `${P}runtimeScope`, "server"),
+    quad(adoption, `${P}consumerImplementationConvention`, convention, "iri"),
+    quad(adoption, `${P}adoptionCurrentnessRule`, "exact profile closure must remain current"),
+    quad(adoption, `${P}adoptionRefusalCode`, "PRODUCT_DEPENDENCY_ADOPTION_STALE"),
+    ...(overrides.wrongKindPackageName
+      ? [quad(adoption, `${P}packageName`, "urn:usf:invalid-package-name", "iri")] : []),
+  ];
+  return Object.freeze({
+    graph: graphOf([...base, ...record("urn:usf:product-dependency-adoption:pngdecode:1"),
+      ...(overrides.duplicate ? record("urn:usf:product-dependency-adoption:pngdecode:2") : [])]),
+    capability, productProfile: profile, implementationConvention: convention,
+  });
 }
 
 test("the convention is read from the graph and never defaulted", () => {
@@ -131,6 +187,61 @@ test("module output is admitted structurally and refuses smuggled dependencies",
   assert.equal(validateImplementationOutput("// never returns any, ever\nexport const a = 1;").accepted, true);
 });
 
+test("an exact current product adoption admits only its declared package specifiers", () => {
+  const fixture = adoptionGraph();
+  const adoption = selectProductDependencyAdoption(fixture.graph, fixture);
+  assert.ok(adoption);
+  assert.equal(readProductDependencyAdoptions(fixture.graph).length, 1);
+  assert.equal(validateImplementationOutput('import decode from "png-decoder";\nexport { decode };', adoption).accepted, true);
+  assert.equal(validateImplementationOutput('import png from "png-decoder/png";\nexport { png };', adoption).accepted, true);
+  assert.equal(validateImplementationOutput('import x from "png-decoder/private";\nexport { x };', adoption).code, "external-import");
+  assert.equal(validateImplementationOutput('import x from "other-package";\nexport { x };', adoption).code, "external-import");
+  for (const source of [
+    'export { x } from "left-pad";',
+    'export * from "left-pad";',
+    'export * as ns from "left-pad";',
+    'export const x = import("left-pad");',
+    'export const x = require("left-pad");',
+    'export const x = (require)("left-pad");',
+    'export const x = module.require("left-pad");',
+    'export const x = module["require"]("left-pad");',
+    'import x = require("left-pad"); export { x };',
+    'const target = "left-pad"; export const x = import(target);',
+    'const target = "left-pad"; export const x = require(target);',
+    'export const x = import();',
+    'export const x = require();',
+    'const loader = require; export const x = loader("left-pad");',
+    'const loader = module["require"]; export const x = loader("left-pad");',
+    'const loader = module[`require`]; export const x = loader("left-pad");',
+    'import x from ; export { x };',
+    'import x from "node:not-a-real-builtin"; export { x };',
+    'import x from ".not-relative"; export { x };',
+    'export const a = 1; import x from "left-pad";',
+  ]) assert.equal(validateImplementationOutput(source, adoption).code, "external-import", source);
+  assert.equal(selectProductDependencyAdoption(fixture.graph, { ...fixture, capability: "urn:usf:delivery-capability:other" }), null);
+  assert.equal(selectProductDependencyAdoption(fixture.graph, { ...fixture, productProfile: "urn:usf:product-profile:other:1" }), null);
+  assert.equal(selectProductDependencyAdoption(fixture.graph, { ...fixture, implementationConvention: "urn:usf:convention:other:1" }), null);
+  assert.equal(productDependencyAdoptionForNeed(fixture.graph, {
+    capability: fixture.capability, productProfile: null, implementationConvention: fixture.implementationConvention,
+  }), null);
+});
+
+test("dependency adoption refuses stale, malformed, and ambiguous authority", () => {
+  const stale = adoptionGraph({ closureDigest: `sha256:${"d".repeat(64)}` });
+  assert.throws(() => selectProductDependencyAdoption(stale.graph, stale),
+    (error: unknown) => (error as { code?: string }).code === "PRODUCT_DEPENDENCY_ADOPTION_STALE");
+  const malformed = adoptionGraph({ omitPackageIntegrity: true });
+  assert.throws(() => readProductDependencyAdoptions(malformed.graph),
+    (error: unknown) => (error as { code?: string }).code === "PRODUCT_DEPENDENCY_ADOPTION_INVALID");
+  const ambiguous = adoptionGraph({ duplicate: true });
+  assert.throws(() => selectProductDependencyAdoption(ambiguous.graph, ambiguous),
+    (error: unknown) => (error as { code?: string }).code === "PRODUCT_DEPENDENCY_ADOPTION_AMBIGUOUS");
+  assert.throws(() => readProductDependencyAdoptions(adoptionGraph({ wrongKindPackageName: true }).graph),
+    (error: unknown) => (error as { code?: string }).code === "PRODUCT_DEPENDENCY_ADOPTION_INVALID");
+  assert.throws(() => readProductDependencyAdoptions(adoptionGraph({ version: "latest" }).graph),
+    (error: unknown) => (error as { code?: string }).code === "PRODUCT_DEPENDENCY_ADOPTION_INVALID");
+});
+
 test("a conformance test that does not bind to the real module is refused before execution", () => {
   const graph = graphOf([...conventionQuads(), ...capabilityQuads()]);
   const [need] = deriveCapabilityImplementationNeeds(graph, readImplementationConvention(graph));
@@ -145,6 +256,7 @@ test("a conformance test that does not bind to the real module is refused before
   const accepted = validateConformanceOutput(good, need!, specifier);
   assert.equal(accepted.accepted, true);
   assert.deepEqual(accepted.coveredFacets, ["policygateaudit", "policygatebehaviour"]);
+  assert.equal(validateConformanceOutput(`${good}\nimport x from "left-pad";`, need!, specifier).code, "external-import");
 
   const noImport = good.replace('import * as capability from "../m.ts";', "");
   assert.equal(validateConformanceOutput(noImport, need!, specifier).code, "module-not-imported");

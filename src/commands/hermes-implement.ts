@@ -13,6 +13,7 @@ import {
   deriveCapabilityImplementationNeeds, deriveConformancePrompt, deriveImplementationPrompt,
   deriveImplementationWorkUnits, importSpecifierFor, inspectRepositoryFile, maximumRepairRounds,
   maximumRewriteBytes, maximumSiblingBytes,
+  productDependencyAdoptionForNeed,
   readConformanceRule, readImplementationConvention, readImplementationConventions,
   validateConformanceOutput, validateImplementationOutput,
   type CapabilityImplementationNeed, type CapabilityRepairState, type FailingRequirement,
@@ -317,6 +318,12 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     throw new UsfError("HERMES_IMPLEMENT_CAPABILITY_UNKNOWN", exitCodes.INVALID_INPUT,
       "No capability with outstanding implementation requirements carries that canonical name.", { capability: parsed.onlyCapability });
   }
+  // Authenticate every adoption before any evidence write or provider effect.
+  // One malformed graph record therefore fails the cycle at its read boundary,
+  // rather than halfway through a dispatch after partial operational effects.
+  const adoptionByCapability = new Map(needs.map((need) =>
+    [need.capability, productDependencyAdoptionForNeed(graph, need)] as const));
+  const conventionByIri = new Map(conventions.map((entry) => [entry.convention, entry] as const));
 
   // A record's paths are relative to the repository that produced it. This
   // profile's records resolve under its realisation root; anything else is USF's.
@@ -534,6 +541,13 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       continue;
     }
     const specifier = importSpecifierFor(unit.need);
+    const dependencyAdoption = adoptionByCapability.get(unit.need.capability) ?? null;
+    const governingConvention = unit.need.implementationConvention === undefined
+      ? null : conventionByIri.get(unit.need.implementationConvention) ?? null;
+    if (governingConvention === null) {
+      throw new UsfError("IMPLEMENTATION_CONVENTION_UNAVAILABLE", exitCodes.DOMAIN_FAILURE,
+        "The selected capability has no exact governing implementation convention.", { capability: unit.need.capability });
+    }
     const priorFailure = candidateFailures[unit.need.capability];
     const carried: readonly FailingRequirement[] = unit.repairs.length > 0 ? unit.repairs
       : priorFailure === undefined ? Object.freeze([])
@@ -542,11 +556,11 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
           detail: `a previous attempt at this module was discarded because it did not compile: ${priorFailure}`,
         })]);
     const prompt = unit.stage === "implementation"
-      ? deriveImplementationPrompt(unit.need, convention, Object.freeze({
+      ? deriveImplementationPrompt(unit.need, governingConvention, Object.freeze({
           existingTarget,
           moduleSource: null,
           siblingModule: await siblingModule(unitRoot, needs, present, unit.need.modulePath),
-        }), carried)
+        }), carried, dependencyAdoption)
       : deriveConformancePrompt(unit.need, moduleSource!, specifier, unit.repairs, existingTarget);
     // Existing source is part of identity: a changed module must not reuse a
     // test written against the surface it used to have.
@@ -562,7 +576,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     const lookup = await lookupSemanticResult(repositoryRoot, identity);
     if (lookup.hit && lookup.entry !== null) {
       const checked = unit.stage === "implementation"
-        ? validateImplementationOutput(lookup.entry.text)
+        ? validateImplementationOutput(lookup.entry.text, dependencyAdoption)
         : validateConformanceOutput(lookup.entry.text, unit.need, specifier);
       // A cached result whose bytes are already at the target proves nothing:
       // re-landing them cannot change anything the last check did not already
@@ -645,8 +659,9 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         continue;
       }
       const specifier = importSpecifierFor(unit.need);
+      const dependencyAdoption = adoptionByCapability.get(unit.need.capability) ?? null;
       const checked = unit.stage === "implementation"
-        ? validateImplementationOutput(record.resultText)
+        ? validateImplementationOutput(record.resultText, dependencyAdoption)
         : validateConformanceOutput(record.resultText, unit.need, specifier);
       if (!checked.accepted) {
         admissionOf(record, false);

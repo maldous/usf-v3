@@ -16,7 +16,12 @@ import { loadSemanticGraph } from "../../src/graph/index.ts";
 import { deriveWork } from "../../src/graph/work.ts";
 import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
 import type { CheckedCandidateReceipt } from "../../src/commands/check.ts";
-import type { CompletionEvidenceCandidate, CompletionProofBundle, WorkCompletionPublicationReceipt } from "../../src/realisation/work-completion.ts";
+import {
+  deriveNoChangeCompletionAuthority,
+  workCompletionRecordLines,
+  type NoChangeCompletionAuthority,
+  type CompletionEvidenceCandidate, type CompletionProofBundle, type WorkCompletionPublicationReceipt,
+} from "../../src/realisation/work-completion.ts";
 
 const canonicalRoot = resolve(import.meta.dirname, "../..");
 const manifest = "graph/manifests/integration.json";
@@ -28,6 +33,42 @@ const checkedReceiptFixturePath = resolve(canonicalRoot, "tests/fixtures/work-co
 const checkedReceiptProvenancePath = resolve(canonicalRoot, "tests/fixtures/work-completion/repository-path-checked-receipt.provenance.json");
 const isConfinedFixtureProcess = process.env.USF_REPOSITORY_ROOT !== undefined;
 const temporaryRoot = process.env.TMPDIR === undefined ? resolve(canonicalRoot, ".usf/tmp") : resolve(process.env.TMPDIR);
+
+test("a completion record binds exact semantic dependency identities", () => {
+  const digest = `sha256:${"a".repeat(64)}`;
+  const productWork = "urn:usf:work:product-dependency-adoption-reader";
+  const authority = {
+    targetGraphIri: "urn:usf:graph:test-completion",
+    realisationReceiptType: "urn:usf:type:NoChangeRealisationReceipt",
+    realisationReceiptSchemaIri: "urn:usf:no-change-realisation-receipt:1",
+    semanticDependencies: ["urn:usf:contract:exact-product-dependency-adoption:1"],
+    policy: { iri: "urn:usf:policy:test-completion", resourceDigest: digest },
+  } as unknown as NoChangeCompletionAuthority;
+  const evidence = {
+    evidenceIri: "urn:usf:evidence:test-product-dependency-completion",
+    evidenceRequirementIri: "urn:usf:evidence-requirement:test-completion",
+    workIri: productWork,
+    profileIri: "urn:usf:profile:product-dependency-adoption-reader:1",
+    manifestPath: "graph/manifests/product-dependency-adoption-reader.json",
+    realisationBasisDigest: digest, scopedDependencyDigest: digest, candidateDigest: digest,
+    workspaceIdentityDigest: digest, candidateTreeDigest: digest, lineageDigest: digest,
+    byteDeltaDigest: digest, fileModeDigest: digest, writeSetDigest: digest,
+    validationResultDigest: digest, validationResults: [{ obligationIri: "urn:usf:validation:test-completion" }],
+    contentDigest: digest,
+  } as unknown as CompletionProofBundle["evidence"];
+  const proof = {
+    proofResultIri: "urn:usf:proof-result:test-product-dependency-completion",
+    workIri: productWork, obligationIri: "urn:usf:proof:test-completion",
+    algorithmIri: "urn:usf:algorithm:test-completion", evidenceDigest: digest,
+    realisationBasisDigest: digest, scopedDependencyDigest: digest, candidateDigest: digest,
+    validationResultDigest: digest, contentDigest: digest,
+  } as unknown as CompletionProofBundle["proof"];
+  const record = workCompletionRecordLines({ evidence, proof } as CompletionProofBundle, authority, `sha256:${"b".repeat(64)}`);
+  assert.ok(record.lines.some((line) => line.includes("<urn:usf:predicate:semanticDependency> <urn:usf:contract:exact-product-dependency-adoption:1>")));
+  const withoutDependency = workCompletionRecordLines({ evidence, proof } as CompletionProofBundle,
+    { ...authority, semanticDependencies: [] }, `sha256:${"b".repeat(64)}`);
+  assert.notEqual(record.member.realisationDigest, withoutDependency.member.realisationDigest);
+});
 
 interface CheckedReceiptFixtureProvenance {
   readonly schema: "urn:usf:checked-candidate-receipt-fixture-provenance:1";
@@ -160,7 +201,9 @@ test("direct outer fixture regeneration reproduces the retained real checked rec
   }
 });
 
-test("retained real receipt is reauthenticated before no-change completion effects", async () => {
+test("retained real receipt is reauthenticated before no-change completion effects", {
+  skip: isConfinedFixtureProcess && "the authoritative direct lane runs outside mode-2 confinement",
+}, async () => {
   const fixture = await checkedReceiptFixture();
   const isolated = await isolatedPrecompletionRepository();
   try {

@@ -1,8 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import ts from "typescript";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
-import type { SemanticGraph } from "../graph/index.ts";
+import { resourceDigest, transitiveResourceIris, type SemanticGraph } from "../graph/index.ts";
 
 /**
  * The bridge from recovered facet requirements to executable product work.
@@ -17,6 +18,8 @@ import type { SemanticGraph } from "../graph/index.ts";
 const P = "urn:usf:predicate:";
 const conventionType = "urn:usf:type:CapabilityImplementationConvention";
 const conformanceRuleType = "urn:usf:type:ImplementationConformanceRule";
+const adoptionType = "urn:usf:type:ProductDependencyAdoption";
+const digestPattern = /^sha256:[0-9a-f]{64}$/u;
 
 function one(graph: SemanticGraph, subject: string, predicate: string): string | null {
   const values = graph.quads.filter((quad) => quad.subject === subject && quad.predicate === `${P}${predicate}`);
@@ -26,6 +29,11 @@ function subjectsOfType(graph: SemanticGraph, type: string): readonly string[] {
   return Object.freeze(graph.quads
     .filter((quad) => quad.predicate === `${P}type` && quad.object === type)
     .map((quad) => quad.subject).sort());
+}
+function values(graph: SemanticGraph, subject: string, predicate: string): readonly string[] {
+  return Object.freeze(graph.quads
+    .filter((quad) => quad.subject === subject && quad.predicate === `${P}${predicate}`)
+    .map((quad) => quad.object).sort());
 }
 function localName(iri: string): string {
   return iri.split(":").pop() ?? iri;
@@ -43,6 +51,154 @@ export interface ImplementationConvention {
   readonly dependencyDerivationRule: string;
   readonly outputRule: string;
   readonly filenameConvention: string;
+}
+
+export interface ProductDependencyAdoption {
+  readonly adoption: string;
+  readonly capability: string;
+  readonly productProfile: string;
+  readonly profileClosureDigest: string;
+  readonly packageName: string;
+  readonly resolvedPackageVersion: string;
+  readonly packageIntegrity: string;
+  readonly packageLockIdentity: string;
+  readonly transitiveLockClosureDigest: string;
+  readonly permittedImportSpecifiers: readonly string[];
+  readonly sourceProvenance: string;
+  readonly licenseProvenance: string;
+  readonly platformScope: string;
+  readonly buildScope: string;
+  readonly runtimeScope: string;
+  readonly implementationConvention: string;
+  readonly currentnessRule: string;
+  readonly refusalCode: string;
+  readonly resourceDigest: string;
+}
+
+const adoptionIriFields = Object.freeze([
+  "adoptsCapability", "adoptsProductProfile", "consumerImplementationConvention",
+] as const);
+const adoptionLiteralFields = Object.freeze([
+  "adoptsProfileClosureDigest", "packageName", "resolvedPackageVersion", "packageIntegrity",
+  "packageLockIdentity", "transitiveLockClosureDigest", "sourceProvenance", "licenseProvenance",
+  "platformScope", "buildScope", "runtimeScope", "adoptionCurrentnessRule", "adoptionRefusalCode",
+] as const);
+
+function exactAdoptionField(
+  graph: SemanticGraph,
+  adoption: string,
+  field: string,
+  objectKind: "iri" | "literal",
+): string {
+  const matches = graph.quads.filter((quad) => quad.subject === adoption
+    && quad.predicate === `${P}${field}`);
+  if (matches.length !== 1 || matches[0]!.objectKind !== objectKind) {
+    throw new UsfError("PRODUCT_DEPENDENCY_ADOPTION_INVALID", exitCodes.DOMAIN_FAILURE,
+      "An exact product dependency adoption field is missing, ambiguous, or has the wrong value kind.",
+      { adoption, field, values: matches.length });
+  }
+  return matches[0]!.object;
+}
+
+/** Read only complete, closed adoption records. A package name alone is never authority. */
+export function readProductDependencyAdoptions(graph: SemanticGraph): readonly ProductDependencyAdoption[] {
+  const allowed = new Set([
+    `${P}type`, `${P}permittedImportSpecifier`,
+    ...adoptionIriFields.map((field) => `${P}${field}`),
+    ...adoptionLiteralFields.map((field) => `${P}${field}`),
+  ]);
+  return Object.freeze(subjectsOfType(graph, adoptionType).map((adoption) => {
+    const unexpected = graph.quads.filter((quad) => quad.subject === adoption && !allowed.has(quad.predicate));
+    const permittedImportQuads = graph.quads.filter((quad) => quad.subject === adoption
+      && quad.predicate === `${P}permittedImportSpecifier`);
+    const permittedImportSpecifiers = Object.freeze(permittedImportQuads.map((quad) => quad.object).sort());
+    const iri = Object.fromEntries(adoptionIriFields.map((field) =>
+      [field, exactAdoptionField(graph, adoption, field, "iri")] as const)) as Record<typeof adoptionIriFields[number], string>;
+    const literal = Object.fromEntries(adoptionLiteralFields.map((field) =>
+      [field, exactAdoptionField(graph, adoption, field, "literal")] as const)) as Record<typeof adoptionLiteralFields[number], string>;
+    const packageName = literal.packageName!;
+    if (unexpected.length > 0 || permittedImportSpecifiers.length === 0
+      || permittedImportQuads.some((quad) => quad.objectKind !== "literal")
+      || new Set(permittedImportSpecifiers).size !== permittedImportSpecifiers.length
+      || !/^(@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*|[a-z0-9][a-z0-9._-]*)$/u.test(packageName)
+      || permittedImportSpecifiers.some((specifier) => specifier !== packageName && !specifier.startsWith(`${packageName}/`))
+      || !digestPattern.test(literal.adoptsProfileClosureDigest!)
+      || !digestPattern.test(literal.packageIntegrity!)
+      || !digestPattern.test(literal.packageLockIdentity!)
+      || !digestPattern.test(literal.transitiveLockClosureDigest!)
+      || !/^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u.test(literal.resolvedPackageVersion)
+      || !/^[A-Z][A-Z0-9_]{2,63}$/u.test(literal.adoptionRefusalCode!)
+      || adoptionLiteralFields.some((field) => literal[field]!.length === 0)) {
+      throw new UsfError("PRODUCT_DEPENDENCY_ADOPTION_INVALID", exitCodes.DOMAIN_FAILURE,
+        "A product dependency adoption is not a complete finite exact record.", { adoption });
+    }
+    return Object.freeze({
+      adoption,
+      capability: iri.adoptsCapability!, productProfile: iri.adoptsProductProfile!,
+      profileClosureDigest: literal.adoptsProfileClosureDigest!, packageName,
+      resolvedPackageVersion: literal.resolvedPackageVersion!, packageIntegrity: literal.packageIntegrity!,
+      packageLockIdentity: literal.packageLockIdentity!,
+      transitiveLockClosureDigest: literal.transitiveLockClosureDigest!,
+      permittedImportSpecifiers,
+      sourceProvenance: literal.sourceProvenance!, licenseProvenance: literal.licenseProvenance!,
+      platformScope: literal.platformScope!, buildScope: literal.buildScope!, runtimeScope: literal.runtimeScope!,
+      implementationConvention: iri.consumerImplementationConvention!,
+      currentnessRule: literal.adoptionCurrentnessRule!, refusalCode: literal.adoptionRefusalCode!,
+      resourceDigest: resourceDigest(graph, adoption),
+    });
+  }));
+}
+
+function currentProductProfileClosureDigest(graph: SemanticGraph, productProfile: string): string | null {
+  const bindings = subjectsOfType(graph, "urn:usf:type:ProfileFoundationBinding")
+    .filter((binding) => one(graph, binding, "boundProfileRevision") === productProfile);
+  if (bindings.length !== 1) return null;
+  const canonical = values(graph, bindings[0]!, "foundationDependencySeed");
+  const retired = values(graph, bindings[0]!, "coreDependencySeed");
+  if ((canonical.length > 0 && retired.length > 0) || (canonical.length === 0 && retired.length === 0)) return null;
+  const resources = transitiveResourceIris(graph, canonical.length > 0 ? canonical : retired).sort()
+    .map((resource) => Object.freeze({ resource, digest: resourceDigest(graph, resource) }));
+  return canonicalDigest(resources);
+}
+
+/** Select one current record for one exact consumer context; mismatch never falls back. */
+export function selectProductDependencyAdoption(
+  graph: SemanticGraph,
+  context: Readonly<{ capability: string; productProfile: string; implementationConvention: string }>,
+): ProductDependencyAdoption | null {
+  const matching = readProductDependencyAdoptions(graph).filter((adoption) =>
+    adoption.capability === context.capability
+    && adoption.productProfile === context.productProfile
+    && adoption.implementationConvention === context.implementationConvention);
+  if (matching.length > 1) {
+    throw new UsfError("PRODUCT_DEPENDENCY_ADOPTION_AMBIGUOUS", exitCodes.DOMAIN_FAILURE,
+      "More than one exact dependency adoption matches this consumer context.", { context, matches: matching.length });
+  }
+  if (matching.length === 0) return null;
+  const selected = matching[0]!;
+  let closureDigest: string | null;
+  try { closureDigest = currentProductProfileClosureDigest(graph, context.productProfile); }
+  catch {
+    throw new UsfError(selected.refusalCode, exitCodes.CURRENTNESS_FAILURE,
+      "The product dependency adoption profile closure cannot be rederived.", { adoption: selected.adoption });
+  }
+  if (closureDigest !== selected.profileClosureDigest) {
+    throw new UsfError(selected.refusalCode, exitCodes.CURRENTNESS_FAILURE,
+      "The product dependency adoption profile closure is not current.", { adoption: selected.adoption });
+  }
+  return selected;
+}
+
+export function productDependencyAdoptionForNeed(
+  graph: SemanticGraph,
+  need: Pick<CapabilityImplementationNeed, "capability" | "productProfile" | "implementationConvention">,
+): ProductDependencyAdoption | null {
+  if (need.productProfile == null || need.implementationConvention === undefined) return null;
+  return selectProductDependencyAdoption(graph, {
+    capability: need.capability,
+    productProfile: need.productProfile,
+    implementationConvention: need.implementationConvention,
+  });
 }
 
 /**
@@ -140,6 +296,9 @@ export interface FacetRequirement {
 /** One capability's complete outstanding implementation obligation. */
 export interface CapabilityImplementationNeed {
   readonly capability: string;
+  /** Present on graph-derived needs; optional only for retained direct test fixtures. */
+  readonly implementationConvention?: string;
+  readonly productProfile?: string | null;
   readonly canonicalName: string;
   readonly domain: string;
   readonly contract: string | null;
@@ -179,6 +338,7 @@ export function deriveCapabilityImplementationNeeds(
   // capability invisible.
   const profileRevisions = new Set(subjectsOfType(graph, "urn:usf:type:ProductProfileRevision"));
   const repositoryOfCapability = new Map<string, string>();
+  const profileOfCapability = new Map<string, string>();
   for (const quad of graph.quads) {
     // declaresCapability is shared with Core's own capability set, so only a
     // product profile revision may claim a capability for a repository. The
@@ -186,6 +346,7 @@ export function deriveCapabilityImplementationNeeds(
     if (quad.predicate !== `${P}declaresCapability` || !profileRevisions.has(quad.subject)) continue;
     const repository = one(graph, quad.subject, "productRepository");
     if (repository !== null) repositoryOfCapability.set(quad.object, repository);
+    profileOfCapability.set(quad.object, quad.subject);
   }
   const byRepository = new Map<string | null, ImplementationConvention>();
   for (const entry of conventions) byRepository.set(entry.productRepository, entry);
@@ -250,6 +411,8 @@ export function deriveCapabilityImplementationNeeds(
       const sorted = Object.freeze([...requirements].sort((left, right) => left.facet.localeCompare(right.facet)));
       return Object.freeze({
         capability,
+        implementationConvention: governingConvention.convention,
+        productProfile: profileOfCapability.get(capability) ?? null,
         canonicalName: name,
         domain,
         contract: [...capabilityOfContract.entries()].find(([, value]) => value === capability)?.[0] ?? null,
@@ -449,6 +612,7 @@ export function deriveImplementationPrompt(
   convention: ImplementationConvention,
   context: InspectionContext,
   failing: readonly FailingRequirement[] = [],
+  adoption: ProductDependencyAdoption | null = null,
 ): string {
   const existing = context.existingTarget === null
     ? "This module does not exist yet. Create its complete content."
@@ -473,7 +637,9 @@ export function deriveImplementationPrompt(
     ``,
     `Rules you must follow exactly:`,
     `- Return only the TypeScript source of this one module. No commentary, no code fence, no file path, no additional file.`,
-    `- Import nothing outside the Node standard library. Do not import any package.`,
+    adoption === null
+      ? `- Import nothing outside the Node standard library. Do not import any package.`
+      : `- The only external package imports permitted by the exact current adoption are: ${adoption.permittedImportSpecifiers.join(", ")}. Import no other package.`,
     `- Export named functions and named constants. Every behaviour a requirement above asserts must be reachable by calling an export with ordinary values.`,
     `- Where a requirement names a fixed set of outcomes, export that set as a readonly array of string literals and a union type over it.`,
     `- Where a requirement says a check must precede a mutation, make the ordering observable: the mutation function must accept the audit function and must not mutate when it throws or returns a failure.`,
@@ -707,7 +873,73 @@ function stripCodeFence(text: string): string {
   return embedded === null ? text : embedded[1]!;
 }
 
-const forbiddenImport = /(?:^|\n)\s*(?:import[\s\S]{0,200}?from\s*|import\s*)["']([^"']+)["']/gu;
+function analyseImports(content: string): Readonly<{
+  specifiers: readonly string[];
+  invalid: boolean;
+}> {
+  const source = ts.createSourceFile("candidate.ts", content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const specifiers = new Set<string>();
+  const admittedRequireReferences = new Set<ts.Node>();
+  const parsedSource = source as ts.SourceFile & { readonly parseDiagnostics: readonly ts.Diagnostic[] };
+  let invalid = parsedSource.parseDiagnostics.length > 0;
+  const add = (node: ts.Expression | undefined): void => {
+    if (node !== undefined && ts.isStringLiteralLike(node)) specifiers.add(node.text);
+    else invalid = true;
+  };
+  const requireCallee = (expression: ts.Expression): ts.Node | null => {
+    let candidate = expression;
+    while (ts.isParenthesizedExpression(candidate)) candidate = candidate.expression;
+    if (ts.isIdentifier(candidate) && candidate.text === "require") return candidate;
+    if (ts.isPropertyAccessExpression(candidate) && candidate.name.text === "require") return candidate.name;
+    if (ts.isElementAccessExpression(candidate) && ts.isStringLiteralLike(candidate.argumentExpression)
+      && candidate.argumentExpression.text === "require") return candidate.argumentExpression;
+    return null;
+  };
+  const visit = (node: ts.Node): void => {
+    if (ts.isImportDeclaration(node)) add(node.moduleSpecifier);
+    else if (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined) add(node.moduleSpecifier);
+    else if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference)) {
+      add(node.moduleReference.expression);
+    } else if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      add(node.arguments[0]);
+    } else if (ts.isCallExpression(node)) {
+      const reference = requireCallee(node.expression);
+      if (reference !== null) {
+        admittedRequireReferences.add(reference);
+        add(node.arguments[0]);
+      }
+    } else if (ts.isIdentifier(node) && node.text === "require" && !admittedRequireReferences.has(node)) {
+      invalid = true;
+    } else if (ts.isStringLiteralLike(node) && node.text === "require"
+      && ts.isElementAccessExpression(node.parent) && node.parent.argumentExpression === node
+      && !admittedRequireReferences.has(node)) {
+      invalid = true;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return Object.freeze({ specifiers: Object.freeze([...specifiers].sort()), invalid });
+}
+
+function externalImportRefusal(
+  content: string,
+  adoption: ProductDependencyAdoption | null,
+): Readonly<{ code: "external-import"; detail: string }> | null {
+  const analysis = analyseImports(content);
+  if (analysis.invalid) {
+    return Object.freeze({ code: "external-import", detail: "generated source contains an invalid or non-literal module reference" });
+  }
+  for (const specifier of analysis.specifiers) {
+    if (!nodeBuiltin(specifier) && !/^\.\.?\//u.test(specifier)
+      && !(adoption?.permittedImportSpecifiers.includes(specifier) ?? false)) {
+      return Object.freeze({
+        code: "external-import",
+        detail: `generated source may import only Node builtins, relative modules and exact adopted specifiers: ${specifier}`,
+      });
+    }
+  }
+  return null;
+}
 
 /**
  * A Node builtin reached by its bare legacy name is still a Node builtin. The
@@ -715,7 +947,6 @@ const forbiddenImport = /(?:^|\n)\s*(?:import[\s\S]{0,200}?from\s*|import\s*)["'
  * specifier style, and refusing `crypto` cost a whole dispatch.
  */
 function nodeBuiltin(specifier: string): boolean {
-  if (specifier.startsWith("node:")) return true;
   const { isBuiltin } = process.getBuiltinModule?.("module") ?? {};
   return typeof isBuiltin === "function" ? isBuiltin(specifier) : false;
 }
@@ -725,7 +956,10 @@ function nodeBuiltin(specifier: string): boolean {
  * the kind of thing the convention authorizes, not that it is correct: only
  * executing it can establish that.
  */
-export function validateImplementationOutput(raw: string): ImplementationOutputCheck {
+export function validateImplementationOutput(
+  raw: string,
+  adoption: ProductDependencyAdoption | null = null,
+): ImplementationOutputCheck {
   const content = stripCodeFence(stripReasoning(raw)).trim();
   const refuse = (code: string, detail: string): ImplementationOutputCheck =>
     Object.freeze({ accepted: false, code, detail, content, contentDigest: canonicalDigest(content) });
@@ -741,12 +975,8 @@ export function validateImplementationOutput(raw: string): ImplementationOutputC
     return refuse("leading-slash", "module content may not begin with a path-like slash");
   }
   if (!/\bexport\b/u.test(content)) return refuse("no-export", "a capability module must export its surface");
-  for (const match of content.matchAll(forbiddenImport)) {
-    const specifier = match[1]!;
-    if (!nodeBuiltin(specifier) && !specifier.startsWith(".")) {
-      return refuse("external-import", `a capability module may import only Node builtins and its own directory: ${specifier}`);
-    }
-  }
+  const importRefusal = externalImportRefusal(content, adoption);
+  if (importRefusal !== null) return refuse(importRefusal.code, importRefusal.detail);
   // Only an actual annotation position, so prose mentioning the word in a
   // comment cannot cost a whole dispatch.
   if (/:\s*any\s*[;,)\]=>]/u.test(content)) {
@@ -778,6 +1008,8 @@ export function validateConformanceOutput(
   if (content.startsWith("/") && !content.startsWith("//") && !content.startsWith("/*")) {
     return refuse("leading-slash", "test content may not begin with a path-like slash");
   }
+  const importRefusal = externalImportRefusal(content, null);
+  if (importRefusal !== null) return refuse(importRefusal.code, importRefusal.detail);
   if (!content.includes(importSpecifier)) {
     return refuse("module-not-imported", `the test must import the module under test at ${importSpecifier}`);
   }
