@@ -1,7 +1,7 @@
-import { loadSemanticGraph } from "../graph/index.ts";
+import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { readFileSync } from "node:fs";
 import { createJsonSchemaValidator } from "../schema/index.ts";
-import { deriveCliTransitionContext, deriveCliRecordSpecifications, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema } from "../graph/cli-transitions.ts";
+import { deriveCliTransitionContext, deriveCliRecordSpecifications, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema, type CliTransitionAdapter } from "../graph/cli-transitions.ts";
 import { canonicalQuadDigest } from "../graph/nquads.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
 import { parseCommandInput, readCommandInput } from "./command-input.ts";
@@ -37,6 +37,7 @@ const observationAdapters = new Map([[
     id: "urn:usf:cli-adapter:local-contribution-prepare:1",
     command: "urn:usf:command:resolve-prepare-local:1",
     algorithm: "urn:usf:algorithm:local-contribution-preparation:1",
+    outputSchema: "urn:usf:local-contribution:1",
     rules: localObservationRules,
     prepare: prepareLocalContribution,
   },
@@ -90,17 +91,9 @@ export function validateLocalObservationRoles(descriptor: ObservationObject, tra
   }
 }
 
-export async function observationCommandHandler(request: CommandRequest, commandPath: string): Promise<CommandResult> {
+export function inspectObservationTransition(graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, commandPath: string) {
   const implementation = observationAdapters.get(commandPath);
   if (implementation === undefined) throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "No compiled observation adapter exists.");
-  const transport = parseCommandInput(request.args, "RESOLVE");
-  if (transport.mode !== "source") throw new UsfError("RESOLVE_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, "Local preparation requires the registered --input transport.");
-  const input = observationObject(await readCommandInput(request.repositoryRoot, transport, "RESOLVE"));
-  if (typeof input.rootIdentity !== "string" || typeof input.manifestPath !== "string") {
-    throw new UsfError("CLI_TRANSITION_INPUT_REQUIRED", exitCodes.INVALID_INPUT, "External rootIdentity and manifestPath are required.");
-  }
-  const selection = { rootIdentity: input.rootIdentity, manifestPath: input.manifestPath };
-  const graph = loadSemanticGraph(request.repositoryRoot, selection.manifestPath);
   const context = deriveCliTransitionContext(graph, selection.rootIdentity);
   if (context.diagnostics.length > 0 || context.contract === null || context.profile === null) {
     throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Selected context is not uniquely interpretable.", { diagnostics: context.diagnostics });
@@ -137,6 +130,13 @@ export async function observationCommandHandler(request: CommandRequest, command
   if (!projected.valid || projected.value === null) throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Observation descriptor is incomplete.", { diagnostics: projected.gaps });
   const descriptor = projected.value;
   validateLocalObservationRoles(descriptor, transitions[0]!);
+  const declaredOutputs = descriptor.produces;
+  if (!Array.isArray(declaredOutputs) || declaredOutputs.length !== 1
+    || observationObject(declaredOutputs[0]).schema !== implementation.outputSchema
+    || observationObject(declaredOutputs[0]).work !== selection.rootIdentity
+    || observationObject(declaredOutputs[0]).profile !== context.profile) {
+    throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Declared output does not match the compiled observation work/profile/schema.");
+  }
   const effect = observationObject(descriptor.effect), declaredInput = observationObject(descriptor.input);
   if (descriptor.owner !== context.contract || effect.effectClass !== "observation" || effect.contact !== "none"
     || !Array.isArray(descriptor.prerequisites) || descriptor.prerequisites.length !== 0
@@ -158,12 +158,25 @@ export async function observationCommandHandler(request: CommandRequest, command
   const record = recordIds.length === 1 ? specifications.records.find(r => r.id === recordIds[0]) : undefined;
   if (record === undefined) throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Input record is outside the canonical schema closure.");
   const validator = createJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:usf:cli-observation-input-validation:1", $ref: record.schemaIdentity + "#" + record.fragment }, { dependencySchemas: [schema] });
+  return { implementation, context, descriptor, validator, transitionIdentity: transitions[0]! };
+}
+
+export async function observationCommandHandler(request: CommandRequest, commandPath: string): Promise<CommandResult> {
+  if (!observationAdapters.has(commandPath)) throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "No compiled observation adapter exists.");
+  const transport = parseCommandInput(request.args, "RESOLVE");
+  if (transport.mode !== "source") throw new UsfError("RESOLVE_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, "Local preparation requires the registered --input transport.");
+  const input = observationObject(await readCommandInput(request.repositoryRoot, transport, "RESOLVE"));
+  if (typeof input.rootIdentity !== "string" || typeof input.manifestPath !== "string") {
+    throw new UsfError("CLI_TRANSITION_INPUT_REQUIRED", exitCodes.INVALID_INPUT, "External rootIdentity and manifestPath are required.");
+  }
+  const selection = { rootIdentity: input.rootIdentity, manifestPath: input.manifestPath };
+  const graph = loadSemanticGraph(request.repositoryRoot, selection.manifestPath);
+  const { implementation, context, validator } = inspectObservationTransition(graph, selection, commandPath);
   if (!validator.validate(input).valid) throw new UsfError("CLI_TRANSITION_INPUT_INVALID", exitCodes.INVALID_INPUT, "Input violates the graph-generated request schema.");
   try {
     const output = parseLocalContribution(await implementation.prepare(request.repositoryRoot, selection, input.operations));
-    const outputs = descriptor.produces;
-    if (!Array.isArray(outputs) || outputs.length !== 1 || observationObject(outputs[0]).schema !== output.schema
-      || observationObject(outputs[0]).work !== selection.rootIdentity || observationObject(outputs[0]).profile !== context.profile) {
+    if (output.schema !== implementation.outputSchema || output.basis.work.id !== selection.rootIdentity
+      || output.basis.selection.profile !== context.profile) {
       throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Produced artifact is not the declared work/profile/schema.");
     }
     const current = loadSemanticGraph(request.repositoryRoot, selection.manifestPath);
@@ -175,6 +188,24 @@ export async function observationCommandHandler(request: CommandRequest, command
     if (error instanceof LocalContributionError) throw new UsfError(error.reasonCode, exitCodes.DOMAIN_FAILURE, "Current local preparation guards refused.");
     throw error;
   }
+}
+
+export function observationTransitionAdapters(): readonly CliTransitionAdapter[] {
+  return [...observationAdapters].map(([commandPath, implementation]) => ({
+    id: implementation.id, effectClass: "observation",
+    inspect(graph, selection, transitionIdentity) {
+      try {
+        const admitted = inspectObservationTransition(graph, selection, commandPath);
+        if (admitted.transitionIdentity !== transitionIdentity) {
+          return [{ reasonCode: "TRANSITION_ADAPTER_UNMAPPED", subject: transitionIdentity, field: "adapter" }];
+        }
+        return [];
+      } catch (error) {
+        if (!(error instanceof UsfError)) throw error;
+        return [{ reasonCode: error.code, subject: transitionIdentity, field: "adapter" }];
+      }
+    },
+  }));
 }
 
 
@@ -222,7 +253,7 @@ export function transitionCommandHandler(request: CommandRequest, installedComma
   };
   let output: ReturnType<typeof deriveCliTransitionCoverage>;
   try {
-    output = deriveCliTransitionCoverage(graph, selection, inventory, []);
+    output = deriveCliTransitionCoverage(graph, selection, inventory, observationTransitionAdapters());
   } catch (error) {
     if (error instanceof RangeError && ["TRANSITION_INPUT_BOUNDS_EXCEEDED", "TRANSITION_DESCRIPTOR_BOUNDS_EXCEEDED", "CLI_SPECIFICATION_BOUNDS", "CLI_RECORD_BOUNDS"].includes(error.message)) {
       throw new UsfError(error.message, exitCodes.INVALID_INPUT, "Selected transition data exceeds the bounded interrogation contract.");

@@ -337,7 +337,11 @@ export interface CliTransitionInventory {
   readonly leaves: readonly { readonly path: readonly string[]; readonly owner: string | null; readonly parserOwner: string | null }[];
   readonly complete: boolean;
 }
-export interface CliTransitionAdapter { readonly id: string; readonly effectClass: string }
+export interface CliTransitionAdapter {
+  readonly id: string; readonly effectClass: string;
+  /** Trusted compiled inspection only; serialized adapter declarations cannot authenticate support. */
+  readonly inspect?: (graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, transitionIdentity: string) => readonly CliTransitionDiagnostic[];
+}
 export type CliParallelSafetyAssessment = Readonly<Record<string, CliRecordValue>> & { readonly state: "unproven" | "blocked" | "proved" };
 export interface CliTransitionDiagnostic { readonly reasonCode: string; readonly subject: string; readonly field: string }
 interface CliTransitionTopology {
@@ -470,7 +474,21 @@ export function deriveCliTransitionCoverage(
     }
     // Structural projection does not authenticate operational evaluators or adapters.
     issue("TRANSITION_EVALUATORS_UNAUTHENTICATED", id, "operationalRules");
-    issue("TRANSITION_ADAPTER_UNMAPPED", id, "adapter");
+    const commands = values(id, "command");
+    const bindings = commands.length === 1 ? values(commands[0]!, "adapterIdentity") : [];
+    const matching = bindings.length === 1 ? adapters.filter(adapter => adapter.id === bindings[0]) : [];
+    const projectedEffect = descriptors.find(descriptor => descriptor.identity === id)?.effect;
+    const effectClass = projectedEffect !== null && typeof projectedEffect === "object" && !Array.isArray(projectedEffect)
+      ? (projectedEffect as Readonly<Record<string, CliRecordValue>>).effectClass : null;
+    const adapter = matching.length === 1 ? matching[0] : undefined;
+    if (adapter === undefined || typeof adapter.inspect !== "function" || adapter.effectClass !== effectClass) {
+      issue("TRANSITION_ADAPTER_UNMAPPED", id, "adapter");
+    } else {
+      const inspected = adapter.inspect(graph, selection, id);
+      if (!Array.isArray(inspected) || inspected.length > 4096 || inspected.some(d => !d || !boundedText(d.reasonCode) || !boundedText(d.subject) || !boundedText(d.field))) {
+        issue("TRANSITION_ADAPTER_INSPECTION_INVALID", id, "adapter");
+      } else diagnostics.push(...inspected);
+    }
     return { id, requiresTransition: values(id, "requiresTransition"), consumes: values(id, "consumes"), produces: values(id, "produces") };
   });
   if (specifications !== null) diagnostics.push(...specifications.gaps, ...specifications.operationalGaps);

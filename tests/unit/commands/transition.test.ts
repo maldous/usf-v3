@@ -1,7 +1,68 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles } from "../../../src/commands/transition.ts";
+import { observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters } from "../../../src/commands/transition.ts";
+import { readFileSync } from "node:fs";
+import type { SemanticGraph } from "../../../src/graph/index.ts";
+import { parseStrictNQuads } from "../../../src/graph/nquads.ts";
+import { deriveCliTransitionCoverage } from "../../../src/graph/cli-transitions.ts";
 import { findHelpTopic, transitionInterrogationContract } from "../../../src/commands/help.ts";
+
+function actualDescriptorGraph(): SemanticGraph {
+  const quads = parseStrictNQuads(readFileSync(new URL("../../../graph/cli-transition-definition.nq", import.meta.url), "utf8"), "urn:usf:graph:cli-transition-definition");
+  quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
+  return { quads, manifest: { schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [] }, semanticDigest: "untrusted", graphDigests: {}, sourceDigests: {}, repositoryRoot: "/unused" };
+}
+
+test("interrogation and preparation share actual graph-bound observation admission", () => {
+  const graph = actualDescriptorGraph();
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const admitted = inspectObservationTransition(graph, selection, "resolve prepare-local");
+  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
+  assert.deepEqual(report.descriptors[0], admitted.descriptor);
+  assert.equal(report.diagnostics.some(d => d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), false);
+  assert.equal(report.executionAuthority, "none");
+  assert.equal(report.complete, false);
+  assert.equal(report.parallelSafety.state, "unproven");
+  assert.equal(report.terminalClosure.equal, false);
+  assert(report.diagnostics.some(d => d.reasonCode === "TRANSITION_EVALUATORS_UNAUTHENTICATED"));
+  assert.equal(admitted.validator.validate({ ...selection, operations: [{ kind: "write", path: "src/a.ts", content: "proposal" }] }).valid, true);
+  assert.equal(admitted.validator.validate({ ...selection, basis: "invented", operations: [] }).valid, false);
+});
+
+test("changed operational semantics refuse identically in shared inspection and preparation admission", () => {
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  for (const [subject, predicate, replacement] of [
+    ["urn:usf:cli-contract:local-preparation-effect:1", "guardRule", "urn:usf:rule:local-preparation-readback:1"],
+    ["urn:usf:cli-contract:local-preparation-artifact:1", "producer", "urn:test:other"],
+    ["urn:usf:cli-contract:local-preparation-artifact:1", "schema", "urn:test:unsupported-schema"],
+    ["urn:usf:cli-contract:local-preparation-artifact:1", "work", "urn:test:other-work"],
+    ["urn:usf:cli-contract:local-preparation-artifact:1", "profile", "urn:test:other-profile"],
+    ["urn:usf:command:resolve-prepare-local:1", "commandPath", "invented prepare"],
+    ["urn:usf:rule:local-preparation-guard:1", "text", "changed operational meaning"],
+  ]) {
+    const graph = actualDescriptorGraph();
+    const row = graph.quads.find(q => q.subject === subject && q.predicate === "urn:usf:predicate:" + predicate)!;
+    row.object = replacement!;
+    let refusal: string | undefined;
+    assert.throws(() => inspectObservationTransition(graph, selection, "resolve prepare-local"), (error: unknown) => {
+      refusal = (error as { code: string }).code; return typeof refusal === "string";
+    });
+    const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
+    assert(report.diagnostics.some(d => d.reasonCode === refusal && d.field === "adapter"));
+    assert.equal(report.executionAuthority, "none");
+  }
+});
+
+test("adapter declarations, collisions and wrong effect classes cannot authenticate mapping", () => {
+  const graph = actualDescriptorGraph();
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const [adapter] = observationTransitionAdapters();
+  for (const adapters of [[{ id: adapter!.id, effectClass: "observation" }], [adapter!, adapter!], [{ ...adapter!, effectClass: "integration" }]]) {
+    const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, adapters);
+    assert(report.diagnostics.some(d => d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
+    assert.equal(report.executionAuthority, "none");
+  }
+});
 
 test("compiled observation admission binds each rule role and output producer", () => {
   const transition = "urn:usf:cli-transition:local-contribution-prepare:1";
