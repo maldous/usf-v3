@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:provider-answer-observation:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "routeMemberDigest",
+    "candidateMemberDigest",
+    "requestedIdentity",
+    "actualIdentity",
+    "accountObservationDigest",
+    "routeModelEconomicsBindingDigest",
+    "credentialSourceIdentityDigest",
+    "adapterPreflightDigest",
+    "runAuthorizationDigest",
+    "promptOnlyProjectionDigest",
+    "rawProviderResponseDigest",
+    "sanitizedAnswer",
+    "usage",
+    "economics",
+    "latency",
+    "acquiredAt",
+    "expiresAt",
+    "failureCode"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:provider-answer-observation:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "routeMemberDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "candidateMemberDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "requestedIdentity": {
+      "$ref": "#/$defs/modelIdentity"
+    },
+    "actualIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "provider",
+        "model",
+        "sdkProvider"
+      ],
+      "properties": {
+        "family": {
+          "$ref": "#/$defs/identifier"
+        },
+        "provider": {
+          "$ref": "#/$defs/identifier"
+        },
+        "model": {
+          "$ref": "#/$defs/identifier"
+        },
+        "sdkProvider": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "accountObservationDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "routeModelEconomicsBindingDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "credentialSourceIdentityDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "adapterPreflightDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "runAuthorizationDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "promptOnlyProjectionDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "rawProviderResponseDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "sanitizedAnswer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputTokens",
+        "outputTokens",
+        "totalTokens"
+      ],
+      "properties": {
+        "inputTokens": {
+          "$ref": "#/$defs/tokenCount"
+        },
+        "outputTokens": {
+          "$ref": "#/$defs/tokenCount"
+        },
+        "totalTokens": {
+          "$ref": "#/$defs/tokenCount"
+        }
+      }
+    },
+    "economics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "costDisposition",
+        "observedCostUsd",
+        "quota"
+      ],
+      "properties": {
+        "costDisposition": {
+          "const": "zero-paid"
+        },
+        "observedCostUsd": {
+          "const": "0"
+        },
+        "quota": {
+          "enum": [
+            "available",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "latency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "milliseconds"
+      ],
+      "properties": {
+        "milliseconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "acquiredAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "expiresAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "failureCode": {
+      "type": "null"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "tokenCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "modelIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "family": {
+          "$ref": "#/$defs/identifier"
+        },
+        "provider": {
+          "$ref": "#/$defs/identifier"
+        },
+        "model": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    }
+  }
+}

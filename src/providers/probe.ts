@@ -1,4 +1,4 @@
-import { canonicalDigest } from "../core/canonical.ts";
+import { canonicalDigest, sha256 } from "../core/canonical.ts";
 import type { ProviderRouteConfig } from "./config.ts";
 import { evaluateZeroPaidEconomics, type ZeroPaidEconomicsInput } from "./economics.ts";
 
@@ -157,6 +157,74 @@ function constrainedFetch(endpoint: URL, delegate: typeof globalThis.fetch): typ
   };
 }
 
+export interface ProviderRawResponseCapture {
+  readonly digest: `sha256:${string}`;
+  readonly byteLength: number;
+  readonly status: number;
+}
+
+async function readBoundedResponseBytes(response: Response, maximumBytes: number): Promise<Uint8Array> {
+  const declaredLength = response.headers.get("content-length");
+  if (declaredLength !== null && (!/^[0-9]+$/u.test(declaredLength) || Number(declaredLength) > maximumBytes)) {
+    throw new Error("PROVIDER_RESPONSE_LIMIT_EXCEEDED");
+  }
+  if (response.body === null) return new Uint8Array();
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const next = await reader.read();
+      if (next.done) break;
+      total += next.value.byteLength;
+      if (total > maximumBytes) {
+        await reader.cancel("PROVIDER_RESPONSE_LIMIT_EXCEEDED");
+        throw new Error("PROVIDER_RESPONSE_LIMIT_EXCEEDED");
+      }
+      chunks.push(next.value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const joined = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    joined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return joined;
+}
+
+/**
+ * Enforce the exact provider transport boundary and replace its body with one
+ * bounded immutable copy. The callback receives only a digest and byte count;
+ * raw provider bytes never leave the child transport.
+ */
+export function createBoundedProviderFetch(
+  endpoint: URL,
+  delegate: typeof globalThis.fetch,
+  maximumResponseBytes: number,
+  capture: (observation: ProviderRawResponseCapture) => void,
+): typeof globalThis.fetch {
+  if (endpoint.protocol !== "https:" || endpoint.username !== "" || endpoint.password !== ""
+    || endpoint.search !== "" || endpoint.hash !== "" || !endpoint.pathname.endsWith("/")
+    || !Number.isSafeInteger(maximumResponseBytes) || maximumResponseBytes < 1 || maximumResponseBytes > 1_048_576) {
+    throw new Error("PROVIDER_CHILD_INPUT_INVALID");
+  }
+  const fixed = constrainedFetch(endpoint, delegate);
+  return async (input, init) => {
+    const response = await fixed(input, init);
+    const bytes = await readBoundedResponseBytes(response, maximumResponseBytes);
+    capture(Object.freeze({ digest: providerRawResponseDigest(bytes), byteLength: bytes.byteLength, status: response.status }));
+    const body = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  };
+}
+
 /** Classify only enough remaining quota to prove that one further bounded call fits. */
 export function classifyProbeQuotaHeaders(headers: Readonly<Record<string, string | undefined>>): "available" | "exhausted" | "unknown" {
   const numeric = (values: readonly (string | undefined)[]): number[] => values
@@ -183,7 +251,7 @@ async function directInvoke(request: ProbeInvocationRequest): Promise<ProbeInvoc
   // Adapter/runtime code is loaded only after the caller has completed every
   // local currentness, containment and zero-paid preflight.
   const { generateText } = await import("ai");
-  const secureFetch = constrainedFetch(endpoint, request.fetch);
+  const secureFetch = createBoundedProviderFetch(endpoint, request.fetch, 1_048_576, () => undefined);
   const provider = request.route.provider === "groq"
     ? (await import("@ai-sdk/groq")).createGroq({ apiKey: request.credential, baseURL: endpoint.href.slice(0, -1), fetch: secureFetch })
     : (await import("@ai-sdk/cerebras")).createCerebras({ apiKey: request.credential, baseURL: endpoint.href.slice(0, -1), fetch: secureFetch });
@@ -377,3 +445,392 @@ export async function probeProvider(input: ProviderProbeInput): Promise<Provider
 }
 
 export { probePromptDigest };
+
+export interface AdapterPreflightReceipt {
+  readonly schema: "urn:usf:adapter-preflight-receipt:1";
+  readonly version: 1;
+  readonly routeMemberDigest: string;
+  readonly adapterPackage: string;
+  readonly adapterVersion: string;
+  readonly adapterIntegrity: "pnpm-lock-integrity-bound";
+  readonly adapterArtifactDigest: string;
+  readonly childProtocolDigest: string;
+  readonly fixedOriginDigest: string;
+  readonly selectedCredentialName: string;
+  readonly observedAt: string;
+  readonly expiresAt: string;
+  readonly status: "available" | "refused";
+  readonly failureCode: string | null;
+}
+
+export interface RunAuthorization {
+  readonly schema: "urn:usf:run-authorization:1";
+  readonly version: 1;
+  readonly routeMemberDigest: string;
+  readonly candidateMemberDigest: string;
+  readonly requestedModelIdentity: Readonly<{ family: string; provider: string; model: string }>;
+  readonly accountSourceUseAuthorizationDigest: string;
+  readonly accountObservationDigest: string;
+  readonly routeModelEconomicsBindingDigest: string;
+  readonly credentialSourceIdentityDigest: string;
+  readonly adapterPreflightDigest: string;
+  readonly profileDigest: string;
+  readonly effectivePolicyDigest: string;
+  readonly privacyProjectionDigest: string;
+  readonly taskDigest: string;
+  readonly promptOnlyProjectionDigest: string;
+  readonly maximumInputBytes: number;
+  readonly maximumOutputTokens: number;
+  readonly timeoutMilliseconds: number;
+  readonly issuedAt: string;
+  readonly expiresAt: string;
+  readonly fallbackProhibited: true;
+  readonly paidCostCeiling: "0";
+  readonly authorizationDisposition: "authorized";
+}
+
+export interface ProviderAnswerObservation {
+  readonly schema: "urn:usf:provider-answer-observation:1";
+  readonly version: 1;
+  readonly routeMemberDigest: string;
+  readonly candidateMemberDigest: string;
+  readonly requestedIdentity: Readonly<{ family: string; provider: string; model: string }>;
+  readonly actualIdentity: Readonly<{ family: string; provider: string; model: string; sdkProvider: string }>;
+  readonly accountObservationDigest: string;
+  readonly routeModelEconomicsBindingDigest: string;
+  readonly credentialSourceIdentityDigest: string;
+  readonly adapterPreflightDigest: string;
+  readonly runAuthorizationDigest: string;
+  readonly promptOnlyProjectionDigest: string;
+  readonly rawProviderResponseDigest: string;
+  readonly sanitizedAnswer: string;
+  readonly usage: Readonly<{ inputTokens: number; outputTokens: number; totalTokens: number }>;
+  readonly economics: Readonly<{ costDisposition: "zero-paid"; observedCostUsd: "0"; quota: "available" | "unknown" }>;
+  readonly latency: Readonly<{ milliseconds: number }>;
+  readonly acquiredAt: string;
+  readonly expiresAt: string;
+  readonly failureCode: null;
+}
+
+export interface RunAuthorizationExpectedBindings {
+  readonly routeMemberDigest: string;
+  readonly candidateMemberDigest: string;
+  readonly requestedModelIdentity: RunAuthorization["requestedModelIdentity"];
+  readonly accountSourceUseAuthorizationDigest: string;
+  readonly accountObservationDigest: string;
+  readonly routeModelEconomicsBindingDigest: string;
+  readonly credentialSourceIdentityDigest: string;
+  readonly adapterPreflightDigest: string;
+  readonly profileDigest: string;
+  readonly effectivePolicyDigest: string;
+  readonly privacyProjectionDigest: string;
+  readonly taskDigest: string;
+  readonly promptOnlyProjectionDigest: string;
+  readonly maximumInputBytes: number;
+  readonly maximumOutputTokens: number;
+  readonly timeoutMilliseconds: number;
+}
+
+export interface ProviderChildEnvironmentInput {
+  readonly credentialName: string;
+  readonly credentialValue: string;
+  readonly fixedOrigin: string;
+  readonly home: string;
+  readonly temporary: string;
+  readonly maximumInputBytes: number;
+  readonly maximumOutputTokens: number;
+  readonly timeoutMilliseconds: number;
+}
+
+export interface ProviderChildLaunch {
+  readonly executable: string;
+  readonly arguments: readonly string[];
+  readonly environment: Readonly<Record<string, string>>;
+}
+
+const strictDigestPattern = /^sha256:[0-9a-f]{64}$/u;
+const strictCredentialPattern = /^[A-Z_][A-Z0-9_]{0,127}$/u;
+const strictTokenPattern = /^[A-Za-z0-9][A-Za-z0-9._:/+~-]{0,191}$/u;
+const strictAdapterPattern = /^(?:@[a-z0-9][a-z0-9._-]{0,63}\/[a-z0-9][a-z0-9._-]{0,95}|[a-z0-9][a-z0-9._-]{0,95})$/u;
+const reservedChildEnvironmentNames = new Set([
+  "HOME", "LANG", "LC_ALL", "PATH", "TMPDIR",
+  "USF_PROVIDER_CHILD", "USF_PROVIDER_FIXED_ORIGIN", "USF_PROVIDER_MAXIMUM_INPUT_BYTES",
+  "USF_PROVIDER_MAXIMUM_OUTPUT_TOKENS", "USF_PROVIDER_PAID_COST_CEILING",
+  "USF_PROVIDER_TIMEOUT_MILLISECONDS",
+]);
+
+function strictRecord(value: unknown): Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new Error("PROVIDER_RECORD_INVALID");
+  return value as Record<string, unknown>;
+}
+
+function strictKeys(value: Record<string, unknown>, keys: readonly string[]): void {
+  const actual = Object.keys(value).sort();
+  const expected = [...keys].sort();
+  if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) throw new Error("PROVIDER_RECORD_INVALID");
+}
+
+function strictDigestValue(value: unknown): string {
+  if (typeof value !== "string" || !strictDigestPattern.test(value)) throw new Error("PROVIDER_RECORD_INVALID");
+  return value;
+}
+
+function strictToken(value: unknown): string {
+  if (typeof value !== "string" || !strictTokenPattern.test(value)) throw new Error("PROVIDER_RECORD_INVALID");
+  return value;
+}
+
+function strictInstant(value: unknown): string {
+  if (typeof value !== "string" || !canonicalInstant.test(value) || !Number.isFinite(Date.parse(value))
+    || new Date(Date.parse(value)).toISOString() !== value) throw new Error("PROVIDER_RECORD_INVALID");
+  return value;
+}
+
+function strictPositiveInteger(value: unknown, maximum: number): number {
+  if (!Number.isSafeInteger(value) || (value as number) < 1 || (value as number) > maximum) throw new Error("PROVIDER_RECORD_INVALID");
+  return value as number;
+}
+
+function strictNonnegativeInteger(value: unknown): number {
+  if (!Number.isSafeInteger(value) || (value as number) < 0) throw new Error("PROVIDER_RECORD_INVALID");
+  return value as number;
+}
+
+function strictIdentity(value: unknown): Readonly<{ family: string; provider: string; model: string }> {
+  const identity = strictRecord(value);
+  strictKeys(identity, ["family", "provider", "model"]);
+  return Object.freeze({ family: strictToken(identity.family), provider: strictToken(identity.provider), model: strictToken(identity.model) });
+}
+
+export const providerChildProtocolDigest = canonicalDigest({
+  schema: "urn:usf:provider-child-protocol:1",
+  version: 1,
+  environment: "empty-allowlist-selected-credential-only",
+  launch: "absolute-node-no-shell-die-with-parent",
+  transport: "https-exact-origin-path-redirect-error-bounded-response-no-retries",
+  output: "closed-sanitized-provider-answer-observation",
+}, { rejectAbsolutePaths: true });
+
+export function parseAdapterPreflightReceipt(value: unknown): AdapterPreflightReceipt {
+  const receipt = strictRecord(value);
+  strictKeys(receipt, [
+    "schema", "version", "routeMemberDigest", "adapterPackage", "adapterVersion", "adapterIntegrity",
+    "adapterArtifactDigest", "childProtocolDigest", "fixedOriginDigest", "selectedCredentialName",
+    "observedAt", "expiresAt", "status", "failureCode",
+  ]);
+  if (receipt.schema !== "urn:usf:adapter-preflight-receipt:1" || receipt.version !== 1
+    || receipt.adapterIntegrity !== "pnpm-lock-integrity-bound"
+    || (receipt.status !== "available" && receipt.status !== "refused")) throw new Error("PROVIDER_RECORD_INVALID");
+  const adapterPackage = typeof receipt.adapterPackage === "string" && strictAdapterPattern.test(receipt.adapterPackage)
+    ? receipt.adapterPackage : (() => { throw new Error("PROVIDER_RECORD_INVALID"); })();
+  const selectedCredentialName = typeof receipt.selectedCredentialName === "string" && strictCredentialPattern.test(receipt.selectedCredentialName)
+    ? receipt.selectedCredentialName : (() => { throw new Error("PROVIDER_RECORD_INVALID"); })();
+  const failureCode = receipt.failureCode === null ? null : strictToken(receipt.failureCode);
+  if ((receipt.status === "available") !== (failureCode === null)) throw new Error("PROVIDER_RECORD_INVALID");
+  const observedAt = strictInstant(receipt.observedAt);
+  const expiresAt = strictInstant(receipt.expiresAt);
+  if (Date.parse(observedAt) >= Date.parse(expiresAt)) throw new Error("PROVIDER_RECORD_INVALID");
+  return Object.freeze({
+    schema: "urn:usf:adapter-preflight-receipt:1", version: 1,
+    routeMemberDigest: strictDigestValue(receipt.routeMemberDigest), adapterPackage,
+    adapterVersion: strictToken(receipt.adapterVersion), adapterIntegrity: "pnpm-lock-integrity-bound",
+    adapterArtifactDigest: strictDigestValue(receipt.adapterArtifactDigest),
+    childProtocolDigest: strictDigestValue(receipt.childProtocolDigest),
+    fixedOriginDigest: strictDigestValue(receipt.fixedOriginDigest), selectedCredentialName,
+    observedAt, expiresAt, status: receipt.status, failureCode,
+  });
+}
+
+export function adapterPreflightReceiptDigest(value: unknown): `sha256:${string}` {
+  return canonicalDigest(parseAdapterPreflightReceipt(value), { rejectAbsolutePaths: true });
+}
+
+export function parseRunAuthorization(value: unknown): RunAuthorization {
+  const authorization = strictRecord(value);
+  strictKeys(authorization, [
+    "schema", "version", "routeMemberDigest", "candidateMemberDigest", "requestedModelIdentity",
+    "accountSourceUseAuthorizationDigest", "accountObservationDigest", "routeModelEconomicsBindingDigest",
+    "credentialSourceIdentityDigest", "adapterPreflightDigest", "profileDigest", "effectivePolicyDigest",
+    "privacyProjectionDigest", "taskDigest", "promptOnlyProjectionDigest", "maximumInputBytes",
+    "maximumOutputTokens", "timeoutMilliseconds", "issuedAt", "expiresAt", "fallbackProhibited",
+    "paidCostCeiling", "authorizationDisposition",
+  ]);
+  if (authorization.schema !== "urn:usf:run-authorization:1" || authorization.version !== 1
+    || authorization.fallbackProhibited !== true || authorization.paidCostCeiling !== "0"
+    || authorization.authorizationDisposition !== "authorized") throw new Error("PROVIDER_RECORD_INVALID");
+  const issuedAt = strictInstant(authorization.issuedAt);
+  const expiresAt = strictInstant(authorization.expiresAt);
+  if (Date.parse(issuedAt) >= Date.parse(expiresAt)) throw new Error("PROVIDER_RECORD_INVALID");
+  return Object.freeze({
+    schema: "urn:usf:run-authorization:1", version: 1,
+    routeMemberDigest: strictDigestValue(authorization.routeMemberDigest),
+    candidateMemberDigest: strictDigestValue(authorization.candidateMemberDigest),
+    requestedModelIdentity: strictIdentity(authorization.requestedModelIdentity),
+    accountSourceUseAuthorizationDigest: strictDigestValue(authorization.accountSourceUseAuthorizationDigest),
+    accountObservationDigest: strictDigestValue(authorization.accountObservationDigest),
+    routeModelEconomicsBindingDigest: strictDigestValue(authorization.routeModelEconomicsBindingDigest),
+    credentialSourceIdentityDigest: strictDigestValue(authorization.credentialSourceIdentityDigest),
+    adapterPreflightDigest: strictDigestValue(authorization.adapterPreflightDigest),
+    profileDigest: strictDigestValue(authorization.profileDigest),
+    effectivePolicyDigest: strictDigestValue(authorization.effectivePolicyDigest),
+    privacyProjectionDigest: strictDigestValue(authorization.privacyProjectionDigest),
+    taskDigest: strictDigestValue(authorization.taskDigest),
+    promptOnlyProjectionDigest: strictDigestValue(authorization.promptOnlyProjectionDigest),
+    maximumInputBytes: strictPositiveInteger(authorization.maximumInputBytes, 1_048_576),
+    maximumOutputTokens: strictPositiveInteger(authorization.maximumOutputTokens, 4_096),
+    timeoutMilliseconds: strictPositiveInteger(authorization.timeoutMilliseconds, 120_000),
+    issuedAt, expiresAt, fallbackProhibited: true, paidCostCeiling: "0", authorizationDisposition: "authorized",
+  });
+}
+
+export function runAuthorizationDigest(value: unknown): `sha256:${string}` {
+  return canonicalDigest(parseRunAuthorization(value), { rejectAbsolutePaths: true });
+}
+
+export function verifyRunAuthorization(value: unknown, expected: RunAuthorizationExpectedBindings, at: string): RunAuthorization {
+  const authorization = parseRunAuthorization(value);
+  const expectedAuthorization = parseRunAuthorization({
+    ...authorization,
+    routeMemberDigest: expected.routeMemberDigest,
+    candidateMemberDigest: expected.candidateMemberDigest,
+    requestedModelIdentity: expected.requestedModelIdentity,
+    accountSourceUseAuthorizationDigest: expected.accountSourceUseAuthorizationDigest,
+    accountObservationDigest: expected.accountObservationDigest,
+    routeModelEconomicsBindingDigest: expected.routeModelEconomicsBindingDigest,
+    credentialSourceIdentityDigest: expected.credentialSourceIdentityDigest,
+    adapterPreflightDigest: expected.adapterPreflightDigest,
+    profileDigest: expected.profileDigest,
+    effectivePolicyDigest: expected.effectivePolicyDigest,
+    privacyProjectionDigest: expected.privacyProjectionDigest,
+    taskDigest: expected.taskDigest,
+    promptOnlyProjectionDigest: expected.promptOnlyProjectionDigest,
+    maximumInputBytes: expected.maximumInputBytes,
+    maximumOutputTokens: expected.maximumOutputTokens,
+    timeoutMilliseconds: expected.timeoutMilliseconds,
+  });
+  if (canonicalDigest(authorization) !== canonicalDigest(expectedAuthorization)) throw new Error("RUN_AUTHORIZATION_BINDING_MISMATCH");
+  const observedAt = strictInstant(at);
+  if (Date.parse(authorization.issuedAt) > Date.parse(observedAt) || Date.parse(observedAt) >= Date.parse(authorization.expiresAt)) {
+    throw new Error("RUN_AUTHORIZATION_STALE");
+  }
+  return authorization;
+}
+
+export function parseProviderAnswerObservation(value: unknown): ProviderAnswerObservation {
+  const observation = strictRecord(value);
+  strictKeys(observation, [
+    "schema", "version", "routeMemberDigest", "candidateMemberDigest", "requestedIdentity", "actualIdentity",
+    "accountObservationDigest", "routeModelEconomicsBindingDigest", "credentialSourceIdentityDigest",
+    "adapterPreflightDigest", "runAuthorizationDigest", "promptOnlyProjectionDigest", "rawProviderResponseDigest",
+    "sanitizedAnswer", "usage", "economics", "latency", "acquiredAt", "expiresAt", "failureCode",
+  ]);
+  if (observation.schema !== "urn:usf:provider-answer-observation:1" || observation.version !== 1 || observation.failureCode !== null) {
+    throw new Error("PROVIDER_RECORD_INVALID");
+  }
+  const requestedIdentity = strictIdentity(observation.requestedIdentity);
+  const actualValue = strictRecord(observation.actualIdentity);
+  strictKeys(actualValue, ["family", "provider", "model", "sdkProvider"]);
+  const actualIdentity = Object.freeze({
+    family: strictToken(actualValue.family),
+    provider: strictToken(actualValue.provider),
+    model: strictToken(actualValue.model),
+    sdkProvider: strictToken(actualValue.sdkProvider),
+  });
+  const usageValue = strictRecord(observation.usage);
+  strictKeys(usageValue, ["inputTokens", "outputTokens", "totalTokens"]);
+  const usage = Object.freeze({
+    inputTokens: strictNonnegativeInteger(usageValue.inputTokens),
+    outputTokens: strictNonnegativeInteger(usageValue.outputTokens),
+    totalTokens: strictNonnegativeInteger(usageValue.totalTokens),
+  });
+  if (usage.totalTokens !== usage.inputTokens + usage.outputTokens) throw new Error("PROVIDER_RECORD_INVALID");
+  const economicsValue = strictRecord(observation.economics);
+  strictKeys(economicsValue, ["costDisposition", "observedCostUsd", "quota"]);
+  if (economicsValue.costDisposition !== "zero-paid" || economicsValue.observedCostUsd !== "0"
+    || (economicsValue.quota !== "available" && economicsValue.quota !== "unknown")) throw new Error("PROVIDER_RECORD_INVALID");
+  const latencyValue = strictRecord(observation.latency);
+  strictKeys(latencyValue, ["milliseconds"]);
+  if (typeof latencyValue.milliseconds !== "number" || !Number.isFinite(latencyValue.milliseconds) || latencyValue.milliseconds < 0) {
+    throw new Error("PROVIDER_RECORD_INVALID");
+  }
+  if (typeof observation.sanitizedAnswer !== "string" || observation.sanitizedAnswer.length < 1
+    || Buffer.byteLength(observation.sanitizedAnswer, "utf8") > 1_048_576 || observation.sanitizedAnswer.includes("\u0000")) {
+    throw new Error("PROVIDER_RECORD_INVALID");
+  }
+  const acquiredAt = strictInstant(observation.acquiredAt);
+  const expiresAt = strictInstant(observation.expiresAt);
+  if (Date.parse(acquiredAt) >= Date.parse(expiresAt)) throw new Error("PROVIDER_RECORD_INVALID");
+  return Object.freeze({
+    schema: "urn:usf:provider-answer-observation:1", version: 1,
+    routeMemberDigest: strictDigestValue(observation.routeMemberDigest),
+    candidateMemberDigest: strictDigestValue(observation.candidateMemberDigest),
+    requestedIdentity, actualIdentity,
+    accountObservationDigest: strictDigestValue(observation.accountObservationDigest),
+    routeModelEconomicsBindingDigest: strictDigestValue(observation.routeModelEconomicsBindingDigest),
+    credentialSourceIdentityDigest: strictDigestValue(observation.credentialSourceIdentityDigest),
+    adapterPreflightDigest: strictDigestValue(observation.adapterPreflightDigest),
+    runAuthorizationDigest: strictDigestValue(observation.runAuthorizationDigest),
+    promptOnlyProjectionDigest: strictDigestValue(observation.promptOnlyProjectionDigest),
+    rawProviderResponseDigest: strictDigestValue(observation.rawProviderResponseDigest),
+    sanitizedAnswer: observation.sanitizedAnswer, usage,
+    economics: Object.freeze({ costDisposition: "zero-paid", observedCostUsd: "0", quota: economicsValue.quota }),
+    latency: Object.freeze({ milliseconds: latencyValue.milliseconds }), acquiredAt, expiresAt, failureCode: null,
+  });
+}
+
+export function providerAnswerObservationDigest(value: unknown): `sha256:${string}` {
+  return canonicalDigest(parseProviderAnswerObservation(value), { rejectAbsolutePaths: true });
+}
+
+export function providerRawResponseDigest(value: Uint8Array): `sha256:${string}` {
+  if (value.byteLength > 1_048_576) throw new Error("PROVIDER_RESPONSE_LIMIT_EXCEEDED");
+  return sha256(value);
+}
+
+function exactHttpsOrigin(value: string): string {
+  let url: URL;
+  try { url = new URL(value); } catch { throw new Error("PROVIDER_CHILD_INPUT_INVALID"); }
+  if (url.protocol !== "https:" || url.username !== "" || url.password !== "" || url.pathname !== "/"
+    || url.search !== "" || url.hash !== "" || url.origin + "/" !== value) throw new Error("PROVIDER_CHILD_INPUT_INVALID");
+  return url.origin;
+}
+
+export function buildProviderChildEnvironment(input: ProviderChildEnvironmentInput): Readonly<Record<string, string>> {
+  if (!strictCredentialPattern.test(input.credentialName) || reservedChildEnvironmentNames.has(input.credentialName)
+    || input.credentialValue.length < 1 || input.credentialValue.length > 8_192
+    || input.credentialValue.includes("\u0000") || !input.home.startsWith("/") || !input.temporary.startsWith("/")
+    || input.home.includes("\u0000") || input.temporary.includes("\u0000")) throw new Error("PROVIDER_CHILD_INPUT_INVALID");
+  const fixedOrigin = exactHttpsOrigin(input.fixedOrigin);
+  const maximumInput = strictPositiveInteger(input.maximumInputBytes, 1_048_576);
+  const maximumOutput = strictPositiveInteger(input.maximumOutputTokens, 4_096);
+  const timeout = strictPositiveInteger(input.timeoutMilliseconds, 120_000);
+  return Object.freeze({
+    [input.credentialName]: input.credentialValue,
+    HOME: input.home,
+    LANG: "C.UTF-8",
+    LC_ALL: "C.UTF-8",
+    PATH: "",
+    TMPDIR: input.temporary,
+    USF_PROVIDER_CHILD: "1",
+    USF_PROVIDER_FIXED_ORIGIN: fixedOrigin,
+    USF_PROVIDER_MAXIMUM_INPUT_BYTES: String(maximumInput),
+    USF_PROVIDER_MAXIMUM_OUTPUT_TOKENS: String(maximumOutput),
+    USF_PROVIDER_PAID_COST_CEILING: "0",
+    USF_PROVIDER_TIMEOUT_MILLISECONDS: String(timeout),
+  });
+}
+
+export function buildProviderChildLaunch(
+  nodeExecutable: string,
+  childEntrypoint: string,
+  environmentInput: ProviderChildEnvironmentInput,
+): ProviderChildLaunch {
+  if (!nodeExecutable.startsWith("/") || !childEntrypoint.startsWith("/") || nodeExecutable.includes("\u0000") || childEntrypoint.includes("\u0000")) {
+    throw new Error("PROVIDER_CHILD_INPUT_INVALID");
+  }
+  return Object.freeze({
+    executable: nodeExecutable,
+    arguments: Object.freeze(["--permission", `--allow-fs-read=${childEntrypoint}`, "--", childEntrypoint, "--usf-provider-child-v1"]),
+    environment: buildProviderChildEnvironment(environmentInput),
+  });
+}

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:adapter-preflight-receipt:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "routeMemberDigest",
+    "adapterPackage",
+    "adapterVersion",
+    "adapterIntegrity",
+    "adapterArtifactDigest",
+    "childProtocolDigest",
+    "fixedOriginDigest",
+    "selectedCredentialName",
+    "observedAt",
+    "expiresAt",
+    "status",
+    "failureCode"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:adapter-preflight-receipt:1"
+    },
+    "version": {
+      "const": 1
+    },
+    "routeMemberDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "adapterPackage": {
+      "$ref": "#/$defs/packageName"
+    },
+    "adapterVersion": {
+      "$ref": "#/$defs/identifier"
+    },
+    "adapterIntegrity": {
+      "enum": [
+        "pnpm-lock-integrity-bound"
+      ]
+    },
+    "adapterArtifactDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "childProtocolDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "fixedOriginDigest": {
+      "$ref": "#/$defs/digest"
+    },
+    "selectedCredentialName": {
+      "$ref": "#/$defs/credentialName"
+    },
+    "observedAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "expiresAt": {
+      "$ref": "#/$defs/instant"
+    },
+    "status": {
+      "enum": [
+        "available",
+        "refused"
+      ]
+    },
+    "failureCode": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/reasonCode"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "minLength": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,191}$"
+    },
+    "packageName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:@[a-z0-9][a-z0-9._-]{0,63}/)?[a-z0-9][a-z0-9._-]{0,95}$"
+    },
+    "credentialName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z_][A-Z0-9_]{0,127}$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Z][A-Z0-9_]{1,95}(?::[^\\s]{1,192})?$"
+    }
+  }
+}
