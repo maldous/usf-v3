@@ -218,19 +218,27 @@ interface StoredQualificationRecord {
   readonly route: Readonly<{ readonly provider: string; readonly model: string }>;
   readonly qualificationDigest: string;
   readonly observationSetDigest: string;
-  readonly observations: readonly QualificationObservation[];
-  readonly qualification: SemanticQualificationResult;
+  readonly observations: readonly QualificationObservation<string | null>[];
+  readonly qualification: SemanticQualificationResult<string | null, string | null>;
 }
 
 const recordKeys = Object.freeze([
   "schema", "status", "role", "taskClass", "route", "qualificationDigest",
   "observationSetDigest", "observations", "qualification",
 ]);
-const invocationEvidenceKeys = Object.freeze([
+const legacyInvocationEvidenceKeys = Object.freeze([
   "schema", "provider", "requestedModel", "actualModel", "transport",
   "adapterPackage", "adapterVersion", "adapterLockDigest", "suiteId",
   "suiteVersion", "caseId", "prompt", "answer", "startedAt", "completedAt",
   "latencyMs", "usage", "evidenceDigest",
+]);
+// Records written before the CLI branch did not carry an invocation identity.
+// That exact old shape remains readable only for the API transport that wrote
+// it. Every new shape, and every CLI record, must state the field as a bounded
+// string or null so absence cannot be confused with an observed unknown.
+const invocationEvidenceKeys = Object.freeze([
+  ...legacyInvocationEvidenceKeys,
+  "invocationIdentity",
 ]);
 const qualificationObservationKeys = Object.freeze([
   "schema", "provider", "requestedModel", "actualModel", "transport",
@@ -253,6 +261,17 @@ function validInstant(value: unknown): value is string {
   if (typeof value !== "string") return false;
   const milliseconds = Date.parse(value);
   return Number.isFinite(milliseconds) && new Date(milliseconds).toISOString() === value;
+}
+
+function validInvocationIdentity(value: unknown): value is string | null {
+  return value === null || (typeof value === "string"
+    && value.length > 0
+    && Buffer.byteLength(value, "utf8") <= 1_024
+    && !/[\u0000-\u001f\u007f]/u.test(value));
+}
+
+function validUsageValue(value: unknown): value is number | null {
+  return value === null || (typeof value === "number" && Number.isSafeInteger(value) && value >= 0);
 }
 
 async function readJsonFile(path: string, maximumBytes: number): Promise<unknown> {
@@ -291,7 +310,9 @@ async function readCurrentQualificationAuthority(
   }
 }
 
-function qualificationProfile(result: SemanticQualificationResult): QualificationAgentProfile {
+function qualificationProfile(
+  result: SemanticQualificationResult<string | null, string | null>,
+): QualificationAgentProfile<string | null> {
   const requested = result.profile.requested;
   return Object.freeze({
     schema: "urn:usf:agent-profile:1" as const,
@@ -315,7 +336,7 @@ function qualificationProfile(result: SemanticQualificationResult): Qualificatio
 async function invocationEvidenceMatches(
   repositoryRoot: string,
   authority: CurrentQualificationAuthority,
-  observations: readonly QualificationObservation[],
+  observations: readonly QualificationObservation<string | null>[],
 ): Promise<boolean> {
   const cases = new Map(authority.suite.corpus.cases.map((item) => [item.caseId, item]));
   const seen = new Set<string>();
@@ -328,12 +349,17 @@ async function invocationEvidenceMatches(
       repositoryRoot, ".usf", qualificationInvocationDirectoryName,
       `${observation.executionEvidenceDigest.slice("sha256:".length)}.json`,
     ), maximumInvocationEvidenceBytes);
-    if (!isRecord(evidenceValue) || !exactKeys(evidenceValue, invocationEvidenceKeys)) return false;
+    if (!isRecord(evidenceValue)) return false;
+    const currentEvidenceShape = exactKeys(evidenceValue, invocationEvidenceKeys);
+    const legacyApiEvidenceShape = exactKeys(evidenceValue, legacyInvocationEvidenceKeys)
+      && evidenceValue.transport === "vercel-ai-sdk";
+    if (!currentEvidenceShape && !legacyApiEvidenceShape) return false;
     const { evidenceDigest, ...evidence } = evidenceValue;
     const item = cases.get(observation.caseId);
     const usage = isRecord(evidenceValue.usage) ? evidenceValue.usage : null;
     if (item === undefined
       || evidenceValue.schema !== "urn:usf:qualification-invocation-evidence:1"
+      || (currentEvidenceShape && !validInvocationIdentity(evidenceValue.invocationIdentity))
       || evidenceDigest !== observation.executionEvidenceDigest
       || canonicalDigest(evidence, { rejectAbsolutePaths: true }) !== observation.executionEvidenceDigest
       || evidenceValue.provider !== observation.provider
@@ -355,7 +381,7 @@ async function invocationEvidenceMatches(
       || !validInstant(evidenceValue.completedAt)
       || Date.parse(evidenceValue.completedAt) - Date.parse(evidenceValue.startedAt) !== observation.latencyMs
       || usage === null || !exactKeys(usage, ["inputTokens", "outputTokens", "totalTokens"])
-      || Object.values(usage).some((value) => typeof value !== "number" || !Number.isSafeInteger(value) || value < 0)
+      || Object.values(usage).some((value) => !validUsageValue(value))
       || usage?.inputTokens !== observation.usage.inputTokens
       || usage?.outputTokens !== observation.usage.outputTokens
       || usage?.totalTokens !== observation.usage.totalTokens) return false;
@@ -364,7 +390,7 @@ async function invocationEvidenceMatches(
 }
 
 function currentInputs(
-  result: SemanticQualificationResult,
+  result: SemanticQualificationResult<string | null, string | null>,
   authority: CurrentQualificationAuthority,
 ): boolean {
   return result.inputs.suiteDigest === authority.suite.suiteDigest

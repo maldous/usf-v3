@@ -74,13 +74,34 @@
        "$ref": "#/$defs/label"
       },
       "adapter": {
-       "$ref": "#/$defs/adapter"
+       "anyOf": [
+        {
+         "$ref": "#/$defs/adapter"
+        },
+        {
+         "type": "null"
+        }
+       ]
       },
       "adapterVersion": {
-       "$ref": "#/$defs/label"
+       "anyOf": [
+        {
+         "$ref": "#/$defs/label"
+        },
+        {
+         "type": "null"
+        }
+       ]
       },
       "adapterLockDigest": {
-       "$ref": "#/$defs/digest"
+       "anyOf": [
+        {
+         "$ref": "#/$defs/digest"
+        },
+        {
+         "type": "null"
+        }
+       ]
       },
       "authMode": {
        "enum": [
@@ -129,7 +150,14 @@
        "$ref": "#/$defs/label"
       },
       "model": {
-       "$ref": "#/$defs/label"
+       "anyOf": [
+        {
+         "$ref": "#/$defs/label"
+        },
+        {
+         "type": "null"
+        }
+       ]
       },
       "transport": {
        "$ref": "#/$defs/label"

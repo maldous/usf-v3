@@ -64,18 +64,18 @@ export class QualificationObservationError extends Error {
 }
 
 export interface QualificationObservationUsage {
-  readonly inputTokens: number;
-  readonly outputTokens: number;
-  readonly totalTokens: number;
+  readonly inputTokens: number | null;
+  readonly outputTokens: number | null;
+  readonly totalTokens: number | null;
 }
 
-export interface QualificationObservation {
+export interface QualificationObservation<ActualModel extends string | null = string> {
   readonly schema: "urn:usf:qualification-observation:1";
   /** The exact route this invocation reached. */
   readonly provider: string;
   readonly requestedModel: string;
   /** What the transport reported answering as; may differ from what was asked. */
-  readonly actualModel: string;
+  readonly actualModel: ActualModel;
   readonly transport: string;
   /** Null for a transport that resolves its own model and needs no adapter. */
   readonly adapterPackage: string | null;
@@ -111,6 +111,8 @@ const observationIdentifierPattern = /^[A-Za-z0-9][A-Za-z0-9._:/+~ ()-]{0,191}$/
 const maximumAnswerBytes = 64 * 1024;
 const validObservationIdentifier = (value: unknown): value is string =>
   typeof value === "string" && observationIdentifierPattern.test(value);
+const validObservedTokenCount = (value: unknown): value is number | null =>
+  value === null || (typeof value === "number" && Number.isSafeInteger(value) && value >= 0);
 
 /** Digest of an answer's exact bytes. The answer is text, so it is digested as text. */
 export function answerDigest(answer: string): string {
@@ -127,7 +129,7 @@ export function promptDigest(prompt: string): string {
  * `observationDigest` itself is excluded, so the digest is recomputable from
  * the record without knowing how it was built.
  */
-function observationDigestInput(observation: QualificationObservation): unknown {
+function observationDigestInput(observation: QualificationObservation<string | null>): unknown {
   return {
     schema: observation.schema,
     provider: observation.provider,
@@ -147,7 +149,7 @@ function observationDigestInput(observation: QualificationObservation): unknown 
   };
 }
 
-export function qualificationObservationDigest(observation: QualificationObservation): string {
+export function qualificationObservationDigest(observation: QualificationObservation<string | null>): string {
   return canonicalDigest(observationDigestInput(observation), { rejectAbsolutePaths: true });
 }
 
@@ -156,7 +158,7 @@ export function qualificationObservationDigest(observation: QualificationObserva
  * any observation in it changes, is added or is removed. Ordered by case so the
  * digest does not depend on the order the invocations happened to complete in.
  */
-export function observationSetDigest(observations: readonly QualificationObservation[]): string {
+export function observationSetDigest(observations: readonly QualificationObservation<string | null>[]): string {
   const ordered = [...observations]
     .sort((left, right) => left.caseId.localeCompare(right.caseId))
     .map((observation) => observation.observationDigest);
@@ -167,24 +169,24 @@ export function observationSetDigest(observations: readonly QualificationObserva
 }
 
 /** Build an observation and seal it with its own digest. */
-export function sealQualificationObservation(
-  draft: Omit<QualificationObservation, "observationDigest">,
-): QualificationObservation {
-  const sealed = { ...draft, observationDigest: "" } as QualificationObservation;
+export function sealQualificationObservation<ActualModel extends string | null = string>(
+  draft: Omit<QualificationObservation<ActualModel>, "observationDigest">,
+): QualificationObservation<ActualModel> {
+  const sealed = { ...draft, observationDigest: "" } as QualificationObservation<ActualModel>;
   const digest = qualificationObservationDigest(sealed);
-  return Object.freeze({ ...draft, observationDigest: digest }) as QualificationObservation;
+  return Object.freeze({ ...draft, observationDigest: digest }) as QualificationObservation<ActualModel>;
 }
 
-function assertShape(observation: unknown): asserts observation is QualificationObservation {
+function assertShape(observation: unknown): asserts observation is QualificationObservation<string | null> {
   if (typeof observation !== "object" || observation === null) {
     throw new QualificationObservationError("OBSERVATION_INVALID");
   }
-  const value = observation as Partial<QualificationObservation>;
+  const value = observation as Partial<QualificationObservation<string | null>>;
   if (
     value.schema !== "urn:usf:qualification-observation:1"
     || !validObservationIdentifier(value.provider)
     || !validObservationIdentifier(value.requestedModel)
-    || !validObservationIdentifier(value.actualModel)
+    || (value.actualModel !== null && !validObservationIdentifier(value.actualModel))
     || !validObservationIdentifier(value.transport)
     || !validObservationIdentifier(value.caseId)
     || (value.adapterPackage !== null && !adapterPattern.test(String(value.adapterPackage)))
@@ -202,9 +204,9 @@ function assertShape(observation: unknown): asserts observation is Qualification
     || Buffer.byteLength(value.answer, "utf8") > maximumAnswerBytes
     || typeof value.latencyMs !== "number" || !Number.isFinite(value.latencyMs) || value.latencyMs < 0
     || typeof value.usage !== "object" || value.usage === null
-    || typeof value.usage.inputTokens !== "number"
-    || typeof value.usage.outputTokens !== "number"
-    || typeof value.usage.totalTokens !== "number"
+    || !validObservedTokenCount(value.usage.inputTokens)
+    || !validObservedTokenCount(value.usage.outputTokens)
+    || !validObservedTokenCount(value.usage.totalTokens)
   ) throw new QualificationObservationError("OBSERVATION_INVALID");
 }
 
@@ -227,7 +229,7 @@ export interface ObservationSetExpectation {
  * not an error -- it scores zero, because the model genuinely did not answer it.
  */
 export function assertObservationSet(
-  observations: readonly QualificationObservation[],
+  observations: readonly QualificationObservation<string | null>[],
   expectation: ObservationSetExpectation,
 ): void {
   if (!Array.isArray(observations) || observations.length === 0) {
@@ -258,7 +260,7 @@ export function assertObservationSet(
     // real fact about the invocation and it disqualifies the observation from
     // qualifying the requested identity, because the answer came from
     // something else.
-    if (observation.actualModel !== expectation.requestedModel) {
+    if (observation.actualModel !== null && observation.actualModel !== expectation.requestedModel) {
       throw new QualificationObservationError("OBSERVATION_ROUTE_MISMATCH");
     }
     if (!scope.has(observation.caseId)) {
@@ -273,7 +275,7 @@ export function assertObservationSet(
 
 /** The answers a validated observation set carries, keyed by case. */
 export function answersFromObservations(
-  observations: readonly QualificationObservation[],
+  observations: readonly QualificationObservation<string | null>[],
 ): ReadonlyMap<string, string> {
   const answers = new Map<string, string>();
   for (const observation of observations) answers.set(observation.caseId, observation.answer);
@@ -281,7 +283,7 @@ export function answersFromObservations(
 }
 
 /** The earliest invocation in the set: when this evidence began to exist. */
-export function earliestObservedAt(observations: readonly QualificationObservation[]): string {
+export function earliestObservedAt(observations: readonly QualificationObservation<string | null>[]): string {
   return [...observations]
     .map((observation) => observation.observedAt)
     .sort((left, right) => Date.parse(left) - Date.parse(right))[0]!;
@@ -327,13 +329,13 @@ export type QualificationRole = typeof qualificationRoles[number];
 export type QualifiedRole = Exclude<QualificationRole, "UNQUALIFIED">;
 export type QualificationAuthMode = "api_token" | "oidc_cli" | "local" | "none";
 
-export interface QualificationAgentProfile {
+export interface QualificationAgentProfile<Adapter extends string | null = string> {
   readonly schema: "urn:usf:agent-profile:1";
   readonly provider: string;
   readonly requestedModel: string;
-  readonly adapter: string;
-  readonly adapterVersion: string;
-  readonly adapterLockDigest: string;
+  readonly adapter: Adapter;
+  readonly adapterVersion: Adapter extends null ? null : string;
+  readonly adapterLockDigest: Adapter extends null ? null : string;
   readonly authMode: QualificationAuthMode;
   readonly toolProfile: string;
   readonly toolProfileDigest: string;
@@ -607,8 +609,11 @@ export interface QualificationAnswer {
   readonly answer: string;
 }
 
-export interface SemanticQualificationInput {
-  readonly profile: QualificationAgentProfile;
+export interface SemanticQualificationInput<
+  Adapter extends string | null = string,
+  ActualModel extends string | null = string,
+> {
+  readonly profile: QualificationAgentProfile<Adapter>;
   readonly taskClass: string;
   readonly suite: QualificationSuiteSnapshot;
   readonly policy: QualificationPolicySnapshot;
@@ -621,7 +626,7 @@ export interface SemanticQualificationInput {
    * entitlement are economics, which qualification must not bind into its
    * identity or depend upon.
    */
-  readonly observations: readonly QualificationObservation[];
+  readonly observations: readonly QualificationObservation<ActualModel>[];
   /** Explicit clock input; the pure core never reads wall time. */
   readonly evaluatedAt: string;
 }
@@ -655,7 +660,10 @@ export interface QualificationDimensionEvaluation {
   readonly total: number;
 }
 
-export interface SemanticQualificationResult {
+export interface SemanticQualificationResult<
+  Adapter extends string | null = string,
+  ActualModel extends string | null = string,
+> {
   readonly schema: "urn:usf:semantic-qualification-result:1";
   readonly status: "qualified" | "unqualified";
   readonly taskClass: string;
@@ -664,9 +672,9 @@ export interface SemanticQualificationResult {
     readonly requested: Readonly<{
       readonly provider: string;
       readonly model: string;
-      readonly adapter: string;
-      readonly adapterVersion: string;
-      readonly adapterLockDigest: string;
+      readonly adapter: Adapter;
+      readonly adapterVersion: Adapter extends null ? null : string;
+      readonly adapterLockDigest: Adapter extends null ? null : string;
       readonly authMode: QualificationAuthMode;
       readonly toolProfile: string;
       readonly toolProfileDigest: string;
@@ -679,7 +687,7 @@ export interface SemanticQualificationResult {
     }>;
     readonly actual: Readonly<{
       readonly provider: string;
-      readonly model: string;
+      readonly model: ActualModel;
       readonly transport: string;
     }>;
   }>;
@@ -989,16 +997,18 @@ function validateCase(value: unknown): value is QualificationCase {
     && value.weight <= maximumWeight;
 }
 
-function validateProfile(value: QualificationAgentProfile): void {
+function validateProfile(value: QualificationAgentProfile<string | null>): void {
   if (
     !isRecord(value)
     || !hasExactKeys(value, ["schema", "provider", "requestedModel", "adapter", "adapterVersion", "adapterLockDigest", "authMode", "toolProfile", "toolProfileDigest", "promptVersion", "promptDigest", "contextConfig", "contextConfigDigest", "outputConfig", "outputConfigDigest"])
     || value.schema !== "urn:usf:agent-profile:1"
     || !validIdentifier(value.provider)
     || !validIdentifier(value.requestedModel)
-    || !adapterPattern.test(value.adapter)
-    || !validIdentifier(value.adapterVersion)
-    || !validDigest(value.adapterLockDigest)
+    || (value.adapter === null
+      ? (value.adapterVersion !== null || value.adapterLockDigest !== null)
+      : (!adapterPattern.test(value.adapter)
+        || !validIdentifier(value.adapterVersion)
+        || !validDigest(value.adapterLockDigest)))
     || !authModes.has(value.authMode)
     || !validIdentifier(value.toolProfile)
     || !validDigest(value.toolProfileDigest)
@@ -1231,7 +1241,7 @@ function matchesExpectation(item: QualificationCase, answer: string): number {
  * execution is authorised, and it is not re-decided here.
  */
 function assertObservationBinding(
-  input: SemanticQualificationInput,
+  input: SemanticQualificationInput<string | null, string | null>,
   caseIds: readonly string[],
 ): void {
   try {
@@ -1246,15 +1256,20 @@ function assertObservationBinding(
     }
     throw error;
   }
+  const expectedTransport = input.observations[0]!.transport;
   for (const observation of input.observations) {
     // The adapter that carried the invocation must be the adapter the profile
     // is qualifying. A transport that resolves its own model carries no
     // adapter, and the profile must say so rather than naming one.
-    const profileAdapter = input.profile.adapter === "" ? null : input.profile.adapter;
+    const profileAdapter = input.profile.adapter;
     if (observation.adapterPackage !== profileAdapter
       || (profileAdapter !== null
         && (observation.adapterVersion !== input.profile.adapterVersion
-          || observation.adapterLockDigest !== input.profile.adapterLockDigest))) {
+          || observation.adapterLockDigest !== input.profile.adapterLockDigest))
+      || observation.transport !== expectedTransport
+      || (profileAdapter === null
+        ? observation.transport !== input.profile.provider
+        : observation.transport !== "vercel-ai-sdk")) {
       throw new QualificationError("QUALIFICATION_BINDING_MISMATCH");
     }
     // An invocation cannot have happened after the moment it is being graded.
@@ -1433,7 +1448,10 @@ export function createQualificationPolicy(definition: QualificationPolicyDefinit
  * kind. The invocations are made elsewhere, under the economic authorization
  * that governs execution; this only grades what they returned.
  */
-export function qualifySemanticProfile(input: SemanticQualificationInput): SemanticQualificationResult {
+export function qualifySemanticProfile<
+  Adapter extends string | null = string,
+  ActualModel extends string | null = string,
+>(input: SemanticQualificationInput<Adapter, ActualModel>): SemanticQualificationResult<Adapter, ActualModel> {
   validateProfile(input.profile);
   assertSuiteSnapshot(input.suite);
   assertPolicySnapshot(input.policy);
@@ -1453,7 +1471,16 @@ export function qualifySemanticProfile(input: SemanticQualificationInput): Seman
   // zero; an answer with no observation cannot reach the grader at all.
   const answers = answersFromObservations(input.observations);
   const score = scoreCases(taskCases, answers, input.taskClass);
-  const derivedRoles = deriveRoles(input.taskClass, score.dimensionEvaluations, input.policy);
+  // A successful transport turn may honestly omit the model it used. Its
+  // answer can still be graded and retained, but it cannot establish a role
+  // for the requested model. A non-null different model was refused above;
+  // null is preserved here and forces the policy default.
+  const exactReturnedModel = input.observations.every(
+    (observation) => observation.actualModel === input.profile.requestedModel,
+  );
+  const derivedRoles = exactReturnedModel
+    ? deriveRoles(input.taskClass, score.dimensionEvaluations, input.policy)
+    : Object.freeze([input.policy.defaultRole]);
   const profileDigest = exactDigest(input.profile);
   // Expiry comes from the declared qualification policy and from nothing else.
   // Previously it was the earlier of the policy window and the probe's own
@@ -1489,7 +1516,7 @@ export function qualifySemanticProfile(input: SemanticQualificationInput): Seman
       // model, so the first carries the set's answer.
       actual: {
         provider: input.observations[0]!.provider,
-        model: input.observations[0]!.actualModel,
+        model: (exactReturnedModel ? input.profile.requestedModel : null) as ActualModel,
         transport: input.observations[0]!.transport,
       },
     },
@@ -1512,12 +1539,15 @@ export function qualifySemanticProfile(input: SemanticQualificationInput): Seman
   return deepFreeze({
     ...withoutDigest,
     qualificationDigest: exactDigest(withoutDigest),
-  }) as SemanticQualificationResult;
+  }) as SemanticQualificationResult<Adapter, ActualModel>;
 }
 
 /** Verify immutable result identity, exact task/binding scope, and currentness. */
-export function verifySemanticQualification(
-  result: SemanticQualificationResult,
+export function verifySemanticQualification<
+  Adapter extends string | null,
+  ActualModel extends string | null,
+>(
+  result: SemanticQualificationResult<Adapter, ActualModel>,
   expected: QualificationExpectedBindings,
   at: string,
 ): VerifiedSemanticQualification {
@@ -1539,13 +1569,16 @@ export function verifySemanticQualification(
     throw new QualificationError("QUALIFICATION_RESULT_DIGEST_MISMATCH");
   }
   const requested = result.profile.requested;
+  const actual = result.profile.actual;
   if (
     !isRecord(requested)
     || !validIdentifier(requested.provider)
     || !validIdentifier(requested.model)
-    || !adapterPattern.test(requested.adapter)
-    || !validIdentifier(requested.adapterVersion)
-    || !validDigest(requested.adapterLockDigest)
+    || (requested.adapter === null
+      ? (requested.adapterVersion !== null || requested.adapterLockDigest !== null)
+      : (!adapterPattern.test(requested.adapter)
+        || !validIdentifier(requested.adapterVersion)
+        || !validDigest(requested.adapterLockDigest)))
     || !authModes.has(requested.authMode)
     || !validIdentifier(requested.toolProfile)
     || !validDigest(requested.toolProfileDigest)
@@ -1555,6 +1588,13 @@ export function verifySemanticQualification(
     || !validDigest(requested.contextConfigDigest)
     || !validIdentifier(requested.outputConfig)
     || !validDigest(requested.outputConfigDigest)
+    || !isRecord(actual)
+    || !validIdentifier(actual.provider)
+    || (actual.model !== null && !validIdentifier(actual.model))
+    || !validIdentifier(actual.transport)
+    || actual.provider !== requested.provider
+    || (actual.model !== null && actual.model !== requested.model)
+    || (result.status === "qualified" && actual.model === null)
     || result.profile.profileDigest !== exactDigest({
       schema: "urn:usf:agent-profile:1",
       provider: requested.provider,

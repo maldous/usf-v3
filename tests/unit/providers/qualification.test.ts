@@ -120,15 +120,15 @@ const allAnswers: readonly QualificationAnswer[] = Object.freeze([
  * that answer, which is the whole point of the rebind: the grader now reads the
  * answer off an authenticated record of a call, not off a caller's array.
  */
-function observationsFor(
+function observationsFor<ActualModel extends string | null = string>(
   answers: readonly QualificationAnswer[] = allAnswers,
-  overrides: Partial<Omit<QualificationObservation, "observationDigest">> = {},
-): readonly QualificationObservation[] {
+  overrides: Partial<Omit<QualificationObservation<ActualModel>, "observationDigest">> = {},
+): readonly QualificationObservation<ActualModel>[] {
   return Object.freeze(answers.map((item) => sealQualificationObservation({
     schema: "urn:usf:qualification-observation:1",
     provider: "groq",
     requestedModel: route.model,
-    actualModel: route.model,
+    actualModel: route.model as ActualModel,
     transport: "vercel-ai-sdk",
     adapterPackage: route.adapterPackage,
     adapterVersion: profile.adapterVersion,
@@ -321,6 +321,92 @@ test("requested and actual identities remain distinct exact fields and mismatche
     }))),
     "QUALIFICATION_OBSERVATION_REFUSED",
   );
+
+  const cliProfile: QualificationAgentProfile<null> = Object.freeze({
+    ...profile,
+    provider: "claude-cli",
+    requestedModel: "claude-haiku-4-5-20251001",
+    adapter: null,
+    adapterVersion: null,
+    adapterLockDigest: null,
+    authMode: "oidc_cli",
+  });
+  const cliObservations = observationsFor(allAnswers, {
+    provider: cliProfile.provider,
+    requestedModel: cliProfile.requestedModel,
+    actualModel: cliProfile.requestedModel,
+    transport: "claude-cli",
+    adapterPackage: null,
+    adapterVersion: null,
+    adapterLockDigest: null,
+    usage: { inputTokens: null, outputTokens: 4, totalTokens: null },
+  });
+  const exactCli = qualifySemanticProfile({ ...input(), profile: cliProfile, observations: cliObservations });
+  assert.equal(exactCli.status, "qualified");
+  assert.deepEqual(exactCli.profile.requested, {
+    provider: cliProfile.provider,
+    model: cliProfile.requestedModel,
+    adapter: null,
+    adapterVersion: null,
+    adapterLockDigest: null,
+    authMode: "oidc_cli",
+    toolProfile: cliProfile.toolProfile,
+    toolProfileDigest: cliProfile.toolProfileDigest,
+    promptVersion: cliProfile.promptVersion,
+    promptDigest: cliProfile.promptDigest,
+    contextConfig: cliProfile.contextConfig,
+    contextConfigDigest: cliProfile.contextConfigDigest,
+    outputConfig: cliProfile.outputConfig,
+    outputConfigDigest: cliProfile.outputConfigDigest,
+  });
+
+  const unknownReturnedModel = qualifySemanticProfile({ ...input(),
+    profile: cliProfile,
+    observations: observationsFor<null>(allAnswers, {
+      provider: cliProfile.provider,
+      requestedModel: cliProfile.requestedModel,
+      actualModel: null,
+      transport: "claude-cli",
+      adapterPackage: null,
+      adapterVersion: null,
+      adapterLockDigest: null,
+      usage: { inputTokens: null, outputTokens: null, totalTokens: null },
+    }),
+  });
+  assert.equal(unknownReturnedModel.status, "unqualified");
+  assert.deepEqual(unknownReturnedModel.derivedRoles, ["UNQUALIFIED"]);
+  assert.equal(unknownReturnedModel.profile.actual.model, null);
+  assert.equal(unknownReturnedModel.casesPassed, 5);
+
+  assert.equal(reason(() => qualifySemanticProfile({ ...input(),
+    profile: { ...cliProfile, adapterVersion: "unexpected" } as unknown as QualificationAgentProfile<null>,
+    observations: cliObservations,
+  })), "QUALIFICATION_INPUT_INVALID");
+  assert.equal(reason(() => qualifySemanticProfile({ ...input(),
+    profile: cliProfile,
+    observations: observationsFor(allAnswers, {
+      provider: cliProfile.provider,
+      requestedModel: cliProfile.requestedModel,
+      actualModel: cliProfile.requestedModel,
+      transport: "claude-cli",
+      adapterPackage: null,
+      adapterVersion: null,
+      adapterLockDigest: null,
+      usage: { inputTokens: -1, outputTokens: null, totalTokens: null },
+    }),
+  })), "QUALIFICATION_OBSERVATION_REFUSED");
+  assert.equal(reason(() => qualifySemanticProfile({ ...input(),
+    profile: cliProfile,
+    observations: observationsFor(allAnswers, {
+      provider: cliProfile.provider,
+      requestedModel: cliProfile.requestedModel,
+      actualModel: cliProfile.requestedModel,
+      transport: "codex-cli",
+      adapterPackage: null,
+      adapterVersion: null,
+      adapterLockDigest: null,
+    }),
+  })), "QUALIFICATION_BINDING_MISMATCH");
 });
 
 test("qualification and verification enforce observed and expiry currentness plus immutable result identity", () => {

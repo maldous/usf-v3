@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { constants } from "node:fs";
 import { lstat, open, realpath } from "node:fs/promises";
 import { dirname, relative, resolve, sep } from "node:path";
+import { homedir } from "node:os";
 import { promisify } from "node:util";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
@@ -28,11 +29,57 @@ import { languageModelFor } from "./execute.ts";
 import { mkdir, writeFile } from "node:fs/promises";
 import type { CommandHandler } from "./dispatcher.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
+import { invokeClaudeCli, type CliInvocationResult } from "../providers/cli-transports.ts";
+import {
+  observeTransportCapability, type AuthenticatedTransportCapability,
+} from "../providers/transports.ts";
 
 const maximumInputBytes = 4 * 1024 * 1024;
 const maximumTrackedBytes = 256 * 1024;
 const maximumPathLength = 4_096;
 const runFile = promisify(execFile);
+
+interface QualificationApiInvocation {
+  readonly outcome: "ok" | "refused";
+  readonly reasonCode: string;
+  readonly text: string | null;
+  readonly actualModel: string | null;
+  readonly invocationIdentity: string | null;
+  readonly inputTokens: number | null;
+  readonly outputTokens: number | null;
+  readonly totalTokens: number | null;
+}
+
+interface QualificationApiRouteInput {
+  readonly adapterPackage: string;
+  readonly model: string;
+  readonly credential: string;
+  readonly baseUrl: string | null;
+}
+
+interface QualificationApiCaseInput {
+  readonly prompt: string;
+  readonly maxOutputTokens: number;
+}
+
+/**
+ * Private in-process seams for the qualification command's host observations
+ * and transport calls. The command line, environment and repository data have
+ * no way to supply these. Production callers receive the exact existing
+ * implementations below; confined tests can exercise the full handler without
+ * reading an operator session or contacting a provider.
+ */
+export interface ProbeQualificationDependencies {
+  readonly readTrackedJson: typeof readTrackedJson;
+  readonly loadCredentialEnvFile: typeof loadCredentialEnvFile;
+  readonly observeInstalledAdapter: typeof observeInstalledAdapter;
+  readonly observeTransportCapability: typeof observeTransportCapability;
+  readonly invokeClaudeCli: typeof invokeClaudeCli;
+  readonly prepareApi: (input: QualificationApiRouteInput) => Promise<(
+    input: QualificationApiCaseInput,
+  ) => Promise<QualificationApiInvocation>>;
+  readonly homeDirectory: () => string;
+}
 
 function invalid(message: string): never {
   throw new UsfError("PROBE_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, message);
@@ -316,12 +363,67 @@ interface ResolvedQualificationRoute {
   readonly provider: string;
   readonly model: string;
   readonly transport: string;
-  readonly adapterPackage: string;
+  readonly adapterPackage: string | null;
   readonly baseUrl: string | null;
-  readonly credential: string;
+  readonly credential: string | null;
+  readonly executablePath: string | null;
   readonly effectivePolicyDigest: string;
-  readonly profile: QualificationAgentProfile;
+  readonly profile: QualificationAgentProfile<string | null>;
 }
+
+function reportedTokenCount(value: unknown): number | null {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
+}
+
+async function prepareQualificationApi(
+  route: QualificationApiRouteInput,
+): Promise<(input: QualificationApiCaseInput) => Promise<QualificationApiInvocation>> {
+  const model = await languageModelFor(
+    route.adapterPackage, route.model, route.credential, route.baseUrl,
+  );
+  const { generateText } = await import("ai");
+  return async (input: QualificationApiCaseInput): Promise<QualificationApiInvocation> => {
+    try {
+      const response = await generateText({
+        model: model as Parameters<typeof generateText>[0]["model"],
+        prompt: input.prompt,
+        maxOutputTokens: input.maxOutputTokens,
+      });
+      const responseIdentity = response.response as unknown as Record<string, unknown> | undefined;
+      return Object.freeze({
+        outcome: "ok" as const,
+        reasonCode: "INVOCATION_OK",
+        text: typeof response.text === "string" ? response.text : null,
+        actualModel: typeof responseIdentity?.modelId === "string" ? responseIdentity.modelId : null,
+        invocationIdentity: typeof responseIdentity?.id === "string" ? responseIdentity.id : null,
+        inputTokens: reportedTokenCount(response.usage?.inputTokens),
+        outputTokens: reportedTokenCount(response.usage?.outputTokens),
+        totalTokens: reportedTokenCount(response.usage?.totalTokens),
+      });
+    } catch (error) {
+      return Object.freeze({
+        outcome: "refused" as const,
+        reasonCode: error instanceof Error ? error.name : "INVOCATION_FAILED",
+        text: null,
+        actualModel: null,
+        invocationIdentity: null,
+        inputTokens: null,
+        outputTokens: null,
+        totalTokens: null,
+      });
+    }
+  };
+}
+
+const productionQualificationDependencies: ProbeQualificationDependencies = Object.freeze({
+  readTrackedJson,
+  loadCredentialEnvFile,
+  observeInstalledAdapter,
+  observeTransportCapability,
+  invokeClaudeCli,
+  prepareApi: prepareQualificationApi,
+  homeDirectory: homedir,
+});
 
 /**
  * Find the exact route in the classified universe and build the agent profile
@@ -337,39 +439,53 @@ interface ResolvedQualificationRoute {
 async function resolveQualificationRoute(
   repositoryRoot: string,
   request: { readonly provider: string; readonly model: string; readonly envFile: string; readonly observedAt: string },
+  dependencies: ProbeQualificationDependencies,
 ): Promise<ResolvedQualificationRoute> {
   const catalogue = await readLocalCatalogue(repositoryRoot);
   const semanticGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
   const bindings = readProviderBindings(semanticGraph);
   const executionPolicy = readProviderExecutionPolicy(semanticGraph);
   const economics = readGraphDerivedEconomics(
-    await readTrackedJson(repositoryRoot, "config/execution-economics.json"), semanticGraph);
+    await dependencies.readTrackedJson(repositoryRoot, "config/execution-economics.json"), semanticGraph);
 
   const declaredAdapters = [...new Set(catalogue.snapshot.providers
     .map((provider) => provider.adapter.package).filter((value): value is string => typeof value === "string"))];
   const installed: string[] = [];
   for (const adapterPackage of declaredAdapters) {
-    if (await observeInstalledAdapter(repositoryRoot, adapterPackage) !== undefined) installed.push(adapterPackage);
+    if (await dependencies.observeInstalledAdapter(repositoryRoot, adapterPackage) !== undefined) installed.push(adapterPackage);
   }
 
   const allowlist = Object.freeze([...new Set(catalogue.snapshot.providers
     .flatMap((provider) => provider.credentialNames ?? []))]
     .filter((name) => /^[A-Z_][A-Z0-9_]{0,127}$/u.test(name)).sort());
-  const envPath = resolve(repositoryRoot, request.envFile);
-  let environment;
-  try { environment = await loadCredentialEnvFile(envPath, allowlist); }
-  catch (error) {
-    throw new UsfError("PROBE_QUALIFY_ENV_FILE_REFUSED", exitCodes.CONTAINMENT_REFUSAL,
-      "The explicit credential file was refused.",
-      error instanceof CredentialEnvError ? { credentialReasonCode: error.reasonCode } : undefined);
+  const cliRequest = request.provider === "claude-cli";
+  let environment: Awaited<ReturnType<typeof loadCredentialEnvFile>> | undefined;
+  if (!cliRequest) {
+    const envPath = resolve(repositoryRoot, request.envFile);
+    try { environment = await dependencies.loadCredentialEnvFile(envPath, allowlist); }
+    catch (error) {
+      throw new UsfError("PROBE_QUALIFY_ENV_FILE_REFUSED", exitCodes.CONTAINMENT_REFUSAL,
+        "The explicit credential file was refused.",
+        error instanceof CredentialEnvError ? { credentialReasonCode: error.reasonCode } : undefined);
+    }
   }
   const suppliedCredentialNames = Object.freeze(allowlist.filter((name) => {
-    const value = environment.getCredential(name);
+    const value = environment?.getCredential(name);
     return typeof value === "string" && value.length > 0;
   }).sort());
+  const localAgentCapabilities: readonly AuthenticatedTransportCapability[] = cliRequest
+    ? Object.freeze([await dependencies.observeTransportCapability("claude-cli", {
+      repositoryRoot,
+      homeDirectory: dependencies.homeDirectory(),
+      observedAt: request.observedAt,
+      suppliedCredentialNames: [],
+      requiredCredentialName: null,
+      adapterInstalled: false,
+    })])
+    : Object.freeze([]);
 
   const universe = deriveRouteUniverse({
-    localAgentCapabilities: [],
+    localAgentCapabilities,
     // The same earned-task-class observation routing uses. This call site
     // omitted it while the field was optional, so the availability preflight
     // reported a universe that ignored qualification entirely; the field is
@@ -395,32 +511,56 @@ async function resolveQualificationRoute(
       "That provider and model is not a selectable candidate; qualification cannot reach a route execution would refuse.",
       { provider: request.provider, model: request.model });
   }
-  if (candidate.adapterPackage === null || candidate.credentialName === null) {
+  if (candidate.model === null) {
     throw new UsfError("PROBE_QUALIFY_ROUTE_UNSUPPORTED", exitCodes.NO_ELIGIBLE_ROUTE,
-      "Only an adapter-carried route can be qualified through this path.", { provider: request.provider });
+      "Qualification requires one exact graph-selected requested model.", { provider: request.provider });
   }
-  const credential = environment.getCredential(candidate.credentialName);
-  if (typeof credential !== "string" || credential.length === 0) {
-    throw new UsfError("PROBE_QUALIFY_CREDENTIAL_MISSING", exitCodes.CURRENTNESS_FAILURE,
-      "The selected route's credential is absent from the supplied file.");
+  if (candidate.transport !== "vercel-ai-sdk" && candidate.transport !== "claude-cli") {
+    throw new UsfError("PROBE_QUALIFY_ROUTE_UNSUPPORTED", exitCodes.NO_ELIGIBLE_ROUTE,
+      "This qualification runner does not implement the selected transport.", { transport: candidate.transport });
   }
-  const adapterObservation = await observeInstalledAdapter(repositoryRoot, candidate.adapterPackage);
-  if (adapterObservation === undefined) {
-    throw new UsfError("PROBE_QUALIFY_ADAPTER_MISSING", exitCodes.EXTERNAL_UNAVAILABLE,
-      "The selected route's adapter is not installed.", { adapterPackage: candidate.adapterPackage });
+
+  const localCapability = localAgentCapabilities.find((item) => item.transport === candidate.transport);
+  let credential: string | null = null;
+  let adapterVersion: string | null = null;
+  let adapterLockDigest: string | null = null;
+  let executablePath: string | null = null;
+  if (candidate.transport === "vercel-ai-sdk") {
+    if (candidate.adapterPackage === null || candidate.credentialName === null || environment === undefined) {
+      throw new UsfError("PROBE_QUALIFY_ROUTE_UNSUPPORTED", exitCodes.NO_ELIGIBLE_ROUTE,
+        "An API qualification route requires an adapter and credential name.");
+    }
+    credential = environment.getCredential(candidate.credentialName) ?? null;
+    if (credential === null || credential.length === 0) {
+      throw new UsfError("PROBE_QUALIFY_CREDENTIAL_MISSING", exitCodes.CURRENTNESS_FAILURE,
+        "The selected route's credential is absent from the supplied file.");
+    }
+    const adapterObservation = await dependencies.observeInstalledAdapter(repositoryRoot, candidate.adapterPackage);
+    if (adapterObservation === undefined) {
+      throw new UsfError("PROBE_QUALIFY_ADAPTER_MISSING", exitCodes.EXTERNAL_UNAVAILABLE,
+        "The selected route's adapter is not installed.", { adapterPackage: candidate.adapterPackage });
+    }
+    adapterVersion = adapterObservation.version;
+    adapterLockDigest = adapterObservation.lockDigest;
+  } else {
+    if (localCapability?.usable !== true || localCapability.executablePath === null) {
+      throw new UsfError("PROBE_QUALIFY_CLI_UNAVAILABLE", exitCodes.CURRENTNESS_FAILURE,
+        "The selected CLI transport has no current authenticated executable capability.");
+    }
+    executablePath = localCapability.executablePath;
   }
 
   // The profile records how the model was driven. Qualification is scoped to
   // these declarations, so a run under a different prompt or output
   // configuration is a different qualification rather than a refreshed one.
-  const profile: QualificationAgentProfile = Object.freeze({
+  const profile: QualificationAgentProfile<string | null> = Object.freeze({
     schema: "urn:usf:agent-profile:1" as const,
     provider: candidate.provider,
     requestedModel: candidate.model!,
     adapter: candidate.adapterPackage,
-    adapterVersion: adapterObservation.version,
-    adapterLockDigest: adapterObservation.lockDigest,
-    authMode: "api_token" as const,
+    adapterVersion,
+    adapterLockDigest,
+    authMode: candidate.transport === "claude-cli" ? "oidc_cli" as const : "api_token" as const,
     toolProfile: "qualification-no-tools",
     toolProfileDigest: canonicalDigest({ toolProfile: "qualification-no-tools" }, { rejectAbsolutePaths: true }),
     promptVersion: "suite-declared-prompts",
@@ -433,11 +573,12 @@ async function resolveQualificationRoute(
 
   return Object.freeze({
     provider: candidate.provider,
-    model: candidate.model!,
+    model: candidate.model,
     transport: candidate.transport,
     adapterPackage: candidate.adapterPackage,
     baseUrl: candidate.baseUrl,
     credential,
+    executablePath,
     effectivePolicyDigest: economics.closureDigest,
     profile,
   });
@@ -455,21 +596,51 @@ async function runQualificationSuite(
   cases: readonly QualificationCase[],
   maxOutputTokens: number,
   suite: QualificationSuiteSnapshot,
-): Promise<{ readonly observations: readonly QualificationObservation[]; readonly failures: readonly string[] }> {
-  const { generateText } = await import("ai");
-  const model = await languageModelFor(route.adapterPackage, route.model, route.credential, route.baseUrl);
-  const observations: QualificationObservation[] = [];
+  dependencies: ProbeQualificationDependencies,
+): Promise<{ readonly observations: readonly QualificationObservation<string | null>[]; readonly failures: readonly string[] }> {
+  const observations: QualificationObservation<string | null>[] = [];
   const failures: string[] = [];
+  const invokeApi = route.transport === "vercel-ai-sdk"
+    ? await (() => {
+      if (route.adapterPackage === null || route.credential === null) {
+        throw new UsfError("PROBE_QUALIFY_ROUTE_UNSUPPORTED", exitCodes.NO_ELIGIBLE_ROUTE,
+          "The selected API route is missing its adapter or credential.");
+      }
+      return dependencies.prepareApi({
+        adapterPackage: route.adapterPackage,
+        model: route.model,
+        credential: route.credential,
+        baseUrl: route.baseUrl,
+      });
+    })()
+    : null;
   for (const item of cases) {
     const startedAt = new Date();
-    let text: string;
     try {
-      const response = await generateText({
-        model: model as Parameters<typeof generateText>[0]["model"],
-        prompt: item.prompt,
-        maxOutputTokens,
-      });
-      text = String(response.text ?? "");
+      let response: QualificationApiInvocation | CliInvocationResult;
+      if (route.transport === "claude-cli") {
+        if (route.executablePath === null) {
+          throw new UsfError("PROBE_QUALIFY_CLI_UNAVAILABLE", exitCodes.CURRENTNESS_FAILURE,
+            "The selected CLI executable identity is absent.");
+        }
+        response = await dependencies.invokeClaudeCli(
+          item.prompt, 30_000, route.model, route.executablePath,
+        );
+      } else {
+        if (invokeApi === null) {
+          throw new UsfError("PROBE_QUALIFY_ROUTE_UNSUPPORTED", exitCodes.NO_ELIGIBLE_ROUTE,
+            "The selected API route has no prepared invocation transport.");
+        }
+        response = await invokeApi({
+          prompt: item.prompt,
+          maxOutputTokens,
+        });
+      }
+      if (response.outcome !== "ok") {
+        failures.push(`${item.caseId}: ${response.reasonCode}`);
+        continue;
+      }
+      const text = response.text ?? "";
       // An invocation that returns no text has not answered. Recording it as an
       // empty answer would grade it as wrong, which is a different claim and a
       // misleading one: measured on cohere/north-mini-code-1-0, a 256-token
@@ -480,18 +651,22 @@ async function runQualificationSuite(
       // is left unobserved -- still zero, but visibly unanswered.
       if (text.trim().length === 0) {
         failures.push(`${item.caseId}: NO_TEXT_RETURNED (output budget ${maxOutputTokens}, ${
-          Number(response.usage?.outputTokens ?? 0)} output tokens consumed)`);
+          response.outputTokens === null ? "unknown" : response.outputTokens} output tokens consumed)`);
         continue;
       }
-      const actualModel = response.response?.modelId ?? "";
-      if (actualModel.length === 0) {
+      const actualModel = response.actualModel;
+      // The existing API contract requires its adapter response to identify the
+      // model. A CLI may truthfully omit that field; its observation is retained
+      // below, but the pure evaluator then forces the model-specific result to
+      // UNQUALIFIED.
+      if (actualModel === null && route.transport === "vercel-ai-sdk") {
         failures.push(`${item.caseId}: ACTUAL_MODEL_UNOBSERVED`);
         continue;
       }
       const usage = {
-        inputTokens: Number(response.usage?.inputTokens ?? 0),
-        outputTokens: Number(response.usage?.outputTokens ?? 0),
-        totalTokens: Number(response.usage?.totalTokens ?? 0),
+        inputTokens: response.inputTokens,
+        outputTokens: response.outputTokens,
+        totalTokens: response.totalTokens,
       };
       const completedAt = new Date();
       // One execution evidence record per invocation, so the observation's
@@ -501,6 +676,7 @@ async function runQualificationSuite(
         provider: route.provider, requestedModel: route.model, actualModel,
         transport: route.transport, adapterPackage: route.adapterPackage,
         adapterVersion: route.profile.adapterVersion, adapterLockDigest: route.profile.adapterLockDigest,
+        invocationIdentity: response.invocationIdentity,
         suiteId: suite.corpus.corpusId, suiteVersion: suite.suiteVersion,
         caseId: item.caseId, prompt: item.prompt, answer: text,
         startedAt: startedAt.toISOString(), completedAt: completedAt.toISOString(),
@@ -548,8 +724,8 @@ async function runQualificationSuite(
  */
 async function storeQualificationRecord(
   repositoryRoot: string,
-  result: SemanticQualificationResult,
-  observations: readonly QualificationObservation[],
+  result: SemanticQualificationResult<string | null, string | null>,
+  observations: readonly QualificationObservation<string | null>[],
 ): Promise<{ readonly recordPath: string }> {
   const record = Object.freeze({
     schema: "urn:usf:qualification-record:1" as const,
@@ -602,11 +778,15 @@ function parseQualify(args: readonly string[]): QualifyArguments {
   return Object.freeze({ provider, model, taskClass, envFile, maxOutputTokens });
 }
 
-async function runQualify(repositoryRoot: string, args: readonly string[]) {
+async function runQualify(
+  repositoryRoot: string,
+  args: readonly string[],
+  dependencies: ProbeQualificationDependencies,
+) {
   const parsed = parseQualify(args);
   const observedAt = new Date().toISOString();
 
-  const qualificationConfig = await readTrackedJson(repositoryRoot, "config/qualification.json");
+  const qualificationConfig = await dependencies.readTrackedJson(repositoryRoot, "config/qualification.json");
   const configRecord = qualificationConfig as {
     readonly suite: Parameters<typeof createQualificationSuite>[0];
     readonly policy: Parameters<typeof createQualificationPolicy>[0];
@@ -623,8 +803,10 @@ async function runQualify(repositoryRoot: string, args: readonly string[]) {
   // qualification can never reach a route execution would refuse.
   const resolved = await resolveQualificationRoute(repositoryRoot, {
     provider: parsed.provider, model: parsed.model, envFile: parsed.envFile, observedAt,
-  });
-  const run = await runQualificationSuite(repositoryRoot, resolved, cases, parsed.maxOutputTokens, suite);
+  }, dependencies);
+  const run = await runQualificationSuite(
+    repositoryRoot, resolved, cases, parsed.maxOutputTokens, suite, dependencies,
+  );
 
   // With no observation there is nothing to grade, and the evaluator refuses
   // rather than reporting a route as unqualified it never assessed. That
@@ -636,15 +818,25 @@ async function runQualify(repositoryRoot: string, args: readonly string[]) {
       { taskClass: parsed.taskClass, failures: run.failures });
   }
 
-  const result = qualifySemanticProfile({
-    profile: resolved.profile,
-    taskClass: parsed.taskClass,
-    suite,
-    policy,
-    effectivePolicyDigest: resolved.effectivePolicyDigest,
-    observations: run.observations,
-    evaluatedAt: new Date().toISOString(),
-  });
+  let result: SemanticQualificationResult<string | null, string | null>;
+  try {
+    result = qualifySemanticProfile({
+      profile: resolved.profile,
+      taskClass: parsed.taskClass,
+      suite,
+      policy,
+      effectivePolicyDigest: resolved.effectivePolicyDigest,
+      observations: run.observations,
+      evaluatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    if (error instanceof QualificationError) {
+      throw new UsfError("PROBE_QUALIFY_OBSERVATION_REFUSED", exitCodes.NO_ELIGIBLE_ROUTE,
+        "The returned invocation observations cannot qualify the selected route.",
+        { qualificationReasonCode: error.reasonCode });
+    }
+    throw error;
+  }
 
   const stored = await storeQualificationRecord(repositoryRoot, result, run.observations);
   return {
@@ -676,10 +868,13 @@ async function runQualify(repositoryRoot: string, args: readonly string[]) {
   } as const;
 }
 
-export const probeCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
+export async function probeCommandHandler(
+  { args, repositoryRoot }: Parameters<CommandHandler>[0],
+  dependencies: ProbeQualificationDependencies = productionQualificationDependencies,
+): Promise<Awaited<ReturnType<CommandHandler>>> {
   const [operation, ...remaining] = args;
   if (operation === "availability") return runAvailability(repositoryRoot, remaining);
-  if (operation === "qualify") return runQualify(repositoryRoot, remaining);
+  if (operation === "qualify") return runQualify(repositoryRoot, remaining, dependencies);
   if (operation !== "semantic") invalid("Probe requires exactly one of availability, qualify or semantic.");
   const input = await readJsonInput(repositoryRoot, parseSemantic(remaining));
   try {
@@ -689,4 +884,4 @@ export const probeCommandHandler: CommandHandler = async ({ args, repositoryRoot
     const reasonCode = error instanceof QualificationError ? error.reasonCode : "QUALIFICATION_INPUT_INVALID";
     throw new UsfError("PROBE_SEMANTIC_INPUT_INVALID", exitCodes.INVALID_INPUT, "Semantic probe input does not satisfy the closed qualification contract.", { reasonCode });
   }
-};
+}
