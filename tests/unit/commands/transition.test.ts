@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadTransitionContextGraph, observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync } from "node:fs";
+import { inspectTransition, transitionAdaptersForCoverage, loadTransitionContextGraph, observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, symlinkSync, lstatSync, readlinkSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { SemanticGraph } from "../../../src/graph/index.ts";
@@ -13,7 +14,9 @@ import { canonicalDigest } from "../../../src/core/canonical.ts";
 function actualDescriptorGraph(): SemanticGraph {
   const quads = parseStrictNQuads(readFileSync(new URL("../../../graph/cli-transition-definition.nq", import.meta.url), "utf8"), "urn:usf:graph:cli-transition-definition");
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
-  return { quads, manifest: { schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [] }, semanticDigest: "untrusted", graphDigests: {}, sourceDigests: {}, repositoryRoot: "/unused" };
+  const selected = new Set(["urn:usf:schema:no-change-realisation-result:1", "urn:usf:schema:completion-evidence-candidate:1", "urn:usf:command:realise-no-change:1"]);
+  quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/profile-authority.nq", import.meta.url), "utf8"), "urn:usf:graph:profile-authority").filter(q => selected.has(q.subject)));
+  return { quads, manifest: { schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [] }, semanticDigest: "untrusted", graphDigests: {}, sourceDigests: {}, repositoryRoot: fileURLToPath(new URL("../../../", import.meta.url)) };
 }
 
 test("schema CLI uses the same selectors and emits current graph-derived schema without authority", () => {
@@ -415,4 +418,96 @@ test("generated no-change request and recovery cases reject opaque or caller-der
   for (const extra of [{ fields: {} }, { action: "repair" }, { whenState: "completed" }, { mayMutateWorkspace: "false" }, { nextTransitions: "execute" }]) {
     assert.equal(validator("recoveryCase").validate({ ...branch, ...extra }).valid, false);
   }
+});
+
+test("generic no-change admission separates result and artifact while observation callers refuse", async () => {
+  const graph = actualDescriptorGraph();
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const admitted = inspectTransition(graph, selection, "realise no-change");
+  assert.equal(admitted.descriptor.resultSchema, "urn:usf:schema:no-change-realisation-result:1");
+  assert.equal((admitted.descriptor.produces as Record<string, unknown>[])[0]!.schema, "urn:usf:schema:no-change-workspace-manifest:1");
+  assert.equal(admitted.validator.validate(selection).valid, true);
+  assert.equal(admitted.resultValidator.validate({ schema: "urn:usf:no-change-workspace-manifest:1" }).valid, false);
+  for (const key of ["candidateDigest", "profile", "work", "basis", "policy", "workspacePath", "output", "executionAuthority"]) {
+    assert.equal(admitted.validator.validate({ ...selection, [key]: "invented" }).valid, false, key);
+  }
+  assert.throws(() => inspectObservationTransition(graph, selection, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  await assert.rejects(() => observationCommandHandler({ command: "realise", repositoryRoot: "/unavailable", args: ["--input", "-"] }, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  const adapter = transitionAdaptersForCoverage().find(a => a.id === admitted.implementation.id)!;
+  assert.equal(adapter.effectClass, "candidate-workspace");
+  assert.equal(observationTransitionAdapters().some(a => a.id === adapter.id), false);
+  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, transitionAdaptersForCoverage());
+  assert.equal(report.diagnostics.some(d => d.subject === admitted.transitionIdentity && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"), false);
+  assert.equal(report.executionAuthority, "none");
+  assert.equal(report.parallelSafety.state, "unproven");
+  assert.equal(report.complete, false);
+});
+
+test("result schema admission refuses unsafe files and malformed schemas without workspace effects", () => {
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const parent = mkdtempSync(join(tmpdir(), "usf-result-schema-boundaries-"));
+  const root = join(parent, "repository");
+  const original = readFileSync(new URL("../../../schemas/no-change-realisation-result.schema.json", import.meta.url));
+  try {
+    mkdirSync(join(root, "schemas"), { recursive: true });
+    const path = join(root, "schemas/no-change-realisation-result.schema.json");
+    const graph = { ...actualDescriptorGraph(), repositoryRoot: root };
+    const inspect = () => inspectTransition(graph, selection, "realise no-change");
+    writeFileSync(path, original);
+    assert.doesNotThrow(inspect, "valid file must reach admission in the same fixture");
+    rmSync(path);
+    const outside = join(parent, "outside-schema.json");
+    writeFileSync(outside, original);
+    symlinkSync(outside, path);
+    assert.throws(inspect, { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+    assert.equal(lstatSync(path).isSymbolicLink(), true);
+    assert.equal(readlinkSync(path), outside);
+    assert.deepEqual(readFileSync(outside), original);
+    rmSync(path);
+    const schema = JSON.parse(original.toString("utf8"));
+    const cases: readonly [string, Buffer][] = [
+      ["oversized otherwise valid JSON", Buffer.concat([original, Buffer.alloc(4 * 1024 * 1024 + 1, 0x20)])],
+      ["malformed JSON", Buffer.from("{not-json")],
+      ["invalid UTF-8", Buffer.concat([original, Buffer.from([0xff])])],
+      ["unsupported keyword", Buffer.from(JSON.stringify({ ...schema, patternProperties: { ".*": {} } }))],
+      ["unresolved external reference", Buffer.from(JSON.stringify({ ...schema, $ref: "urn:test:unavailable-schema" }))],
+    ];
+    for (const [label, bytes] of cases) {
+      writeFileSync(path, bytes);
+      assert.throws(inspect, { code: "CLI_TRANSITION_UNIMPLEMENTED" }, label);
+      assert.deepEqual(readFileSync(path), bytes, label + " must remain untouched");
+      assert.deepEqual(readdirSync(root), ["schemas"], label + " must not create operational state");
+    }
+    writeFileSync(path, original);
+    assert.doesNotThrow(inspect);
+    assert.deepEqual(readdirSync(root), ["schemas"]);
+  } finally { rmSync(parent, { recursive: true, force: true }); }
+});
+
+test("no-change compatibility refuses changed effect recovery and result bindings without invoking producer", () => {
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  for (const [subject, predicate, object] of [
+    ["urn:usf:cli-contract:no-change-workspace-effect:1", "effectClass", "observation"],
+    ["urn:usf:cli-recovery-case:no-change-partial:1", "recoveryCaseAction", "create"],
+    ["urn:usf:cli-transition:no-change-workspace:1", "resultSchema", "urn:test:other-result"],
+    ["urn:usf:schema:no-change-realisation-result:1", "repositoryPath", "schemas/completion-evidence-candidate.schema.json"],
+    ["urn:usf:schema:no-change-realisation-result:1", "version", "2"],
+    ["urn:usf:schema:no-change-realisation-result:1", "type", "urn:test:OtherSchema"],
+  ]) {
+    const graph = actualDescriptorGraph();
+    const rows = graph.quads.filter(q => q.subject === subject && q.predicate === "urn:usf:predicate:" + predicate);
+    assert(rows.length > 0, subject + "/" + predicate);
+    for (const row of rows) row.object = object!;
+    assert.throws(() => inspectTransition(graph, selection, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" }, subject + "/" + predicate);
+  }
+  const root = mkdtempSync(join(tmpdir(), "usf-no-change-result-schema-"));
+  try {
+    mkdirSync(join(root, "schemas"));
+    const path = join(root, "schemas/no-change-realisation-result.schema.json");
+    const original = JSON.parse(readFileSync(new URL("../../../schemas/no-change-realisation-result.schema.json", import.meta.url), "utf8"));
+    writeFileSync(path, JSON.stringify({ ...original, $id: "urn:test:wrong-result" }));
+    const graph = { ...actualDescriptorGraph(), repositoryRoot: root };
+    assert.throws(() => inspectTransition(graph, selection, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+    assert.deepEqual(readdirSync(root), ["schemas"]);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync, spawn } from "node:child_process";
+import { pathToFileURL } from "node:url";
 import { existsSync } from "node:fs";
 import { chmod, cp, mkdir, mkdtemp, open, readFile, readdir, rm, stat, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import test from "node:test";
 
+import { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } from "../../src/commands/construction-authority.ts";
+import { executeTransitionCommand, inspectTransition } from "../../src/commands/transition.ts";
 import { admissionCheckHandler } from "../../src/commands/apply.ts";
 import {
   completionAwareEvidenceCommandHandler,
@@ -382,4 +386,148 @@ test("completion evidence preparation refuses nonclosed inputs before repository
   }
   await assert.rejects(() => prepareCompletionEvidence("/missing", { ...valid, candidateDigest: "sha256:bad" }), { code: "WORK_COMPLETION_IDENTITY_INVALID" });
   await assert.rejects(() => prepareCompletionEvidence("/missing", { ...valid, manifestPath: "../outside.json" }), { code: "WORK_COMPLETION_SELECTION_INVALID" });
+});
+
+const canonicalNoChangeSelection = {
+  rootIdentity: "urn:usf:work:cli-transition-definition",
+  manifestPath: "graph/manifests/cli-transition-definition.json",
+};
+const canonicalNoChangeProfile = "urn:usf:profile:cli-transition-definition:1";
+const canonicalNoChangeInput = ".usf/inputs/no-change-request.json";
+
+async function canonicalNoChangeFixture() {
+  const isolated = await isolatedPrecompletionRepository();
+  try {
+    execFileSync("git", ["init", "--quiet"], { cwd: isolated.root });
+    const common = ["--profile", canonicalNoChangeProfile, "--manifest", canonicalNoChangeSelection.manifestPath];
+    const evidence = ".usf/candidates/construction-authority/no-change-test-evidence.json";
+    const proof = ".usf/candidates/construction-authority/no-change-test-proof.json";
+    await evidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
+      args: ["construction", "--work", canonicalNoChangeSelection.rootIdentity, ...common, "--output", evidence] });
+    await proveCommandHandler({ command: "prove", repositoryRoot: isolated.root,
+      args: ["construction", "--obligation", "urn:usf:proof:cli-transition-definition:construction", "--evidence", evidence, ...common, "--output", proof] });
+    const publication = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root,
+      args: ["construction-authority", "--bundle", proof, ...common, "--apply"] });
+    assert.equal((publication.output as { status: string }).status, "ok");
+    await mkdir(resolve(isolated.root, ".usf/inputs"), { recursive: true, mode: 0o700 });
+    await writeFile(resolve(isolated.root, canonicalNoChangeInput), JSON.stringify(canonicalNoChangeSelection), { mode: 0o600 });
+    return isolated;
+  } catch (error) { await isolated.cleanup(); throw error; }
+}
+
+function runNoChangeCli(root: string) {
+  return JSON.parse(execFileSync(process.execPath, [resolve(root, "src/cli.ts"), "realise", "no-change", "--input", canonicalNoChangeInput],
+    { cwd: root, encoding: "utf8", timeout: 60_000, maxBuffer: 4 * 1024 * 1024 })) as { candidateDigest: string; workspacePath: string; status: string };
+}
+
+// Test-only fault boundary: kill after the native effect returns but before stdout acknowledgement.
+async function interruptNoChange(root: string, boundary: "before" | "after"): Promise<void> {
+  const moduleUrl = pathToFileURL(resolve(root, "src/commands/transition.ts")).href;
+  const request = { command: "realise", repositoryRoot: root, args: ["--input", canonicalNoChangeInput] };
+  const program = `import {executeTransitionCommand} from ${JSON.stringify(moduleUrl)};
+    ${boundary === "after" ? `await executeTransitionCommand(${JSON.stringify(request)}, "realise no-change");` : ""}
+    process.stderr.write("FAULT_BOUNDARY_REACHED\\n");
+    await new Promise(() => { setInterval(() => {}, 1000); });`;
+  const child = spawn(process.execPath, ["--input-type=module", "--eval", program], { cwd: root, stdio: ["ignore", "pipe", "pipe"] });
+  let stdout = "", stderr = "", reached = false;
+  child.stdout.on("data", chunk => { stdout += String(chunk); });
+  child.stderr.on("data", chunk => {
+    stderr += String(chunk);
+    if (!reached && stderr.includes("FAULT_BOUNDARY_REACHED")) { reached = true; child.kill("SIGTERM"); }
+  });
+  const timer = setTimeout(() => child.kill("SIGKILL"), 60_000);
+  try {
+    await new Promise<void>((resolvePromise, reject) => {
+      child.once("error", reject);
+      child.once("close", (_code, signal) => {
+        try { assert.equal(reached, true, stderr); assert.equal(signal, "SIGTERM"); assert.equal(stdout, ""); resolvePromise(); }
+        catch (error) { reject(error); }
+      });
+    });
+  } finally { clearTimeout(timer); }
+}
+
+test("canonical no-change CLI restarts around acknowledgement loss and reuses exact retained workspace", {
+  skip: isConfinedFixtureProcess && "the direct lane owns subprocess interruption",
+}, async () => {
+  const isolated = await canonicalNoChangeFixture();
+  try {
+    await interruptNoChange(isolated.root, "before");
+    assert.equal(existsSync(resolve(isolated.root, ".usf/workspaces")), false);
+    await interruptNoChange(isolated.root, "after");
+    const retained = await readdir(resolve(isolated.root, ".usf/workspaces"));
+    assert.equal(retained.length, 1);
+    const workspace = resolve(isolated.root, ".usf/workspaces", retained[0]!);
+    const manifestPath = resolve(workspace, ".usf-workspace.json");
+    const bytes = await readFile(manifestPath);
+    const directory = await open(workspace, "r");
+    try {
+      const before = await directory.stat();
+      const result = runNoChangeCli(isolated.root);
+      assert.equal(result.status, "ready-for-validation");
+      assert.equal(resolve(isolated.root, result.workspacePath), workspace);
+      assert.equal((await stat(workspace)).ino, before.ino);
+      assert.deepEqual(await readFile(manifestPath), bytes);
+      assert.deepEqual(runNoChangeCli(isolated.root), result);
+      const legacy = await realiseCommandHandler({ command: "realise", repositoryRoot: isolated.root,
+        args: ["no-change", "--work", canonicalNoChangeSelection.rootIdentity, "--profile", canonicalNoChangeProfile,
+          "--manifest", canonicalNoChangeSelection.manifestPath] });
+      assert.deepEqual(legacy.output, result);
+      assert.equal((await stat(workspace)).ino, before.ino);
+      assert.deepEqual(await readFile(manifestPath), bytes);
+      assert.deepEqual(await readdir(resolve(isolated.root, ".usf/workspaces")), retained);
+    } finally { await directory.close(); }
+  } finally { await isolated.cleanup(); }
+});
+
+test("canonical no-change refuses derived overrides and preserves partial or conflicting retained state", {
+  skip: isConfinedFixtureProcess && "the direct lane owns the complete isolated repository",
+}, async (t) => {
+  const isolated = await canonicalNoChangeFixture();
+  const execute = () => executeTransitionCommand({ command: "realise", repositoryRoot: isolated.root,
+    args: ["--input", canonicalNoChangeInput] }, "realise no-change");
+  try {
+    await writeFile(resolve(isolated.root, canonicalNoChangeInput), JSON.stringify({ ...canonicalNoChangeSelection, profile: canonicalNoChangeProfile }), { mode: 0o600 });
+    await assert.rejects(execute, { code: "CLI_TRANSITION_INPUT_INVALID" });
+    assert.equal(existsSync(resolve(isolated.root, ".usf/workspaces")), false);
+    await writeFile(resolve(isolated.root, canonicalNoChangeInput), JSON.stringify(canonicalNoChangeSelection), { mode: 0o600 });
+    const sourcePath = resolve(isolated.root, "graph/cli-transition-definition.nq");
+    const source = await readFile(sourcePath);
+    const admitted = inspectTransition(loadSemanticGraph(isolated.root, canonicalNoChangeSelection.manifestPath), canonicalNoChangeSelection, "realise no-change");
+    const nativePrepare = admitted.implementation.prepare;
+    let effected: { workspacePath: string } | undefined;
+    const injected = t.mock.method(admitted.implementation, "prepare", async (...args: Parameters<typeof nativePrepare>) => {
+      const output = await nativePrepare(...args);
+      effected = output as { workspacePath: string };
+      await writeFile(sourcePath, source.toString("utf8") + '<urn:test:post-effect-drift> <urn:usf:predicate:text> "test-only acknowledgement drift" <urn:usf:graph:cli-transition-definition> .\n');
+      return output;
+    });
+    try { await assert.rejects(execute, { code: "CLI_TRANSITION_STALE" }); }
+    finally { injected.mock.restore(); await writeFile(sourcePath, source); }
+    assert(effected);
+    const effectedWorkspace = resolve(isolated.root, effected.workspacePath);
+    const effectedInode = (await stat(effectedWorkspace)).ino;
+    const effectedManifest = await readFile(resolve(effectedWorkspace, ".usf-workspace.json"));
+    const result = (await execute()).output as { workspacePath: string };
+    const workspace = resolve(isolated.root, result.workspacePath);
+    assert.equal(workspace, effectedWorkspace);
+    assert.equal((await stat(workspace)).ino, effectedInode);
+    assert.deepEqual(await readFile(resolve(workspace, ".usf-workspace.json")), effectedManifest);
+    const manifestPath = resolve(workspace, ".usf-workspace.json");
+    const bytes = await readFile(manifestPath);
+    const directory = await open(workspace, "r");
+    try {
+      const before = await directory.stat();
+      await unlink(manifestPath);
+      await assert.rejects(execute);
+      assert.equal(existsSync(manifestPath), false);
+      assert.equal((await stat(workspace)).ino, before.ino);
+      await writeFile(manifestPath, "conflicting retained manifest", { mode: 0o600 });
+      await assert.rejects(execute);
+      assert.equal(await readFile(manifestPath, "utf8"), "conflicting retained manifest");
+      assert.equal((await stat(workspace)).ino, before.ino);
+      await writeFile(manifestPath, bytes, { mode: 0o600 });
+      assert.deepEqual((await execute()).output, result);
+    } finally { await directory.close(); }
+  } finally { await isolated.cleanup(); }
 });

@@ -39,7 +39,13 @@ const bootstrapHandlers: CommandHandlers = {
     return (await import("./commands/call.ts")).callCommandHandler(context);
   },
   resolve: async (context) => (await import("./commands/resolve.ts")).resolveCommandHandler(context),
-  realise: async (context) => (await import("./commands/work-completion.ts")).realiseCommandHandler(context),
+  realise: async (context) => {
+    if (context.args[0] === "no-change" && context.args[1] === "--input") {
+      const { executeTransitionCommand } = await import("./commands/transition.ts");
+      return executeTransitionCommand({ ...context, args: context.args.slice(1) }, "realise no-change");
+    }
+    return (await import("./commands/work-completion.ts")).realiseCommandHandler(context);
+  },
   apply: async (context) => (await import("./commands/apply.ts")).applyHandler(context),
   check: async (context) => (await import("./commands/apply.ts")).admissionCheckHandler(context),
   integrate: (context) => operationalMutation(context.repositoryRoot, async () => (await import("./commands/apply.ts")).integrateCommandHandler(context)),

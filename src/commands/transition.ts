@@ -1,11 +1,13 @@
 import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync, lstatSync, openSync, fstatSync, readSync, closeSync, constants } from "node:fs";
+import { resolve } from "node:path";
+import { canonicalDigest } from "../core/canonical.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
 import { deriveCliTransitionContext, deriveCliTransitionIds, consistentArtifactProducer, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema, type CliTransitionAdapter } from "../graph/cli-transitions.ts";
 import { canonicalQuadDigest, canonicalQuadLine } from "../graph/nquads.ts";
 import { deriveLinearBindingDeclaration, LinearBindingError } from "../graph/linear-binding.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
-import { parseCommandInput, readCommandInput } from "./command-input.ts";
+import { parseCommandInput, readCommandInput, maximumCommandInputBytes } from "./command-input.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { commandRegistry, transitionInterrogationContract, transitionReadContracts, transitionSchemaContract } from "./help.ts";
 import type { CommandRequest, CommandResult } from "./dispatcher.ts";
@@ -33,11 +35,16 @@ const localObservationRules: Readonly<Record<string, string>> = Object.freeze({
   "urn:usf:rule:local-preparation-terminal:1": "sha256:28748d5c287c49c60426fbebefed8c4dda8ad5fd7cc3f4575a1ffc1b72c5000c"
 });
 
-interface ObservationImplementation {
+interface TransitionImplementation {
   readonly id: string;
   readonly command: string;
   readonly algorithm: string;
   readonly outputSchema: string;
+  readonly resultSchema: string;
+  readonly resultSchemaPath: string;
+  readonly artifactSchema?: string;
+  readonly effectClass: "observation" | "candidate-workspace";
+  readonly recoveryCasesDigest: string;
   readonly rules: Readonly<Record<string, string>>;
   readonly ruleRoles?: Readonly<Record<string, string | readonly string[]>>;
   readonly publicationPolicy?: string;
@@ -60,12 +67,16 @@ const completionRuleRoles = Object.freeze({
   "recovery.obligations": [completionRule],
 });
 
-const observationAdapters = new Map<string, ObservationImplementation>([[
+const transitionAdapters = new Map<string, TransitionImplementation>([[
   "resolve prepare-local", {
     id: "urn:usf:cli-adapter:local-contribution-prepare:1",
     command: "urn:usf:command:resolve-prepare-local:1",
     algorithm: "urn:usf:algorithm:local-contribution-preparation:1",
     outputSchema: "urn:usf:local-contribution:1",
+    resultSchema: "urn:usf:schema:local-contribution:1",
+    resultSchemaPath: "schemas/local-contribution.schema.json",
+    effectClass: "observation",
+    recoveryCasesDigest: "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
     rules: localObservationRules,
     prepare: (root, selection, input) => prepareLocalContribution(root, selection, input.operations),
     identity(output) {
@@ -78,6 +89,10 @@ const observationAdapters = new Map<string, ObservationImplementation>([[
   command: "urn:usf:command:evidence-completion:1",
   algorithm: "urn:usf:algorithm:no-change-completion-evidence:1",
   outputSchema: "urn:usf:completion-evidence-candidate:1",
+    resultSchema: "urn:usf:schema:completion-evidence-candidate:1",
+    resultSchemaPath: "schemas/completion-evidence-candidate.schema.json",
+    effectClass: "observation",
+    recoveryCasesDigest: "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
   publicationPolicy: "urn:usf:publication-policy:cli-transition-definition-no-change-completion:1",
   rules: Object.freeze({
     "urn:usf:rule:completion-evidence-input:1": "sha256:ca0ba233b9dd322223ecde96bba3aa6de6f1873fa18bfd14528c183161be227f",
@@ -91,6 +106,52 @@ const observationAdapters = new Map<string, ObservationImplementation>([[
   },
   identity: output => ({ work: output.workIri, profile: output.profileIri }),
 }]]);
+
+
+const noChangeRule = (name: string) => `urn:usf:rule:no-change-descriptor-${name}:1`;
+transitionAdapters.set("realise no-change", {
+  id: "urn:usf:cli-adapter:no-change-workspace:1",
+  command: "urn:usf:command:realise-no-change:1",
+  algorithm: "urn:usf:algorithm:no-change-workspace-materialisation:1",
+  outputSchema: "urn:usf:no-change-realisation-result:1",
+  resultSchema: "urn:usf:schema:no-change-realisation-result:1",
+  resultSchemaPath: "schemas/no-change-realisation-result.schema.json",
+  artifactSchema: "urn:usf:schema:no-change-workspace-manifest:1",
+  effectClass: "candidate-workspace",
+  publicationPolicy: "urn:usf:publication-policy:cli-transition-definition-no-change-completion:1",
+  recoveryCasesDigest: "sha256:2dba04077af7c64ddc0e9f482fc9c284d8bd777bbec9be4d50ad8f6af78789fd",
+  rules: Object.freeze({
+    [completionRule]: "sha256:c3ccd53a6422bc9b051a3e6a94e16adbb4ea249d15a1df7d5f1e89c0e12288c3",
+    [noChangeRule("input")]: "sha256:1230277db96a083255c927d07c828e207bcf80169b95bf2ee3dc4ca418317780",
+    [noChangeRule("guard")]: "sha256:7af3523283941ce83d9851d5c9e0b74574cab29f3b67ee51cb4db84d6bfb06ea",
+    [noChangeRule("scope")]: "sha256:1fda29f45dbbbcdb78e6dda109da51b4f105927fe06dd396993384bef4a4b44d",
+    [noChangeRule("readback")]: "sha256:cd4c4853ee2af2c642d389ebe5b105e302c20e9f622ccd5cb99cbf02c6947d03",
+    [noChangeRule("safety")]: "sha256:b8e6a8259d6aae0ea051e63c943d9c4ab458a86a6c338c114693b37d4e710954",
+    [noChangeRule("replay")]: "sha256:80c94499a76f7d888378dda575309e4e7e6b771d70a5625db8d52336f8610640",
+    [noChangeRule("terminal")]: "sha256:4dd8dade113c95bd4e42e84c29e9c88010035021de87782c0d3fa6282d4db6e4",
+  }),
+  ruleRoles: Object.freeze({
+    "input.derivationRule": noChangeRule("input"),
+    "effect.guardRule": noChangeRule("guard"),
+    "effect.scopeRule": noChangeRule("scope"),
+    "effect.readbackRule": noChangeRule("readback"),
+    "effect.safetyRule": noChangeRule("safety"),
+    "produces.0.basisRule": completionRule,
+    "produces.0.authenticationRule": completionRule,
+    "produces.0.digestRule": completionRule,
+    "recovery.intentRule": noChangeRule("scope"),
+    "recovery.boundaryRule": noChangeRule("replay"),
+    "recovery.unknownOutcomeRule": noChangeRule("replay"),
+    "recovery.reconciliationRule": noChangeRule("readback"),
+    "recovery.terminalProofRule": noChangeRule("terminal"),
+    "recovery.obligations": [noChangeRule("readback"), noChangeRule("replay")],
+  }),
+  async prepare(root, selection, _input, profile) {
+    const { realiseNoChangeWork } = await import("./work-completion.ts");
+    return realiseNoChangeWork(root, { work: selection.rootIdentity, profile, manifestPath: selection.manifestPath });
+  },
+  identity: output => ({ work: output.workIri, profile: output.profileIri }),
+});
 
 // These bindings describe compiled rule support, not permission or progression.
 const localRuleRoles: Readonly<Record<string, string | readonly string[]>> = Object.freeze({
@@ -145,8 +206,8 @@ function validateObservationRoles(descriptor: ObservationObject, transitionIdent
   }
 }
 
-export function inspectObservationTransition(graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, commandPath: string) {
-  const implementation = observationAdapters.get(commandPath);
+export function inspectTransition(graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, commandPath: string) {
+  const implementation = transitionAdapters.get(commandPath);
   if (implementation === undefined) throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "No compiled observation adapter exists.");
   const context = deriveCliTransitionContext(graph, selection.rootIdentity);
   if (context.diagnostics.length > 0 || context.contract === null || context.profile === null) {
@@ -166,7 +227,7 @@ export function inspectObservationTransition(graph: SemanticGraph, selection: { 
     throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Binding-root execution is not admitted by this observation adapter.");
   }
   const { id: adapter, command } = implementation;
-  if (!values(context.contract, "admitsObservationAdapter").includes(adapter)) {
+  if (!values(context.contract, implementation.effectClass === "observation" ? "admitsObservationAdapter" : "admitsEffectAdapter").includes(adapter)) {
     throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "The selected contract does not admit this observation adapter.");
   }
   exact(command, "commandPath", commandPath, "literal");
@@ -194,16 +255,59 @@ export function inspectObservationTransition(graph: SemanticGraph, selection: { 
   }
   const declaredOutputs = descriptor.produces;
   if (!Array.isArray(declaredOutputs) || declaredOutputs.length !== 1
-    || observationObject(declaredOutputs[0]).schema !== implementation.outputSchema
+    || observationObject(declaredOutputs[0]).schema !== (implementation.artifactSchema ?? implementation.outputSchema)
     || observationObject(declaredOutputs[0]).work !== selection.rootIdentity
     || observationObject(declaredOutputs[0]).profile !== context.profile) {
     throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Declared output does not match the compiled observation work/profile/schema.");
+  }
+  if (descriptor.resultSchema !== implementation.resultSchema) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Command result schema binding is unsupported.");
+  }
+  exact(implementation.resultSchema, "type", "urn:usf:type:SemanticRecordSchema");
+  exact(implementation.resultSchema, "version", "1", "literal");
+  exact(implementation.resultSchema, "repositoryPath", implementation.resultSchemaPath, "literal");
+  const readResultSchema = () => {
+    let fd: number | undefined;
+    try {
+      const path = resolve(realpathSync(graph.repositoryRoot), implementation.resultSchemaPath);
+      const before = lstatSync(path);
+      if (!constants.O_NOFOLLOW || realpathSync(path) !== path || !before.isFile() || before.isSymbolicLink()
+        || before.size > maximumCommandInputBytes) throw new Error("Unsafe result schema file.");
+      fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+      const opened = fstatSync(fd);
+      const same = (value: typeof before) => value.isFile() && !value.isSymbolicLink() && value.dev === before.dev
+        && value.ino === before.ino && value.size === before.size && value.mtimeMs === before.mtimeMs && value.ctimeMs === before.ctimeMs;
+      if (!same(opened)) throw new Error("Result schema changed while opening.");
+      const bytes = Buffer.alloc(maximumCommandInputBytes + 1);
+      let total = 0;
+      while (total < bytes.length) {
+        const count = readSync(fd, bytes, total, bytes.length - total, null);
+        if (count === 0) break;
+        total += count;
+      }
+      if (total > maximumCommandInputBytes || !same(fstatSync(fd)) || !same(lstatSync(path)) || realpathSync(path) !== path) {
+        throw new Error("Result schema changed or exceeded the read bound.");
+      }
+      const resultSchema = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(0, total)));
+      if (resultSchema.$id !== implementation.outputSchema) throw new Error("Result schema identity mismatch.");
+      return resultSchema;
+    } catch {
+      throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "The bound command result schema is unavailable or incompatible.");
+    } finally { if (fd !== undefined) closeSync(fd); }
+  };
+  const resultSchema = readResultSchema();
+  const resultValidator = (() => {
+    try { return createJsonSchemaValidator(resultSchema); }
+    catch { throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "The bound command result schema cannot be interpreted."); }
+  })();
+  if (canonicalDigest(observationObject(descriptor.recovery).cases ?? []) !== implementation.recoveryCasesDigest) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Recovery case interpretation is unknown or has changed.");
   }
   const effect = observationObject(descriptor.effect), declaredInput = observationObject(descriptor.input);
   const expectedSchemas = implementation.consumedSchemas ?? [];
   const consumedSchemas = new Set<string>();
   const transitionIds = deriveCliTransitionIds([...new Set(graph.quads.map(q => q.subject))], values, context.work, context.contract);
-  if (descriptor.owner !== context.contract || effect.effectClass !== "observation" || effect.contact !== "none"
+  if (descriptor.owner !== context.contract || effect.effectClass !== implementation.effectClass || effect.contact !== "none"
     || !Array.isArray(descriptor.prerequisites) || descriptor.prerequisites.length !== 0
     || !Array.isArray(descriptor.consumes) || descriptor.consumes.length !== expectedSchemas.length
     || descriptor.consumes.some(value => {
@@ -232,11 +336,11 @@ export function inspectObservationTransition(graph: SemanticGraph, selection: { 
   const record = recordIds.length === 1 ? specifications.records.find(r => r.id === recordIds[0]) : undefined;
   if (record === undefined) throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Input record is outside the canonical schema closure.");
   const validator = createJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:usf:cli-observation-input-validation:1", $ref: record.schemaIdentity + "#" + record.fragment }, { dependencySchemas: [schema] });
-  return { implementation, context, descriptor, validator, transitionIdentity: transitions[0]! };
+  return { implementation, context, descriptor, validator, resultValidator, resultSchemaDigest: canonicalDigest(resultSchema), readResultSchema, transitionIdentity: transitions[0]! };
 }
 
-export async function observationCommandHandler(request: CommandRequest, commandPath: string): Promise<CommandResult> {
-  if (!observationAdapters.has(commandPath)) throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "No compiled observation adapter exists.");
+export async function executeTransitionCommand(request: CommandRequest, commandPath: string): Promise<CommandResult> {
+  if (!transitionAdapters.has(commandPath)) throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "No compiled observation adapter exists.");
   const transport = parseCommandInput(request.args, "RESOLVE");
   if (transport.mode !== "source") throw new UsfError("RESOLVE_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, "Local preparation requires the registered --input transport.");
   const input = observationObject(await readCommandInput(request.repositoryRoot, transport, "RESOLVE"));
@@ -245,18 +349,18 @@ export async function observationCommandHandler(request: CommandRequest, command
   }
   const selection = { rootIdentity: input.rootIdentity, manifestPath: input.manifestPath };
   const graph = loadSemanticGraph(request.repositoryRoot, selection.manifestPath);
-  const { implementation, context, validator } = inspectObservationTransition(graph, selection, commandPath);
+  const { implementation, context, validator, resultValidator, resultSchemaDigest, readResultSchema } = inspectTransition(graph, selection, commandPath);
   if (!validator.validate(input).valid) throw new UsfError("CLI_TRANSITION_INPUT_INVALID", exitCodes.INVALID_INPUT, "Input violates the graph-generated request schema.");
   try {
     const output = observationObject(await implementation.prepare(request.repositoryRoot, selection, input, context.profile!));
     const identity = implementation.identity(output);
-    if (output.schema !== implementation.outputSchema || identity.work !== selection.rootIdentity
+    if (!resultValidator.validate(output).valid || output.schema !== implementation.outputSchema || identity.work !== selection.rootIdentity
       || identity.profile !== context.profile) {
       throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Produced artifact is not the declared work/profile/schema.");
     }
     const current = loadSemanticGraph(request.repositoryRoot, selection.manifestPath);
-    if (canonicalQuadDigest(current.quads) !== canonicalQuadDigest(graph.quads)) {
-      throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Observation semantics moved before output.");
+    if (canonicalQuadDigest(current.quads) !== canonicalQuadDigest(graph.quads) || canonicalDigest(readResultSchema()) !== resultSchemaDigest) {
+      throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Transition semantics moved before acknowledgement; any produced workspace is preserved for native reconciliation.");
     }
     return { output, exitCode: exitCodes.SUCCESS };
   } catch (error) {
@@ -265,12 +369,12 @@ export async function observationCommandHandler(request: CommandRequest, command
   }
 }
 
-export function observationTransitionAdapters(): readonly CliTransitionAdapter[] {
-  return [...observationAdapters].map(([commandPath, implementation]) => ({
-    id: implementation.id, effectClass: "observation",
+export function transitionAdaptersForCoverage(): readonly CliTransitionAdapter[] {
+  return [...transitionAdapters].map(([commandPath, implementation]) => ({
+    id: implementation.id, effectClass: implementation.effectClass,
     inspect(graph, selection, transitionIdentity) {
       try {
-        const admitted = inspectObservationTransition(graph, selection, commandPath);
+        const admitted = inspectTransition(graph, selection, commandPath);
         if (admitted.transitionIdentity !== transitionIdentity) {
           return [{ reasonCode: "TRANSITION_ADAPTER_UNMAPPED", subject: transitionIdentity, field: "adapter" }];
         }
@@ -282,6 +386,27 @@ export function observationTransitionAdapters(): readonly CliTransitionAdapter[]
     },
   }));
 }
+
+function requireObservationAdapter(commandPath: string): void {
+  if (transitionAdapters.get(commandPath)?.effectClass !== "observation") {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "An observation-only caller cannot execute an effect adapter.");
+  }
+}
+
+export function inspectObservationTransition(graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, commandPath: string) {
+  requireObservationAdapter(commandPath);
+  return inspectTransition(graph, selection, commandPath);
+}
+
+export async function observationCommandHandler(request: CommandRequest, commandPath: string): Promise<CommandResult> {
+  requireObservationAdapter(commandPath);
+  return executeTransitionCommand(request, commandPath);
+}
+
+export function observationTransitionAdapters(): readonly CliTransitionAdapter[] {
+  return transitionAdaptersForCoverage().filter(adapter => adapter.effectClass === "observation");
+}
+
 
 
 export function parseTransitionInterrogation(args: readonly string[]): { rootIdentity: string; manifestPath: string } {
@@ -397,7 +522,7 @@ export function transitionCommandHandler(request: CommandRequest, installedComma
       parserOwner: path.join(" ") === transitionInterrogationContract.path.join(" ") ? "src/commands/help.ts#transitionInterrogationContract" : null,
     })),
   };
-  const output = boundedTransitionRead(() => deriveCliTransitionCoverage(graph, selection, inventory, observationTransitionAdapters()));
+  const output = boundedTransitionRead(() => deriveCliTransitionCoverage(graph, selection, inventory, transitionAdaptersForCoverage()));
   const schema = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-interrogation.schema.json", import.meta.url), "utf8"));
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
   if ("contract" in output && typeof output.contract === "string") {

@@ -151,14 +151,34 @@ function assertSelection(profile: string, manifestPath: string): void {
   }
 }
 
-function parseRealiseRequest(args: readonly string[]): RealiseRequest {
+function parseRealiseRequest(args: readonly string[]): unknown {
   if (args[0] !== "no-change") refuse("REALISE_TOPIC_INVALID", "Use the graph-registered realise no-change topic.");
   const options = optionMap(args.slice(1));
   assertKnownOptions(options, ["--work", "--profile", "--manifest"]);
-  const request = Object.freeze({ work: exactlyOne(options, "--work"), profile: exactlyOne(options, "--profile"), manifestPath: exactlyOne(options, "--manifest") });
+  return {
+    work: exactlyOne(options, "--work"),
+    profile: exactlyOne(options, "--profile"),
+    manifestPath: exactlyOne(options, "--manifest"),
+  };
+}
+
+function parseNoChangeWorkRequest(value: unknown): RealiseRequest {
+  if (value === null || typeof value !== "object" || Array.isArray(value)
+    || Object.keys(value).length !== 3
+    || !Object.hasOwn(value, "work") || !Object.hasOwn(value, "profile") || !Object.hasOwn(value, "manifestPath")) {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "No-change materialisation requires exactly work, profile, and manifestPath.");
+  }
+  const request = Object.freeze({
+    work: (value as { work: unknown }).work,
+    profile: (value as { profile: unknown }).profile,
+    manifestPath: (value as { manifestPath: unknown }).manifestPath,
+  });
+  if (typeof request.work !== "string" || typeof request.profile !== "string" || typeof request.manifestPath !== "string") {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "No-change materialisation requires string work, profile, and manifestPath.");
+  }
   if (!iriPattern.test(request.work)) refuse("WORK_COMPLETION_IRI_INVALID", "Work must be an exact URN IRI.");
   assertSelection(request.profile, request.manifestPath);
-  return request;
+  return Object.freeze({ work: request.work, profile: request.profile, manifestPath: request.manifestPath });
 }
 
 function parseEvidenceRequest(args: readonly string[]): EvidenceRequest {
@@ -518,6 +538,11 @@ async function realiseNoChange(root: string, request: RealiseRequest): Promise<R
     refuse("WORK_COMPLETION_REALISATION_RESULT_INVALID", "No-change realisation result failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
   }
   return result;
+}
+
+export async function realiseNoChangeWork(root: string, request: unknown): Promise<Record<string, unknown>> {
+  try { return await realiseNoChange(root, parseNoChangeWorkRequest(request)); }
+  catch (error) { return asUsfError(error, "WORK_COMPLETION_REALISATION_REFUSED"); }
 }
 
 export interface CompletionEvidencePreparationRequest {
@@ -902,8 +927,7 @@ async function publishCompletion(root: string, request: PublishRequest, values: 
 
 export const realiseCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
   try {
-    const request = parseRealiseRequest(args);
-    return { output: await realiseNoChange(repositoryRoot, request) };
+    return { output: await realiseNoChangeWork(repositoryRoot, parseRealiseRequest(args)) };
   } catch (error) { return asUsfError(error, "WORK_COMPLETION_REALISATION_REFUSED"); }
 };
 
