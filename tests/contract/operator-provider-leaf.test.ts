@@ -94,8 +94,10 @@ test("fresh init installs through the frozen closure and preserves the stable la
   assert.equal(first.status, 0, first.stderr);
   assert.deepEqual(JSON.parse(first.stdout), { schema: "urn:usf:init:1", status: "ok", runtimeRoot: ".usf", providerContacted: false });
   const lockDirectory = await stat(join(root, ".usf/locks"));
+  const inputDirectory = await stat(join(root, ".usf/inputs"));
   const firstLock = await stat(join(root, ".usf/locks/primary-mutation.lock"));
   assert.equal(lockDirectory.mode & 0o777, 0o700);
+  assert.equal(inputDirectory.mode & 0o777, 0o700);
   assert.equal(firstLock.mode & 0o777, 0o600);
   assert.match(await readFile(log, "utf8"), /pnpm install --frozen-lockfile --prefer-offline/u);
   assert.match(await readFile(log, "utf8"), /models refresh --timeout-ms 30000 --max-bytes 33554432/u);

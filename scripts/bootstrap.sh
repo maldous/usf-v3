@@ -14,7 +14,7 @@ for usf_bootstrap_path in \
   bin \
   cache/graph cache/models cache/npm cache/corepack cache/pnpm-store \
   cache/prompts cache/routing cache/validation \
-  catalog chains claims home locks logs metrics objects runs store tmp workspaces \
+  catalog chains claims home inputs locks logs metrics objects runs store tmp workspaces \
   integration backups xdg/cache xdg/config xdg/data xdg/state lineage
 do
   mkdir -p "$usf_bootstrap_root/.usf/$usf_bootstrap_path"
@@ -22,6 +22,7 @@ done
 
 chmod 700 "$usf_bootstrap_root/.usf" \
   "$usf_bootstrap_root/.usf/home" \
+  "$usf_bootstrap_root/.usf/inputs" \
   "$usf_bootstrap_root/.usf/locks" \
   "$usf_bootstrap_root/.usf/objects" \
   "$usf_bootstrap_root/.usf/tmp"
