@@ -19,8 +19,8 @@ import {
   realiseCommandHandler,
   realiseNoChangeWork,
 } from "../../src/commands/work-completion.ts";
-import { loadSemanticGraph } from "../../src/graph/index.ts";
-import { parseStrictNQuads } from "../../src/graph/nquads.ts";
+import { loadSemanticGraph, objectValues } from "../../src/graph/index.ts";
+import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads } from "../../src/graph/nquads.ts";
 import { deriveWork } from "../../src/graph/work.ts";
 import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
 import {
@@ -42,6 +42,7 @@ import {
   type CompletionEvidenceCandidate, type CompletionProofBundle, type WorkCompletionPublicationReceipt,
 } from "../../src/realisation/work-completion.ts";
 import { constructionReceiptPath, deriveConstructionAuthority, validateConstructionReceiptShape, type ConstructionAuthorityPublicationReceipt } from "../../src/realisation/construction-authority.ts";
+import { freshCheckedCompletion } from "../fixtures/realisation/checked-completion.ts";
 
 const canonicalRoot = resolve(import.meta.dirname, "../..");
 const manifest = "graph/manifests/integration.json";
@@ -148,15 +149,6 @@ async function checkedReceiptFixture(): Promise<Readonly<{
   return Object.freeze({ bytes, receipt, provenance });
 }
 
-async function installCheckedReceipt(root: string, fixture: Awaited<ReturnType<typeof checkedReceiptFixture>>): Promise<string> {
-  assert.match(fixture.provenance.receiptPath, /^\.usf\/receipts\/check\/[a-z0-9/.-]+\.json$/u);
-  const path = resolve(root, fixture.provenance.receiptPath);
-  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-  await writeFile(path, fixture.bytes, { flag: "wx", mode: 0o600 });
-  await chmod(path, 0o600);
-  return path;
-}
-
 function rehashedReceipt(receipt: CheckedCandidateReceipt, key: keyof CheckedCandidateReceipt, value: unknown): CheckedCandidateReceipt {
   const { receiptDigest: _ignored, ...originalDraft } = receipt;
   const draft = { ...originalDraft, [key]: value };
@@ -202,20 +194,25 @@ function packet(root: string) {
   return result.items![0]!;
 }
 
-test("direct outer fixture regeneration reproduces the retained real checked receipt", {
+test("fresh native check reuses an authenticated receipt for the same scoped fixture inputs", {
   skip: isConfinedFixtureProcess && "the authoritative direct lane runs outside mode-2 confinement",
 }, async () => {
   const fixture = await checkedReceiptFixture();
   const isolated = await isolatedPrecompletionRepository();
   try {
-    const realised = await realiseCommandHandler({ command: "realise", repositoryRoot: isolated.root, args: ["no-change", "--work", work, "--profile", profile, "--manifest", manifest] });
-    const candidateDigest = (realised.output as { candidateDigest: string }).candidateDigest;
-    assert.equal(candidateDigest, fixture.provenance.candidateDigest);
-    const checked = await admissionCheckHandler({ command: "check", repositoryRoot: isolated.root, args: ["--candidate", candidateDigest, "--validation", validation] });
-    assert.equal((checked.output as { status: string }).status, "pass", JSON.stringify(checked.output));
-    const regeneratedPath = (checked.output as { receiptPath: string }).receiptPath;
-    assert.equal(regeneratedPath, fixture.provenance.receiptPath);
-    assert.deepEqual(await readFile(resolve(isolated.root, regeneratedPath)), fixture.bytes);
+    const fresh = await freshCheckedCompletion(isolated.root, { work, profile, manifestPath: manifest, validation,
+      constructionObligation: "urn:usf:proof:repository-path-scope:construction-authority", name: "repository-path" });
+    const readback = await readGraphDerivedCheckReceipt(isolated.root, fresh.candidateDigest, validation);
+    assert.ok(readback, "the native check must retain a current receipt for its exact fresh candidate");
+    assert.equal(readback.receiptPath, fresh.receiptPath);
+    assert.deepEqual(readback.receipt, fresh.receipt);
+    assert.deepEqual(await readFile(resolve(isolated.root, fresh.receiptPath)), Buffer.from(canonicalJson(fresh.receipt, { rejectAbsolutePaths: true })));
+    const reused = await admissionCheckHandler({ command: "check", repositoryRoot: isolated.root,
+      args: ["--candidate", fresh.candidateDigest, "--validation", validation] });
+    assert.equal((reused.output as { status?: unknown }).status, "pass", JSON.stringify(reused.output));
+    assert.deepEqual(await readGraphDerivedCheckReceipt(isolated.root, fresh.candidateDigest, validation), readback,
+      "the same scoped candidate and validation must reuse its authenticated receipt");
+    assert.equal(fixture.provenance.receiptDigest, fixture.receipt.receiptDigest, "historical fixture receipt remains integrity/provenance evidence only");
   } finally {
     await isolated.cleanup();
   }
@@ -224,15 +221,18 @@ test("direct outer fixture regeneration reproduces the retained real checked rec
 test("retained real receipt is reauthenticated before no-change completion effects", {
   skip: isConfinedFixtureProcess && "the authoritative direct lane runs outside mode-2 confinement",
 }, async () => {
-  const fixture = await checkedReceiptFixture();
   const isolated = await isolatedPrecompletionRepository();
   try {
-    assert.equal(packet(isolated.root).eligibility?.construction.authority, "active-permission");
+    const fresh = await freshCheckedCompletion(isolated.root, { work, profile, manifestPath: manifest, validation,
+      constructionObligation: "urn:usf:proof:repository-path-scope:construction-authority", name: "repository-path" });
     const realised = await realiseCommandHandler({ command: "realise", repositoryRoot: isolated.root, args: ["no-change", "--work", work, "--profile", profile, "--manifest", manifest] });
-    const candidateDigest = (realised.output as { candidateDigest: string }).candidateDigest;
-    assert.equal(candidateDigest, fixture.provenance.candidateDigest);
+    const candidateDigest = fresh.candidateDigest;
+    assert.equal((realised.output as { candidateDigest: string }).candidateDigest, candidateDigest, "replay must retain the fresh native candidate identity");
+    const currentReceipt = await readGraphDerivedCheckReceipt(isolated.root, candidateDigest, validation);
+    assert.ok(currentReceipt, "fresh native check receipt must be current before completion evidence");
+    assert.deepEqual(currentReceipt.receipt, fresh.receipt);
 
-    const workspacePath = resolve(isolated.root, (realised.output as { workspacePath: string }).workspacePath);
+    const workspacePath = resolve(isolated.root, fresh.workspacePath);
     const workspaceManifestPath = resolve(workspacePath, ".usf-workspace.json");
     const manifestBytes = await readFile(workspaceManifestPath);
     const directory = await open(workspacePath, "r");
@@ -266,16 +266,21 @@ test("retained real receipt is reauthenticated before no-change completion effec
       assert.deepEqual(await replay(), realised);
     } finally { await directory.close(); }
 
-    await assert.rejects(
-      async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root, args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest] }),
-      { code: "WORK_COMPLETION_CHECK_RECEIPT_MISSING", exitCode: 4 },
-    );
-
     const preparation = { work, profile, manifestPath: manifest, candidateDigest };
-    await assert.rejects(() => prepareCompletionEvidence(isolated.root, preparation), { code: "WORK_COMPLETION_CHECK_RECEIPT_MISSING", exitCode: 4 });
     const evidencePath = ".usf/candidates/work-completion/repository-path-evidence.json";
     const bundlePath = ".usf/candidates/work-completion/repository-path-bundle.json";
-    const checkedReceiptPath = await installCheckedReceipt(isolated.root, fixture);
+    const checkedReceiptPath = resolve(isolated.root, fresh.receiptPath);
+    const freshReceiptBytes = await readFile(checkedReceiptPath);
+    await unlink(checkedReceiptPath);
+    await assert.rejects(
+      async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
+        args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest] }),
+      { code: "WORK_COMPLETION_CHECK_RECEIPT_MISSING", exitCode: 4 },
+    );
+    await assert.rejects(() => prepareCompletionEvidence(isolated.root, preparation),
+      { code: "WORK_COMPLETION_CHECK_RECEIPT_MISSING", exitCode: 4 });
+    await writeFile(checkedReceiptPath, freshReceiptBytes, { mode: 0o600 });
+
     await chmod(checkedReceiptPath, 0o644);
     await assert.rejects(
       async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root, args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", evidencePath] }),
@@ -287,15 +292,17 @@ test("retained real receipt is reauthenticated before no-change completion effec
     const malformedEvidencePath = ".usf/candidates/work-completion/refused-malformed-receipt.json";
     await writeFile(checkedReceiptPath, "{not-json\n", { mode: 0o600 });
     await assert.rejects(
-      async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root, args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", malformedEvidencePath] }),
+      async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
+        args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", malformedEvidencePath] }),
     );
     assert.equal(existsSync(resolve(isolated.root, malformedEvidencePath)), false, "malformed receipt must refuse before evidence persistence");
 
     const tamperedEvidencePath = ".usf/candidates/work-completion/refused-integrity-tampered-receipt.json";
-    const tamperedReceipt = { ...fixture.receipt, receiptDigest: `sha256:${"0".repeat(64)}` };
+    const tamperedReceipt = { ...fresh.receipt, receiptDigest: `sha256:${"0".repeat(64)}` };
     await writeFile(checkedReceiptPath, canonicalJson(tamperedReceipt, { rejectAbsolutePaths: true }), { mode: 0o600 });
     await assert.rejects(
-      async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root, args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", tamperedEvidencePath] }),
+      async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
+        args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", tamperedEvidencePath] }),
     );
     assert.equal(existsSync(resolve(isolated.root, tamperedEvidencePath)), false, "integrity-tampered receipt must refuse before evidence persistence");
 
@@ -309,13 +316,14 @@ test("retained real receipt is reauthenticated before no-change completion effec
       { key: "validationObligationIri", value: "urn:usf:validation:wrong" },
     ];
     for (const substitution of substitutions) {
-      const changed = rehashedReceipt(fixture.receipt, substitution.key, substitution.value);
+      const changed = rehashedReceipt(fresh.receipt, substitution.key, substitution.value);
       await writeFile(checkedReceiptPath, canonicalJson(changed, { rejectAbsolutePaths: true }), { mode: 0o600 });
       const refusedPath = `.usf/candidates/work-completion/refused-${String(substitution.key)}.json`;
-      await assert.rejects(async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root, args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", refusedPath] }));
+      await assert.rejects(async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
+        args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", refusedPath] }));
       assert.equal(existsSync(resolve(isolated.root, refusedPath)), false, `${String(substitution.key)} must refuse before evidence persistence`);
     }
-    await writeFile(checkedReceiptPath, fixture.bytes, { mode: 0o600 });
+    await writeFile(checkedReceiptPath, freshReceiptBytes, { mode: 0o600 });
 
     const filesBefore = await readdir(isolated.root, { recursive: true });
     const receiptBefore = await readFile(checkedReceiptPath, "utf8");
@@ -433,12 +441,12 @@ test("published transition authority readback retains predecessors and refuses s
       return result;
     };
     const refused = (label: string) => {
-      try {
-        const result = derive();
-        assert.equal(result.status, "refused", `${label} must not retain a cached accepted result`);
-      } catch (error: unknown) {
-        assert.match(error instanceof Error ? error.message : String(error), /^(TRANSITION_LIVE|REQUIRED_TRANSITION)_/u, label);
-      }
+      const result = derive();
+      assert.equal(result.status, "ok", `${label} must retain unaffected queue/readback projection`);
+      const affected = result.items?.[0];
+      assert.equal(affected?.realisationStage?.stage, "blocked", `${label} must block the affected work without cached acceptance`);
+      assert.ok(affected?.eligibility?.construction.reasonCodes.some(reason => /_PERMISSION_CURRENTNESS_UNVERIFIED:/u.test(reason)),
+        `${label} must retain the exact permission-currentness refusal`);
     };
     const baseline = accepted();
     assert.deepEqual(accepted(), baseline, "reentry must reauthenticate the same published transition without cached acceptance");
@@ -1002,40 +1010,45 @@ test("publication intent binds the native proof bundle digest beyond a work and 
   assert.notEqual(first, second, "native publication intent must not collapse distinct proof bundles with the same work and manifest tuple");
 });
 
+async function genuineLegacyMember(root: string, member: typeof legacyCohort[number], freshConstruction = true) {
+  const memberManifest = manifest;
+  if (freshConstruction) {
+    const constructionEvidencePath = `.usf/candidates/construction-authority/${member.name}-cohort-evidence.json`;
+    const constructionBundlePath = `.usf/candidates/construction-authority/${member.name}-cohort-bundle.json`;
+    await evidenceCommandHandler({ command: "evidence", repositoryRoot: root,
+      args: ["construction", "--work", member.work, "--profile", profile, "--manifest", memberManifest, "--output", constructionEvidencePath] });
+    await proveCommandHandler({ command: "prove", repositoryRoot: root,
+      args: ["construction", "--obligation", member.constructionObligation, "--evidence", constructionEvidencePath, "--profile", profile, "--manifest", memberManifest, "--output", constructionBundlePath] });
+    const construction = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root,
+      args: ["construction-authority", "--bundle", constructionBundlePath, "--profile", profile, "--manifest", memberManifest, "--apply"] });
+    assert.equal((construction.output as { status: string }).status, "ok", `${member.name} must receive fresh isolated construction authority`);
+  }
+  const realised = await realiseCommandHandler({ command: "realise", repositoryRoot: root,
+    args: ["no-change", "--work", member.work, "--profile", profile, "--manifest", memberManifest] });
+  const candidateDigest = (realised.output as { candidateDigest: string }).candidateDigest;
+  const checked = await admissionCheckHandler({ command: "check", repositoryRoot: root,
+    args: ["--candidate", candidateDigest, "--validation", member.validation] });
+  assert.equal((checked.output as { status: string }).status, "pass", `${member.name} must have one native checked receipt: ${JSON.stringify(checked.output)}`);
+  const evidencePath = `.usf/candidates/work-completion/${member.name}-cohort-evidence.json`;
+  const bundlePath = `.usf/candidates/work-completion/${member.name}-cohort-bundle.json`;
+  const evidence = await completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: root,
+    args: ["completion", "--candidate", candidateDigest, "--work", member.work, "--profile", profile, "--manifest", memberManifest, "--output", evidencePath] });
+  const proof = await completionAwareProveCommandHandler({ command: "prove", repositoryRoot: root,
+    args: ["completion", "--obligation", member.obligation, "--evidence", evidencePath, "--profile", profile, "--manifest", memberManifest, "--output", bundlePath] });
+  const packet = deriveWork(loadSemanticGraph(root, memberManifest), { profile, selector: member.work, maxItems: 1 }).items?.[0];
+  assert.ok(packet?.realisationBasis, `${member.name} must retain an independently derived original basis`);
+  const bundle = proof.output as CompletionProofBundle;
+  return Object.freeze({ bundlePath, member: Object.freeze({ work: member.work, manifestPath: bundle.evidence.manifestPath, manifestDigest: bundle.evidence.manifestDigest,
+    originalBasisDigest: packet.realisationBasis.basisDigest, candidateDigest, proofBundleDigest: canonicalDigest(bundle, { rejectAbsolutePaths: true }) }) });
+}
+
 async function genuineLegacyCohort(root: string, freshConstruction = true, requireDistinctManifestDigests = false) {
   const bundles: string[] = [];
   const members: Array<{ work: string; manifestPath: string; manifestDigest: string; originalBasisDigest: string; candidateDigest: string; proofBundleDigest: string }> = [];
   for (const member of legacyCohort) {
-    const memberManifest = manifest;
-    if (freshConstruction) {
-      const constructionEvidencePath = `.usf/candidates/construction-authority/${member.name}-cohort-evidence.json`;
-      const constructionBundlePath = `.usf/candidates/construction-authority/${member.name}-cohort-bundle.json`;
-      await evidenceCommandHandler({ command: "evidence", repositoryRoot: root,
-        args: ["construction", "--work", member.work, "--profile", profile, "--manifest", memberManifest, "--output", constructionEvidencePath] });
-      await proveCommandHandler({ command: "prove", repositoryRoot: root,
-        args: ["construction", "--obligation", member.constructionObligation, "--evidence", constructionEvidencePath, "--profile", profile, "--manifest", memberManifest, "--output", constructionBundlePath] });
-      const construction = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root,
-        args: ["construction-authority", "--bundle", constructionBundlePath, "--profile", profile, "--manifest", memberManifest, "--apply"] });
-      assert.equal((construction.output as { status: string }).status, "ok", `${member.name} must receive fresh isolated construction authority`);
-    }
-    const realised = await realiseCommandHandler({ command: "realise", repositoryRoot: root,
-      args: ["no-change", "--work", member.work, "--profile", profile, "--manifest", memberManifest] });
-    const candidateDigest = (realised.output as { candidateDigest: string }).candidateDigest;
-    const checked = await admissionCheckHandler({ command: "check", repositoryRoot: root,
-      args: ["--candidate", candidateDigest, "--validation", member.validation] });
-    assert.equal((checked.output as { status: string }).status, "pass", `${member.name} must have one native checked receipt: ${JSON.stringify(checked.output)}`);
-    const evidencePath = `.usf/candidates/work-completion/${member.name}-cohort-evidence.json`;
-    const bundlePath = `.usf/candidates/work-completion/${member.name}-cohort-bundle.json`;
-    const evidence = await completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: root,
-      args: ["completion", "--candidate", candidateDigest, "--work", member.work, "--profile", profile, "--manifest", memberManifest, "--output", evidencePath] });
-    const proof = await completionAwareProveCommandHandler({ command: "prove", repositoryRoot: root,
-      args: ["completion", "--obligation", member.obligation, "--evidence", evidencePath, "--profile", profile, "--manifest", memberManifest, "--output", bundlePath] });
-    const packet = deriveWork(loadSemanticGraph(root, memberManifest), { profile, selector: member.work, maxItems: 1 }).items?.[0];
-    assert.ok(packet?.realisationBasis, `${member.name} must retain an independently derived original basis`);
-    const bundle = proof.output as CompletionProofBundle;
-    bundles.push(bundlePath);
-    members.push({ work: member.work, manifestPath: bundle.evidence.manifestPath, manifestDigest: bundle.evidence.manifestDigest,
-      originalBasisDigest: packet.realisationBasis.basisDigest, candidateDigest, proofBundleDigest: canonicalDigest(bundle, { rejectAbsolutePaths: true }) });
+    const prepared = await genuineLegacyMember(root, member, freshConstruction);
+    bundles.push(prepared.bundlePath);
+    members.push(prepared.member);
   }
   assert.equal(new Set(members.map((member) => member.work)).size, 2, "genuine cohort members remain distinct");
   if (requireDistinctManifestDigests) assert.equal(new Set(members.map((member) => member.manifestDigest)).size, 2, "genuine v2 cohort members must retain distinct selected manifest digests before publication");
@@ -1048,7 +1061,16 @@ test("legacy completion publication refuses the original genuine dependent cohor
 }, async () => {
   const isolated = await isolatedPrecompletionRepository();
   try {
-    const cohort = await genuineLegacyCohort(isolated.root, false);
+    const predecessor = await genuineLegacyMember(isolated.root, legacyCohort[0]!, true);
+    const predecessorPublication = await completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root,
+      args: ["work-completion", "--bundle", predecessor.bundlePath, "--profile", profile, "--manifest", manifest, "--apply"] });
+    assert.equal((predecessorPublication.output as { publicationState: string }).publicationState, "created", "the predecessor must be genuinely accepted before the dependent member can be constructed");
+    assert.equal(packet(isolated.root).realisationStage?.stage, "verified-complete", "the predecessor acceptance must be current before dependent construction");
+
+    const dependent = await genuineLegacyMember(isolated.root, legacyCohort[1]!, true);
+    // The dependent construction changes semantic authority; rederive the predecessor bundle instead of replaying stale proof bytes.
+    const refreshedPredecessor = await genuineLegacyMember(isolated.root, legacyCohort[0]!, false);
+    const cohort = Object.freeze({ bundles: Object.freeze([refreshedPredecessor.bundlePath, dependent.bundlePath]) });
     const sourceBefore = await readFile(resolve(isolated.root, "graph/integration.nq"));
     const receiptsBefore = await readdir(resolve(isolated.root, "evidence/work-completion"));
     const candidatesBefore = [...(await regularTree(resolve(isolated.root, ".usf/candidates/work-completion")))].map(([path, entry]) => [path, entry.mode, entry.digest]);
@@ -1455,6 +1477,10 @@ test("transition inspection refuses an unsupported selected publication receipt 
   try {
     const sourcePath = resolve(isolated.root, "graph/cli-transition-definition.nq");
     const source = await readFile(sourcePath, "utf8");
+    const evaluator = "urn:usf:rule:completion-terminal-native-evaluation:1";
+    const evaluatorSourceDigest = canonicalQuadDigest(
+      loadSemanticGraph(isolated.root, canonicalNoChangeSelection.manifestPath).quads.filter(quad => quad.subject === evaluator),
+    );
     const selectedBinding = '<urn:usf:schema-binding:completion-publication-receipt:2> <urn:usf:predicate:version> "2" <urn:usf:graph:cli-transition-definition> .';
     assert.equal(source.split(selectedBinding).length - 1, 1, "fixture must mutate the one selected v2 schema binding");
     await writeFile(sourcePath, source.replace(selectedBinding, selectedBinding.replace('"2"', '"3"')));
@@ -1471,14 +1497,22 @@ test("transition inspection refuses an unsupported selected publication receipt 
       readonly terminalClosure: { readonly assessment: {
         readonly authenticatedArtifacts: readonly unknown[];
         readonly reasonCodes: readonly string[];
-        readonly diagnostics: readonly { readonly reasonCode: string }[];
+        readonly diagnostics: readonly { readonly reasonCode: string; readonly subject: string; readonly sourceDigest: string; readonly observedTargets: readonly string[] }[];
       } };
+      readonly diagnostics: readonly { readonly reasonCode: string; readonly subject: string; readonly field: string }[];
     };
     assert.equal(output.complete, false);
     assert.equal(output.executionAuthority, "none");
     assert.deepEqual(output.terminalClosure.assessment.authenticatedArtifacts, []);
-    assert(output.terminalClosure.assessment.reasonCodes.includes("TRANSITION_TERMINAL_EVALUATION_REFUSED"));
-    assert(output.terminalClosure.assessment.diagnostics.some(diagnostic => diagnostic.reasonCode === "TRANSITION_TERMINAL_EVALUATION_REFUSED"));
+    const expectedDiagnostic = Object.freeze({ reasonCode: "TRANSITION_TERMINAL_EVALUATION_REFUSED", subject: evaluator,
+      sourceDigest: evaluatorSourceDigest, observedTargets: Object.freeze([] as string[]) });
+    assert.equal(output.terminalClosure.assessment.reasonCodes.filter(reason => reason === expectedDiagnostic.reasonCode).length, 1);
+    assert.deepEqual(output.diagnostics.filter(diagnostic => diagnostic.reasonCode === expectedDiagnostic.reasonCode), [{
+      reasonCode: expectedDiagnostic.reasonCode, subject: evaluator, field: "publicationReceiptSchema",
+    }],
+      "unsupported selected schema must surface one exact top-level evaluator refusal");
+    assert.deepEqual(output.terminalClosure.assessment.diagnostics.filter(diagnostic => diagnostic.reasonCode === expectedDiagnostic.reasonCode), [expectedDiagnostic],
+      "unsupported selected schema must surface one exact nested evaluator refusal");
     assert.deepEqual(await readFile(sourcePath), graphBefore, "inspection must not mutate the unsupported schema binding");
     const receiptsAfter = existsSync(receiptDirectory)
       ? await Promise.all((await readdir(receiptDirectory)).sort().map(async name => Object.freeze([name, await readFile(resolve(receiptDirectory, name))] as const)))
@@ -1529,10 +1563,14 @@ test("canonical terminal evaluation refuses altered evaluator and artifact linea
         "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:profile> <urn:usf:profile:cli-transition-definition:1>",
         "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:profile> <urn:usf:profile:wrong-profile:1>",
       ));
-      await refuseOrEmpty(replaceExactly(
-        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:schema> <urn:usf:schema:work-completion-publication-receipt:1>",
-        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:schema> <urn:usf:schema:wrong-publication-receipt:1>",
-      ));
+      const artifact = "urn:usf:cli-contract:completion-publication-artifact:1";
+      const schemaPredicate = "urn:usf:predicate:schema";
+      const selectedSchemas = objectValues(loadSemanticGraph(isolated.root, canonicalNoChangeSelection.manifestPath), artifact, schemaPredicate);
+      assert.equal(selectedSchemas.length, 1, "terminal artifact must select exactly one current schema field");
+      const [artifactSchema] = parseStrictNQuads(source, "urn:usf:graph:cli-transition-definition")
+        .filter(quad => quad.subject === artifact && quad.predicate === schemaPredicate && quad.object === selectedSchemas[0]);
+      assert.ok(artifactSchema, "selected artifact schema must have one canonical source quad");
+      await refuseOrEmpty(replaceExactly(artifactSchema.canonical, canonicalQuadLine({ ...artifactSchema, object: "urn:usf:schema:wrong-publication-receipt:1" })));
     } finally { await writeFile(sourcePath, source); }
   } finally { await isolated.cleanup(); }
 });

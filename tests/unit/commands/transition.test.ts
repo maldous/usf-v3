@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { resolveCommandHandler } from "../../../src/commands/resolve.ts";
 import { inspectTransition, transitionAdaptersForCoverage, loadTransitionContextGraph, observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, symlinkSync, lstatSync, readlinkSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -296,6 +297,7 @@ test("observation adapter refuses unknown commands and transport overrides befor
   await assert.rejects(observationCommandHandler(request, "invented execute"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
   for (const args of [["{}"], ["--profile", "urn:test:profile"], ["--input", "-", "--apply"], []]) {
     await assert.rejects(observationCommandHandler({ ...request, args }, "resolve prepare-local"), { code: "RESOLVE_ARGUMENTS_INVALID" });
+    await assert.rejects(async () => resolveCommandHandler({ ...request, args: ["prepare-local", ...args] }), { code: "RESOLVE_ARGUMENTS_INVALID" });
   }
   const help = findHelpTopic(["resolve", "prepare-local"]);
   assert.equal(help?.outputSchema, "urn:usf:local-contribution:1");

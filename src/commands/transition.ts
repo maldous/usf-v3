@@ -740,14 +740,26 @@ function attachAuthenticatedTerminalArtifacts(
     evaluated = evaluate(repositoryRoot, { rootIdentity: work, manifestPath: nativeManifestPath });
   } catch (error) {
     if (error instanceof UsfError && error.code === "WORK_COMPLETION_WORK_PROJECTION_INVALID") return output;
-    if (error instanceof Error && error.message === "WORK_COMPLETION_PUBLICATIONRECEIPTSCHEMA_INVALID") {
+    if (error instanceof Error && (error.message === "WORK_COMPLETION_PUBLICATIONRECEIPTSCHEMA_INVALID"
+      || error.message === "WORK_COMPLETION_PUBLICATION_RECEIPT_SCHEMA_BINDINGS_INVALID")) {
       const { digest: _ignored, ...body } = output;
-      const diagnostics = [...body.diagnostics, {
+      const refusal = {
         reasonCode: "TRANSITION_TERMINAL_EVALUATION_REFUSED",
         subject: "urn:usf:rule:completion-terminal-native-evaluation:1",
-        field: error.message,
-      }];
-      const refused = { ...body, diagnostics, complete: false,
+        sourceDigest: canonicalQuadDigest(graph.quads.filter(quad => quad.subject === "urn:usf:rule:completion-terminal-native-evaluation:1")),
+        observedTargets: [],
+      };
+      const diagnostic = {
+        reasonCode: refusal.reasonCode,
+        subject: refusal.subject,
+        field: "publicationReceiptSchema",
+      };
+      const terminalClosure = { ...body.terminalClosure, assessment: {
+        ...body.terminalClosure.assessment,
+        reasonCodes: [...body.terminalClosure.assessment.reasonCodes, refusal.reasonCode],
+        diagnostics: [...body.terminalClosure.assessment.diagnostics, refusal],
+      } };
+      const refused = { ...body, diagnostics: [...body.diagnostics, diagnostic], terminalClosure, complete: false,
         reasonCode: "TRANSITION_SEMANTICS_INCOMPLETE" as const, executionAuthority: "none" as const };
       return { ...refused, digest: canonicalDigest(refused) };
     }

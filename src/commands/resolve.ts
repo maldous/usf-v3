@@ -8,7 +8,6 @@ import { exitCodes, UsfError } from "../core/errors.ts";
 import { assertSameBasis, parseRealisationBasis } from "../realisation/basis.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
 import { parseCommandInput, readCommandInput } from "./command-input.ts";
-import { observationCommandHandler } from "./transition.ts";
 
 const callResultValidator = createJsonSchemaValidator(JSON.parse(
   readFileSync(new URL("../../schemas/call-result.schema.json", import.meta.url), "utf8"),
@@ -24,7 +23,10 @@ export function resolveCommand(contributions: readonly ResolvableContribution[])
 /** Keep local proposals out of provider call-result and success accounting. */
 export const resolveCommandHandler: CommandHandler = async (request) => {
   const { args, repositoryRoot } = request;
-  if (args[0] === "prepare-local") return observationCommandHandler({ ...request, args: args.slice(1) }, "resolve prepare-local");
+  if (args[0] === "prepare-local") {
+    const { observationCommandHandler } = await import("./transition.ts");
+    return observationCommandHandler({ ...request, args: args.slice(1) }, "resolve prepare-local");
+  }
   const value = await readCommandInput(repositoryRoot, parseCommandInput(args, "RESOLVE"), "RESOLVE");
   const localInput = value !== null && typeof value === "object" && !Array.isArray(value)
     && (value as Record<string, unknown>).schema === "urn:usf:local-contribution:1";
