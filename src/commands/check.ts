@@ -1,5 +1,5 @@
 import { constants, lstatSync, readdirSync, realpathSync, type Stats } from "node:fs";
-import { chmod, link, lstat, mkdir, open, readdir, realpath, rm, unlink, writeFile } from "node:fs/promises";
+import { chmod, link, lstat, mkdir, open, readdir, realpath, rename, rm, unlink, writeFile } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { candidateWorkspace, currentCandidateWorkspace, RealisationError, stableReason, withCandidateLock } from "../realisation/index.ts";
@@ -9,6 +9,7 @@ import { exitCodes } from "../core/errors.ts";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { loadSemanticGraph, objectsFor, resourceDigest, validationRuntimeClosure, type LoadedSemanticGraph } from "../graph/index.ts";
 import { isOperation, type FileOperation } from "../providers/types.ts";
+import { createJsonSchemaValidator } from "../schema/index.ts";
 
 export interface FocusedCheck { readonly id: string; readonly command: readonly string[]; }
 export type FocusedCheckResult =
@@ -63,6 +64,32 @@ export interface CheckedCandidateReceipt {
   readonly receiptDigest: string;
 }
 
+interface CheckedCandidateExecutionIntent {
+  readonly schema: "urn:usf:checked-candidate-execution-intent:1";
+  readonly state: "PREPARED" | "STARTED" | "SETTLED" | "UNKNOWN";
+  readonly intentDigest: string;
+  readonly candidateDigest: string;
+  readonly validationObligationIri: string;
+  readonly workIri: string;
+  readonly explicitProfileIri: string;
+  readonly originalConstructionBasisDigest: string;
+  readonly scopedDependencyDigest: string;
+  readonly workspaceIdentityDigest: string;
+  readonly candidateTreeDigest: string;
+  readonly validationResourceDigest: string;
+  readonly validationCommandDigest: string;
+  readonly validationEnvironmentDigest: string;
+  readonly validationExecutionModeDigest: string;
+  readonly validationToolDependencyDigest: string;
+  readonly validationSchemaDependencyDigest: string;
+  readonly validationAuthorityDependencyDigest: string;
+  readonly validationExecutionAuthorityResourceDigest: string;
+  readonly executionInputDigest: string;
+  readonly intentPath: string;
+  readonly receiptPath: string;
+  readonly receiptDigest: string | null;
+}
+
 export type GraphDerivedCheckResult =
   | { readonly status: "pass"; readonly basis: RealisationBasis; readonly id: string; readonly exitCode: 0; readonly receiptPath: string; readonly receipt: CheckedCandidateReceipt }
   | { readonly status: "refused"; readonly basis?: RealisationBasis; readonly reasonCode: string; readonly id: string; readonly exitCode?: number;
@@ -73,6 +100,10 @@ export type GraphDerivedCheckResult =
 const bubblewrapExecutable = "/usr/bin/bwrap" as const;
 const checkedCandidateSchemaIri = "urn:usf:schema:checked-candidate-receipt:1";
 const checkedCandidateSchemaIdentity = "urn:usf:checked-candidate-receipt:1" as const;
+const checkedCandidateExecutionIntentSchemaIdentity = "urn:usf:checked-candidate-execution-intent:1" as const;
+const checkedCandidateExecutionIntentSchemaIri = "urn:usf:schema:checked-candidate-execution-intent:1";
+const checkedCandidateExecutionIntentRuleIri = "urn:usf:rule:completion-check-receipts-execution-intent:1";
+const checkedCandidateExecutionIntentRuleFingerprint = "sha256:775deab3b2a619f85a27db7ea3b9755c648881a438c15ea7b2efd2c89ee276ce";
 const validationExecutionAuthorityIri = "urn:usf:algorithm:work-integration-transition:2";
 const integrationManifestPath = "graph/manifests/integration.json";
 const checkReceiptRoot = ".usf/receipts/check";
@@ -704,6 +735,16 @@ function receiptLocation(root: string, candidateDigest: string, validationId: st
   return { repositoryPath, path: resolve(root, repositoryPath) };
 }
 
+function intentLocation(root: string, candidateDigest: string, validationId: string): { readonly repositoryPath: string; readonly path: string } {
+  const receipt = receiptLocation(root, candidateDigest, validationId);
+  const repositoryPath = receipt.repositoryPath.replace(/\.json$/u, ".intent.json");
+  return { repositoryPath, path: resolve(root, repositoryPath) };
+}
+
+function intentTemporaryPath(finalPath: string): string {
+  return `${finalPath}.pending`;
+}
+
 function sameFileIdentity(left: Stats, right: Stats): boolean {
   return left.dev === right.dev && left.ino === right.ino && left.uid === right.uid && left.mode === right.mode
     && left.nlink === right.nlink && left.size === right.size && left.mtimeMs === right.mtimeMs && left.ctimeMs === right.ctimeMs;
@@ -716,7 +757,7 @@ async function authenticatedContentFile(
 ): Promise<{ readonly bytes: Buffer; readonly entry: Stats }> {
   let handle: Awaited<ReturnType<typeof open>>;
   try {
-    handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   } catch {
     return refuse(reasonCode);
   }
@@ -805,10 +846,20 @@ async function fsyncReceiptDirectory(root: string, candidateDigest: string): Pro
   }
 }
 
+async function fsyncReceiptAncestry(root: string, candidateDigest: string): Promise<void> {
+  if (await authenticatedDirectory(root, false) === null) refuse("CHECK_RECEIPT_PATH_UNSAFE");
+  const paths = [root, ...receiptDirectories(root, candidateDigest)];
+  for (const [index, path] of paths.entries()) {
+    if (await authenticatedDirectory(path, index !== 0) === null) refuse("CHECK_RECEIPT_PATH_UNSAFE");
+    const handle = await open(path, constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW).catch(() => refuse("CHECK_RECEIPT_PATH_UNSAFE"));
+    try { await handle.sync(); } finally { await handle.close(); }
+  }
+}
+
 async function authenticatedReceiptFile(path: string, allowedLinks: readonly number[]): Promise<{ readonly bytes: Buffer; readonly entry: Stats } | null> {
   let handle: Awaited<ReturnType<typeof open>>;
   try {
-    handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     return refuse("CHECK_RECEIPT_PATH_UNSAFE");
@@ -831,8 +882,247 @@ async function authenticatedReceiptFile(path: string, allowedLinks: readonly num
   }
 }
 
+const checkedCandidateExecutionIntentFields = Object.freeze([
+  "schema", "state", "intentDigest", "candidateDigest", "validationObligationIri", "workIri", "explicitProfileIri",
+  "originalConstructionBasisDigest", "scopedDependencyDigest", "workspaceIdentityDigest", "candidateTreeDigest",
+  "validationResourceDigest", "validationCommandDigest", "validationEnvironmentDigest", "validationExecutionModeDigest",
+  "validationToolDependencyDigest", "validationSchemaDependencyDigest", "validationAuthorityDependencyDigest",
+  "validationExecutionAuthorityResourceDigest", "executionInputDigest", "intentPath", "receiptPath", "receiptDigest",
+] as const);
+const checkedCandidateExecutionIntentStates = Object.freeze(["PREPARED", "STARTED", "SETTLED", "UNKNOWN"] as const);
+
+function intentDigest(intent: Omit<CheckedCandidateExecutionIntent, "state" | "intentDigest" | "receiptDigest">): string {
+  return canonicalDigest(intent, { rejectAbsolutePaths: true });
+}
+
+function parseExecutionIntent(bytes: Buffer, validate: (value: unknown) => boolean): CheckedCandidateExecutionIntent {
+  let parsed: unknown;
+  try { parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { return refuse("CHECK_EXECUTION_INTENT_INVALID"); }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) || !validate(parsed) || !exactKeys(parsed, checkedCandidateExecutionIntentFields)) refuse("CHECK_EXECUTION_INTENT_INVALID");
+  const intent = parsed as CheckedCandidateExecutionIntent;
+  if (canonicalJson(intent, { rejectAbsolutePaths: true }) !== bytes.toString("utf8")
+    || intent.schema !== checkedCandidateExecutionIntentSchemaIdentity
+    || !checkedCandidateExecutionIntentStates.includes(intent.state)
+    || !digestPattern.test(intent.intentDigest) || !digestPattern.test(intent.candidateDigest)
+    || !digestPattern.test(intent.originalConstructionBasisDigest) || !digestPattern.test(intent.scopedDependencyDigest)
+    || !digestPattern.test(intent.workspaceIdentityDigest) || !digestPattern.test(intent.candidateTreeDigest)
+    || !digestPattern.test(intent.validationResourceDigest) || !digestPattern.test(intent.validationCommandDigest)
+    || !digestPattern.test(intent.validationEnvironmentDigest) || !digestPattern.test(intent.validationExecutionModeDigest)
+    || !digestPattern.test(intent.validationToolDependencyDigest) || !digestPattern.test(intent.validationSchemaDependencyDigest)
+    || !digestPattern.test(intent.validationAuthorityDependencyDigest)
+    || !digestPattern.test(intent.validationExecutionAuthorityResourceDigest) || !digestPattern.test(intent.executionInputDigest)
+    || typeof intent.validationObligationIri !== "string" || typeof intent.workIri !== "string" || typeof intent.explicitProfileIri !== "string"
+    || typeof intent.intentPath !== "string" || typeof intent.receiptPath !== "string"
+    || (intent.receiptDigest !== null && !digestPattern.test(intent.receiptDigest))) refuse("CHECK_EXECUTION_INTENT_INVALID");
+  const { state: _state, intentDigest: suppliedDigest, receiptDigest: _receiptDigest, ...bound } = intent;
+  if (suppliedDigest !== intentDigest(bound) || (intent.state === "SETTLED") !== (intent.receiptDigest !== null)) refuse("CHECK_EXECUTION_INTENT_INVALID");
+  return Object.freeze(intent);
+}
+
+interface ExecutionIntentAuthority {
+  readonly schemaDigest: string;
+  readonly ruleDigest: string;
+  readonly validate: (value: unknown) => boolean;
+}
+
+async function executionIntentAuthority(root: string): Promise<ExecutionIntentAuthority> {
+  const canonicalRoot = await realpath(root).catch(() => refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID"));
+  if (canonicalRoot !== root) refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  let graph: LoadedSemanticGraph;
+  try { graph = loadSemanticGraph(root, integrationManifestPath); } catch { return refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID"); }
+  exactGraphType(graph, checkedCandidateExecutionIntentSchemaIri, "urn:usf:type:SemanticRecordSchema", "CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  if (exactGraphValue(graph, checkedCandidateExecutionIntentSchemaIri, "urn:usf:predicate:schemaIdentity", "iri", "CHECK_EXECUTION_INTENT_AUTHORITY_INVALID") !== checkedCandidateExecutionIntentSchemaIdentity
+    || exactGraphValue(graph, checkedCandidateExecutionIntentSchemaIri, "urn:usf:predicate:repositoryPath", "literal", "CHECK_EXECUTION_INTENT_AUTHORITY_INVALID") !== "schemas/checked-candidate-execution-intent.schema.json") {
+    refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  }
+  const graphFields = objectsFor(graph, checkedCandidateExecutionIntentSchemaIri, "urn:usf:predicate:requiredField");
+  const graphStates = objectsFor(graph, checkedCandidateExecutionIntentSchemaIri, "urn:usf:predicate:allowedState");
+  if (graphFields.some((quad) => quad.objectKind !== "literal") || graphStates.some((quad) => quad.objectKind !== "literal")
+    || canonicalJson(graphFields.map((quad) => quad.object).sort()) !== canonicalJson([...checkedCandidateExecutionIntentFields].sort())
+    || canonicalJson(graphStates.map((quad) => quad.object).sort()) !== canonicalJson([...checkedCandidateExecutionIntentStates].sort())) {
+    refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  }
+  const schemaPath = resolve(root, "schemas/checked-candidate-execution-intent.schema.json");
+  const schemaFile = await authenticatedContentFile(schemaPath, maximumReceiptBytes, "CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  let schema: unknown;
+  try { schema = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(schemaFile.bytes)); } catch { return refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID"); }
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  const candidate = schema as { $id?: unknown; required?: unknown; properties?: { state?: { enum?: unknown } } };
+  if (candidate.$id !== checkedCandidateExecutionIntentSchemaIdentity || !Array.isArray(candidate.required)
+    || canonicalJson([...candidate.required].sort()) !== canonicalJson([...checkedCandidateExecutionIntentFields].sort())
+    || !Array.isArray(candidate.properties?.state?.enum)
+    || canonicalJson([...candidate.properties.state.enum].sort()) !== canonicalJson([...checkedCandidateExecutionIntentStates].sort())) {
+    refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  }
+  exactGraphType(graph, checkedCandidateExecutionIntentRuleIri, "urn:usf:type:CliFieldDerivationRule", "CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  if (exactGraphValue(graph, checkedCandidateExecutionIntentRuleIri, "urn:usf:predicate:version", "literal", "CHECK_EXECUTION_INTENT_AUTHORITY_INVALID") !== "1"
+    || exactGraphValue(graph, checkedCandidateExecutionIntentRuleIri, "urn:usf:predicate:text", "literal", "CHECK_EXECUTION_INTENT_AUTHORITY_INVALID").length === 0) {
+    refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  }
+  const ruleDigest = resourceDigest(graph, checkedCandidateExecutionIntentRuleIri);
+  if (ruleDigest !== checkedCandidateExecutionIntentRuleFingerprint) refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID");
+  let validator: ReturnType<typeof createJsonSchemaValidator<CheckedCandidateExecutionIntent>>;
+  try { validator = createJsonSchemaValidator<CheckedCandidateExecutionIntent>(schema); }
+  catch { return refuse("CHECK_EXECUTION_INTENT_AUTHORITY_INVALID"); }
+  return Object.freeze({
+    schemaDigest: canonicalDigest(schema, { rejectAbsolutePaths: true }),
+    ruleDigest,
+    validate: (value: unknown) => validator.validate(value).valid,
+  });
+}
+
+async function deriveExecutionIntent(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  current: Awaited<ReturnType<typeof currentCandidateWorkspace>>,
+  validation: GraphValidation,
+  authority: ValidationExecutionAuthority,
+): Promise<Omit<CheckedCandidateExecutionIntent, "state" | "intentDigest" | "receiptDigest">> {
+  const facts = await candidateReceiptFacts(root, current.workspace, candidateDigest, current.basis);
+  const authorityDependencies = await validationAuthorityDependencies(root, current.workspace, validation.repositoryReadFiles);
+  const claims = validationReceiptClaims(validation);
+  const receipt = receiptLocation(root, candidateDigest, validationId);
+  const intent = intentLocation(root, candidateDigest, validationId);
+  const binding = {
+    candidateDigest,
+    validationObligationIri: validationId,
+    workIri: current.basis.work.id,
+    explicitProfileIri: current.basis.selection.profile,
+    originalConstructionBasisDigest: current.basis.basisDigest,
+    scopedDependencyDigest: current.basis.work.scopedDependencyDigest,
+    workspaceIdentityDigest: facts.workspaceIdentityDigest,
+    candidateTreeDigest: facts.candidateTreeDigest,
+    validationResourceDigest: claims.validationResourceDigest,
+    validationCommandDigest: claims.validationCommandDigest,
+    validationEnvironmentDigest: claims.validationEnvironmentDigest,
+    validationExecutionModeDigest: claims.validationExecutionModeDigest,
+    validationToolDependencyDigest: claims.validationToolDependencyDigest,
+    validationSchemaDependencyDigest: claims.validationSchemaDependencyDigest,
+    validationAuthorityDependencyDigest: canonicalDigest(authorityDependencies, { rejectAbsolutePaths: true }),
+    validationExecutionAuthorityResourceDigest: authority.resourceDigest,
+  };
+  const intentAuthority = await executionIntentAuthority(root);
+  return Object.freeze({
+    schema: checkedCandidateExecutionIntentSchemaIdentity,
+    ...binding,
+    executionInputDigest: canonicalDigest({
+      ...binding,
+      ruleDigest: intentAuthority.ruleDigest,
+      intentSchemaDigest: intentAuthority.schemaDigest,
+      checkedCandidateSchemaDigest: authority.schemaDigest,
+    }, { rejectAbsolutePaths: true }),
+    intentPath: intent.repositoryPath,
+    receiptPath: receipt.repositoryPath,
+  });
+}
+
+async function readExecutionIntent(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  expected: Omit<CheckedCandidateExecutionIntent, "state" | "intentDigest" | "receiptDigest">,
+): Promise<CheckedCandidateExecutionIntent | null> {
+  if (!await authenticateReceiptAncestry(root, candidateDigest, false)) return null;
+  const location = intentLocation(root, candidateDigest, validationId);
+  if (await authenticatedReceiptFile(intentTemporaryPath(location.path), [1]) !== null) refuse("CHECK_EXECUTION_INTENT_PENDING");
+  const file = await authenticatedReceiptFile(location.path, [1]);
+  if (file === null) return null;
+  const authority = await executionIntentAuthority(root);
+  const intent = parseExecutionIntent(file.bytes, authority.validate);
+  const { state: _state, intentDigest: _digest, receiptDigest: _receiptDigest, ...bound } = intent;
+  if (canonicalJson(bound, { rejectAbsolutePaths: true }) !== canonicalJson(expected, { rejectAbsolutePaths: true })) refuse("CHECK_EXECUTION_INTENT_INVALID");
+  return intent;
+}
+
+async function executionIntentPresent(root: string, candidateDigest: string, validationId: string): Promise<boolean> {
+  if (!await authenticateReceiptAncestry(root, candidateDigest, false)) return false;
+  const location = intentLocation(root, candidateDigest, validationId);
+  if (await authenticatedReceiptFile(intentTemporaryPath(location.path), [1]) !== null) refuse("CHECK_EXECUTION_INTENT_PENDING");
+  return await authenticatedReceiptFile(location.path, [1]) !== null;
+}
+
+async function persistExecutionIntent(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  bound: Omit<CheckedCandidateExecutionIntent, "state" | "intentDigest" | "receiptDigest">,
+  state: CheckedCandidateExecutionIntent["state"],
+  receiptDigestValue: string | null,
+  predecessor: CheckedCandidateExecutionIntent | null,
+): Promise<CheckedCandidateExecutionIntent> {
+  await ensureReceiptDirectories(root, candidateDigest);
+  const current = await readExecutionIntent(root, candidateDigest, validationId, bound);
+  if (canonicalJson(current, { rejectAbsolutePaths: true }) !== canonicalJson(predecessor, { rejectAbsolutePaths: true })) {
+    refuse("CHECK_EXECUTION_INTENT_INVALID");
+  }
+  const location = intentLocation(root, candidateDigest, validationId);
+  const temporary = intentTemporaryPath(location.path);
+  if (await authenticatedReceiptFile(temporary, [1]) !== null) refuse("CHECK_EXECUTION_INTENT_PENDING");
+  const draft = { ...bound, state, receiptDigest: receiptDigestValue };
+  const intent = Object.freeze({ ...draft, intentDigest: intentDigest(bound) });
+  const bytes = Buffer.from(canonicalJson(intent, { rejectAbsolutePaths: true }));
+  let handle: Awaited<ReturnType<typeof open>> | null = null;
+  try {
+    handle = await open(temporary, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW, 0o600);
+    await handle.writeFile(bytes);
+    await handle.sync();
+    const written = await handle.stat();
+    const uid = typeof process.getuid === "function" ? process.getuid() : written.uid;
+    if (!written.isFile() || written.uid !== uid || written.nlink !== 1 || (written.mode & 0o777) !== 0o600 || written.size !== bytes.byteLength) refuse("CHECK_EXECUTION_INTENT_INVALID");
+    await handle.close();
+    handle = null;
+    const pending = await authenticatedReceiptFile(temporary, [1]);
+    if (pending === null || !pending.bytes.equals(bytes)) refuse("CHECK_EXECUTION_INTENT_INVALID");
+    await authenticateReceiptAncestry(root, candidateDigest, false);
+    const beforeRename = await authenticatedReceiptFile(location.path, [1]);
+    const authority = await executionIntentAuthority(root);
+    const immediatePredecessor = beforeRename === null ? null : parseExecutionIntent(beforeRename.bytes, authority.validate);
+    if (canonicalJson(immediatePredecessor, { rejectAbsolutePaths: true }) !== canonicalJson(predecessor, { rejectAbsolutePaths: true })) {
+      refuse("CHECK_EXECUTION_INTENT_INVALID");
+    }
+    await rename(temporary, location.path).catch(() => refuse("CHECK_EXECUTION_INTENT_INVALID"));
+    await fsyncReceiptDirectory(root, candidateDigest);
+  } finally {
+    if (handle !== null) await handle.close().catch(() => undefined);
+  }
+  const readback = await authenticatedReceiptFile(location.path, [1]);
+  if (readback === null || !readback.bytes.equals(bytes)) refuse("CHECK_EXECUTION_INTENT_INVALID");
+  const authority = await executionIntentAuthority(root);
+  return parseExecutionIntent(readback.bytes, authority.validate);
+}
+
+type ExecutionIntentDisposition = "ABSENT" | "PREPARED" | "RECONCILE" | "UNKNOWN";
+
+function executionIntentDisposition(intent: CheckedCandidateExecutionIntent | null, receipt: CheckedCandidateReceipt | null): ExecutionIntentDisposition {
+  if (intent === null) return "ABSENT";
+  if (intent.state === "UNKNOWN") return "UNKNOWN";
+  if (intent.state === "PREPARED") {
+    if (receipt !== null) refuse("CHECK_EXECUTION_INTENT_INVALID");
+    return "PREPARED";
+  }
+  if (intent.state === "STARTED") return receipt === null ? "UNKNOWN" : "RECONCILE";
+  if (receipt === null || intent.receiptDigest !== receipt.receiptDigest) refuse("CHECK_EXECUTION_INTENT_INVALID");
+  return "RECONCILE";
+}
+
+/**
+ * Lock-free intent preflight for a caller already holding the candidate lock.
+ * It never repairs pending publication, writes a state, or dispatches a child.
+ */
+export async function authenticateGraphDerivedCheckIntent(root: string, candidateDigest: string, validationId: string): Promise<void> {
+  const current = await currentCandidateWorkspace(root, candidateDigest);
+  const validation = graphValidation(root, current.basis, validationId);
+  const authority = checkedReceiptExecutionAuthority(root);
+  const bound = await deriveExecutionIntent(root, candidateDigest, validationId, current, validation, authority);
+  const intent = await readExecutionIntent(root, candidateDigest, validationId, bound);
+  const receipt = await readGraphDerivedCheckReceipt(root, candidateDigest, validationId);
+  if (executionIntentDisposition(intent, receipt?.receipt ?? null) === "UNKNOWN") refuse("CHECK_EXECUTION_OUTCOME_UNKNOWN");
+}
+
 async function ensureReceiptDirectories(root: string, candidateDigest: string): Promise<void> {
   await authenticateReceiptAncestry(root, candidateDigest, true);
+  await fsyncReceiptAncestry(root, candidateDigest);
 }
 
 function receiptDigest(receipt: Omit<CheckedCandidateReceipt, "receiptDigest">): string {
@@ -1191,9 +1481,49 @@ async function executeBoundedCheck(
  * basis; command, environment, mode and dependencies are never caller input.
  */
 export async function runGraphDerivedCheck(root: string, candidateDigest: string, validationId: string): Promise<GraphDerivedCheckResult> {
+  return graphDerivedCheck(root, candidateDigest, validationId, false);
+}
+
+/** Reuse a current receipt or execute an absent member under the native candidate lock. */
+export async function ensureGraphDerivedCheck(root: string, candidateDigest: string, validationId: string): Promise<GraphDerivedCheckResult> {
+  return graphDerivedCheck(root, candidateDigest, validationId, true);
+}
+
+async function graphDerivedCheck(root: string, candidateDigest: string, validationId: string, reuseCurrent: boolean): Promise<GraphDerivedCheckResult> {
   let basis: RealisationBasis | undefined;
   try {
     return await withCandidateLock(root, candidateDigest, async (canonicalRoot) => {
+      const intentEnabled = reuseCurrent || await executionIntentPresent(canonicalRoot, candidateDigest, validationId);
+      let intentBound: Omit<CheckedCandidateExecutionIntent, "state" | "intentDigest" | "receiptDigest"> | null = null;
+      let retainedIntent: CheckedCandidateExecutionIntent | null = null;
+      let retainedReceipt: Awaited<ReturnType<typeof readGraphDerivedCheckReceipt>> = null;
+      if (intentEnabled) {
+        const initial = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+        basis = initial.basis;
+        const initialValidation = graphValidation(canonicalRoot, basis, validationId);
+        const initialAuthority = checkedReceiptExecutionAuthority(canonicalRoot);
+        intentBound = await deriveExecutionIntent(canonicalRoot, candidateDigest, validationId, initial, initialValidation, initialAuthority);
+        retainedIntent = await readExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound);
+        await recoverReceiptPublication(canonicalRoot, candidateDigest, validationId, initialValidation.fixtureProcessPolicy);
+        retainedReceipt = await readGraphDerivedCheckReceipt(canonicalRoot, candidateDigest, validationId);
+        const disposition = executionIntentDisposition(retainedIntent, retainedReceipt?.receipt ?? null);
+        if (disposition === "RECONCILE") {
+          if (retainedIntent === null || retainedReceipt === null) refuse("CHECK_EXECUTION_INTENT_INVALID");
+          if (retainedIntent.state === "SETTLED") {
+            return { status: "pass", basis, id: validationId, exitCode: 0, ...retainedReceipt };
+          }
+          const settled = await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "SETTLED", retainedReceipt.receipt.receiptDigest, retainedIntent);
+          if (settled.receiptDigest !== retainedReceipt.receipt.receiptDigest) refuse("CHECK_EXECUTION_INTENT_INVALID");
+          return { status: "pass", basis, id: validationId, exitCode: 0, ...retainedReceipt };
+        }
+        if (disposition === "UNKNOWN") {
+          if (retainedIntent?.state === "STARTED") await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, retainedIntent);
+          refuse("CHECK_EXECUTION_OUTCOME_UNKNOWN");
+        }
+        if (disposition === "ABSENT" && retainedReceipt !== null) {
+          return { status: "pass", basis, id: validationId, exitCode: 0, ...retainedReceipt };
+        }
+      }
       const workspaceBeforeAuthentication = await candidateWorkspace(canonicalRoot, candidateDigest);
       await resetFocusedCheckTemporary(workspaceBeforeAuthentication);
       const current = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
@@ -1220,10 +1550,26 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
         refuse("CHECK_CONFINEMENT_UNAVAILABLE");
       }
       if (launch === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+      let startedIntent: CheckedCandidateExecutionIntent | null = null;
+      if (intentEnabled) {
+        if (intentBound === null) refuse("CHECK_EXECUTION_INTENT_INVALID");
+        const preSpawnCurrent = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+        const preSpawnValidation = graphValidation(canonicalRoot, preSpawnCurrent.basis, validationId);
+        const preSpawnAuthority = checkedReceiptExecutionAuthority(canonicalRoot);
+        const refreshedBound = await deriveExecutionIntent(canonicalRoot, candidateDigest, validationId, preSpawnCurrent, preSpawnValidation, preSpawnAuthority);
+        if (canonicalJson(refreshedBound, { rejectAbsolutePaths: true }) !== canonicalJson(intentBound, { rejectAbsolutePaths: true })) {
+          refuse("CHECK_EXECUTION_INTENT_INVALID");
+        }
+        const preparedIntent = await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "PREPARED", null, retainedIntent);
+        startedIntent = await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "STARTED", null, preparedIntent);
+      }
       let observation: ValidationExecutionObservation;
       try {
         observation = await executeBoundedCheck(launch.executable, launch.arguments, execution.view, executionAuthority);
         if (validation.fixtureProcessPolicy !== null && !authenticateFixtureProcessHostProfile(validation.fixtureProcessPolicy)) refuse("CHECK_CONFINEMENT_UNAVAILABLE");
+      } catch (error) {
+        if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
+        throw error;
       } finally {
         await resetFocusedCheckTemporary(workspace);
       }
@@ -1238,21 +1584,30 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
         validationTimeoutTerminationSignal: observation.timeoutTerminationSignal,
       };
       const observedOutputResultDigest = canonicalDigest(observedOutputResult);
-      if (observation.timedOut) return {
-        status: "refused",
-        basis,
-        reasonCode: executionAuthority.timeoutReasonCode,
-        id: validationId,
-        exitCode: observation.exitCode,
-        validationExecutionAuthorityResourceDigest: executionAuthority.resourceDigest,
-        validationWallTimeMilliseconds: executionAuthority.wallTimeMilliseconds,
-        validationTerminationGraceMilliseconds: executionAuthority.terminationGraceMilliseconds,
-        validationTimedOut: true,
-        validationTimeoutTerminationSignal: observation.timeoutTerminationSignal,
-        outputResultDigest: observedOutputResultDigest,
-      };
-      if (!observation.outputWithinLimit) return { status: "refused", basis, reasonCode: "CHECK_OUTPUT_LIMIT_EXCEEDED", id: validationId, exitCode: observation.exitCode };
-      if (observation.exitCode !== 0) return { status: "refused", basis, reasonCode: "CHECK_FAILED", id: validationId, exitCode: observation.exitCode };
+      if (observation.timedOut) {
+        if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
+        return {
+          status: "refused",
+          basis,
+          reasonCode: executionAuthority.timeoutReasonCode,
+          id: validationId,
+          exitCode: observation.exitCode,
+          validationExecutionAuthorityResourceDigest: executionAuthority.resourceDigest,
+          validationWallTimeMilliseconds: executionAuthority.wallTimeMilliseconds,
+          validationTerminationGraceMilliseconds: executionAuthority.terminationGraceMilliseconds,
+          validationTimedOut: true,
+          validationTimeoutTerminationSignal: observation.timeoutTerminationSignal,
+          outputResultDigest: observedOutputResultDigest,
+        };
+      }
+      if (!observation.outputWithinLimit) {
+        if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
+        return { status: "refused", basis, reasonCode: "CHECK_OUTPUT_LIMIT_EXCEEDED", id: validationId, exitCode: observation.exitCode };
+      }
+      if (observation.exitCode !== 0) {
+        if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
+        return { status: "refused", basis, reasonCode: "CHECK_FAILED", id: validationId, exitCode: observation.exitCode };
+      }
       const authenticatedAfter = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
       if (authenticatedAfter.basis.basisDigest !== basis.basisDigest) refuse("CANDIDATE_BASIS_MISMATCH");
       const after = await candidateReceiptFacts(canonicalRoot, workspace, candidateDigest, basis);
@@ -1286,6 +1641,17 @@ export async function runGraphDerivedCheck(root: string, candidateDigest: string
         refuse("CHECK_RECEIPT_CONFLICT");
       }
       const receiptPath = await persistReceipt(canonicalRoot, candidateDigest, validationId, receipt);
+      if (intentBound !== null && startedIntent !== null) {
+        const retained = await readGraphDerivedCheckReceipt(canonicalRoot, candidateDigest, validationId);
+        if (retained === null || retained.receiptPath !== receiptPath
+          || canonicalJson(retained.receipt) !== canonicalJson(receipt)) refuse("CHECK_RECEIPT_READBACK_MISMATCH");
+        const settledCurrent = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
+        const settledValidation = graphValidation(canonicalRoot, settledCurrent.basis, validationId);
+        const settledAuthority = checkedReceiptExecutionAuthority(canonicalRoot);
+        const settledBound = await deriveExecutionIntent(canonicalRoot, candidateDigest, validationId, settledCurrent, settledValidation, settledAuthority);
+        if (canonicalJson(settledBound, { rejectAbsolutePaths: true }) !== canonicalJson(intentBound, { rejectAbsolutePaths: true })) refuse("CHECK_EXECUTION_INTENT_INVALID");
+        await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "SETTLED", retained.receipt.receiptDigest, startedIntent);
+      }
       return { status: "pass", basis, id: validationId, exitCode: 0, receiptPath, receipt };
     });
   } catch (error) {

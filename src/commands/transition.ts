@@ -99,7 +99,7 @@ const transitionAdapters = new Map<string, TransitionImplementation>([[
     [completionRule]: "sha256:c3ccd53a6422bc9b051a3e6a94e16adbb4ea249d15a1df7d5f1e89c0e12288c3",
   }),
   ruleRoles: completionRuleRoles,
-  consumedSchemas: ["urn:usf:schema:checked-candidate-receipt:1", "urn:usf:schema:no-change-workspace-manifest:1"],
+  consumedSchemas: ["urn:usf:schema:completion-check-receipt-set-result:1", "urn:usf:schema:no-change-workspace-manifest:1"],
   async prepare(root, selection, input, profile) {
     const { prepareCompletionEvidence } = await import("./work-completion.ts");
     return prepareCompletionEvidence(root, { work: selection.rootIdentity, profile, manifestPath: selection.manifestPath, candidateDigest: input.candidateDigest as string });

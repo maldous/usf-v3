@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
-import { cp, link, lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
-import { spawnSync } from "node:child_process";
+import { cp, link, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from "node:fs/promises";
+import { spawn, spawnSync } from "node:child_process";
 import { join, resolve } from "node:path";
 import test, { type TestContext } from "node:test";
-import { confinedNodeTestLaunch, prepareFocusedCheck, readGraphDerivedCheckReceipt, runGraphDerivedCheck } from "../../src/commands/check.ts";
+import { ensureGraphDerivedCheck, confinedNodeTestLaunch, prepareFocusedCheck, readGraphDerivedCheckReceipt, runGraphDerivedCheck } from "../../src/commands/check.ts";
 import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
 import { loadSemanticGraph } from "../../src/graph/index.ts";
 import { deriveWork, type WorkPacket } from "../../src/graph/work.ts";
-import { candidateScope, materialiseCandidate, type CandidateSpec } from "../../src/realisation/index.ts";
+import { withCandidateLock, candidateScope, materialiseCandidate, type CandidateSpec } from "../../src/realisation/index.ts";
 import type { RealisationBasis } from "../../src/realisation/basis.ts";
 
 const sourceRoot = resolve(import.meta.dirname, "../..");
@@ -100,6 +100,152 @@ async function candidate(root: string, nonce: string): Promise<CandidateSpec> {
   };
 }
 
+type InterruptionMode = "before-effect" | "before-persist" | "pending-synced" | "receipt-published" | "before-ack" | "legacy" | "ensure" | "preflight";
+
+async function checkSubprocess(root: string, digest: string, validationId: string, mode: InterruptionMode) {
+  const receiptPath = join(root, ".usf/receipts/check", digest.slice(7), `${canonicalDigest(validationId).slice(7)}.json`);
+  const child = spawn(process.execPath, [join(root, "tests/fixtures/realisation/check-interruption.ts"),
+    root, digest, validationId, mode, `${receiptPath}.pending`], {
+    cwd: root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"],
+  });
+  let reached = false, launches = 0, successfulExits = 0, stderr = "", stdout = "";
+  let result: { status: string; reasonCode?: string; receipt?: { receiptDigest: string } } | undefined;
+  child.stderr!.on("data", chunk => { stderr += String(chunk); });
+  child.stdout!.on("data", chunk => { stdout += String(chunk); });
+  child.on("message", (message: unknown) => {
+    if (message === null || typeof message !== "object") return;
+    const event = message as Record<string, unknown>;
+    if (event.kind === "validation-spawn") launches++;
+    if (event.kind === "validation-exit" && event.code === 0 && event.signal === null) successfulExits++;
+    if (event.kind === "result") result = event.result as typeof result;
+    if (event.kind === "boundary" && event.boundary === mode) {
+      reached = true;
+      child.kill("SIGKILL");
+    }
+  });
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  try {
+    const ended = await new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((accept, reject) => {
+      child.once("error", reject);
+      child.once("close", (code, signal) => accept({ code, signal }));
+    });
+    assert.equal(stdout, "", stderr);
+    if (["legacy", "ensure", "preflight"].includes(mode)) {
+      assert.equal(ended.code, 0, stderr);
+      assert.equal(ended.signal, null);
+      assert.ok(result, stderr);
+    } else {
+      assert.equal(reached, true, stderr);
+      assert.equal(ended.signal, "SIGKILL");
+    }
+    return { launches, successfulExits, result, receiptPath };
+  } finally { clearTimeout(timeout); }
+}
+
+test("native check interruption preserves authenticated unknown outcomes and reconciles genuine receipts without redispatch", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const validationId = "urn:usf:validation:realisation-basis-chain-focused";
+  for (const boundary of ["before-effect", "before-persist", "pending-synced", "receipt-published", "before-ack"] as const) {
+    const spec = await candidate(root, `genuine-interruption-${boundary}`);
+    const { workspace } = await materialiseCandidate(root, spec);
+    const manifestPath = join(workspace, ".usf-workspace.json");
+    const manifest = await readFile(manifestPath);
+    const source = await readFile(join(workspace, targetPath));
+    const workspaceIdentity = await lstat(workspace);
+    const interrupted = await checkSubprocess(root, spec.digest, validationId, boundary);
+    assert.equal(interrupted.launches, boundary === "before-effect" ? 0 : 1);
+    assert.equal(interrupted.successfulExits, boundary === "before-effect" ? 0 : 1);
+    const receiptPath = interrupted.receiptPath;
+    const intentPath = receiptPath.replace(/\.json$/u, ".intent.json");
+    const pendingPath = `${receiptPath}.pending`;
+    const originalIntentBytes = await readFile(intentPath);
+    const intent = JSON.parse(originalIntentBytes.toString("utf8"));
+    assert.equal(intent.state, boundary === "before-ack" ? "SETTLED" : "STARTED");
+    assert.equal(intent.candidateDigest, spec.digest);
+    assert.equal(intent.validationObligationIri, validationId);
+    assert.equal(intent.originalConstructionBasisDigest, spec.basis.basisDigest);
+    assert.equal(intent.workIri, spec.basis.work.id);
+    assert.equal(intent.explicitProfileIri, spec.basis.selection.profile);
+    assert.equal((await lstat(intentPath)).mode & 0o777, 0o600);
+    // This is native rederivation, not authentication by self-rehashed JSON.
+    const preflight = await checkSubprocess(root, spec.digest, validationId, "preflight");
+    assert.equal(preflight.launches, 0);
+    assert.deepEqual(await readFile(intentPath), originalIntentBytes);
+    const unknown = boundary === "before-effect" || boundary === "before-persist";
+    if (unknown) {
+      assert.equal(preflight.result?.reasonCode, "CHECK_EXECUTION_OUTCOME_UNKNOWN");
+      await assert.rejects(() => lstat(receiptPath), { code: "ENOENT" });
+      await assert.rejects(() => lstat(pendingPath), { code: "ENOENT" });
+      let unknownBytes: Buffer | undefined;
+      for (const mode of ["legacy", "ensure", "legacy", "ensure"] as const) {
+        const retry = await checkSubprocess(root, spec.digest, validationId, mode);
+        assert.equal(retry.result?.status, "refused");
+        assert.equal(retry.result?.reasonCode, "CHECK_EXECUTION_OUTCOME_UNKNOWN");
+        assert.equal(retry.launches, 0);
+        const bytes = await readFile(intentPath);
+        const retained = JSON.parse(bytes.toString("utf8"));
+        assert.deepEqual(retained, { ...intent, state: "UNKNOWN" });
+        if (unknownBytes) assert.deepEqual(bytes, unknownBytes);
+        unknownBytes = bytes;
+        await assert.rejects(() => lstat(receiptPath), { code: "ENOENT" });
+      }
+    } else {
+      if (boundary === "pending-synced") {
+        assert.equal(preflight.result?.status, "refused");
+        assert.equal(preflight.result?.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
+        // Preserve actual child-produced bytes through an unsafe-path refusal.
+        const pendingBytes = await readFile(pendingPath);
+        assert.equal(JSON.parse(pendingBytes.toString("utf8")).exitCode, 0);
+        const saved = `${pendingPath}.held`;
+        await rename(pendingPath, saved);
+        await symlink(saved, pendingPath);
+        try {
+          for (const mode of ["legacy", "ensure"] as const) {
+            const refused = await checkSubprocess(root, spec.digest, validationId, mode);
+            assert.equal(refused.result?.status, "refused");
+            assert.equal(refused.result?.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
+            assert.equal(refused.launches, 0);
+            assert.equal((await lstat(pendingPath)).isSymbolicLink(), true);
+            assert.deepEqual(await readFile(saved), pendingBytes);
+            assert.deepEqual(await readFile(intentPath), originalIntentBytes);
+          }
+        } finally {
+          await rm(pendingPath);
+          await rename(saved, pendingPath);
+        }
+        assert.deepEqual(await readFile(pendingPath), pendingBytes);
+      } else {
+        assert.equal(preflight.result?.status, "authenticated");
+      }
+      const retainedReceiptPath = boundary === "pending-synced" ? pendingPath : receiptPath;
+      const producedBytes = await readFile(retainedReceiptPath);
+      const producedIdentity = await lstat(retainedReceiptPath);
+      let authenticatedBytes: Buffer | undefined;
+      for (const mode of ["legacy", "ensure", "legacy", "ensure"] as const) {
+        const replay = await checkSubprocess(root, spec.digest, validationId, mode);
+        assert.equal(replay.result?.status, "pass", replay.result?.reasonCode);
+        assert.equal(replay.launches, 0);
+        const authenticated = await readGraphDerivedCheckReceipt(root, spec.digest, validationId);
+        assert.ok(authenticated);
+        const settled = JSON.parse(await readFile(intentPath, "utf8"));
+        assert.deepEqual(settled, { ...intent, state: "SETTLED", receiptDigest: authenticated.receipt.receiptDigest });
+        const bytes = await readFile(receiptPath);
+        assert.deepEqual(bytes, producedBytes);
+        assert.equal((await lstat(receiptPath)).ino, producedIdentity.ino);
+        if (authenticatedBytes) assert.deepEqual(bytes, authenticatedBytes);
+        authenticatedBytes = bytes;
+        await assert.rejects(() => lstat(pendingPath), { code: "ENOENT" });
+      }
+      const current = await checkSubprocess(root, spec.digest, validationId, "preflight");
+      assert.equal(current.result?.status, "authenticated");
+      assert.equal(current.launches, 0);
+    }
+    assert.deepEqual(await readFile(manifestPath), manifest);
+    assert.deepEqual(await readFile(join(workspace, targetPath)), source);
+    assert.equal((await lstat(workspace)).ino, workspaceIdentity.ino);
+  }
+});
 test("focused checks rederive the persisted basis before enforcing the command allowlist", async (context) => {
   await assertConfinedNetworkNamespace();
   if (lockProcessUnavailable(context)) return;
@@ -247,7 +393,13 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
   await materialiseCandidate(root, spec);
   const validationId = "urn:usf:validation:realisation-basis-chain-focused";
 
-  const result = await runGraphDerivedCheck(root, spec.digest, validationId);
+  assert.equal(await readGraphDerivedCheckReceipt(root, spec.digest, validationId), null);
+  // A separately held native lock is a deterministic competing-owner barrier.
+  const busy = await withCandidateLock(root, spec.digest, () => ensureGraphDerivedCheck(root, spec.digest, validationId));
+  assert.equal(busy.status, "refused");
+  if (busy.status === "refused") assert.equal(busy.reasonCode, "CANDIDATE_BUSY");
+  assert.equal(await readGraphDerivedCheckReceipt(root, spec.digest, validationId), null);
+  const result = await ensureGraphDerivedCheck(root, spec.digest, validationId);
   assert.equal(result.status, "pass", result.status === "refused" ? result.reasonCode : undefined);
   if (result.status !== "pass") return;
   assert.equal(result.basis.basisDigest, spec.basis.basisDigest);
@@ -280,6 +432,27 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
   assert.equal(authenticatedReadback?.receiptPath, expectedPath);
   assert.deepEqual(authenticatedReadback?.receipt, result.receipt);
 
+
+  const scratch = join(root, ".usf/workspaces", spec.digest.slice("sha256:".length), ".usf-check-tmp");
+  const sentinel = join(scratch, "ensure-reuse-sentinel");
+  await writeFile(sentinel, "retained scratch must not be reset", { mode: 0o600 });
+  const scratchIdentity = await lstat(scratch);
+  const receiptIdentity = await lstat(receiptPath);
+  const assertNoExecutionCleanup = async () => {
+    assert.equal(await readFile(sentinel, "utf8"), "retained scratch must not be reset");
+    assert.equal((await lstat(scratch)).ino, scratchIdentity.ino);
+  };
+  for (let replay = 0; replay < 2; replay++) {
+    const reused = await ensureGraphDerivedCheck(root, spec.digest, validationId);
+    assert.deepEqual(reused, result);
+    assert.equal((await lstat(receiptPath)).ino, receiptIdentity.ino);
+    await assertNoExecutionCleanup();
+  }
+  const reusedBusy = await withCandidateLock(root, spec.digest, () => ensureGraphDerivedCheck(root, spec.digest, validationId));
+  assert.equal(reusedBusy.status, "refused");
+  if (reusedBusy.status === "refused") assert.equal(reusedBusy.reasonCode, "CANDIDATE_BUSY");
+  assert.deepEqual(await ensureGraphDerivedCheck(root, spec.digest, validationId), result);
+  await assertNoExecutionCleanup();
 
   const originalReceiptBytes = await readFile(receiptPath);
   const workspace = join(root, ".usf/workspaces", spec.digest.slice("sha256:".length));
@@ -322,6 +495,10 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
       assert.notEqual(bytes, originalReceiptBytes.toString("utf8"), label);
       await writeFile(receiptPath, bytes, { mode: 0o600 });
       await assert.rejects(() => readGraphDerivedCheckReceipt(root, spec.digest, validationId), { reasonCode: "CHECK_RECEIPT_INVALID" }, label);
+      const ensured = await ensureGraphDerivedCheck(root, spec.digest, validationId);
+      assert.equal(ensured.status, "refused", label);
+      if (ensured.status === "refused") assert.equal(ensured.reasonCode, "CHECK_RECEIPT_INVALID", label);
+      await assertNoExecutionCleanup();
       assert.equal(await readFile(receiptPath, "utf8"), bytes, label + ": readback must not repair a rejected receipt");
       assert.equal((await lstat(workspace)).ino, workspaceEntry.ino, label);
       assert.deepEqual(await readFile(join(workspace, ".usf-workspace.json")), workspaceManifest, label);
@@ -333,6 +510,37 @@ test("graph-derived check persists one canonical owner-only receipt and refuses 
   assert.deepEqual((await readGraphDerivedCheckReceipt(root, spec.digest, validationId))?.receipt, result.receipt);
 
   const pendingPath = `${receiptPath}.pending`;
+  const ensureUnsafe = async () => {
+    const outcome = await ensureGraphDerivedCheck(root, spec.digest, validationId);
+    assert.equal(outcome.status, "refused");
+    if (outcome.status === "refused") assert.equal(outcome.reasonCode, "CHECK_RECEIPT_PATH_UNSAFE");
+    await assertNoExecutionCleanup();
+  };
+  // Ensure never adopts or repairs an interrupted publication, even with genuine bytes.
+  await writeFile(pendingPath, originalReceiptBytes, { mode: 0o600 });
+  try {
+    await ensureUnsafe();
+    assert.deepEqual(await readFile(pendingPath), originalReceiptBytes);
+    assert.deepEqual(await readFile(receiptPath), originalReceiptBytes);
+  } finally { await rm(pendingPath); }
+  await link(receiptPath, pendingPath);
+  try {
+    await ensureUnsafe();
+    assert.equal((await lstat(receiptPath)).nlink, 2);
+    assert.equal((await lstat(pendingPath)).ino, (await lstat(receiptPath)).ino);
+  } finally { await rm(pendingPath); }
+  await rm(receiptPath);
+  await symlink(join(root, "package.json"), receiptPath);
+  try {
+    await ensureUnsafe();
+    assert.equal((await lstat(receiptPath)).isSymbolicLink(), true);
+  } finally {
+    await rm(receiptPath);
+    await writeFile(receiptPath, originalReceiptBytes, { mode: 0o600 });
+  }
+  assert.deepEqual(await ensureGraphDerivedCheck(root, spec.digest, validationId), result);
+  await assertNoExecutionCleanup();
+
   await link(receiptPath, pendingPath);
   assert.equal((await lstat(receiptPath)).nlink, 2);
   const linkedRecovery = await runGraphDerivedCheck(root, spec.digest, validationId);

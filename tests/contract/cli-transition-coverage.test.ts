@@ -12,6 +12,7 @@ const work = "urn:test:work", profile = "urn:test:profile:1", contract = "urn:te
 function terminalFixture() {
   const quads = ["cli-transition-definition", "v3-convention"].flatMap(name =>
     parseStrictNQuads(readFileSync(new URL("../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
+  quads.push(...parseStrictNQuads(readFileSync(new URL("../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
   const graph = { quads } as SemanticGraph;
   const root = "urn:usf:work:cli-transition-definition", declaration = "urn:usf:cli-terminal-closure:cli-transition-definition:1";
   const artifact = "urn:usf:cli-contract:local-preparation-artifact:1";
@@ -40,11 +41,7 @@ test("terminal census exposes real completion and recovery obligations, not mere
 
 test("declared terminal artifact can complete structural census without authenticating satisfaction", () => {
   const f = terminalFixture(); f.add(f.declaration, "terminalArtifact", f.artifact);
-  assert(f.run().reasonCodes.includes("TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING"));
-  // Hypothetical recovery declarations fill structure only; they authenticate no producer behavior.
-  for (const producer of ["no-change-workspace", "completion-check-receipts"]) {
-    f.add(`urn:usf:cli-transition:${producer}:1`, "recoveryContract", "urn:usf:cli-contract:completion-evidence-recovery:1");
-  }
+  assert.equal(f.run().reasonCodes.includes("TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING"), false);
   const result = f.run();
   assert.deepEqual(result.reasonCodes, []);
   assert.equal(result.structuralComplete, true); assert.equal(result.satisfaction, "unverified");
@@ -737,14 +734,15 @@ test("downstream discovery excludes other contracts without hiding explicit prer
   assert.equal(explicit.executionAuthority, "none");
 });
 
-test("terminal diagnostics bind the actual missing recovery edge without inventing a target", () => {
+test("terminal diagnostics bind an omitted native-intent rule without inventing a target", () => {
   const f = terminalFixture();
-  const subject = "urn:usf:cli-transition:completion-check-receipts:1", rule = "urn:usf:cli-terminal-edge:9:1";
+  const subject = "urn:usf:rule:completion-check-receipts-execution-intent:1", rule = "urn:usf:cli-terminal-edge:13:1";
+  f.graph.quads = f.graph.quads.filter(q => q.subject !== subject);
   const result = f.run();
-  const diagnostic = result.diagnostics.find(d => d.reasonCode === "TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING" && d.subject === subject && d.predicate === P + "recoveryContract");
+  const diagnostic = result.diagnostics.find(d => d.reasonCode === "TRANSITION_TERMINAL_NODE_MISSING_OR_WRONG_TYPE" && d.subject === subject && d.predicate === P + "type");
   assert.deepEqual(diagnostic, {
-    reasonCode: "TRANSITION_TERMINAL_REQUIRED_EDGE_MISSING", subject, predicate: P + "recoveryContract",
-    rule, expectedType: T + "CliRecoveryContract", scope: "reference", observedTargets: [],
+    reasonCode: "TRANSITION_TERMINAL_NODE_MISSING_OR_WRONG_TYPE", subject, predicate: P + "type",
+    rule, expectedType: T + "CliFieldDerivationRule", observedTargets: [],
     sourceDigest: canonicalQuadDigest(f.graph.quads.filter(q => q.subject === subject)),
     ruleDigest: canonicalQuadDigest(f.graph.quads.filter(q => q.subject === rule)),
   });
@@ -840,4 +838,34 @@ test("terminal diagnostics refuse record and observed-target overflow instead of
     }
     assert.throws(() => f.run(), { name: "RangeError", message: "TRANSITION_INPUT_BOUNDS_EXCEEDED" }, mode);
   }
+});
+
+test("selective receipt declarations are graph-projectable but do not become execution or parallel authority", () => {
+  const graph = { quads: [
+    ...parseStrictNQuads(readFileSync(new URL("../../graph/cli-transition-definition.nq", import.meta.url), "utf8"), "urn:usf:graph:cli-transition-definition"),
+    ...parseStrictNQuads(readFileSync(new URL("../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"),
+    ...parseStrictNQuads(readFileSync(new URL("../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"),
+  ] } as SemanticGraph;
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, []);
+  const id = "urn:usf:cli-transition:completion-check-receipts:1";
+  assert(report.waves.flat().includes(id));
+  assert(report.descriptors.some(d => d.identity === id), "shared native-intent semantics permit descriptor projection");
+  assert(report.diagnostics.some(d => d.subject === id && d.reasonCode === "TRANSITION_ADAPTER_UNMAPPED"));
+  assert.equal(report.executionAuthority, "none");
+  assert.equal(report.parallelSafety.state, "unproven");
+  assert.equal(report.complete, false, "a declared complete-current recovery branch is not execution permission");
+});
+
+test("receipt-set generated schema accepts bounded dynamic denominators and rejects authority extensions", () => {
+  const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
+  const validator = createJsonSchemaValidator({ $schema: descriptor.$schema, $id: "urn:usf:schema:completion-check-receipt-set-result:1", $ref: descriptor.$id + "#/$defs/completionCheckReceiptSet" }, { dependencySchemas: [descriptor] });
+  const obligation = (name: string) => `urn:test:validation:${name}`;
+  const receipt = (name: string) => ({ obligationIri: obligation(name), receiptPath: `.usf/receipts/check/sha256:${"a".repeat(64)}/${name}.json`, receiptDigest: "sha256:" + name.repeat(64).slice(0, 64), validationResultSetDigest: "sha256:" + (name + "f").repeat(64).slice(0, 64) });
+  const receipts = [receipt("a"), receipt("b"), receipt("c")];
+  const result = { schema: "urn:usf:schema:completion-check-receipt-set-result:1", status: "current", workIri: "urn:test:work", profileIri: "urn:test:profile:1", candidateDigest: "sha256:" + "a".repeat(64), constructionBasisDigest: "sha256:" + "b".repeat(64), validationObligations: receipts.map(item => item.obligationIri), receipts, receiptSetDigest: "sha256:" + "c".repeat(64), nonClaims: ["completion", "parallel-safety", "partial-set-recovery", "terminal-closure"] };
+  assert.equal(validator.validate(result).valid, true);
+  assert.equal(validator.validate({ ...result, provider: "invented" }).valid, false);
+  assert.equal(validator.validate({ ...result, executionAuthority: "execute" }).valid, false);
+  assert.equal(validator.validate({ ...result, parallelSafety: { state: "proved" } }).valid, false);
 });

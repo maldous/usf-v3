@@ -13,6 +13,7 @@ import { canonicalDigest } from "../../../src/core/canonical.ts";
 
 function actualDescriptorGraph(): SemanticGraph {
   const quads = parseStrictNQuads(readFileSync(new URL("../../../graph/cli-transition-definition.nq", import.meta.url), "utf8"), "urn:usf:graph:cli-transition-definition");
+  quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
   const selected = new Set(["urn:usf:schema:no-change-realisation-result:1", "urn:usf:schema:completion-evidence-candidate:1", "urn:usf:command:realise-no-change:1"]);
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/profile-authority.nq", import.meta.url), "utf8"), "urn:usf:graph:profile-authority").filter(q => selected.has(q.subject)));
@@ -248,6 +249,7 @@ test("completion preparation exposes required consumed artifacts and typed canon
   assert.equal(inspected.validator.validate(selection).valid, false);
   const consumed = inspected.descriptor.consumes as readonly { identity: string; producer: string }[];
   assert.deepEqual(consumed.map(value => value.identity), ["urn:usf:cli-contract:completion-check-receipts-artifact:1", "urn:usf:cli-contract:no-change-workspace-artifact:1"]);
+  assert.deepEqual((consumed as readonly { schema?: string }[]).map(value => value.schema), ["urn:usf:schema:completion-check-receipt-set-result:1", "urn:usf:schema:no-change-workspace-manifest:1"]);
   assert(consumed.every(value => graph.quads.some(q => q.subject === value.producer && q.predicate === "urn:usf:predicate:produces" && q.object === value.identity)));
   const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, observationTransitionAdapters());
   assert.equal(report.executionAuthority, "none");
