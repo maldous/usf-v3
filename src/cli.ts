@@ -17,6 +17,7 @@ async function operationalMutation<T>(repositoryRoot: string, action: () => Prom
 }
 
 const bootstrapHandlers: CommandHandlers = {
+  transition: async (context) => (await import("./commands/transition.ts")).transitionCommandHandler(context, Object.keys(bootstrapHandlers)),
   init: ({ repositoryRoot }) => {
     const result = spawnSync("sh", [resolve(repositoryRoot, "scripts/bootstrap.sh")], { cwd: repositoryRoot, encoding: "utf8", env: process.env });
     if (result.stderr) process.stderr.write(result.stderr);

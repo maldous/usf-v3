@@ -4,11 +4,12 @@ import { DeterministicFakeProvider, fakeProviderRoutes } from "../../../src/prov
 import type { CallAssignment } from "../../../src/providers/types.ts";
 import { resolveContributions } from "../../../src/collaboration/index.ts";
 import { proposalBasis, proposalPacket } from "../../fixtures/proposal-packet.ts";
+import { createLocalContribution } from "../../../src/collaboration/local-contribution.ts";
+import { createRealisationBasis } from "../../../src/realisation/basis.ts";
 
 const limits = { maxTurns: 1, maxWallTimeMs: 100, maxInputTokens: 100, maxOutputTokens: 100, maxToolCalls: 0, maxRetries: 0 };
-function contribution(path: string) {
+function contribution(path: string, basis = proposalBasis()) {
   const route = fakeProviderRoutes()[path.endsWith("a.ts") ? 0 : 1]!;
-  const basis = proposalBasis();
   const assignment: CallAssignment = { route, basis, workPacketDigest: basis.work.packetCoreDigest, promptTemplateDigest: basis.inputs.policyDigest, scopedDependencyDigest: basis.work.scopedDependencyDigest, limits, packet: proposalPacket(basis.work.id, path, [path], [{ kind: "write", path, content: path }]) };
   const value = new DeterministicFakeProvider(route).invoke(assignment);
   assert.ok("schema" in value);
@@ -22,6 +23,26 @@ test("resolution deterministically merges disjoint operations and preserves line
   assert.equal(left.candidate?.identity.artifactDigest, right.candidate?.identity.artifactDigest);
   assert.deepEqual(left.candidate?.lineage.acceptedContributionDigests, left.acceptedContributionDigests);
   assert.equal(left.candidate?.nonclaims.includes("not-written-to-repository"), true);
+});
+
+test("same resolver merges local and provider contributions without provider-shaped local facts", () => {
+  const { basisDigest: _digest, ...draft } = proposalBasis();
+  const requirements = ["urn:usf:contribution-source:local-authored:1", "urn:usf:algorithm:local-contribution-preparation:1"].map(id => ({ id, digest: "sha256:" + "c".repeat(64) }));
+  const basis = createRealisationBasis({ ...draft,
+    trace: { ...draft.trace, requirements: [...draft.trace.requirements, ...requirements] },
+    work: { ...draft.work, dependencies: [...draft.work.dependencies, ...requirements.map(r => ({ kind: "semantic-resource" as const, key: r.id, digest: r.digest }))] },
+    scope: { readSet: [], writeSet: ["src/a.ts", "src/b.ts"], preimages: { "src/a.ts": null, "src/b.ts": null } } });
+  const provider = contribution("src/a.ts", basis);
+  const local = createLocalContribution(basis, [{ kind: "write", path: "src/b.ts", content: "local" }]);
+  const left = resolveContributions([provider, local]), right = resolveContributions([local, provider]);
+  assert.equal(left.status, "resolved"); assert.deepEqual(left, right);
+  assert(left.candidate?.lineage.acceptedContributionDigests.includes(local.identity.artifactDigest));
+  assert.deepEqual(resolveContributions([local]), resolveContributions([local]));
+  assert.equal(resolveContributions([local, local]).status, "refused");
+  assert.equal(resolveContributions([provider, createLocalContribution(basis, [{ kind: "write", path: "src/a.ts", content: "collision" }])]).status, "refused");
+  const invalid = { ...local, identity: { ...local.identity, artifactDigest: "sha256:" + "0".repeat(64) } };
+  assert.equal(resolveContributions([invalid]).rejected[0]?.reasonCode, "LOCAL_CONTRIBUTION_INTEGRITY_FAILURE");
+  assert.throws(() => resolveContributions([contribution("src/a.ts"), local]));
 });
 
 test("overlaps and malformed operations are refused with stable lineage", () => {

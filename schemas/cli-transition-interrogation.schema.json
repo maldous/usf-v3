@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:cli-transition-interrogation:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "rootIdentity", "manifestPath", "graphDigest", "work", "contract", "profile", "profileCandidates", "requiredGraphRefs", "descriptors", "waves", "topologicalOnly", "parallelSafety", "terminalClosure", "diagnostics", "complete", "reasonCode", "executionAuthority", "digest"],
+  "properties": {
+    "schema": {"const": "urn:usf:cli-transition-interrogation:1"},
+    "rootIdentity": {"$ref": "#/$defs/text"},
+    "manifestPath": {"$ref": "#/$defs/text"},
+    "graphDigest": {"$ref": "#/$defs/digest"},
+    "work": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]},
+    "contract": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]},
+    "profile": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]},
+    "profileCandidates": {"$ref": "#/$defs/texts"},
+    "requiredGraphRefs": {"$ref": "#/$defs/texts"},
+    "descriptors": {"type": "array", "maxItems": 1024, "items": {"$ref": "urn:usf:cli-transition-descriptor:1"}},
+    "waves": {"type": "array", "maxItems": 1024, "items": {"$ref": "#/$defs/texts"}},
+    "topologicalOnly": {"type": "boolean"},
+    "parallelSafety": {"$ref": "urn:usf:cli-transition-descriptor:1#/$defs/parallelSafety"},
+    "terminalClosure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["declared", "derived", "equal"],
+      "properties": {"declared": {"$ref": "#/$defs/texts"}, "derived": {"$ref": "#/$defs/texts"}, "equal": {"type": "boolean"}}
+    },
+    "diagnostics": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reasonCode", "subject", "field"],
+      "properties": {"reasonCode": {"$ref": "#/$defs/text"}, "subject": {"$ref": "#/$defs/text"}, "field": {"$ref": "#/$defs/text"}}
+    }},
+    "complete": {"type": "boolean"},
+    "reasonCode": {"enum": ["TRANSITION_COVERAGE_COMPLETE", "TRANSITION_SEMANTICS_INCOMPLETE"]},
+    "executionAuthority": {"const": "none"},
+    "digest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "maxLength": 4096},
+    "digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "texts": {"type": "array", "maxItems": 4096, "uniqueItems": true, "items": {"$ref": "#/$defs/text"}}
+  }
+}

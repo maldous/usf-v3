@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { createJsonSchemaValidator, SchemaPolicyError } from "../../../src/schema/index.ts";
-import { proposalBasis } from "../../fixtures/proposal-packet.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const digest = `sha256:${"a".repeat(64)}`;
+const dialect = "https://json-schema.org/draft/2020-12/schema";
 
 function schemaFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true })
@@ -24,6 +24,7 @@ function readSchema(path: string): unknown {
   return JSON.parse(readFileSync(path, "utf8")) as unknown;
 }
 
+
 test("every repository JSON schema compiles deterministically through the narrow profile", () => {
   const files = [
     ...schemaFiles(join(repositoryRoot, "schemas")),
@@ -35,7 +36,9 @@ test("every repository JSON schema compiles deterministically through the narrow
 
   const compile = () => files.map((path) => ({
     path: relative(repositoryRoot, path),
-    schemaId: createJsonSchemaValidator(readSchema(path)).schemaId,
+    schemaId: createJsonSchemaValidator(readSchema(path), relative(repositoryRoot, path) === "schemas/cli-transition-interrogation.schema.json"
+      ? { dependencySchemas: [readSchema(join(repositoryRoot, "schemas/cli-transition-descriptor.schema.json"))] }
+      : {}).schemaId,
   }));
   assert.deepEqual(compile(), compile());
 });
@@ -107,7 +110,8 @@ test("envelope validation rejects additional properties and malformed digests wi
   assert.deepEqual(validator.validate({ ...envelope, unexpected: true, identity: {} }), validator.validate({ ...envelope, unexpected: true, identity: {} }));
 });
 
-test("candidate validation distinguishes resolved fixtures from required-field and status defects", () => {
+test("candidate validation distinguishes resolved fixtures from required-field and status defects", async () => {
+  const { proposalBasis } = await import("../../fixtures/proposal-packet.ts");
   const validator = createJsonSchemaValidator(readSchema(join(repositoryRoot, "schemas/candidate.schema.json")));
   const basis = proposalBasis();
   const candidate = {

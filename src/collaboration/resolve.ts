@@ -1,6 +1,9 @@
 import { type Contribution, type FileOperation, contributionDigest, digest, immutable, isOperation } from "../providers/types.ts";
 import { canonicalDigest } from "../core/canonical.ts";
 import { assertRealisationBasis, assertSameBasis, type RealisationBasis } from "../realisation/basis.ts";
+import { parseLocalContribution, type LocalContribution } from "./local-contribution.ts";
+
+export type ResolvableContribution = Contribution | LocalContribution;
 
 export interface Candidate {
   schema: "urn:usf:candidate:1";
@@ -24,7 +27,11 @@ export interface Resolution {
   rejected: readonly ResolutionRejection[];
 }
 
-function contributionOperations(contribution: Contribution): FileOperation[] | ResolutionRejection {
+function contributionOperations(contribution: ResolvableContribution): FileOperation[] | ResolutionRejection {
+  if (contribution.schema === "urn:usf:local-contribution:1") {
+    try { return parseLocalContribution(contribution).payload.operations.map(operation => ({ ...operation })); }
+    catch { return { contributionDigest: contribution.identity?.artifactDigest ?? null, reasonCode: "LOCAL_CONTRIBUTION_INTEGRITY_FAILURE" }; }
+  }
   const operations = contribution.payload?.operations;
   if (!Array.isArray(operations) || !operations.every(isOperation)) return { contributionDigest: contribution.identity?.artifactDigest ?? null, reasonCode: "MALFORMED_FILE_OPERATION" };
   if (contribution.schema !== "urn:usf:contribution:1" || contribution.kind !== "contribution" || !contribution.identity?.artifactDigest
@@ -39,7 +46,7 @@ function contributionOperations(contribution: Contribution): FileOperation[] | R
   return operations.map((operation) => ({ ...operation }));
 }
 
-export function resolveContributions(contributions: readonly Contribution[]): Resolution {
+export function resolveContributions(contributions: readonly ResolvableContribution[]): Resolution {
   if (contributions.length === 0) throw new Error("RESOLVE_CONTRIBUTIONS_REQUIRED");
   for (const contribution of contributions) assertRealisationBasis((contribution as Contribution & { basis?: RealisationBasis }).basis);
   for (const contribution of contributions.slice(1)) assertSameBasis((contributions[0] as Contribution & { basis: RealisationBasis }).basis, (contribution as Contribution & { basis: RealisationBasis }).basis);
@@ -47,7 +54,7 @@ export function resolveContributions(contributions: readonly Contribution[]): Re
   const sorted = [...contributions].sort((a, b) => a.identity.artifactDigest.localeCompare(b.identity.artifactDigest));
   const rejected: ResolutionRejection[] = [];
   const seen = new Map<string, string>();
-  const accepted: Contribution[] = [];
+  const accepted: ResolvableContribution[] = [];
   for (const contribution of sorted) {
     const operations = contributionOperations(contribution);
     if (!Array.isArray(operations)) { rejected.push(operations); continue; }

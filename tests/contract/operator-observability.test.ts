@@ -16,7 +16,7 @@ test("dispatcher calls a typed handler without hidden lifecycle state", async ()
 });
 
 test("one static registry covers parsing and every self-describing help topic", () => {
-  const required = ["init", "doctor", "status", "query", "observe", "metrics", "work", "models", "providers", "probe", "route", "call", "profile", "transact", "hermes", "graph", "execute", "review", "resolve", "realise", "linear-binding", "apply", "check", "integrate", "bootstrap-carrier", "evidence", "prove", "drift", "publish", "start", "stop", "watch", "help"];
+  const required = ["transition", "init", "doctor", "status", "query", "observe", "metrics", "work", "models", "providers", "probe", "route", "call", "profile", "transact", "hermes", "graph", "execute", "review", "resolve", "realise", "linear-binding", "apply", "check", "integrate", "bootstrap-carrier", "evidence", "prove", "drift", "publish", "start", "stop", "watch", "help"];
   assert.deepEqual(commandRegistry.map((entry) => entry.name), required);
   for (const entry of commandRegistry) {
     assert.deepEqual(parseCommand([entry.name]), { command: entry.name, args: [] });

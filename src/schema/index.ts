@@ -46,6 +46,10 @@ export type SchemaPolicyReason =
   | "SCHEMA_DIALECT_UNSUPPORTED"
   | "SCHEMA_KEYWORD_UNSUPPORTED"
   | "SCHEMA_REF_EXTERNAL"
+  | "SCHEMA_REGISTRY_BOUNDS"
+  | "SCHEMA_ID_INVALID"
+  | "SCHEMA_ID_DUPLICATE"
+  | "SCHEMA_REF_UNRESOLVED"
   | "SCHEMA_FORMAT_UNSUPPORTED"
   | "SCHEMA_COMPILE_FAILED";
 
@@ -79,6 +83,7 @@ export interface JsonSchemaValidator<T = unknown> {
 
 export interface ValidatorOptions {
   readonly maxErrors?: number;
+  readonly dependencySchemas?: readonly unknown[];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -114,7 +119,7 @@ function assertJsonValue(value: unknown, path: string): void {
   }
 }
 
-function assertSchemaNode(schema: unknown, path: string): void {
+function assertSchemaNode(schema: unknown, path: string, registry?: ReadonlySet<string>): void {
   if (typeof schema === "boolean") return;
   if (!isRecord(schema)) throw new SchemaPolicyError("SCHEMA_NOT_JSON", path);
 
@@ -126,9 +131,17 @@ function assertSchemaNode(schema: unknown, path: string): void {
 
     if (keyword === "$ref") {
       if (typeof value !== "string" || (value !== "#" && !value.startsWith("#/"))) {
-        throw new SchemaPolicyError("SCHEMA_REF_EXTERNAL", keywordPath);
+        if (registry === undefined) throw new SchemaPolicyError("SCHEMA_REF_EXTERNAL", keywordPath);
+        const [id, fragment, ...extra] = typeof value === "string" ? value.split("#") : [];
+        if (!id || !registry.has(id) || extra.length > 0 || (fragment !== undefined && fragment !== "" && !fragment.startsWith("/"))) {
+          throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", keywordPath);
+        }
       }
       continue;
+    }
+
+    if (keyword === "$id" && registry !== undefined && path !== "#") {
+      throw new SchemaPolicyError("SCHEMA_ID_INVALID", keywordPath);
     }
 
     if (keyword === "format") {
@@ -141,7 +154,7 @@ function assertSchemaNode(schema: unknown, path: string): void {
     if (SCHEMA_MAP_KEYWORDS.has(keyword)) {
       if (!isRecord(value)) throw new SchemaPolicyError("SCHEMA_NOT_JSON", keywordPath);
       for (const [name, child] of Object.entries(value)) {
-        assertSchemaNode(child, childPath(keywordPath, name));
+        assertSchemaNode(child, childPath(keywordPath, name), registry);
       }
       continue;
     }
@@ -149,24 +162,53 @@ function assertSchemaNode(schema: unknown, path: string): void {
     if (SCHEMA_ARRAY_KEYWORDS.has(keyword)) {
       if (!Array.isArray(value)) throw new SchemaPolicyError("SCHEMA_NOT_JSON", keywordPath);
       for (let index = 0; index < value.length; index += 1) {
-        assertSchemaNode(value[index], childPath(keywordPath, String(index)));
+        assertSchemaNode(value[index], childPath(keywordPath, String(index)), registry);
       }
       continue;
     }
 
     if (SCHEMA_VALUE_KEYWORDS.has(keyword) && typeof value !== "boolean") {
-      assertSchemaNode(value, keywordPath);
+      assertSchemaNode(value, keywordPath, registry);
     }
   }
 }
 
-function assertSchemaPolicy(schema: unknown): asserts schema is AnySchema {
+function assertSchemaPolicy(schema: unknown, registry?: ReadonlySet<string>): asserts schema is AnySchema {
   assertJsonValue(schema, "#");
   if (!isRecord(schema)) throw new SchemaPolicyError("SCHEMA_NOT_JSON", "#");
   if (schema.$schema !== DIALECT) {
     throw new SchemaPolicyError("SCHEMA_DIALECT_UNSUPPORTED", "#/$schema");
   }
-  assertSchemaNode(schema, "#");
+  assertSchemaNode(schema, "#", registry);
+}
+
+/** Bound and snapshot the entire supplied registry before recursive policy checks or AJV. */
+function registryDocuments(schema: unknown, dependencies: readonly unknown[]): AnySchema[] {
+  if (!Array.isArray(dependencies) || dependencies.length > 32) throw new SchemaPolicyError("SCHEMA_REGISTRY_BOUNDS", "#");
+  let nodes = 0, textBytes = 0;
+  const ancestors = new Set<object>();
+  function visit(value: unknown, depth: number): void {
+    if (++nodes > 100000 || depth > 64) throw new SchemaPolicyError("SCHEMA_REGISTRY_BOUNDS", "#");
+    if (typeof value === "string") textBytes += Buffer.byteLength(value, "utf8");
+    if (value !== null && typeof value === "object") {
+      if (ancestors.has(value)) throw new SchemaPolicyError("SCHEMA_NOT_JSON", "#");
+      ancestors.add(value);
+      for (const [key, child] of Object.entries(value)) { textBytes += Buffer.byteLength(key, "utf8"); visit(child, depth + 1); }
+      ancestors.delete(value);
+    }
+    if (textBytes > 1048576) throw new SchemaPolicyError("SCHEMA_REGISTRY_BOUNDS", "#");
+  }
+  const documents = [schema, ...dependencies];
+  for (const document of documents) visit(document, 0);
+  const ids = new Set<string>();
+  for (const document of documents) {
+    assertJsonValue(document, "#");
+    if (!isRecord(document) || typeof document.$id !== "string" || !/^[A-Za-z][A-Za-z0-9+.-]*:[^\s#]+$/.test(document.$id)) throw new SchemaPolicyError("SCHEMA_ID_INVALID", "#/$id");
+    if (ids.has(document.$id)) throw new SchemaPolicyError("SCHEMA_ID_DUPLICATE", "#/$id");
+    ids.add(document.$id);
+  }
+  for (const document of documents) assertSchemaPolicy(document, ids);
+  return JSON.parse(JSON.stringify(documents)) as AnySchema[];
 }
 
 function bounded(value: string): string {
@@ -211,7 +253,7 @@ function normalizeErrors(errors: readonly ErrorObject[]): ValidationIssue[] {
     );
 }
 
-function compile(schema: AnySchema): ValidateFunction {
+function compile(schema: AnySchema, documents?: readonly AnySchema[]): ValidateFunction {
   const ajv = new Ajv2020({
     allErrors: true,
     coerceTypes: false,
@@ -229,8 +271,15 @@ function compile(schema: AnySchema): ValidateFunction {
   });
 
   try {
+    if (documents !== undefined) {
+      for (const document of documents) ajv.addSchema(document);
+      // Compile even unused dependencies: unresolved references cannot hide in the registry.
+      for (const document of documents) ajv.getSchema((document as { $id: string }).$id);
+      return ajv.getSchema((schema as { $id: string }).$id)!;
+    }
     return ajv.compile(schema);
-  } catch {
+  } catch (error) {
+    if (documents !== undefined && typeof error === "object" && error !== null && "missingRef" in error) throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", "#/$ref");
     throw new SchemaPolicyError("SCHEMA_COMPILE_FAILED", "#");
   }
 }
@@ -238,14 +287,15 @@ function compile(schema: AnySchema): ValidateFunction {
 /**
  * Compile an in-memory JSON Schema through the deliberately narrow V3 profile.
  * The adapter exposes no asynchronous compilation or loader hook; references
- * must resolve within the supplied document.
+ * resolve locally, or within an explicitly supplied bounded in-memory registry.
  */
 export function createJsonSchemaValidator<T = unknown>(
   schema: unknown,
   options: ValidatorOptions = {},
 ): JsonSchemaValidator<T> {
-  assertSchemaPolicy(schema);
-  const validate = compile(schema);
+  const documents = options.dependencySchemas === undefined ? undefined : registryDocuments(schema, options.dependencySchemas);
+  if (documents === undefined) assertSchemaPolicy(schema);
+  const validate = compile(documents?.[0] ?? schema as AnySchema, documents);
   const requestedLimit = options.maxErrors ?? DEFAULT_MAX_ERRORS;
   const maxErrors = Number.isSafeInteger(requestedLimit) && requestedLimit > 0
     ? requestedLimit
