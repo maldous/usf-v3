@@ -22,6 +22,7 @@ import {
 import type { CatalogueModelView, ModelCatalogueSnapshot } from "../providers/catalogue.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
+import { createProviderLeafCompletionAuthorizer, createProviderLeafDispatcher } from "./provider-leaf-dispatch.ts";
 
 const providerConfigPath = "config/providers.json";
 const legacyProviderConfigPath = "config/provider-legacy-observations.json";
@@ -101,43 +102,6 @@ interface LegacyProviderRead {
 
 function providersError(code: string, exitCode: (typeof exitCodes)[keyof typeof exitCodes], message: string, details?: Record<string, unknown>): never {
   throw new UsfError(code, exitCode, message, details);
-}
-
-async function dispatchProviderReceipt(args: readonly string[], repositoryRoot: string): Promise<Awaited<ReturnType<CommandHandler>>> {
-  const implementationModule = "./provider-receipts.ts";
-  const implementationUrl = new URL(implementationModule, import.meta.url).href;
-  let loaded: Record<string, unknown>;
-  try {
-    const candidate: unknown = await import(implementationModule);
-    if (!isRecord(candidate)) {
-      return providersError(
-        "PROVIDERS_RECEIPT_UNAVAILABLE",
-        exitCodes.CURRENTNESS_FAILURE,
-        "The registered provider receipt implementation does not expose a valid module.",
-      );
-    }
-    loaded = candidate;
-  } catch (error) {
-    const code = isRecord(error) && typeof error.code === "string" ? error.code : undefined;
-    const missingUrl = isRecord(error) && typeof error.url === "string" ? error.url : undefined;
-    if (code === "ERR_MODULE_NOT_FOUND" && missingUrl === implementationUrl) {
-      return providersError(
-        "PROVIDERS_RECEIPT_PROOFBLOCKED",
-        exitCodes.DOMAIN_FAILURE,
-        "The provider receipt interface is registered but its graph-authorized capability has not been implemented and qualified.",
-      );
-    }
-    throw error;
-  }
-  const handler = loaded.providerReceiptsCommandHandler;
-  if (typeof handler !== "function") {
-    return providersError(
-      "PROVIDERS_RECEIPT_UNAVAILABLE",
-      exitCodes.CURRENTNESS_FAILURE,
-      "The registered provider receipt implementation is missing its exact command handler.",
-    );
-  }
-  return (handler as CommandHandler)({ command: "providers", args, repositoryRoot });
 }
 
 function parsePositiveInteger(value: string | undefined): number {
@@ -689,8 +653,21 @@ function rowMatches(row: Readonly<Record<string, unknown>>, parsed: ParsedArgume
   return true;
 }
 
+const requireProviderLeafCompletion = createProviderLeafCompletionAuthorizer({
+  validateProfile: validateVersionedProfile,
+  validateManifest: validateRepositoryManifest,
+  deriveOwnerWork: ({ repositoryRoot, manifest, profile, work }) => deriveWork(loadSemanticGraph(repositoryRoot, manifest), {
+    profile,
+    selector: work,
+    maxItems: 1,
+  }),
+});
+
+const dispatchRegisteredProviderLeaf = createProviderLeafDispatcher({ authorize: requireProviderLeafCompletion });
+
 export const providersCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
-  if (args[0] === "receipt") return dispatchProviderReceipt(args.slice(1), repositoryRoot);
+  const leafResult = await dispatchRegisteredProviderLeaf(args, repositoryRoot);
+  if (leafResult !== null) return leafResult;
   const parsed = parseArguments(args);
   const scope = semanticScope(repositoryRoot, parsed);
   const [catalogue, config, legacyRead] = await Promise.all([

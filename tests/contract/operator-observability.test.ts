@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { UsfError } from "../../src/core/errors.ts";
+import { createProviderLeafCompletionAuthorizer, createProviderLeafDispatcher } from "../../src/commands/provider-leaf-dispatch.ts";
 import test from "node:test";
 import { commandRegistry, findHelpTopic, helpCommandResult } from "../../src/commands/help.ts";
 import { dispatchCommand, parseCommand } from "../../src/commands/dispatcher.ts";
@@ -61,10 +65,16 @@ test("one static registry covers parsing and every self-describing help topic", 
   const hostGroupHelp = helpCommandResult(["providers", "host", "--json"]);
   assert.equal((hostGroupHelp.output as { command: { availability: string } }).command.availability, "registered");
   const hostCensusHelp = helpCommandResult(["providers", "host", "census", "--json"]);
-  const hostCensus = (hostCensusHelp.output as { command: { availability: string; externalContact: string; outputSchema: string } }).command;
+  const hostCensus = (hostCensusHelp.output as { command: { availability: string; externalContact: string; outputSchema: string; options: Array<{ syntax: string }> } }).command;
   assert.equal(hostCensus.availability, "registered");
-  assert.equal(hostCensus.externalContact, "possible");
+  assert.equal(hostCensus.externalContact, "none");
   assert.equal(hostCensus.outputSchema, "urn:usf:provider-host-census-result:1");
+  assert.ok(hostCensus.options.some((option) => option.syntax === "--provider-home ABSOLUTE_PATH"));
+  const providersSource = readFileSync(new URL("../../src/commands/providers.ts", import.meta.url), "utf8");
+  assert.match(providersSource, /createProviderLeafCompletionAuthorizer\(\{/u);
+  assert.match(providersSource, /deriveWork\(loadSemanticGraph\(repositoryRoot, manifest\)/u);
+  assert.match(providersSource, /createProviderLeafDispatcher\(\{ authorize: requireProviderLeafCompletion \}\)/u);
+  assert.match(providersSource, /dispatchRegisteredProviderLeaf\(args, repositoryRoot\)/u);
 
   const availabilityHelp = helpCommandResult(["probe", "availability", "--json"]);
   const availability = (availabilityHelp.output as { command: { externalContact: string; exitCodes: number[] } }).command;
@@ -152,4 +162,177 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.equal(completionPublish.historyScan, "none");
   assert.equal(completionPublish.outputSchema, "urn:usf:work-completion-publication-result:1");
   assert.ok(completionPublish.options.some((option) => option.syntax === "--bundle PATH|-"));
+});
+
+
+test("the provider leaf boundary is lazy, exact and authority-gated without provider contact", async () => {
+  const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
+  const exactProfile = "urn:usf:profile:v3-self-host:3";
+  const exactManifest = "graph/manifests/self-host-provider-v3.json";
+  const digest = "sha256:" + "a".repeat(64);
+  const order: string[] = [];
+  let loadCount = 0;
+  let lockCount = 0;
+  const state = new Map<string, "complete" | "blocked" | "drift">([
+    ["urn:usf:work:provider-census", "complete"],
+    ["urn:usf:work:provider-account-tier-receipt", "blocked"],
+  ]);
+  const forwarded: Array<{ command: string; args: readonly string[]; repositoryRoot: string }> = [];
+  const owner = (work: string): { readonly contract: string; readonly modulePath: string } => work === "urn:usf:work:provider-census"
+    ? { contract: "urn:usf:contract:provider-census:1", modulePath: "src/commands/provider-hosts.ts" }
+    : { contract: "urn:usf:contract:provider-account-tier-receipt:1", modulePath: "src/commands/provider-receipts.ts" };
+  const authorize = createProviderLeafCompletionAuthorizer({
+    validateProfile: (value) => {
+      order.push("validate:profile");
+      if (value !== exactProfile) throw new Error("invalid-profile");
+      return value;
+    },
+    validateManifest: (value) => {
+      order.push("validate:manifest");
+      if (value !== exactManifest) throw new Error("invalid-manifest");
+      return value;
+    },
+    deriveOwnerWork: (request) => {
+      order.push("derive:" + request.work);
+      assert.equal(request.repositoryRoot, repositoryRoot);
+      assert.equal(request.profile, exactProfile);
+      assert.equal(request.manifest, exactManifest);
+      const selected = owner(request.work);
+      const disposition = state.get(request.work) ?? "blocked";
+      return {
+        status: "ok",
+        items: [{
+          id: request.work,
+          contract: selected.contract,
+          scopedDependencyDigest: digest,
+          semanticDependencies: disposition === "drift" ? [] : [{ key: selected.modulePath, digest, kind: "file" }],
+          realisationStage: {
+            stage: disposition === "blocked" ? "proofblocked" : "verified-complete",
+            completion: {
+              verified: disposition !== "blocked",
+              proofResult: disposition === "blocked" ? null : "urn:usf:proof-result:fixture",
+              reasonCodes: disposition === "blocked" ? ["FIXTURE_INCOMPLETE"] : [],
+            },
+          },
+        }],
+      };
+    },
+  });
+  const dispatch = createProviderLeafDispatcher({
+    authorize,
+    withImportLock: async (_root, action) => {
+      lockCount += 1;
+      order.push("lock:enter");
+      try { return await action(); }
+      finally { order.push("lock:exit"); }
+    },
+    load: async (moduleSpecifier) => {
+      loadCount += 1;
+      order.push("load:" + moduleSpecifier);
+      const handler = (request: { command: string; args: readonly string[]; repositoryRoot: string }) => {
+        order.push("handler:" + moduleSpecifier);
+        forwarded.push(request);
+        return { output: { status: "delegated" } };
+      };
+      return moduleSpecifier === "./provider-hosts.ts"
+        ? { providerHostsCommandHandler: handler }
+        : { providerReceiptsCommandHandler: handler };
+    },
+  });
+  assert.equal(lockCount, 0, "creating the production boundary must not acquire the mutation lock");
+  assert.equal(loadCount, 0, "creating the production boundary must not load a feature module");
+  assert.equal(await dispatch(["census"], repositoryRoot), null);
+  assert.equal(lockCount, 0, "ordinary provider operations must not acquire the mutation lock");
+  assert.equal(loadCount, 0, "ordinary provider operations must not load a feature module");
+
+  assert.deepEqual(await dispatch(["host", "census", "--profile", exactProfile, "--manifest", exactManifest, "--max-items", "1"], repositoryRoot), {
+    output: { status: "delegated" },
+  });
+  assert.equal(lockCount, 1);
+  assert.equal(loadCount, 1);
+  assert.deepEqual(order, [
+    "lock:enter",
+    "validate:profile",
+    "validate:manifest",
+    "derive:urn:usf:work:provider-census",
+    "load:./provider-hosts.ts",
+    "lock:exit",
+    "handler:./provider-hosts.ts",
+  ], "the shared lock must cover currentness and import but be released before handler invocation");
+  assert.deepEqual(forwarded, [{
+    command: "providers",
+    args: ["census", "--profile", exactProfile, "--manifest", exactManifest, "--max-items", "1"],
+    repositoryRoot,
+  }]);
+
+  order.length = 0;
+  const loadBeforeBlocked = loadCount;
+  await assert.rejects(
+    dispatch(["receipt", "verify", "--profile", exactProfile, "--manifest", exactManifest], repositoryRoot),
+    { code: "PROVIDERS_RECEIPT_PROOFBLOCKED", exitCode: 1 },
+  );
+  assert.equal(loadCount, loadBeforeBlocked, "a present but unqualified receipt leaf must not be imported");
+  assert.deepEqual(order, [
+    "lock:enter",
+    "validate:profile",
+    "validate:manifest",
+    "derive:urn:usf:work:provider-account-tier-receipt",
+    "lock:exit",
+  ]);
+
+  state.set("urn:usf:work:provider-census", "blocked");
+  await assert.rejects(
+    dispatch(["host", "census", "--profile", exactProfile, "--manifest", exactManifest], repositoryRoot),
+    { code: "PROVIDERS_HOST_PROOFBLOCKED", exitCode: 1 },
+  );
+  assert.equal(loadCount, loadBeforeBlocked, "an incomplete host leaf must not be imported");
+
+  state.set("urn:usf:work:provider-account-tier-receipt", "drift");
+  await assert.rejects(
+    dispatch(["receipt", "verify", "--profile", exactProfile, "--manifest", exactManifest], repositoryRoot),
+    { code: "PROVIDERS_RECEIPT_DEPENDENCY_REFUSED", exitCode: 4 },
+  );
+  assert.equal(loadCount, loadBeforeBlocked, "a dependency-drifted leaf must not be imported");
+
+  await assert.rejects(
+    dispatch(["receipt", "verify", "--profile", exactProfile, "--profile", exactProfile, "--manifest", exactManifest], repositoryRoot),
+    { code: "PROVIDERS_RECEIPT_SCOPE_REQUIRED", exitCode: 2 },
+  );
+  await assert.rejects(
+    dispatch(["receipt", "verify", "--manifest", exactManifest], repositoryRoot),
+    { code: "PROVIDERS_RECEIPT_SCOPE_REQUIRED", exitCode: 2 },
+  );
+  assert.equal(loadCount, loadBeforeBlocked, "invalid or duplicate scope must refuse before import");
+
+  const locksBeforeCrossRoot = lockCount;
+  await assert.rejects(
+    dispatch(["receipt", "verify", "--profile", exactProfile, "--manifest", exactManifest], "/definitely/not/the/implementation/root"),
+    { code: "PROVIDERS_RECEIPT_ROOT_REFUSED", exitCode: 5 },
+  );
+  assert.equal(lockCount, locksBeforeCrossRoot, "cross-root authority must refuse before lock or import");
+  assert.equal(loadCount, loadBeforeBlocked);
+
+  state.set("urn:usf:work:provider-census", "complete");
+  const missingUrl = new URL("../../src/commands/provider-hosts.ts", import.meta.url).href;
+  const proofblocked = createProviderLeafDispatcher({
+    authorize,
+    withImportLock: async (_root, action) => action(),
+    load: async () => {
+      const error = Object.assign(new Error("controlled missing host leaf"), {
+        code: "ERR_MODULE_NOT_FOUND",
+        url: missingUrl,
+      });
+      throw error;
+    },
+  });
+  await assert.rejects(
+    proofblocked(["host", "census", "--profile", exactProfile, "--manifest", exactManifest], repositoryRoot),
+    (error: unknown) => {
+      assert.ok(error instanceof UsfError);
+      assert.equal(error.code, "PROVIDERS_HOST_PROOFBLOCKED");
+      assert.equal(error.exitCode, 1);
+      assert.match(error.message, /subscription-host/i);
+      return true;
+    },
+  );
 });
