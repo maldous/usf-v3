@@ -91,17 +91,25 @@ export const transitionInterrogationContract = Object.freeze({
       description: "Optionally delimit graph discovery. The selected graph must uniquely derive the root context; absence is not permission to search unrelated profiles." }),
   ]),
 });
+export const transitionSchemaContract = Object.freeze({
+  ...transitionInterrogationContract,
+  path: Object.freeze(["transition", "schema"] as const),
+  outputSchema: "urn:usf:cli-schema-derivation:1",
+});
+export const transitionReadContracts = Object.freeze([transitionInterrogationContract, transitionSchemaContract]);
 const transitionOptions = transitionInterrogationContract.inputs.map((input) => ({
   syntax: `${input.flag} ${input.valueName}`, description: input.description,
 }));
-const transitionSynopsis = `usf ${transitionInterrogationContract.path.join(" ")} ${transitionInterrogationContract.inputs.map((input) => {
+const transitionSynopsisFor = (path: readonly string[]) => `usf ${path.join(" ")} ${transitionInterrogationContract.inputs.map((input) => {
   const value = `${input.flag} ${input.valueName}`;
   return input.required ? value : `[${value}]`;
 }).join(" ")}`;
+const transitionSynopsis = transitionSynopsisFor(transitionInterrogationContract.path);
 
 export const commandRegistry = Object.freeze([
   command({ name: "transition", group: "inspect", purpose: "Interrogate selected semantic transition and artifact closure without executing effects.",
-    synopsis: [transitionSynopsis], options: transitionOptions, outputSchema: transitionInterrogationContract.outputSchema,
+    synopsis: transitionReadContracts.map(contract => transitionSynopsisFor(contract.path)), options: transitionOptions,
+    outputSchema: transitionReadContracts.map(contract => contract.outputSchema).join(" | "),
     exitCodes: [0, 1, 2, 4, 5], externalContact: "none", historyScan: "none", availability: "implemented",
     authorityEffect: "Read-only graph interrogation. Missing semantics, adapters or complete installed-leaf inventory remain explicit; no work, recovery, publication, provider or metrics-ledger effect.",
     topics: [topic(transitionInterrogationContract.path, {
@@ -109,6 +117,11 @@ export const commandRegistry = Object.freeze([
       synopsis: [transitionSynopsis], options: transitionOptions, outputSchema: transitionInterrogationContract.outputSchema,
       exitCodes: [0, 1, 2, 4, 5], externalContact: "none", historyScan: "none", availability: "implemented",
       authorityEffect: "Observation only. An incomplete plan does not admit execution; a declared artifact state is not authenticated completion.",
+    }), topic(transitionSchemaContract.path, {
+      purpose: "Emit the canonical descriptor schema derived from the selected semantic field specifications.",
+      synopsis: [transitionSynopsisFor(transitionSchemaContract.path)], options: transitionOptions, outputSchema: transitionSchemaContract.outputSchema,
+      exitCodes: [0, 1, 2, 4, 5], externalContact: "none", historyScan: "none", availability: "implemented",
+      authorityEffect: "Stdout schema candidate and source digests only. No installed-schema equality requirement, source write, construction grant, publication, completion or parallel authority.",
     })] }),
   command({ name: "init", group: "setup", purpose: "Create and verify the repository-local operational layout.", synopsis: ["usf init"], options: noOptions, outputSchema: "urn:usf:init-result:1", exitCodes: standardExitCodes, externalContact: "explicit", historyScan: "bounded", authorityEffect: "Creates only ignored operational state; never establishes semantic authority.", availability: "implemented" }),
   command({ name: "doctor", group: "setup", purpose: "Inspect local provider configuration, policy, catalogue, adapters, credential names and containment without probing.", synopsis: ["usf doctor [--env-file PATH] [--provider-home ABSOLUTE_PATH]"], options: [{ syntax: "--env-file PATH", description: "Explicitly inspect one owner-only untracked environment file through configured credential-name allowlists; values are never emitted." }, { syntax: "--provider-home ABSOLUTE_PATH", description: "Reserved explicit owner-controlled provider-state root for bounded local host-readiness diagnosis; this operator slice documents but does not yet implement that later provider-census behavior." }], outputSchema: "urn:usf:doctor-result:1", exitCodes: standardExitCodes, externalContact: "none", historyScan: "bounded", authorityEffect: localReadOnly, availability: "implemented" }),

@@ -1,12 +1,12 @@
 import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { readFileSync } from "node:fs";
 import { createJsonSchemaValidator } from "../schema/index.ts";
-import { deriveCliTransitionContext, deriveCliRecordSpecifications, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema, type CliTransitionAdapter } from "../graph/cli-transitions.ts";
+import { deriveCliTransitionContext, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema, type CliTransitionAdapter } from "../graph/cli-transitions.ts";
 import { canonicalQuadDigest } from "../graph/nquads.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
 import { parseCommandInput, readCommandInput } from "./command-input.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
-import { commandRegistry, transitionInterrogationContract } from "./help.ts";
+import { commandRegistry, transitionInterrogationContract, transitionReadContracts, transitionSchemaContract } from "./help.ts";
 import type { CommandRequest, CommandResult } from "./dispatcher.ts";
 
 type ObservationObject = Readonly<Record<string, unknown>>;
@@ -210,13 +210,14 @@ export function observationTransitionAdapters(): readonly CliTransitionAdapter[]
 
 
 export function parseTransitionInterrogation(args: readonly string[]): { rootIdentity: string; manifestPath: string } {
-  if (args[0] !== transitionInterrogationContract.path[1]) {
-    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.INVALID_INPUT, "Only no-effect transition interrogation is implemented.");
+  const contract = transitionReadContracts.find(contract => contract.path[1] === args[0]);
+  if (contract === undefined) {
+    throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.INVALID_INPUT, "Only registered no-effect transition reads are implemented.");
   }
   const values = new Map<string, string>();
   for (let index = 1; index < args.length; index += 2) {
     const flag = args[index]!;
-    const input = transitionInterrogationContract.inputs.find((field) => field.flag === flag);
+    const input = contract.inputs.find((field) => field.flag === flag);
     const value = args[index + 1];
     if (!input || values.has(flag) || value === undefined || value.length > input.maximumLength
       || !new RegExp(input.pattern, "u").test(value)) {
@@ -224,7 +225,7 @@ export function parseTransitionInterrogation(args: readonly string[]): { rootIde
     }
     values.set(flag, value);
   }
-  for (const input of transitionInterrogationContract.inputs) {
+  for (const input of contract.inputs) {
     if (!values.has(input.flag)) {
       if (input.required) throw new UsfError("CLI_TRANSITION_INPUT_REQUIRED", exitCodes.INVALID_INPUT, "A required external selector is missing.", { input: input.flag });
       if (input.defaultValue !== null) values.set(input.flag, input.defaultValue);
@@ -233,9 +234,54 @@ export function parseTransitionInterrogation(args: readonly string[]): { rootIde
   return { rootIdentity: values.get("--root")!, manifestPath: values.get("--manifest")! };
 }
 
+function boundedTransitionRead<T>(read: () => T): T {
+  try { return read(); }
+  catch (error) {
+    if (error instanceof RangeError && ["TRANSITION_INPUT_BOUNDS_EXCEEDED", "TRANSITION_DESCRIPTOR_BOUNDS_EXCEEDED", "CLI_SPECIFICATION_BOUNDS", "CLI_RECORD_BOUNDS"].includes(error.message)) {
+      throw new UsfError(error.message, exitCodes.INVALID_INPUT, "Selected transition data exceeds the bounded interrogation contract.");
+    }
+    throw error;
+  }
+}
+
+export function deriveTransitionSchemaResult(graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }) {
+  return boundedTransitionRead(() => {
+  const context = deriveCliTransitionContext(graph, selection.rootIdentity);
+  if (context.diagnostics.length > 0 || context.work === null || context.contract === null || context.profile === null) {
+    throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Schema derivation requires one exact work/contract/profile context.", { diagnostics: context.diagnostics });
+  }
+  const command = "urn:usf:command:transition-schema:1", predicate = "urn:usf:predicate:";
+  for (const [field, value, kind] of [
+    ["type", "urn:usf:type:RegisteredCliCommand", "iri"], ["version", "1", "literal"],
+    ["commandPath", transitionSchemaContract.path.join(" "), "literal"], ["forContract", context.contract, "iri"],
+    ["algorithm", "urn:usf:cli-field-specification:rule-generate-schema:1", "iri"],
+    ["outputSchema", transitionSchemaContract.outputSchema, "iri"], ["externalContact", "none", "literal"],
+  ]) {
+    const rows = graph.quads.filter(q => q.subject === command && q.predicate === predicate + field);
+    if (rows.length !== 1 || rows[0]!.objectKind !== kind || rows[0]!.object !== value) {
+      throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Schema derivation command binding does not match current semantic authority.", { field });
+    }
+  }
+  const generated = deriveCliSchemas(deriveCliRecordSpecifications(graph, { contractIdentity: context.contract }));
+  if (generated.descriptorSchema === null || generated.digest === null) {
+    throw new UsfError("CLI_SPECIFICATION_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Structural specifications do not define a canonical schema.", { gaps: generated.gaps });
+  }
+  const output = { schema: transitionSchemaContract.outputSchema, ...selection, work: context.work, contract: context.contract,
+    profile: context.profile, sourceBasis: generated.sourceBasis, schemaDigest: generated.digest,
+    descriptorSchema: generated.descriptorSchema, operationalGaps: generated.operationalGaps, executionAuthority: "none" as const };
+  const wire = JSON.parse(readFileSync(new URL("../../schemas/cli-schema-derivation.schema.json", import.meta.url), "utf8"));
+  const validation = createJsonSchemaValidator(wire).validate(output);
+  if (!validation.valid) throw new UsfError("CLI_TRANSITION_OUTPUT_INVALID", exitCodes.DOMAIN_FAILURE, "Generated schema result violates its declared envelope.", { errors: validation.errors });
+  return output;
+  });
+}
+
 export function transitionCommandHandler(request: CommandRequest, installedCommands: readonly string[]): CommandResult {
   const selection = parseTransitionInterrogation(request.args);
   const graph = loadSemanticGraph(request.repositoryRoot, selection.manifestPath);
+  if (request.args[0] === transitionSchemaContract.path[1]) {
+    return { output: deriveTransitionSchemaResult(graph, selection), exitCode: exitCodes.SUCCESS };
+  }
   const paths = new Map<string, readonly string[]>();
   for (const command of commandRegistry) {
     paths.set(command.path.join(" "), command.path);
@@ -251,15 +297,7 @@ export function transitionCommandHandler(request: CommandRequest, installedComma
       parserOwner: path.join(" ") === transitionInterrogationContract.path.join(" ") ? "src/commands/help.ts#transitionInterrogationContract" : null,
     })),
   };
-  let output: ReturnType<typeof deriveCliTransitionCoverage>;
-  try {
-    output = deriveCliTransitionCoverage(graph, selection, inventory, observationTransitionAdapters());
-  } catch (error) {
-    if (error instanceof RangeError && ["TRANSITION_INPUT_BOUNDS_EXCEEDED", "TRANSITION_DESCRIPTOR_BOUNDS_EXCEEDED", "CLI_SPECIFICATION_BOUNDS", "CLI_RECORD_BOUNDS"].includes(error.message)) {
-      throw new UsfError(error.message, exitCodes.INVALID_INPUT, "Selected transition data exceeds the bounded interrogation contract.");
-    }
-    throw error;
-  }
+  const output = boundedTransitionRead(() => deriveCliTransitionCoverage(graph, selection, inventory, observationTransitionAdapters()));
   const schema = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-interrogation.schema.json", import.meta.url), "utf8"));
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
   if ("contract" in output && typeof output.contract === "string") {

@@ -1,17 +1,81 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters } from "../../../src/commands/transition.ts";
-import { readFileSync } from "node:fs";
+import { observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { SemanticGraph } from "../../../src/graph/index.ts";
 import { parseStrictNQuads } from "../../../src/graph/nquads.ts";
 import { deriveCliTransitionCoverage } from "../../../src/graph/cli-transitions.ts";
-import { findHelpTopic, transitionInterrogationContract } from "../../../src/commands/help.ts";
+import { findHelpTopic, transitionInterrogationContract, transitionSchemaContract } from "../../../src/commands/help.ts";
+import { canonicalDigest } from "../../../src/core/canonical.ts";
 
 function actualDescriptorGraph(): SemanticGraph {
   const quads = parseStrictNQuads(readFileSync(new URL("../../../graph/cli-transition-definition.nq", import.meta.url), "utf8"), "urn:usf:graph:cli-transition-definition");
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
   return { quads, manifest: { schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [] }, semanticDigest: "untrusted", graphDigests: {}, sourceDigests: {}, repositoryRoot: "/unused" };
 }
+
+test("schema CLI uses the same selectors and emits current graph-derived schema without authority", () => {
+  assert.equal(transitionSchemaContract.inputs, transitionInterrogationContract.inputs);
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  assert.deepEqual(parseTransitionInterrogation(["schema", "--root", selection.rootIdentity, "--manifest", selection.manifestPath]), selection);
+  const topic = findHelpTopic(transitionSchemaContract.path)!;
+  assert.equal(topic.outputSchema, "urn:usf:cli-schema-derivation:1");
+  assert.equal(topic.externalContact, "none");
+  const graph = actualDescriptorGraph(), before = JSON.stringify(graph);
+  const result = deriveTransitionSchemaResult(graph, selection);
+  const installed = JSON.parse(readFileSync(new URL("../../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
+  assert.deepEqual(result.descriptorSchema, installed);
+  assert.equal(result.schemaDigest, canonicalDigest(installed));
+  assert.equal(result.executionAuthority, "none");
+  assert(result.operationalGaps.length > 0);
+  assert.deepEqual(deriveTransitionSchemaResult(graph, selection), result);
+  assert.equal(JSON.stringify(graph), before);
+  for (const flag of ["--profile", "--basis", "--output", "--apply"]) {
+    assert.throws(() => parseTransitionInterrogation(["schema", "--root", selection.rootIdentity, flag, "value"]), { code: "CLI_TRANSITION_ARGUMENTS_INVALID" });
+  }
+});
+
+test("schema derivation can describe governed schema drift but refuses invalid or unknown semantics", () => {
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const graph = actualDescriptorGraph(), old = deriveTransitionSchemaResult(graph, selection);
+  const explanation = graph.quads.find(q => q.subject === "urn:usf:cli-field-specification:descriptor-explanation:1" && q.predicate === "urn:usf:predicate:text")!;
+  explanation.object = "Updated semantic explanation for the governed schema candidate.";
+  const changed = deriveTransitionSchemaResult(graph, selection);
+  assert.notEqual(changed.schemaDigest, old.schemaDigest);
+  assert.notEqual(changed.sourceBasis, old.sourceBasis);
+  assert.equal(changed.executionAuthority, "none");
+  graph.quads.find(q => q.subject === explanation.subject && q.predicate === "urn:usf:predicate:maximumCardinality")!.object = "0";
+  assert.throws(() => deriveTransitionSchemaResult(graph, selection), { code: "CLI_SPECIFICATION_INCOMPLETE" });
+  const unknown = actualDescriptorGraph();
+  unknown.quads.find(q => q.subject === "urn:usf:command:transition-schema:1" && q.predicate === "urn:usf:predicate:algorithm")!.object = "urn:test:unknown-generator";
+  assert.throws(() => deriveTransitionSchemaResult(unknown, selection), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+});
+
+test("schema handler loads declared sources, emits a reproducible candidate and creates no runtime ledger", () => {
+  const root = mkdtempSync(join(tmpdir(), "usf-schema-cli-"));
+  try {
+    mkdirSync(join(root, "graph"));
+    const names = ["cli-transition-definition", "v3-convention"];
+    for (const name of names) writeFileSync(join(root, "graph", name + ".nq"), readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url)));
+    writeFileSync(join(root, "graph", "test.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: names.map(name => ({
+      path: "graph/" + name + ".nq", format: "application/n-quads", graph: "urn:usf:graph:" + name, role: "contract", validationProfile: "bootstrap-nquads-v1",
+    })) }));
+    const request = { command: "transition" as const, repositoryRoot: root, args: ["schema", "--root", "urn:usf:work:cli-transition-definition", "--manifest", "graph/test.json"] };
+    const first = transitionCommandHandler(request, []);
+    assert.equal(first.exitCode, 0);
+    assert.deepEqual(transitionCommandHandler(request, []), first);
+    assert.equal((first.output as { executionAuthority: string }).executionAuthority, "none");
+    assert.deepEqual(readdirSync(root), ["graph"]);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("schema bounds use the same typed CLI refusal as interrogation", () => {
+  const graph = actualDescriptorGraph();
+  graph.quads = [...graph.quads, ...Array.from({ length: 100001 }, () => graph.quads[0]!)];
+  assert.throws(() => deriveTransitionSchemaResult(graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" }), { code: "CLI_SPECIFICATION_BOUNDS", exitCode: 2 });
+});
 
 test("interrogation and preparation share actual graph-bound observation admission", () => {
   const graph = actualDescriptorGraph();
