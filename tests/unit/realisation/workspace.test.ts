@@ -23,7 +23,9 @@ import {
   candidateOperations,
   currentCandidateWorkspace,
   deriveCandidatePreimages,
+  deriveNoChangeCandidateIdentity,
   materialiseCandidate,
+  materialiseNoChangeCandidate,
   RealisationError,
   withCandidateLock,
   type CandidateSpec,
@@ -235,6 +237,54 @@ test("basis-bound materialisation refuses missing, fabricated, stale and out-of-
     () => applyCandidateOperations(root, valid.digest, candidateOperations(valid)),
     (error: unknown) => error instanceof RealisationError && ["STALE_REALISATION_BASIS", "STALE_RELEVANT_PREIMAGE"].includes(error.reasonCode),
   );
+});
+
+test("preflights an oversized workspace manifest before changing an existing workspace", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const basis = packet(root).realisationBasis;
+  const oversized = candidate(basis, "x".repeat(600 * 1024), "manifest-oversize");
+  const workspace = join(root, ".usf", "workspaces", oversized.digest.slice("sha256:".length));
+  await mkdir(workspace, { recursive: true, mode: 0o700 });
+  const sentinel = join(workspace, "preserved-before-preflight");
+  await writeFile(sentinel, "unchanged\n", { mode: 0o600 });
+
+  await assert.rejects(
+    () => materialiseCandidate(root, oversized),
+    (error: unknown) => error instanceof RealisationError && error.reasonCode === "INVALID_WORKSPACE_MANIFEST",
+  );
+  assert.equal(await readFile(sentinel, "utf8"), "unchanged\n");
+  assert.deepEqual((await readdir(workspace)).sort(), ["preserved-before-preflight"]);
+
+  const ordinary = candidate(basis, "ordinary candidate bytes\n", "manifest-ordinary");
+  const materialised = await materialiseCandidate(root, ordinary);
+  await applyCandidateOperations(root, ordinary.digest, candidateOperations(ordinary));
+  assert.equal(await readFile(join(materialised.workspace, targetPath), "utf8"), "ordinary candidate bytes\n");
+});
+
+test("preflights an oversized no-change workspace manifest before changing an existing workspace", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const work = packet(root);
+  assert.equal(work.realisationBasis.authority.effectiveAuthority, "active-permission");
+  const policy = {
+    iri: `urn:usf:policy:workspace-manifest-preflight-test:${"x".repeat(600 * 1024)}`,
+    algorithmIri: "urn:usf:algorithm:workspace-manifest-preflight-test",
+    resourceDigest: `sha256:${"a".repeat(64)}`,
+    algorithmResourceDigest: `sha256:${"b".repeat(64)}`,
+  } as const;
+  const candidateDigest = await deriveNoChangeCandidateIdentity(root, work.realisationBasis, policy);
+  const workspace = join(root, ".usf", "workspaces", candidateDigest.slice("sha256:".length));
+  await mkdir(workspace, { recursive: true, mode: 0o700 });
+  const sentinel = join(workspace, "preserved-before-preflight");
+  await writeFile(sentinel, "unchanged\n", { mode: 0o600 });
+
+  await assert.rejects(
+    () => materialiseNoChangeCandidate(root, work.realisationBasis, policy),
+    (error: unknown) => error instanceof RealisationError && error.reasonCode === "INVALID_WORKSPACE_MANIFEST",
+  );
+  assert.equal(await readFile(sentinel, "utf8"), "unchanged\n");
+  assert.deepEqual((await readdir(workspace)).sort(), ["preserved-before-preflight"]);
 });
 
 test("authenticates candidate lineage, actual bytes, modes and scoped tree without caller identity", async (context) => {

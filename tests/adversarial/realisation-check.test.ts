@@ -77,16 +77,16 @@ async function fixture(context: TestContext): Promise<string> {
   return root;
 }
 
-function basisFor(root: string): RealisationBasis {
-  const result = deriveWork(loadSemanticGraph(root, manifestPath), { profile, selector: workId });
+function basisFor(root: string, selectedManifest = manifestPath): RealisationBasis {
+  const result = deriveWork(loadSemanticGraph(root, selectedManifest), { profile, selector: workId });
   const packet = result.items?.[0] as ProfileBoundPacket | undefined;
   assert.equal(result.status, "ok");
   assert.ok(packet?.realisationBasis);
   return packet.realisationBasis;
 }
 
-async function candidate(root: string, nonce: string): Promise<CandidateSpec> {
-  const basis = basisFor(root);
+async function candidate(root: string, nonce: string, selectedManifest = manifestPath): Promise<CandidateSpec> {
+  const basis = basisFor(root, selectedManifest);
   const operations = [{ kind: "write" as const, path: targetPath, content: await readFile(join(root, targetPath), "utf8") }];
   const acceptedContributionDigests = [canonicalDigest({ nonce })];
   return {
@@ -740,4 +740,46 @@ test("graph-derived check enforces graph wall time and mints no timeout receipt"
   assert.equal(["SIGTERM", "SIGKILL"].includes(result.validationTimeoutTerminationSignal ?? ""), true);
   assert.match(result.outputResultDigest ?? "", /^sha256:[0-9a-f]{64}$/u);
   assert.equal(await readGraphDerivedCheckReceipt(root, spec.digest, validationId), null);
+});
+
+test("graph-derived check identifies an unsafe fixture ancestor without losing the generic refusal", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const selectedManifest = "graph/manifests/check-confinement-fixture.json";
+  await writeFile(join(root, selectedManifest), JSON.stringify({
+    schema: "urn:usf:graph-manifest:2", version: 2,
+    imports: [manifestPath, "graph/manifests/fixture-process-runtime.json"],
+    sources: [],
+  }), "utf8");
+  const semanticPath = join(root, "graph/semantic-first.nq");
+  const semantic = await readFile(semanticPath, "utf8");
+  const originalMode = '<urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute>';
+  assert.equal(semantic.split(originalMode).length, 2);
+  await writeFile(semanticPath, semantic.replace(originalMode,
+    '<urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2>'), "utf8");
+  const closurePath = join(root, "graph/usf-bootstrap.nq");
+  const closure = await readFile(closurePath, "utf8");
+  const assetRows = ["src/realisation/fixture-process.apparmor", "src/realisation/fixture-process-launcher.py"].map(path =>
+    '<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "' + path + '" <urn:usf:graph:usf-bootstrap> .');
+  await writeFile(closurePath, closure.trimEnd() + "\n" + assetRows.join("\n") + "\n", "utf8");
+  const spec = await candidate(root, "unsafe-fixture-ancestor", selectedManifest);
+  await materialiseCandidate(root, spec);
+  const workspace = join(root, ".usf/workspaces", spec.digest.slice("sha256:".length));
+  const manifestBefore = await readFile(join(workspace, ".usf-workspace.json"));
+  const parent = resolve(root, "..");
+  const parentMode = (await lstat(parent)).mode & 0o777;
+  const validationId = "urn:usf:validation:realisation-basis-chain-focused";
+  try {
+    await chmod(parent, 0o770);
+    const result = await runGraphDerivedCheck(root, spec.digest, validationId);
+    assert.equal(result.status, "refused");
+    if (result.status !== "refused") return;
+    assert.equal(result.reasonCode, "CHECK_CONFINEMENT_UNAVAILABLE", JSON.stringify(result));
+    assert.equal(result.confinementFailure, "FIXTURE_POLICY_AUTHENTICATION_FAILED");
+    assert.deepEqual(await readFile(join(workspace, ".usf-workspace.json")), manifestBefore);
+    assert.equal(await readGraphDerivedCheckReceipt(root, spec.digest, validationId), null);
+    await assert.rejects(() => lstat(join(root, ".usf/receipts/check", spec.digest.slice("sha256:".length))), { code: "ENOENT" });
+  } finally {
+    await chmod(parent, parentMode);
+  }
 });

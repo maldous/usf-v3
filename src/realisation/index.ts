@@ -183,12 +183,23 @@ export interface AuthenticatedNoChangeWorkspace {
 }
 
 const manifestName = ".usf-workspace.json";
+const maximumWorkspaceManifestBytes = 512 * 1024;
 const forbiddenTopLevel = new Set([".git", ".usf", ".env"]);
 const digestPattern = /^sha256:[a-f0-9]{64}$/;
 const digestHexPattern = /^[a-f0-9]{64}$/;
 
 function digest(bytes: Uint8Array): string {
   return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+}
+
+function serializedWorkspaceManifest(manifest: WorkspaceManifest, canonical: boolean): Buffer {
+  const bytes = Buffer.from(canonical
+    ? canonicalJson(manifest, { rejectAbsolutePaths: true })
+    : JSON.stringify(manifest));
+  if (bytes.byteLength > maximumWorkspaceManifestBytes) {
+    throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate workspace manifest exceeds the supported size");
+  }
+  return bytes;
 }
 
 function checkRelative(path: string): string {
@@ -293,7 +304,7 @@ async function assertPrivateWorkspaceRoot(root: string, workspace: string, creat
   await assertPrivateUsfDirectory(root, repositoryPath, create);
 }
 
-async function readPrivateWorkspaceFile(root: string, workspace: string, fileName: string, maximumBytes = 512 * 1024): Promise<Buffer> {
+async function readPrivateWorkspaceFile(root: string, workspace: string, fileName: string, maximumBytes = maximumWorkspaceManifestBytes): Promise<Buffer> {
   await assertPrivateWorkspaceRoot(root, workspace);
   const path = resolve(workspace, fileName);
   const handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW).catch(() => {
@@ -656,6 +667,17 @@ export async function materialiseCandidate(root: string, candidate: CandidateSpe
         throw new RealisationError("STALE_RELEVANT_PREIMAGE", `Relevant pre-image is stale: ${path}`);
       }
     }
+    const manifest: WorkspaceManifest = {
+      schema: "urn:usf:workspace-manifest:1",
+      digest: candidate.digest,
+      basis,
+      operations: validated.operations,
+      lineage: { acceptedContributionDigests: [...candidate.lineage.acceptedContributionDigests], rejected: [] },
+      scope,
+      writeSet,
+      preimages: declaredPreimages,
+    };
+    const manifestBytes = serializedWorkspaceManifest(manifest, false);
     await assertPrivateUsfDirectory(canonicalRoot, ".usf", true);
     await assertPrivateUsfDirectory(canonicalRoot, ".usf/workspaces", true);
     try {
@@ -669,17 +691,7 @@ export async function materialiseCandidate(root: string, candidate: CandidateSpe
     await assertPrivateWorkspaceRoot(canonicalRoot, workspace);
     try {
       for (const path of scope) await copyRegularTree(canonicalRoot, workspace, path);
-      const manifest: WorkspaceManifest = {
-        schema: "urn:usf:workspace-manifest:1",
-        digest: candidate.digest,
-        basis,
-        operations: validated.operations,
-        lineage: { acceptedContributionDigests: [...candidate.lineage.acceptedContributionDigests], rejected: [] },
-        scope,
-        writeSet,
-        preimages: declaredPreimages,
-      };
-      await writeAtomically(resolve(workspace, manifestName), Buffer.from(JSON.stringify(manifest)));
+      await writeAtomically(resolve(workspace, manifestName), manifestBytes);
       return { workspace, basis, preimages: declaredPreimages };
     } catch (error) {
       await rm(workspace, { recursive: true, force: true });
@@ -749,10 +761,11 @@ export async function materialiseNoChangeCandidate(
 ): Promise<MaterialisedNoChangeCandidate> {
   const { canonicalRoot, basis, policy, scope, writeSet, preimages, draft, candidateDigest } =
     await prepareNoChangeCandidateIdentity(root, suppliedBasis, suppliedPolicy);
+  const manifest: NoChangeWorkspaceManifest = Object.freeze({ ...draft, digest: candidateDigest });
+  const manifestBytes = serializedWorkspaceManifest(manifest, true);
   return withCandidateLock(canonicalRoot, candidateDigest, async (lockedRoot) => {
     await currentBasis(lockedRoot, basis);
     const workspace = workspaceFor(lockedRoot, candidateDigest);
-    const manifest: NoChangeWorkspaceManifest = Object.freeze({ ...draft, digest: candidateDigest });
     const result = Object.freeze({
       workspace,
       workspacePath: relative(lockedRoot, workspace).split(sep).join("/"),
@@ -784,7 +797,7 @@ export async function materialiseNoChangeCandidate(
     await assertPrivateWorkspaceRoot(lockedRoot, workspace);
     try {
       for (const path of scope) await copyRegularTree(lockedRoot, workspace, path);
-      await writeAtomically(resolve(workspace, manifestName), Buffer.from(canonicalJson(manifest, { rejectAbsolutePaths: true })));
+      await writeAtomically(resolve(workspace, manifestName), manifestBytes);
       const readback = await loadManifest(lockedRoot, workspace);
       if (readback.schema !== manifest.schema || readback.digest !== candidateDigest) {
         throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "No-change workspace readback did not match the intended manifest");

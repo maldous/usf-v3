@@ -5,10 +5,10 @@ import { pathToFileURL } from "node:url";
 import { existsSync } from "node:fs";
 import { chmod, cp, lstat, mkdir, mkdtemp, open, readFile, readdir, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import test from "node:test";
+import test, { after } from "node:test";
 
 import { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } from "../../src/commands/construction-authority.ts";
-import { executeTransitionCommand, inspectTransition } from "../../src/commands/transition.ts";
+import { executeTransitionCommand, inspectTransition, transitionCommandHandler } from "../../src/commands/transition.ts";
 import { admissionCheckHandler } from "../../src/commands/apply.ts";
 import {
   completionAwareEvidenceCommandHandler,
@@ -20,6 +20,7 @@ import {
   realiseNoChangeWork,
 } from "../../src/commands/work-completion.ts";
 import { loadSemanticGraph } from "../../src/graph/index.ts";
+import { parseStrictNQuads } from "../../src/graph/nquads.ts";
 import { deriveWork } from "../../src/graph/work.ts";
 import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
 import {
@@ -34,10 +35,13 @@ import {
 import { ensureGraphDerivedCheck, readGraphDerivedCheckReceipt, readGraphDerivedCheckReceiptForRecovery, type CheckedCandidateReceipt } from "../../src/commands/check.ts";
 import {
   deriveNoChangeCompletionAuthority,
+  completionPublicationIntentDigest,
+  createWorkCompletionPublicationReceipt,
   workCompletionRecordLines,
-  type NoChangeCompletionAuthority,
+  type NoChangeCompletionAuthority, type WorkCompletionPublicationMember,
   type CompletionEvidenceCandidate, type CompletionProofBundle, type WorkCompletionPublicationReceipt,
 } from "../../src/realisation/work-completion.ts";
+import { constructionReceiptPath, deriveConstructionAuthority, validateConstructionReceiptShape, type ConstructionAuthorityPublicationReceipt } from "../../src/realisation/construction-authority.ts";
 
 const canonicalRoot = resolve(import.meta.dirname, "../..");
 const manifest = "graph/manifests/integration.json";
@@ -342,6 +346,8 @@ test("retained real receipt is reauthenticated before no-change completion effec
     const appliedOutput = applied.output as { publicationState: string; publicationReceiptPath: string };
     assert.equal(appliedOutput.publicationState, "created");
     assert.equal(packet(isolated.root).realisationStage?.stage, "verified-complete");
+    const historicalReceipt = JSON.parse(await readFile(resolve(isolated.root, appliedOutput.publicationReceiptPath), "utf8")) as { schema?: unknown };
+    assert.equal(historicalReceipt.schema, "urn:usf:work-completion-publication-receipt:1", "the retained integration fixture remains an unchanged v1 historical receipt");
 
     const matching = await completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root, args: ["work-completion", "--bundle", bundlePath, "--profile", profile, "--manifest", manifest, "--apply"] });
     assert.equal((matching.output as { publicationState: string }).publicationState, "matching");
@@ -361,9 +367,19 @@ test("retained real receipt is reauthenticated before no-change completion effec
 
     const toolPath = resolve(isolated.root, "src/commands/work-completion.ts");
     const toolBytes = await readFile(toolPath);
+    const historicalReceiptPath = resolve(isolated.root, appliedOutput.publicationReceiptPath);
+    const historicalReceiptBytes = await readFile(historicalReceiptPath);
+    const sourceBeforeToolCurrentness = await readFile(sourcePath);
+    await writeFile(sourcePath, completedSource, "utf8");
     await writeFile(toolPath, Buffer.concat([toolBytes, Buffer.from("\n// scoped completion authority movement\n")]));
     assert.notEqual(packet(isolated.root).realisationStage?.stage, "verified-complete", "bound implementation movement must stale completion");
+    await assert.rejects(
+      async () => completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root,
+        args: ["work-completion", "--bundle", bundlePath, "--profile", profile, "--manifest", manifest, "--verify"] }),
+    );
+    assert.deepEqual(await readFile(historicalReceiptPath), historicalReceiptBytes, "v1 history remains byte-identical after native currentness refusal");
     await writeFile(toolPath, toolBytes);
+    await writeFile(sourcePath, sourceBeforeToolCurrentness, "utf8");
     assert.equal(packet(isolated.root).realisationStage?.stage, "verified-complete");
 
     const receiptPath = resolve(isolated.root, appliedOutput.publicationReceiptPath);
@@ -399,12 +415,92 @@ test("completion evidence preparation refuses nonclosed inputs before repository
   await assert.rejects(() => prepareCompletionEvidence("/missing", { ...valid, manifestPath: "../outside.json" }), { code: "WORK_COMPLETION_SELECTION_INVALID" });
 });
 
+test("published transition authority readback retains predecessors and refuses stale or malformed reentry", async () => {
+  const isolated = await isolatedPrecompletionRepository();
+  try {
+    const transitionManifest = "graph/manifests/self-host.json";
+    const transitionProfile = "urn:usf:profile:v3-self-host:1";
+    const dependentWork = "urn:usf:work:repository-path-scope";
+    const derive = () => deriveWork(loadSemanticGraph(isolated.root, transitionManifest), {
+      profile: transitionProfile, selector: dependentWork, maxItems: 1,
+    });
+    const accepted = () => {
+      const result = derive();
+      assert.equal(result.status, "ok", "published predecessor authority must derive the selected dependent work");
+      assert.equal(result.items?.length, 1);
+      assert.equal(result.items?.[0]?.id, dependentWork);
+      assert.ok(result.items?.[0]?.realisationBasis, "readback must retain the published predecessor basis");
+      return result;
+    };
+    const refused = (label: string) => {
+      try {
+        const result = derive();
+        assert.equal(result.status, "refused", `${label} must not retain a cached accepted result`);
+      } catch (error: unknown) {
+        assert.match(error instanceof Error ? error.message : String(error), /^(TRANSITION_LIVE|REQUIRED_TRANSITION)_/u, label);
+      }
+    };
+    const baseline = accepted();
+    assert.deepEqual(accepted(), baseline, "reentry must reauthenticate the same published transition without cached acceptance");
+    const receiptPath = resolve(isolated.root, "evidence/semantic-first-bootstrap-admission.json");
+    const receiptBytes = await readFile(receiptPath);
+    await writeFile(receiptPath, Buffer.concat([receiptBytes, Buffer.from("\n")]));
+    refused("stale predecessor evidence bytes");
+    await writeFile(receiptPath, receiptBytes);
+    const transitionSourcePath = resolve(isolated.root, "graph/semantic-first.nq");
+    const transitionSource = await readFile(transitionSourcePath, "utf8");
+    await writeFile(transitionSourcePath, `${transitionSource}<urn:usf:test:stale-transition-predecessor> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:semantic-first> .\n`, "utf8");
+    refused("stale predecessor source bytes");
+    await writeFile(transitionSourcePath, transitionSource, "utf8");
+    const malformed = JSON.parse(receiptBytes.toString("utf8")) as { postState?: { members?: unknown[] } };
+    assert.ok(Array.isArray(malformed.postState?.members) && malformed.postState.members.length > 1, "published transition fixture must retain a genuine sibling member");
+    malformed.postState!.members![1] = { workId: 7 };
+    await writeFile(receiptPath, `${canonicalJson(malformed, { rejectAbsolutePaths: true })}\n`);
+    refused("malformed published sibling member");
+    await writeFile(receiptPath, receiptBytes);
+    assert.deepEqual(accepted(), baseline, "restored genuine authority must be independently reauthenticated after every refusal");
+  } finally { await isolated.cleanup(); }
+});
+
 const canonicalNoChangeSelection = {
   rootIdentity: "urn:usf:work:cli-transition-definition",
   manifestPath: "graph/manifests/cli-transition-definition.json",
 };
 const canonicalNoChangeProfile = "urn:usf:profile:cli-transition-definition:1";
 const canonicalNoChangeInput = ".usf/inputs/no-change-request.json";
+
+interface V2PublicationReceiptMember {
+  readonly ordinal: number;
+  readonly workIri: string;
+  readonly manifestPath: string;
+  readonly manifestDigest: string;
+}
+
+interface V2PublicationReceipt {
+  readonly schema: "urn:usf:work-completion-publication-receipt:2";
+  readonly cohortManifestDigest: string;
+  readonly memberCount: number;
+  readonly members: readonly V2PublicationReceiptMember[];
+}
+
+function assertV2PublicationReceipt(value: unknown, expectedMemberCount: number): asserts value is V2PublicationReceipt {
+  assert.ok(value !== null && typeof value === "object" && !Array.isArray(value), "selected v2 publication must be an object");
+  const receipt = value as Record<string, unknown>;
+  assert.equal(receipt.schema, "urn:usf:work-completion-publication-receipt:2");
+  assert.equal(Object.hasOwn(receipt, "manifestDigest"), false, "v2 replaces the v1 top-level manifest digest with the cohort digest");
+  assert.equal(receipt.memberCount, expectedMemberCount);
+  assert.ok(Array.isArray(receipt.members));
+  assert.equal(receipt.members.length, expectedMemberCount);
+  const members = receipt.members as V2PublicationReceiptMember[];
+  const aggregate = canonicalDigest(members.map(({ ordinal, workIri, manifestPath, manifestDigest }) =>
+    ({ ordinal, workIri, manifestPath, manifestDigest })), { rejectAbsolutePaths: true });
+  assert.equal(receipt.cohortManifestDigest, aggregate, "v2 cohort digest must bind ordered member manifest identities");
+  for (const [index, member] of members.entries()) {
+    assert.equal(member.ordinal, index + 1, "v2 members retain native cohort ordinal order");
+    assert.match(member.manifestPath, /^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u);
+    assert.match(member.manifestDigest, /^sha256:[0-9a-f]{64}$/u);
+  }
+}
 
 async function canonicalNoChangeFixture() {
   const isolated = await isolatedPrecompletionRepository();
@@ -712,5 +808,731 @@ test("canonical no-change refuses derived overrides and preserves partial or con
       await writeFile(manifestPath, bytes, { mode: 0o600 });
       assert.deepEqual((await execute()).output, result);
     } finally { await directory.close(); }
+  } finally { await isolated.cleanup(); }
+});
+
+const legacyCohort = Object.freeze([
+  Object.freeze({ work: "urn:usf:work:repository-path-scope", validation: "urn:usf:validation:repository-path-tests", obligation: "urn:usf:proof:repository-path-scope", constructionObligation: "urn:usf:proof:repository-path-scope:construction-authority", name: "repository-path" }),
+  Object.freeze({ work: "urn:usf:work:file-asset-index", validation: "urn:usf:validation:file-asset-index-tests", obligation: "urn:usf:proof:file-asset-index", constructionObligation: "urn:usf:proof:file-asset-index:construction-authority", name: "file-asset-index" }),
+]);
+
+async function removeIsolatedConstructionAuthorityHistory(root: string): Promise<void> {
+  const receiptDirectory = resolve(root, "evidence/construction-authority");
+  if (!existsSync(receiptDirectory)) return;
+  const sourcePath = "graph/integration.nq";
+  const sourceAbsolute = resolve(root, sourcePath);
+  const source = await readFile(sourceAbsolute, "utf8");
+  const sourceLines = source.split("\n").filter(line => line.length > 0);
+  const graph = loadSemanticGraph(root, manifest);
+  const cohortWorks: ReadonlySet<string> = new Set(legacyCohort.map(member => member.work));
+  const selected: Array<Readonly<{ path: string; receipt: ConstructionAuthorityPublicationReceipt }>> = [];
+  const receiptBytes = new Map<string, Buffer>();
+  for (const name of (await readdir(receiptDirectory)).sort()) {
+    const path = resolve(receiptDirectory, name);
+    const bytes = await readFile(path);
+    receiptBytes.set(path, bytes);
+    let receipt: ConstructionAuthorityPublicationReceipt;
+    try { receipt = JSON.parse(bytes.toString("utf8")) as ConstructionAuthorityPublicationReceipt; }
+    catch { continue; }
+    const member = receipt.memberCount === 1 && receipt.members.length === 1 ? receipt.members[0] : undefined;
+    if (receipt.manifestPath !== manifest || receipt.profileIri !== profile || receipt.semanticSourcePath !== sourcePath
+      || member === undefined || !cohortWorks.has(member.workIri)) continue;
+    const authority = deriveConstructionAuthority(graph, member.workIri);
+    assert.equal(validateConstructionReceiptShape(root, receipt, authority), true, `selected construction receipt must satisfy its current closed schema: ${name}`);
+    const { receiptDigest, ...draft } = receipt;
+    assert.equal(receiptDigest, canonicalDigest(draft, { rejectAbsolutePaths: true }), `selected construction receipt must retain its canonical digest: ${name}`);
+    assert.equal(receipt.deltaDigest, canonicalDigest(receipt.operations, { rejectAbsolutePaths: true }), `selected construction receipt must retain its exact operation digest: ${name}`);
+    assert.equal(bytes.toString("utf8"), `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, `selected construction receipt must retain canonical bytes: ${name}`);
+    assert.equal(receipt.publicationReceiptPath, constructionReceiptPath(receipt.publicationIntentDigest, authority), `selected construction receipt must bind its exact receipt path: ${name}`);
+    assert.equal(resolve(root, receipt.publicationReceiptPath), path, `selected construction receipt must be stored at its bound path: ${name}`);
+    selected.push(Object.freeze({ path, receipt }));
+  }
+  assert.ok(selected.length > 0, "fixture must remove authenticated pre-existing construction history for the cohort");
+  assert.deepEqual(new Set(selected.map(({ receipt }) => receipt.members[0]!.workIri)), cohortWorks, "fixture must reset both and only the actual cohort members' construction history");
+  const removed = new Set<string>();
+  for (const { receipt } of selected) {
+    for (const operation of receipt.operations) {
+      assert.equal(operation.kind, "add");
+      assert.equal(operation.sourcePath, sourcePath, "selected construction operations must target only integration.nq");
+      assert.equal(sourceLines.filter(line => line === operation.line).length, 1, "each selected construction operation must occur exactly once in integration.nq");
+      assert.equal(removed.has(operation.line), false, "selected construction operation lines must not overlap");
+      removed.add(operation.line);
+    }
+  }
+  await writeFile(sourceAbsolute, `${sourceLines.filter(line => !removed.has(line)).join("\n")}\n`, "utf8");
+  for (const { path } of selected) await unlink(path);
+  const sourceAfter = (await readFile(sourceAbsolute, "utf8")).split("\n").filter(line => line.length > 0);
+  assert.deepEqual(sourceAfter, sourceLines.filter(line => !removed.has(line)), "only authenticated selected construction operation lines may be removed");
+  for (const [path, bytes] of receiptBytes) {
+    if (!selected.some(candidate => candidate.path === path)) assert.deepEqual(await readFile(path), bytes, `unselected construction receipt must remain byte-identical: ${path}`);
+  }
+}
+
+async function isolatedLegacyCohortVariant(): Promise<{ root: string; cleanup: () => Promise<void> }> {
+  const isolated = await isolatedPrecompletionRepository();
+  try {
+    await removeIsolatedConstructionAuthorityHistory(isolated.root);
+    const bootstrapPath = resolve(isolated.root, "graph/usf-bootstrap.nq");
+    const originalBootstrap = await readFile(bootstrapPath, "utf8");
+    const originalGraph = loadSemanticGraph(isolated.root, manifest);
+    const dependencyRow = `<urn:usf:work:file-asset-index> <urn:usf:predicate:dependsOn> <urn:usf:work:repository-path-scope> <urn:usf:graph:usf-bootstrap> .`;
+    assert.equal(originalBootstrap.split("\n").filter(line => line === dependencyRow).length, 1, "the original fixture must retain the native dependent-cohort refusal edge");
+    assert.doesNotThrow(() => deriveConstructionAuthority(originalGraph, legacyCohort[0]!.work));
+    assert.doesNotThrow(() => deriveConstructionAuthority(originalGraph, legacyCohort[1]!.work));
+    await writeFile(bootstrapPath, removeExactNQuadRow(originalBootstrap, dependencyRow), "utf8");
+    await adoptV2PublicationSchemaForIsolatedCohort(isolated.root);
+
+    const variantGraph = loadSemanticGraph(isolated.root, manifest);
+    for (const member of legacyCohort) {
+      assert.doesNotThrow(() => deriveConstructionAuthority(variantGraph, member.work));
+      assert.doesNotThrow(() => deriveNoChangeCompletionAuthority(variantGraph, member.work));
+    }
+    assert.equal(await readFile(bootstrapPath, "utf8").then(bytes => bytes.includes(dependencyRow)), false, "only the isolated bootstrap dependency edge is removed");
+    return isolated;
+  } catch (error) { await isolated.cleanup(); throw error; }
+}
+
+async function adoptV2PublicationSchemaForIsolatedCohort(root: string): Promise<void> {
+  const sourcePath = resolve(root, "graph/integration.nq");
+  const source = await readFile(sourcePath, "utf8");
+  assert.equal(existsSync(resolve(root, "schemas/work-completion-publication-receipt-v2.schema.json")), true, "isolated repository copy must retain the tracked v2 receipt schema bytes");
+  const cliSource = await readFile(resolve(canonicalRoot, "graph/cli-transition-definition.nq"), "utf8");
+  const profileAuthoritySource = await readFile(resolve(canonicalRoot, "graph/profile-authority.nq"), "utf8");
+  const graph = "urn:usf:graph:integration";
+  const profileAuthorityGraph = "urn:usf:graph:profile-authority";
+  const cliGraph = "urn:usf:graph:cli-transition-definition";
+  const policy = "urn:usf:publication-policy:no-change-work-completion:1";
+  const cliPolicy = "urn:usf:publication-policy:cli-transition-definition-no-change-completion:1";
+  const algorithm = "urn:usf:algorithm:copy-on-write-work-completion-publication:1";
+  const cliAlgorithm = "urn:usf:algorithm:cli-transition-definition-work-completion-publication:1";
+  const subjects = new Set([
+    "urn:usf:rule:completion-publication-reauthentication:1",
+    "urn:usf:rule:completion-publication-snapshot-authentication:1",
+    "urn:usf:rule:completion-publication-cohort-snapshot:1",
+    "urn:usf:rule:completion-publication-member-manifests:2",
+    "urn:usf:rule:completion-publication-member-basis:1",
+    "urn:usf:rule:completion-publication-receipt-schema-selection:1",
+    "urn:usf:schema-binding:completion-publication-receipt:1",
+    "urn:usf:schema-binding:completion-publication-receipt:2",
+    "urn:usf:type:CliFieldDerivationRule",
+    "urn:usf:type:SemanticRecordSchemaBinding",
+    "urn:usf:predicate:admittedBinding",
+    "urn:usf:predicate:contextBinding",
+    "urn:usf:predicate:dependencyConstraint",
+    "urn:usf:predicate:manifestPathConstraint",
+    "urn:usf:predicate:memberAuthentication",
+    "urn:usf:predicate:memberAuthenticationRule",
+    "urn:usf:predicate:otherSchemaVersion",
+    "urn:usf:predicate:producedValue",
+    "urn:usf:predicate:refusedInput",
+    "urn:usf:predicate:requiredReadback",
+    "urn:usf:predicate:schemaRole",
+    "urn:usf:predicate:schemaSelectionRule",
+  ]);
+  const selected = cliSource.split("\n").filter(line => [...subjects].some(subject => line.startsWith(`<${subject}> `)))
+    .map(line => line.replaceAll(`<${cliGraph}>`, `<${graph}>`).replaceAll(`<${cliPolicy}>`, `<${policy}>`).replaceAll(`<${cliAlgorithm}>`, `<${algorithm}>`));
+  assert.ok(selected.length > 0, "fixture must import exact governed v2 selection and member-authentication declarations");
+  const v2SchemaSubject = "urn:usf:schema:work-completion-publication-receipt:2";
+  const v2SchemaRows = profileAuthoritySource.split("\n")
+    .filter(line => line.startsWith(`<${v2SchemaSubject}> `))
+    .map(line => line.replaceAll(`<${profileAuthorityGraph}>`, `<${graph}>`));
+  assert.deepEqual(v2SchemaRows, [
+    `<${v2SchemaSubject}> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <${graph}> .`,
+    `<${v2SchemaSubject}> <urn:usf:predicate:version> "2" <${graph}> .`,
+    `<${v2SchemaSubject}> <urn:usf:predicate:repositoryPath> "schemas/work-completion-publication-receipt-v2.schema.json" <${graph}> .`,
+  ], "fixture must retain exactly the tracked v2 schema type, version and repository-path declarations");
+  const v2DigestMembershipRows = cliSource.split("\n")
+    .filter(line => line.startsWith(`<${v2SchemaSubject}> <urn:usf:predicate:digestMembership> `))
+    .map(line => line.replaceAll(`<${cliGraph}>`, `<${graph}>`));
+  assert.deepEqual(v2DigestMembershipRows, [
+    `<${v2SchemaSubject}> <urn:usf:predicate:digestMembership> <urn:usf:rule:completion-publication-member-manifests:2> <${graph}> .`,
+  ], "fixture must retain the governed v2 digest-membership declaration independently of the profile schema record");
+  const v1Schema = `<${policy}> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <${graph}> .`;
+  const v1Path = `<${policy}> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <${graph}> .`;
+  assert.equal(source.split(v1Schema).length - 1, 1, "isolated policy must have one v1 schema selection");
+  assert.equal(source.split(v1Path).length - 1, 1, "isolated policy must have one v1 schema path");
+  const v2Schema = `<${policy}> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:2> <${graph}> .`;
+  const v2Path = `<${policy}> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt-v2.schema.json" <${graph}> .`;
+  const selectionRule = `<${policy}> <urn:usf:predicate:schemaSelectionRule> <urn:usf:rule:completion-publication-receipt-schema-selection:1> <${graph}> .`;
+  const v2CarrierPath = `<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "schemas/work-completion-publication-receipt-v2.schema.json" <${graph}> .`;
+  const rows = source.slice(0, -1).split("\n").filter(line => line !== v1Schema && line !== v1Path);
+  for (const row of [v2Schema, v2Path, selectionRule, v2CarrierPath, ...selected, ...v2SchemaRows, ...v2DigestMembershipRows]) if (!rows.includes(row)) rows.push(row);
+  const adopted = `${rows.join("\n")}\n`;
+  assert.doesNotThrow(() => parseStrictNQuads(adopted, graph));
+  await writeFile(sourcePath, adopted, "utf8");
+  const closure = loadSemanticGraph(root, manifest);
+  assert.equal(closure.manifests.some(({ path }) => path === "graph/manifests/profile-authority.json"), false, "isolated selection must not broaden its manifest closure with profile-authority command declarations");
+  assert.equal(closure.quads.some(quad => quad.subject === "urn:usf:schema:work-completion-publication-receipt:2"
+    && quad.predicate === "urn:usf:predicate:repositoryPath" && quad.object === "schemas/work-completion-publication-receipt-v2.schema.json"), true,
+  "isolated selection must bind the v2 receipt record path");
+}
+
+function removeExactNQuadRow(source: string, row: string): string {
+  assert.equal(source.endsWith("\n"), true, "fixture semantic source must retain its canonical terminal newline");
+  assert.equal(source.includes("\r"), false, "fixture semantic source must retain LF-only canonical bytes");
+  const rows = source.slice(0, -1).split("\n");
+  assert.equal(rows.filter((candidate) => candidate === row).length, 1, "fixture variant must remove one exact semantic row");
+  return `${rows.filter((candidate) => candidate !== row).join("\n")}\n`;
+}
+
+test("isolated legacy cohort edge removal preserves strict N-Quads", async () => {
+  const dependencyRow = `<urn:usf:work:file-asset-index> <urn:usf:predicate:dependsOn> <urn:usf:work:repository-path-scope> <urn:usf:graph:usf-bootstrap> .`;
+  const source = await readFile(resolve(canonicalRoot, "graph/usf-bootstrap.nq"), "utf8");
+  const variant = removeExactNQuadRow(source, dependencyRow);
+  assert.equal(variant.split("\n").filter((row) => row === dependencyRow).length, 0, "variant must omit only the dependency row");
+  assert.doesNotThrow(() => parseStrictNQuads(variant, "urn:usf:graph:usf-bootstrap"));
+});
+
+test("publication intent binds the native proof bundle digest beyond a work and manifest tuple", () => {
+  const graph = loadSemanticGraph(canonicalRoot, canonicalNoChangeSelection.manifestPath);
+  const authority = deriveNoChangeCompletionAuthority(graph, canonicalNoChangeSelection.rootIdentity);
+  const packet = deriveWork(graph, { profile: canonicalNoChangeProfile, selector: canonicalNoChangeSelection.rootIdentity, maxItems: 1 }).items?.[0];
+  assert.ok(packet?.realisationBasis, "intent probe must use the genuine selected manifest digest");
+  const common = Object.freeze({
+    evidence: Object.freeze({ workIri: canonicalNoChangeSelection.rootIdentity, manifestPath: canonicalNoChangeSelection.manifestPath, manifestDigest: packet.realisationBasis.selection.manifestDigest }),
+  }) as unknown as CompletionProofBundle;
+  const first = completionPublicationIntentDigest(
+    [Object.freeze({ ...common, bundleDigest: `sha256:${"1".repeat(64)}` }) as CompletionProofBundle],
+    canonicalNoChangeProfile, canonicalNoChangeSelection.manifestPath, authority,
+  );
+  const second = completionPublicationIntentDigest(
+    [Object.freeze({ ...common, bundleDigest: `sha256:${"2".repeat(64)}` }) as CompletionProofBundle],
+    canonicalNoChangeProfile, canonicalNoChangeSelection.manifestPath, authority,
+  );
+  assert.notEqual(first, second, "native publication intent must not collapse distinct proof bundles with the same work and manifest tuple");
+});
+
+async function genuineLegacyCohort(root: string, freshConstruction = true, requireDistinctManifestDigests = false) {
+  const bundles: string[] = [];
+  const members: Array<{ work: string; manifestPath: string; manifestDigest: string; originalBasisDigest: string; candidateDigest: string; proofBundleDigest: string }> = [];
+  for (const member of legacyCohort) {
+    const memberManifest = manifest;
+    if (freshConstruction) {
+      const constructionEvidencePath = `.usf/candidates/construction-authority/${member.name}-cohort-evidence.json`;
+      const constructionBundlePath = `.usf/candidates/construction-authority/${member.name}-cohort-bundle.json`;
+      await evidenceCommandHandler({ command: "evidence", repositoryRoot: root,
+        args: ["construction", "--work", member.work, "--profile", profile, "--manifest", memberManifest, "--output", constructionEvidencePath] });
+      await proveCommandHandler({ command: "prove", repositoryRoot: root,
+        args: ["construction", "--obligation", member.constructionObligation, "--evidence", constructionEvidencePath, "--profile", profile, "--manifest", memberManifest, "--output", constructionBundlePath] });
+      const construction = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root,
+        args: ["construction-authority", "--bundle", constructionBundlePath, "--profile", profile, "--manifest", memberManifest, "--apply"] });
+      assert.equal((construction.output as { status: string }).status, "ok", `${member.name} must receive fresh isolated construction authority`);
+    }
+    const realised = await realiseCommandHandler({ command: "realise", repositoryRoot: root,
+      args: ["no-change", "--work", member.work, "--profile", profile, "--manifest", memberManifest] });
+    const candidateDigest = (realised.output as { candidateDigest: string }).candidateDigest;
+    const checked = await admissionCheckHandler({ command: "check", repositoryRoot: root,
+      args: ["--candidate", candidateDigest, "--validation", member.validation] });
+    assert.equal((checked.output as { status: string }).status, "pass", `${member.name} must have one native checked receipt: ${JSON.stringify(checked.output)}`);
+    const evidencePath = `.usf/candidates/work-completion/${member.name}-cohort-evidence.json`;
+    const bundlePath = `.usf/candidates/work-completion/${member.name}-cohort-bundle.json`;
+    const evidence = await completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: root,
+      args: ["completion", "--candidate", candidateDigest, "--work", member.work, "--profile", profile, "--manifest", memberManifest, "--output", evidencePath] });
+    const proof = await completionAwareProveCommandHandler({ command: "prove", repositoryRoot: root,
+      args: ["completion", "--obligation", member.obligation, "--evidence", evidencePath, "--profile", profile, "--manifest", memberManifest, "--output", bundlePath] });
+    const packet = deriveWork(loadSemanticGraph(root, memberManifest), { profile, selector: member.work, maxItems: 1 }).items?.[0];
+    assert.ok(packet?.realisationBasis, `${member.name} must retain an independently derived original basis`);
+    const bundle = proof.output as CompletionProofBundle;
+    bundles.push(bundlePath);
+    members.push({ work: member.work, manifestPath: bundle.evidence.manifestPath, manifestDigest: bundle.evidence.manifestDigest,
+      originalBasisDigest: packet.realisationBasis.basisDigest, candidateDigest, proofBundleDigest: canonicalDigest(bundle, { rejectAbsolutePaths: true }) });
+  }
+  assert.equal(new Set(members.map((member) => member.work)).size, 2, "genuine cohort members remain distinct");
+  if (requireDistinctManifestDigests) assert.equal(new Set(members.map((member) => member.manifestDigest)).size, 2, "genuine v2 cohort members must retain distinct selected manifest digests before publication");
+  assert.equal(new Set(members.map((member) => member.proofBundleDigest)).size, 2, "bundle digest remains distinct from native receipt identities");
+  return Object.freeze({ bundles: Object.freeze(bundles), members: Object.freeze(members) });
+}
+
+test("legacy completion publication refuses the original genuine dependent cohort without effects", {
+  skip: isConfinedFixtureProcess && "the direct lane owns native cohort publication",
+}, async () => {
+  const isolated = await isolatedPrecompletionRepository();
+  try {
+    const cohort = await genuineLegacyCohort(isolated.root, false);
+    const sourceBefore = await readFile(resolve(isolated.root, "graph/integration.nq"));
+    const receiptsBefore = await readdir(resolve(isolated.root, "evidence/work-completion"));
+    const candidatesBefore = [...(await regularTree(resolve(isolated.root, ".usf/candidates/work-completion")))].map(([path, entry]) => [path, entry.mode, entry.digest]);
+    const args = ["work-completion", ...cohort.bundles.flatMap((bundle) => ["--bundle", bundle]), "--profile", profile, "--manifest", manifest, "--verify"];
+    await assert.rejects(
+      async () => { await completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root, args }); },
+      { code: "WORK_COMPLETION_DEPENDENT_COHORT_REFUSED" },
+    );
+    assert.deepEqual(await readFile(resolve(isolated.root, "graph/integration.nq")), sourceBefore, "dependent cohort refusal must not mutate the semantic source");
+    assert.deepEqual(await readdir(resolve(isolated.root, "evidence/work-completion")), receiptsBefore, "dependent cohort refusal must not create a publication receipt");
+    assert.deepEqual(
+      [...(await regularTree(resolve(isolated.root, ".usf/candidates/work-completion")))].map(([path, entry]) => [path, entry.mode, entry.digest]),
+      candidatesBefore,
+      "dependent cohort refusal must not persist a publication snapshot",
+    );
+  } finally { await isolated.cleanup(); }
+});
+
+async function interruptLegacyPublication(root: string, sourcePath: string, bundles: readonly string[], boundary: "before-source" | "source-before-receipt" | "receipt-before-ack") {
+  const child = spawn(process.execPath, [resolve(canonicalRoot, "tests/fixtures/realisation/completion-publication-interruption.ts"),
+    root, canonicalRoot, "legacy", legacyCohort[0]!.work, profile, manifest, boundary, sourcePath, ...bundles], { cwd: root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"] });
+  let reached = false;
+  let stderr = "";
+  child.stderr!.on("data", (chunk) => { stderr += String(chunk); });
+  child.on("message", (message: unknown) => {
+    if (message !== null && typeof message === "object" && (message as { kind?: string }).kind === "boundary") {
+      reached = true;
+      child.kill("SIGKILL");
+    }
+  });
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  try {
+    const ended = await new Promise<{ signal: NodeJS.Signals | null }>((accept, reject) => {
+      child.once("error", reject);
+      child.once("close", (_code, signal) => accept({ signal }));
+    });
+    assert.equal(reached, true, stderr);
+    assert.equal(ended.signal, "SIGKILL");
+  } finally { clearTimeout(timeout); }
+}
+
+type CanonicalPublicationBoundary = "before-source" | "source-before-receipt" | "receipt-pending-before-link" | "receipt-linked-before-cleanup" | "receipt-before-ack";
+
+async function interruptCanonicalPublication(root: string, sourcePath: string, boundary: CanonicalPublicationBoundary): Promise<Readonly<{ receiptPendingPath?: string; receiptPath?: string }>> {
+  const child = spawn(process.execPath, [resolve(canonicalRoot, "tests/fixtures/realisation/completion-publication-interruption.ts"),
+    root, canonicalRoot, "canonical", canonicalNoChangeSelection.rootIdentity, canonicalNoChangeProfile,
+    canonicalNoChangeSelection.manifestPath, boundary, sourcePath], { cwd: root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"] });
+  let reached = false;
+  let stderr = "";
+  let observation: Readonly<{ receiptPendingPath?: string; receiptPath?: string }> = {};
+  child.stderr!.on("data", (chunk) => { stderr += String(chunk); });
+  child.on("message", (message: unknown) => {
+    if (message !== null && typeof message === "object" && (message as { kind?: string }).kind === "boundary") {
+      reached = true;
+      observation = message as Readonly<{ receiptPendingPath?: string; receiptPath?: string }>;
+      child.kill("SIGKILL");
+    }
+  });
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  try {
+    const ended = await new Promise<{ signal: NodeJS.Signals | null }>((accept, reject) => {
+      child.once("error", reject);
+      child.once("close", (_code, signal) => accept({ signal }));
+    });
+    assert.equal(reached, true, stderr);
+    assert.equal(ended.signal, "SIGKILL");
+    return observation;
+  } finally { clearTimeout(timeout); }
+}
+
+async function prepareGenuineCanonicalPublicationRoot(root: string): Promise<void> {
+  const request = Object.freeze({
+    work: canonicalNoChangeSelection.rootIdentity,
+    profile: canonicalNoChangeProfile,
+    manifestPath: canonicalNoChangeSelection.manifestPath,
+  });
+  const realised = await realiseNoChangeWork(root, request);
+  assert.equal(realised.status, "ready-for-validation", "canonical publication starts from a native no-change workspace");
+  await prepareCompletionChecks(root, request);
+}
+
+interface RegularTreeEntry {
+  readonly mode: number;
+  readonly digest: string;
+  readonly inode: number;
+}
+
+async function regularTree(root: string): Promise<ReadonlyMap<string, RegularTreeEntry>> {
+  const entries = new Map<string, RegularTreeEntry>();
+  const visit = async (relative: string): Promise<void> => {
+    const directory = resolve(root, relative);
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const childRelative = relative.length === 0 ? entry.name : join(relative, entry.name);
+      const child = resolve(root, childRelative);
+      const metadata = await lstat(child);
+      assert.equal(metadata.isSymbolicLink(), false, `seed copies admit no symbolic links: ${childRelative}`);
+      if (metadata.isDirectory()) await visit(childRelative);
+      else {
+        assert.equal(metadata.isFile(), true, `seed copies admit only regular files: ${childRelative}`);
+        entries.set(childRelative, Object.freeze({ mode: metadata.mode & 0o777, digest: rawDigest(await readFile(child)), inode: metadata.ino }));
+      }
+    }
+  };
+  await visit("");
+  return entries;
+}
+
+async function assertNoCheckRuntimeResidue(root: string): Promise<void> {
+  const tree = await regularTree(root);
+  for (const path of tree.keys()) {
+    assert.equal(path.endsWith(".pending"), false, `checked seed cannot retain pending state: ${path}`);
+    assert.equal(path.includes(".usf-check-tmp/"), false, `checked seed cannot retain check scratch: ${path}`);
+  }
+  const locksRoot = resolve(root, ".usf/locks/candidates");
+  if (!existsSync(locksRoot)) return;
+  for (const name of (await readdir(locksRoot)).sort()) {
+    assert.match(name, /^[0-9a-f]{64}\.lock$/u, `candidate lock inventory must remain exact: ${name}`);
+    const candidateDigest = `sha256:${name.slice(0, -".lock".length)}`;
+    const before = await lstat(resolve(locksRoot, name));
+    await withCandidateLock(root, candidateDigest, async () => undefined);
+    const after = await lstat(resolve(locksRoot, name));
+    assert.equal(after.isFile(), true);
+    assert.equal(after.isSymbolicLink(), false);
+    assert.equal(after.dev, before.dev, `native lock acquisition must preserve retained lock device: ${name}`);
+    assert.equal(after.ino, before.ino, `native lock acquisition must preserve retained lock inode: ${name}`);
+    assert.equal(after.nlink, before.nlink, `native lock acquisition must preserve retained lock link count: ${name}`);
+    assert.equal(after.mode & 0o777, before.mode & 0o777, `native lock acquisition must preserve retained lock mode: ${name}`);
+  }
+}
+
+test("a retained unheld candidate lock is authenticated by native acquisition", async () => {
+  await mkdir(temporaryRoot, { recursive: true, mode: 0o700 });
+  const root = await mkdtemp(resolve(temporaryRoot, "retained-candidate-lock-"));
+  const candidateDigest = `sha256:${"a".repeat(64)}`;
+  try {
+    await withCandidateLock(root, candidateDigest, async () => undefined);
+    const lockPath = resolve(root, ".usf/locks/candidates", `${candidateDigest.slice("sha256:".length)}.lock`);
+    const before = await lstat(lockPath);
+    await assertNoCheckRuntimeResidue(root);
+    const after = await lstat(lockPath);
+    assert.equal(after.dev, before.dev);
+    assert.equal(after.ino, before.ino);
+    assert.equal(after.mode & 0o777, before.mode & 0o777);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+const canonicalSeedRequest = Object.freeze({
+  work: canonicalNoChangeSelection.rootIdentity,
+  profile: canonicalNoChangeProfile,
+  manifestPath: canonicalNoChangeSelection.manifestPath,
+});
+
+let checkedCanonicalPrepublicationSeed: Promise<{ root: string; cleanup: () => Promise<void> }> | undefined;
+
+async function canonicalCheckedPrepublicationSeed(): Promise<{ root: string; cleanup: () => Promise<void> }> {
+  if (checkedCanonicalPrepublicationSeed === undefined) {
+    checkedCanonicalPrepublicationSeed = (async () => {
+      const seed = await canonicalNoChangeFixture();
+      try {
+        await prepareGenuineCanonicalPublicationRoot(seed.root);
+        await assertSettledCompleteCheckSet(seed.root);
+        await assertNoCheckRuntimeResidue(seed.root);
+        return seed;
+      } catch (error) { await seed.cleanup(); throw error; }
+    })();
+  }
+  return checkedCanonicalPrepublicationSeed;
+}
+
+after(async () => {
+  if (checkedCanonicalPrepublicationSeed !== undefined) await (await checkedCanonicalPrepublicationSeed).cleanup();
+});
+
+async function assertSettledCompleteCheckSet(root: string): Promise<Readonly<{ candidateDigest: string; obligations: readonly string[] }>> {
+  const moduleUrl = pathToFileURL(resolve(canonicalRoot, "src/commands/work-completion.ts")).href;
+  const program = `import childProcess from "node:child_process";
+    import { syncBuiltinESMExports } from "node:module";
+    const originalSpawn = childProcess.spawn;
+    let validationLaunches = 0;
+    childProcess.spawn = ((...args) => {
+      if (args[0] === "/usr/bin/bwrap") validationLaunches++;
+      return originalSpawn(...args);
+    });
+    syncBuiltinESMExports();
+    const native = await import(${JSON.stringify(moduleUrl)});
+    const result = await native.prepareCompletionChecks(${JSON.stringify(root)}, ${JSON.stringify(canonicalSeedRequest)});
+    process.stdout.write(JSON.stringify({ validationLaunches, result }));`;
+  let observed: { validationLaunches?: unknown; result?: unknown };
+  try {
+    observed = JSON.parse(execFileSync(process.execPath, ["--input-type=module", "--eval", program], {
+      cwd: root, encoding: "utf8", timeout: 120_000, maxBuffer: 4 * 1024 * 1024,
+    })) as { validationLaunches?: unknown; result?: unknown };
+  } catch (error: unknown) {
+    assert.fail(`instrumented public prepareCompletionChecks failed: ${JSON.stringify(error)}`);
+  }
+  assert.equal(observed!.validationLaunches, 0, "a complete copied receipt set must not launch validation during public preparation");
+  const prepared = observed!.result as Record<string, unknown>;
+  assert.equal(prepared.status, "current");
+  const candidateDigest = prepared.candidateDigest as string;
+  const obligations = prepared.validationObligations as readonly string[];
+  assert.ok(candidateDigest.startsWith("sha256:"));
+  assert.ok(obligations.length > 0);
+  for (const obligation of obligations) {
+    const receipt = await readGraphDerivedCheckReceipt(root, candidateDigest, obligation);
+    assert.ok(receipt, `complete seed must retain a current receipt for ${obligation}`);
+    const intentPath = resolve(root, receipt.receiptPath.replace(/\.json$/u, ".intent.json"));
+    assert.equal(JSON.parse(await readFile(intentPath, "utf8")).state, "SETTLED", `complete seed must retain a settled intent for ${obligation}`);
+  }
+  return Object.freeze({ candidateDigest, obligations: Object.freeze([...obligations]) });
+}
+
+async function canonicalCheckedPrepublicationClone(): Promise<{ root: string; cleanup: () => Promise<void> }> {
+  const seed = await canonicalCheckedPrepublicationSeed();
+  const parent = await mkdtemp(resolve(temporaryRoot, "completion-publication-seed-copy-"));
+  const root = resolve(parent, "repository");
+  try {
+    await cp(seed.root, root, { recursive: true, force: false, errorOnExist: true });
+    const seedTree = await regularTree(seed.root);
+    const cloneTree = await regularTree(root);
+    assert.deepEqual(
+      [...cloneTree].map(([path, entry]) => [path, entry.mode, entry.digest]),
+      [...seedTree].map(([path, entry]) => [path, entry.mode, entry.digest]),
+      "each clone preserves exact checked seed bytes and modes",
+    );
+    for (const [path, seedEntry] of seedTree) {
+      assert.notEqual(cloneTree.get(path)?.inode, seedEntry.inode, `each regular seed file is independently copied: ${path}`);
+    }
+    await assertNoCheckRuntimeResidue(root);
+    const before = await regularTree(root);
+    await assertSettledCompleteCheckSet(root);
+    const afterPrepare = await regularTree(root);
+    assert.deepEqual(
+      [...afterPrepare].map(([path, entry]) => [path, entry.mode, entry.digest, entry.inode]),
+      [...before].map(([path, entry]) => [path, entry.mode, entry.digest, entry.inode]),
+      "complete-set authentication preserves copied receipt and intent provenance",
+    );
+    return { root, cleanup: async () => rm(parent, { recursive: true, force: true }) };
+  } catch (error) { await rm(parent, { recursive: true, force: true }); throw error; }
+}
+
+test("v2 completion publication retains a genuine two-member independent cohort and refuses member tampering", {
+  skip: isConfinedFixtureProcess && "the direct lane owns native cohort publication",
+}, async () => {
+  const isolated = await isolatedLegacyCohortVariant();
+  try {
+    const cohort = await genuineLegacyCohort(isolated.root, true, true);
+    const args = ["work-completion", ...cohort.bundles.flatMap((bundle) => ["--bundle", bundle]), "--profile", profile, "--manifest", manifest];
+    const verified = await completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root, args: [...args, "--verify"] });
+    assert.equal((verified.output as { publicationState: string; memberCount: number }).publicationState, "absent");
+    assert.equal((verified.output as { memberCount: number }).memberCount, 2);
+    const applied = await completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root, args: [...args, "--apply"] });
+    const output = applied.output as { publicationState: string; publicationReceiptPath: string; memberCount: number; works: readonly string[] };
+    assert.equal(output.publicationState, "created");
+    assert.equal(output.memberCount, 2);
+    assert.deepEqual([...output.works].sort(), cohort.members.map((member) => member.work).sort());
+    const receiptPath = resolve(isolated.root, output.publicationReceiptPath);
+    const receiptBytes = await readFile(receiptPath);
+    const receipt: unknown = JSON.parse(receiptBytes.toString("utf8"));
+    assertV2PublicationReceipt(receipt, 2);
+    const authentic = receipt as V2PublicationReceipt & Record<string, unknown>;
+    assert.deepEqual(authentic.members.map((member) => member.workIri).sort(), cohort.members.map((member) => member.work).sort());
+    assert.deepEqual(
+      authentic.members.map(({ workIri, manifestPath, manifestDigest }) => ({ workIri, manifestPath, manifestDigest })),
+      [...cohort.members].sort((left, right) => left.work.localeCompare(right.work)).map(({ work, manifestPath, manifestDigest }) => ({ workIri: work, manifestPath, manifestDigest })),
+      "v2 receipt must retain each genuine member manifest identity",
+    );
+    assert.equal(new Set(authentic.members.map((member) => member.manifestDigest)).size, 2, "v2 receipt must preserve the distinct pre-publication member manifest digests");
+    const sourcePath = resolve(isolated.root, "graph/integration.nq");
+    const refuseReceiptMutation = async (label: string, mutated: Record<string, unknown>): Promise<void> => {
+      const sourceBefore = await readFile(sourcePath);
+      await writeFile(receiptPath, `${canonicalJson(mutated, { rejectAbsolutePaths: true })}\n`, { mode: 0o644 });
+      try {
+        await assert.rejects(
+          async () => completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root, args: [...args, "--verify"] }),
+        );
+        assert.deepEqual(await readFile(sourcePath), sourceBefore, `${label} must not mutate the integration source`);
+      } finally { await writeFile(receiptPath, receiptBytes, { mode: 0o644 }); }
+    };
+    const authenticReceipt = receipt as WorkCompletionPublicationReceipt;
+    const authority = deriveNoChangeCompletionAuthority(loadSemanticGraph(isolated.root, manifest), legacyCohort[0]!.work);
+    const rehash = (members: readonly Record<string, unknown>[], aggregateOverride?: string): Record<string, unknown> => {
+      const native = createWorkCompletionPublicationReceipt({
+        authority,
+        publicationIntentDigest: authenticReceipt.publicationIntentDigest,
+        profileIri: authenticReceipt.profileIri,
+        profileVersion: authenticReceipt.profileVersion,
+        manifestPath: authenticReceipt.manifestPath,
+        manifestDigest: authentic.members[0]!.manifestDigest,
+        authorityDependencies: authenticReceipt.authorityDependencies,
+        baseSourceDigest: authenticReceipt.baseSourceDigest,
+        resultingSourceDigest: authenticReceipt.resultingSourceDigest,
+        baseSemanticDigest: authenticReceipt.baseSemanticDigest,
+        resultingSemanticDigest: authenticReceipt.resultingSemanticDigest,
+        members: members as unknown as readonly WorkCompletionPublicationMember[],
+        operations: authenticReceipt.operations,
+      });
+      const { receiptDigest: _ignored, ...body } = native;
+      const validationResultDigest = aggregateOverride === undefined ? native.validationResultDigest : canonicalDigest({
+        members: members.map(({ workIri, realisationDigest, evidenceDigest, proofDigest }) => ({ workIri, realisationDigest, evidenceDigest, proofDigest })),
+        cohortManifestDigest: aggregateOverride,
+        operationCount: native.operations.length,
+        authorityDependencyDigest: native.authorityDependencyDigest,
+        resultingSemanticDigest: native.resultingSemanticDigest,
+      }, { rejectAbsolutePaths: true });
+      const mutated = aggregateOverride === undefined ? body : { ...body, cohortManifestDigest: aggregateOverride, validationResultDigest };
+      return { ...mutated, receiptDigest: canonicalDigest(mutated, { rejectAbsolutePaths: true }) };
+    };
+    const copiedMembers = () => authentic.members.map(member => ({ ...member })) as Record<string, unknown>[];
+    const swapped = copiedMembers();
+    [swapped[0]!.manifestDigest, swapped[1]!.manifestDigest] = [swapped[1]!.manifestDigest, swapped[0]!.manifestDigest];
+    await refuseReceiptMutation("swapped per-member manifest digests", rehash(swapped));
+    await refuseReceiptMutation("altered cohort manifest aggregate", rehash(copiedMembers(), `sha256:${"0".repeat(64)}`));
+    const staleSibling = copiedMembers();
+    staleSibling[1]!.manifestDigest = staleSibling[0]!.manifestDigest;
+    await refuseReceiptMutation("stale sibling manifest identity", rehash(staleSibling));
+    const assetIndexPath = resolve(isolated.root, "src/core/asset-index.ts");
+    const assetIndexBytes = await readFile(assetIndexPath);
+    const assetIndexMode = (await stat(assetIndexPath)).mode & 0o777;
+    const deriveMember = (member: typeof legacyCohort[number]) => {
+      const result = deriveWork(loadSemanticGraph(isolated.root, manifest), { profile, selector: member.work, maxItems: 1 });
+      assert.equal(result.status, "ok", `${member.name} must remain graph-derivable during sibling currentness readback`);
+      assert.equal(result.items?.length, 1);
+      return result.items![0]!;
+    };
+    const repositoryPathBefore = deriveMember(legacyCohort[0]!);
+    assert.equal(repositoryPathBefore.readSet.includes("src/core/asset-index.ts"), false, "repository-path-scope must not bind the file-asset-index scoped source");
+    const repositoryPathBasis = repositoryPathBefore.realisationBasis?.basisDigest;
+    assert.ok(repositoryPathBasis, "repository-path-scope must retain its independent genuine basis");
+    const fileAssetBefore = deriveMember(legacyCohort[1]!);
+    const fileAssetBasis = fileAssetBefore.realisationBasis?.basisDigest;
+    assert.ok(fileAssetBasis, "file-asset-index must retain its independently derived genuine basis");
+    try {
+      await writeFile(assetIndexPath, Buffer.concat([assetIndexBytes, Buffer.from("\n")]), { mode: assetIndexMode });
+      for (const order of [legacyCohort, [...legacyCohort].reverse()] as const) {
+        for (const member of order) {
+          const packet = deriveMember(member);
+          assert.equal(packet.realisationStage?.completion.verified, false, `${member.name} must not retain completion after the genuine sibling-source mutation`);
+          if (member.work === legacyCohort[0]!.work) assert.equal(packet.realisationBasis?.basisDigest, repositoryPathBasis, "unscoped sibling source mutation must not alter repository-path-scope's own basis");
+          if (member.work === legacyCohort[1]!.work) assert.notEqual(packet.realisationBasis?.basisDigest, fileAssetBasis, "file-asset-index scoped source mutation must alter its own basis");
+        }
+      }
+    } finally {
+      await writeFile(assetIndexPath, assetIndexBytes, { mode: assetIndexMode });
+      await chmod(assetIndexPath, assetIndexMode);
+    }
+    const replay = await completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root, args: [...args, "--apply"] });
+    assert.equal((replay.output as { publicationState: string; memberCount: number }).publicationState, "matching");
+    assert.equal((replay.output as { memberCount: number }).memberCount, 2);
+  } finally { await isolated.cleanup(); }
+});
+
+const canonicalPublicationRecoveryBoundaries = ["before-source", "source-before-receipt", "receipt-pending-before-link", "receipt-linked-before-cleanup", "receipt-before-ack"] as const;
+
+for (const boundary of canonicalPublicationRecoveryBoundaries) {
+  test(`canonical completion publication resumes the exact retained intent at ${boundary}`, async () => {
+    const native: typeof import("../../src/commands/work-completion.ts") =
+      await import(pathToFileURL(resolve(canonicalRoot, "src/commands/work-completion.ts")).href);
+    const request = Object.freeze({ rootIdentity: canonicalNoChangeSelection.rootIdentity, manifestPath: canonicalNoChangeSelection.manifestPath });
+    const isolated = await canonicalCheckedPrepublicationClone();
+    try {
+      const authority = deriveNoChangeCompletionAuthority(
+        loadSemanticGraph(isolated.root, canonicalNoChangeSelection.manifestPath), canonicalNoChangeSelection.rootIdentity,
+      );
+      const interrupted = await interruptCanonicalPublication(isolated.root, authority.sourcePath, boundary);
+      let retained: Readonly<{ readonly path: string; readonly bytes: Buffer; readonly inode: number }> | null = null;
+      if (boundary === "receipt-pending-before-link") {
+        assert.ok(interrupted.receiptPendingPath?.startsWith(`${isolated.root}/`), "fixture must report the actual contained pending receipt");
+        const entry = await lstat(interrupted.receiptPendingPath!);
+        assert.equal(entry.isFile(), true);
+        assert.equal(entry.nlink, 1, "durable pending receipt must precede the hard link");
+        retained = Object.freeze({ path: interrupted.receiptPendingPath!, bytes: await readFile(interrupted.receiptPendingPath!), inode: entry.ino });
+      } else if (boundary === "receipt-linked-before-cleanup") {
+        assert.ok(interrupted.receiptPendingPath?.startsWith(`${isolated.root}/`), "fixture must report the actual linked pending receipt");
+        assert.ok(interrupted.receiptPath?.startsWith(`${isolated.root}/`), "fixture must report the actual linked final receipt");
+        const pending = await lstat(interrupted.receiptPendingPath!);
+        const final = await lstat(interrupted.receiptPath!);
+        assert.equal(pending.isFile(), true);
+        assert.equal(pending.nlink, 2, "linked receipt must retain the durable pending inode before cleanup");
+        assert.equal(final.ino, pending.ino);
+        retained = Object.freeze({ path: interrupted.receiptPendingPath!, bytes: await readFile(interrupted.receiptPendingPath!), inode: pending.ino });
+      }
+      const resumed = await native.runCanonicalCompletionPublication(isolated.root, Object.freeze({ ...request, mode: "apply" }));
+      const replay = await native.runCanonicalCompletionPublication(isolated.root, Object.freeze({ ...request, mode: "apply" }));
+      const verified = await native.runCanonicalCompletionPublication(isolated.root, Object.freeze({ ...request, mode: "verify" }));
+      assert.equal((resumed as { memberCount: number }).memberCount, 1, `${boundary} recovery must retain the exact singleton cohort`);
+      assert.equal((replay as { publicationState: string }).publicationState, "matching", `${boundary} replay must not publish a second receipt`);
+      assert.equal((verified as { publicationState: string }).publicationState, "matching", `${boundary} verify must read the recovered native receipt`);
+      const receipt = JSON.parse(await readFile(resolve(isolated.root, (resumed as { publicationReceiptPath: string }).publicationReceiptPath), "utf8"));
+      assertV2PublicationReceipt(receipt, 1);
+      if (retained !== null) {
+        const receiptPath = resolve(isolated.root, (resumed as { publicationReceiptPath: string }).publicationReceiptPath);
+        const final = await lstat(receiptPath);
+        assert.equal(final.ino, retained.inode, `${boundary} recovery must retain the original durable receipt inode`);
+        assert.deepEqual(await readFile(receiptPath), retained.bytes, `${boundary} recovery must retain the original durable receipt bytes`);
+        await assert.rejects(() => lstat(retained.path), { code: "ENOENT" });
+        assert.equal((await lstat(receiptPath)).ino, final.ino, `${boundary} replay must not replace the recovered receipt`);
+      }
+    } finally { await isolated.cleanup(); }
+  });
+}
+
+test("transition inspection refuses an unsupported selected publication receipt schema without effects", async () => {
+  const isolated = await isolatedPrecompletionRepository();
+  try {
+    const sourcePath = resolve(isolated.root, "graph/cli-transition-definition.nq");
+    const source = await readFile(sourcePath, "utf8");
+    const selectedBinding = '<urn:usf:schema-binding:completion-publication-receipt:2> <urn:usf:predicate:version> "2" <urn:usf:graph:cli-transition-definition> .';
+    assert.equal(source.split(selectedBinding).length - 1, 1, "fixture must mutate the one selected v2 schema binding");
+    await writeFile(sourcePath, source.replace(selectedBinding, selectedBinding.replace('"2"', '"3"')));
+    const graphBefore = await readFile(sourcePath);
+    const receiptDirectory = resolve(isolated.root, "evidence/work-completion");
+    const receiptsBefore = existsSync(receiptDirectory)
+      ? await Promise.all((await readdir(receiptDirectory)).sort().map(async name => Object.freeze([name, await readFile(resolve(receiptDirectory, name))] as const)))
+      : [];
+    const result = transitionCommandHandler({ command: "transition", repositoryRoot: isolated.root,
+      args: ["inspect", "--root", canonicalNoChangeSelection.rootIdentity, "--manifest", canonicalNoChangeSelection.manifestPath] }, []);
+    const output = result.output as {
+      readonly complete: boolean;
+      readonly executionAuthority: string;
+      readonly terminalClosure: { readonly assessment: {
+        readonly authenticatedArtifacts: readonly unknown[];
+        readonly reasonCodes: readonly string[];
+        readonly diagnostics: readonly { readonly reasonCode: string }[];
+      } };
+    };
+    assert.equal(output.complete, false);
+    assert.equal(output.executionAuthority, "none");
+    assert.deepEqual(output.terminalClosure.assessment.authenticatedArtifacts, []);
+    assert(output.terminalClosure.assessment.reasonCodes.includes("TRANSITION_TERMINAL_EVALUATION_REFUSED"));
+    assert(output.terminalClosure.assessment.diagnostics.some(diagnostic => diagnostic.reasonCode === "TRANSITION_TERMINAL_EVALUATION_REFUSED"));
+    assert.deepEqual(await readFile(sourcePath), graphBefore, "inspection must not mutate the unsupported schema binding");
+    const receiptsAfter = existsSync(receiptDirectory)
+      ? await Promise.all((await readdir(receiptDirectory)).sort().map(async name => Object.freeze([name, await readFile(resolve(receiptDirectory, name))] as const)))
+      : [];
+    assert.deepEqual(receiptsAfter, receiptsBefore, "inspection must not create or rewrite completion receipts");
+  } finally { await isolated.cleanup(); }
+});
+
+test("canonical terminal evaluation refuses altered evaluator and artifact lineage", async () => {
+  const isolated = await canonicalNoChangeFixture();
+  try {
+    const native: typeof import("../../src/commands/work-completion.ts") =
+      await import(pathToFileURL(resolve(canonicalRoot, "src/commands/work-completion.ts")).href);
+    const request = Object.freeze({ rootIdentity: canonicalNoChangeSelection.rootIdentity, manifestPath: canonicalNoChangeSelection.manifestPath });
+    await prepareGenuineCanonicalPublicationRoot(isolated.root);
+    const publication = await native.runCanonicalCompletionPublication(isolated.root, Object.freeze({ ...request, mode: "apply" }));
+    assert.equal((publication as { publicationState: string }).publicationState, "created");
+    assert.equal(native.evaluateCanonicalCompletionTerminal(isolated.root, request).authenticatedArtifacts.length, 1);
+    const sourcePath = resolve(isolated.root, "graph/cli-transition-definition.nq");
+    const source = await readFile(sourcePath, "utf8");
+    const replaceExactly = (from: string, to: string): string => {
+      assert.equal(source.split(from).length - 1, 1, `expected one current graph artifact field: ${from}`);
+      return source.replace(from, to);
+    };
+    const refuseOrEmpty = async (mutated: string) => {
+      await writeFile(sourcePath, mutated);
+      try {
+        assert.deepEqual(native.evaluateCanonicalCompletionTerminal(isolated.root, request).authenticatedArtifacts, []);
+      } catch (error: unknown) {
+        const code = error !== null && typeof error === "object" && "code" in error ? (error as { code?: unknown }).code : undefined;
+        assert.ok(code === "WORK_COMPLETION_TERMINAL_ARTIFACT_INVALID" || code === "WORK_COMPLETION_TERMINAL_STALE",
+          `lineage mutation must refuse or produce no accepted artifacts: ${JSON.stringify(error)}`);
+      }
+    };
+    try {
+      await writeFile(sourcePath, replaceExactly("Accept only a fresh native evaluateNoChangeCompletionRecords", "Mutated evaluator text"));
+      assert.throws(() => native.evaluateCanonicalCompletionTerminal(isolated.root, request), { code: "WORK_COMPLETION_TERMINAL_EVALUATOR_INVALID" });
+      await refuseOrEmpty(`${source}<urn:usf:test:arbitrary-terminal-artifact> <urn:usf:predicate:authenticationRule> <urn:usf:rule:completion-terminal-native-evaluation:1> <urn:usf:graph:cli-transition-definition> .\n`);
+      await refuseOrEmpty(replaceExactly(
+        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:producer> <urn:usf:cli-transition:completion-publication:1>",
+        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:producer> <urn:usf:cli-transition:wrong-producer:1>",
+      ));
+      await refuseOrEmpty(replaceExactly(
+        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:work> <urn:usf:work:cli-transition-definition>",
+        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:work> <urn:usf:work:wrong-work>",
+      ));
+      await refuseOrEmpty(replaceExactly(
+        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:profile> <urn:usf:profile:cli-transition-definition:1>",
+        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:profile> <urn:usf:profile:wrong-profile:1>",
+      ));
+      await refuseOrEmpty(replaceExactly(
+        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:schema> <urn:usf:schema:work-completion-publication-receipt:1>",
+        "<urn:usf:cli-contract:completion-publication-artifact:1> <urn:usf:predicate:schema> <urn:usf:schema:wrong-publication-receipt:1>",
+      ));
+    } finally { await writeFile(sourcePath, source); }
   } finally { await isolated.cleanup(); }
 });
