@@ -22,7 +22,7 @@ import {
 import type { CatalogueModelView, ModelCatalogueSnapshot } from "../providers/catalogue.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
-import { createProviderLeafCompletionAuthorizer, createProviderLeafDispatcher } from "./provider-leaf-dispatch.ts";
+import { createProviderLeafDispatcher } from "./provider-leaf-dispatch.ts";
 
 const providerConfigPath = "config/providers.json";
 const legacyProviderConfigPath = "config/provider-legacy-observations.json";
@@ -653,17 +653,7 @@ function rowMatches(row: Readonly<Record<string, unknown>>, parsed: ParsedArgume
   return true;
 }
 
-const requireProviderLeafCompletion = createProviderLeafCompletionAuthorizer({
-  validateProfile: validateVersionedProfile,
-  validateManifest: validateRepositoryManifest,
-  deriveOwnerWork: ({ repositoryRoot, manifest, profile, work }) => deriveWork(loadSemanticGraph(repositoryRoot, manifest), {
-    profile,
-    selector: work,
-    maxItems: 1,
-  }),
-});
-
-const dispatchRegisteredProviderLeaf = createProviderLeafDispatcher({ authorize: requireProviderLeafCompletion });
+const dispatchRegisteredProviderLeaf = createProviderLeafDispatcher();
 
 export const providersCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
   const leafResult = await dispatchRegisteredProviderLeaf(args, repositoryRoot);

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:resolve-result:1",
+  "oneOf": [{"$ref": "#/$defs/resolvedResult"}, {"$ref": "#/$defs/refusedResult"}],
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "nonempty": {"type": "string", "minLength": 1},
+    "ref": {
+      "type": "object", "additionalProperties": false, "required": ["id", "digest"],
+      "properties": {"id": {"$ref": "#/$defs/nonempty"}, "digest": {"$ref": "#/$defs/digest"}}
+    },
+    "dependency": {
+      "type": "object", "additionalProperties": false, "required": ["key", "digest", "kind"],
+      "properties": {
+        "key": {"$ref": "#/$defs/nonempty"}, "digest": {"$ref": "#/$defs/digest"},
+        "kind": {"enum": ["semantic-resource", "semantic-graph", "file", "manifest", "policy", "schema", "tool"]}
+      }
+    },
+    "selection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["manifestPath", "manifestDigest", "profile", "profileVersion", "profileDigest", "product", "productVersion", "productDigest", "foundation", "foundationVersion", "foundationDigest", "coreToProductDigest", "productToCoreDigest", "compositeDigest"],
+      "properties": {
+        "manifestPath": {"$ref": "#/$defs/nonempty"}, "manifestDigest": {"$ref": "#/$defs/digest"},
+        "profile": {"$ref": "#/$defs/nonempty"}, "profileVersion": {"$ref": "#/$defs/nonempty"}, "profileDigest": {"$ref": "#/$defs/digest"},
+        "product": {"$ref": "#/$defs/nonempty"}, "productVersion": {"$ref": "#/$defs/nonempty"}, "productDigest": {"$ref": "#/$defs/digest"},
+        "foundation": {"$ref": "#/$defs/nonempty"}, "foundationVersion": {"$ref": "#/$defs/nonempty"}, "foundationDigest": {"$ref": "#/$defs/digest"},
+        "coreToProductDigest": {"$ref": "#/$defs/digest"}, "productToCoreDigest": {"$ref": "#/$defs/digest"}, "compositeDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "authority": {
+      "type": "object", "additionalProperties": false,
+      "required": ["contract", "contractDigest", "contractShape", "permission", "permissionDigest", "permissionState", "maximumThrough", "effectiveAuthority", "effectiveMaximumThrough"],
+      "properties": {
+        "contract": {"$ref": "#/$defs/nonempty"}, "contractDigest": {"$ref": "#/$defs/digest"}, "contractShape": {"$ref": "#/$defs/nonempty"},
+        "permission": {"$ref": "#/$defs/nonempty"}, "permissionDigest": {"$ref": "#/$defs/digest"}, "permissionState": {"$ref": "#/$defs/nonempty"},
+        "maximumThrough": {"$ref": "#/$defs/nonempty"}, "effectiveAuthority": {"enum": ["active-permission", "bootstrap-exception", "none"]}, "effectiveMaximumThrough": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "work": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "resourceDigest", "packetCoreDigest", "semanticDigest", "scopedDependencyDigest", "dependencies"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonempty"}, "resourceDigest": {"$ref": "#/$defs/digest"}, "packetCoreDigest": {"$ref": "#/$defs/digest"},
+        "semanticDigest": {"$ref": "#/$defs/digest"}, "scopedDependencyDigest": {"$ref": "#/$defs/digest"}, "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}}
+      }
+    },
+    "stage": {
+      "type": "object", "additionalProperties": false, "required": ["id", "order"],
+      "properties": {"id": {"$ref": "#/$defs/nonempty"}, "order": {"type": "integer", "minimum": 1}}
+    },
+    "trace": {
+      "type": "object", "additionalProperties": false, "required": ["requirements", "evidence", "proof", "validation"],
+      "properties": {
+        "requirements": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "evidence": {"type": "array", "items": {"$ref": "#/$defs/ref"}},
+        "proof": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "validation": {"type": "array", "items": {"$ref": "#/$defs/ref"}}
+      }
+    },
+    "basis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "basisDigest", "selection", "authority", "work", "semanticTrace", "scope", "trace", "inputs"],
+      "properties": {
+        "schema": {"const": "urn:usf:realisation-basis:1"}, "basisDigest": {"$ref": "#/$defs/digest"},
+        "selection": {"$ref": "#/$defs/selection"}, "authority": {"$ref": "#/$defs/authority"}, "work": {"$ref": "#/$defs/work"},
+        "semanticTrace": {
+          "type": "object", "additionalProperties": false, "required": ["policy", "stages"],
+          "properties": {"policy": {"type": ["string", "null"]}, "stages": {"type": "array", "items": {"$ref": "#/$defs/stage"}}}
+        },
+        "scope": {
+          "type": "object", "additionalProperties": false, "required": ["readSet", "writeSet", "preimages"],
+          "properties": {"readSet": {"type": "array", "items": {"type": "string"}}, "writeSet": {"type": "array", "items": {"type": "string"}}, "preimages": {"type": "object", "additionalProperties": {"type": ["string", "null"]}}}
+        },
+        "trace": {"$ref": "#/$defs/trace"},
+        "inputs": {
+          "type": "object", "additionalProperties": false, "required": ["policyDigest", "schemaDigests", "toolDigests"],
+          "properties": {"policyDigest": {"$ref": "#/$defs/digest"}, "schemaDigests": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "toolDigests": {"type": "array", "items": {"$ref": "#/$defs/ref"}}}
+        }
+      }
+    },
+    "writeOperation": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "path", "content"],
+      "properties": {
+        "kind": {"const": "write"}, "path": {"type": "string", "pattern": "^(?!(?:\\.git|\\.usf|\\.env)(?:/|$))(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"},
+        "content": {"type": "string"}, "encoding": {"enum": ["utf8", "base64"]}, "mediaType": {"type": "string", "pattern": "^[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+$"}, "expectedDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "deleteOperation": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "path"],
+      "properties": {"kind": {"const": "delete"}, "path": {"type": "string", "pattern": "^(?!(?:\\.git|\\.usf|\\.env)(?:/|$))(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"}, "expectedDigest": {"$ref": "#/$defs/digest"}}
+    },
+    "operation": {"oneOf": [{"$ref": "#/$defs/writeOperation"}, {"$ref": "#/$defs/deleteOperation"}]},
+    "rejection": {
+      "type": "object", "additionalProperties": false, "required": ["contributionDigest", "reasonCode"],
+      "properties": {"contributionDigest": {"anyOf": [{"$ref": "#/$defs/digest"}, {"type": "null"}]}, "reasonCode": {"$ref": "#/$defs/nonempty"}, "path": {"$ref": "#/$defs/nonempty"}}
+    },
+    "candidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "kind", "status", "identity", "basis", "payload", "lineage", "claims", "nonclaims"],
+      "properties": {
+        "schema": {"const": "urn:usf:candidate:1"}, "kind": {"const": "candidate"}, "status": {"const": "resolved"}, "basis": {"$ref": "#/$defs/basis"},
+        "identity": {"type": "object", "additionalProperties": false, "required": ["artifactDigest", "basisDigest"], "properties": {"artifactDigest": {"$ref": "#/$defs/digest"}, "basisDigest": {"$ref": "#/$defs/digest"}}},
+        "payload": {"type": "object", "additionalProperties": false, "required": ["operations"], "properties": {"operations": {"type": "array", "items": {"$ref": "#/$defs/operation"}}}},
+        "lineage": {
+          "type": "object", "additionalProperties": false, "required": ["acceptedContributionDigests", "rejected"],
+          "properties": {"acceptedContributionDigests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/digest"}}, "rejected": {"type": "array", "maxItems": 0, "items": {"$ref": "#/$defs/rejection"}}}
+        },
+        "claims": {"type": "array", "items": {"type": "string"}}, "nonclaims": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "resolvedResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "basis", "status", "candidate", "acceptedContributionDigests", "rejected"],
+      "properties": {
+        "schema": {"const": "urn:usf:resolve-result:1"}, "basis": {"$ref": "#/$defs/basis"}, "status": {"const": "resolved"}, "candidate": {"$ref": "#/$defs/candidate"},
+        "acceptedContributionDigests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/digest"}},
+        "rejected": {"type": "array", "maxItems": 0, "items": {"$ref": "#/$defs/rejection"}}
+      }
+    },
+    "refusedResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "basis", "status", "candidate", "acceptedContributionDigests", "rejected"],
+      "properties": {
+        "schema": {"const": "urn:usf:resolve-result:1"}, "basis": {"$ref": "#/$defs/basis"}, "status": {"const": "refused"}, "candidate": {"type": "null"},
+        "acceptedContributionDigests": {"type": "array", "items": {"$ref": "#/$defs/digest"}},
+        "rejected": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/rejection"}}
+      }
+    }
+  }
+}

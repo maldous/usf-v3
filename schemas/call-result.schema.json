@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:call-result:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "basis", "status", "contributions", "failures", "metrics"],
+  "properties": {
+    "schema": {"const": "urn:usf:call-result:1"},
+    "basis": {"$ref": "#/$defs/basis"},
+    "status": {"enum": ["ok", "partial", "refused"]},
+    "contributions": {"type": "array", "items": {"$ref": "#/$defs/contribution"}},
+    "failures": {"type": "array", "items": {"$ref": "#/$defs/failure"}},
+    "metrics": {"$ref": "#/$defs/metrics"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "nonempty": {"type": "string", "minLength": 1},
+    "ref": {
+      "type": "object", "additionalProperties": false, "required": ["id", "digest"],
+      "properties": {"id": {"$ref": "#/$defs/nonempty"}, "digest": {"$ref": "#/$defs/digest"}}
+    },
+    "dependency": {
+      "type": "object", "additionalProperties": false, "required": ["key", "digest", "kind"],
+      "properties": {
+        "key": {"$ref": "#/$defs/nonempty"}, "digest": {"$ref": "#/$defs/digest"},
+        "kind": {"enum": ["semantic-resource", "semantic-graph", "file", "manifest", "policy", "schema", "tool"]}
+      }
+    },
+    "selection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["manifestPath", "manifestDigest", "profile", "profileVersion", "profileDigest", "product", "productVersion", "productDigest", "foundation", "foundationVersion", "foundationDigest", "coreToProductDigest", "productToCoreDigest", "compositeDigest"],
+      "properties": {
+        "manifestPath": {"$ref": "#/$defs/nonempty"}, "manifestDigest": {"$ref": "#/$defs/digest"},
+        "profile": {"$ref": "#/$defs/nonempty"}, "profileVersion": {"$ref": "#/$defs/nonempty"}, "profileDigest": {"$ref": "#/$defs/digest"},
+        "product": {"$ref": "#/$defs/nonempty"}, "productVersion": {"$ref": "#/$defs/nonempty"}, "productDigest": {"$ref": "#/$defs/digest"},
+        "foundation": {"$ref": "#/$defs/nonempty"}, "foundationVersion": {"$ref": "#/$defs/nonempty"}, "foundationDigest": {"$ref": "#/$defs/digest"},
+        "coreToProductDigest": {"$ref": "#/$defs/digest"}, "productToCoreDigest": {"$ref": "#/$defs/digest"}, "compositeDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "authority": {
+      "type": "object", "additionalProperties": false,
+      "required": ["contract", "contractDigest", "contractShape", "permission", "permissionDigest", "permissionState", "maximumThrough", "effectiveAuthority", "effectiveMaximumThrough"],
+      "properties": {
+        "contract": {"$ref": "#/$defs/nonempty"}, "contractDigest": {"$ref": "#/$defs/digest"}, "contractShape": {"$ref": "#/$defs/nonempty"},
+        "permission": {"$ref": "#/$defs/nonempty"}, "permissionDigest": {"$ref": "#/$defs/digest"}, "permissionState": {"$ref": "#/$defs/nonempty"},
+        "maximumThrough": {"$ref": "#/$defs/nonempty"}, "effectiveAuthority": {"enum": ["active-permission", "bootstrap-exception", "none"]}, "effectiveMaximumThrough": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "work": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "resourceDigest", "packetCoreDigest", "semanticDigest", "scopedDependencyDigest", "dependencies"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonempty"}, "resourceDigest": {"$ref": "#/$defs/digest"}, "packetCoreDigest": {"$ref": "#/$defs/digest"},
+        "semanticDigest": {"$ref": "#/$defs/digest"}, "scopedDependencyDigest": {"$ref": "#/$defs/digest"},
+        "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}}
+      }
+    },
+    "stage": {
+      "type": "object", "additionalProperties": false, "required": ["id", "order"],
+      "properties": {"id": {"$ref": "#/$defs/nonempty"}, "order": {"type": "integer", "minimum": 1}}
+    },
+    "trace": {
+      "type": "object", "additionalProperties": false, "required": ["requirements", "evidence", "proof", "validation"],
+      "properties": {
+        "requirements": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "evidence": {"type": "array", "items": {"$ref": "#/$defs/ref"}},
+        "proof": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "validation": {"type": "array", "items": {"$ref": "#/$defs/ref"}}
+      }
+    },
+    "basis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "basisDigest", "selection", "authority", "work", "semanticTrace", "scope", "trace", "inputs"],
+      "properties": {
+        "schema": {"const": "urn:usf:realisation-basis:1"}, "basisDigest": {"$ref": "#/$defs/digest"},
+        "selection": {"$ref": "#/$defs/selection"}, "authority": {"$ref": "#/$defs/authority"}, "work": {"$ref": "#/$defs/work"},
+        "semanticTrace": {
+          "type": "object", "additionalProperties": false, "required": ["policy", "stages"],
+          "properties": {"policy": {"type": ["string", "null"]}, "stages": {"type": "array", "items": {"$ref": "#/$defs/stage"}}}
+        },
+        "scope": {
+          "type": "object", "additionalProperties": false, "required": ["readSet", "writeSet", "preimages"],
+          "properties": {
+            "readSet": {"type": "array", "items": {"type": "string"}}, "writeSet": {"type": "array", "items": {"type": "string"}},
+            "preimages": {"type": "object", "additionalProperties": {"type": ["string", "null"]}}
+          }
+        },
+        "trace": {"$ref": "#/$defs/trace"},
+        "inputs": {
+          "type": "object", "additionalProperties": false, "required": ["policyDigest", "schemaDigests", "toolDigests"],
+          "properties": {"policyDigest": {"$ref": "#/$defs/digest"}, "schemaDigests": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "toolDigests": {"type": "array", "items": {"$ref": "#/$defs/ref"}}}
+        }
+      }
+    },
+    "providerIdentity": {
+      "type": "object", "additionalProperties": false, "required": ["family", "provider", "model"],
+      "properties": {"family": {"$ref": "#/$defs/nonempty"}, "provider": {"$ref": "#/$defs/nonempty"}, "model": {"$ref": "#/$defs/nonempty"}}
+    },
+    "writeOperation": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "path", "content"],
+      "properties": {
+        "kind": {"const": "write"}, "path": {"type": "string", "pattern": "^(?!(?:\\.git|\\.usf|\\.env)(?:/|$))(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"},
+        "content": {"type": "string"}, "encoding": {"enum": ["utf8", "base64"]}, "mediaType": {"type": "string", "pattern": "^[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+$"}, "expectedDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "deleteOperation": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "path"],
+      "properties": {
+        "kind": {"const": "delete"}, "path": {"type": "string", "pattern": "^(?!(?:\\.git|\\.usf|\\.env)(?:/|$))(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"}, "expectedDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "operation": {"oneOf": [{"$ref": "#/$defs/writeOperation"}, {"$ref": "#/$defs/deleteOperation"}]},
+    "contribution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "kind", "basis", "identity", "assignment", "requested", "actual", "cost", "usage", "limits", "payload", "claims", "nonclaims"],
+      "properties": {
+        "schema": {"const": "urn:usf:contribution:1"}, "kind": {"const": "contribution"}, "basis": {"$ref": "#/$defs/basis"},
+        "identity": {
+          "type": "object", "additionalProperties": false, "required": ["artifactDigest", "basisDigest"],
+          "properties": {"artifactDigest": {"$ref": "#/$defs/digest"}, "basisDigest": {"$ref": "#/$defs/digest"}}
+        },
+        "assignment": {
+          "type": "object", "additionalProperties": false, "required": ["basisDigest", "workPacketDigest", "promptTemplateDigest", "scopedDependencyDigest", "purpose"],
+          "properties": {
+            "basisDigest": {"$ref": "#/$defs/digest"}, "workPacketDigest": {"$ref": "#/$defs/digest"}, "promptTemplateDigest": {"$ref": "#/$defs/digest"},
+            "scopedDependencyDigest": {"$ref": "#/$defs/digest"}, "purpose": {"enum": ["proposal", "independence", "freshness"]}
+          }
+        },
+        "requested": {"$ref": "#/$defs/providerIdentity"}, "actual": {"$ref": "#/$defs/providerIdentity"},
+        "cost": {
+          "type": "object", "additionalProperties": false, "required": ["costClass", "observedCost", "evidence"],
+          "properties": {
+            "costClass": {"enum": ["local", "zero-price", "free-quota", "subscription", "paid", "unknown"]},
+            "observedCost": {"anyOf": [{"type": "number", "minimum": 0}, {"type": "null"}]}, "evidence": {"$ref": "#/$defs/nonempty"}
+          }
+        },
+        "usage": {
+          "type": "object", "additionalProperties": false, "required": ["inputTokens", "outputTokens", "toolCalls", "retries"],
+          "properties": {"inputTokens": {"type": "integer", "minimum": 0}, "outputTokens": {"type": "integer", "minimum": 0}, "toolCalls": {"type": "integer", "minimum": 0}, "retries": {"type": "integer", "minimum": 0}}
+        },
+        "limits": {
+          "type": "object", "additionalProperties": false, "required": ["maxTurns", "maxWallTimeMs", "maxInputTokens", "maxOutputTokens", "maxToolCalls", "maxRetries"],
+          "properties": {"maxTurns": {"type": "integer", "minimum": 1}, "maxWallTimeMs": {"type": "integer", "minimum": 1}, "maxInputTokens": {"type": "integer", "minimum": 0}, "maxOutputTokens": {"type": "integer", "minimum": 0}, "maxToolCalls": {"type": "integer", "minimum": 0}, "maxRetries": {"type": "integer", "minimum": 0}}
+        },
+        "payload": {"type": "object", "additionalProperties": false, "required": ["operations"], "properties": {"operations": {"type": "array", "items": {"$ref": "#/$defs/operation"}}}},
+        "claims": {"type": "array", "items": {"type": "string"}}, "nonclaims": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "failure": {
+      "type": "object", "additionalProperties": false, "required": ["route", "reasonCode", "retryable"],
+      "properties": {"route": {"$ref": "#/$defs/providerIdentity"}, "reasonCode": {"$ref": "#/$defs/nonempty"}, "retryable": {"type": "boolean"}}
+    },
+    "metrics": {
+      "type": "object", "additionalProperties": false, "required": ["requested", "succeeded", "failed", "observedCost"],
+      "properties": {"requested": {"type": "integer", "minimum": 1}, "succeeded": {"type": "integer", "minimum": 0}, "failed": {"type": "integer", "minimum": 0}, "observedCost": {"type": "number", "minimum": 0}}
+    }
+  }
+}

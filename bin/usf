@@ -2,4 +2,36 @@
 set -eu
 
 usf_bin_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+
+usf_dynamic_leaf=""
+case "${1-}:${2-}" in
+  call:parallel|call:compare|providers:host|providers:receipt) usf_dynamic_leaf="${1}:${2}" ;;
+esac
+for usf_argument in "$@"; do
+  case "$usf_argument" in
+    --help|-h) usf_dynamic_leaf="" ;;
+  esac
+done
+
+if [ -n "$usf_dynamic_leaf" ]; then
+  usf_primary_lock="$usf_bin_root/.usf/locks/primary-mutation.lock"
+  if [ ! -x /usr/bin/flock ] || [ ! -f "$usf_primary_lock" ] || ! exec 9<>"$usf_primary_lock"; then
+    printf '%s\n' '{"schema":"urn:usf:cli-error:1","status":"refused","reasonCode":"DYNAMIC_LEAF_LAUNCHER_LOCK_UNAVAILABLE","message":"The initialized stable-launcher primary-mutation lock is unavailable."}' >&2
+    exit 3
+  fi
+  if /usr/bin/flock --shared --nonblock --conflict-exit-code 75 9; then
+    :
+  else
+    usf_lock_status=$?
+    if [ "$usf_lock_status" -eq 75 ]; then
+      printf '%s\n' '{"schema":"urn:usf:cli-error:1","status":"refused","reasonCode":"DYNAMIC_LEAF_LAUNCHER_LOCK_BUSY","message":"A cooperative primary mutation is in progress."}' >&2
+      exit 4
+    fi
+    printf '%s\n' '{"schema":"urn:usf:cli-error:1","status":"refused","reasonCode":"DYNAMIC_LEAF_LAUNCHER_LOCK_UNAVAILABLE","message":"The stable launcher could not acquire its shared primary-mutation lock."}' >&2
+    exit 3
+  fi
+  export USF_DYNAMIC_LEAF_LOCK_FD=9
+  export USF_DYNAMIC_LEAF="$usf_dynamic_leaf"
+fi
+
 exec node -- "$usf_bin_root/src/cli.ts" "$@"
