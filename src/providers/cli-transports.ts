@@ -43,16 +43,22 @@ function integerOrNull(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-/** Claude CLI: one bounded non-interactive turn with structured JSON output. */
 /**
  * The exact argv for one bounded Claude CLI worker turn.
  *
- * Two flags matter and were missing. Without --model the CLI inherits the
+ * One flag matters and was missing. Without --model the CLI inherits the
  * operator's interactive default -- at the time of writing a heavyweight
  * reasoning configuration -- so worker units drew the supervisor's own model
  * and died at the timeout; both recorded failures of this route were exactly
- * that. And --max-turns 1 bounds the CLI's agentic loop to a single answer: a
- * worker unit needs one generation, not a session.
+ * that.
+ *
+ * This comment used to name a second flag, --max-turns 1, as bounding the
+ * agentic loop, three lines above an inline comment saying that flag does not
+ * exist and had been removed as stale knowledge. Two comments in one function
+ * disagreeing is worse than either alone: an agent reading the first would
+ * reintroduce a flag the binary rejects, which fails the whole route as a usage
+ * error. Verified against claude 2.1.251: --max-turns appears nowhere in its
+ * help, and --output-format offers exactly text, json and stream-json.
  */
 export function claudeCliArguments(prompt: string, model: string | null): readonly string[] {
   // No turn-bounding flag: the installed CLI's help does not list one, and a

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { test } from "node:test";
@@ -9,7 +9,11 @@ import {
   splitCapabilityRequirement, satisfiesCapabilities, taskClassCapabilities,
   unmetCapabilities,
 } from "../../src/providers/capabilities.ts";
-import { antigravityCliArguments } from "../../src/providers/cli-transports.ts";
+import { antigravityCliArguments, claudeCliArguments, codexModelSelection } from "../../src/providers/cli-transports.ts";
+import { createQualificationPolicy, createQualificationSuite } from "../../src/providers/qualification.ts";
+import { fileURLToPath } from "node:url";
+
+const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
 import { deriveRouteUniverse } from "../../src/providers/route-universe.ts";
 
 /**
@@ -119,6 +123,11 @@ async function repositoryWith(records: readonly Readonly<Record<string, unknown>
   const root = await mkdtemp(resolve(tmpdir(), "usf-qualification-"));
   const directory = resolve(root, ".usf", "qualifications");
   await mkdir(directory, { recursive: true });
+  // The observer binds a record against the qualification authority in force,
+  // so the fixture root carries the real one rather than a convenient copy.
+  await mkdir(resolve(root, "config"), { recursive: true });
+  await writeFile(resolve(root, "config/qualification.json"),
+    await readFile(resolve(repositoryRoot, "config/qualification.json"), "utf8"), "utf8");
   let index = 0;
   for (const record of records) {
     await writeFile(resolve(directory, `record-${index++}.json`), JSON.stringify(record), "utf8");
@@ -126,31 +135,108 @@ async function repositoryWith(records: readonly Readonly<Record<string, unknown>
   return root;
 }
 
-const future = "2099-01-01T00:00:00.000Z";
+const qualificationConfig = JSON.parse(
+  await readFile(resolve(repositoryRoot, "config/qualification.json"), "utf8"),
+) as { suite: Parameters<typeof createQualificationSuite>[0]; policy: Parameters<typeof createQualificationPolicy>[0] };
+const currentSuite = createQualificationSuite(qualificationConfig.suite);
+const currentPolicy = createQualificationPolicy(qualificationConfig.policy);
+
 const past = "2000-01-01T00:00:00.000Z";
-const record = (over: Readonly<Record<string, unknown>> = {}) => ({
-  status: "ok", role: "PATCH_PRODUCER", taskClass: "typescript",
-  route: { provider: "groq", model: "qwen/qwen3.6-27b" }, expiresAt: future, ...over,
-});
+const route = { provider: "groq", model: "qwen/qwen3.6-27b" };
+const record = (over: Readonly<Record<string, unknown>> = {}) => {
+  const on = (over.route as typeof route | undefined) ?? route;
+  return {
+    status: "ok", role: "PATCH_PRODUCER", taskClass: "typescript",
+    route: on, ...over,
+    qualification: {
+      inputs: {
+        corpusDigest: currentSuite.corpusDigest,
+        qualificationPolicyDigest: currentPolicy.policyDigest,
+      },
+      // Evidence follows the route it is filed under unless a case overrides it.
+      profile: { requested: on, actual: on },
+      ...(over.qualification as Record<string, unknown> | undefined ?? {}),
+    },
+  };
+};
 
 test("a current record grants exactly its own task class to its own route", async () => {
-  const observed = await observeQualifiedTaskClasses(await repositoryWith([record()]), new Date());
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([record()]));
   assert.deepEqual([...observed.byRoute.keys()], ["groq:qwen/qwen3.6-27b"]);
   assert.deepEqual(observed.byRoute.get("groq:qwen/qwen3.6-27b"), ["typescript"]);
 });
 
-test("an expired record grants nothing and is counted as expired", async () => {
-  // The validity window is the point: a stale pass stops being a claim rather
-  // than becoming a weaker one.
+/**
+ * The freshness repair, asserted from both sides.
+ *
+ * A qualification used to expire fifteen minutes after it was earned. That
+ * number was copied from probe freshness in the same commit that introduced it,
+ * and the two are different kinds of fact: whether a route is answering right
+ * now decays, whether a model demonstrated competence at a task class does not.
+ * The routing replay had decided it by identity all along and never consulted
+ * the clock; this observer is what disagreed.
+ */
+test("elapsed time alone does not withdraw a qualification", async () => {
+  // A record that would have been long expired under the old window, carrying
+  // an ageing expiresAt the observer no longer reads at all.
   const observed = await observeQualifiedTaskClasses(
-    await repositoryWith([record({ expiresAt: past })]), new Date());
+    await repositoryWith([record({ expiresAt: past, evaluatedAt: past, observedAt: past })]));
+  assert.deepEqual(observed.byRoute.get("groq:qwen/qwen3.6-27b"), ["typescript"]);
+  assert.equal(observed.supersededCount, 0, "age is not supersession");
+});
+
+test("a changed corpus supersedes the qualification earned under the old one", async () => {
+  // Changing any grader, prompt or case changes the corpus digest, so a verdict
+  // earned under the previous meaning of the task class stops counting. This is
+  // the invalidation that matters, and it names itself.
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([
+    record({ qualification: { inputs: { corpusDigest: `sha256:${"0".repeat(64)}`, qualificationPolicyDigest: currentPolicy.policyDigest }, profile: { requested: route, actual: route } } }),
+  ]));
   assert.equal(observed.byRoute.size, 0);
-  assert.equal(observed.expiredCount, 1);
+  assert.equal(observed.supersededCount, 1);
+});
+
+test("a changed policy supersedes the qualification earned under the old thresholds", async () => {
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([
+    record({ qualification: { inputs: { corpusDigest: currentSuite.corpusDigest, qualificationPolicyDigest: `sha256:${"1".repeat(64)}` }, profile: { requested: route, actual: route } } }),
+  ]));
+  assert.equal(observed.byRoute.size, 0);
+  assert.equal(observed.supersededCount, 1);
+});
+
+test("a record carrying no bound identity proved nothing checkable and is refused", async () => {
+  // Not superseded -- inadmissible. There is no contract to compare it against,
+  // and admitting it at any strength would let a writable file decide the
+  // outcome. This is also what retires every record written under the old shape.
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([
+    { status: "ok", role: "PATCH_PRODUCER", taskClass: "typescript", route, expiresAt: "2099-01-01T00:00:00.000Z" },
+  ]));
+  assert.equal(observed.byRoute.size, 0);
+  assert.equal(observed.supersededCount, 0);
+  assert.equal(observed.recordCount, 1);
+});
+
+test("evidence produced by another model cannot be indexed under this route", async () => {
+  // The record names one route and the evidence names another. Whichever is the
+  // mistake, the pair is not evidence for the route it is filed under.
+  const other = { provider: "groq", model: "openai/gpt-oss-120b" };
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([
+    record({ qualification: { inputs: { corpusDigest: currentSuite.corpusDigest, qualificationPolicyDigest: currentPolicy.policyDigest }, profile: { requested: route, actual: other } } }),
+  ]));
+  assert.equal(observed.byRoute.size, 0);
+});
+
+test("the admitted basis is reported, so what was required is inspectable", async () => {
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([record()]));
+  assert.equal(observed.basis.corpusDigest, currentSuite.corpusDigest);
+  assert.equal(observed.basis.qualificationPolicyDigest, currentPolicy.policyDigest);
+  assert.equal(observed.basis.suiteId, currentSuite.suiteId);
+  assert.equal(observed.basis.suiteVersion, currentSuite.suiteVersion);
 });
 
 test("UNQUALIFIED is a recorded fact and not a capability", async () => {
   const observed = await observeQualifiedTaskClasses(
-    await repositoryWith([record({ role: "UNQUALIFIED" })]), new Date());
+    await repositoryWith([record({ role: "UNQUALIFIED" })]));
   assert.equal(observed.byRoute.size, 0);
 });
 
@@ -159,8 +245,7 @@ test("a failed, malformed or unparseable record grants nothing", async () => {
     record({ status: "failed" }),
     record({ taskClass: "not-a-task-class" }),
     record({ route: { provider: "groq" } }),
-    record({ expiresAt: "not-a-date" }),
-  ]), new Date());
+  ]));
   assert.equal(observed.byRoute.size, 0, "no partial credit from a defective record");
 });
 
@@ -169,7 +254,7 @@ test("a record may not grant a model feature under the guise of a task class", a
   // here would let a stored file mint catalogue evidence -- the one direction
   // of borrowing a writable record could actually achieve.
   const observed = await observeQualifiedTaskClasses(
-    await repositoryWith([record({ taskClass: "tool-call" })]), new Date());
+    await repositoryWith([record({ taskClass: "tool-call" })]));
   assert.equal(observed.byRoute.size, 0);
 });
 
@@ -179,7 +264,7 @@ test("records accumulate per route and stay sorted and duplicate-free", async ()
     record({ taskClass: "node-test" }),
     record({ taskClass: "typescript" }),
     record({ taskClass: "cli-design", route: { provider: "cohere", model: "north-mini-code-1-0" } }),
-  ]), new Date());
+  ]));
   assert.deepEqual(observed.byRoute.get("groq:qwen/qwen3.6-27b"), ["node-test", "typescript"]);
   assert.deepEqual(observed.byRoute.get("cohere:north-mini-code-1-0"), ["cli-design"]);
 });
@@ -187,11 +272,24 @@ test("records accumulate per route and stay sorted and duplicate-free", async ()
 test("a repository with no qualification directory reports evaluated and empty", async () => {
   // Evaluated-and-none must be distinguishable from not-evaluated, or an empty
   // result would be read as an unknown one and then guessed at.
-  const root = await mkdtemp(resolve(tmpdir(), "usf-qualification-empty-"));
-  const observed = await observeQualifiedTaskClasses(root, new Date());
+  const observed = await observeQualifiedTaskClasses(await repositoryWith([]));
   assert.equal(observed.evaluated, true);
   assert.equal(observed.byRoute.size, 0);
   assert.equal(observed.recordCount, 0);
+});
+
+test("absent qualification authority admits nothing and still reports evaluated", async () => {
+  // A root with no config/qualification.json has no contract to bind a record
+  // against, so a record that would otherwise be admitted is inadmissible. The
+  // result is evaluated-and-none, never unknown.
+  const root = await mkdtemp(resolve(tmpdir(), "usf-qualification-bare-"));
+  await mkdir(resolve(root, ".usf", "qualifications"), { recursive: true });
+  await writeFile(resolve(root, ".usf", "qualifications", "r.json"), JSON.stringify(record()), "utf8");
+  const observed = await observeQualifiedTaskClasses(root);
+  assert.equal(observed.evaluated, true);
+  assert.equal(observed.recordCount, 1);
+  assert.equal(observed.byRoute.size, 0);
+  assert.equal(observed.basis.corpusDigest, "");
 });
 
 /**
@@ -289,4 +387,103 @@ test("the antigravity worker turn pins accept-edits and never plan mode", () => 
   assert.equal(argv[argv.indexOf("--model") + 1], "gpt-oss-120b-medium");
   // Exactly one mode is named, so no later argument can override it.
   assert.equal(argv.filter((entry) => entry === "--mode").length, 1);
+});
+
+/**
+ * Adversarial proof that the presented CLI surface and the dispatching one agree.
+ *
+ * Help is a hand-maintained table and the dispatcher is what actually parses, so
+ * they are two statements of one surface and nothing forced them to match. They
+ * did not. `probe qualify` was implemented, reachable, and the command's own
+ * refusal message named it -- while help offered only availability and semantic,
+ * so the live qualification path was undiscoverable from the CLI that carries it.
+ * `profile build`, `export` and `import` were implemented and registered in the
+ * graph and likewise absent.
+ *
+ * This does not turn help into a derived projection; that is a redesign. It makes
+ * the second statement provably consistent with the first, which is the part that
+ * was missing.
+ */
+test("every subcommand the dispatcher accepts is presented, and every presented one dispatches", async () => {
+  const commandSource = await readFile(resolve(repositoryRoot, "src/commands/probe.ts"), "utf8");
+  const profileSource = await readFile(resolve(repositoryRoot, "src/commands/profile.ts"), "utf8");
+  const helpSource = await readFile(resolve(repositoryRoot, "src/commands/help.ts"), "utf8");
+
+  /**
+   * What the handler accepts. An explicit allowlist array is preferred where one
+   * exists, because it is the handler's own complete statement; scraping the
+   * equality chain is the fallback and cannot see a fallthrough default, which is
+   * exactly how `profile status` reads as unaccepted when it is the default.
+   */
+  const accepted = (source: string): readonly string[] => {
+    const allowlist = /const operations = \[([^\]]+)\] as const;/u.exec(source);
+    if (allowlist !== null) {
+      return Object.freeze([...new Set([...(allowlist[1] as string).matchAll(/"([a-z-]+)"/gu)].map((m) => m[1] as string))].sort());
+    }
+    return Object.freeze([...new Set([
+      ...[...source.matchAll(/operation === "([a-z-]+)"/gu)].map((m) => m[1] as string),
+      ...[...source.matchAll(/operation !== "([a-z-]+)"/gu)].map((m) => m[1] as string),
+    ])].sort());
+  };
+
+  // What help presents is the alternation in its own synopsis lines.
+  const presented = (command: string): readonly string[] => {
+    const found = new Set<string>();
+    for (const match of helpSource.matchAll(new RegExp(String.raw`usf ${command} (?:<([a-z|-]+)>|([a-z][a-z-]*))`, "gu"))) {
+      if (match[1] !== undefined) for (const part of match[1].split("|")) found.add(part);
+      else if (match[2] !== undefined) found.add(match[2]);
+    }
+    return Object.freeze([...found].sort());
+  };
+
+  for (const [command, source] of [["probe", commandSource], ["profile", profileSource]] as const) {
+    const dispatches = accepted(source);
+    const shown = presented(command);
+    assert.ok(dispatches.length > 0, `${command} accepts at least one operation`);
+    assert.deepEqual(
+      dispatches.filter((operation) => !shown.includes(operation)), [],
+      `${command}: implemented and reachable but absent from help`,
+    );
+    assert.deepEqual(
+      shown.filter((operation) => !dispatches.includes(operation)), [],
+      `${command}: presented in help but not accepted by the handler`,
+    );
+  }
+});
+
+/**
+ * Adversarial proof for the external CLI argv Hermes constructs.
+ *
+ * A flag the binary rejects fails the whole route as a usage error, and the mode
+ * a flag selects can make a route answer every time while producing nothing --
+ * which is how one transport spent 606 619 output tokens across 20 successful
+ * invocations for zero accepted results. Neither failure is visible in the
+ * transport layer, so the argv is asserted here against the shape each installed
+ * CLI documents, recorded at claude 2.1.251, codex-cli 0.152.0 and agy 1.1.26.
+ */
+test("every constructed provider argv names only flags and values the CLI documents", () => {
+  const claude = claudeCliArguments("work", "claude-haiku-4-5-20251001");
+  assert.deepEqual([...claude], ["-p", "work", "--output-format", "json", "--model", "claude-haiku-4-5-20251001"]);
+  // json is one of exactly text, json and stream-json; --max-turns is not a flag
+  // this CLI has, and reintroducing it would fail the route.
+  assert.equal(claude.includes("--max-turns"), false);
+  assert.equal(claude[claude.indexOf("--output-format") + 1], "json");
+  // Omitting the model is permitted by the CLI and refused here: the transport's
+  // default carries its own quota and is not the model the operator chose.
+  assert.deepEqual([...claudeCliArguments("work", null)], ["-p", "work", "--output-format", "json"]);
+
+  const agy = antigravityCliArguments("work", "gpt-oss-120b-medium");
+  assert.equal(agy[agy.indexOf("--mode") + 1], "accept-edits");
+  assert.equal(agy.includes("plan"), false);
+  assert.equal(agy[agy.indexOf("--output-format") + 1], "stream-json");
+  assert.equal(agy.filter((entry) => entry === "--mode").length, 1);
+
+  const codex = codexModelSelection("gpt-5.3-codex-spark@medium");
+  // The effort is always explicit: exec inherits the operator's config.toml
+  // otherwise, which is how single worker units burned a million reasoning
+  // tokens. A declared model@effort suffix selects it; anything else takes low.
+  assert.equal(codex.effort, "medium");
+  assert.equal(codex.model, "gpt-5.3-codex-spark");
+  assert.equal(codexModelSelection(null).effort, "low");
+  assert.equal(codexModelSelection("gpt-5.6-sol").effort, "low");
 });

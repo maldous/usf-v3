@@ -224,7 +224,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     executionPolicy,
     credentialAliases: bindings.credentialAliases,
     providerEndpoints: bindings.endpoints,
-    qualifiedTaskClassesByRoute: (await observeQualifiedTaskClasses(repositoryRoot, new Date(observedAt))).byRoute,
+    qualifiedTaskClassesByRoute: (await observeQualifiedTaskClasses(repositoryRoot)).byRoute,
   });
 
   const summary = universe.catalogueSummary;

@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { createQualificationPolicy, createQualificationSuite } from "./qualification.ts";
 
 /**
  * One capability vocabulary, in two kinds that never borrow each other's
@@ -149,16 +150,41 @@ export function satisfiesCapabilities(
  * for the same reason `observeAvailableRoutes` is the single implementation of
  * observed availability: two implementations of one decision is the defect.
  *
- * A record counts only when it names the exact route, carries a qualified role
- * for the task class, and has not expired. An expired record is not a downgrade
- * to be argued about -- the policy sets a validity window precisely so that a
- * stale pass stops being a claim.
+ * A record counts when it names the exact route, carries a qualified role for
+ * the task class, and was earned under the suite, corpus and policy identities
+ * still in force. It does not expire.
+ *
+ * It used to expire after fifteen minutes. That number was not derived: the
+ * commit that introduced the qualification policy set `validitySeconds` to 900
+ * in the same change that set `probeFreshnessSeconds` to 900, and the decision
+ * record justifies neither. Those are different kinds of fact. Probe freshness
+ * asks whether a route is answering right now, which genuinely decays. A
+ * qualification asks whether a model demonstrated competence at a task class,
+ * which does not decay with the clock: a model does not become worse at
+ * TypeScript because a quarter of an hour passed, a process restarted, an
+ * account receipt aged or a provider rate-limited.
+ *
+ * What does invalidate it is a change of identity, and the routing replay has
+ * decided it that way all along -- it compares the corpus, policy and effective
+ * policy digests and the requested and actual route identity, and never once
+ * consults the clock. This observer disagreed with it, and the repair is to
+ * make the newer consumer agree with the established one rather than to invent
+ * a third rule.
+ *
+ * There is deliberately no time parameter. Removing it is what makes wall-clock
+ * expiry unrepresentable here instead of merely absent.
  */
 export interface ObservedQualification {
   /** `provider:model` to the task classes it currently holds a role for. */
   readonly byRoute: ReadonlyMap<string, readonly string[]>;
   readonly recordCount: number;
-  readonly expiredCount: number;
+  /** Records earned under a suite, corpus or policy identity no longer in force. */
+  readonly supersededCount: number;
+  /** The identities admitted records were required to match. */
+  readonly basis: Readonly<{
+    suiteId: string; suiteVersion: string;
+    corpusDigest: string; qualificationPolicyDigest: string;
+  }>;
   readonly evaluated: true;
 }
 
@@ -166,13 +192,39 @@ const qualificationDirectoryName = "qualifications";
 
 export async function observeQualifiedTaskClasses(
   repositoryRoot: string,
-  now: Date,
 ): Promise<ObservedQualification> {
+  // The identities in force now. A record earned under a different suite,
+  // corpus or policy proved something about a contract that has since changed,
+  // which is the only kind of ageing that matters here.
+  // Absent or unreadable authority admits nothing. There is no contract to bind
+  // a record against, so every record becomes inadmissible rather than trusted,
+  // and the result still reports itself as evaluated so an empty answer is not
+  // mistaken for an unknown one.
+  const authority = await readFile(resolve(repositoryRoot, "config/qualification.json"), "utf8")
+    .then((bytes) => {
+      const parsed = JSON.parse(bytes) as {
+        readonly suite: Parameters<typeof createQualificationSuite>[0];
+        readonly policy: Parameters<typeof createQualificationPolicy>[0];
+      };
+      const suite = createQualificationSuite(parsed.suite);
+      const policy = createQualificationPolicy(parsed.policy);
+      return Object.freeze({
+        suiteId: suite.suiteId,
+        suiteVersion: suite.suiteVersion,
+        corpusDigest: suite.corpusDigest,
+        qualificationPolicyDigest: policy.policyDigest,
+      });
+    })
+    .catch(() => null);
+  const basis = authority ?? Object.freeze({
+    suiteId: "", suiteVersion: "", corpusDigest: "", qualificationPolicyDigest: "",
+  });
+
   const directory = resolve(repositoryRoot, ".usf", qualificationDirectoryName);
   const names = await readdir(directory).catch(() => [] as string[]);
   const byRoute = new Map<string, Set<string>>();
   let recordCount = 0;
-  let expiredCount = 0;
+  let supersededCount = 0;
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
     const bytes = await readFile(resolve(directory, name), "utf8").catch(() => undefined);
@@ -180,7 +232,14 @@ export async function observeQualifiedTaskClasses(
     recordCount += 1;
     let record: {
       readonly status?: unknown; readonly role?: unknown; readonly taskClass?: unknown;
-      readonly expiresAt?: unknown; readonly route?: { readonly provider?: unknown; readonly model?: unknown };
+      readonly route?: { readonly provider?: unknown; readonly model?: unknown };
+      readonly qualification?: {
+        readonly inputs?: { readonly corpusDigest?: unknown; readonly qualificationPolicyDigest?: unknown };
+        readonly profile?: {
+          readonly requested?: { readonly provider?: unknown; readonly model?: unknown };
+          readonly actual?: { readonly provider?: unknown; readonly model?: unknown };
+        };
+      };
     };
     try { record = JSON.parse(bytes) as typeof record; } catch { continue; }
     if (record.status !== "ok") continue;
@@ -193,11 +252,22 @@ export async function observeQualifiedTaskClasses(
     const provider = record.route?.provider;
     const model = record.route?.model;
     if (typeof provider !== "string" || typeof model !== "string") continue;
-    const expiresAt = record.expiresAt;
-    if (typeof expiresAt !== "string") continue;
-    const expiry = Date.parse(expiresAt);
-    if (!Number.isFinite(expiry)) continue;
-    if (expiry <= now.getTime()) { expiredCount += 1; continue; }
+    // Earned under the contract still in force, decided the same way the routing
+    // replay decides it. A record with no bound identity at all proved nothing
+    // checkable and is refused rather than trusted.
+    if (authority === null) continue;
+    const inputs = record.qualification?.inputs;
+    if (typeof inputs?.corpusDigest !== "string" || typeof inputs.qualificationPolicyDigest !== "string") continue;
+    if (inputs.corpusDigest !== basis.corpusDigest
+      || inputs.qualificationPolicyDigest !== basis.qualificationPolicyDigest) {
+      supersededCount += 1;
+      continue;
+    }
+    // The evidence must have been produced by the route it is indexed under, in
+    // both directions: what was asked and what answered.
+    const profile = record.qualification?.profile;
+    if (profile?.requested?.provider !== provider || profile.requested.model !== model
+      || profile.actual?.provider !== provider || profile.actual.model !== model) continue;
     const routeId = `${provider}:${model}`;
     const held = byRoute.get(routeId) ?? new Set<string>();
     held.add(taskClass);
@@ -210,7 +280,8 @@ export async function observeQualifiedTaskClasses(
   return Object.freeze({
     byRoute: frozen,
     recordCount,
-    expiredCount,
+    supersededCount,
+    basis,
     evaluated: true as const,
   });
 }

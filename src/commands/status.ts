@@ -465,7 +465,7 @@ async function providerDenominators(repositoryRoot: string): Promise<Readonly<Re
     })).usable,
   })));
 
-  const qualification = await observeQualifiedTaskClasses(repositoryRoot, new Date());
+  const qualification = await observeQualifiedTaskClasses(repositoryRoot);
   const invocations = await observeAvailableRoutes(repositoryRoot);
 
   return Object.freeze({
@@ -495,9 +495,12 @@ async function providerDenominators(repositoryRoot: string): Promise<Readonly<Re
     qualification: Object.freeze({
       routesHoldingAnyTaskClass: qualification.byRoute.size,
       records: qualification.recordCount,
-      expiredRecords: qualification.expiredCount,
+      // Superseded, not expired. A qualification is invalidated by the suite,
+      // corpus or policy it was earned under changing, never by elapsed time.
+      supersededRecords: qualification.supersededCount,
+      basis: qualification.basis,
       denominator: "stored-qualification-records",
-      note: "A task-class capability is held only while a stored record says so. Availability is not qualification.",
+      note: "A task-class capability is held only while a stored record earned under the identities still in force says so. Availability is not qualification, and neither is elapsed time a reason to withdraw one.",
     }),
   });
 }

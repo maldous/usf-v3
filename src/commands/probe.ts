@@ -374,7 +374,7 @@ async function resolveQualificationRoute(
     // omitted it while the field was optional, so the availability preflight
     // reported a universe that ignored qualification entirely; the field is
     // required now and the omission is no longer expressible.
-    qualifiedTaskClassesByRoute: (await observeQualifiedTaskClasses(repositoryRoot, new Date())).byRoute,
+    qualifiedTaskClassesByRoute: (await observeQualifiedTaskClasses(repositoryRoot)).byRoute,
     transportSelectedModel: bindings.transportSelectedModel,
     snapshot: catalogue.snapshot,
     installedAdapterPackages: Object.freeze(installed),

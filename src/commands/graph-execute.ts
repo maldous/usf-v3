@@ -414,7 +414,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   // model was complete, adversarially proven and never consulted: this command
   // is the only path hermes implement dispatches through, and it derived every
   // candidate with an empty earned-task-class set.
-  const qualifiedTaskClassesByRoute = (await observeQualifiedTaskClasses(repositoryRoot, new Date(observedAt))).byRoute;
+  const qualifiedTaskClassesByRoute = (await observeQualifiedTaskClasses(repositoryRoot)).byRoute;
   const deferralRecords = await readRouteDeferrals(repositoryRoot);
   const deferred = deferredCandidateIds(deferralRecords, Date.now());
   // What each route has actually produced, used to order the pool.
