@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:integrate-result:1",
+  "title": "USF integration command refusal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "reasonCode", "candidateDigests", "dryRun", "nonClaims"],
+  "properties": {
+    "schema": {"const": "urn:usf:integrate-result:1"},
+    "status": {"const": "refused"},
+    "reasonCode": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,127}$"},
+    "candidateDigests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {"$ref": "#/$defs/digest"}
+    },
+    "dryRun": {"type": "boolean"},
+    "gitDiagnostic": {"$ref": "#/$defs/gitDiagnostic"},
+    "nonClaims": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "operation": {
+      "enum": [
+        "git-add",
+        "git-cat-file",
+        "git-check-attr",
+        "git-commit",
+        "git-diff",
+        "git-diff-check",
+        "git-ls-files",
+        "git-ls-tree",
+        "git-merge",
+        "git-merge-base",
+        "git-rev-parse",
+        "git-status",
+        "git-symbolic-ref",
+        "git-update-ref",
+        "git-worktree"
+      ]
+    },
+    "detail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "line", "kind"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!(?:\\.git|\\.usf|\\.env)(?:/|$))(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+        },
+        "line": {"type": "integer", "minimum": 1},
+        "kind": {"enum": ["blank-at-eof", "space-before-tab", "trailing-whitespace"]}
+      }
+    },
+    "genericGitDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "failureClass", "details", "detailsTruncated"],
+      "properties": {
+        "operation": {"$ref": "#/$defs/operation"},
+        "failureClass": {"enum": ["git-failed", "git-unavailable"]},
+        "details": {"type": "array", "maxItems": 0, "items": {"$ref": "#/$defs/detail"}},
+        "detailsTruncated": {"const": false}
+      }
+    },
+    "preflightGitDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "failureClass", "candidateDigest", "basisDigest", "details", "detailsTruncated"],
+      "properties": {
+        "operation": {"const": "git-diff-check"},
+        "failureClass": {"enum": ["git-failed", "git-unavailable"]},
+        "candidateDigest": {"$ref": "#/$defs/digest"},
+        "basisDigest": {"$ref": "#/$defs/digest"},
+        "details": {"type": "array", "maxItems": 0, "items": {"$ref": "#/$defs/detail"}},
+        "detailsTruncated": {"const": false}
+      }
+    },
+    "whitespaceGitDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "failureClass", "candidateDigest", "basisDigest", "details", "detailsTruncated"],
+      "properties": {
+        "operation": {"const": "git-diff-check"},
+        "failureClass": {"const": "candidate-whitespace"},
+        "candidateDigest": {"$ref": "#/$defs/digest"},
+        "basisDigest": {"$ref": "#/$defs/digest"},
+        "details": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {"$ref": "#/$defs/detail"}
+        },
+        "detailsTruncated": {"type": "boolean"}
+      }
+    },
+    "gitDiagnostic": {
+      "oneOf": [
+        {"$ref": "#/$defs/genericGitDiagnostic"},
+        {"$ref": "#/$defs/preflightGitDiagnostic"},
+        {"$ref": "#/$defs/whitespaceGitDiagnostic"}
+      ]
+    }
+  }
+}

@@ -27,6 +27,12 @@ export type ApplyResult = { readonly status: "applied"; readonly basis: Realisat
 const maximumApplyInputBytes = 4 * 1024 * 1024;
 const digestPattern = /^sha256:[a-f0-9]{64}$/u;
 const ignoredInputPattern = /^\.usf\/inputs\/[A-Za-z0-9][A-Za-z0-9._-]{0,127}\.json$/u;
+const integrationGitOperations = new Set([
+  "git-add", "git-cat-file", "git-check-attr", "git-commit", "git-diff", "git-diff-check", "git-ls-files", "git-ls-tree",
+  "git-merge", "git-merge-base", "git-rev-parse", "git-status", "git-symbolic-ref", "git-update-ref", "git-worktree",
+]);
+const integrationWhitespaceKinds = new Set(["blank-at-eof", "space-before-tab", "trailing-whitespace"]);
+const integrationPathPattern = /^(?!(?:\.git|\.usf|\.env)(?:\/|$))(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u;
 
 export type ApplyArguments =
   | Readonly<{ mode: "input"; source: string }>
@@ -283,16 +289,84 @@ export const admissionCheckHandler: CommandHandler = async (request) => {
   };
 };
 
+export interface IntegrateCommandDependencies {
+  readonly prepareCandidateIntegration: typeof prepareCandidateIntegration;
+  readonly integrateCandidates: typeof integrateCandidates;
+}
+
+const defaultIntegrateCommandDependencies: IntegrateCommandDependencies = Object.freeze({
+  prepareCandidateIntegration,
+  integrateCandidates,
+});
+
+function boundedGitDiagnostic(error: unknown, candidateDigests: readonly string[]): Record<string, unknown> | undefined {
+  if (!(error instanceof IntegrationError) || typeof error.gitDiagnostic !== "object" || error.gitDiagnostic === null) return undefined;
+  const diagnostic = error.gitDiagnostic as unknown as Record<string, unknown>;
+  if (!integrationGitOperations.has(diagnostic.operation as string)
+    || !["candidate-whitespace", "git-failed", "git-unavailable"].includes(diagnostic.failureClass as string)
+    || !Array.isArray(diagnostic.details) || typeof diagnostic.detailsTruncated !== "boolean") return undefined;
+  const candidateDigest = diagnostic.candidateDigest;
+  const basisDigest = diagnostic.basisDigest;
+  if (candidateDigest === undefined && basisDigest === undefined) {
+    if (Object.keys(diagnostic).sort().join(",") !== "details,detailsTruncated,failureClass,operation"
+      || diagnostic.failureClass === "candidate-whitespace" || diagnostic.details.length !== 0 || diagnostic.detailsTruncated !== false) return undefined;
+    return Object.freeze({
+      operation: diagnostic.operation,
+      failureClass: diagnostic.failureClass,
+      details: Object.freeze([]),
+      detailsTruncated: false,
+    });
+  }
+  if (Object.keys(diagnostic).sort().join(",") !== "basisDigest,candidateDigest,details,detailsTruncated,failureClass,operation"
+    || diagnostic.operation !== "git-diff-check"
+    || typeof candidateDigest !== "string" || !candidateDigests.includes(candidateDigest)
+    || typeof basisDigest !== "string" || !digestPattern.test(basisDigest)) return undefined;
+  if (diagnostic.failureClass !== "candidate-whitespace") {
+    if (diagnostic.details.length !== 0 || diagnostic.detailsTruncated !== false) return undefined;
+    return Object.freeze({
+      operation: diagnostic.operation,
+      failureClass: diagnostic.failureClass,
+      candidateDigest,
+      basisDigest,
+      details: Object.freeze([]),
+      detailsTruncated: false,
+    });
+  }
+  if (diagnostic.details.length < 1 || diagnostic.details.length > 16) return undefined;
+  const details = diagnostic.details.map((value) => {
+    if (typeof value !== "object" || value === null) return undefined;
+    const detail = value as Record<string, unknown>;
+    if (Object.keys(detail).sort().join(",") !== "kind,line,path"
+      || typeof detail.path !== "string" || !integrationPathPattern.test(detail.path)
+      || typeof detail.line !== "number" || !Number.isSafeInteger(detail.line) || detail.line < 1
+      || typeof detail.kind !== "string" || !integrationWhitespaceKinds.has(detail.kind)) return undefined;
+    return Object.freeze({ path: detail.path, line: detail.line, kind: detail.kind });
+  });
+  if (details.some((detail) => detail === undefined)) return undefined;
+  return Object.freeze({
+    operation: diagnostic.operation,
+    failureClass: diagnostic.failureClass,
+    candidateDigest,
+    basisDigest,
+    details: Object.freeze(details),
+    detailsTruncated: diagnostic.detailsTruncated,
+  });
+}
+
 /** Explicit dry-run preparation or one local observation-only integration. */
-export const integrateCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
+export const integrateCommandHandler = async (
+  { args, repositoryRoot }: Parameters<CommandHandler>[0],
+  dependencies: IntegrateCommandDependencies = defaultIntegrateCommandDependencies,
+): Promise<Awaited<ReturnType<CommandHandler>>> => {
   const parsed = parseIntegrateArguments(args);
   try {
     const output = parsed.dryRun
-      ? await prepareCandidateIntegration(repositoryRoot, { candidateDigests: parsed.candidateDigests })
-      : await integrateCandidates(repositoryRoot, { candidateDigests: parsed.candidateDigests });
+      ? await dependencies.prepareCandidateIntegration(repositoryRoot, { candidateDigests: parsed.candidateDigests })
+      : await dependencies.integrateCandidates(repositoryRoot, { candidateDigests: parsed.candidateDigests });
     return { output, exitCode: exitCodes.SUCCESS };
   } catch (error) {
     const reasonCode = error instanceof IntegrationError ? error.reasonCode : stableReason(error) ?? "INTEGRATION_VALIDATION_INVALID";
+    const boundDiagnostic = boundedGitDiagnostic(error, parsed.candidateDigests);
     return {
       output: {
         schema: "urn:usf:integrate-result:1",
@@ -300,9 +374,11 @@ export const integrateCommandHandler: CommandHandler = async ({ args, repository
         reasonCode,
         candidateDigests: parsed.candidateDigests,
         dryRun: parsed.dryRun,
+        ...(boundDiagnostic === undefined ? {} : { gitDiagnostic: boundDiagnostic }),
         nonClaims: [
-          "no-integration-observation-created",
-          "no-evidence-proof-publication-or-completion-effect",
+          "no-successful-integration-or-completion-effect",
+          "refusal-integration-observation-may-exist",
+          "no-evidence-or-proof-publication-effect",
           "no-github-push-provider-runtime-staging-or-production-effect",
         ],
       },

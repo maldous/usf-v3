@@ -1,4 +1,4 @@
-import { chmodSync, closeSync, constants as fsConstants, existsSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, closeSync, constants as fsConstants, existsSync, fstatSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { chmod, link, lstat, mkdir, open, readFile, realpath, rename, rm, rmdir } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
@@ -1020,12 +1020,54 @@ export type IntegrationReasonCode =
 export class IntegrationError extends Error {
   readonly reasonCode: IntegrationReasonCode;
   readonly validationExecution?: IntegrationValidationExecutionObservation;
-  constructor(reasonCode: IntegrationReasonCode, message: string = reasonCode, validationExecution?: IntegrationValidationExecutionObservation) {
+  readonly gitDiagnostic?: IntegrationGitDiagnostic;
+  constructor(
+    reasonCode: IntegrationReasonCode,
+    message: string = reasonCode,
+    validationExecution?: IntegrationValidationExecutionObservation,
+    gitDiagnostic?: IntegrationGitDiagnostic,
+  ) {
     super(message);
     this.name = "IntegrationError";
     this.reasonCode = reasonCode;
     this.validationExecution = validationExecution;
+    this.gitDiagnostic = gitDiagnostic;
   }
+}
+
+export type IntegrationGitOperation =
+  | "git-add"
+  | "git-cat-file"
+  | "git-check-attr"
+  | "git-commit"
+  | "git-diff"
+  | "git-diff-check"
+  | "git-ls-files"
+  | "git-ls-tree"
+  | "git-merge"
+  | "git-merge-base"
+  | "git-rev-parse"
+  | "git-status"
+  | "git-symbolic-ref"
+  | "git-update-ref"
+  | "git-worktree";
+
+export type IntegrationGitFailureClass = "candidate-whitespace" | "git-failed" | "git-unavailable";
+export type IntegrationWhitespaceKind = "blank-at-eof" | "space-before-tab" | "trailing-whitespace";
+
+export interface IntegrationWhitespaceDetail {
+  readonly path: string;
+  readonly line: number;
+  readonly kind: IntegrationWhitespaceKind;
+}
+
+export interface IntegrationGitDiagnostic {
+  readonly operation: IntegrationGitOperation;
+  readonly failureClass: IntegrationGitFailureClass;
+  readonly candidateDigest?: string;
+  readonly basisDigest?: string;
+  readonly details: readonly IntegrationWhitespaceDetail[];
+  readonly detailsTruncated: boolean;
 }
 
 export interface IntegrationValidationAuthority {
@@ -1391,10 +1433,29 @@ function chmodSyncCompat(path: string, mode: number): void {
   catch { throw new IntegrationError("INTEGRATION_GIT_FAILED", "Private integration directory mode cannot be set"); }
 }
 
+const maximumGitUidMapBytes = 256;
+const gitUidMapRowPattern = /^[ \t]*([0-9]{1,10})[ \t]+([0-9]{1,10})[ \t]+([0-9]{1,10})[ \t]*(?:\r?\n)?(?![\s\S])/u;
+
+export function isTrustedRootOwnedGitUid(uid: number, currentUid: number, rawUidMap?: Uint8Array): boolean {
+  if (uid === 0) return true;
+  if (uid !== 65534 || currentUid !== 1000 || rawUidMap === undefined
+    || rawUidMap.byteLength === 0 || rawUidMap.byteLength > maximumGitUidMapBytes) return false;
+  for (const byte of rawUidMap) if (byte > 0x7f) return false;
+  const match = gitUidMapRowPattern.exec(Buffer.from(rawUidMap).toString("ascii"));
+  return match !== null && Number(match[1]) === 1000 && Number(match[2]) === 0 && Number(match[3]) === 1;
+}
+
+function trustedRootOwnedGitUid(uid: number): boolean {
+  if (uid === 0) return true;
+  if (uid !== 65534 || processUid(uid) !== 1000) return false;
+  try { return isTrustedRootOwnedGitUid(uid, 1000, readFileSync("/proc/self/uid_map")); }
+  catch { return false; }
+}
+
 function assertTrustedGit(): void {
   let entry: ReturnType<typeof lstatSync>;
   try { entry = lstatSync("/usr/bin/git"); } catch { throw new IntegrationError("INTEGRATION_GIT_UNAVAILABLE"); }
-  if (entry.isSymbolicLink() || !entry.isFile() || entry.uid !== 0 || (entry.mode & 0o022) !== 0 || (entry.mode & 0o111) === 0
+  if (entry.isSymbolicLink() || !entry.isFile() || !trustedRootOwnedGitUid(entry.uid) || (entry.mode & 0o022) !== 0 || (entry.mode & 0o111) === 0
     || realpathSync("/usr/bin/git") !== "/usr/bin/git") {
     throw new IntegrationError("INTEGRATION_GIT_UNAVAILABLE", "Git executable is not a trusted root-owned host dependency");
   }
@@ -1403,15 +1464,54 @@ function assertTrustedGit(): void {
 const allowedGitCommands = new Set([
   "rev-parse", "symbolic-ref", "status", "check-attr", "worktree", "add", "commit", "diff", "ls-files", "ls-tree", "cat-file", "update-ref", "merge", "merge-base",
 ]);
+const integrationWorktreeIdentityPattern = /^[a-f0-9]{64}$/u;
 
-function gitResult(root: string, command: string, args: readonly string[] = [], input?: Uint8Array): { status: number; stdout: Buffer; stderr: Buffer } {
+function directIntegrationWorktreeStateRoot(root: string): string | null {
+  const marker = `${sep}.usf${sep}integration-worktrees${sep}`;
+  const markerIndex = root.lastIndexOf(marker);
+  if (markerIndex < 0) return null;
+  const [identity, ...descendants] = root.slice(markerIndex + marker.length).split(sep);
+  if (!integrationWorktreeIdentityPattern.test(identity ?? "")) {
+    throw new IntegrationError("INTEGRATION_PRIVATE_STATE_UNSAFE", "Integration worktree identity is invalid");
+  }
+  return descendants.length === 0 ? root.slice(0, markerIndex) : null;
+}
+
+export interface GitProcessResult { readonly status: number; readonly stdout: Buffer; readonly stderr: Buffer; }
+
+const gitOperationByCommand: Readonly<Record<string, IntegrationGitOperation>> = Object.freeze({
+  add: "git-add",
+  "cat-file": "git-cat-file",
+  "check-attr": "git-check-attr",
+  commit: "git-commit",
+  diff: "git-diff",
+  "ls-files": "git-ls-files",
+  "ls-tree": "git-ls-tree",
+  merge: "git-merge",
+  "merge-base": "git-merge-base",
+  "rev-parse": "git-rev-parse",
+  status: "git-status",
+  "symbolic-ref": "git-symbolic-ref",
+  "update-ref": "git-update-ref",
+  worktree: "git-worktree",
+});
+
+function gitOperation(command: string, args: readonly string[]): IntegrationGitOperation {
+  if (command === "diff" && args.includes("--check")) return "git-diff-check";
+  return gitOperationByCommand[command] ?? "git-diff";
+}
+
+function genericGitDiagnostic(operation: IntegrationGitOperation, failureClass: "git-failed" | "git-unavailable"): IntegrationGitDiagnostic {
+  return deepFreeze({ operation, failureClass, details: [], detailsTruncated: false });
+}
+
+function gitResult(root: string, command: string, args: readonly string[] = [], input?: Uint8Array): GitProcessResult {
   assertTrustedGit();
   if (!allowedGitCommands.has(command)) throw new IntegrationError("INTEGRATION_GIT_FAILED", `Forbidden Git command: ${command}`);
-  const worktreeMarker = `${sep}.usf${sep}integration-worktrees${sep}`;
-  const markerIndex = root.indexOf(worktreeMarker);
-  const stateRoot = markerIndex < 0 ? root : root.slice(0, markerIndex);
+  const directWorktreeStateRoot = directIntegrationWorktreeStateRoot(root);
+  const stateRoot = directWorktreeStateRoot ?? root;
   assertCanonicalRoot(stateRoot);
-  if (markerIndex >= 0) assertPrivateWorktreeRootSync(stateRoot, root);
+  if (directWorktreeStateRoot !== null) assertPrivateWorktreeRootSync(stateRoot, root);
   const privateHome = resolve(stateRoot, ".usf", "home", "git-integration");
   assertPrivateUsfDirectorySync(stateRoot, ".usf", true);
   assertPrivateUsfDirectorySync(stateRoot, ".usf/home", true);
@@ -1425,6 +1525,7 @@ function gitResult(root: string, command: string, args: readonly string[] = [], 
     "-c", "core.fsmonitor=false",
     "-c", "core.autocrlf=false",
     "-c", "core.safecrlf=true",
+    "-c", "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab",
     "-c", "maintenance.auto=false",
     "-c", "gc.auto=0",
     "-c", "protocol.allow=never",
@@ -1444,6 +1545,7 @@ function gitResult(root: string, command: string, args: readonly string[] = [], 
       XDG_CONFIG_HOME: privateHome,
       GIT_CONFIG_NOSYSTEM: "1",
       GIT_CONFIG_GLOBAL: "/dev/null",
+      ...(command === "diff" && args.includes("--no-index") ? { GIT_CEILING_DIRECTORIES: dirname(root) } : {}),
       GIT_TERMINAL_PROMPT: "0",
       GIT_ASKPASS: "/bin/false",
       SSH_ASKPASS: "/bin/false",
@@ -1458,16 +1560,216 @@ function gitResult(root: string, command: string, args: readonly string[] = [], 
 }
 
 function git(root: string, command: string, args: readonly string[] = [], input?: Uint8Array): Buffer {
-  const result = gitResult(root, command, args, input);
+  const operation = gitOperation(command, args);
+  let result: GitProcessResult;
+  try { result = gitResult(root, command, args, input); }
+  catch (error) {
+    if (error instanceof IntegrationError && error.reasonCode === "INTEGRATION_GIT_UNAVAILABLE" && error.gitDiagnostic === undefined) {
+      throw new IntegrationError(error.reasonCode, error.message, error.validationExecution, genericGitDiagnostic(operation, "git-unavailable"));
+    }
+    throw error;
+  }
   if (result.status !== 0) {
-    const message = result.stderr.toString("utf8").slice(0, 512);
-    throw new IntegrationError("INTEGRATION_GIT_FAILED", `${command} failed: ${message}`);
+    throw new IntegrationError("INTEGRATION_GIT_FAILED", `${operation} failed`, undefined, genericGitDiagnostic(operation, "git-failed"));
   }
   return result.stdout;
 }
 
 function gitText(root: string, command: string, args: readonly string[] = []): string {
   return git(root, command, args).toString("utf8").trim();
+}
+
+export interface AuthenticatedCandidateWhitespaceInput {
+  readonly candidateDigest: string;
+  readonly basisDigest: string;
+  readonly deltas: readonly Readonly<{
+    path: string;
+    before: string | null;
+    after: string | null;
+    beforeDigest: string | null;
+    afterDigest: string | null;
+  }>[];
+}
+
+export interface IntegrationWhitespacePreflightDependencies {
+  readonly diffCheck?: (root: string, args: readonly string[]) => GitProcessResult;
+}
+
+const maximumGitCheckOutputBytes = 64 * 1024;
+const maximumWhitespaceDetails = 16;
+const whitespaceMessageKinds = new Map<string, IntegrationWhitespaceKind>([
+  ["new blank line at EOF.", "blank-at-eof"],
+  ["space before tab in indent.", "space-before-tab"],
+  ["trailing whitespace.", "trailing-whitespace"],
+]);
+const defaultWhitespacePreflightDependencies: IntegrationWhitespacePreflightDependencies = Object.freeze({
+  diffCheck: (root: string, args: readonly string[]) => gitResult(root, "diff", args),
+});
+
+function candidateGitDiagnostic(
+  input: AuthenticatedCandidateWhitespaceInput,
+  failureClass: IntegrationGitFailureClass,
+  details: readonly IntegrationWhitespaceDetail[] = [],
+  detailsTruncated = false,
+): IntegrationGitDiagnostic {
+  return deepFreeze({
+    operation: "git-diff-check" as const,
+    failureClass,
+    candidateDigest: input.candidateDigest,
+    basisDigest: input.basisDigest,
+    details: [...details],
+    detailsTruncated,
+  });
+}
+
+function preflightError(
+  input: AuthenticatedCandidateWhitespaceInput,
+  reasonCode: "INTEGRATION_GIT_FAILED" | "INTEGRATION_GIT_UNAVAILABLE",
+  failureClass: "git-failed" | "git-unavailable",
+): IntegrationError {
+  return new IntegrationError(reasonCode, `${failureClass} during git-diff-check`, undefined, candidateGitDiagnostic(input, failureClass));
+}
+
+function strictSnapshotBytes(snapshot: string | null, digest: string | null): Buffer | null {
+  if (snapshot === null || digest === null) {
+    if (snapshot !== null || digest !== null) throw new Error("SNAPSHOT_IDENTITY_MISMATCH");
+    return null;
+  }
+  const bytes = Buffer.from(snapshot, "base64");
+  if (bytes.toString("base64") !== snapshot || sha256(bytes) !== digest) throw new Error("SNAPSHOT_IDENTITY_MISMATCH");
+  return bytes;
+}
+
+function writePreflightSnapshot(path: string, bytes: Buffer): void {
+  writeFileSync(path, bytes, { flag: "wx", mode: 0o600 });
+  const entry = lstatSync(path);
+  if (!entry.isFile() || entry.isSymbolicLink() || entry.uid !== processUid(entry.uid)
+    || entry.nlink !== 1 || (entry.mode & 0o177) !== 0 || realpathSync(path) !== path) {
+    throw new Error("PREFLIGHT_SNAPSHOT_UNSAFE");
+  }
+}
+
+function escapeRegularExpression(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function parseWhitespaceDetails(
+  stdout: Buffer,
+  expectedAfterPath: string,
+  repositoryPath: string,
+): IntegrationWhitespaceDetail[] | null {
+  if (stdout.byteLength === 0 || stdout.byteLength > maximumGitCheckOutputBytes) return null;
+  let text: string;
+  try { text = new TextDecoder("utf-8", { fatal: true }).decode(stdout); }
+  catch { return null; }
+  if (!text.endsWith("\n") || text.includes("\0")) return null;
+  const lines = text.slice(0, -1).split("\n");
+  const header = new RegExp(`^${escapeRegularExpression(expectedAfterPath)}:([1-9][0-9]*): (.+)$`, "u");
+  const details: IntegrationWhitespaceDetail[] = [];
+  for (let index = 0; index < lines.length;) {
+    const match = header.exec(lines[index] ?? "");
+    const kind = match === null ? undefined : whitespaceMessageKinds.get(match[2] ?? "");
+    const line = Number(match?.[1]);
+    if (match === null || kind === undefined || !Number.isSafeInteger(line) || line < 1) return null;
+    details.push({ path: repositoryPath, line, kind });
+    index += 1;
+    if (kind !== "blank-at-eof") {
+      if (!(lines[index] ?? "").startsWith("+")) return null;
+      index += 1;
+    }
+  }
+  return details.length === 0 ? null : details;
+}
+
+/**
+ * Inspect only independently authenticated delta bytes. The caller supplies
+ * candidates in canonical cohort order; paths are re-sorted bytewise here.
+ * Raw Git output and scratch paths never cross this boundary.
+ */
+export function assertAuthenticatedCandidateWhitespace(
+  root: string,
+  candidates: readonly AuthenticatedCandidateWhitespaceInput[],
+  dependencies: IntegrationWhitespacePreflightDependencies = defaultWhitespacePreflightDependencies,
+): void {
+  const canonicalRoot = realpathSync(root);
+  const diffCheck = dependencies.diffCheck ?? defaultWhitespacePreflightDependencies.diffCheck!;
+  let firstWhitespace: IntegrationGitDiagnostic | undefined;
+  for (const input of candidates) {
+    if (!digestPattern.test(input.candidateDigest) || !digestPattern.test(input.basisDigest)) {
+      throw new IntegrationError("INTEGRATION_GIT_FAILED", "git-failed during git-diff-check", undefined, genericGitDiagnostic("git-diff-check", "git-failed"));
+    }
+    const deltas = [...input.deltas]
+      .map((delta) => ({ ...delta, path: safeRepositoryPath(delta.path) }))
+      .sort((left, right) => Buffer.compare(Buffer.from(left.path, "utf8"), Buffer.from(right.path, "utf8")));
+    const retained = deltas.filter((delta) => delta.after !== null);
+    if (retained.length === 0) continue;
+    let scratch: string | undefined;
+    try {
+      assertPrivateUsfDirectorySync(canonicalRoot, ".usf", true);
+      const parent = assertPrivateUsfDirectorySync(canonicalRoot, ".usf/integration-git-preflight", true);
+      scratch = mkdtempSync(resolve(parent, "check-"));
+      chmodSync(scratch, 0o700);
+      assertPrivateUsfDirectorySync(canonicalRoot, relative(canonicalRoot, scratch).split(sep).join("/"), false);
+    } catch (error) {
+      if (scratch !== undefined) rmSync(scratch, { recursive: true, force: true });
+      if (error instanceof IntegrationError) throw error;
+      throw preflightError(input, "INTEGRATION_GIT_FAILED", "git-failed");
+    }
+    const details: IntegrationWhitespaceDetail[] = [];
+    try {
+      for (let index = 0; index < retained.length; index += 1) {
+        const delta = retained[index]!;
+        let before: Buffer | null;
+        let after: Buffer | null;
+        try {
+          before = strictSnapshotBytes(delta.before, delta.beforeDigest);
+          after = strictSnapshotBytes(delta.after, delta.afterDigest);
+        } catch {
+          throw preflightError(input, "INTEGRATION_GIT_FAILED", "git-failed");
+        }
+        if (after === null) throw preflightError(input, "INTEGRATION_GIT_FAILED", "git-failed");
+        const beforePath = resolve(scratch, `${index}-before`);
+        const afterPath = resolve(scratch, `${index}-after`);
+        try {
+          if (before !== null) writePreflightSnapshot(beforePath, before);
+          writePreflightSnapshot(afterPath, after);
+        } catch (error) {
+          if (error instanceof IntegrationError) throw error;
+          throw preflightError(input, "INTEGRATION_GIT_FAILED", "git-failed");
+        }
+        let result: GitProcessResult;
+        try {
+          result = diffCheck(canonicalRoot, ["--no-index", "--check", "--no-color", "--", before === null ? "/dev/null" : beforePath, afterPath]);
+        } catch (error) {
+          if (error instanceof IntegrationError && error.reasonCode === "INTEGRATION_GIT_UNAVAILABLE") {
+            throw preflightError(input, "INTEGRATION_GIT_UNAVAILABLE", "git-unavailable");
+          }
+          throw preflightError(input, "INTEGRATION_GIT_FAILED", "git-failed");
+        }
+        if (result.status === 0 || result.status === 1) {
+          if (result.stdout.byteLength !== 0 || result.stderr.byteLength !== 0) {
+            throw preflightError(input, "INTEGRATION_GIT_FAILED", "git-failed");
+          }
+          continue;
+        }
+        if (result.status !== 3 || result.stderr.byteLength !== 0) {
+          throw preflightError(input, "INTEGRATION_GIT_FAILED", "git-failed");
+        }
+        const parsed = parseWhitespaceDetails(result.stdout, afterPath, delta.path);
+        if (parsed === null) throw preflightError(input, "INTEGRATION_GIT_FAILED", "git-failed");
+        details.push(...parsed);
+      }
+    } finally {
+      rmSync(scratch, { recursive: true, force: true });
+    }
+    if (details.length > 0 && firstWhitespace === undefined) {
+      const ordered = [...details].sort((left, right) => Buffer.compare(Buffer.from(left.path, "utf8"), Buffer.from(right.path, "utf8")) || left.line - right.line || left.kind.localeCompare(right.kind));
+      firstWhitespace = candidateGitDiagnostic(input, "candidate-whitespace", ordered.slice(0, maximumWhitespaceDetails), ordered.length > maximumWhitespaceDetails);
+    }
+  }
+  if (firstWhitespace !== undefined) {
+    throw new IntegrationError("INTEGRATION_GIT_FAILED", "candidate-whitespace during git-diff-check", undefined, firstWhitespace);
+  }
 }
 
 function assertGitRoot(root: string): void {
@@ -2657,24 +2959,15 @@ export async function prepareCandidateIntegration(root: string, options: Candida
   const profiles = [...new Set(authenticated.map((candidate) => candidate.constructionBasis.selection.profile))];
   const manifests = [...new Set(authenticated.map((candidate) => candidate.constructionBasis.selection.manifestPath))];
   if (profiles.length !== 1 || manifests.length !== 1) throw new IntegrationError("INTEGRATION_PROFILE_MISMATCH");
-  const authority = integrationAuthority(canonicalRoot, profiles[0]!);
-  const receiptsByCandidate = await Promise.all(authenticated.map((candidate) => authenticatedCheckedReceipts(
-    canonicalRoot,
-    candidate,
-    authority.binding.checkedCandidateSchemaDigest,
-  )));
-  const allReceiptDigests = receiptsByCandidate.flatMap((receipts) => receipts.map((receipt) => receipt.receiptDigest));
-  if (new Set(allReceiptDigests).size !== allReceiptDigests.length) throw new IntegrationError("INTEGRATION_DUPLICATE_RECEIPT");
   const workIris = authenticated.map((candidate) => candidate.constructionBasis.work.id);
   if (new Set(workIris).size !== workIris.length) throw new IntegrationError("INTEGRATION_DUPLICATE_WORK");
   const workGraph = loadSemanticGraph(canonicalRoot, manifests[0]!);
-  const inputRecords = authenticated.map((candidate, index) => ({ authenticated: candidate, receipts: receiptsByCandidate[index]! }));
-  const orderedRecords = canonicalCohortOrder(workGraph, inputRecords);
-  if (orderedRecords.some((record, index) => record.authenticated.candidateDigest !== options.candidateDigests[index])) {
+  const preflightRecords = canonicalCohortOrder(workGraph, authenticated.map((candidate) => ({ authenticated: candidate, receipts: [] })));
+  if (preflightRecords.some((record, index) => record.authenticated.candidateDigest !== options.candidateDigests[index])) {
     throw new IntegrationError("INTEGRATION_CALLER_ORDER_INVALID");
   }
   const touched = new Set<string>();
-  for (const record of orderedRecords) for (const path of record.authenticated.writeSet) {
+  for (const record of preflightRecords) for (const path of record.authenticated.writeSet) {
     if (touched.has(path)) throw new IntegrationError("INTEGRATION_OVERLAPPING_WRITE_SET");
     touched.add(path);
   }
@@ -2684,6 +2977,24 @@ export async function prepareCandidateIntegration(root: string, options: Candida
   }
   if (touched.has(integrationManifestIdentity) || touched.has("graph/integration.nq")) {
     throw new IntegrationError("INTEGRATION_AUTHORITY_INVALID", "Ordinary integration cannot replace its own selected authority");
+  }
+  assertAuthenticatedCandidateWhitespace(canonicalRoot, preflightRecords.map(({ authenticated: candidate }) => ({
+    candidateDigest: candidate.candidateDigest,
+    basisDigest: candidate.constructionBasis.basisDigest,
+    deltas: candidate.actualOperationDelta,
+  })));
+  const authority = integrationAuthority(canonicalRoot, profiles[0]!);
+  const receiptsByCandidate = await Promise.all(authenticated.map((candidate) => authenticatedCheckedReceipts(
+    canonicalRoot,
+    candidate,
+    authority.binding.checkedCandidateSchemaDigest,
+  )));
+  const allReceiptDigests = receiptsByCandidate.flatMap((receipts) => receipts.map((receipt) => receipt.receiptDigest));
+  if (new Set(allReceiptDigests).size !== allReceiptDigests.length) throw new IntegrationError("INTEGRATION_DUPLICATE_RECEIPT");
+  const inputRecords = authenticated.map((candidate, index) => ({ authenticated: candidate, receipts: receiptsByCandidate[index]! }));
+  const orderedRecords = canonicalCohortOrder(workGraph, inputRecords);
+  if (orderedRecords.some((record, index) => record.authenticated.candidateDigest !== options.candidateDigests[index])) {
+    throw new IntegrationError("INTEGRATION_CALLER_ORDER_INVALID");
   }
   const members = cohortMembers(orderedRecords);
   const orderedReceipts = orderedRecords.flatMap((record) => record.receipts);
