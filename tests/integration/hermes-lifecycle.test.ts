@@ -21,9 +21,9 @@ async function writeRecord(root: string, record: unknown): Promise<void> {
 
 function recordFor(process_: Awaited<ReturnType<typeof linuxProcessInspector.current>>): unknown {
   return {
-    schema: "urn:usf:hermes-supervisor:1", version: 1, supervisorId: "test", startedAt: "2026-01-01T00:00:00.000Z",
-    process: process_, envFile: ".usf/credentials/providers.env",
-    pauseSeconds: 20, concurrency: 6, dispatchLimit: 12, authorityIdentity: "sha256:00",
+    schema: "urn:usf:hermes-supervisor:1", version: 1, supervisorId: "0123456789abcdef012345678", startedAt: "2026-01-01T00:00:00.000Z",
+    process: process_, envFile: ".usf/credentials/providers.env", manifest: "graph/manifests/operational-stewardship.json",
+    pauseSeconds: 20, concurrency: 6, dispatchLimit: 12, usefulTokenTarget: 100000, authorityIdentity: "sha256:00",
   };
 }
 
@@ -39,7 +39,7 @@ test("supervisor liveness is derived from durable process identity, not a bare p
   // supervisor: a recycled pid must never be mistaken for the owner.
   await writeRecord(root, recordFor({ ...current, startTicks: current.startTicks + 1 }));
   assert.equal((await observeSupervisor(root)).liveness, "stale");
-  await writeRecord(root, recordFor({ ...current, argvDigest: "sha256:0000" }));
+  await writeRecord(root, recordFor({ ...current, argvDigest: "sha256:1111111111111111111111111111111111111111111111111111111111111111" }));
   assert.equal((await observeSupervisor(root)).liveness, "stale");
   await writeRecord(root, recordFor({ ...current, bootId: "00000000-0000-0000-0000-000000000000" }));
   assert.equal((await observeSupervisor(root)).liveness, "stale");

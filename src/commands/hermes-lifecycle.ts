@@ -1,9 +1,11 @@
 import { spawn } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { constants } from "node:fs";
-import { mkdir, open, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { lstat, mkdir, open, readFile, rename, rm, stat } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { linuxProcessInspector, type ProcessIdentity } from "../continuous/lifecycle.ts";
+import { acquireStewardActivity, acquireSupervisorLifetimeLock } from "../continuous/stewardship.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
@@ -23,15 +25,29 @@ const supervisorRecord = `${supervisorRoot}/supervisor.json`;
 const stopRequestRecord = `${supervisorRoot}/stop-request.json`;
 const cycleRecord = `${supervisorRoot}/cycle.json`;
 const supervisorLog = `${supervisorRoot}/supervisor.log`;
+const supervisorAdmission = `${supervisorRoot}/admission.json`;
 const deliveryManifest = "graph/manifests/v3-delivery.json";
 const startObservationTimeoutMs = 60_000;
 const defaultStopWaitMs = 180_000;
-// SIGTERM is honoured at the next cycle boundary rather than immediately, so a
-// transaction in flight completes. The grace is sized for that, and SIGKILL
-// remains the deterministic backstop the operator is promised.
-const terminationGraceMs = 60_000;
 const defaultPauseSeconds = 20;
 const maximumPauseSeconds = 3_600;
+const privateDirectoryMode = 0o700;
+const privateFileMode = 0o600;
+const maximumRuntimeRecordBytes = 64 * 1024;
+
+interface SupervisorAdmission {
+  readonly schema: "urn:usf:hermes-supervisor-admission:1";
+  readonly version: 1;
+  readonly state: "awaiting-binding" | "bound";
+  readonly tokenDigest: string;
+  readonly sessionDigest: string;
+  readonly claimId: string;
+  readonly generation: string;
+  readonly starter: ProcessIdentity;
+  readonly child: ProcessIdentity;
+  readonly argumentsDigest: string;
+  readonly createdAt: string;
+}
 
 export interface HermesSupervisorRecord {
   readonly schema: "urn:usf:hermes-supervisor:1";
@@ -149,24 +165,157 @@ function parseLifecycleArgumentsAgainstAuthority(repositoryRoot: string, args: r
   return parseLifecycleArguments(args, resolveConcurrencyBounds(repositoryRoot, provisional.manifest));
 }
 
-async function runtimeRoot(repositoryRoot: string): Promise<string> {
-  const root = resolve(repositoryRoot, supervisorRoot);
-  await mkdir(root, { recursive: true, mode: 0o700 });
-  return root;
+function currentUid(): number {
+  const uid = process.getuid?.();
+  if (process.platform !== "linux" || uid === undefined || uid === 0) {
+    throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime files require a non-root Linux owner.");
+  }
+  return uid;
+}
+
+async function privateDirectory(path: string, create: boolean, strictMode: boolean): Promise<boolean> {
+  if (create) await mkdir(path, { recursive: true, mode: privateDirectoryMode });
+  const metadata = await lstat(path).catch((error: NodeJS.ErrnoException) => error.code === "ENOENT" ? undefined : Promise.reject(error));
+  if (metadata === undefined) return false;
+  if (!metadata.isDirectory() || metadata.isSymbolicLink() || metadata.uid !== currentUid()
+    || (strictMode && (metadata.mode & 0o777) !== privateDirectoryMode)) {
+    throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime directories must be owner-controlled real directories.");
+  }
+  return true;
+}
+
+/**
+ * The complete Hermes runtime lineage is owner-private. Status calls this with
+ * `create=false`, so observation never creates a runtime directory or record.
+ */
+async function secureRuntimeRoot(repositoryRoot: string, create: boolean): Promise<string | null> {
+  const base = resolve(repositoryRoot, ".usf");
+  if (!await privateDirectory(base, create, true)) return null;
+  const hermes = resolve(base, "hermes");
+  if (!await privateDirectory(hermes, create, true)) return null;
+  const supervisor = resolve(hermes, "supervisor");
+  if (!await privateDirectory(supervisor, create, true)) return null;
+  return supervisor;
+}
+
+async function safeRuntimeJson<T>(repositoryRoot: string, path: string): Promise<T | null> {
+  const runtime = await secureRuntimeRoot(repositoryRoot, false);
+  if (runtime === null) return null;
+  const target = resolve(repositoryRoot, path);
+  if (dirname(target) !== runtime) throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime path escaped its private directory.");
+  const metadata = await lstat(target).catch((error: NodeJS.ErrnoException) => error.code === "ENOENT" ? undefined : Promise.reject(error));
+  if (metadata === undefined) return null;
+  if (!metadata.isFile() || metadata.isSymbolicLink() || metadata.uid !== currentUid() || metadata.nlink !== 1
+    || (metadata.mode & 0o777) !== privateFileMode || metadata.size < 2 || metadata.size > maximumRuntimeRecordBytes) {
+    throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "A Hermes runtime record is unsafe.");
+  }
+  const handle = await open(target, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0)).catch(() => {
+    throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "A Hermes runtime record cannot be opened safely.");
+  });
+  try {
+    const opened = await handle.stat();
+    if (opened.dev !== metadata.dev || opened.ino !== metadata.ino || opened.nlink !== 1) {
+      throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "A Hermes runtime record changed while read.");
+    }
+    try { return JSON.parse((await handle.readFile()).toString("utf8")) as T; }
+    catch { throw new UsfError("HERMES_RUNTIME_INVALID", exitCodes.CONTAINMENT_REFUSAL, "A Hermes runtime record is malformed."); }
+  } finally { await handle.close(); }
+}
+
+/** Write through a private temporary inode so readers never observe a partial record. */
+async function writeJson(repositoryRoot: string, path: string, value: unknown): Promise<void> {
+  const runtime = await secureRuntimeRoot(repositoryRoot, true);
+  if (runtime === null) throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime directory is unavailable.");
+  const target = resolve(repositoryRoot, path);
+  if (dirname(target) !== runtime) throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime path escaped its private directory.");
+  const transient = resolve(runtime, `.${target.split("/").at(-1)!}.${randomBytes(16).toString("hex")}.tmp`);
+  const handle = await open(transient, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | (constants.O_NOFOLLOW ?? 0), privateFileMode);
+  try { await handle.writeFile(`${JSON.stringify(value)}\n`); await handle.sync(); }
+  finally { await handle.close(); }
+  try {
+    await rename(transient, target);
+    const directory = await open(runtime, constants.O_RDONLY | (constants.O_DIRECTORY ?? 0));
+    try { await directory.sync(); } finally { await directory.close(); }
+  } finally { await rm(transient, { force: true }).catch(() => undefined); }
 }
 
 async function readJson<T>(repositoryRoot: string, path: string): Promise<T | null> {
-  const bytes = await readFile(resolve(repositoryRoot, path), "utf8").catch(() => undefined);
-  if (bytes === undefined) return null;
-  try { return JSON.parse(bytes) as T; } catch { return null; }
+  return safeRuntimeJson<T>(repositoryRoot, path);
 }
 
-/** Write through a temporary name so a reader never observes a partial record. */
-async function writeJson(repositoryRoot: string, path: string, value: unknown): Promise<void> {
-  const target = resolve(repositoryRoot, path);
-  const transient = `${target}.tmp-${process.pid}`;
-  await writeFile(transient, `${JSON.stringify(value, null, 1)}\n`, { mode: 0o600 });
-  await rename(transient, target);
+function sameProcess(left: ProcessIdentity, right: ProcessIdentity): boolean {
+  return canonicalDigest(left) === canonicalDigest(right);
+}
+
+async function safeSupervisorLog(repositoryRoot: string): Promise<Awaited<ReturnType<typeof open>>> {
+  const runtime = await secureRuntimeRoot(repositoryRoot, true);
+  if (runtime === null) throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime directory is unavailable.");
+  const target = resolve(repositoryRoot, supervisorLog);
+  if (dirname(target) !== runtime) throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes log path escaped its private directory.");
+  const prior = await lstat(target).catch((error: NodeJS.ErrnoException) => error.code === "ENOENT" ? undefined : Promise.reject(error));
+  if (prior !== undefined && (!prior.isFile() || prior.isSymbolicLink() || prior.uid !== currentUid() || prior.nlink !== 1 || (prior.mode & 0o777) !== privateFileMode)) {
+    throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes supervisor log is unsafe.");
+  }
+  const handle = await open(target, constants.O_CREAT | constants.O_WRONLY | constants.O_APPEND | (constants.O_NOFOLLOW ?? 0), privateFileMode);
+  const opened = await handle.stat();
+  const named = await lstat(target);
+  if (!opened.isFile() || opened.uid !== currentUid() || opened.nlink !== 1 || (opened.mode & 0o777) !== privateFileMode
+    || named.isSymbolicLink() || named.dev !== opened.dev || named.ino !== opened.ino || named.nlink !== 1) {
+    await handle.close();
+    throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes supervisor log changed while opened.");
+  }
+  return handle;
+}
+
+function admissionArgumentsDigest(args: readonly string[]): string { return canonicalDigest(args); }
+
+function admissionSessionDigest(session: string): string { return canonicalDigest({ session }); }
+
+function validProcessIdentity(value: unknown): value is ProcessIdentity {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const item = value as Record<string, unknown>;
+  return Object.keys(item).sort().join("|") === ["argvDigest", "bootId", "executablePathDigest", "pid", "startTicks", "uid"].join("|")
+    && Number.isSafeInteger(item.pid) && Number(item.pid) > 0 && Number.isSafeInteger(item.uid) && Number(item.uid) >= 0
+    && typeof item.bootId === "string" && typeof item.startTicks === "string"
+    && typeof item.argvDigest === "string" && /^sha256:[0-9a-f]{64}$/u.test(item.argvDigest)
+    && typeof item.executablePathDigest === "string" && /^sha256:[0-9a-f]{64}$/u.test(item.executablePathDigest);
+}
+
+function validAdmission(value: unknown): value is SupervisorAdmission {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const item = value as Record<string, unknown>;
+  return item.schema === "urn:usf:hermes-supervisor-admission:1" && item.version === 1
+    && (item.state === "awaiting-binding" || item.state === "bound")
+    && typeof item.tokenDigest === "string" && /^sha256:[0-9a-f]{64}$/u.test(item.tokenDigest)
+    && typeof item.sessionDigest === "string" && /^sha256:[0-9a-f]{64}$/u.test(item.sessionDigest)
+    && typeof item.claimId === "string" && /^sha256:[0-9a-f]{64}$/u.test(item.claimId)
+    && typeof item.generation === "string" && /^sha256:[0-9a-f]{64}$/u.test(item.generation)
+    && typeof item.argumentsDigest === "string" && /^sha256:[0-9a-f]{64}$/u.test(item.argumentsDigest)
+    && typeof item.createdAt === "string" && validProcessIdentity(item.starter) && validProcessIdentity(item.child);
+}
+
+async function admissionOrRefuse(repositoryRoot: string): Promise<SupervisorAdmission> {
+  const admission = await readJson<unknown>(repositoryRoot, supervisorAdmission);
+  if (admission === null || !validAdmission(admission)) {
+    throw new UsfError("HERMES_SUPERVISOR_ADMISSION_REQUIRED", exitCodes.CONTAINMENT_REFUSAL, "A supervisor may only start through a current authorised Hermes start admission.");
+  }
+  return admission;
+}
+
+function validSupervisorRecord(value: unknown): value is HermesSupervisorRecord {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const item = value as Record<string, unknown>;
+  return Object.keys(item).sort().join("|") === ["authorityIdentity", "concurrency", "dispatchLimit", "envFile", "manifest", "pauseSeconds", "process", "schema", "startedAt", "supervisorId", "usefulTokenTarget", "version"].join("|")
+    && item.schema === "urn:usf:hermes-supervisor:1" && item.version === 1
+    // Preserve the established lifecycle identifier contract: the generator
+    // retains the first 25 hexadecimal characters of its canonical digest.
+    && typeof item.supervisorId === "string" && /^[0-9a-f]{25}$/u.test(item.supervisorId)
+    && typeof item.startedAt === "string" && typeof item.manifest === "string" && typeof item.envFile === "string"
+    && typeof item.authorityIdentity === "string" && validProcessIdentity(item.process)
+    && Number.isSafeInteger(item.usefulTokenTarget) && Number(item.usefulTokenTarget) >= 100_000
+    && Number.isSafeInteger(item.pauseSeconds) && Number(item.pauseSeconds) > 0
+    && Number.isSafeInteger(item.concurrency) && Number(item.concurrency) > 0
+    && Number.isSafeInteger(item.dispatchLimit) && Number(item.dispatchLimit) > 0;
 }
 
 export type SupervisorLiveness = "live" | "stale" | "absent";
@@ -179,10 +328,12 @@ export type SupervisorLiveness = "live" | "stale" | "absent";
 export async function observeSupervisor(repositoryRoot: string): Promise<Readonly<{
   liveness: SupervisorLiveness; record: HermesSupervisorRecord | null;
 }>> {
-  const record = await readJson<HermesSupervisorRecord>(repositoryRoot, supervisorRecord);
-  if (record === null || record.schema !== "urn:usf:hermes-supervisor:1") {
+  const value = await readJson<unknown>(repositoryRoot, supervisorRecord);
+  if (value === null) {
     return Object.freeze({ liveness: "absent" as const, record: null });
   }
+  if (!validSupervisorRecord(value)) throw new UsfError("HERMES_RUNTIME_INVALID", exitCodes.CONTAINMENT_REFUSAL, "Hermes supervisor record is malformed.");
+  const record = value;
   const observed = await linuxProcessInspector.inspect(record.process.pid).catch(() => null);
   const same = observed !== null
     && observed.bootId === record.process.bootId
@@ -227,7 +378,13 @@ export function superviseArguments(parsed: LifecycleArguments): readonly string[
 
 export async function hermesStartCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const parsed = parseLifecycleArgumentsAgainstAuthority(repositoryRoot, args);
-  await runtimeRoot(repositoryRoot);
+  if (!await secureRuntimeRoot(repositoryRoot, true)) throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime directory is unavailable.");
+  const claimId = process.env.USF_STEWARD_CLAIM_ID;
+  const generation = process.env.USF_STEWARD_GENERATION;
+  const session = process.env.USF_STEWARD_SESSION_ID;
+  if (claimId === undefined || generation === undefined || session === undefined) {
+    throw new UsfError("HERMES_SUPERVISOR_ADMISSION_REQUIRED", exitCodes.CONTAINMENT_REFUSAL, "Hermes start requires the current steward claim, generation and session.");
+  }
   const observed = await observeSupervisor(repositoryRoot);
   if (observed.liveness === "live") {
     throw new UsfError("HERMES_SUPERVISOR_ALREADY_ACTIVE", exitCodes.DOMAIN_FAILURE,
@@ -243,10 +400,15 @@ export async function hermesStartCommand(repositoryRoot: string, args: readonly 
   // A stale record is reclaimed, never repaired: the previous process is gone
   // and its semantic results are already durable elsewhere.
   const reclaimed = observed.liveness === "stale";
-  await rm(resolve(repositoryRoot, supervisorRecord), { force: true });
-  await rm(resolve(repositoryRoot, stopRequestRecord), { force: true });
+  // The admitted child owns record replacement under its lifetime lock. A
+  // competing starter must never delete a record another child just created.
 
-  const log = await open(resolve(repositoryRoot, supervisorLog), constants.O_CREAT | constants.O_WRONLY | constants.O_APPEND, 0o600);
+  const starter = await linuxProcessInspector.current();
+  const token = randomBytes(32).toString("hex");
+  // The child is not trusted merely because it inherits an environment. The
+  // admission binds its exact process identity, its immediate start parent,
+  // the selected arguments and the current steward epoch before it can cycle.
+  const log = await safeSupervisorLog(repositoryRoot);
   const child = spawn(process.execPath, [
     resolve(import.meta.dirname, "..", "cli.ts"), "hermes", "supervise",
     ...superviseArguments(parsed),
@@ -254,8 +416,23 @@ export async function hermesStartCommand(repositoryRoot: string, args: readonly 
     cwd: repositoryRoot,
     detached: true,
     stdio: ["ignore", log.fd, log.fd],
-    env: { HOME: process.env.HOME ?? "", LANG: "C.UTF-8", LC_ALL: "C.UTF-8", NO_COLOR: "1", PATH: process.env.PATH ?? "" },
+    env: {
+      HOME: process.env.HOME ?? "", LANG: "C.UTF-8", LC_ALL: "C.UTF-8", NO_COLOR: "1", PATH: process.env.PATH ?? "",
+      USF_STEWARD_SESSION_ID: session, USF_STEWARD_CLAIM_ID: claimId, USF_STEWARD_GENERATION: generation,
+      USF_HERMES_START_TOKEN: token,
+    },
   });
+  const childIdentity = child.pid === undefined ? null : await linuxProcessInspector.inspect(child.pid);
+  if (childIdentity === null) {
+    await log.close();
+    throw new UsfError("HERMES_SUPERVISOR_DID_NOT_START", exitCodes.CONTINUOUS_DEGRADED, "The admitted supervisor child did not establish a durable process identity.");
+  }
+  const admission: SupervisorAdmission = Object.freeze({
+    schema: "urn:usf:hermes-supervisor-admission:1", version: 1, state: "awaiting-binding",
+    tokenDigest: canonicalDigest({ token }), sessionDigest: admissionSessionDigest(session), claimId, generation,
+    starter, child: childIdentity, argumentsDigest: admissionArgumentsDigest(superviseArguments(parsed)), createdAt: new Date().toISOString(),
+  });
+  await writeJson(repositoryRoot, supervisorAdmission, admission);
   child.unref();
   await log.close();
 
@@ -272,6 +449,13 @@ export async function hermesStartCommand(repositoryRoot: string, args: readonly 
       "The supervisor process did not establish its lifecycle record.",
       { logPath: supervisorLog, spawnedPid: child.pid ?? null });
   }
+  if (!sameProcess(current.record!.process, childIdentity)) {
+    throw new UsfError("HERMES_SUPERVISOR_ADMISSION_STALE", exitCodes.CURRENTNESS_FAILURE,
+      "The observed supervisor is not the exact child admitted by this start request.");
+  }
+  const { bindSupervisorToActiveClaimUnderActivity } = await import("../continuous/stewardship.ts");
+  await bindSupervisorToActiveClaimUnderActivity(repositoryRoot, claimId, generation, current.record!.process);
+  await writeJson(repositoryRoot, supervisorAdmission, Object.freeze({ ...admission, state: "bound" as const }));
   return {
     output: Object.freeze({
       schema: "urn:usf:hermes-lifecycle:1" as const,
@@ -303,7 +487,7 @@ export async function hermesStartCommand(repositoryRoot: string, args: readonly 
 
 export async function hermesStopCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const parsed = parseLifecycleArgumentsAgainstAuthority(repositoryRoot, args);
-  await runtimeRoot(repositoryRoot);
+  if (!await secureRuntimeRoot(repositoryRoot, true)) throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime directory is unavailable.");
   const observed = await observeSupervisor(repositoryRoot);
   const idle = (outcome: string, reclaimed: boolean): CommandResult => ({
     output: Object.freeze({
@@ -331,7 +515,6 @@ export async function hermesStopCommand(repositoryRoot: string, args: readonly s
   // Orderly drain first: the supervisor observes the request at a cycle
   // boundary, so no transaction is interrupted part-way.
   const started = Date.now();
-  let signal: string | null = null;
   let live = true;
   while (Date.now() - started < parsed.waitMs) {
     await new Promise((complete) => setTimeout(complete, 500));
@@ -339,37 +522,23 @@ export async function hermesStopCommand(repositoryRoot: string, args: readonly s
     if (current.liveness !== "live") { live = false; break; }
   }
   if (live) {
-    // Drain did not complete inside the operator's bound. Terminate
-    // deterministically rather than leaving an owner nobody can replace.
-    try { process.kill(record.process.pid, "SIGTERM"); signal = "SIGTERM"; } catch { signal = null; }
-    const graceDeadline = Date.now() + terminationGraceMs;
-    while (Date.now() < graceDeadline) {
-      await new Promise((complete) => setTimeout(complete, 250));
-      const current = await observeSupervisor(repositoryRoot);
-      if (current.liveness !== "live") { live = false; break; }
-    }
-    if (live) {
-      try { process.kill(record.process.pid, "SIGKILL"); signal = "SIGKILL"; } catch { /* already gone */ }
-      const killDeadline = Date.now() + terminationGraceMs;
-      while (Date.now() < killDeadline) {
-        await new Promise((complete) => setTimeout(complete, 250));
-        const current = await observeSupervisor(repositoryRoot);
-        if (current.liveness !== "live") { live = false; break; }
-      }
-    }
-  }
-  await rm(resolve(repositoryRoot, supervisorRecord), { force: true });
-  await rm(resolve(repositoryRoot, stopRequestRecord), { force: true });
-  if (live) {
-    throw new UsfError("HERMES_SUPERVISOR_NOT_TERMINATED", exitCodes.CONTINUOUS_DEGRADED,
-      "The supervisor did not terminate after an orderly request and both signals.",
+    throw new UsfError("HERMES_DRAIN_PENDING", exitCodes.CONTINUOUS_DEGRADED,
+      "The orderly stop request remains pending. Preserve the supervisor and its transaction; observe again before takeover.",
       { supervisorId: record.supervisorId, pid: record.process.pid });
   }
+  // The supervisor removes its own identity. Preserve a replacement process's
+  // records if a different, authorised start occurred after this one drained.
+  const remaining = await observeSupervisor(repositoryRoot);
+  if (remaining.record?.supervisorId === record.supervisorId) {
+    await rm(resolve(repositoryRoot, supervisorRecord), { force: true });
+  }
+  const request = await readJson<{ supervisorId: string }>(repositoryRoot, stopRequestRecord);
+  if (request?.supervisorId === record.supervisorId) await rm(resolve(repositoryRoot, stopRequestRecord), { force: true });
   return {
     output: Object.freeze({
       schema: "urn:usf:hermes-lifecycle:1" as const, version: 1 as const, operation: "stop" as const,
-      running: false, outcome: signal === null ? "drained" : "terminated",
-      reclaimedStaleRecord: false, drained: signal === null, terminationSignal: signal,
+      running: false, outcome: "drained",
+      reclaimedStaleRecord: false, drained: true, terminationSignal: null,
       waitedMs: Date.now() - started, supervisorId: record.supervisorId,
       nonClaims: Object.freeze([
         "Completed semantic and evidence state is untouched by stopping: results already written remain exactly as the cycles left them.",
@@ -549,15 +718,68 @@ async function pause(repositoryRoot: string, supervisorId: string, seconds: numb
   return stopRequested(repositoryRoot, supervisorId);
 }
 
+async function awaitAdmissionBinding(repositoryRoot: string, admission: SupervisorAdmission, identity: ProcessIdentity): Promise<void> {
+  const deadline = Date.now() + startObservationTimeoutMs;
+  while (Date.now() < deadline) {
+    const current = await admissionOrRefuse(repositoryRoot);
+    if (current.tokenDigest !== admission.tokenDigest || !sameProcess(current.child, identity)
+      || current.claimId !== admission.claimId || current.generation !== admission.generation) {
+      throw new UsfError("HERMES_SUPERVISOR_ADMISSION_STALE", exitCodes.CURRENTNESS_FAILURE, "The supervisor admission changed before stewardship binding.");
+    }
+    if (current.state === "bound") {
+      const { verifyAdmittedSupervisorBinding } = await import("../continuous/stewardship.ts");
+      await verifyAdmittedSupervisorBinding(repositoryRoot, admission.claimId, admission.generation, identity, admission.starter);
+      return;
+    }
+    await new Promise((complete) => setTimeout(complete, 25));
+  }
+  throw new UsfError("HERMES_SUPERVISOR_ADMISSION_TIMEOUT", exitCodes.CONTINUOUS_DEGRADED, "The authorised start did not bind the supervisor to its stewardship claim.");
+}
+
+async function validateChildAdmission(repositoryRoot: string, args: readonly string[], identity: ProcessIdentity): Promise<SupervisorAdmission> {
+  const token = process.env.USF_HERMES_START_TOKEN;
+  const claimId = process.env.USF_STEWARD_CLAIM_ID;
+  const generation = process.env.USF_STEWARD_GENERATION;
+  const session = process.env.USF_STEWARD_SESSION_ID;
+  if (token === undefined || claimId === undefined || generation === undefined || session === undefined) {
+    throw new UsfError("HERMES_SUPERVISOR_ADMISSION_REQUIRED", exitCodes.CONTAINMENT_REFUSAL, "Direct Hermes supervise is refused; use an authorised Hermes start.");
+  }
+  const deadline = Date.now() + 5_000;
+  let admission: SupervisorAdmission | null = null;
+  while (Date.now() < deadline && admission === null) {
+    admission = await readJson<unknown>(repositoryRoot, supervisorAdmission).then((value) => value !== null && validAdmission(value) ? value : null);
+    if (admission === null) await new Promise((complete) => setTimeout(complete, 10));
+  }
+  if (admission === null || admission.state !== "awaiting-binding") throw new UsfError("HERMES_SUPERVISOR_ADMISSION_REQUIRED", exitCodes.CONTAINMENT_REFUSAL, "No current authorised Hermes start admission exists.");
+  const parent = await linuxProcessInspector.inspect(process.ppid);
+  if (parent === null || !sameProcess(parent, admission.starter) || !sameProcess(identity, admission.child)
+    || admission.tokenDigest !== canonicalDigest({ token }) || admission.sessionDigest !== admissionSessionDigest(session)
+    || admission.claimId !== claimId || admission.generation !== generation || admission.argumentsDigest !== admissionArgumentsDigest(args)) {
+    throw new UsfError("HERMES_SUPERVISOR_ADMISSION_STALE", exitCodes.CURRENTNESS_FAILURE, "The Hermes start admission does not match this child, parent, steward epoch and arguments.");
+  }
+  return admission;
+}
+
 export async function hermesSuperviseCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
+  const lifetime = await acquireSupervisorLifetimeLock(repositoryRoot);
+  try {
+    return await runAdmittedSupervisor(repositoryRoot, args);
+  } finally {
+    await lifetime.release();
+  }
+}
+
+async function runAdmittedSupervisor(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const parsed = parseLifecycleArgumentsAgainstAuthority(repositoryRoot, args);
-  await runtimeRoot(repositoryRoot);
+  if (!await secureRuntimeRoot(repositoryRoot, true)) throw new UsfError("HERMES_RUNTIME_UNSAFE", exitCodes.CONTAINMENT_REFUSAL, "Hermes runtime directory is unavailable.");
   const existing = await observeSupervisor(repositoryRoot);
   if (existing.liveness === "live") {
     throw new UsfError("HERMES_SUPERVISOR_ALREADY_ACTIVE", exitCodes.DOMAIN_FAILURE,
       "Another Hermes supervisor already owns this repository.", { supervisorId: existing.record!.supervisorId });
   }
   const identity = await linuxProcessInspector.current();
+  const admission = await validateChildAdmission(repositoryRoot, args, identity);
+  await rm(resolve(repositoryRoot, stopRequestRecord), { force: true });
   const record: HermesSupervisorRecord = Object.freeze({
     schema: "urn:usf:hermes-supervisor:1" as const,
     version: 1 as const,
@@ -573,10 +795,14 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
     authorityIdentity: authorityIdentity(repositoryRoot, parsed.manifest),
   });
   await writeJson(repositoryRoot, supervisorRecord, record);
+  // `start` still owns the activity lock while it binds this exact process to
+  // the current steward record. Until then the child holds only its lifetime
+  // lock and cannot enter a cycle or dispatch work.
+  await awaitAdmissionBinding(repositoryRoot, admission, identity);
 
   const { implementCommand } = await import("./hermes-implement.ts");
   const { realisePlanCommand } = await import("./hermes-realise.ts");
-  const { transactCommand } = await import("./transact.ts");
+  const { transactCommand, listPendingTransactions } = await import("./transact.ts");
 
   // A signal is a request, not an interruption: it is recorded and observed at
   // the next boundary, so no transaction is torn in half by it.
@@ -599,6 +825,28 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
     for (;;) {
       if (signalled !== null) { reason = `signalled-${signalled}`; break; }
       if (await stopRequested(repositoryRoot, record.supervisorId)) { reason = "stop-requested"; break; }
+      let activity;
+      try {
+        activity = await acquireStewardActivity(repositoryRoot);
+      } catch (error) {
+        if (!(error instanceof UsfError) || error.code !== "STEWARD_ACTIVITY_BUSY") throw error;
+        if (await pause(repositoryRoot, record.supervisorId, parsed.pauseSeconds)) { reason = "stop-requested"; break; }
+        continue;
+      }
+      let waitSeconds = parsed.pauseSeconds;
+      try {
+      const pending = await listPendingTransactions(repositoryRoot);
+      if (pending.length > 0) {
+        const previous = await readJson<Record<string, unknown>>(repositoryRoot, cycleRecord);
+        await writeJson(repositoryRoot, cycleRecord, {
+          ...(previous?.supervisorId === record.supervisorId ? previous : {}),
+          schema: "urn:usf:hermes-cycle-projection:1", version: 1,
+          supervisorId: record.supervisorId, manifest: parsed.manifest,
+          observedAt: new Date().toISOString(), cycle,
+          lastReason: "pending transaction requires explicit recovery",
+          blockers: [{ lane: "transaction", reason: "TRANSACT_RECOVERY_REQUIRED", transactions: pending }],
+        });
+      } else {
       cycle += 1;
       const transactions: Record<string, unknown>[] = [];
       const blockers: Record<string, unknown>[] = [];
@@ -742,7 +990,11 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
         || transactions.length > 0
         || (Array.isArray(implementation?.conformanceRuns) && implementation.conformanceRuns.length > 0);
       idleCycles = progressed ? 0 : Math.min(idleCycles + 1, 3);
-      const waitSeconds = Math.min(maximumPauseSeconds, parsed.pauseSeconds * 2 ** idleCycles);
+      waitSeconds = Math.min(maximumPauseSeconds, parsed.pauseSeconds * 2 ** idleCycles);
+      }
+      } finally {
+        await activity.release();
+      }
       if (await pause(repositoryRoot, record.supervisorId, waitSeconds)) { reason = "stop-requested"; break; }
     }
   } catch (error) {
@@ -758,7 +1010,10 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
       ...(last ?? {}), supervisorId: record.supervisorId, cyclesCompleted: cycle,
       terminalReason: reason, terminatedAt: new Date().toISOString(),
     }));
-    await rm(resolve(repositoryRoot, supervisorRecord), { force: true });
+    const current = await observeSupervisor(repositoryRoot);
+    if (current.record?.supervisorId === record.supervisorId) {
+      await rm(resolve(repositoryRoot, supervisorRecord), { force: true });
+    }
   }
   return {
     output: Object.freeze({

@@ -33,67 +33,89 @@ The first packet is product-neutral. The second proves the selected ANQR
 management closure; the final exact product packet cannot be derived from the
 core-only manifest.
 
-## Implemented lifecycle surface
+## Operational stewardship and the current CLI
 
-`usf hermes start`, `usf hermes status` and `usf hermes stop` are the supported
-operator interface for business-as-usual. They own process identity, duplicate
-refusal, orderly drain and the runtime files, so no operator needs to know a
-PID or any file under `.usf/hermes/`. The former external driver script
-(`scripts/hermes-bau.sh`) was removed at the post-realisation housekeeping
-boundary; the registered lifecycle commands are the only interface.
+The operator or its authorised Codex/Claude session uses the current CLI; this
+page is guidance, and the selected graph contract remains authority.
+`graph/manifests/operational-stewardship.json` selects the independent USF
+operational stewardship contract. It does not select ANQR work or change any
+product requirement.
+
+An agent maintains one opaque `USF_STEWARD_SESSION_ID` in its environment. The
+CLI retains its digest, the controlling parent process fingerprint, a claim
+generation and a boot-monotonic renewal deadline. It never records the raw
+session identity. Successful claim returns the identity the agent supplies as
+`USF_STEWARD_CLAIM_ID` together with `USF_STEWARD_GENERATION` when invoking guarded control operations.
 
 ```text
-usf hermes start  [--env-file PATH] [--pause-seconds N] [--concurrency N] [--limit N]
+usf hermes steward claim --agent LABEL [--seconds N]
+usf hermes steward status
+usf hermes steward renew --claim DIGEST --generation DIGEST [--seconds N]
+usf hermes steward handoff --claim DIGEST --generation DIGEST
+usf hermes steward recover --agent LABEL [--seconds N]
+usf hermes steward release --claim DIGEST --generation DIGEST
+```
+
+Claim replay by the same live controlling session preserves the generation.
+Another live session refuses. Handoff makes transfer available only at a safe
+boundary; the incoming claim supersedes the outgoing generation. Dead or expired
+ownership requires explicit recovery. A pending transaction must be resolved
+through `usf transact --recover DIGEST` (with the owning repository/manifest
+where applicable) before stewardship transfer; another live owner still blocks
+that recovery. Unknown bytes or unsafe records refuse recovery.
+
+Release leaves Hermes running. Renewal time limits operating liveness only;
+semantic work identity, evidence currentness and provider qualification remain
+bound to their existing semantic identities. A claim is distinct from supervisor
+ownership, semantic work ownership, Linear assignment and integration authority.
+
+```text
+usf hermes start [--manifest PATH] [--env-file PATH] [--pause-seconds N] [--concurrency N] [--limit N]
 usf hermes status
-usf hermes stop   [--wait-ms N]
+usf hermes stop [--wait-ms N]
 ```
 
-`start` refuses a second supervisor while one is live, reclaims a stale record
-left by a dead process, spawns the detached supervisor and returns only after it
-has observed the record that supervisor wrote for itself. Semantic state is never
-reset by process lifecycle: the semantic cache, conformance evidence and landed
-implementation survive any restart.
+Start, stop, run and applying the implementation/realisation lanes require a
+current stewardship claim. Supervisor admission owns one kernel lifetime lock;
+cycles and manual operations share activity exclusion. Primary publication and
+integration retain the existing primary mutation lock. Independent candidate
+construction does not acquire primary integration authority.
 
-`stop` writes an instance-bound stop request, waits for the supervisor to observe
-it at a cycle boundary — never inside a transaction — and only then escalates to
-`SIGTERM` and `SIGKILL` within a bounded grace. It is idempotent: stopping a
-supervisor that is not running is a success, and a stale record is reclaimed
-without signalling anything.
+Stop requests an orderly cycle boundary. If the wait expires, it reports
+`HERMES_DRAIN_PENDING` and preserves the process, stop request and in-flight
+transaction; it does not escalate to killing a transaction. Successful stop
+preserves semantic results and evidence. Normal handoffs need no stop or restart.
+A previously running supervisor that imported unguarded handlers must be drained
+and upgraded before the new guards apply; changing source bytes cannot patch a
+live JavaScript module instance.
 
-`status` contacts no provider. It reports liveness, supervisor identity, the
-current cycle and its last reason, ready/blocked/landed work counts, provider
-activity, transactions, blockers, the latest behavioural evidence, facet counts
-and the authority identity the supervisor started against.
+Supervisor status is a read-only observation of exact process identity and the
+last cycle projection. Steward status separately describes claim liveness and
+activity availability; unknown lock state remains unknown. A cached empty
+transaction list is not proof that no transaction is active. `ready=0` is only
+the selected profile's current frontier, not whole-programme completion.
 
-Supervisor liveness is derived from durable Linux process identity — boot id,
-start ticks, uid, argv digest and executable digest — so a recycled PID can never
-be mistaken for the owner. `usf hermes supervise` is the foreground loop `start`
-owns; it is not an operator entry point.
+`usf hermes supervise` is an internal child entry admitted by `hermes start`;
+direct invocation without its exact current start admission refuses. The child
+cannot run a cycle until its current steward has bound its process identity.
+`usf start/watch/stop` retain their separate foreground composer contracts;
+`usf stop --instance hermes-bau` does not target the business-as-usual supervisor
+merely because it has a similar name. Bare `usf hermes` is not an implemented
+management invocation; follow `usf hermes --help` and
+`usf hermes steward --help` for the registered surface.
 
-`usf hermes implement` and `usf hermes realise` are the two work lanes the
-supervisor drives, and both remain separately invocable for inspection.
+A future takeover reads Linear priorities and issue continuation, verifies local
+source/semantic identities and runtime state, claims or safely recovers
+stewardship, resumes existing valid work, then selects the next ready issue.
+The Linear binding and interrupted-session exercise have their own acceptance
+in USF-1162 and USF-1163. Ticket prose cannot dispatch work, prove completion or
+act as a concurrency lock. Cross-session review scheduling remains separately
+tracked in USF-1178; a session's parallel reviewer is not a persistent service.
 
-The remaining planned surface is:
-
-```text
-usf hermes doctor [--config config/hermes.json]
-```
-
-Bare `usf hermes` is an intentional full-management entrypoint, not help. It
-resolves the one exact tracked default BAU intent and starts the same foreground
-composer used by `usf start` and `usf watch`. Help remains available through
-`usf hermes --help` and `usf help hermes [topic]` without a repository.
-
-`start` writes only ignored lifecycle/plan records and emits JSONL. `status` and
-`doctor` are read-only. `stop` writes the same exact instance-bound stop intent
-as ordinary `usf stop`; therefore both of these target the configured instance:
-
-```text
-usf hermes stop
-usf stop --instance hermes-bau
-```
-
-No hidden executable or temporary shell recipe is part of the interface.
+The following configuration and management material describes the existing
+profile-bound composer/management contract. Its intended effects must be checked
+against current CLI availability before use; it is not an alternate lifecycle
+or permission source.
 
 ## Tracked policy and resolved configuration
 
@@ -211,7 +233,12 @@ the exact selected profile/manifest, construction evidence/proof and current fil
 its selected ceiling. Process readiness may be ready and idle while
 proofblocked work is excluded. It does not invent missing contracts, treat
 dependency readiness as activation, accept absent evidence or bypass provider
-gates:
+gates. The currently installed foreground composer only observes and orders
+eligible work: it has no execution adapter. Its own instance lock controls its
+lifecycle. Any future executing composer must acquire stewardship for each
+bounded wave and keep stop usable; holding activity for an entire foreground
+lifetime would prevent orderly stop. USF-1162 owns the missing execution binding.
+An observation-only invocation is:
 
 ```sh
 ./bin/usf start \

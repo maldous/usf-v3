@@ -1,35 +1,20 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { dispatchCommand, parseCommand, type CommandHandlers } from "./commands/dispatcher.ts";
-import { admissionCheckHandler, applyHandler, integrateCommandHandler } from "./commands/apply.ts";
-import { bootstrapCarrierCommandHandler } from "./commands/bootstrap-carrier.ts";
-import { callCommandHandler } from "./commands/call.ts";
-import { doctorCommandHandler } from "./commands/doctor.ts";
-import { executeCommandHandler } from "./commands/execute.ts";
-import { graphExecuteCommand } from "./commands/graph-execute.ts";
-import { graphIntegrityCommand } from "./commands/graph-integrity.ts";
-import { graphLanesCommand } from "./commands/graph-lanes.ts";
-import { transactCommand } from "./commands/transact.ts";
-import { hermesCommand } from "./commands/hermes.ts";
-import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
-import { metricsCommandHandler } from "./commands/metrics.ts";
-import { modelsCommandHandler } from "./commands/models.ts";
-import { probeCommandHandler } from "./commands/probe.ts";
-import { providersCommandHandler } from "./commands/providers.ts";
-import { queryCommand } from "./commands/query.ts";
-import { resolveCommandHandler } from "./commands/resolve.ts";
-import { routeCommandHandler } from "./commands/route.ts";
-import { broadStatusCommandHandler } from "./commands/status.ts";
-import { workCommand } from "./commands/work.ts";
-import {
-  completionAwareEvidenceCommandHandler,
-  completionAwareProveCommandHandler,
-  completionAwarePublishCommandHandler,
-  realiseCommandHandler,
-} from "./commands/work-completion.ts";
 import { errorOutput, exitCodes, UsfError } from "./core/errors.ts";
 import { resolveRepositoryRoot } from "./core/repository.ts";
 import { localGitChildEnvironment } from "./providers/local-git.ts";
+import { withOperationalExclusion, withTransactionRecoveryExclusion } from "./continuous/stewardship.ts";
+
+async function operationalMutation<T>(repositoryRoot: string, action: () => Promise<T>, requireClaim = false): Promise<T> {
+  const { observeSupervisor } = await import("./commands/hermes-lifecycle.ts");
+  const { currentStewardshipDependencies } = await import("./commands/hermes-stewardship.ts");
+  return withOperationalExclusion(repositoryRoot, process.env.USF_STEWARD_CLAIM_ID, process.env.USF_STEWARD_GENERATION, action, {
+    requireClaim,
+    dependencies: currentStewardshipDependencies(repositoryRoot),
+    requireClaimWhenAbsent: async () => (await observeSupervisor(repositoryRoot)).liveness === "live",
+  });
+}
 
 const bootstrapHandlers: CommandHandlers = {
   init: ({ repositoryRoot }) => {
@@ -39,60 +24,108 @@ const bootstrapHandlers: CommandHandlers = {
     if (result.status !== 0) throw new UsfError("INIT_FAILED", exitCodes.CONTAINMENT_REFUSAL, "Initialization failed.");
     return { output: undefined };
   },
-  doctor: doctorCommandHandler,
-  status: broadStatusCommandHandler,
-  query: queryCommand,
-  work: workCommand,
-  call: callCommandHandler,
-  resolve: resolveCommandHandler,
-  realise: realiseCommandHandler,
-  apply: applyHandler,
-  check: admissionCheckHandler,
-  integrate: integrateCommandHandler,
-  "bootstrap-carrier": bootstrapCarrierCommandHandler,
-  evidence: completionAwareEvidenceCommandHandler,
-  prove: completionAwareProveCommandHandler,
-  metrics: metricsCommandHandler,
-  models: modelsCommandHandler,
-  providers: providersCommandHandler,
-  probe: probeCommandHandler,
-  publish: completionAwarePublishCommandHandler,
-  execute: executeCommandHandler,
+  doctor: async (context) => (await import("./commands/doctor.ts")).doctorCommandHandler(context),
+  status: async (context) => (await import("./commands/status.ts")).broadStatusCommandHandler(context),
+  query: async (context) => (await import("./commands/query.ts")).queryCommand(context),
+  work: async (context) => (await import("./commands/work.ts")).workCommand(context),
+  // Generic call accepts only options and performs no external contact. Every
+  // named call leaf passes the same exclusion boundary, including future
+  // registered leaves, before its own semantic and provider admission.
+  call: async (context) => {
+    if (context.args[0] !== undefined && !context.args[0].startsWith("-")) {
+      return operationalMutation(context.repositoryRoot, async () => (await import("./commands/call.ts")).callCommandHandler(context));
+    }
+    return (await import("./commands/call.ts")).callCommandHandler(context);
+  },
+  resolve: async (context) => (await import("./commands/resolve.ts")).resolveCommandHandler(context),
+  realise: async (context) => (await import("./commands/work-completion.ts")).realiseCommandHandler(context),
+  apply: async (context) => (await import("./commands/apply.ts")).applyHandler(context),
+  check: async (context) => (await import("./commands/apply.ts")).admissionCheckHandler(context),
+  integrate: (context) => operationalMutation(context.repositoryRoot, async () => (await import("./commands/apply.ts")).integrateCommandHandler(context)),
+  "bootstrap-carrier": async (context) => {
+    const { bootstrapCarrierCommandHandler } = await import("./commands/bootstrap-carrier.ts");
+    return context.args[0] === "adopt"
+      ? operationalMutation(context.repositoryRoot, async () => bootstrapCarrierCommandHandler(context))
+      : bootstrapCarrierCommandHandler(context);
+  },
+  evidence: async (context) => (await import("./commands/work-completion.ts")).completionAwareEvidenceCommandHandler(context),
+  prove: async (context) => (await import("./commands/work-completion.ts")).completionAwareProveCommandHandler(context),
+  metrics: async (context) => (await import("./commands/metrics.ts")).metricsCommandHandler(context),
+  models: async (context) => {
+    const { modelsCommandHandler } = await import("./commands/models.ts");
+    return context.args[0] === "refresh" ? operationalMutation(context.repositoryRoot, async () => modelsCommandHandler(context)) : modelsCommandHandler(context);
+  },
+  providers: async (context) => {
+    const { providersCommandHandler } = await import("./commands/providers.ts");
+    return context.args[0] === "policy" ? operationalMutation(context.repositoryRoot, async () => providersCommandHandler(context)) : providersCommandHandler(context);
+  },
+  probe: async (context) => {
+    const { probeCommandHandler } = await import("./commands/probe.ts");
+    return context.args[0] === "qualify" ? operationalMutation(context.repositoryRoot, async () => probeCommandHandler(context)) : probeCommandHandler(context);
+  },
+  publish: async (context) => {
+    const { completionAwarePublishCommandHandler } = await import("./commands/work-completion.ts");
+    return context.args.includes("--apply") ? operationalMutation(context.repositoryRoot, async () => completionAwarePublishCommandHandler(context)) : completionAwarePublishCommandHandler(context);
+  },
+  execute: (context) => operationalMutation(context.repositoryRoot, async () => (await import("./commands/execute.ts")).executeCommandHandler(context)),
   hermes: async ({ args, repositoryRoot }) => {
+    if (args[0] === "steward") {
+      const { stewardshipCommand } = await import("./commands/hermes-stewardship.ts");
+      return stewardshipCommand(repositoryRoot, args.slice(1));
+    }
     if (args[0] === "realise") {
       const { realisePlanCommand } = await import("./commands/hermes-realise.ts");
-      return realisePlanCommand(repositoryRoot, args.slice(1));
+      return args.includes("--apply")
+        ? operationalMutation(repositoryRoot, () => realisePlanCommand(repositoryRoot, args.slice(1)), true)
+        : realisePlanCommand(repositoryRoot, args.slice(1));
     }
     if (args[0] === "implement") {
       const { implementCommand } = await import("./commands/hermes-implement.ts");
-      return implementCommand(repositoryRoot, args.slice(1));
+      return args.includes("--apply")
+        ? operationalMutation(repositoryRoot, () => implementCommand(repositoryRoot, args.slice(1)), true)
+        : implementCommand(repositoryRoot, args.slice(1));
     }
     if (args[0] === "start" || args[0] === "stop" || args[0] === "supervise" || args[0] === "status") {
       const lifecycle = await import("./commands/hermes-lifecycle.ts");
-      if (args[0] === "start") return lifecycle.hermesStartCommand(repositoryRoot, args.slice(1));
-      if (args[0] === "stop") return lifecycle.hermesStopCommand(repositoryRoot, args.slice(1));
+      if (args[0] === "start") return operationalMutation(repositoryRoot, () => lifecycle.hermesStartCommand(repositoryRoot, args.slice(1)), true);
+      if (args[0] === "stop") return operationalMutation(repositoryRoot, () => lifecycle.hermesStopCommand(repositoryRoot, args.slice(1)), true);
       if (args[0] === "status") return lifecycle.hermesLifecycleStatusCommand(repositoryRoot, args.slice(1));
       return lifecycle.hermesSuperviseCommand(repositoryRoot, args.slice(1));
     }
-    return hermesCommand(repositoryRoot, args);
+    const { hermesCommand } = await import("./commands/hermes.ts");
+    return args[0] === "run"
+      ? operationalMutation(repositoryRoot, () => hermesCommand(repositoryRoot, args), true)
+      : hermesCommand(repositoryRoot, args);
   },
-  transact: ({ args, repositoryRoot }) => transactCommand(repositoryRoot, args),
+  transact: async ({ args, repositoryRoot }) => {
+    const { transactCommand } = await import("./commands/transact.ts");
+    if (args.includes("--recover")) {
+      const { currentStewardshipDependencies } = await import("./commands/hermes-stewardship.ts");
+      return withTransactionRecoveryExclusion(repositoryRoot, process.env.USF_STEWARD_CLAIM_ID, process.env.USF_STEWARD_GENERATION,
+        () => transactCommand(repositoryRoot, args), currentStewardshipDependencies(repositoryRoot));
+    }
+    return args.includes("--dry-run") ? transactCommand(repositoryRoot, args)
+      : operationalMutation(repositoryRoot, () => transactCommand(repositoryRoot, args));
+  },
   profile: async ({ args, repositoryRoot }) => {
     const { profileCommand } = await import("./commands/profile.ts");
     return profileCommand(repositoryRoot, args);
   },
   graph: async ({ args, repositoryRoot }) => {
-    if (args[0] === "integrity") return graphIntegrityCommand(repositoryRoot, args.slice(1));
-    if (args[0] === "lanes") return graphLanesCommand(repositoryRoot, args.slice(1));
+    if (args[0] === "integrity") return (await import("./commands/graph-integrity.ts")).graphIntegrityCommand(repositoryRoot, args.slice(1));
+    if (args[0] === "lanes") return (await import("./commands/graph-lanes.ts")).graphLanesCommand(repositoryRoot, args.slice(1));
     if (args[0] !== "execute") {
       throw new UsfError("GRAPH_OPERATION_UNKNOWN", exitCodes.INVALID_INPUT, "Graph requires exactly one of: execute, integrity.");
     }
-    return graphExecuteCommand(repositoryRoot, args.slice(1));
+    return operationalMutation(repositoryRoot, async () => (await import("./commands/graph-execute.ts")).graphExecuteCommand(repositoryRoot, args.slice(1)));
   },
-  route: routeCommandHandler,
-  start: startCommandHandler,
-  stop: stopCommandHandler,
-  watch: watchCommandHandler,
+  route: async (context) => (await import("./commands/route.ts")).routeCommandHandler(context),
+  // The current foreground composer only observes eligible work and retains
+  // its own instance lifecycle lock. A future executing composer must acquire
+  // stewardship per bounded wave; a lifetime activity lock would block stop.
+  start: async (context) => (await import("./commands/lifecycle.ts")).startCommandHandler(context),
+  stop: async (context) => (await import("./commands/lifecycle.ts")).stopCommandHandler(context),
+  watch: async (context) => (await import("./commands/lifecycle.ts")).watchCommandHandler(context),
 };
 
 function resolveRepositoryRootWithMinimalEnvironment(): string {
