@@ -42,6 +42,43 @@ const observationAdapters = new Map([[
   },
 ]]);
 
+// These bindings describe compiled rule support, not permission or progression.
+const localRuleRoles: Readonly<Record<string, string | readonly string[]>> = Object.freeze({
+  "input.derivationRule": "input",
+  "effect.guardRule": "guard",
+  "effect.scopeRule": "scope",
+  "effect.readbackRule": "readback",
+  "effect.safetyRule": "serial-safety",
+  "produces.0.basisRule": "basis",
+  "produces.0.authenticationRule": "readback",
+  "produces.0.digestRule": "digest",
+  "recovery.intentRule": "intent",
+  "recovery.boundaryRule": "boundary",
+  "recovery.unknownOutcomeRule": "replay",
+  "recovery.reconciliationRule": "replay",
+  "recovery.terminalProofRule": "terminal",
+  "recovery.obligations": ["readback", "replay"],
+});
+
+export function validateLocalObservationRoles(descriptor: ObservationObject, transitionIdentity: string): void {
+  for (const [path, supported] of Object.entries(localRuleRoles)) {
+    let value: unknown = descriptor;
+    for (const key of path.split(".")) {
+      value = value !== null && typeof value === "object" ? (value as ObservationObject)[key] : undefined;
+    }
+    const expected = (typeof supported === "string" ? [supported] : supported)
+      .map(name => `urn:usf:rule:local-preparation-${name}:1`);
+    const actual = typeof value === "string" ? [value] : value;
+    if (!Array.isArray(actual) || actual.length !== expected.length || actual.some((id, index) => id !== expected[index])) {
+      throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Compiled rule role does not match the semantic descriptor.", { path });
+    }
+  }
+  const outputs = descriptor.produces;
+  if (!Array.isArray(outputs) || outputs.length !== 1 || observationObject(outputs[0]).producer !== transitionIdentity) {
+    throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Produced artifact has inconsistent transition lineage.");
+  }
+}
+
 export async function observationCommandHandler(request: CommandRequest, commandPath: string): Promise<CommandResult> {
   const implementation = observationAdapters.get(commandPath);
   if (implementation === undefined) throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "No compiled observation adapter exists.");
@@ -88,6 +125,7 @@ export async function observationCommandHandler(request: CommandRequest, command
   const projected = deriveCliRecord(graph, { recordIdentity: rootRecord.id, subjectIdentity: transitions[0]! }, specifications);
   if (!projected.valid || projected.value === null) throw new UsfError("TRANSITION_SEMANTICS_INCOMPLETE", exitCodes.DOMAIN_FAILURE, "Observation descriptor is incomplete.", { diagnostics: projected.gaps });
   const descriptor = projected.value;
+  validateLocalObservationRoles(descriptor, transitions[0]!);
   const effect = observationObject(descriptor.effect), declaredInput = observationObject(descriptor.input);
   if (descriptor.owner !== context.contract || effect.effectClass !== "observation" || effect.contact !== "none"
     || !Array.isArray(descriptor.prerequisites) || descriptor.prerequisites.length !== 0

@@ -1,7 +1,29 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { observationCommandHandler, parseTransitionInterrogation } from "../../../src/commands/transition.ts";
+import { observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles } from "../../../src/commands/transition.ts";
 import { findHelpTopic, transitionInterrogationContract } from "../../../src/commands/help.ts";
+
+test("compiled observation admission binds each rule role and output producer", () => {
+  const transition = "urn:usf:cli-transition:local-contribution-prepare:1";
+  const rule = (name: string) => `urn:usf:rule:local-preparation-${name}:1`;
+  const descriptor = {
+    input: { derivationRule: rule("input") },
+    effect: { guardRule: rule("guard"), scopeRule: rule("scope"), readbackRule: rule("readback"), safetyRule: rule("serial-safety") },
+    produces: [{ producer: transition, basisRule: rule("basis"), authenticationRule: rule("readback"), digestRule: rule("digest") }],
+    recovery: { intentRule: rule("intent"), boundaryRule: rule("boundary"), unknownOutcomeRule: rule("replay"), reconciliationRule: rule("replay"), terminalProofRule: rule("terminal"), obligations: [rule("readback"), rule("replay")] },
+  };
+  assert.doesNotThrow(() => validateLocalObservationRoles(descriptor, transition));
+  const swapped = structuredClone(descriptor);
+  const effect = swapped.effect as Record<string, unknown>;
+  [effect.guardRule, effect.readbackRule] = [effect.readbackRule, effect.guardRule];
+  assert.throws(() => validateLocalObservationRoles(swapped, transition), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  const lineage = structuredClone(descriptor);
+  (lineage.produces as Array<Record<string, unknown>>)[0]!.producer = "urn:test:other-transition";
+  assert.throws(() => validateLocalObservationRoles(lineage, transition), { code: "TRANSITION_SEMANTICS_INCOMPLETE" });
+  const missing = structuredClone(descriptor);
+  delete (missing.recovery as Record<string, unknown>).unknownOutcomeRule;
+  assert.throws(() => validateLocalObservationRoles(missing, transition), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+});
 
 test("observation adapter refuses unknown commands and transport overrides before graph access", async () => {
   const request = { command: "resolve" as const, repositoryRoot: "/unavailable", args: [] as string[] };
