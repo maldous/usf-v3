@@ -920,6 +920,368 @@
       ],
       "type": "object"
     },
+    "operationalSupport": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/operationalSupportCurrent"
+        },
+        {
+          "$ref": "#/$defs/operationalSupportMissing"
+        },
+        {
+          "$ref": "#/$defs/operationalSupportRefused"
+        }
+      ]
+    },
+    "operationalSupportCurrent": {
+      "additionalProperties": false,
+      "properties": {
+        "derivations": {
+          "description": "Generated native operational-support derivations.",
+          "items": {
+            "$ref": "#/$defs/operationalSupportDerivation"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "implementation": {
+          "const": "authenticated",
+          "description": "Generated native operational-support implementation.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "lockAvailability": {
+          "const": "not-observed",
+          "description": "Native inspection does not observe idle or busy state and does not acquire locks.",
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "outcome": {
+          "const": "current",
+          "description": "Generated native operational-support outcome.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceBasis": {
+          "description": "Generated native operational-support sourceBasis.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "transitionIdentity": {
+          "description": "Generated native operational-support transitionIdentity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "derivations",
+        "implementation",
+        "lockAvailability",
+        "outcome",
+        "sourceBasis",
+        "transitionIdentity"
+      ],
+      "type": "object"
+    },
+    "operationalSupportDerivation": {
+      "additionalProperties": false,
+      "properties": {
+        "authenticatedFacts": {
+          "description": "Generated native operational-support authenticatedFacts.",
+          "items": {
+            "$ref": "#/$defs/operationalSupportFact"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "fieldIdentity": {
+          "description": "Generated native operational-support fieldIdentity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "outputPath": {
+          "description": "Exact ordered native trace output path.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "type": "array"
+        },
+        "sourceDigest": {
+          "description": "Generated native operational-support sourceDigest.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "authenticatedFacts",
+        "fieldIdentity",
+        "outputPath",
+        "sourceDigest"
+      ],
+      "type": "object"
+    },
+    "operationalSupportFact": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "description": "Generated native operational-support digest.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "factKind": {
+          "description": "Closed native preflight fact kind. candidate-identity binds the declared candidate digest only and does not prove a workspace exists.",
+          "enum": [
+            "authority",
+            "basis",
+            "candidate-identity",
+            "candidate-workspace",
+            "check-receipt",
+            "check-recovery",
+            "context",
+            "evidence",
+            "local-preimage",
+            "proof-bundle",
+            "publication-receipt",
+            "publication-snapshot",
+            "scope",
+            "tool-source"
+          ],
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "identity": {
+          "description": "Bounded native fact identity. The authenticated native validator owns its IRI, digest or repository-relative-path domain.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "factKind",
+        "identity"
+      ],
+      "type": "object"
+    },
+    "operationalSupportMissing": {
+      "additionalProperties": false,
+      "properties": {
+        "derivations": {
+          "description": "Generated native operational-support derivations.",
+          "items": {
+            "$ref": "#/$defs/operationalSupportDerivation"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "implementation": {
+          "const": "authenticated",
+          "description": "Generated native operational-support implementation.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "lockAvailability": {
+          "const": "not-observed",
+          "description": "Native inspection does not observe idle or busy state and does not acquire locks.",
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "outcome": {
+          "const": "missing-prerequisite",
+          "description": "Generated native operational-support outcome.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceBasis": {
+          "description": "Generated native operational-support sourceBasis.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "transitionIdentity": {
+          "description": "Generated native operational-support transitionIdentity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "unavailableInputs": {
+          "description": "Generated native operational-support unavailableInputs.",
+          "items": {
+            "$ref": "#/$defs/operationalSupportUnavailableInput"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "derivations",
+        "implementation",
+        "lockAvailability",
+        "outcome",
+        "sourceBasis",
+        "transitionIdentity",
+        "unavailableInputs"
+      ],
+      "type": "object"
+    },
+    "operationalSupportRefused": {
+      "additionalProperties": false,
+      "properties": {
+        "derivations": {
+          "description": "Generated native operational-support derivations.",
+          "items": {
+            "$ref": "#/$defs/operationalSupportDerivation"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "implementation": {
+          "const": "authenticated",
+          "description": "Generated native operational-support implementation.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "lockAvailability": {
+          "const": "not-observed",
+          "description": "Native inspection does not observe idle or busy state and does not acquire locks.",
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        "outcome": {
+          "const": "refused",
+          "description": "Generated native operational-support outcome.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "refusalClass": {
+          "description": "Typed refusal class; exact native refusal code is carried separately.",
+          "enum": [
+            "mixed",
+            "stale",
+            "unclassified",
+            "unsafe"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "refusalCode": {
+          "description": "Exact native refusal code, including CLI_TRANSITION_STALE where applicable.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceBasis": {
+          "description": "Generated native operational-support sourceBasis.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "transitionIdentity": {
+          "description": "Generated native operational-support transitionIdentity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "derivations",
+        "implementation",
+        "lockAvailability",
+        "outcome",
+        "refusalClass",
+        "refusalCode",
+        "sourceBasis",
+        "transitionIdentity"
+      ],
+      "type": "object"
+    },
+    "operationalSupportUnavailableInput": {
+      "additionalProperties": false,
+      "properties": {
+        "factKind": {
+          "description": "Closed unavailable native fact kind. candidate-identity binds the declared candidate digest only and does not prove a workspace exists.",
+          "enum": [
+            "authority",
+            "basis",
+            "candidate-identity",
+            "candidate-workspace",
+            "check-receipt",
+            "check-recovery",
+            "context",
+            "evidence",
+            "local-preimage",
+            "proof-bundle",
+            "publication-receipt",
+            "publication-snapshot",
+            "scope",
+            "tool-source"
+          ],
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "identity": {
+          "description": "Bounded missing native prerequisite identity. The authenticated native validator owns its IRI, digest, repository-relative-path or proposed-operation name domain.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "reasonCode": {
+          "description": "Generated native operational-support reasonCode.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "state": {
+          "const": "missing",
+          "description": "Closed unavailable native fact state.",
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "factKind",
+        "identity",
+        "reasonCode",
+        "state"
+      ],
+      "type": "object"
+    },
     "parallelSafety": {
       "oneOf": [
         {

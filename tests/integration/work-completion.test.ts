@@ -1489,7 +1489,7 @@ test("transition inspection refuses an unsupported selected publication receipt 
     const receiptsBefore = existsSync(receiptDirectory)
       ? await Promise.all((await readdir(receiptDirectory)).sort().map(async name => Object.freeze([name, await readFile(resolve(receiptDirectory, name))] as const)))
       : [];
-    const result = transitionCommandHandler({ command: "transition", repositoryRoot: isolated.root,
+    const result = await transitionCommandHandler({ command: "transition", repositoryRoot: isolated.root,
       args: ["inspect", "--root", canonicalNoChangeSelection.rootIdentity, "--manifest", canonicalNoChangeSelection.manifestPath] }, []);
     const output = result.output as {
       readonly complete: boolean;

@@ -13,6 +13,7 @@ export interface CliFieldSpecification {
   readonly id: string; readonly property: string; readonly predicate: string | null; readonly kind: string;
   readonly rule: string;
   readonly minimum: number; readonly maximum: number; readonly collection: boolean;
+  readonly collectionOrderingRule?: string;
   readonly minimumLength: number; readonly maximumLength: number;
   readonly minimumValue: number | null; readonly maximumValue: number | null;
   readonly allowedValues: readonly string[];
@@ -100,6 +101,10 @@ export function deriveCliRecord(
     for (const q of rows) if (!allowed.has(q.predicate)) bad(subject, q.predicate, "CLI_RECORD_FIELD_UNKNOWN");
     const output: Record<string, CliRecordValue> = Object.create(null) as Record<string, CliRecordValue>;
     for (const field of record.fields) {
+      if (field.collectionOrderingRule !== undefined) {
+        bad(subject, field.id, "CLI_RECORD_ORDERED_SOURCE_UNAVAILABLE");
+        continue;
+      }
       const subjectSource = field.rule === "urn:usf:cli-field-specification:rule-subject-identity:1";
       const source = subjectSource ? rows : rows.filter(q => q.predicate === field.predicate);
       const values = [...new Map(source.map(q => [canonicalJson([q.objectKind, q.object]), q])).entries()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, q]) => q);
@@ -221,6 +226,16 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
       if (rule !== prefix + "rule-predicate-values:1" && !subjectSource) bad(fieldId, "derivationRule", "CLI_SPECIFICATION_RULE_UNKNOWN");
       const collectionValue = single(fieldId, "collection", "literal"), collection = collectionValue === "true";
       if (collectionValue !== "true" && collectionValue !== "false") bad(fieldId, "collection");
+      const orderingRules = many(fieldId, "collectionOrderingRule");
+      if (orderingRules.length > 0) {
+        if (orderingRules.length !== 1 || !collection || subjectSource
+          || orderingRules[0] !== prefix + "rule-native-trace-sequence:1") {
+          bad(fieldId, "collectionOrderingRule", "CLI_SPECIFICATION_RULE_UNKNOWN");
+        } else {
+          typed(orderingRules[0]!, "CliFieldDerivationRule");
+          if (single(orderingRules[0]!, "version", "literal") !== "1") bad(fieldId, "collectionOrderingRule");
+        }
+      }
       const minimum = number(fieldId, "minimumCardinality"), maximum = number(fieldId, "maximumCardinality");
       const minimumLength = number(fieldId, "minimumLength"), maximumLength = number(fieldId, "maximumLength");
       if (minimum > maximum || maximum > 1024 || (!collection && maximum !== 1) || minimumLength > maximumLength) bad(fieldId, "bounds");
@@ -253,7 +268,9 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
       if (subjectSource) {
         if ((index.get(fieldId) ?? []).some(q => q.predicate === P + "sourcePredicate") || kind !== "iri" || collection || minimum !== 1 || maximum !== 1) bad(fieldId, "sourcePredicate/kind/cardinality", "CLI_SPECIFICATION_SUBJECT_SOURCE_INVALID");
       } else if (predicate === null || !index.has(predicate)) bad(fieldId, "sourcePredicate", "CLI_SPECIFICATION_SOURCE_UNRESOLVED");
-      fields.push({ id: fieldId, property, predicate, rule, kind, minimum, maximum, collection, minimumLength, maximumLength, minimumValue, maximumValue, allowedValues, record: refs[0] ?? null, dependencies, explanation });
+      fields.push({ id: fieldId, property, predicate, rule, kind, minimum, maximum, collection,
+        ...(orderingRules.length === 1 ? { collectionOrderingRule: orderingRules[0]! } : {}),
+        minimumLength, maximumLength, minimumValue, maximumValue, allowedValues, record: refs[0] ?? null, dependencies, explanation });
     }
     records.push({ id, sourceType: single(id, "sourceType"), schemaIdentity: single(id, "schemaIdentity"), fragment: single(id, "schemaFragment", "literal"), alternatives, discriminator: discriminators[0] ?? null, fields: fields.sort((a, b) => a.property < b.property ? -1 : a.property > b.property ? 1 : 0) });
   }
@@ -308,7 +325,9 @@ export function deriveCliSchemas(specifications: CliRecordSpecifications): Reado
       else shape = { type: "string", minLength: f.minimumLength, maxLength: f.maximumLength, ...(f.kind === "iri" ? { pattern: "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$" } : {}) };
       if (f.allowedValues.length === 1) shape.const = f.allowedValues[0];
       else if (f.allowedValues.length > 1) shape.enum = f.allowedValues;
-      properties[f.property] = f.collection ? { type: "array", minItems: f.minimum, maxItems: f.maximum, uniqueItems: true, items: shape, description: f.explanation } : { ...shape, description: f.explanation };
+      properties[f.property] = f.collection ? { type: "array", minItems: f.minimum, maxItems: f.maximum,
+        ...(f.collectionOrderingRule === undefined ? { uniqueItems: true } : {}),
+        items: shape, description: f.explanation } : { ...shape, description: f.explanation };
     }
     shapes.set(r.id, { type: "object", additionalProperties: false, properties, required: r.fields.filter(f => f.collection || f.minimum > 0).map(f => f.property) });
   }
@@ -346,11 +365,67 @@ export interface CliTransitionInventory {
 }
 export interface CliTransitionAdapter {
   readonly id: string; readonly effectClass: string;
+  readonly operationalSupportDefinition?: CliOperationalSupportDefinition;
   /** Trusted compiled inspection only; serialized adapter declarations cannot authenticate support. */
   readonly inspect?: (graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, transitionIdentity: string) => readonly CliTransitionDiagnostic[];
+  /** Native observations are prepared by the command kernel, never by schema projection. */
+  readonly operationalSupport?: (graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, projection: CliRecordDerivation) => CliOperationalSupport | null;
 }
+export type CliOperationalFact = Readonly<{ factKind: string; identity: string; digest: string }>;
+export type CliOperationalSupport = Readonly<{
+  readonly sourceBasis: string;
+  readonly transitionIdentity: string;
+  readonly implementation: "authenticated";
+  readonly lockAvailability: "not-observed";
+  readonly derivations: readonly Readonly<{
+    fieldIdentity: string;
+    outputPath: readonly string[];
+    sourceDigest: string;
+    authenticatedFacts: readonly CliOperationalFact[];
+  }>[];
+}> & (
+  | Readonly<{ outcome: "current" }>
+  | Readonly<{ outcome: "missing-prerequisite"; unavailableInputs: readonly Readonly<{
+      factKind: string; identity: string; state: string; reasonCode: string;
+    }>[] }>
+  | Readonly<{ outcome: "refused"; refusalClass: "stale" | "unsafe" | "mixed" | "unclassified"; refusalCode: string }>
+);
 export type CliParallelSafetyAssessment = Readonly<Record<string, CliRecordValue>> & { readonly state: "unproven" | "blocked" | "proved" };
 export interface CliTransitionDiagnostic { readonly reasonCode: string; readonly subject: string; readonly field: string }
+export interface CliOperationalSupportDefinition {
+  readonly identity: string;
+  readonly version: string;
+  readonly recordIdentity: string;
+  readonly outputSchema: string;
+  readonly implementationPaths: readonly string[];
+}
+
+/** Shared admission for native observation and its later coverage projection. */
+export function inspectCliOperationalSupportAdmission(
+  graph: SemanticGraph, adapterIdentity: string, definition: CliOperationalSupportDefinition | undefined,
+): readonly CliTransitionDiagnostic[] {
+  const refused = (field: string): CliTransitionDiagnostic => ({
+    reasonCode: "TRANSITION_OPERATIONAL_SUPPORT_UNADMITTED", subject: adapterIdentity, field,
+  });
+  if (definition === undefined || !Array.isArray(definition.implementationPaths)
+    || definition.implementationPaths.length === 0 || definition.implementationPaths.length > 64) {
+    return [refused("operationalSatisfactionRule")];
+  }
+  const diagnostics: CliTransitionDiagnostic[] = [];
+  const expect = (subject: string, predicate: string, kind: "iri" | "literal", expected: readonly string[]) => {
+    const rows = graph.quads.filter(row => row.subject === subject && row.predicate === `urn:usf:predicate:${predicate}`);
+    const actual = [...new Set(rows.map(row => row.object))].sort();
+    if (rows.some(row => row.objectKind !== kind)
+      || canonicalJson(actual) !== canonicalJson([...new Set(expected)].sort())) diagnostics.push(refused(predicate));
+  };
+  expect(adapterIdentity, "operationalSatisfactionRule", "iri", [definition.identity]);
+  expect(definition.identity, "type", "iri", ["urn:usf:type:OperationalSatisfactionRule"]);
+  expect(definition.identity, "version", "literal", [definition.version]);
+  expect(definition.identity, "operationalOutputSchema", "iri", [definition.outputSchema]);
+  expect(definition.identity, "recordSpecification", "iri", [definition.recordIdentity]);
+  expect(definition.identity, "implementationPath", "literal", definition.implementationPaths);
+  return diagnostics;
+}
 interface CliTransitionTopology {
   readonly id: string;
   readonly requiresTransition: readonly string[];
@@ -368,6 +443,7 @@ export interface CliTransitionCoverageReport {
   readonly profileCandidates: readonly string[];
   readonly requiredGraphRefs: readonly string[];
   readonly descriptors: readonly Readonly<Record<string, CliRecordValue>>[];
+  readonly operationalSupport: readonly CliOperationalSupport[];
   readonly waves: readonly (readonly string[])[];
   readonly topologicalOnly: boolean;
   readonly parallelSafety: CliParallelSafetyAssessment;
@@ -671,15 +747,27 @@ export function deriveCliTransitionCoverage(
   const specifications = contract === null ? null : deriveCliRecordSpecifications(graph, { contractIdentity: contract });
   const descriptorRecord = specifications?.records.find(record => record.fragment === "");
   const descriptors: Readonly<Record<string, CliRecordValue>>[] = [];
+  const operationalUsers = new Map<string, Set<string>>();
+  const operationalSupporters = new Map<string, Set<string>>();
+  const operationalObservations: CliOperationalSupport[] = [];
+  let allDescriptorsValid = true;
   const topology: CliTransitionTopology[] = ids.map(id => {
+    let projection: CliRecordDerivation | null = null;
     if (!typed(id, "CliTransitionDescriptor")) issue("TRANSITION_DESCRIPTOR_TYPE_MISSING", id, "type");
     if (one(id, "owner") !== contract) issue("TRANSITION_OWNER_CONFLICT", id, "owner");
     if (specifications === null || descriptorRecord === undefined || descriptorRecord.sourceType !== T + "CliTransitionDescriptor") {
+      allDescriptorsValid = false;
       issue("CLI_SPECIFICATION_INCOMPLETE", id, "recordSpecification");
     } else {
-      const projection = deriveCliRecord(graph, { recordIdentity: descriptorRecord.id, subjectIdentity: id }, specifications);
+      projection = deriveCliRecord(graph, { recordIdentity: descriptorRecord.id, subjectIdentity: id }, specifications);
+      allDescriptorsValid &&= projection.valid;
       diagnostics.push(...projection.gaps, ...projection.operationalGaps);
       if (projection.value !== null) descriptors.push(projection.value);
+      for (const gap of projection.operationalGaps) {
+        const users = operationalUsers.get(gap.subject) ?? new Set<string>();
+        users.add(id);
+        operationalUsers.set(gap.subject, users);
+      }
     }
     // Structural projection does not authenticate operational evaluators or adapters.
     issue("TRANSITION_EVALUATORS_UNAUTHENTICATED", id, "operationalRules");
@@ -696,7 +784,85 @@ export function deriveCliTransitionCoverage(
       const inspected = adapter.inspect(graph, selection, id);
       if (!Array.isArray(inspected) || inspected.length > 4096 || inspected.some(d => !d || !boundedText(d.reasonCode) || !boundedText(d.subject) || !boundedText(d.field))) {
         issue("TRANSITION_ADAPTER_INSPECTION_INVALID", id, "adapter");
-      } else diagnostics.push(...inspected);
+      } else {
+        diagnostics.push(...inspected);
+        if (inspected.length === 0 && projection?.valid && adapter.operationalSupport !== undefined) {
+          try {
+            const admission = inspectCliOperationalSupportAdmission(graph, adapter.id, adapter.operationalSupportDefinition);
+            diagnostics.push(...admission);
+            const support = admission.length === 0 ? adapter.operationalSupport(graph, selection, projection) : null;
+            if (support !== null) {
+              const key = (value: { fieldIdentity: string; outputPath: readonly string[]; sourceDigest: string }) =>
+                canonicalJson([value.fieldIdentity, value.outputPath, value.sourceDigest]);
+              const requiredFields = new Set(projection.operationalGaps.map(gap => gap.subject));
+              const required = projection.derivations.filter(value => requiredFields.has(value.fieldIdentity));
+              const requiredKeys = new Set(required.map(key));
+              const observed = new Set<string>();
+              const digest = (value: unknown): value is string => typeof value === "string" && /^sha256:[a-f0-9]{64}$/.test(value);
+              if (support.sourceBasis !== projection.sourceBasis || support.transitionIdentity !== id || support.implementation !== "authenticated"
+                || support.lockAvailability !== "not-observed"
+                || !["current", "missing-prerequisite", "refused"].includes(support.outcome)
+                || (support.outcome === "missing-prerequisite" && (!Array.isArray(support.unavailableInputs)
+                  || support.unavailableInputs.length === 0 || support.unavailableInputs.length > 4096
+                  || support.unavailableInputs.some(value => !value
+                    || !boundedText(value.factKind) || !boundedText(value.identity) || value.state !== "missing" || !boundedText(value.reasonCode))))
+                || (support.outcome === "refused" && (!["stale", "unsafe", "mixed", "unclassified"].includes(support.refusalClass)
+                  || !/^[A-Z][A-Z0-9_]{0,255}$/.test(support.refusalCode)))
+                || !Array.isArray(support.derivations) || support.derivations.length > 4096
+                || (support.outcome !== "refused" && support.derivations.length === 0)
+                || support.derivations.some(value => {
+                  if (value === null || typeof value !== "object" || !Array.isArray(value.outputPath)
+                    || value.outputPath.length > 32 || value.outputPath.some((part: unknown) => typeof part !== "string" || !boundedText(part))
+                    || !boundedText(value.fieldIdentity) || !digest(value.sourceDigest)
+                    || !Array.isArray(value.authenticatedFacts) || value.authenticatedFacts.length === 0
+                    || value.authenticatedFacts.length > 4096 || value.authenticatedFacts.some((fact: CliOperationalFact | null) => !fact
+                      || !boundedText(fact.factKind) || !boundedText(fact.identity) || !digest(fact.digest))) return true;
+                  const identity = key(value);
+                  if (!requiredKeys.has(identity) || observed.has(identity)) return true;
+                  observed.add(identity);
+                  return false;
+                })) {
+                issue("TRANSITION_OPERATIONAL_SUPPORT_INVALID", id, "operationalRules");
+              } else {
+                operationalObservations.push({
+                  sourceBasis: support.sourceBasis,
+                  transitionIdentity: support.transitionIdentity,
+                  implementation: support.implementation,
+                  lockAvailability: support.lockAvailability,
+                  derivations: support.derivations.map(value => ({
+                    fieldIdentity: value.fieldIdentity,
+                    outputPath: [...value.outputPath],
+                    sourceDigest: value.sourceDigest,
+                    authenticatedFacts: value.authenticatedFacts.map((fact: CliOperationalFact) => ({
+                      factKind: fact.factKind, identity: fact.identity, digest: fact.digest,
+                    })).sort((a: CliOperationalFact, b: CliOperationalFact) => canonicalJson(a) < canonicalJson(b) ? -1 : canonicalJson(a) > canonicalJson(b) ? 1 : 0),
+                  })).sort((a, b) => key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0),
+                  ...(support.outcome === "missing-prerequisite" ? {
+                    outcome: support.outcome,
+                    unavailableInputs: support.unavailableInputs.map(value => ({
+                      factKind: value.factKind, identity: value.identity,
+                      state: value.state, reasonCode: value.reasonCode,
+                    })).sort((a, b) => canonicalJson(a) < canonicalJson(b) ? -1 : canonicalJson(a) > canonicalJson(b) ? 1 : 0),
+                  } : support.outcome === "refused" ? {
+                    outcome: support.outcome, refusalClass: support.refusalClass, refusalCode: support.refusalCode,
+                  } : { outcome: support.outcome }),
+                });
+                if (support.outcome === "refused") issue(support.refusalCode, id, "operationalRules");
+                for (const field of requiredFields) {
+                  if (support.outcome === "refused") continue;
+                  const instances = required.filter(value => value.fieldIdentity === field);
+                  if (instances.length === 0 || !instances.every(value => observed.has(key(value)))) continue;
+                  const supporters = operationalSupporters.get(field) ?? new Set<string>();
+                  supporters.add(id);
+                  operationalSupporters.set(field, supporters);
+                }
+              }
+            }
+          } catch {
+            issue("TRANSITION_OPERATIONAL_SUPPORT_REFUSED", id, "operationalRules");
+          }
+        }
+      }
     }
     return { id, requiresTransition: values(id, "requiresTransition"), consumes: values(id, "consumes"), produces: values(id, "produces") };
   });
@@ -733,7 +899,13 @@ export function deriveCliTransitionCoverage(
   issue("TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED", root, "terminalArtifact/recovery");
   const assessment = deriveCliTerminalAssessment(graph, root);
   for (const reasonCode of assessment.reasonCodes) issue(reasonCode, root, "terminalClosure");
-  const uniqueDiagnostics = [...new Map(diagnostics.map(d => [canonicalJson(d), d])).values()].sort((a, b) => canonicalJson(a) < canonicalJson(b) ? -1 : canonicalJson(a) > canonicalJson(b) ? 1 : 0);
+  // A shared field is supported only when every selected descriptor instance is covered.
+  const remainingDiagnostics = diagnostics.filter(diagnostic => {
+    if (diagnostic.reasonCode !== "CLI_OPERATIONAL_RULE_UNRESOLVED" || !allDescriptorsValid || ids.length === 0) return true;
+    const users = operationalUsers.get(diagnostic.subject), supporters = operationalSupporters.get(diagnostic.subject);
+    return users === undefined || users.size === 0 || supporters === undefined || [...users].some(id => !supporters.has(id));
+  });
+  const uniqueDiagnostics = [...new Map(remainingDiagnostics.map(d => [canonicalJson(d), d])).values()].sort((a, b) => canonicalJson(a) < canonicalJson(b) ? -1 : canonicalJson(a) > canonicalJson(b) ? 1 : 0);
   // Bind every selected named-source quad, including referenced semantics not projected above.
   const graphDigest = canonicalQuadDigest(graph.quads);
   const body = { schema: "urn:usf:cli-transition-interrogation:1" as const, ...selection, graphDigest, work, contract, profile, profileCandidates: profiles, requiredGraphRefs, descriptors, waves,
@@ -741,7 +913,8 @@ export function deriveCliTransitionCoverage(
       assessmentRule: "urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1",
       missingObligations: ["urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1"],
       reasonCodes: ["TRANSITION_PARALLEL_SAFETY_UNAUTHENTICATED"] },
-    terminalClosure: { declared, derived, equal, assessment }, diagnostics: uniqueDiagnostics, complete: uniqueDiagnostics.length === 0,
+    terminalClosure: { declared, derived, equal, assessment }, operationalSupport: operationalObservations,
+    diagnostics: uniqueDiagnostics, complete: uniqueDiagnostics.length === 0,
     reasonCode: uniqueDiagnostics.length === 0 ? "TRANSITION_COVERAGE_COMPLETE" as const : "TRANSITION_SEMANTICS_INCOMPLETE" as const, executionAuthority: "none" as const };
   function freeze<TValue>(value: TValue): TValue {
     if (value !== null && typeof value === "object") { for (const child of Object.values(value)) freeze(child); Object.freeze(value); }

@@ -126,12 +126,14 @@ async function observedDigest(root: string, path: string): Promise<string | null
   } finally { await handle.close(); }
 }
 
-export async function prepareLocalContribution(repositoryRoot: string, selection: { readonly rootIdentity: string; readonly manifestPath: string }, proposedOperations: unknown): Promise<LocalContribution> {
+function localSelection(selection: { readonly rootIdentity: string; readonly manifestPath: string }) {
   record(selection, ["rootIdentity", "manifestPath"]);
   if (typeof selection.rootIdentity !== "string" || selection.rootIdentity.length > 4096 || !/^[A-Za-z][A-Za-z0-9+.-]*:[^\s]+$/.test(selection.rootIdentity) || !isRepositoryRelativePath(selection.manifestPath)) return refuse("LOCAL_SELECTION_INVALID");
-  selection = Object.freeze({ ...selection });
-  let snapshot: unknown;
-  try { snapshot = structuredClone(proposedOperations); } catch { return refuse("LOCAL_CONTRIBUTION_INPUT_INVALID"); }
+  return Object.freeze({ ...selection });
+}
+
+async function prepareLocalSelectionContext(repositoryRoot: string, selection: { readonly rootIdentity: string; readonly manifestPath: string }) {
+  selection = localSelection(selection);
   const root = await realpath(repositoryRoot);
   const graph = loadSemanticGraph(root, selection.manifestPath), P = "urn:usf:predicate:", T = "urn:usf:type:";
   const values = (s: string, p: string) => [...new Set(graph.quads.filter(q => q.subject === s && q.predicate === P + p && q.objectKind === "iri").map(q => q.object))];
@@ -150,6 +152,16 @@ export async function prepareLocalContribution(repositoryRoot: string, selection
   if (result.status !== "ok" || result.truncation?.truncated || result.items?.length !== 1 || packet?.id !== selection.rootIdentity || !packet.eligibility?.construction.eligible || !packet.realisationBasis) return refuse("LOCAL_CONSTRUCTION_REFUSED");
   const basis = await deriveCurrentRealisationBasis(root, packet.realisationBasis);
   assertSameBasis(packet.realisationBasis, basis);
+  if (basis.work.id !== packet.id || basis.selection.profile !== packet.decisionBoundary.root
+    || basis.selection.manifestPath !== selection.manifestPath) return refuse("LOCAL_SELECTION_INVALID");
+  return Object.freeze({ root, basis });
+}
+
+async function prepareLocalContributionContext(repositoryRoot: string, selection: { readonly rootIdentity: string; readonly manifestPath: string }, proposedOperations: unknown) {
+  selection = localSelection(selection);
+  let snapshot: unknown;
+  try { snapshot = structuredClone(proposedOperations); } catch { return refuse("LOCAL_CONTRIBUTION_INPUT_INVALID"); }
+  const { root, basis } = await prepareLocalSelectionContext(repositoryRoot, selection);
   const contribution = createLocalContribution(basis, snapshot);
   const paths = contribution.payload.operations.map(op => op.path);
   const preimages = await deriveCandidatePreimages(root, basis, paths);
@@ -160,5 +172,38 @@ export async function prepareLocalContribution(repositoryRoot: string, selection
   const toolDigest = await observedDigest(dirname(toolPath), toolPath.slice(dirname(toolPath).length + 1));
   if (toolDigest === null) return refuse("LOCAL_TOOL_SOURCE_MISSING");
   assertSameBasis(basis, await deriveCurrentRealisationBasis(root, basis));
-  return createLocalContribution(basis, contribution.payload.operations.map(({ expectedDigest: _expectedDigest, ...op }) => op), toolDigest);
+  return Object.freeze({ basis, preimages: Object.freeze(preimages), toolDigest,
+    contribution: createLocalContribution(basis, contribution.payload.operations.map(({ expectedDigest: _expectedDigest, ...op }) => op), toolDigest) });
+}
+
+/** Existing producer entrypoint; all authority inspection remains in the shared private context. */
+export async function prepareLocalContribution(repositoryRoot: string, selection: { readonly rootIdentity: string; readonly manifestPath: string }, proposedOperations: unknown): Promise<LocalContribution> {
+  return (await prepareLocalContributionContext(repositoryRoot, selection, proposedOperations)).contribution;
+}
+
+/** No proposed operations means unknown input, never an invented empty contribution. */
+export async function inspectLocalContribution(repositoryRoot: string, selection: { readonly rootIdentity: string; readonly manifestPath: string }, proposedOperations?: unknown) {
+  const fact = (kind: "basis" | "scope" | "authority" | "local-preimage" | "tool-source", identity: string, digest: string) => Object.freeze({ kind, identity, digest, current: true as const });
+  const common = (basis: RealisationBasis) => ({ operation: "local-contribution" as const, executionAuthority: "none" as const, lockAvailability: "not-observed" as const,
+    selection: Object.freeze({ workIri: basis.work.id, profileIri: basis.selection.profile, manifestPath: basis.selection.manifestPath }) });
+  const selectionFacts = (basis: RealisationBasis) => [
+    fact("basis", basis.work.id, basis.basisDigest),
+    fact("scope", basis.work.id, canonicalDigest(basis.scope)),
+    fact("authority", basis.authority.contract, canonicalDigest(basis.authority)),
+  ];
+  if (proposedOperations === undefined) {
+    const context = await prepareLocalSelectionContext(repositoryRoot, selection);
+    assertSameBasis(context.basis, await deriveCurrentRealisationBasis(context.root, context.basis));
+    const reasonCode = "LOCAL_OPERATIONS_UNAVAILABLE";
+    return Object.freeze({ ...common(context.basis), status: "unavailable" as const, reasonCode,
+      facts: Object.freeze(selectionFacts(context.basis)),
+      unavailable: Object.freeze([Object.freeze({ kind: "local-preimage" as const, identity: "proposedOperations", state: "missing" as const, reasonCode })]) });
+  }
+    const context = await prepareLocalContributionContext(repositoryRoot, selection, proposedOperations);
+    return Object.freeze({ ...common(context.basis),
+      status: "authenticated" as const, unavailable: Object.freeze([]), facts: Object.freeze([
+        ...selectionFacts(context.basis),
+        fact("tool-source", "src/collaboration/local-contribution.ts", context.toolDigest),
+        ...Object.entries(context.preimages).map(([path, digest]) => fact("local-preimage", path, canonicalDigest({ path, digest }))),
+      ]) });
 }

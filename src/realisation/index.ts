@@ -267,6 +267,10 @@ async function writeAtomically(target: string, bytes: Buffer, mode = 0o600): Pro
 function processUid(fallback: number): number { return typeof process.getuid === "function" ? process.getuid() : fallback; }
 
 async function assertPrivateUsfDirectory(root: string, repositoryPath: string, create: boolean): Promise<string> {
+  return (await readPrivateUsfDirectory(root, repositoryPath, create, false))!;
+}
+
+async function readPrivateUsfDirectory(root: string, repositoryPath: string, create: boolean, allowMissing: boolean): Promise<string | null> {
   if (!repositoryPath.startsWith(".usf") || repositoryPath.split("/").some((part) => part.length === 0 || part === "." || part === "..")) {
     throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Private state path is invalid");
   }
@@ -277,6 +281,7 @@ async function assertPrivateUsfDirectory(root: string, repositoryPath: string, c
     try {
       await lstat(cursor);
     } catch (error: unknown) {
+      if (!create && allowMissing && (error as NodeJS.ErrnoException).code === "ENOENT") return null;
       if (!create || (error as NodeJS.ErrnoException).code !== "ENOENT") throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Private state ancestry is unavailable");
       await mkdir(cursor, { mode: 0o700 });
       created = true;
@@ -1128,50 +1133,85 @@ export async function authenticateCandidateWorkspace(root: string, candidateDige
   });
 }
 
+async function readAuthenticatedNoChangeWorkspace(
+  canonicalRoot: string, candidateDigest: string, inventoryPolicy: WorkspaceInventoryPolicy,
+): Promise<AuthenticatedNoChangeWorkspace> {
+  const workspace = workspaceFor(canonicalRoot, candidateDigest);
+  const manifest = await loadManifest(canonicalRoot, workspace);
+  if (manifest.schema !== "urn:usf:no-change-workspace-manifest:1" || manifest.digest !== candidateDigest) {
+    throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate is not an exact no-change workspace");
+  }
+  const constructionBasis = await currentBasis(canonicalRoot, manifest.basis);
+  if (inventoryPolicy.admitsAuthenticatedCheckRuntime) {
+    await assertWorkspaceCandidateBytesForCheckRecovery(canonicalRoot, workspace, manifest);
+  } else {
+    await assertWorkspaceCandidateBytes(canonicalRoot, workspace, manifest);
+  }
+  const scopedTree = await scopedWorkspaceTree(workspace, inventoryPolicy);
+  const candidateTreeDigest = canonicalDigest(scopedTree);
+  const writeSet = [...manifest.writeSet];
+  const authenticated = freezeCandidate({
+    schema: "urn:usf:authenticated-no-change-workspace:1" as const,
+    disposition: "verified-no-change" as const,
+    candidateDigest,
+    workspace,
+    constructionBasis,
+    policy: { ...manifest.policy },
+    workspaceIdentityDigest: canonicalDigest({
+      candidateDigest,
+      originalConstructionBasisDigest: constructionBasis.basisDigest,
+      scope: manifest.scope,
+      candidateTreeDigest,
+    }, { rejectAbsolutePaths: true }),
+    lineageDigest: canonicalDigest(manifest.lineage, { rejectAbsolutePaths: true }),
+    byteDeltaDigest: canonicalDigest([], { rejectAbsolutePaths: true }),
+    fileModeDigest: canonicalDigest([], { rejectAbsolutePaths: true }),
+    writeSet,
+    writeSetDigest: canonicalDigest(writeSet, { rejectAbsolutePaths: true }),
+    scopedTree,
+    candidateTreeDigest,
+  });
+  return authenticated;
+}
+
 async function withAuthenticatedNoChangeWorkspaceInternal<T>(
-  root: string,
-  candidateDigest: string,
-  inventoryPolicy: WorkspaceInventoryPolicy,
+  root: string, candidateDigest: string, inventoryPolicy: WorkspaceInventoryPolicy,
   operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>,
 ): Promise<T> {
-  return withCandidateLock(root, candidateDigest, async (canonicalRoot) => {
-    const workspace = workspaceFor(canonicalRoot, candidateDigest);
-    const manifest = await loadManifest(canonicalRoot, workspace);
-    if (manifest.schema !== "urn:usf:no-change-workspace-manifest:1" || manifest.digest !== candidateDigest) {
-      throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate is not an exact no-change workspace");
+  return withCandidateLock(root, candidateDigest, async canonicalRoot =>
+    operation(await readAuthenticatedNoChangeWorkspace(canonicalRoot, candidateDigest, inventoryPolicy)));
+}
+
+/** Read-only byte authentication does not observe or acquire the producer's lock. */
+export async function inspectNoChangeWorkspace(
+  root: string, candidateDigest: string, mode: "strict" | "check-recovery" = "strict",
+): Promise<Readonly<AuthenticatedNoChangeWorkspace & { lockAvailability: "not-observed" }>> {
+  assertDigest(candidateDigest);
+  if (mode !== "strict" && mode !== "check-recovery") throw new RealisationError("INVALID_OPERATION", "Unknown workspace observation mode");
+  const canonicalRoot = await realpath(root);
+  const inventory = mode === "strict" ? strictWorkspaceInventory : checkRecoveryWorkspaceInventory;
+  const first = await readAuthenticatedNoChangeWorkspace(canonicalRoot, candidateDigest, inventory);
+  const second = await readAuthenticatedNoChangeWorkspace(canonicalRoot, candidateDigest, inventory);
+  if (canonicalJson(first) !== canonicalJson(second)) {
+    throw new RealisationError("CANDIDATE_BASIS_MISMATCH", "Candidate changed during read-only authentication");
+  }
+  return Object.freeze({ ...second, lockAvailability: "not-observed" as const });
+}
+
+/** Absence is observational, not proof of lock availability or permission to create a workspace. */
+export async function inspectNoChangeWorkspaceState(root: string, candidateDigest: string, mode: "strict" | "check-recovery" = "strict") {
+  assertDigest(candidateDigest);
+  if (mode !== "strict" && mode !== "check-recovery") throw new RealisationError("INVALID_OPERATION", "Unknown workspace observation mode");
+  const canonicalRoot = await realpath(root);
+  const path = relative(canonicalRoot, workspaceFor(canonicalRoot, candidateDigest)).split(sep).join("/");
+  if (await readPrivateUsfDirectory(canonicalRoot, path, false, true) === null) {
+    if (await readPrivateUsfDirectory(canonicalRoot, path, false, true) !== null) {
+      throw new RealisationError("CANDIDATE_BASIS_MISMATCH", "Candidate appeared during absence observation");
     }
-    const constructionBasis = await currentBasis(canonicalRoot, manifest.basis);
-    if (inventoryPolicy.admitsAuthenticatedCheckRuntime) {
-      await assertWorkspaceCandidateBytesForCheckRecovery(canonicalRoot, workspace, manifest);
-    } else {
-      await assertWorkspaceCandidateBytes(canonicalRoot, workspace, manifest);
-    }
-    const scopedTree = await scopedWorkspaceTree(workspace, inventoryPolicy);
-    const candidateTreeDigest = canonicalDigest(scopedTree);
-    const writeSet = [...manifest.writeSet];
-    const authenticated = freezeCandidate({
-      schema: "urn:usf:authenticated-no-change-workspace:1" as const,
-      disposition: "verified-no-change" as const,
-      candidateDigest,
-      workspace,
-      constructionBasis,
-      policy: { ...manifest.policy },
-      workspaceIdentityDigest: canonicalDigest({
-        candidateDigest,
-        originalConstructionBasisDigest: constructionBasis.basisDigest,
-        scope: manifest.scope,
-        candidateTreeDigest,
-      }, { rejectAbsolutePaths: true }),
-      lineageDigest: canonicalDigest(manifest.lineage, { rejectAbsolutePaths: true }),
-      byteDeltaDigest: canonicalDigest([], { rejectAbsolutePaths: true }),
-      fileModeDigest: canonicalDigest([], { rejectAbsolutePaths: true }),
-      writeSet,
-      writeSetDigest: canonicalDigest(writeSet, { rejectAbsolutePaths: true }),
-      scopedTree,
-      candidateTreeDigest,
-    });
-    return operation(authenticated);
-  });
+    return Object.freeze({ status: "missing" as const, candidateDigest, lockAvailability: "not-observed" as const });
+  }
+  return Object.freeze({ status: "authenticated" as const, workspace: await inspectNoChangeWorkspace(canonicalRoot, candidateDigest, mode),
+    lockAvailability: "not-observed" as const });
 }
 
 /** Authenticate and use the positive no-change disposition under one candidate lock. */

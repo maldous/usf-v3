@@ -31,6 +31,8 @@ import { deriveWork, evaluateCurrentNoChangeCompletion, type WorkPacket } from "
 import { deriveCliTransitionContext } from "../graph/cli-transitions.ts";
 import {
   authenticateNoChangeWorkspace,
+  inspectNoChangeWorkspace,
+  inspectNoChangeWorkspaceState,
   materialiseNoChangeCandidate,
   deriveNoChangeCandidateIdentity,
   withAuthenticatedNoChangeWorkspaceForCheckRecovery,
@@ -108,6 +110,31 @@ interface PreparedPublicationSnapshot {
   readonly metadata: CompletionPublicationSnapshot;
   readonly bytes: ReadonlyMap<string, Buffer>;
 }
+
+export type NativePreflightFact = Readonly<{
+  kind: "context" | "authority" | "basis" | "scope" | "candidate-identity" | "candidate-workspace" | "check-receipt" | "check-recovery" | "evidence" | "proof-bundle" | "publication-receipt" | "publication-snapshot" | "local-preimage" | "tool-source";
+  identity: string;
+  digest: string;
+  current: true;
+}>;
+
+export type NativePreflightUnavailable = Readonly<{
+  kind: NativePreflightFact["kind"];
+  identity: string;
+  state: "missing" | "stale" | "unsafe" | "mixed" | "recovery-required" | "unknown";
+  reasonCode: string;
+}>;
+
+export type NativeOperationalPreflight = Readonly<{
+  executionAuthority: "none";
+  lockAvailability: "not-observed";
+  operation: "no-change" | "checks" | "evidence" | "proof" | "publication";
+  selection: Readonly<{ workIri: string; profileIri: string; manifestPath: string }> | null;
+  facts: readonly NativePreflightFact[];
+}> & (
+  | Readonly<{ status: "authenticated"; unavailable: readonly [] }>
+  | Readonly<{ status: "unavailable"; reasonCode: string; unavailable: readonly NativePreflightUnavailable[] }>
+);
 
 function refuse(code: string, message: string, exitCode: ExitCode = exitCodes.INVALID_INPUT, details?: Record<string, unknown>): never {
   throw new UsfError(code, exitCode, message, details);
@@ -482,9 +509,10 @@ async function deriveEvidence(
   graph: LoadedSemanticGraph,
   packet: WorkPacket,
   candidateDigest: string,
+  readOnly = false,
 ): Promise<CompletionEvidenceCandidate> {
   const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
-  const workspace = await authenticateNoChangeWorkspace(root, candidateDigest);
+  const workspace = await (readOnly ? inspectNoChangeWorkspace(root, candidateDigest) : authenticateNoChangeWorkspace(root, candidateDigest));
   if (workspace.constructionBasis.basisDigest !== packet.realisationBasis?.basisDigest
     || canonicalJson(workspace.policy) !== canonicalJson(authority.policy)) {
     refuse("WORK_COMPLETION_WORKSPACE_STALE", "The no-change workspace no longer matches current scoped authority.", exitCodes.CURRENTNESS_FAILURE);
@@ -538,12 +566,17 @@ async function authenticateBundle(
   return { bundle, packet };
 }
 
-async function realiseNoChange(root: string, request: RealiseRequest): Promise<Record<string, unknown>> {
+async function prepareNoChangeContext(root: string, request: RealiseRequest) {
   const graph = loadSemanticGraph(root, request.manifestPath);
   const packet = exactPacket(graph, request.profile, request.work);
   const basis = packet.realisationBasis;
   if (basis === undefined) refuse("WORK_COMPLETION_BASIS_MISSING", "The selected work has no realisation basis.", exitCodes.CURRENTNESS_FAILURE);
   const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
+  return Object.freeze({ graph, packet, basis, authority });
+}
+
+async function realiseNoChange(root: string, request: RealiseRequest): Promise<Record<string, unknown>> {
+  const { packet, basis, authority } = await prepareNoChangeContext(root, request);
   const candidate = await materialiseNoChangeCandidate(root, basis, authority.policy);
   const result = Object.freeze({
     schema: "urn:usf:no-change-realisation-result:1" as const,
@@ -576,9 +609,7 @@ export async function realiseNoChangeWork(root: string, request: unknown): Promi
 }
 
 
-/** Derive and authenticate the complete graph-required receipt set without accepting completion. */
-export async function prepareCompletionChecks(root: string, request: unknown): Promise<Record<string, unknown>> {
-  try {
+async function prepareChecksSelectionContext(root: string, request: unknown, readOnly = false) {
     const selected = parseNoChangeWorkRequest(request);
     const repositoryRoot = realpathSync(resolve(root));
     const selection = () => {
@@ -602,7 +633,10 @@ export async function prepareCompletionChecks(root: string, request: unknown): P
         refuse("WORK_COMPLETION_CHECK_SET_STALE", "Selected check-set authority changed during authentication.", exitCodes.CURRENTNESS_FAILURE);
       }
     };
-    const readState = () => withAuthenticatedNoChangeWorkspaceForCheckRecovery(repositoryRoot, candidateDigest, async (workspace) => {
+    const withWorkspace = readOnly
+      ? async <T>(operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>) => operation(await inspectNoChangeWorkspace(repositoryRoot, candidateDigest, "check-recovery"))
+      : async <T>(operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>) => withAuthenticatedNoChangeWorkspaceForCheckRecovery(repositoryRoot, candidateDigest, operation);
+    const readState = () => withWorkspace(async (workspace) => {
       assertCurrent();
       if (workspace.constructionBasis.basisDigest !== basis.basisDigest
         || canonicalJson(workspace.policy) !== canonicalJson(initial.authority.policy)) {
@@ -616,7 +650,18 @@ export async function prepareCompletionChecks(root: string, request: unknown): P
       assertCurrent();
       return Object.freeze({ ...state, reconciliations: Object.freeze(reconciliations) });
     });
-    const before = await readState();
+    return { selected, repositoryRoot, initial, basis, candidateDigest, readState, assertCurrent };
+}
+
+async function prepareChecksContext(root: string, request: unknown, readOnly = false) {
+  const context = await prepareChecksSelectionContext(root, request, readOnly);
+  return { ...context, before: await context.readState() };
+}
+
+/** Derive and authenticate the complete graph-required receipt set without accepting completion. */
+export async function prepareCompletionChecks(root: string, request: unknown): Promise<Record<string, unknown>> {
+  try {
+    const { selected, repositoryRoot, initial, basis, candidateDigest, readState, before } = await prepareChecksContext(root, request);
     const ensureMember = async (obligationIri: string) => {
       // Authenticate the entire retained denominator before requesting any effect.
       await readState();
@@ -657,7 +702,7 @@ export interface CompletionEvidencePreparationRequest {
 }
 
 /** Authenticate a current evidence candidate without persisting or publishing it. */
-export async function prepareCompletionEvidence(root: string, request: CompletionEvidencePreparationRequest): Promise<CompletionEvidenceCandidate> {
+async function prepareEvidenceContext(root: string, request: CompletionEvidencePreparationRequest, readOnly = false) {
   try {
     const keys = ["candidateDigest", "manifestPath", "profile", "work"];
     if (request === null || typeof request !== "object" || Array.isArray(request)
@@ -679,7 +724,7 @@ export async function prepareCompletionEvidence(root: string, request: Completio
     const packet = exactPacket(graph, selected.profile, selected.work);
     const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
     const dependencies = workCompletionAuthorityDependencies(graph, authority);
-    const evidence = await deriveEvidence(repositoryRoot, graph, packet, selected.candidateDigest);
+    const evidence = await deriveEvidence(repositoryRoot, graph, packet, selected.candidateDigest, readOnly);
     // Awaited workspace/check authentication must not carry a stale selection into output.
     const currentGraph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
     const currentPacket = exactPacket(currentGraph, selected.profile, selected.work);
@@ -689,8 +734,15 @@ export async function prepareCompletionEvidence(root: string, request: Completio
       || canonicalJson(dependencies) !== canonicalJson(workCompletionAuthorityDependencies(currentGraph, currentAuthority))) {
       refuse("WORK_COMPLETION_EVIDENCE_NOT_CURRENT", "Evidence preparation authority changed during authentication.", exitCodes.CURRENTNESS_FAILURE);
     }
-    return evidence;
-  } catch (error) { return asUsfError(error, "WORK_COMPLETION_EVIDENCE_REFUSED"); }
+    return { evidence, packet, authority, selected };
+  } catch (error) {
+    if (readOnly) throw error;
+    return asUsfError(error, "WORK_COMPLETION_EVIDENCE_REFUSED");
+  }
+}
+
+export async function prepareCompletionEvidence(root: string, request: CompletionEvidencePreparationRequest): Promise<CompletionEvidenceCandidate> {
+  return (await prepareEvidenceContext(root, request)).evidence;
 }
 
 async function produceCompletionProof(root: string, graph: LoadedSemanticGraph, packet: WorkPacket, evidence: CompletionEvidenceCandidate, obligation: string): Promise<CompletionProofBundle> {
@@ -734,7 +786,7 @@ function parseCanonicalCompletionProofRequest(value: unknown): Readonly<Canonica
 }
 
 /** Root-selected, no-persistence proof preparation for the transition adapter. */
-export async function prepareCanonicalCompletionProof(root: string, request: CanonicalCompletionProofRequest): Promise<CompletionProofBundle> {
+async function prepareProofContext(root: string, request: CanonicalCompletionProofRequest, readOnly = false) {
   try {
     const selected = parseCanonicalCompletionProofRequest(request);
     const repositoryRoot = realpathSync(resolve(root));
@@ -749,7 +801,7 @@ export async function prepareCanonicalCompletionProof(root: string, request: Can
     if (basis === undefined || typeof obligation !== "string") refuse("WORK_COMPLETION_PROOF_OBLIGATION_INVALID", "Canonical proof preparation requires one graph-selected completion proof obligation.", exitCodes.CURRENTNESS_FAILURE);
     const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
     const candidateDigest = await deriveNoChangeCandidateIdentity(repositoryRoot, basis, authority.policy);
-    const evidence = await deriveEvidence(repositoryRoot, graph, packet, candidateDigest);
+    const evidence = await deriveEvidence(repositoryRoot, graph, packet, candidateDigest, readOnly);
     const bundle = await produceCompletionProof(repositoryRoot, graph, packet, evidence, obligation);
     const currentGraph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
     const currentContext = deriveCliTransitionContext(currentGraph, selected.rootIdentity);
@@ -762,8 +814,15 @@ export async function prepareCanonicalCompletionProof(root: string, request: Can
       || canonicalJson(authority) !== canonicalJson(currentAuthority)) {
       refuse("WORK_COMPLETION_BUNDLE_NOT_CURRENT", "Canonical completion proof authority changed during preparation.", exitCodes.CURRENTNESS_FAILURE);
     }
-    return bundle;
-  } catch (error) { return asUsfError(error, "WORK_COMPLETION_PROOF_REFUSED"); }
+    return { bundle, packet, authority, selected };
+  } catch (error) {
+    if (readOnly) throw error;
+    return asUsfError(error, "WORK_COMPLETION_PROOF_REFUSED");
+  }
+}
+
+export async function prepareCanonicalCompletionProof(root: string, request: CanonicalCompletionProofRequest): Promise<CompletionProofBundle> {
+  return (await prepareProofContext(root, request)).bundle;
 }
 
 export interface CanonicalCompletionPublicationRequest extends CanonicalCompletionProofRequest {
@@ -856,9 +915,7 @@ function parseCanonicalCompletionPublicationRequest(value: unknown): Readonly<Ca
 }
 
 /** Both CLI surfaces delegate to the same native publisher and receipt domain. */
-export async function runCanonicalCompletionPublication(root: string, request: CanonicalCompletionPublicationRequest): Promise<Record<string, unknown>> {
-  try {
-    const selected = parseCanonicalCompletionPublicationRequest(request);
+function preparePublicationSelection(root: string, selected: CanonicalCompletionProofRequest) {
     const repositoryRoot = realpathSync(resolve(root));
     const graph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
     const context = deriveCliTransitionContext(graph, selected.rootIdentity);
@@ -866,6 +923,13 @@ export async function runCanonicalCompletionPublication(root: string, request: C
       refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Canonical publication requires one admitted work context.");
     }
     const authority = deriveNoChangeCompletionAuthority(graph, selected.rootIdentity);
+    return { repositoryRoot, graph, context: { ...context, profile: context.profile }, authority };
+}
+
+async function preparePublicationContext(root: string, request: CanonicalCompletionPublicationRequest, readOnly = false) {
+  try {
+    const selected = parseCanonicalCompletionPublicationRequest(request);
+    const { repositoryRoot, graph, context, authority } = preparePublicationSelection(root, selected);
     const binding = publicationSnapshotBinding(graph, authority);
     const group = binding === null ? null : publicationSnapshotGroup(binding, context.profile, selected.manifestPath, [selected.rootIdentity]);
     if (binding !== null && group !== null && existsSync(resolve(repositoryRoot, group))) {
@@ -884,18 +948,169 @@ export async function runCanonicalCompletionPublication(root: string, request: C
         const snapshot = matches[0];
         const bundles = snapshot.metadata.files.filter(file => file.role === "proof-bundle").map(file =>
           JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(snapshot.bytes.get(file.path)!)) as CompletionProofBundle);
-        return await publishCompletion(repositoryRoot, { profile: context.profile, manifestPath: selected.manifestPath,
-          mode: selected.mode, bundlePaths: [] }, bundles);
+        return { repositoryRoot, selected, profile: context.profile, authority, bundles, snapshot };
       }
     }
-    const bundle = await prepareCanonicalCompletionProof(repositoryRoot, {
+    const proof = await prepareProofContext(repositoryRoot, {
       rootIdentity: selected.rootIdentity, manifestPath: selected.manifestPath,
-    });
-    return await publishCompletion(repositoryRoot, {
-      profile: bundle.evidence.profileIri, manifestPath: selected.manifestPath,
-      mode: selected.mode, bundlePaths: [],
-    }, [bundle]);
+    }, readOnly);
+    if (canonicalJson(authority) !== canonicalJson(proof.authority)) {
+      refuse("WORK_COMPLETION_BUNDLE_NOT_CURRENT", "Publication authority changed during proof preparation.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return { repositoryRoot, selected, profile: proof.bundle.evidence.profileIri, authority, bundles: [proof.bundle], snapshot: null, packet: proof.packet };
+  } catch (error) {
+    if (readOnly) throw error;
+    return asUsfError(error, "WORK_COMPLETION_PUBLICATION_REFUSED");
+  }
+}
+
+export async function runCanonicalCompletionPublication(root: string, request: CanonicalCompletionPublicationRequest): Promise<Record<string, unknown>> {
+  const context = await preparePublicationContext(root, request);
+  try {
+    return await publishCompletion(context.repositoryRoot, { profile: context.profile, manifestPath: context.selected.manifestPath,
+      mode: context.selected.mode, bundlePaths: [] }, context.bundles);
   } catch (error) { return asUsfError(error, "WORK_COMPLETION_PUBLICATION_REFUSED"); }
+}
+
+function preflightFact(kind: NativePreflightFact["kind"], identity: string, digest: string): NativePreflightFact {
+  if (!digestPattern.test(digest)) refuse("WORK_COMPLETION_PREFLIGHT_FACT_INVALID", "Native fact has no canonical digest.");
+  return Object.freeze({ kind, identity, digest, current: true as const });
+}
+
+function packetPreflightFacts(packet: WorkPacket, authority: NoChangeCompletionAuthority): readonly NativePreflightFact[] {
+  const basis = packet.realisationBasis;
+  if (basis === undefined) refuse("WORK_COMPLETION_BASIS_MISSING", "Native preflight has no current basis.");
+  return Object.freeze([
+    preflightFact("basis", packet.id, basis.basisDigest),
+    preflightFact("scope", packet.id, canonicalDigest(basis.scope)),
+    preflightFact("authority", authority.policy.iri, authority.policy.resourceDigest),
+  ]);
+}
+
+async function inspectNativeContext(
+  operation: NativeOperationalPreflight["operation"],
+  read: () => Promise<{ packet: WorkPacket; manifestPath: string; facts: readonly NativePreflightFact[]; unavailable?: readonly NativePreflightUnavailable[] }>,
+): Promise<NativeOperationalPreflight> {
+    const context = await read();
+    const basis = context.packet.realisationBasis;
+    if (basis === undefined) refuse("WORK_COMPLETION_BASIS_MISSING", "Native preflight has no current basis.");
+    if (basis.work.id !== context.packet.id || context.packet.decisionBoundary.root !== basis.selection.profile
+      || basis.selection.manifestPath !== context.manifestPath) {
+      refuse("WORK_COMPLETION_PREFLIGHT_STALE", "Native selection disagrees with its authenticated basis.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    const selection = Object.freeze({ workIri: basis.work.id, profileIri: basis.selection.profile, manifestPath: basis.selection.manifestPath });
+    const unavailable = Object.freeze([...(context.unavailable ?? [])]);
+    const common = { operation, selection, facts: Object.freeze([...context.facts]), executionAuthority: "none" as const, lockAvailability: "not-observed" as const };
+    return unavailable.length === 0
+      ? Object.freeze({ ...common, status: "authenticated" as const, unavailable: Object.freeze([]) as readonly [] })
+      : Object.freeze({ ...common, status: "unavailable" as const, reasonCode: unavailable[0]!.reasonCode, unavailable });
+}
+
+async function prepareRootInspectionContext(root: string, request: unknown) {
+  const selected = parseCanonicalCompletionProofRequest(request);
+  const graph = loadSemanticGraph(root, selected.manifestPath);
+  const context = deriveCliTransitionContext(graph, selected.rootIdentity);
+  if (context.diagnostics.length !== 0 || context.profile === null || context.work !== selected.rootIdentity) {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Native inspection requires one admitted work context.");
+  }
+  const nativeRequest = Object.freeze({ work: selected.rootIdentity, profile: context.profile, manifestPath: selected.manifestPath });
+  return { selected, nativeRequest, ...await prepareNoChangeContext(root, nativeRequest) };
+}
+
+/** Observational facts only. No workspaces, checks, locks or publication are created. */
+export async function inspectNoChangeWork(root: string, request: unknown): Promise<NativeOperationalPreflight> {
+  return inspectNativeContext("no-change", async () => {
+    const initial = await prepareRootInspectionContext(root, request);
+    const selected = initial.nativeRequest;
+    const dependencies = workCompletionAuthorityDependencies(initial.graph, initial.authority);
+    const candidateDigest = await deriveNoChangeCandidateIdentity(root, initial.basis, initial.authority.policy);
+    const current = await prepareNoChangeContext(root, selected);
+    if (canonicalJson(initial.basis) !== canonicalJson(current.basis) || canonicalJson(initial.authority) !== canonicalJson(current.authority)
+      || canonicalJson(dependencies) !== canonicalJson(workCompletionAuthorityDependencies(current.graph, current.authority))) {
+      refuse("WORK_COMPLETION_PREFLIGHT_STALE", "No-change authority changed during observation.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return { packet: current.packet, manifestPath: selected.manifestPath, facts: [...packetPreflightFacts(current.packet, current.authority),
+      preflightFact("candidate-identity", candidateDigest, candidateDigest)] };
+  });
+}
+
+async function prepareCompletionInspectionContext(root: string, request: unknown) {
+    const initial = await prepareRootInspectionContext(root, request);
+    const context = await prepareChecksSelectionContext(root, initial.nativeRequest, true);
+    const facts = [...packetPreflightFacts(context.initial.packet, context.initial.authority),
+      preflightFact("candidate-identity", context.candidateDigest, context.candidateDigest)];
+    const observed = await inspectNoChangeWorkspaceState(context.repositoryRoot, context.candidateDigest, "check-recovery");
+    context.assertCurrent();
+    if (observed.status === "missing") {
+      return { packet: context.initial.packet, manifestPath: context.selected.manifestPath, facts,
+        unavailable: [Object.freeze({ kind: "candidate-workspace" as const, identity: context.candidateDigest,
+          state: "missing" as const, reasonCode: "WORK_COMPLETION_WORKSPACE_MISSING" })] };
+    }
+    const before = await context.readState();
+    facts.push(preflightFact("candidate-workspace", context.candidateDigest, observed.workspace.workspaceIdentityDigest),
+      ...before.references.map(receipt => preflightFact("check-receipt", receipt.obligationIri, receipt.receiptDigest)));
+    const unavailable: NativePreflightUnavailable[] = [
+      ...before.missing.map(identity => Object.freeze({ kind: "check-receipt" as const, identity, state: "missing" as const, reasonCode: "WORK_COMPLETION_CHECK_RECEIPT_MISSING" })),
+      ...before.reconciliations.map(identity => Object.freeze({ kind: "check-recovery" as const, identity, state: "recovery-required" as const, reasonCode: "WORK_COMPLETION_CHECK_RECOVERY_REQUIRED" })),
+    ];
+    return { packet: context.initial.packet, manifestPath: context.selected.manifestPath, facts, unavailable };
+}
+
+export async function inspectCompletionChecks(root: string, request: unknown): Promise<NativeOperationalPreflight> {
+  return inspectNativeContext("checks", () => prepareCompletionInspectionContext(root, request));
+}
+
+export async function inspectCompletionEvidence(root: string, request: CanonicalCompletionProofRequest): Promise<NativeOperationalPreflight> {
+  return inspectNativeContext("evidence", async () => {
+    const prerequisites = await prepareCompletionInspectionContext(root, request);
+    if (prerequisites.unavailable.length !== 0) return prerequisites;
+    const initial = await prepareRootInspectionContext(root, request);
+    const candidateDigest = await deriveNoChangeCandidateIdentity(root, initial.basis, initial.authority.policy);
+    const context = await prepareEvidenceContext(root, { ...initial.nativeRequest, candidateDigest }, true);
+    if (canonicalJson(initial.basis) !== canonicalJson(context.packet.realisationBasis)) {
+      refuse("WORK_COMPLETION_PREFLIGHT_STALE", "Evidence basis changed during root-derived inspection.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return { packet: context.packet, manifestPath: context.selected.manifestPath,
+      facts: [...packetPreflightFacts(context.packet, context.authority),
+        preflightFact("candidate-workspace", context.evidence.candidateDigest, context.evidence.workspaceIdentityDigest),
+        ...context.evidence.validationResults.map(receipt => preflightFact("check-receipt", receipt.obligationIri, receipt.receiptDigest)),
+        preflightFact("evidence", context.evidence.evidenceIri, context.evidence.contentDigest)] };
+  });
+}
+
+export async function inspectCanonicalCompletionProof(root: string, request: CanonicalCompletionProofRequest): Promise<NativeOperationalPreflight> {
+  return inspectNativeContext("proof", async () => {
+    const prerequisites = await prepareCompletionInspectionContext(root, request);
+    if (prerequisites.unavailable.length !== 0) return prerequisites;
+    const context = await prepareProofContext(root, request, true);
+    return { packet: context.packet, manifestPath: context.selected.manifestPath,
+      facts: [...packetPreflightFacts(context.packet, context.authority),
+        preflightFact("evidence", context.bundle.evidence.evidenceIri, context.bundle.evidence.contentDigest),
+        preflightFact("proof-bundle", context.bundle.proof.proofResultIri, context.bundle.bundleDigest)] };
+  });
+}
+
+export async function inspectCanonicalCompletionPublication(root: string, request: CanonicalCompletionProofRequest | CanonicalCompletionPublicationRequest): Promise<NativeOperationalPreflight> {
+  return inspectNativeContext("publication", async () => {
+    if (request !== null && typeof request === "object" && !Object.hasOwn(request, "mode")) {
+      const selected = parseCanonicalCompletionProofRequest(request);
+      preparePublicationSelection(root, selected);
+      const prerequisites = await prepareCompletionInspectionContext(root, selected);
+      return { ...prerequisites,
+        unavailable: [Object.freeze({ kind: "context" as const, identity: "mode", state: "missing" as const, reasonCode: "WORK_COMPLETION_PUBLICATION_MODE_MISSING" }), ...prerequisites.unavailable] };
+    }
+    const selected = parseCanonicalCompletionPublicationRequest(request);
+    const prerequisites = await prepareCompletionInspectionContext(root, { rootIdentity: selected.rootIdentity, manifestPath: selected.manifestPath });
+    if (prerequisites.unavailable.length !== 0) return prerequisites;
+    const context = await preparePublicationContext(root, selected, true);
+    // Retained recovery reauthentication currently requires native scratch. Never run it in an observer.
+    if (context.snapshot !== null || context.packet === undefined) {
+      refuse("WORK_COMPLETION_SNAPSHOT_REAUTHENTICATION_REQUIRED", "Retained publication requires native recovery; observation cannot create reconstruction scratch.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return { packet: context.packet, manifestPath: context.selected.manifestPath,
+      facts: [...packetPreflightFacts(context.packet, context.authority),
+        ...context.bundles.map(bundle => preflightFact("proof-bundle", bundle.proof.proofResultIri, bundle.bundleDigest))] };
+  });
 }
 
 function publicationReceiptPath(root: string, repositoryPath: string, createParent: boolean, pendingIdentity?: { dev: number; ino: number }): string {

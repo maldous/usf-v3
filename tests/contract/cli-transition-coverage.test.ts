@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { createJsonSchemaValidator } from "../../src/schema/index.ts";
 import { deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
 import { transitionAdaptersForCoverage } from "../../src/commands/transition.ts";
+import type { CliOperationalSupport, CliOperationalSupportDefinition, CliRecordDerivation, CliTransitionAdapter } from "../../src/graph/cli-transitions.ts";
 import type { SemanticGraph } from "../../src/graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../src/graph/nquads.ts";
 
@@ -1060,5 +1061,306 @@ test("integer value bounds support 16 MiB without widening structural bounds", (
     const refused = deriveCliRecordSpecifications(altered, { contractIdentity: contract });
     assert.equal(refused.structuralComplete, false, property);
     assert.equal(deriveCliSchemas(refused).descriptorSchema, null);
+  }
+});
+
+function operationalSupportFixture() {
+  const f = specificationsFixture();
+  const operationalRule = "urn:test:operational-support-rule:1";
+  const operationalSupportDefinition: CliOperationalSupportDefinition = Object.freeze({
+    identity: operationalRule, version: "1", recordIdentity: f.record, outputSchema: "urn:test:generated:1",
+    implementationPaths: Object.freeze(["src/test/native-operational-support.ts"]),
+  });
+  replaceSpecificationValue(f, f.record, "sourceType", T + "CliTransitionDescriptor");
+  addSubjectIdentity(f.graph, f.record);
+  const effectRecord = "urn:test:effect-record", nestedRecord = "urn:test:nested-record";
+  function record(id: string, sourceType: string, fragment: string) {
+    f.add("urn:test:amendment:1", "recordSpecification", id);
+    f.add(f.record, "derivationDependency", id);
+    f.add(id, "type", T + "CliRecordSpecification");
+    f.add(id, "sourceType", T + sourceType);
+    f.add(id, "schemaIdentity", "urn:test:generated:1");
+    f.add(id, "schemaDerivationRule", f.b + "rule-generate-schema:1");
+    for (const [p, v] of Object.entries({ version: "1", unknownFieldPolicy: "refuse", schemaFragment: fragment })) f.add(id, p, v, "literal");
+  }
+  function field(recordId: string, name: string, property: string, kind: string, nested?: string, collection = false) {
+    const id = recordId + "-" + property;
+    f.add(recordId, "fieldSpecification", id); f.add(id, "type", T + "CliFieldSpecification");
+    f.add(id, "sourceRecord", recordId); f.add(id, "sourcePredicate", P + name);
+    f.add(P + name, "type", T + "SemanticPredicate");
+    f.add(id, "valueKind", f.b + "kind-" + kind + ":1");
+    f.add(f.b + "kind-" + kind + ":1", "type", T + "CliFieldValueKind");
+    f.add(id, "derivationRule", f.b + "rule-predicate-values:1"); f.add(id, "derivationDependency", recordId);
+    if (nested) f.add(id, "recordSpecification", nested);
+    for (const [p, v] of Object.entries({ version: "1", outputProperty: property, collection: String(collection),
+      minimumCardinality: "1", maximumCardinality: collection ? "4" : "1", minimumLength: "1", maximumLength: "4096", text: "Synthetic projection alignment, not native evidence." })) f.add(id, p, v, "literal");
+    return id;
+  }
+  record(effectRecord, "CliEffectContract", "/$defs/effect");
+  record(nestedRecord, "NestedInput", "/$defs/nested");
+  field(f.record, "owner", "owner", "iri");
+  field(f.record, "command", "command", "iri");
+  field(f.record, "effectContract", "effect", "record", effectRecord);
+  field(f.record, "inputContract", "inputs", "record", nestedRecord, true);
+  field(effectRecord, "effectClass", "effectClass", "text");
+  const nestedField = field(nestedRecord, "example", "example", "text");
+  for (const id of [f.field, nestedField]) f.add(id, "semanticRuleRequirement", f.b + "rule-operational-rule-required:1");
+  const ids = ["urn:test:operational-a", "urn:test:operational-b"];
+  for (const id of ids) {
+    f.add(work, "transition", id); f.add(id, "type", T + "CliTransitionDescriptor");
+    f.add(id, "owner", contract); f.add(id, "command", id + "-command"); f.add(id + "-command", "adapterIdentity", "urn:test:adapter");
+    f.add(id, "example", "root", "literal"); f.add(id, "effectContract", id + "-effect");
+    f.add(id + "-effect", "type", T + "CliEffectContract"); f.add(id + "-effect", "effectClass", "observation", "literal");
+    for (const suffix of ["first", "second"]) {
+      const child = id + "-" + suffix;
+      f.add(id, "inputContract", child); f.add(child, "type", T + "NestedInput"); f.add(child, "example", suffix, "literal");
+    }
+  }
+  f.add("urn:test:adapter", "operationalSatisfactionRule", operationalRule);
+  f.add(operationalRule, "type", T + "OperationalSatisfactionRule");
+  f.add(operationalRule, "version", "1", "literal");
+  f.add(operationalRule, "operationalOutputSchema", "urn:test:generated:1");
+  f.add(operationalRule, "recordSpecification", f.record);
+  f.add(operationalRule, "implementationPath", "src/test/native-operational-support.ts", "literal");
+  const specs = f.specs();
+  assert.equal(specs.structuralComplete, true, JSON.stringify(specs.gaps));
+  const support = (projection: CliRecordDerivation): CliOperationalSupport => ({
+    sourceBasis: projection.sourceBasis, transitionIdentity: projection.subjectIdentity,
+    implementation: "authenticated", lockAvailability: "not-observed", outcome: "current",
+    derivations: projection.derivations.filter(d => [f.field, nestedField].includes(d.fieldIdentity)).map(d => ({
+      fieldIdentity: d.fieldIdentity, outputPath: d.outputPath, sourceDigest: d.sourceDigest,
+      authenticatedFacts: [{ factKind: "context", identity: projection.subjectIdentity + ":context", digest: canonicalQuadDigest(f.graph.quads) }],
+    })),
+  });
+  const run = (callback?: CliTransitionAdapter["operationalSupport"], definition: CliOperationalSupportDefinition | null = operationalSupportDefinition) => deriveCliTransitionCoverage(f.graph,
+    { rootIdentity: work, manifestPath: "graph/test.json" }, { leaves: [], complete: false },
+    [{ id: "urn:test:adapter", effectClass: "observation", inspect: () => [], ...(callback ? { operationalSupport: callback } : {}), ...(definition !== null ? { operationalSupportDefinition: definition } : {}) }]);
+  const unresolved = (result: ReturnType<typeof run>, id: string) => result.diagnostics.some(d => d.reasonCode === "CLI_OPERATIONAL_RULE_UNRESOLVED" && d.subject === id);
+  return { ...f, ids, nestedField, operationalRule, operationalSupportDefinition, support, run, unresolved };
+}
+
+test("operational support requires exact trace instances for every selected descriptor user", () => {
+  const f = operationalSupportFixture();
+  for (const callback of [undefined, () => null, (_g: SemanticGraph, _s: unknown, p: CliRecordDerivation) => ({ ...f.support(p), derivations: [] })]) {
+    const report = f.run(callback);
+    assert(f.unresolved(report, f.field)); assert(f.unresolved(report, f.nestedField));
+  }
+  const oneUser = f.run((_g, _s, p) => p.subjectIdentity === f.ids[0] ? f.support(p) : null);
+  assert(f.unresolved(oneUser, f.field)); assert(f.unresolved(oneUser, f.nestedField));
+  const partial = f.run((_g, _s, p) => {
+    const support = f.support(p);
+    return { ...support, derivations: support.derivations.filter((d, i, all) => d.fieldIdentity !== f.nestedField || i === all.findIndex(x => x.fieldIdentity === f.nestedField)) };
+  });
+  assert.equal(f.unresolved(partial, f.field), false);
+  assert(f.unresolved(partial, f.nestedField), "one of two repeated field instances is insufficient");
+  const completeSupport = f.run((_g, _s, p) => f.support(p));
+  assert.equal(f.unresolved(completeSupport, f.field), false); assert.equal(f.unresolved(completeSupport, f.nestedField), false);
+  assert.equal(completeSupport.executionAuthority, "none"); assert.equal(completeSupport.parallelSafety.state, "unproven");
+  assert(completeSupport.operationalSupport.every(value => value.lockAvailability === "not-observed"));
+  assert.equal(completeSupport.topologicalOnly, true, "unknown lock availability cannot become an execution schedule");
+  assert.equal(JSON.stringify(completeSupport).includes("idle"), false, "unknown lock availability cannot be projected as idle");
+  assert(completeSupport.diagnostics.some(d => d.reasonCode === "TRANSITION_EVALUATORS_UNAUTHENTICATED"));
+  assert.equal(f.specs().operationalGaps.length, 2, "generic specifications stay conservative despite trusted callback support");
+});
+
+test("operational support admission refuses every altered compiled rule binding before callback", () => {
+  const cases: readonly [string, string, (f: ReturnType<typeof operationalSupportFixture>) => CliOperationalSupportDefinition | null][] = [
+    ["missing", "operationalSatisfactionRule", () => null],
+    ["binding", "operationalSatisfactionRule", f => { f.add("urn:test:adapter", "operationalSatisfactionRule", "urn:test:foreign-operational-rule:1"); return f.operationalSupportDefinition; }],
+    ["type", "type", f => { f.graph.quads = f.graph.quads.map(q => q.subject === f.operationalRule && q.predicate === P + "type" ? { ...q, object: T + "OtherRule" } : q); return f.operationalSupportDefinition; }],
+    ["version", "version", f => { f.graph.quads = f.graph.quads.map(q => q.subject === f.operationalRule && q.predicate === P + "version" ? { ...q, object: "2" } : q); return f.operationalSupportDefinition; }],
+    ["output schema", "operationalOutputSchema", f => { f.graph.quads = f.graph.quads.map(q => q.subject === f.operationalRule && q.predicate === P + "operationalOutputSchema" ? { ...q, object: "urn:test:foreign-schema:1" } : q); return f.operationalSupportDefinition; }],
+    ["record", "recordSpecification", f => { f.graph.quads = f.graph.quads.map(q => q.subject === f.operationalRule && q.predicate === P + "recordSpecification" ? { ...q, object: "urn:test:foreign-record:1" } : q); return f.operationalSupportDefinition; }],
+    ["path", "implementationPath", f => { f.add(f.operationalRule, "implementationPath", "src/test/foreign.ts", "literal"); return f.operationalSupportDefinition; }],
+  ];
+  for (const [name, field, alter] of cases) {
+    const f = operationalSupportFixture();
+    let calls = 0;
+    const report = f.run((_graph, _selection, projection) => { calls++; return f.support(projection); }, alter(f));
+    assert.equal(calls, 0, name);
+    assert(report.diagnostics.some(d => d.reasonCode === "TRANSITION_OPERATIONAL_SUPPORT_UNADMITTED" && d.subject === "urn:test:adapter" && d.field === field), name);
+    assert(f.unresolved(report, f.field), name);
+    assert(f.unresolved(report, f.nestedField), name);
+    assert.equal(report.executionAuthority, "none");
+  }
+});
+
+test("operational support refuses stale foreign duplicate empty-fact and wrong-path traces", () => {
+  const mutations: ((s: CliOperationalSupport) => CliOperationalSupport)[] = [
+    s => ({ ...s, sourceBasis: "sha256:" + "0".repeat(64) }),
+    s => ({ ...s, transitionIdentity: "urn:test:other" }),
+    s => ({ ...s, derivations: [...s.derivations, s.derivations[0]!] }),
+    ...["fieldIdentity", "sourceDigest", "outputPath", "authenticatedFacts"].map(property => (s: CliOperationalSupport): CliOperationalSupport => ({
+      ...s, derivations: s.derivations.map((d, i) => i === 0 ? { ...d, [property]: property === "outputPath" ? ["wrong-role"] : property === "authenticatedFacts" ? [] : property === "sourceDigest" ? "sha256:" + "0".repeat(64) : "urn:test:foreign-field" } : d),
+    })),
+    s => ({ ...s, derivations: s.derivations.map(d => ({ ...d, authenticatedFacts: [{ factKind: "context", identity: d.fieldIdentity, digest: "not-a-digest" }] })) }),
+  ];
+  for (const mutate of mutations) {
+    const f = operationalSupportFixture(), report = f.run((_g, _s, p) => mutate(f.support(p)));
+    assert(report.diagnostics.some(d => d.reasonCode === "TRANSITION_OPERATIONAL_SUPPORT_INVALID"));
+    assert(f.unresolved(report, f.field)); assert(f.unresolved(report, f.nestedField));
+    assert.equal(report.executionAuthority, "none");
+  }
+  const f = operationalSupportFixture();
+  const refused = (fact: string) => f.run((_g, _s, p) => {
+    const support = f.support(p);
+    return { ...support, outcome: "refused" as const, refusalClass: "stale" as const, refusalCode: "NATIVE_CONTEXT_STALE",
+      derivations: support.derivations.map(value => ({ ...value, authenticatedFacts: [{ factKind: "context", identity: value.fieldIdentity, digest: fact }] })) };
+  });
+  const firstFact = "sha256:" + "3".repeat(64), secondFact = "sha256:" + "4".repeat(64);
+  const first = refused(firstFact), second = refused(secondFact);
+  for (const report of [first, second]) {
+    assert(report.diagnostics.some(d => d.reasonCode === "NATIVE_CONTEXT_STALE"));
+    assert(f.unresolved(report, f.field)); assert(f.unresolved(report, f.nestedField));
+    assert.equal(report.executionAuthority, "none");
+    assert.equal(report.operationalSupport[0]!.outcome, "refused");
+    assert.equal(report.operationalSupport[0]!.refusalCode, "NATIVE_CONTEXT_STALE");
+  }
+  assert(JSON.stringify(first.operationalSupport).includes(firstFact), "refused observations retain authenticated recovery facts");
+  assert(JSON.stringify(second.operationalSupport).includes(secondFact));
+  assert.notEqual(first.digest, second.digest, "retained refused facts participate in the canonical output digest");
+});
+
+test("operational support cannot bypass adapter admission or an invalid descriptor user", () => {
+  const f = operationalSupportFixture();
+  let calls = 0;
+  const report = deriveCliTransitionCoverage(f.graph, { rootIdentity: work, manifestPath: "graph/test.json" },
+    { leaves: [], complete: false }, [{ id: "urn:test:adapter", effectClass: "observation",
+      inspect: (_graph, _selection, id) => [{ reasonCode: "CLI_TRANSITION_UNIMPLEMENTED", subject: id, field: "adapter" }],
+      operationalSupport: (_graph, _selection, projection) => { calls++; return f.support(projection); } }]);
+  assert.equal(calls, 0, "native support is not consulted after failed shared admission");
+  assert(f.unresolved(report, f.field)); assert(f.unresolved(report, f.nestedField));
+  f.add(f.ids[1]!, "undocumentedOverride", "unexpected", "literal");
+  const malformed = f.run((_graph, _selection, projection) => f.support(projection));
+  assert(malformed.diagnostics.some(d => d.reasonCode === "CLI_RECORD_FIELD_UNKNOWN"));
+  assert(f.unresolved(malformed, f.field)); assert(f.unresolved(malformed, f.nestedField));
+  assert.equal(malformed.executionAuthority, "none");
+  assert.equal(malformed.parallelSafety.state, "unproven");
+});
+
+test("operational support binds changed native facts into visible report provenance and digest", () => {
+  const f = operationalSupportFixture();
+  const firstFact = "sha256:" + "1".repeat(64), secondFact = "sha256:" + "2".repeat(64);
+  const observe = (fact: string) => f.run((_graph, _selection, projection) => {
+    const support = f.support(projection);
+    return { ...support, derivations: support.derivations.map(d => ({ ...d, authenticatedFacts: [{ factKind: "context", identity: d.fieldIdentity, digest: fact }] })) };
+  });
+  const first = observe(firstFact), second = observe(secondFact);
+  assert.equal(first.graphDigest, second.graphDigest, "only the trusted native observation changes");
+  assert.deepEqual(first.diagnostics, second.diagnostics, "diagnostic filtering is not the evidence denominator");
+  assert.notEqual(first.digest, second.digest, "runtime support facts must participate in the canonical report digest");
+  assert(JSON.stringify(first).includes(firstFact), "the first native fact must remain visible, not just influence an opaque digest");
+  assert(JSON.stringify(second).includes(secondFact), "the changed native fact must remain visible");
+  assert.equal(first.executionAuthority, "none"); assert.equal(second.executionAuthority, "none");
+  assert.equal(first.parallelSafety.state, "unproven"); assert.equal(second.parallelSafety.state, "unproven");
+});
+
+test("operational support leaves unavailable external input users unresolved", () => {
+  const f = operationalSupportFixture();
+  const report = f.run((_graph, _selection, projection) => {
+    const support = f.support(projection);
+    if (projection.subjectIdentity !== f.ids[1]) return support;
+    return {
+      ...support,
+      outcome: "missing-prerequisite",
+      unavailableInputs: [{ factKind: "local-preimage", identity: "urn:test:operation-input:1", state: "missing", reasonCode: "NATIVE_EXTERNAL_INPUT_UNAVAILABLE" }],
+    };
+  });
+  const missing = report.operationalSupport.filter(value => value.outcome === "missing-prerequisite");
+  assert.equal(missing.length, 1);
+  assert.deepEqual(missing[0]!.unavailableInputs, [{ factKind: "local-preimage", identity: "urn:test:operation-input:1", state: "missing", reasonCode: "NATIVE_EXTERNAL_INPUT_UNAVAILABLE" }]);
+  assert.equal(f.unresolved(report, f.field), false, "a typed missing prerequisite is not fabricated as a current native observation");
+  assert.equal(f.unresolved(report, f.nestedField), false);
+  assert.equal(report.complete, false);
+  assert.equal(report.executionAuthority, "none");
+  assert.equal(report.parallelSafety.state, "unproven");
+});
+
+test("generated operational support union rejects mixed outcomes and projects only authenticated trace fields", () => {
+  const f = operationalSupportFixture();
+  const current = f.run((_graph, _selection, projection) => f.support(projection)).operationalSupport[0]!;
+  const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
+  const validator = createJsonSchemaValidator({ $schema: descriptor.$schema, $id: "urn:test:operational-support:1", $ref: "urn:usf:cli-transition-descriptor:1#/$defs/operationalSupport" }, { dependencySchemas: [descriptor] });
+  assert.equal(validator.validate(current).valid, true);
+  const missing = { ...current, outcome: "missing-prerequisite", unavailableInputs: [{ factKind: "context", identity: "urn:test:missing:1", state: "missing", reasonCode: "NATIVE_INPUT_MISSING" }] };
+  assert.equal(validator.validate(missing).valid, true, "a missing prerequisite has identity, not an invented output path");
+  assert.equal(validator.validate({ ...missing, unavailableInputs: [{ ...missing.unavailableInputs[0], outputPath: ["native", "context", "urn:test:missing:1"] }] }).valid, false,
+    "unavailable inputs cannot invent a bridge-local output path");
+  assert.equal(validator.validate({ ...current, unavailableInputs: [{ factKind: "context", identity: "urn:test:missing:1", state: "missing", reasonCode: "NATIVE_INPUT_MISSING" }] }).valid, false,
+    "a current result cannot carry a missing prerequisite");
+  assert.equal(validator.validate({ ...current, outcome: "unknown" }).valid, false,
+    "unknown native outcomes cannot be reclassified as missing prerequisites");
+  assert.equal(validator.validate({ ...current, derivations: current.derivations.map(value => ({ ...value, selectedWork: work })) }).valid, false,
+    "the output contract is closed to bridge-local selection values");
+
+  const projected = f.run((_graph, _selection, projection) => {
+    const support = f.support(projection) as CliOperationalSupport & { derivations: readonly (CliOperationalSupport["derivations"][number] & { readonly untrusted: string })[] };
+    return { ...support, derivations: support.derivations.map(value => ({ ...value, untrusted: "must-not-project" })) };
+  });
+  assert.equal(JSON.stringify(projected.operationalSupport).includes("must-not-project"), false,
+    "coverage selects the exact authenticated trace properties rather than spreading bridge output");
+  assert.equal(projected.parallelSafety.state, "unproven");
+  assert(projected.operationalSupport.every(value => value.lockAvailability === "not-observed"));
+});
+
+test("typed operational support requires traces for current or missing prerequisites and refuses non-missing absence states", () => {
+  const invalid = (callback: CliTransitionAdapter["operationalSupport"], f = operationalSupportFixture()) => {
+    const report = f.run(callback);
+    assert(report.diagnostics.some(d => d.reasonCode === "TRANSITION_OPERATIONAL_SUPPORT_INVALID"));
+    assert(f.unresolved(report, f.field));
+    assert(f.unresolved(report, f.nestedField));
+    assert.equal(report.executionAuthority, "none");
+    assert.equal(report.parallelSafety.state, "unproven");
+  };
+  invalid((_graph, _selection, projection) => ({ ...operationalSupportFixture().support(projection), derivations: [] }));
+  invalid((_graph, _selection, projection) => ({
+    ...operationalSupportFixture().support(projection), outcome: "missing-prerequisite", derivations: [],
+    unavailableInputs: [{ factKind: "context", identity: "urn:test:missing:1", state: "missing", reasonCode: "NATIVE_CONTEXT_MISSING" }],
+  }));
+  for (const state of ["stale", "recovery-required", "unknown"]) {
+    invalid((_graph, _selection, projection) => ({
+      ...operationalSupportFixture().support(projection), outcome: "missing-prerequisite",
+      unavailableInputs: [{ factKind: "context", identity: "urn:test:unavailable:" + state, state, reasonCode: "NATIVE_CONTEXT_" + state.toUpperCase().replaceAll("-", "_") }],
+    }));
+  }
+  const f = operationalSupportFixture();
+  const refused = f.run((_graph, _selection, projection) => ({
+    ...f.support(projection), outcome: "refused", derivations: [], refusalClass: "unsafe", refusalCode: "NATIVE_CONTEXT_UNSAFE",
+  }));
+  assert(refused.diagnostics.some(d => d.reasonCode === "NATIVE_CONTEXT_UNSAFE"));
+  assert(f.unresolved(refused, f.field));
+  assert(f.unresolved(refused, f.nestedField));
+});
+
+test("ordered collection declarations preserve repeated schema values but refuse unordered graph sources", () => {
+  const f = specificationsFixture(), subject = "urn:test:ordered-values", ordering = f.b + "rule-native-trace-sequence:1";
+  replaceSpecificationValue(f, f.field, "collection", "true");
+  replaceSpecificationValue(f, f.field, "minimumCardinality", "0");
+  replaceSpecificationValue(f, f.field, "maximumCardinality", "4");
+  f.add(ordering, "type", T + "CliFieldDerivationRule");
+  f.add(ordering, "version", "1", "literal");
+  f.add(f.field, "collectionOrderingRule", ordering);
+  f.add(subject, "type", T + "Example");
+  f.add(subject, "example", "repeat", "literal");
+  const specs = f.specs();
+  assert.equal(specs.structuralComplete, true, JSON.stringify(specs.gaps));
+  const schema = deriveCliSchemas(specs).descriptorSchema!;
+  assert.equal(((schema.properties as Record<string, unknown>).example as { uniqueItems?: boolean }).uniqueItems, undefined);
+  assert.equal(createJsonSchemaValidator(schema).validate({ example: ["repeat", "repeat"] }).valid, true);
+  const result = deriveCliRecord(f.graph, { recordIdentity: f.record, subjectIdentity: subject }, specs);
+  assert.equal(result.valid, false);
+  assert(result.gaps.some(gap => gap.reasonCode === "CLI_RECORD_ORDERED_SOURCE_UNAVAILABLE"));
+});
+
+test("unordered collections retain unique-items and malformed ordered declarations refuse", () => {
+  const ordinary = specificationsFixture();
+  replaceSpecificationValue(ordinary, ordinary.field, "collection", "true");
+  replaceSpecificationValue(ordinary, ordinary.field, "minimumCardinality", "0");
+  replaceSpecificationValue(ordinary, ordinary.field, "maximumCardinality", "4");
+  const ordinarySchema = deriveCliSchemas(ordinary.specs()).descriptorSchema!;
+  assert.equal((((ordinarySchema.properties as Record<string, unknown>).example) as { uniqueItems?: boolean }).uniqueItems, true);
+  for (const ordering of ["urn:test:unknown", ordinary.b + "rule-subject-identity:1"]) {
+    const f = specificationsFixture(); replaceSpecificationValue(f, f.field, "collection", "true"); f.add(f.field, "collectionOrderingRule", ordering);
+    assert.equal(f.specs().structuralComplete, false);
   }
 });

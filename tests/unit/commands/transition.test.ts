@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { resolveCommandHandler } from "../../../src/commands/resolve.ts";
 import { inspectTransition, transitionAdaptersForCoverage, loadTransitionContextGraph, observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, symlinkSync, lstatSync, readlinkSync } from "node:fs";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, symlinkSync, lstatSync, readlinkSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative, isAbsolute, sep } from "node:path";
 import type { SemanticGraph } from "../../../src/graph/index.ts";
 import { canonicalQuadLine, parseStrictNQuads } from "../../../src/graph/nquads.ts";
 import { deriveCliTransitionContext, deriveCliTransitionCoverage } from "../../../src/graph/cli-transitions.ts";
@@ -13,6 +13,364 @@ import { findHelpTopic, transitionInterrogationContract, transitionSchemaContrac
 import { canonicalDigest } from "../../../src/core/canonical.ts";
 import { executeTransitionCommand } from "../../../src/commands/transition.ts";
 import { prepareCanonicalCompletionProof, runCanonicalCompletionPublication } from "../../../src/commands/work-completion.ts";
+
+test("native inspection authenticates genuine bytes without writes or lock claims and preserves stale refusals", {
+  skip: process.env.USF_REPOSITORY_ROOT !== undefined && "the direct lane owns genuine construction and native check execution",
+}, async () => {
+  const { cp, mkdir, mkdtemp, readdir, readFile, writeFile, unlink, rename, rm } = await import("node:fs/promises");
+  const { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } = await import("../../../src/commands/construction-authority.ts");
+  const { admissionCheckHandler } = await import("../../../src/commands/apply.ts");
+  const { readGraphDerivedCheckReceipt } = await import("../../../src/commands/check.ts");
+  const { inspectNoChangeWorkspace, withCandidateLock } = await import("../../../src/realisation/index.ts");
+  const { realiseCommandHandler, inspectNoChangeWork, inspectCompletionChecks, inspectCompletionEvidence, inspectCanonicalCompletionProof, inspectCanonicalCompletionPublication } = await import("../../../src/commands/work-completion.ts");
+  const canonicalRoot = fileURLToPath(new URL("../../../", import.meta.url));
+  const temporaryRoot = process.env.TMPDIR ?? join(canonicalRoot, ".usf/tmp");
+  await mkdir(temporaryRoot, { recursive: true, mode: 0o700 });
+  const parent = await mkdtemp(join(temporaryRoot, "native-inspection-test-"));
+  const root = join(parent, "repository");
+  await mkdir(root, { mode: 0o700 });
+  const manifestPath = "graph/manifests/integration.json";
+  const work = "urn:usf:work:repository-path-scope";
+  const profile = "urn:usf:profile:v3-self-host:1";
+  try {
+    for (const entry of await readdir(canonicalRoot, { withFileTypes: true })) {
+      if (entry.name === ".git" || entry.name === "node_modules" || entry.name.startsWith(".usf")) continue;
+      await cp(join(canonicalRoot, entry.name), join(root, entry.name), { recursive: true });
+    }
+    // Use the integration fixture's exact historical publication removal, never alter a checked receipt.
+    const receiptDirectory = join(root, "evidence/work-completion");
+    const removedBySource = new Map<string, Set<string>>();
+    for (const name of await readdir(receiptDirectory)) {
+      const path = join(receiptDirectory, name);
+      const receipt = JSON.parse(await readFile(path, "utf8"));
+      if (receipt.manifestPath !== manifestPath || receipt.profileIri !== profile) continue;
+      for (const operation of receipt.operations) {
+        const removed = removedBySource.get(operation.sourcePath) ?? new Set<string>();
+        removed.add(operation.line);
+        removedBySource.set(operation.sourcePath, removed);
+      }
+      await unlink(path);
+    }
+    for (const [path, removed] of removedBySource) {
+      const source = await readFile(join(root, path), "utf8");
+      await writeFile(join(root, path), source.split("\n").filter(line => line.length > 0 && !removed.has(line)).join("\n") + "\n");
+    }
+    const snapshot = () => {
+      const rows: unknown[] = [];
+      const visit = (path: string) => {
+        const absolute = join(root, path), stat = lstatSync(absolute);
+        rows.push({ path, dev: stat.dev, ino: stat.ino, mode: stat.mode, size: stat.size,
+          mtime: stat.mtimeMs, ctime: stat.ctimeMs,
+          content: stat.isFile() ? readFileSync(absolute).toString("base64") : null });
+        if (stat.isDirectory()) for (const child of readdirSync(absolute).sort()) visit(path + "/" + child);
+      };
+      visit(".usf");
+      visit("evidence");
+      return rows;
+    };
+    // Same genuine native preparation as freshCheckedCompletion, with assertions at the pre-effect boundary.
+    const evidencePath = ".usf/candidates/construction-authority/native-inspection-evidence.json";
+    const bundlePath = ".usf/candidates/construction-authority/native-inspection-bundle.json";
+    const common = ["--profile", profile, "--manifest", manifestPath];
+    await evidenceCommandHandler({ command: "evidence", repositoryRoot: root,
+      args: ["construction", "--work", work, ...common, "--output", evidencePath] });
+    await proveCommandHandler({ command: "prove", repositoryRoot: root,
+      args: ["construction", "--obligation", "urn:usf:proof:repository-path-scope:construction-authority", "--evidence", evidencePath, ...common, "--output", bundlePath] });
+    const granted = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root,
+      args: ["construction-authority", "--bundle", bundlePath, ...common, "--apply"] });
+    assert.equal((granted.output as { status: string }).status, "ok");
+    const selection = { rootIdentity: work, manifestPath };
+    const prospectiveBefore = snapshot();
+    const prospective = await inspectNoChangeWork(root, selection);
+    assert.equal(prospective.status, "authenticated");
+    const prospectiveIdentity = prospective.facts.find(fact => fact.kind === "candidate-identity")?.identity;
+    assert.ok(prospectiveIdentity);
+    for (const inspect of [inspectCompletionChecks, inspectCompletionEvidence, inspectCanonicalCompletionProof]) {
+      const missing = await inspect(root, selection);
+      assert.equal(missing.status, "unavailable");
+      assert.equal(missing.selection?.workIri, work);
+      assert.equal(missing.executionAuthority, "none");
+      assert.equal(missing.lockAvailability, "not-observed");
+      for (const kind of ["basis", "authority", "scope", "candidate-identity"]) assert.ok(missing.facts.some(fact => fact.kind === kind));
+      assert.deepEqual(missing.unavailable, [{ kind: "candidate-workspace", identity: prospectiveIdentity,
+        state: "missing", reasonCode: "WORK_COMPLETION_WORKSPACE_MISSING" }]);
+      assert.equal(missing.facts.some(fact => fact.kind === "candidate-workspace" || fact.kind === "check-receipt"), false);
+    }
+    assert.deepEqual(snapshot(), prospectiveBefore, "root-only inspection must not create locks, workspaces or receipts before materialisation");
+    const realised = await realiseCommandHandler({ command: "realise", repositoryRoot: root,
+      args: ["no-change", "--work", work, ...common] });
+    const native = realised.output as { candidateDigest: string; workspacePath: string };
+    assert.equal(native.candidateDigest, prospectiveIdentity);
+    const validation = "urn:usf:validation:repository-path-tests";
+    const checked = await admissionCheckHandler({ command: "check", repositoryRoot: root,
+      args: ["--candidate", native.candidateDigest, "--validation", validation] });
+    const checkResult = checked.output as { status: string; reasonCode?: string; confinementFailure?: string; id?: string };
+    assert.equal(checkResult.status, "pass", JSON.stringify({ reasonCode: checkResult.reasonCode,
+      confinementFailure: checkResult.confinementFailure, id: checkResult.id }));
+    const receipt = await readGraphDerivedCheckReceipt(root, native.candidateDigest, validation);
+    assert.ok(receipt);
+    const fresh = { ...native, receiptPath: receipt.receiptPath };
+    const before = snapshot();
+    const observed = await inspectNoChangeWorkspace(root, fresh.candidateDigest);
+    assert.equal(observed.candidateDigest, fresh.candidateDigest);
+    assert.equal(observed.lockAvailability, "not-observed");
+    assert.deepEqual(await inspectNoChangeWorkspace(root, fresh.candidateDigest), observed);
+    const evidence = await inspectCompletionEvidence(root, selection);
+    assert.equal(evidence.status, "authenticated");
+    assert.equal(evidence.executionAuthority, "none");
+    assert.equal(evidence.selection?.profileIri, profile);
+    assert.ok(evidence.facts.some(fact => fact.kind === "candidate-workspace" && fact.identity === fresh.candidateDigest));
+    const { loadSemanticGraph } = await import("../../../src/graph/index.ts");
+    const { deriveWork } = await import("../../../src/graph/work.ts");
+    const { createCompletionEvidenceCandidate, createCompletionProofBundle } = await import("../../../src/realisation/work-completion.ts");
+    const currentGraph = loadSemanticGraph(root, manifestPath);
+    const derived = deriveWork(currentGraph, { selector: work, profile, maxItems: 1 });
+    assert.equal(derived.status, "ok");
+    assert.equal(derived.items?.length, 1);
+    const currentPacket = derived.items![0]!;
+    assert.deepEqual(currentPacket.realisationAuthority?.completionValidationObligations, [validation]);
+    const proofObligation = currentPacket.realisationAuthority?.completionProofObligation;
+    assert.equal(typeof proofObligation, "string");
+    assert.ok(typeof proofObligation === "string");
+    const expectedEvidence = createCompletionEvidenceCandidate(currentGraph, currentPacket, observed, [{
+      obligationIri: validation, receiptPath: receipt.receiptPath, receiptDigest: receipt.receipt.receiptDigest,
+      validationResultSetDigest: receipt.receipt.validationResultSetDigest,
+    }]);
+    const expectedProof = createCompletionProofBundle(currentGraph, currentPacket, expectedEvidence, proofObligation);
+    const proof = await inspectCanonicalCompletionProof(root, selection);
+    assert.equal(proof.status, "authenticated");
+    assert.equal(proof.executionAuthority, "none");
+    assert.equal(proof.lockAvailability, "not-observed");
+    assert.deepEqual(proof.selection, evidence.selection);
+    assert.deepEqual(proof.unavailable, []);
+    assert.deepEqual(proof.facts.filter(fact => fact.kind === "evidence"), [{
+      kind: "evidence", identity: expectedEvidence.evidenceIri, digest: expectedEvidence.contentDigest, current: true,
+    }]);
+    assert.deepEqual(proof.facts.filter(fact => fact.kind === "proof-bundle"), [{
+      kind: "proof-bundle", identity: expectedProof.proof.proofResultIri, digest: expectedProof.bundleDigest, current: true,
+    }]);
+    const publication = await inspectCanonicalCompletionPublication(root, selection);
+    assert.equal(publication.status, "unavailable");
+    assert.ok(publication.status === "unavailable");
+    assert.equal(publication.reasonCode, "WORK_COMPLETION_PUBLICATION_MODE_MISSING");
+    assert.equal(publication.unavailable[0]?.identity, "mode");
+    assert.deepEqual(snapshot(), before, "read-only success and replay must preserve lock, receipt and workspace bytes and metadata");
+    await withCandidateLock(root, fresh.candidateDigest, async () => {
+      const locked = snapshot();
+      assert.equal((await inspectNoChangeWorkspace(root, fresh.candidateDigest)).lockAvailability, "not-observed");
+      const held = await inspectCompletionEvidence(root, selection);
+      assert.equal(held.lockAvailability, "not-observed");
+      assert.equal(held.executionAuthority, "none");
+      assert.deepEqual(snapshot(), locked, "optimistic byte observation must not change or claim availability of the held lock");
+    });
+    const workspacePath = join(root, fresh.workspacePath);
+    const retainedWorkspace = join(parent, "retained-workspace");
+    await rename(workspacePath, retainedWorkspace);
+    try {
+      const missingBefore = snapshot();
+      for (const inspect of [inspectCompletionChecks, inspectCompletionEvidence, inspectCanonicalCompletionProof]) {
+        const result = await inspect(root, selection);
+        assert.equal(result.status, "unavailable");
+        assert.equal(result.selection?.workIri, work);
+        assert.equal(result.selection?.profileIri, profile);
+        assert.equal(result.executionAuthority, "none");
+        assert.equal(result.lockAvailability, "not-observed");
+        assert.ok(result.facts.some(fact => fact.kind === "candidate-identity" && fact.identity === fresh.candidateDigest));
+        for (const kind of ["basis", "authority", "scope"]) assert.ok(result.facts.some(fact => fact.kind === kind));
+        assert.equal(result.facts.some(fact => fact.kind === "candidate-workspace" || fact.kind === "check-receipt" || fact.kind === "evidence" || fact.kind === "proof-bundle"), false);
+        assert.deepEqual(result.unavailable, [{ kind: "candidate-workspace", identity: fresh.candidateDigest,
+          state: "missing", reasonCode: "WORK_COMPLETION_WORKSPACE_MISSING" }]);
+      }
+      assert.deepEqual(snapshot(), missingBefore, "missing workspace does not erase context or create future artifacts");
+    } finally { await rename(retainedWorkspace, workspacePath); }
+    const receiptPath = join(root, fresh.receiptPath);
+    const receiptBytes = await readFile(receiptPath);
+    await unlink(receiptPath);
+    try {
+      const missingBefore = snapshot();
+      for (const inspect of [inspectCompletionChecks, inspectCompletionEvidence, inspectCanonicalCompletionProof]) {
+        const result = await inspect(root, selection);
+        assert.equal(result.status, "unavailable");
+        assert.ok(result.facts.some(fact => fact.kind === "candidate-workspace"));
+        assert.ok(result.unavailable.some(item => item.kind === "check-receipt"
+          && item.identity === "urn:usf:validation:repository-path-tests" && item.state === "missing"));
+        assert.equal(result.facts.some(fact => fact.kind === "evidence" || fact.kind === "proof-bundle"), false);
+      }
+      assert.deepEqual(snapshot(), missingBefore, "missing receipt observation never dispatches checks or repairs receipts");
+    } finally { await writeFile(receiptPath, receiptBytes, { mode: 0o600 }); }
+    const basis = observed.constructionBasis;
+    const stalePath = Object.entries(basis.scope.preimages).find(([, digest]) => digest !== null)?.[0];
+    assert.ok(stalePath, "genuine basis must bind at least one existing preimage");
+    const original = await readFile(join(root, stalePath));
+    await writeFile(join(root, stalePath), Buffer.concat([original, Buffer.from("\n")]));
+    try {
+      const stale = snapshot();
+      await assert.rejects(() => inspectNoChangeWorkspace(root, fresh.candidateDigest), { reasonCode: "STALE_REALISATION_BASIS" });
+      assert.deepEqual(snapshot(), stale, "stale refusal must preserve all retained native state");
+    } finally { await writeFile(join(root, stalePath), original); }
+  } finally { await rm(parent, { recursive: true, force: true }); }
+});
+
+test("installed transition inspect reduces native operational gaps on a genuinely authorised root without effects", {
+  skip: process.env.USF_REPOSITORY_ROOT !== undefined && "the direct lane owns isolated construction publication and CLI subprocesses",
+}, async (t) => {
+  const { cp, mkdir, mkdtemp, readdir, chmod, rm } = await import("node:fs/promises");
+  const { spawnSync, execFileSync } = await import("node:child_process");
+  const { createHash } = await import("node:crypto");
+  const { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } = await import("../../../src/commands/construction-authority.ts");
+  const native = await import("../../../src/commands/work-completion.ts");
+  const { inspectLocalContribution } = await import("../../../src/collaboration/local-contribution.ts");
+  const { loadSemanticGraph } = await import("../../../src/graph/index.ts");
+  const { canonicalJson } = await import("../../../src/core/canonical.ts");
+  const canonicalRoot = fileURLToPath(new URL("../../../", import.meta.url));
+  const temporaryRoot = process.env.TMPDIR ?? join(canonicalRoot, ".usf/tmp");
+  await mkdir(temporaryRoot, { recursive: true, mode: 0o700 });
+  const parent = await mkdtemp(join(temporaryRoot, "installed-native-frontier-"));
+  const root = join(parent, "repository");
+  await mkdir(root, { mode: 0o700 });
+  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
+  const profile = "urn:usf:profile:cli-transition-definition:1";
+  try {
+    for (const entry of await readdir(canonicalRoot, { withFileTypes: true })) {
+      if (entry.name === ".git" || entry.name === "node_modules" || entry.name.startsWith(".usf")) continue;
+      await cp(join(canonicalRoot, entry.name), join(root, entry.name), { recursive: true });
+    }
+    for (const path of ["node_modules", ".usf/cache"]) {
+      const source = join(canonicalRoot, path);
+      assert.equal(lstatSync(source).isSymbolicLink(), false, "fixture dependencies must be physical: " + path);
+      await mkdir(join(root, path), { recursive: true, mode: 0o700 });
+      await cp(source, join(root, path), { recursive: true, verbatimSymlinks: true });
+      await chmod(join(root, path), 0o700);
+    }
+      const assertContainedLinks = (entry: string) => {
+        const stat = lstatSync(entry);
+        if (stat.isSymbolicLink()) {
+          const target = realpathSync(entry);
+          const relation = relative(root, target);
+          assert.ok(!isAbsolute(relation) && relation !== ".." && !relation.startsWith(".." + sep),
+            "copied dependency symlink must resolve within the fixture: " + relative(root, entry));
+        } else if (stat.isDirectory()) {
+          for (const child of readdirSync(entry).sort()) assertContainedLinks(join(entry, child));
+        }
+      };
+    for (const path of ["node_modules", ".usf/cache"]) assertContainedLinks(join(root, path));
+    execFileSync("git", ["init", "--quiet"], { cwd: root });
+    const snapshot = () => {
+      const rows: unknown[] = [];
+      const visit = (path: string) => {
+        const absolute = join(root, path), stat = lstatSync(absolute);
+        rows.push({ path, dev: stat.dev, ino: stat.ino, mode: stat.mode, size: stat.size, mtime: stat.mtimeMs, ctime: stat.ctimeMs,
+          digest: stat.isFile() ? createHash("sha256").update(readFileSync(absolute)).digest("hex") : null,
+          link: stat.isSymbolicLink() ? readlinkSync(absolute) : null });
+        if (stat.isDirectory()) for (const child of readdirSync(absolute).sort()) visit(path === "" ? child : path + "/" + child);
+      };
+      visit("");
+      return rows;
+    };
+    const inspect = () => {
+      const result = spawnSync(join(root, "bin/usf"), ["transition", "inspect", "--root", selection.rootIdentity, "--manifest", selection.manifestPath],
+        { cwd: root, encoding: "utf8", timeout: 120_000, maxBuffer: 16 * 1024 * 1024 });
+      assert.equal(result.error, undefined);
+      assert.equal(result.signal, null);
+      assert.equal(result.status, 1, result.stderr);
+      const report = JSON.parse(result.stdout) as ReturnType<typeof deriveCliTransitionCoverage>;
+      assert.ok(Array.isArray(report.descriptors), result.stdout);
+      return report;
+    };
+    const beforeConstruction = snapshot();
+    const refused = inspect();
+    assert.equal(refused.descriptors.length, 6);
+    assert.ok(refused.waves.length > 0);
+    assert.equal(refused.complete, false);
+    assert.equal(refused.executionAuthority, "none");
+    assert.equal(refused.parallelSafety.state, "unproven");
+    const initialGraph = loadSemanticGraph(root, selection.manifestPath);
+    for (const command of ["realise no-change", "check", "evidence completion", "prove completion", "publish work-completion"]) {
+      const identity = inspectTransition(initialGraph, selection, command).transitionIdentity;
+      const matches = refused.operationalSupport.filter(support => support.transitionIdentity === identity);
+      assert.equal(matches.length, 1, command);
+      const support = matches[0]!;
+      assert.equal(support.outcome, "refused");
+      assert.ok(support.outcome === "refused");
+      assert.equal(support.refusalClass, "unclassified", "wire classification must not invent a semantic class from a native error constructor");
+      assert.equal(support.refusalCode, "INVALID_REALISATION_BASIS");
+      assert.equal(support.lockAvailability, "not-observed");
+      assert.deepEqual(support.derivations, []);
+    }
+    assert.equal(refused.diagnostics.some(diagnostic => diagnostic.reasonCode === "TRANSITION_OPERATIONAL_PREFLIGHT_FAILED"), false);
+    assert.deepEqual(snapshot(), beforeConstruction, "typed construction refusal must retain the DAG without any fixture mutation");
+    const common = ["--profile", profile, "--manifest", selection.manifestPath];
+    const evidence = ".usf/candidates/construction-authority/installed-frontier-evidence.json";
+    const bundle = ".usf/candidates/construction-authority/installed-frontier-bundle.json";
+    await evidenceCommandHandler({ command: "evidence", repositoryRoot: root,
+      args: ["construction", "--work", selection.rootIdentity, ...common, "--output", evidence] });
+    await proveCommandHandler({ command: "prove", repositoryRoot: root,
+      args: ["construction", "--obligation", "urn:usf:proof:cli-transition-definition:construction", "--evidence", evidence, ...common, "--output", bundle] });
+    const grant = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root,
+      args: ["construction-authority", "--bundle", bundle, ...common, "--apply"] });
+    assert.equal((grant.output as { status: string }).status, "ok");
+    const graph = loadSemanticGraph(root, selection.manifestPath);
+    const baseline = deriveCliTransitionCoverage(graph, selection, { leaves: [], complete: false }, transitionAdaptersForCoverage());
+    const original = snapshot();
+    const report = inspect();
+    assert.deepEqual(inspect(), report, "the installed CLI replay must bind the same native support and graph basis");
+    assert.ok(report.descriptors.length > 0);
+    assert.deepEqual(report.descriptors, baseline.descriptors);
+    assert.deepEqual(report.waves, baseline.waves);
+    assert.equal(report.executionAuthority, "none");
+    assert.equal(report.parallelSafety.state, "unproven");
+    assert.equal(report.topologicalOnly, true);
+    assert.equal(report.complete, false);
+    const matrix = [
+      ["realise no-change", native.inspectNoChangeWork], ["check", native.inspectCompletionChecks],
+      ["evidence completion", native.inspectCompletionEvidence], ["prove completion", native.inspectCanonicalCompletionProof],
+      ["publish work-completion", native.inspectCanonicalCompletionPublication], ["resolve prepare-local", inspectLocalContribution],
+    ] as const;
+    const sorted = (values: readonly unknown[]) => values.map(value => canonicalJson(value)).sort();
+    const supportedFields = new Set<string>();
+    for (const [command, read] of matrix) {
+      const transition = inspectTransition(graph, selection, command).transitionIdentity;
+      const supports = report.operationalSupport.filter(support => support.transitionIdentity === transition);
+      assert.equal(supports.length, 1, command + " must retain one native observation");
+      const support = supports[0]!;
+      const observed = await read(root, selection);
+      assert.equal(support.implementation, "authenticated");
+      assert.equal(support.lockAvailability, "not-observed");
+      assert.equal(support.outcome, observed.status === "authenticated" ? "current" : "missing-prerequisite");
+      assert.ok(support.derivations.length > 0, command + " must bind actual operational field derivations");
+      for (const derivation of support.derivations) {
+        supportedFields.add(derivation.fieldIdentity);
+        assert.deepEqual(sorted(derivation.authenticatedFacts), sorted(observed.facts.map(fact => ({ factKind: fact.kind, identity: fact.identity, digest: fact.digest }))));
+      }
+      if (support.outcome === "missing-prerequisite") {
+        assert.deepEqual(sorted(support.unavailableInputs), sorted(observed.unavailable.map(input => ({
+          factKind: input.kind, identity: input.identity, state: input.state, reasonCode: input.reasonCode,
+        }))));
+      }
+      if (command === "publish work-completion") assert.ok(observed.unavailable.some(input => input.identity === "mode"));
+      if (command === "resolve prepare-local") assert.ok(observed.unavailable.some(input => input.identity === "proposedOperations"));
+      assert.equal(observed.facts.some(fact => fact.kind === "candidate-workspace" || fact.kind === "check-receipt" || fact.kind === "proof-bundle"), false);
+    }
+    const unresolved = (value: typeof report) => new Set(value.diagnostics.filter(d => d.reasonCode === "CLI_OPERATIONAL_RULE_UNRESOLVED").map(d => d.subject));
+    const before = unresolved(baseline), after = unresolved(report);
+    const removed = new Set([...before].filter(field => !after.has(field)));
+    assert.ok(removed.size > 0, "genuine current authority must reduce the operational family");
+    assert.deepEqual(removed, new Set([...before].filter(field => supportedFields.has(field))));
+    assert.deepEqual(after, new Set([...before].filter(field => !supportedFields.has(field))), "unsupported operational rules remain unresolved");
+    assert.deepEqual(snapshot(), original, "installed interrogation and native readback must not write any fixture state");
+    const summary = (value: typeof report) => {
+      const families: Record<string, number> = {};
+      for (const diagnostic of value.diagnostics) families[diagnostic.reasonCode] = (families[diagnostic.reasonCode] ?? 0) + 1;
+      return { digest: value.digest, graphDigest: value.graphDigest, descriptors: value.descriptors.length, waves: value.waves.length,
+        diagnostics: value.diagnostics.length, operational: value.diagnostics.filter(d => d.reasonCode === "CLI_OPERATIONAL_RULE_UNRESOLVED").length,
+        families: Object.fromEntries(Object.entries(families).sort(([left], [right]) => left.localeCompare(right))) };
+    };
+    t.diagnostic(JSON.stringify({ installedNativeFrontier: { beforeConstruction: summary(refused),
+      withoutNativeSupport: summary(baseline), afterConstruction: summary(report),
+      removedOperationalFields: [...removed].sort(), executionAuthority: report.executionAuthority,
+      parallelSafety: report.parallelSafety.state } }));
+  } finally { await rm(parent, { recursive: true, force: true }); }
+});
 
 test("binding proof and publication dispatch derive native work and target without authorising missing evidence", async () => {
   const root = mkdtempSync(join(tmpdir(), "usf-binding-proof-dispatch-"));
@@ -182,7 +540,7 @@ test("schema derivation can describe governed schema drift but refuses invalid o
   assert.throws(() => deriveTransitionSchemaResult(unknown, selection), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
 });
 
-test("schema handler loads declared sources, emits a reproducible candidate and creates no runtime ledger", () => {
+test("schema handler loads declared sources, emits a reproducible candidate and creates no runtime ledger", async () => {
   const root = mkdtempSync(join(tmpdir(), "usf-schema-cli-"));
   try {
     mkdirSync(join(root, "graph"));
@@ -192,9 +550,9 @@ test("schema handler loads declared sources, emits a reproducible candidate and 
       path: "graph/" + name + ".nq", format: "application/n-quads", graph: "urn:usf:graph:" + name, role: "contract", validationProfile: "bootstrap-nquads-v1",
     })) }));
     const request = { command: "transition" as const, repositoryRoot: root, args: ["schema", "--root", "urn:usf:work:cli-transition-definition", "--manifest", "graph/test.json"] };
-    const first = transitionCommandHandler(request, []);
+    const first = await transitionCommandHandler(request, []);
     assert.equal(first.exitCode, 0);
-    assert.deepEqual(transitionCommandHandler(request, []), first);
+    assert.deepEqual(await transitionCommandHandler(request, []), first);
     assert.equal((first.output as { executionAuthority: string }).executionAuthority, "none");
     assert.deepEqual(readdirSync(root), ["graph"]);
   } finally { rmSync(root, { recursive: true, force: true }); }
@@ -315,9 +673,13 @@ test("interrogation parser and help share the same external input contract", () 
   });
 });
 
-test("derived overrides and guessed effectful operations refuse before graph loading", () => {
+test("derived overrides and guessed effectful operations refuse before graph loading", async () => {
   for (const flag of ["--profile", "--work", "--binding", "--basis", "--candidate", "--apply", "--check-mode"]) {
     assert.throws(() => parseTransitionInterrogation(["inspect", "--root", "urn:test:work", flag, "value"]), { code: "CLI_TRANSITION_ARGUMENTS_INVALID" });
+    await assert.rejects(async () => transitionCommandHandler({
+      command: "transition", repositoryRoot: "/unavailable",
+      args: ["inspect", "--root", "urn:test:work", flag, "value"],
+    }, []), { code: "CLI_TRANSITION_ARGUMENTS_INVALID" });
   }
   assert.throws(() => parseTransitionInterrogation(["execute", "--root", "urn:test:work"]), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
   assert.throws(() => parseTransitionInterrogation(["inspect"]), { code: "CLI_TRANSITION_INPUT_REQUIRED" });
@@ -442,7 +804,7 @@ test("binding context uses the declared profile and never admits observation exe
   assert(deriveCliTransitionContext(wrongProfile, "urn:test:binding").diagnostics.some(d => d.reasonCode === "TRANSITION_BINDING_PROFILE_MISMATCH"));
 });
 
-test("CLI binding reads follow only the selected target manifest without runtime effects", () => {
+test("CLI binding reads follow only the selected target manifest without runtime effects", async () => {
   const root = mkdtempSync(join(tmpdir(), "usf-binding-context-"));
   try {
     mkdirSync(join(root, "graph"));
@@ -460,7 +822,7 @@ test("CLI binding reads follow only the selected target manifest without runtime
     const closure = loadTransitionContextGraph(root, selection);
     assert.equal(closure.quads.filter(q => q.subject === selection.rootIdentity).length, bindingRows().length);
     const request = { command: "transition" as const, repositoryRoot: root, args: ["inspect", "--root", selection.rootIdentity, "--manifest", selection.manifestPath] };
-    const result = transitionCommandHandler(request, []);
+    const result = await transitionCommandHandler(request, []);
     const output = result.output as { rootIdentity: string; manifestPath: string; work: string; complete: boolean; executionAuthority: string; parallelSafety: { state: string } };
     assert.equal(output.rootIdentity, selection.rootIdentity);
     assert.equal(output.manifestPath, selection.manifestPath);
@@ -468,8 +830,8 @@ test("CLI binding reads follow only the selected target manifest without runtime
     assert.equal(output.complete, false);
     assert.equal(output.executionAuthority, "none");
     assert.equal(output.parallelSafety.state, "unproven");
-    assert.deepEqual(transitionCommandHandler(request, []), result);
-    assert.equal(transitionCommandHandler({ ...request, args: ["schema", ...request.args.slice(1)] }, []).exitCode, 0);
+    assert.deepEqual(await transitionCommandHandler(request, []), result);
+    assert.equal((await transitionCommandHandler({ ...request, args: ["schema", ...request.args.slice(1)] }, [])).exitCode, 0);
     assert.deepEqual(readdirSync(root), ["graph"]);
     for (const target of ["../outside.json", "/outside.json", "graph/missing.json"]) {
       writeFileSync(join(root, "graph/bindings.nq"), bindingRows(target).map(canonicalQuadLine).join("\n") + "\n");

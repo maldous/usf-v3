@@ -3,10 +3,11 @@ import { readFileSync, realpathSync, lstatSync, openSync, fstatSync, readSync, c
 import { resolve } from "node:path";
 import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
-import { deriveCliTransitionContext, deriveCliTransitionIds, consistentArtifactProducer, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, verifyCliDescriptorSchema, type CliTransitionAdapter } from "../graph/cli-transitions.ts";
+import { deriveCliTransitionContext, deriveCliTransitionIds, consistentArtifactProducer, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, inspectCliOperationalSupportAdmission, verifyCliDescriptorSchema, type CliTransitionAdapter, type CliOperationalSupport, type CliOperationalSupportDefinition, type CliRecordDerivation, type CliTransitionDiagnostic } from "../graph/cli-transitions.ts";
 import { canonicalQuadDigest, canonicalQuadLine } from "../graph/nquads.ts";
 import { deriveLinearBindingDeclaration, LinearBindingError } from "../graph/linear-binding.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
+import { RealisationError } from "../realisation/index.ts";
 import { parseCommandInput, readCommandInput, maximumCommandInputBytes } from "./command-input.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { commandRegistry, transitionInterrogationContract, transitionReadContracts, transitionSchemaContract } from "./help.ts";
@@ -53,11 +54,27 @@ interface TransitionImplementation {
   readonly publicationPolicy?: string;
   readonly prerequisiteTransitions?: readonly string[];
   readonly consumedSchemas?: readonly string[];
+  /** Compiled shared inspector name; semantic graph data never selects code. */
+  readonly nativePreflight?: string;
   prepare(root: string, selection: { rootIdentity: string; manifestPath: string }, input: ObservationObject, profile: string): Promise<unknown>;
   identity(output: ObservationObject): { work: unknown; profile: unknown };
 }
 
 const completionRule = "urn:usf:rule:completion-evidence-reauthentication:1";
+const nativeOperationalSupportDefinition: CliOperationalSupportDefinition = Object.freeze({
+  identity: "urn:usf:rule:cli-transition-native-operational-support:1",
+  version: "1",
+  recordIdentity: "urn:usf:cli-field-specification:record-operational-support:1",
+  outputSchema: "urn:usf:cli-transition-descriptor:1",
+  implementationPaths: Object.freeze([
+    "src/collaboration/local-contribution.ts",
+    "src/commands/check.ts",
+    "src/commands/transition.ts",
+    "src/commands/work-completion.ts",
+    "src/graph/cli-transitions.ts",
+    "src/realisation/index.ts",
+  ]),
+});
 const completionRuleRoles = Object.freeze({
   "input.derivationRule": "urn:usf:rule:completion-evidence-input:1",
   ...Object.fromEntries([
@@ -82,6 +99,7 @@ const transitionAdapters = new Map<string, TransitionImplementation>([[
     effectClass: "observation",
     recoveryCasesDigest: "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
     rules: localObservationRules,
+    nativePreflight: "inspectLocalContribution",
     prepare: (root, selection, input) => prepareLocalContribution(root, selection, input.operations),
     identity(output) {
       const parsed = parseLocalContribution(output);
@@ -104,6 +122,7 @@ const transitionAdapters = new Map<string, TransitionImplementation>([[
   }),
   ruleRoles: completionRuleRoles,
   consumedSchemas: ["urn:usf:schema:completion-check-receipt-set-result:1", "urn:usf:schema:no-change-workspace-manifest:1"],
+  nativePreflight: "inspectCompletionEvidence",
   async prepare(root, selection, input, profile) {
     const { prepareCompletionEvidence } = await import("./work-completion.ts");
     return prepareCompletionEvidence(root, { work: selection.rootIdentity, profile, manifestPath: selection.manifestPath, candidateDigest: input.candidateDigest as string });
@@ -121,6 +140,7 @@ transitionAdapters.set("realise no-change", {
   resultSchema: "urn:usf:schema:no-change-realisation-result:1",
   resultSchemaPath: "schemas/no-change-realisation-result.schema.json",
   artifactSchema: "urn:usf:schema:no-change-workspace-manifest:1",
+  nativePreflight: "inspectNoChangeWork",
   effectClass: "candidate-workspace",
   publicationPolicy: "urn:usf:publication-policy:cli-transition-definition-no-change-completion:1",
   recoveryCasesDigest: "sha256:2dba04077af7c64ddc0e9f482fc9c284d8bd777bbec9be4d50ad8f6af78789fd",
@@ -200,6 +220,7 @@ transitionAdapters.set("check", {
     "recovery.obligations": [completionCheckRule("atomic-guard"), completionCheckRule("execution-intent"), completionCheckRule("readback"), completionCheckRule("recovery")],
   }),
   consumedSchemas: ["urn:usf:schema:no-change-workspace-manifest:1"],
+  nativePreflight: "inspectCompletionChecks",
   async prepare(root, selection, _input, profile) {
     const { prepareCompletionChecks } = await import("./work-completion.ts");
     return prepareCompletionChecks(root, { work: selection.rootIdentity, profile, manifestPath: selection.manifestPath });
@@ -274,6 +295,7 @@ transitionAdapters.set("prove completion", {
     "recovery.obligations": [completionProofRule],
   }),
   consumedSchemas: ["urn:usf:completion-evidence-candidate:1"],
+  nativePreflight: "inspectCanonicalCompletionProof",
   async prepare(root, selection) {
     const native = await import("./work-completion.ts") as Record<string, unknown>;
     const prepare = native.prepareCanonicalCompletionProof;
@@ -317,6 +339,7 @@ transitionAdapters.set("publish work-completion", {
     "recovery.obligations": [completionPublicationCohortRule, completionPublicationRule, completionPublicationSnapshotRule, completionPublicationSourceAuthenticationRule],
   }),
   consumedSchemas: ["urn:usf:schema:completion-proof-bundle:1"],
+  nativePreflight: "inspectCanonicalCompletionPublication",
   async prepare(root, selection, input) {
     const native = await import("./work-completion.ts") as Record<string, unknown>;
     const publish = native.runCanonicalCompletionPublication;
@@ -344,10 +367,14 @@ const localRuleRoles: Readonly<Record<string, string | readonly string[]>> = Obj
   "recovery.obligations": ["readback", "replay"],
 });
 
-export function validateLocalObservationRoles(descriptor: ObservationObject, transitionIdentity: string): void {
-  validateObservationRoles(descriptor, transitionIdentity, Object.fromEntries(Object.entries(localRuleRoles).map(([path, supported]) => [path,
+const resolvedLocalRuleRoles: Readonly<Record<string, string | readonly string[]>> = Object.freeze(Object.fromEntries(
+  Object.entries(localRuleRoles).map(([path, supported]) => [path,
     typeof supported === "string" ? `urn:usf:rule:local-preparation-${supported}:1` : supported.map(name => `urn:usf:rule:local-preparation-${name}:1`),
-  ])));
+  ]),
+));
+
+export function validateLocalObservationRoles(descriptor: ObservationObject, transitionIdentity: string): void {
+  validateObservationRoles(descriptor, transitionIdentity, resolvedLocalRuleRoles);
 }
 
 function validateObservationRoles(descriptor: ObservationObject, transitionIdentity: string, roles: Readonly<Record<string, string | readonly string[]>>): void {
@@ -566,7 +593,90 @@ export async function executeTransitionCommand(request: CommandRequest, commandP
   }
 }
 
-export function transitionAdaptersForCoverage(): readonly CliTransitionAdapter[] {
+function operationalRefusal(error: unknown, sourceBasis: string, transitionIdentity: string): CliOperationalSupport | null {
+  const code = error instanceof UsfError ? error.code
+    : error instanceof LocalContributionError ? error.reasonCode
+    : error instanceof RealisationError ? error.reasonCode
+    : "TRANSITION_OPERATIONAL_PREFLIGHT_FAILED";
+  // Native reason codes are authoritative. Classification is deliberately
+  // unclassified until the native inspector supplies a governed class.
+  return Object.freeze({ sourceBasis, transitionIdentity, implementation: "authenticated" as const,
+    outcome: "refused" as const, refusalClass: "unclassified", refusalCode: code,
+    lockAvailability: "not-observed", derivations: Object.freeze([]) }) as CliOperationalSupport;
+}
+
+/**
+ * The graph kernel supplies the generated record derivation. This bridge
+ * deliberately supplies no derived values: it binds only native facts to the
+ * exact operational-gap traces selected by that kernel.
+ */
+async function nativeOperationalPreflight(
+  root: string, graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, commandPath: string,
+  projection: CliRecordDerivation, transitionIdentity: string,
+): Promise<CliOperationalSupport | null> {
+  const admitted = inspectTransition(graph, selection, commandPath);
+  const inspectorName = admitted.implementation.nativePreflight;
+  if (inspectorName === undefined) return null;
+  try {
+    const module: Record<string, unknown> = inspectorName === "inspectLocalContribution"
+      ? await import("../collaboration/local-contribution.ts") as unknown as Record<string, unknown>
+      : nativeWorkCompletionModule as unknown as Record<string, unknown>;
+    const inspect = module[inspectorName];
+    if (typeof inspect !== "function") throw new UsfError("TRANSITION_OPERATIONAL_PREFLIGHT_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Shared native inspector is unavailable.");
+    const outerGraphDigest = canonicalQuadDigest(graph.quads);
+    if (bindingAwareNativeSelection(root, selection).graphDigest !== outerGraphDigest) {
+      throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Transition graph changed before native operational observation.");
+    }
+    const native = await withCurrentNativeSelection(root, selection, async current => inspect(root, current));
+    if (bindingAwareNativeSelection(root, selection).graphDigest !== outerGraphDigest) {
+      throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Transition graph changed during native operational observation.");
+    }
+    const value = observationObject(native);
+    if (value.executionAuthority !== "none" || value.lockAvailability !== "not-observed" || !Array.isArray(value.facts) || !Array.isArray(value.unavailable)) throw new UsfError("TRANSITION_OPERATIONAL_PREFLIGHT_INVALID", exitCodes.DOMAIN_FAILURE, "Native inspector returned an invalid outcome.");
+    const nativeSelection = value.selection === null ? null : observationObject(value.selection);
+    const expectedOperation: Readonly<Record<string, string>> = {
+      inspectNoChangeWork: "no-change", inspectCompletionChecks: "checks", inspectCompletionEvidence: "evidence",
+      inspectCanonicalCompletionProof: "proof", inspectCanonicalCompletionPublication: "publication", inspectLocalContribution: "local-contribution",
+    };
+    const nativeManifest = admitted.context.binding?.targetManifest ?? selection.manifestPath;
+    if (nativeSelection === null || nativeSelection.workIri !== admitted.context.work || nativeSelection.profileIri !== admitted.context.profile
+      || nativeSelection.manifestPath !== nativeManifest || value.operation !== expectedOperation[inspectorName]) {
+      throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Native preflight selection differs from the exact derived transition context.");
+    }
+    if ((value.status === "authenticated" && value.unavailable.length !== 0) || (value.status === "unavailable" && value.unavailable.length === 0)) {
+      throw new UsfError("TRANSITION_OPERATIONAL_PREFLIGHT_INVALID", exitCodes.DOMAIN_FAILURE, "Native preflight status and unavailable prerequisites disagree.");
+    }
+    const facts = value.facts.map(fact => {
+      const row = observationObject(fact);
+      if (row.current !== true || typeof row.kind !== "string" || typeof row.identity !== "string" || typeof row.digest !== "string") throw new UsfError("TRANSITION_OPERATIONAL_PREFLIGHT_INVALID", exitCodes.DOMAIN_FAILURE, "Native fact is incomplete.");
+      return Object.freeze({ factKind: row.kind, identity: row.identity, digest: row.digest });
+    });
+    const at = (value: unknown, path: readonly string[]): unknown => path.reduce<unknown>((current, part) => current !== null && typeof current === "object" ? (current as ObservationObject)[part] : undefined, value);
+    const roles = admitted.implementation.ruleRoles ?? resolvedLocalRuleRoles;
+    const needed = new Set(projection.operationalGaps.map(gap => gap.subject));
+    const derivations = projection.derivations.filter(trace => {
+      if (!needed.has(trace.fieldIdentity)) return false;
+      const role = roles[trace.outputPath.join(".")];
+      const actual = at(admitted.descriptor, trace.outputPath);
+      return role !== undefined && canonicalJson(actual) === canonicalJson(role);
+    }).map(trace => Object.freeze({ fieldIdentity: trace.fieldIdentity, outputPath: trace.outputPath, sourceDigest: trace.sourceDigest, authenticatedFacts: Object.freeze(facts) }));
+    if (value.status === "authenticated") return Object.freeze({ sourceBasis: projection.sourceBasis, transitionIdentity, implementation: "authenticated", outcome: "current", lockAvailability: "not-observed", derivations: Object.freeze(derivations) });
+    if (value.status !== "unavailable" || typeof value.reasonCode !== "string") throw new UsfError("TRANSITION_OPERATIONAL_PREFLIGHT_INVALID", exitCodes.DOMAIN_FAILURE, "Native preflight outcome is unknown.");
+    const unavailableInputs = value.unavailable.map(input => {
+      const row = observationObject(input);
+      if (typeof row.kind !== "string" || typeof row.identity !== "string" || typeof row.state !== "string" || typeof row.reasonCode !== "string") throw new UsfError("TRANSITION_OPERATIONAL_PREFLIGHT_INVALID", exitCodes.DOMAIN_FAILURE, "Native unavailable prerequisite is incomplete.");
+      return Object.freeze({ factKind: row.kind, identity: row.identity, state: row.state, reasonCode: row.reasonCode });
+    });
+    const nonMissing = unavailableInputs.find(input => input.state !== "missing");
+    if (nonMissing !== undefined) {
+      return Object.freeze({ sourceBasis: projection.sourceBasis, transitionIdentity, implementation: "authenticated", outcome: "refused", refusalClass: "unclassified", refusalCode: nonMissing.reasonCode,
+        lockAvailability: "not-observed", derivations: Object.freeze(derivations) });
+    }
+    return Object.freeze({ sourceBasis: projection.sourceBasis, transitionIdentity, implementation: "authenticated", outcome: "missing-prerequisite", lockAvailability: "not-observed", derivations: Object.freeze(derivations), unavailableInputs: Object.freeze(unavailableInputs) });
+  } catch (error) { return operationalRefusal(error, projection.sourceBasis, transitionIdentity); }
+}
+
+export function transitionAdaptersForCoverage(support?: ReadonlyMap<string, CliOperationalSupport>, adapterDiagnostics?: ReadonlyMap<string, readonly CliTransitionDiagnostic[]>): readonly CliTransitionAdapter[] {
   return [...transitionAdapters].map(([commandPath, implementation]) => ({
     id: implementation.id, effectClass: implementation.effectClass,
     inspect(graph, selection, transitionIdentity) {
@@ -575,12 +685,14 @@ export function transitionAdaptersForCoverage(): readonly CliTransitionAdapter[]
         if (admitted.transitionIdentity !== transitionIdentity) {
           return [{ reasonCode: "TRANSITION_ADAPTER_UNMAPPED", subject: transitionIdentity, field: "adapter" }];
         }
-        return [];
+        return adapterDiagnostics?.get(commandPath) ?? [];
       } catch (error) {
         if (!(error instanceof UsfError)) throw error;
         return [{ reasonCode: error.code, subject: transitionIdentity, field: "adapter" }];
       }
     },
+    ...(support?.has(commandPath) ? { operationalSupport: () => support.get(commandPath)! } : {}),
+    ...(implementation.nativePreflight === undefined ? {} : { operationalSupportDefinition: nativeOperationalSupportDefinition }),
   }));
 }
 
@@ -806,7 +918,63 @@ function attachAuthenticatedTerminalArtifacts(
   return { ...body, terminalClosure, digest: canonicalDigest({ ...body, terminalClosure }) };
 }
 
-export function transitionCommandHandler(request: CommandRequest, installedCommands: readonly string[]): CommandResult {
+interface OperationalPreflightResult {
+  readonly supports: ReadonlyMap<string, CliOperationalSupport>;
+  readonly adapterDiagnostics: ReadonlyMap<string, readonly CliTransitionDiagnostic[]>;
+}
+
+function operationalSupportValidationDiagnostics(transitionIdentity: string, errors: unknown): readonly CliTransitionDiagnostic[] {
+  const rows = Array.isArray(errors) ? errors.filter((value): value is Readonly<Record<string, unknown>> => value !== null && typeof value === "object") : [];
+  const diagnostics = rows.slice(0, 8).map(row => {
+    const instancePath = typeof row.instancePath === "string" ? row.instancePath : "";
+    const keyword = typeof row.keyword === "string" ? row.keyword : "invalid";
+    const params = row.params !== null && typeof row.params === "object" ? row.params as Readonly<Record<string, unknown>> : {};
+    const property = typeof params.additionalProperty === "string" ? `/${params.additionalProperty}` : "";
+    return Object.freeze({ reasonCode: "TRANSITION_OPERATIONAL_SUPPORT_INVALID", subject: transitionIdentity,
+      field: `operationalSupport${instancePath}/${keyword}${property}`.slice(0, 512) });
+  });
+  return Object.freeze(diagnostics.length > 0 ? diagnostics : [{ reasonCode: "TRANSITION_OPERATIONAL_SUPPORT_INVALID", subject: transitionIdentity, field: "operationalSupport/invalid" }]);
+}
+
+async function operationalSupportForCoverage(repositoryRoot: string, graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }): Promise<OperationalPreflightResult> {
+  const context = deriveCliTransitionContext(graph, selection.rootIdentity);
+  if (context.work === null || context.contract === null) return { supports: new Map(), adapterDiagnostics: new Map() };
+  const specifications = deriveCliRecordSpecifications(graph, { contractIdentity: context.contract });
+  const record = specifications.records.find(value => value.fragment === "");
+  if (record === undefined) return { supports: new Map(), adapterDiagnostics: new Map() };
+  const values = (subject: string, predicate: string, kind: "iri" | "literal" = "iri") => [...new Set(graph.quads
+    .filter(row => row.subject === subject && row.predicate === `urn:usf:predicate:${predicate}` && row.objectKind === kind).map(row => row.object))].sort();
+  const selected = new Set(deriveCliTransitionIds([...new Set(graph.quads.map(row => row.subject))], values, context.work, context.contract));
+  const supports = new Map<string, CliOperationalSupport>();
+  const adapterDiagnostics = new Map<string, readonly CliTransitionDiagnostic[]>();
+  const schema = deriveTransitionSchemaResult(graph, selection).descriptorSchema;
+  const validator = createJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:usf:cli-transition-operational-support-runtime:1", $ref: `${String(schema.$id)}#/$defs/operationalSupport` }, { dependencySchemas: [schema] });
+  for (const [path, implementation] of transitionAdapters) {
+    if (implementation.nativePreflight === undefined || ![...selected].some(id => values(id, "command").includes(implementation.command))) continue;
+    let admitted: ReturnType<typeof inspectTransition>;
+    try { admitted = inspectTransition(graph, selection, path); }
+    catch { continue; }
+    const admission = inspectCliOperationalSupportAdmission(graph, admitted.implementation.id, nativeOperationalSupportDefinition);
+    if (admission.length !== 0) {
+      adapterDiagnostics.set(path, admission);
+      continue;
+    }
+    const projection = deriveCliRecord(graph, { recordIdentity: record.id, subjectIdentity: admitted.transitionIdentity }, specifications);
+    if (!projection.valid) continue;
+    const support = await nativeOperationalPreflight(repositoryRoot, graph, selection, path, projection, admitted.transitionIdentity);
+    if (support === null) continue;
+    // Invalid support stays adapter-local and cannot clear graph gaps.
+    const validation = validator.validate(support);
+    if (!validation.valid) {
+      adapterDiagnostics.set(path, operationalSupportValidationDiagnostics(admitted.transitionIdentity, validation.errors));
+      continue;
+    }
+    supports.set(path, support);
+  }
+  return { supports, adapterDiagnostics };
+}
+
+export async function transitionCommandHandler(request: CommandRequest, installedCommands: readonly string[]): Promise<CommandResult> {
   const selection = parseTransitionInterrogation(request.args);
   const graph = loadTransitionContextGraph(request.repositoryRoot, selection);
   if (request.args[0] === transitionSchemaContract.path[1]) {
@@ -827,7 +995,8 @@ export function transitionCommandHandler(request: CommandRequest, installedComma
       parserOwner: path.join(" ") === transitionInterrogationContract.path.join(" ") ? "src/commands/help.ts#transitionInterrogationContract" : null,
     })),
   };
-  let output = boundedTransitionRead(() => deriveCliTransitionCoverage(graph, selection, inventory, transitionAdaptersForCoverage()));
+  const preflight = await operationalSupportForCoverage(request.repositoryRoot, graph, selection);
+  let output = boundedTransitionRead(() => deriveCliTransitionCoverage(graph, selection, inventory, transitionAdaptersForCoverage(preflight.supports, preflight.adapterDiagnostics)));
   const schema = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-interrogation.schema.json", import.meta.url), "utf8"));
   const descriptor = JSON.parse(readFileSync(new URL("../../schemas/cli-transition-descriptor.schema.json", import.meta.url), "utf8"));
   if ("contract" in output && typeof output.contract === "string") {
