@@ -4,6 +4,14 @@ import { chmod, cp, link, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, s
 import { join, resolve } from "node:path";
 import test, { type TestContext } from "node:test";
 import { canonicalDigest, canonicalJson } from "../../../src/core/canonical.ts";
+import {
+  RegistrationFeatureError,
+  registrationFeatureDigestsEqual,
+  registrationFeatureOperations,
+  registrationFeatureOperationsDigest,
+  registrationFeaturePostimageSet,
+  registrationFeaturePostimageSetDigest,
+} from "../../../src/collaboration/resolve.ts";
 import { runGraphDerivedCheck } from "../../../src/commands/check.ts";
 import { loadSemanticGraph, objectValues } from "../../../src/graph/index.ts";
 import { deriveWork, type WorkPacket } from "../../../src/graph/work.ts";
@@ -632,3 +640,105 @@ test("integration cohort ingress refuses invalid bounds and duplicate locators b
     );
   }
 });
+
+// ---------------------------------------------------------------------------
+// Registration-feature identity for urn:usf:rule:provider-receipt-target-registration:1.
+// The rule's refusal prose becomes executable here: cross-phase equality, and
+// fail-closed behaviour on additional, missing or changed members.
+// ---------------------------------------------------------------------------
+  const declaredWriteSet = [
+    "src/commands/provider-receipts.ts",
+    "schemas/account-observation.schema.json",
+    "tests/integration/provider-receipts.test.ts",
+  ];
+  const featureOperations = [
+    { kind: "write" as const, path: "src/commands/provider-receipts.ts", content: "export const receipts = 2;\n" },
+    { kind: "write" as const, path: "schemas/account-observation.schema.json", content: "{\n  \"x\": 1\n}\n" },
+  ];
+
+  test("registration feature digests are canonical, path-ordered and content-bound", () => {
+    const members = registrationFeatureOperations(featureOperations);
+    assert.deepEqual(members.map((m) => m.path), [
+      "schemas/account-observation.schema.json",
+      "src/commands/provider-receipts.ts",
+    ], "members are path-ordered regardless of submission order");
+    for (const member of members) {
+      assert.match(member.contentDigest as string, /^sha256:[0-9a-f]{64}$/u);
+      assert.deepEqual(Object.keys(member).sort(), ["contentDigest", "kind", "path"], "closed member: no envelope fields");
+    }
+
+    // Submission order must not change identity.
+    assert.equal(
+      registrationFeatureOperationsDigest(featureOperations),
+      registrationFeatureOperationsDigest([...featureOperations].reverse()),
+    );
+
+    // The postimage set spans the entire declared write set, including the
+    // member the feature does not touch, which carries canonical absence.
+    const postimages = registrationFeaturePostimageSet(declaredWriteSet, featureOperations);
+    assert.equal(postimages.length, declaredWriteSet.length);
+    const untouched = postimages.find((m) => m.path === "tests/integration/provider-receipts.test.ts")!;
+    assert.deepEqual(untouched, { path: "tests/integration/provider-receipts.test.ts", kind: null, resultingMode: null, resultingContentDigest: null });
+    const written = postimages.find((m) => m.path === "src/commands/provider-receipts.ts")!;
+    assert.equal(written.kind, "write");
+    assert.equal(written.resultingMode, "100644");
+    assert.match(written.resultingContentDigest as string, /^sha256:[0-9a-f]{64}$/u);
+  });
+
+  test("registration feature digests are basis-independent and cross-phase equal", () => {
+    // The preliminary and final candidates differ only in the operator
+    // predecessor basis, which contributes nothing to either digest.
+    const preliminary = {
+      operationsDigest: registrationFeatureOperationsDigest(featureOperations),
+      postimageSetDigest: registrationFeaturePostimageSetDigest(declaredWriteSet, featureOperations),
+    };
+    const final = {
+      operationsDigest: registrationFeatureOperationsDigest([...featureOperations].reverse()),
+      postimageSetDigest: registrationFeaturePostimageSetDigest([...declaredWriteSet].reverse(), [...featureOperations].reverse()),
+    };
+    assert.deepEqual(final, preliminary, "independently constructed representations agree");
+    assert.equal(registrationFeatureDigestsEqual(preliminary, final), true);
+  });
+
+  test("registration feature identity fails closed on changed, extra or missing members", () => {
+    const base = {
+      operationsDigest: registrationFeatureOperationsDigest(featureOperations),
+      postimageSetDigest: registrationFeaturePostimageSetDigest(declaredWriteSet, featureOperations),
+    };
+
+    // Changed content changes both digests.
+    const changed = [{ ...featureOperations[0]!, content: "export const receipts = 3;\n" }, featureOperations[1]!];
+    assert.notEqual(registrationFeatureOperationsDigest(changed), base.operationsDigest);
+    assert.notEqual(registrationFeaturePostimageSetDigest(declaredWriteSet, changed), base.postimageSetDigest);
+    assert.equal(registrationFeatureDigestsEqual(base, {
+      operationsDigest: registrationFeatureOperationsDigest(changed),
+      postimageSetDigest: registrationFeaturePostimageSetDigest(declaredWriteSet, changed),
+    }), false);
+
+    // A missing operation changes both digests rather than being tolerated.
+    const missing = [featureOperations[0]!];
+    assert.notEqual(registrationFeatureOperationsDigest(missing), base.operationsDigest);
+    assert.notEqual(registrationFeaturePostimageSetDigest(declaredWriteSet, missing), base.postimageSetDigest);
+
+    // A declared-scope change alone moves the postimage digest, so the key
+    // binds intended scope and not only resulting content.
+    assert.notEqual(
+      registrationFeaturePostimageSetDigest([...declaredWriteSet, "docs/extra.md"], featureOperations),
+      base.postimageSetDigest,
+    );
+
+    // An operation outside the declared write set refuses.
+    const refusal = (run: () => unknown): string | null => {
+      try { run(); return null; } catch (error) { return error instanceof RegistrationFeatureError ? error.reasonCode : null; }
+    };
+    assert.equal(refusal(() => registrationFeaturePostimageSetDigest(declaredWriteSet, [
+      ...featureOperations, { kind: "write" as const, path: "src/commands/help.ts", content: "x\n" },
+    ])), "UNDECLARED_WRITE");
+    // Duplicate and malformed members refuse.
+    assert.equal(refusal(() => registrationFeatureOperations([featureOperations[0]!, featureOperations[0]!])), "UNDECLARED_WRITE");
+    assert.equal(refusal(() => registrationFeatureOperations([{ kind: "write" as const, path: "/etc/passwd", content: "x" }])), "UNDECLARED_WRITE");
+    assert.equal(refusal(() => registrationFeatureOperations([{ kind: "write" as const, path: "a/../../b", content: "x" }])), "UNDECLARED_WRITE");
+    // A write must carry exact content; a delete must not.
+    assert.equal(refusal(() => registrationFeatureOperations([{ kind: "write" as const, path: "a.ts" }])), "UNDECLARED_WRITE");
+    assert.equal(refusal(() => registrationFeatureOperations([{ kind: "delete" as const, path: "a.ts", content: "x" }])), "UNDECLARED_WRITE");
+  });
