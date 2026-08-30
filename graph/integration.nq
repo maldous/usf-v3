@@ -2,18 +2,21 @@
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:authorityNamedGraph> <urn:usf:graph:integration> <urn:usf:graph:integration> .
-<urn:usf:authority:core-completion:1> <urn:usf:predicate:objective> "Bound two exact V3 direct-bootstrap/manual carrier adoptions and the future checked-candidate to integration-observation transition without converting carrier history into semantic completion authority." <urn:usf:graph:integration> .
+<urn:usf:authority:core-completion:1> <urn:usf:predicate:objective> "Bound three exact V3 direct-bootstrap/manual carrier adoptions, the registered bootstrap-carrier verification surface and the future checked-candidate to integration-observation transition without converting carrier history into semantic completion authority." <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:carrierAdoption> <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:carrierAdoption> <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:graph:integration> .
+<urn:usf:authority:core-completion:1> <urn:usf:predicate:carrierAdoption> <urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:carrierIntent> <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:graph:integration> .
+<urn:usf:authority:core-completion:1> <urn:usf:predicate:carrierIntent> <urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:integrationTransitionAlgorithm> <urn:usf:algorithm:work-integration-transition:2> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:bootstrapCarrierTransitionAlgorithm> <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:graph:integration> .
+<urn:usf:authority:core-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:bootstrap-carrier:1> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:receiptBoundary> <urn:usf:receipt-boundary:core-completion:1> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:nonClaim> "A bounded direct-bootstrap/manual carrier adoption is not an ordinary checked-candidate integration receipt and does not establish work completion." <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:nonClaim> "This authority performs no GitHub access, push, provider contact, runtime activation, staging, production or terminal proof." <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:1> <urn:usf:predicate:nonClaim> "A Git parent, commit or tree is a local carrier observation and is not semantic evidence, proof, currentness or completion by itself." <urn:usf:graph:integration> .
 <urn:usf:graph:integration> <urn:usf:predicate:type> <urn:usf:type:CoreCompletionAuthorityNamedGraph> <urn:usf:graph:integration> .
-<urn:usf:graph:integration> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:graph:integration> <urn:usf:predicate:version> "3" <urn:usf:graph:integration> .
 <urn:usf:graph:integration> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:type> <urn:usf:type:ReceiptBoundary> <urn:usf:graph:integration> .
 <urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
@@ -22,6 +25,12 @@
 <urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:ignoredCheckReceiptRoot> ".usf/receipts/check/" <urn:usf:graph:integration> .
 <urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:ignoredIntegrationObservationRoot> ".usf/receipts/integration/" <urn:usf:graph:integration> .
 <urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:ignoredBootstrapCarrierReceiptRoot> ".usf/receipts/bootstrap-carrier/" <urn:usf:graph:integration> .
+<urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:trackedBootstrapCarrierReceiptRoot> "evidence/historical-carriers/" <urn:usf:graph:integration> .
+<urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:transientBootstrapCarrierWorkspaceRoot> ".usf/integration-worktrees/bootstrap-carrier/" <urn:usf:graph:integration> .
+<urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:transientBootstrapCarrierScratchRoot> ".usf/tmp/bootstrap-carrier/" <urn:usf:graph:integration> .
+<urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:transientBootstrapCarrierRawObservationRoot> ".usf/receipts/bootstrap-carrier/raw/" <urn:usf:graph:integration> .
+<urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:transientBootstrapCarrierLockRoot> ".usf/locks/bootstrap-carrier/" <urn:usf:graph:integration> .
+<urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:persistentPrimaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:integration> .
 <urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:ignoredWorkspaceRoot> ".usf/integration-worktrees/" <urn:usf:graph:integration> .
 <urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:bootstrapCarrierReceiptSchema> <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:graph:integration> .
 <urn:usf:receipt-boundary:core-completion:1> <urn:usf:predicate:boundaryRule> "Checked-candidate records, integration observations and disposable worktrees remain repository-local ignored state until separate graph-defined evidence, proof and publication admit exact content into a tracked completion receipt; integrate cannot write or imply that tracked receipt." <urn:usf:graph:integration> .
@@ -32,6 +41,7 @@
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:currentnessAuthority> <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:lineage> <urn:usf:lineage:semantic-first-gate-carrier:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:transitionAlgorithm> <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:adoptionStateRule> <urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:pathEffectScope> <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:carrierParentCommit> "a90228fdb545fab0d031e5db7f713f489247907c" <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:carrierCommit> "846c5bbf36c1e9cb022a05bb90a7c0b950c0525a" <urn:usf:graph:integration> .
@@ -40,8 +50,16 @@
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:adoptedWork> <urn:usf:work:realisation-basis-chain> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:adoptedWork> <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:adoptedWorkCount> "3" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:adoptedSubjectCount> "3" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:pathCount> "54" <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:bootstrapCohort> <urn:usf:cohort:semantic-first-gate-carrier:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:admissionReceipt> <urn:usf:receipt:semantic-first-bootstrap-admission:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:localPreparationReceiptPath> ".usf/receipts/bootstrap-carrier/semantic-first-gate-v1.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:trackedReceiptPath> "evidence/historical-carriers/semantic-first-gate-v1.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:validation> <urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:validation> <urn:usf:validation:realisation-basis-chain-focused> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:validation> <urn:usf:validation:semantic-first-lifecycle-focused> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:validationCount> "3" <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:adoptionScope> "Only the exact three named gate works and exact content-bound admission receipt are in scope; every other path or effect carried by the commit is outside this adoption." <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:predicate:nonClaim> "The carrier adoption does not claim ordinary integration or completion for any of the three works." <urn:usf:graph:integration> .
 <urn:usf:cohort:semantic-first-gate-carrier:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierCohort> <urn:usf:graph:integration> .
@@ -74,6 +92,10 @@
 <urn:usf:receipt:semantic-first-bootstrap-admission:1> <urn:usf:predicate:receiptDigest> "sha256:87c9a1fe5169fa7b3b71f2c5293cef40e717e34b3b19b4f6b0f4700b3021568e" <urn:usf:graph:integration> .
 <urn:usf:receipt:semantic-first-bootstrap-admission:1> <urn:usf:predicate:transition> <urn:usf:transition:semantic-first-bootstrap-admission:1> <urn:usf:graph:integration> .
 <urn:usf:receipt:semantic-first-bootstrap-admission:1> <urn:usf:predicate:algorithm> <urn:usf:algorithm:verified-transition-receipt:1> <urn:usf:graph:integration> .
+<urn:usf:transition:semantic-first-bootstrap-admission:1> <urn:usf:predicate:type> <urn:usf:type:ReceiptBackedHistoricalTransitionIdentity> <urn:usf:graph:integration> .
+<urn:usf:transition:semantic-first-bootstrap-admission:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:transition:semantic-first-bootstrap-admission:1> <urn:usf:predicate:recordPath> "evidence/semantic-first-bootstrap-admission.json" <urn:usf:graph:integration> .
+<urn:usf:transition:semantic-first-bootstrap-admission:1> <urn:usf:predicate:identityBoundary> "This IRI identifies only the exact transition recorded by the content-bound tracked receipt. It is not a graph-executable transition, current authority, ordinary evidence, proof or completion and grants no mutation or runtime effect." <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierAdoption> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
@@ -81,14 +103,20 @@
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:currentnessAuthority> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:lineage> <urn:usf:lineage:repository-path-scope-carrier:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:transitionAlgorithm> <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:adoptionStateRule> <urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:pathEffectScope> <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:carrierParentCommit> "79379bb64594062ba35d64f9f4e65de20b724f54" <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:carrierCommit> "95bce10289403ce5d9383a41c81a1862acc20d3f" <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:carrierTree> "001a34b97bf4665719e4b8a6f3f02733152b8958" <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:adoptedWork> <urn:usf:work:repository-path-scope> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:adoptedSubjectCount> "1" <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:pathObservation> <urn:usf:carrier-path:repository-path-scope-source:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:pathObservation> <urn:usf:carrier-path:repository-path-scope-test:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:pathCount> "2" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:localPreparationReceiptPath> ".usf/receipts/bootstrap-carrier/repository-path-scope-v1.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:trackedReceiptPath> "evidence/historical-carriers/repository-path-scope-v1.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:validation> <urn:usf:validation:repository-path-carrier-focused> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:validationCount> "1" <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:adoptionScope> "Only the two exact listed paths at their current SHA-256 content digests and file modes are in scope; every other path or effect carried by the commit is outside this adoption." <urn:usf:graph:integration> .
 <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:predicate:nonClaim> "The historical carrier and current matching bytes do not claim ordinary integration or completion for the repository-path-scope work." <urn:usf:graph:integration> .
 <urn:usf:lineage:repository-path-scope-carrier:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapManualLineage> <urn:usf:graph:integration> .
@@ -105,55 +133,271 @@
 <urn:usf:carrier-path:repository-path-scope-test:1> <urn:usf:predicate:repositoryPath> "tests/unit/core/scope.test.ts" <urn:usf:graph:integration> .
 <urn:usf:carrier-path:repository-path-scope-test:1> <urn:usf:predicate:currentContentDigest> "sha256:0e55fdd7c3e1371cc104ff96a3c4437038d5be48520f97c300a78e4f3e704f67" <urn:usf:graph:integration> .
 <urn:usf:carrier-path:repository-path-scope-test:1> <urn:usf:predicate:fileMode> "100644" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierAdoption> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:v3-self-host:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:currentnessAuthority> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:lineage> <urn:usf:lineage:integration-toolchain-repair-carrier:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:transitionAlgorithm> <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:adoptionStateRule> <urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:pathEffectScope> <urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:carrierParentCommit> "1df0d028fa41fefc92ae61450d06f97e53f08de7" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:carrierCommit> "081129f0101707c75b87f5318d9336303f4f6bc5" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:carrierTree> "d3c5bdb8d31c80170506ece93cd285633eff43ab" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:adoptedCarrierIntent> <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:adoptedSubjectCount> "1" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:pathCount> "10" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:localPreparationReceiptPath> ".usf/receipts/bootstrap-carrier/integration-toolchain-repair-v1.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:trackedReceiptPath> "evidence/historical-carriers/integration-toolchain-repair-v1.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:validation> <urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:validationCount> "1" <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:adoptionScope> "Only the exact ten modified paths carried by the committed integration-toolchain intent are classified; the adoption preserves their direct-bootstrap/manual lineage and does not claim ordinary integration or completion." <urn:usf:graph:integration> .
+<urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:predicate:nonClaim> "The historical integration implementation carrier is not completion evidence or proof for any ordinary work and grants no provider, GitHub, runtime, staging or production authority." <urn:usf:graph:integration> .
+<urn:usf:lineage:integration-toolchain-repair-carrier:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapManualLineage> <urn:usf:graph:integration> .
+<urn:usf:lineage:integration-toolchain-repair-carrier:1> <urn:usf:predicate:lineageMode> "direct-bootstrap/manual-toolchain-repair" <urn:usf:graph:integration> .
+<urn:usf:lineage:integration-toolchain-repair-carrier:1> <urn:usf:predicate:parentCommit> "1df0d028fa41fefc92ae61450d06f97e53f08de7" <urn:usf:graph:integration> .
+<urn:usf:lineage:integration-toolchain-repair-carrier:1> <urn:usf:predicate:commit> "081129f0101707c75b87f5318d9336303f4f6bc5" <urn:usf:graph:integration> .
+<urn:usf:lineage:integration-toolchain-repair-carrier:1> <urn:usf:predicate:tree> "d3c5bdb8d31c80170506ece93cd285633eff43ab" <urn:usf:graph:integration> .
+<urn:usf:lineage:integration-toolchain-repair-carrier:1> <urn:usf:predicate:ordinaryIntegrationState> "not-observed" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-authoritative> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-authoritative> <urn:usf:predicate:command> "corepack pnpm run check" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-authoritative> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-authoritative> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-authoritative> <urn:usf:predicate:applicability> "required" <urn:usf:graph:integration> .
+<urn:usf:validation:repository-containment-check> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:integration> .
+<urn:usf:validation:repository-containment-check> <urn:usf:predicate:command> "./scripts/verify-contained.sh" <urn:usf:graph:integration> .
+<urn:usf:validation:repository-containment-check> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:integration> .
+<urn:usf:validation:repository-containment-check> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:integration> .
+<urn:usf:validation:repository-containment-check> <urn:usf:predicate:applicability> "required" <urn:usf:graph:integration> .
+<urn:usf:validation:repository-path-carrier-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:integration> .
+<urn:usf:validation:repository-path-carrier-focused> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/core/scope.test.ts" <urn:usf:graph:integration> .
+<urn:usf:validation:repository-path-carrier-focused> <urn:usf:predicate:environment> <urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:graph:integration> .
+<urn:usf:validation:repository-path-carrier-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:integration> .
+<urn:usf:validation:repository-path-carrier-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:integration> .
+<urn:usf:validation:repository-path-carrier-focused> <urn:usf:predicate:carrierBasisTestPath> "tests/unit/core/scope.test.ts" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:predicate:command> "node --test --test-isolation=none tests/adversarial/realisation-check.test.ts tests/contract/cli.test.ts tests/unit/realisation/workspace.test.ts" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:predicate:environment> <urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:predicate:carrierBasisTestPath> "tests/adversarial/realisation-check.test.ts" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:predicate:carrierBasisTestPath> "tests/contract/cli.test.ts" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-toolchain-carrier-focused> <urn:usf:predicate:carrierBasisTestPath> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:type> <urn:usf:type:HermeticValidationEnvironment> <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:networkAccess> "forbidden-by-private-network-namespace" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:credentialAccess> "forbidden" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:sourceAccess> "read-only-exact-carrier-tree-and-dependency-members" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:writeAccess> "exact-transient-workspace-and-scratch-only" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "LANG=C.UTF-8" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "LC_ALL=C.UTF-8" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "TZ=UTC" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "HOME=/usf-scratch/home" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "TMPDIR=/usf-scratch/tmp" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "XDG_CACHE_HOME=/usf-scratch/xdg/cache" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "XDG_CONFIG_HOME=/usf-scratch/xdg/config" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "XDG_DATA_HOME=/usf-scratch/xdg/data" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:fixedEnvironmentEntry> "XDG_STATE_HOME=/usf-scratch/xdg/state" <urn:usf:graph:integration> .
+<urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:predicate:environmentRule> "Launch the exact resolved Node executable without a shell in a private route-free network namespace at the authenticated detached carrier worktree. Bind the invocation's authenticated repository-local per-adoption scratch directory at /usf-scratch as its only writable filesystem and create the declared home, tmp and XDG subdirectories beneath it before launch. The inherited environment is exactly the nine graph-declared fixedEnvironmentEntry values; PATH, NODE_OPTIONS, package-manager mutation variables, proxies, provider and credential variables, Git transport/SSH variables and every other inherited name are absent. Runtime-internal variables created by Node after launch are not inherited authority. Never install, fetch or resolve a dependency from the network." <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:availability> "planned" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:postQualificationAvailabilityTarget> "implemented" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:commandPath> "bootstrap-carrier" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:commandGroup> "admit" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:purpose> "Verify or adopt one exact graph-declared historical bootstrap carrier without converting it into ordinary realization, evidence, proof or completion." <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:synopsis> "usf bootstrap-carrier verify --adoption IRI --profile VERSIONED_IRI --manifest graph/manifests/integration.json" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:synopsis> "usf bootstrap-carrier adopt --adoption IRI --profile VERSIONED_IRI --manifest graph/manifests/integration.json" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:requiredOption> "--adoption IRI" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:requiredOption> "--profile VERSIONED_IRI" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:requiredOption> "--manifest graph/manifests/integration.json" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/integration.json" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:topic> <urn:usf:command-mode:bootstrap-carrier-verify:1> <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:topic> <urn:usf:command-mode:bootstrap-carrier-adopt:1> <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:outputSchema> <urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:errorSchema> <urn:usf:cli-error:1> <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:exitCode> "0:success" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:exitCode> "1:validation-or-domain-refusal" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:exitCode> "2:invalid-input-or-configuration" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:exitCode> "3:git-tool-or-validation-dependency-unavailable" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:exitCode> "4:authority-currentness-or-integrity-failure" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:exitCode> "5:containment-privacy-or-security-refusal" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:exitCode> "7:receipt-conflict-busy-or-overlap" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:historyScan> "bounded-exact-parent-commit-tree-and-selected-diff" <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:authorityEffect> "Verify has no durable output. Both modes may create only bounded ignored transient preparation, raw-observation, scratch, per-adoption-lock and detached-worktree state plus the unavoidable matching Git worktree administration and private worktree index; every such transient object is removed before successful return. The shared primary-mutation lock file remains a persistent coordination inode and only flock ownership is released. Adopt may additionally no-replace-create only the graph-declared tracked historical-carrier receipt under the active finite publication permission. Neither mode mutates semantic sources, primary Git refs or index, commits, remotes, work completion, provider state or runtime." <urn:usf:graph:integration> .
+<urn:usf:command:bootstrap-carrier:1> <urn:usf:predicate:dependencyProjectionRule> "For this carrier command slice, only explicit dependsOn predicates between work resources are operational predecessor edges. Reciprocal authority, registeredCommand, transitionAlgorithm, topic, permission, schema, digest-membership and adoption-state bindings are metadata edges; they contribute to semantic connectivity but never form execution-order cycles or runtime deadlocks." <urn:usf:graph:integration> .
+<urn:usf:command-mode:bootstrap-carrier-verify:1> <urn:usf:predicate:type> <urn:usf:type:CliCommandMode> <urn:usf:graph:integration> .
+<urn:usf:command-mode:bootstrap-carrier-verify:1> <urn:usf:predicate:commandTopic> "verify" <urn:usf:graph:integration> .
+<urn:usf:command-mode:bootstrap-carrier-verify:1> <urn:usf:predicate:writeEffect> "Create and read back only the exact bounded owner-private transient preparation and validation state, remove it before success, and never write tracked content. Verification returns the candidate or authenticated historical receipt digest plus fresh live currentness only in the command result." <urn:usf:graph:integration> .
+<urn:usf:command-mode:bootstrap-carrier-adopt:1> <urn:usf:predicate:type> <urn:usf:type:CliCommandMode> <urn:usf:graph:integration> .
+<urn:usf:command-mode:bootstrap-carrier-adopt:1> <urn:usf:predicate:commandTopic> "adopt" <urn:usf:graph:integration> .
+<urn:usf:command-mode:bootstrap-carrier-adopt:1> <urn:usf:predicate:writeEffect> "Do not trust prior transient state. When the tracked target is absent, rederive and revalidate all authority, carrier, historical-validation and current-observation facts, stage/read back transient bytes, then create the exact tracked receipt with no replacement. When the target exists, authenticate its exact historical receipt and historical observation basis without regenerating it from current files; return matching only for identical authenticated bytes and report newly derived live currentness only in the result. Any invalid or different existing object refuses." <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierObservationPublicationPermission> <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:activationState> <urn:usf:contract-state:active> <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:forAlgorithm> <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:bootstrap-carrier:1> <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:maximumThrough> "historical-carrier-observation-publication" <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:allowedPath> "evidence/historical-carriers/semantic-first-gate-v1.json" <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:allowedPath> "evidence/historical-carriers/repository-path-scope-v1.json" <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:allowedPath> "evidence/historical-carriers/integration-toolchain-repair-v1.json" <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:activationCondition> "For an absent target, the selected adoption, exact scoped authority dependency, exact raw carrier objects and selected path effects are current for the invocation; every graph-declared detached-carrier historical validation passes; transient receipt bytes are read back; and the tracked path remains absent at the locked recheck. For an existing target, no publication occurs: authenticate the stored receipt against its recorded historical observation basis and return matching or refuse." <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:mutationRule> "Only the absent-target branch may create one exact graph-declared tracked receipt with no replacement. The existing-target branch never rewrites, regenerates, touches or normalizes the receipt. Never edit a semantic source, primary Git ref or index, commit, remote, sibling receipt or other tracked path. Receipt presence is historical carrier observation only and cannot activate a work permission, dependency readiness, evidence, proof or completion." <urn:usf:graph:integration> .
+<urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:predicate:currentnessRule> "Later verification compares the selected adoption's scoped authority dependency digest and exact receipt bytes. Unrelated integration-graph resources and unrelated Git successors are outside currentness; relevant selected-resource or tracked-receipt movement refuses without rewriting history." <urn:usf:graph:integration> .
+<urn:usf:type:BootstrapCarrierObservationPublicationPermission> <urn:usf:predicate:type> <urn:usf:type:FiniteObservationPublicationPermissionType> <urn:usf:graph:integration> .
+<urn:usf:type:BootstrapCarrierObservationPublicationPermission> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:authority-class:HistoricalCarrierObservation> <urn:usf:predicate:type> <urn:usf:type:NonEvidenceAuthorityClass> <urn:usf:graph:integration> .
+<urn:usf:authority-class:HistoricalCarrierObservation> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:authority-class:HistoricalCarrierObservation> <urn:usf:predicate:genericEvidenceEligibility> "forbidden" <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:predicate:type> <urn:usf:type:CarrierAdoptionStateDerivationRule> <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:predicate:absentReceiptState> "not-adopted" <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:predicate:validReceiptState> "historical-carrier-admitted" <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:predicate:invalidReceiptState> "integrity-refused" <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:predicate:derivationRule> "Select the exact trackedReceiptPath from the graph-selected adoption. Absence yields not-adopted. Presence yields historical-carrier-admitted only after owner/containment authentication, closed-schema validation, receipt digest rederivation, exact algorithm/adoption/lineage/carrier/path-effect/subject/validation/scoped-authority bindings and exact byte readback; any mismatch yields integrity-refused. Never mutate the graph to flip adoption state." <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:predicate:historicalCurrentnessRule> "A valid receipt permanently records historical carrier identity and its point-in-time current observation. Later source, graph or HEAD movement does not rewrite or invalidate that historical record. Consumers separately rederive live scoped currentness and may report current, stale or reconstructable without changing adoption state." <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:predicate:nonClaim> "historical-carrier-admitted does not mean work-ready, construction-authorized, integrated, evidence-admitted, proved, completed, runtime-active or production-ready." <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "schema" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "status" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "operation" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "mode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "carrierAdoptionIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "authorityProfileIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "authorityManifestPath" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "localPreparationReceiptPath" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "trackedReceiptPath" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "trackedReceiptState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "receiptDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "historicalObservedCurrentnessDisposition" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "liveCurrentnessBasisCommit" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "liveCurrentnessBasisTree" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "liveCurrentnessDisposition" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "authorityEffect" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "nonClaims" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "completionState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "evidenceState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "proofState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "ordinaryPermissionState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:requiredField> "runtimeState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:transientFieldRule> "localPreparationReceiptPath identifies the graph-declared staging location used by the invocation; successful return requires that transient object to be absent. It is not an output artifact or authority reference." <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:predicate:authorityRule> "schema is urn:usf:bootstrap-carrier-result:1, status is ok, operation is bootstrap-carrier and mode is verify or adopt. trackedReceiptState is absent or matching for verify and created or matching for adopt. historicalObservedCurrentnessDisposition comes from the candidate receipt on the absent branch or the authenticated immutable receipt on the existing branch. liveCurrentnessBasisCommit, liveCurrentnessBasisTree and liveCurrentnessDisposition are newly derived for this invocation and exist only in the result; they never alter receiptDigest or trigger receipt regeneration. Every success repeats completionState not-observed, evidenceState not-admitted, proofState not-evaluated, ordinaryPermissionState unchanged and runtimeState unchanged. Refusals use the standard CLI error schema and never fabricate this success result." <urn:usf:graph:integration> .
+<urn:usf:validation:bootstrap-carrier-command-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:integration> .
+<urn:usf:validation:bootstrap-carrier-command-focused> <urn:usf:predicate:command> "node --test tests/contract/cli.test.ts tests/integration/bootstrap-carrier.test.ts" <urn:usf:graph:integration> .
+<urn:usf:validation:bootstrap-carrier-command-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:integration> .
+<urn:usf:validation:bootstrap-carrier-command-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:integration> .
+<urn:usf:validation:bootstrap-carrier-command-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:type> <urn:usf:type:TransitionVerificationAlgorithm> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
-<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:objective> "Verify and adopt one exact graph-declared direct-bootstrap/manual historical carrier only after a tracked receipt binds its complete scoped path-effect classification, exact local Git parent, commit and tree, declared existing admission receipt where applicable, carrier and current postimages and modes, integration authority/currentness and exact validations." <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:objective> "Verify and adopt one exact graph-declared direct-bootstrap/manual historical carrier only after a durable HistoricalCarrierObservation binds its scoped path-effect classification, exact locally reachable Git parent, commit and tree, declared existing admission receipt where applicable, carrier postimages, one point-in-time current-postimage observation, scoped integration authority and exact normalized validations." <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:eligibleCarrierAdoption> <urn:usf:carrier-adoption:semantic-first-gate:1> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:eligibleCarrierAdoption> <urn:usf:carrier-adoption:repository-path-scope:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:eligibleCarrierAdoption> <urn:usf:carrier-adoption:integration-toolchain-repair:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:bootstrap-carrier:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:resultSchema> <urn:usf:schema:bootstrap-carrier-result:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationWorkspaceMode> "detached-local-carrier-worktree" <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationConfinementEnvironment> <urn:usf:environment:bootstrap-carrier-no-network> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationWallTimeMilliseconds> "120000" <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationTerminationSignal> "SIGTERM" <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationTerminationGraceMilliseconds> "5000" <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationForcedTerminationSignal> "SIGKILL" <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationMaximumSettlementWallTimeMilliseconds> "125000" <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationTimeoutReasonCode> "BOOTSTRAP_CARRIER_VALIDATION_TIMEOUT" <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:receiptRecordType> <urn:usf:type:BootstrapCarrierAdoptionReceipt> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:receiptSchema> <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:receiptDigestMembership> <urn:usf:digest-membership:bootstrap-carrier-receipt:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:derivedSetDigestMembership> <urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:pathEffectRecordType> <urn:usf:type:BootstrapCarrierPathEffect> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:pathEffectSchema> <urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationResultSchema> <urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:validationDependencyDerivationRule> <urn:usf:rule:bootstrap-carrier-validation-dependencies:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:publicationPermission> <urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:adoptionStateRule> <urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:localPreparationRoot> ".usf/receipts/bootstrap-carrier/" <urn:usf:graph:integration> .
-<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:trackedReceiptRoot> "evidence/core-completion/bootstrap-carrier/" <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:trackedReceiptRoot> "evidence/historical-carriers/" <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-exact-identity-effects> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-admission-receipt-binding> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-current-postimage> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-authority-validation> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-receipt-promotion> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-durable-reachability> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-scrubbed-git-objects> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-normalized-validation-results> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-target-state-branching> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-receipt-containment> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-lock-minimization> <urn:usf:graph:integration> .
+<urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-historical-currentness-separation> <urn:usf:graph:integration> .
 <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:predicate:requires> <urn:usf:requirement:bootstrap-carrier-noncompletion> <urn:usf:graph:integration> .
 <urn:usf:requirement:bootstrap-carrier-exact-identity-effects> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
-<urn:usf:requirement:bootstrap-carrier-exact-identity-effects> <urn:usf:predicate:text> "Derive the exact parent, commit and tree from local Git object bytes and derive every path effect in the graph-declared scope, including change kind, preimage and postimage SHA-256 digests and modes. Require exact equality with the declared included and excluded path classification and refuse unclassified, duplicate, renamed, ambiguous or out-of-scope effects." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-exact-identity-effects> <urn:usf:predicate:text> "Derive the exact parent, commit and tree from local Git object bytes. For complete-carrier-diff coverage, derive the complete carrier denominator and require every effect to appear exactly once as included or excluded. For exact-selected-path-subdiff coverage, bind only the exact declared selected paths and their tree-entry effects, require the separately declared complete carrier path count, and make no classification or adoption claim about every unselected effect. In both modes bind change kind, conditional preimage and postimage SHA-256 digests and modes; refuse missing selected effects, duplicate paths, ambiguous renames or a count/classification mismatch." <urn:usf:graph:integration> .
 <urn:usf:requirement:bootstrap-carrier-admission-receipt-binding> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
 <urn:usf:requirement:bootstrap-carrier-admission-receipt-binding> <urn:usf:predicate:text> "When the selected carrier adoption declares an existing tracked admission receipt, load it through its declared schema, recompute its exact content and receipt digests and bind its path, transition and algorithm; when not declared, bind not-applicable and forbid fabricated receipt fields." <urn:usf:graph:integration> .
 <urn:usf:requirement:bootstrap-carrier-current-postimage> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
-<urn:usf:requirement:bootstrap-carrier-current-postimage> <urn:usf:predicate:text> "For every included path, independently derive the carrier postimage and current repository postimage SHA-256 digest and mode and bind their exact currentness disposition. Historical adoption does not require current equality: a stale or reconstructable path keeps the adoption explicitly non-current and non-complete, and only a later ordinary graph-defined chain may establish present-state realization. Excluded effects remain bound as excluded and cannot become adopted bytes." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-current-postimage> <urn:usf:predicate:text> "For every selected path, independently derive the carrier postimage and one point-in-time repository postimage state at an exact clean relevant HEAD commit/tree basis, using conditional present/absent digest and mode fields. Per-path observedCurrentnessDisposition is exact-present, exact-absent, missing, divergent or unexpected-present according to the exact state/digest/mode comparison. Receipt aggregate observedCurrentnessDisposition is current exactly when every included path is exact-present or exact-absent; otherwise it is reconstructable because the authenticated carrier tree supplies the exact included postimages. Excluded selected effects remain classified and digest-bound but never enter the included-adoption aggregate. Later live scoped currentness uses the same rule against a newly derived clean HEAD basis only in the command result and never rewrites the receipt." <urn:usf:graph:integration> .
 <urn:usf:requirement:bootstrap-carrier-authority-validation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
-<urn:usf:requirement:bootstrap-carrier-authority-validation> <urn:usf:predicate:text> "Bind the exact integration authority named graph and digest, selected manifest path and digest, authority/currentness dependency digest, selected carrier-adoption resource digest, path-effect-set resource digest and every graph-declared validation identity, dependency and result digest; caller claims and Git metadata alone are never authority." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-authority-validation> <urn:usf:predicate:text> "Bind the integration authority named-graph identity and its full digest as a point-in-time observation, but derive adoption currentness only from the exact selected manifest identity, selected profile identity/version and a scoped dependency digest over this algorithm, command, permission, receipt and path-effect schemas, selected carrier-adoption, lineage, path-effect-set, currentness authority and every graph-declared validation resource plus exact file/tool dependencies. Unrelated resources in the integration graph and unrelated Git movement cannot stale or regenerate the receipt; caller claims and Git metadata alone are never authority." <urn:usf:graph:integration> .
 <urn:usf:requirement:bootstrap-carrier-receipt-promotion> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
-<urn:usf:requirement:bootstrap-carrier-receipt-promotion> <urn:usf:predicate:text> "Prepare one schema-valid content-bound receipt under ignored repository-local state, rederive and read back every field, then atomically publish the same exact bytes under the tracked receipt root only after success. A local preparation receipt is non-authoritative and a refusal never writes tracked evidence." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-receipt-promotion> <urn:usf:predicate:text> "For an absent target, prepare one closed-schema content-bound HistoricalCarrierObservation in bounded ignored transient state, rederive and read back every field, then atomically create the same exact bytes at the graph-declared tracked path only under the finite observation-publication permission and remove the transient state. For an existing target, authenticate the stored historical bytes and create nothing. Transient preparation is non-authoritative; a refusal writes no tracked carrier observation. The tracked file is the only durable output and is categorically ineligible for generic completion-evidence loading despite its durable evidence/ directory placement." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-durable-reachability> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-durable-reachability> <urn:usf:predicate:text> "Before verification or adoption, authenticate the exact local Git parent, commit and tree objects, require the declared parent relationship and require the carrier commit to be an ancestor of the current clean relevant HEAD basis. Bind that reachability basis commit/tree and outcome in the receipt. Reachability must follow ordinary raw parent edges from current HEAD with replacement, graft, shallow, alternate and partial-clone/filter effects refused; dangling or reflog-only presence is insufficient. Never fetch or contact a remote. Later descendant movement does not invalidate the historical reachability observation." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-scrubbed-git-objects> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-scrubbed-git-objects> <urn:usf:predicate:text> "Resolve the repository's common Git directory and object format, require SHA-1 for these three declared 40-hex carriers, set GIT_NO_REPLACE_OBJECTS=1, ignore system/global Git configuration, require refs/replace empty, and reject any info/grafts file, shallow boundary, object alternates environment or file, extensions.partialClone, promisor remote, partial-clone filter or promisor pack used by the object walk. Read raw commit, tree and blob objects without text conversion or filters; independently recompute each Git object ID from type, byte length and raw bytes. The carrier commit must contain exactly one tree header equal to carrierTree and exactly one parent header equal to carrierParentCommit. Parse raw tree entries to derive selected modes and blob IDs, derive each content SHA-256 from raw blob bytes, and require every validation dependency file in the detached worktree to be byte-identical to its authenticated raw carrier blob so attributes, encodings or checkout filters cannot change the executed basis. No fetch, lazy object retrieval, package install, hook, filter, smudge/clean command, remote helper or network operation is permitted." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-normalized-validation-results> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-normalized-validation-results> <urn:usf:predicate:text> "Execute only the selected adoption's graph-declared historical carrier validations in an authenticated detached local worktree at the exact carrier commit/tree. Each command must be the supported closed Node test form: exact node, --test, optional graph-declared --test-isolation=none and --test-name-pattern=<literal>, followed only by explicit repository-relative .test.ts files; no shell, glob, eval, package manager or arbitrary flag is allowed. Run it through the graph-declared scrubbed no-network confinement. The dependency member set contains one canonical full carrier-tree member, each exact graph-declared carrier test path, each exact manifest plus its finite imported-manifest/source closure and declared receipt input selected for that validation, the complete package dependency closure from the carrier's exact pnpm lock including the root importer's test dev dependencies, exact Node/bwrap host tools, validation/environment/mode/confinement resources and timeout policy. The authenticated full carrier tree binds all repository-relative ESM implementation imports, so this bounded command does not add a second TypeScript/import parser. Missing, mutable, filtered, network-fetched or outside-carrier dependencies refuse. A successful tracked receipt contains only the closed deterministic passing result fields and empty failure set defined by the validation-result schema. Current implementation full-suite and containment checks remain carrier-intent qualification gates and never become historical carrier receipt validations. Raw output, timestamps, durations and variable TAP timing remain bounded transient ignored observations and cannot affect tracked receipt bytes." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-target-state-branching> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-target-state-branching> <urn:usf:predicate:text> "Authenticate the graph-declared tracked target before choosing exactly one branch. If absent, derive a new receipt from the current authority, raw carrier objects, passing historical validations and a point-in-time clean HEAD observation, then adopt may no-replace-create it. If a regular contained target exists, validate its closed bytes and receipt digest, reconstruct every historical current-postimage field from its recorded currentObservationBasisCommit/tree rather than current files, authenticate that basis and all immutable graph/carrier/validation bindings, and never regenerate or replace it. In both branches derive a separate fresh clean-HEAD live currentness basis and aggregate for the command result only. A symlink, nonregular file, different receipt, invalid historical basis or ambiguous state refuses without any tracked write." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-receipt-containment> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-receipt-containment> <urn:usf:predicate:text> "Authenticate every transient ancestor as repository-contained, owner-controlled and non-symlink, require owner-only directory and file modes, refuse hardlinks, nonregular files, hostile replacements and oversized content, and never place secrets in receipt bytes. Preparation receipts, scratch, raw output, per-adoption locks and detached workspaces are bounded transient ignored state and must be removed before successful return; interrupted remnants are authenticated then removed or quarantined before reuse and never become authority. The detached Git worktree may create only its exact matching administrative directory and private index beneath the common Git directory, both removed with the worktree; primary refs and the primary index are immutable. Authenticate the tracked ancestor chain separately, fsync/read back the absent-target receipt and create it with no replacement. That tracked HistoricalCarrierObservation is the only durable output; an authenticated existing target is idempotent matching without any write." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-lock-minimization> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-lock-minimization> <urn:usf:predicate:text> "Perform Git inspection, path derivation, detached-worktree validation and transient preparation outside every shared mutation lock. Use at most one owner-private per-adoption transient ignored lock for same-target preparation. For absent-target adopt, hold the existing narrow repository primary-mutation lock only across the final relevant scoped recheck and no-replace tracked placement/readback. Existing-target authentication and verify acquire no primary-mutation lock because they perform no tracked write. Release flock ownership after that critical section but never unlink, replace or recreate the persistent .usf/locks/primary-mutation.lock coordination inode; only the separate per-adoption lock is removable. Perform no validation, history walk, primary Git ref/index change, commit, push, GitHub, provider, CAS, database or network operation while that lock is held." <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-historical-currentness-separation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
+<urn:usf:requirement:bootstrap-carrier-historical-currentness-separation> <urn:usf:predicate:text> "Derive adoption state dynamically from exact tracked receipt authentication without a graph edit. The valid receipt permanently records immutable historical carrier identity, scoped classification, durable reachability and point-in-time current observation. Consumers separately rederive live scoped currentness. Ordinary file, graph or HEAD movement cannot require receipt regeneration or reproof; changing a versioned authority resource is an integrity defect and requires a new version rather than rewriting the historical receipt." <urn:usf:graph:integration> .
 <urn:usf:requirement:bootstrap-carrier-noncompletion> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
 <urn:usf:requirement:bootstrap-carrier-noncompletion> <urn:usf:predicate:text> "Adoption preserves direct-bootstrap/manual lineage and authorizes only the exact bounded historical carrier classification. It cannot create ordinary candidates, checked-candidate receipts, integration observations, completion evidence or proof, and performs no GitHub, push, provider, runtime, staging or production effect." <urn:usf:graph:integration> .
 <urn:usf:type:BootstrapCarrierAdoptionReceipt> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:integration> .
 <urn:usf:type:BootstrapCarrierAdoptionReceipt> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:type:BootstrapCarrierAdoptionReceipt> <urn:usf:predicate:authorityClass> <urn:usf:authority-class:HistoricalCarrierObservation> <urn:usf:graph:integration> .
+<urn:usf:type:BootstrapCarrierAdoptionReceipt> <urn:usf:predicate:genericEvidenceEligibility> "forbidden" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:schemaIdentity> <urn:usf:bootstrap-carrier-adoption-receipt:1> <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:recordType> <urn:usf:type:BootstrapCarrierAdoptionReceipt> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:digestMembership> <urn:usf:digest-membership:bootstrap-carrier-receipt:1> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:derivedSetDigestMembership> <urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "authorityClass" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "genericEvidenceEligibility" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "algorithmIri" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "algorithmVersion" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "algorithmResourceDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "authorityGraphIri" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "authorityGraphDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "observedAuthorityGraphDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "authorityManifestPath" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "authorityManifestDigest" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "authorityDependencyDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "scopedAuthorityDependencyDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "authorityProfileIri" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "authorityProfileVersion" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "currentnessAuthorityIri" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "currentnessAuthorityResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "commandIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "commandResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "receiptSchemaIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "receiptSchemaResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "pathEffectSchemaIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "pathEffectSchemaResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "adoptedSubjectSchemaIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "adoptedSubjectSchemaResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "validationResultSchemaIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "validationResultSchemaResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "publicationPermissionIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "publicationPermissionResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "adoptionStateRuleIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "adoptionStateRuleResourceDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "carrierAdoptionIri" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "carrierAdoptionResourceDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "lineageMode" <urn:usf:graph:integration> .
@@ -161,14 +405,39 @@
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "commit" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "tree" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "pathEffectSetResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "coverageMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "carrierTotalPathEffectCount" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "selectedPathEffectCount" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "scopedPathEffectSetDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "includedPathEffectSetDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "excludedPathEffectSetDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "pathEffects" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "adoptedSubjects" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "adoptedSubjectSetDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:adoptedSubjectSchema> <urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "admissionReceiptApplicability" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "carrierPostimageSetDigest" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "currentPostimageSetDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "currentObservationBasisCommit" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "currentObservationBasisTree" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "observedCurrentPostimageSetDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "reachabilityBasisCommit" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "reachabilityBasisTree" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "carrierReachability" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "validationResultSetDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "validationResults" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:validationResultSchema> <urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "nonClaimSetDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "nonClaims" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "observedCurrentnessDisposition" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:allowedObservedCurrentnessDisposition> "current" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:allowedObservedCurrentnessDisposition> "reconstructable" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "completionState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "evidenceState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "proofState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "ordinaryPermissionState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "runtimeState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "localPreparationReceiptPath" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "trackedReceiptPath" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "outcome" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:requiredField> "receiptDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:admissionReceiptRequiredField> "existingAdmissionReceiptPath" <urn:usf:graph:integration> .
@@ -177,11 +446,163 @@
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:admissionReceiptForbiddenWhenNotApplicableField> "existingAdmissionReceiptPath" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:admissionReceiptForbiddenWhenNotApplicableField> "existingAdmissionReceiptContentDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:admissionReceiptForbiddenWhenNotApplicableField> "existingAdmissionReceiptCanonicalDigest" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:successRequiredField> "trackedReceiptPath" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:successForbiddenField> "refusalReason" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:refusalRequiredField> "refusalReason" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:refusalForbiddenField> "trackedReceiptPath" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:authorityRule> "Receipt digest membership excludes only receiptDigest itself and binds every other present field. Only a success record with exact readback may be tracked; a refusal remains ignored local observation and grants no adoption." <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:forbiddenField> "refusalReason" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:transientFieldRule> "localPreparationReceiptPath binds only the graph-declared transient staging location used to derive these bytes; the path must be absent after successful publication and grants no dependency on ignored state." <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adoption-receipt:1> <urn:usf:predicate:authorityRule> "The receipt is a durable HistoricalCarrierObservation only. It represents successful exact carrier verification plus a point-in-time current-postimage observation at one durable local Git basis; later current movement never invalidates its historical parent, commit, tree or path-effect classification. completionState is not-observed, evidenceState is not-admitted, proofState is not-evaluated, ordinaryPermissionState is unchanged and runtimeState is unchanged. Receipt digest membership excludes only receiptDigest itself and binds every other present field. Every array and derived set digest uses the exact source, projection, subset, member schema, UTF-8 byte order and canonical JSON preimage declared by bootstrap-carrier-derived-sets:1, never execution order. A refusal emits only the command error schema, writes no receipt and grants no adoption." <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:predicate:requiredField> "kind" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:predicate:requiredField> "iri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:predicate:requiredField> "subjectResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:predicate:allowedKind> "work" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:predicate:allowedKind> "carrier-intent" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:predicate:authorityRule> "Derive the closed subject set only from adoptedWork and adoptedCarrierIntent predicates on the selected adoption. Sort by kind then IRI using UTF-8 byte order; reject unknown, duplicate, missing or caller-supplied subjects." <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:digestMembership> <urn:usf:digest-membership:bootstrap-carrier-validation-result:1> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "validationIri" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "validationResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "carrierCommit" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "carrierTree" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "commandDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "commandTokens" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "environmentDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "executionModeDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "dependencyDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "dependencyMembers" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:dependencyMemberSchema> <urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:dependencyDerivationRule> <urn:usf:rule:bootstrap-carrier-validation-dependencies:1> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "wallTimeLimitMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "terminationGraceMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "timedOut" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "lastTerminationSignal" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "exitCode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "outcome" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "failureIdentities" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "failureSetDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:requiredField> "normalizedResultDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:forbiddenField> "stdout" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:forbiddenField> "stderr" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:forbiddenField> "timestamp" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:forbiddenField> "duration" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:predicate:authorityRule> "A tracked carrier receipt contains only passing normalized historical-validation facts: exact carrier basis, graph-derived validation and exact closed command/dependency identities, configured timeout/grace, timedOut false, lastTerminationSignal not-used, exitCode zero, outcome pass and an empty UTF-8-bytewise ordered failure set. commandDigest is SHA-256 over the canonical JSON commandTokens array. dependencyDigest and failureSetDigest use the exact membership rules in bootstrap-carrier-derived-sets:1. Raw stdout, stderr, timestamps, wall-clock durations and TAP timing remain transient ignored observations and never enter tracked bytes. Sort aggregate validationResults by validationIri using UTF-8 byte order and derive validationResultSetDigest over the complete canonical array." <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:requiredField> "kind" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:requiredField> "identity" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:requiredField> "contentDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:allowedKind> "carrier-tree" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:allowedKind> "carrier-file" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:allowedKind> "package" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:allowedKind> "host-tool" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:allowedKind> "authority-resource" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:allowedKind> "confinement-policy" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:carrierFileRequiredField> "fileMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:nonCarrierFileForbiddenField> "fileMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:packageOrToolRequiredField> "version" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:nonPackageOrToolForbiddenField> "version" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:packageRequiredField> "lockIntegrity" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:packageRequiredField> "packageLinkTopologyDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:nonPackageForbiddenField> "lockIntegrity" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:nonPackageForbiddenField> "packageLinkTopologyDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-validation-dependency:1> <urn:usf:predicate:authorityRule> "carrier-tree identity is commit:tree and contentDigest is SHA-256 of a canonical UTF-8 JSON array over the complete recursively parsed raw tree: normalized repository path, raw blob SHA-256 or subtree identity, and raw Git mode. carrier-file identity is one exact validation test, selected manifest/import or receipt-input path within that tree; contentDigest is SHA-256 of raw blob bytes and fileMode is raw tree mode. package identity is the exact unique pnpm lock package locator, while version and lockIntegrity are its exact authenticated lock values; contentDigest is the installed package-instance file-tree digest and packageLinkTopologyDigest binds that locator's safe lock-derived resolution links. A package file-tree digest hashes the canonical path-ordered array of every regular file's normalized package-relative path, raw SHA-256 and executable or nonexecutable mode. Symlinks are accepted only in the separate lock-derived link-topology array with normalized relative link path and relative target confined beneath the read-only package mount root; absolute, escaping, cyclic, dangling, duplicate or extra links refuse. host-tool identity is the executable name without a host path, version is exact and contentDigest is SHA-256 of executable bytes. authority-resource and confinement-policy identities are exact IRIs and contentDigest is the query-derived resource digest. Unknown kinds, absolute host paths, duplicates, mutable members and caller-authored members refuse." <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-validation-dependencies:1> <urn:usf:predicate:type> <urn:usf:type:ValidationDependencyDerivationRule> <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-validation-dependencies:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-validation-dependencies:1> <urn:usf:predicate:derivationRule> "Derive one finite dependencyMembers set for each validation. Add exactly one carrier-tree member from the authenticated carrier commit/tree. Add carrier-file projections for every carrierBasisTestPath on the selected validation, the exact authority manifest and every repository-relative source/import reached by that manifest's finite ordered import closure, and each graph-declared admission or validation receipt input actually opened; all must resolve within and match the carrier tree. The complete carrier-tree member binds repository ESM implementation imports, so do not parse TypeScript imports or create another import-discovery implementation. Add host-tool members for the exact git, node and bwrap executables used. Add authority-resource members for the validation, its execution mode and the transition algorithm/timeout policy, plus confinement-policy members for its environment and bootstrap-carrier-no-network. From the exact carrier package.json importer and raw pnpm-lock.yaml digest, add every unique pnpm lock package locator in the lock-closed dependencies, optionalDependencies and test devDependencies closure, each once with its exact version/integrity, installed package-instance file-tree digest and safe link-topology digest. Sort the complete members by kind then identity using unsigned UTF-8 byte order and reject every missing, extra, duplicate or caller-supplied member." <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-validation-dependencies:1> <urn:usf:predicate:packageMountRule> "The repository-local package cache identity is the exact raw carrier pnpm-lock.yaml SHA-256 plus the canonical complete package-closure digest. Before every validation spawn, authenticate every package file tree and safe link topology against its member, construct or reuse only the exact closure as a read-only mount, and immediately recheck the mounted bytes, modes and links. The cache is reconstructable ignored state, never authority. A cache miss, mismatch or unsupported link refuses; verification never fetches, installs, repairs or runs package lifecycle scripts." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-receipt:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-receipt:1> <urn:usf:predicate:digestField> "receiptDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-receipt:1> <urn:usf:predicate:excludedSelfField> "receiptDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-receipt:1> <urn:usf:predicate:canonicalization> <urn:usf:canonicalization:bootstrap-carrier-json:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-receipt:1> <urn:usf:predicate:membershipRule> "Validate the closed receipt schema and every declared derived digest, remove only receiptDigest from the complete receipt object, serialize every other required or applicable field with bootstrap-carrier-json:1 and derive SHA-256. Unknown, missing, duplicate, noncanonical or forbidden fields refuse." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-result:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-result:1> <urn:usf:predicate:digestField> "normalizedResultDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-result:1> <urn:usf:predicate:excludedSelfField> "normalizedResultDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-result:1> <urn:usf:predicate:canonicalization> <urn:usf:canonicalization:bootstrap-carrier-json:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-result:1> <urn:usf:predicate:membershipRule> "Validate the closed normalized validation-result schema, commandDigest, dependencyDigest and failureSetDigest, remove only normalizedResultDigest from the complete result object, serialize every remaining field with bootstrap-carrier-json:1 and derive SHA-256. Raw process output and nondeterministic timing are outside this record." <urn:usf:graph:integration> .
+<urn:usf:canonicalization:bootstrap-carrier-json:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalJsonAlgorithm> <urn:usf:graph:integration> .
+<urn:usf:canonicalization:bootstrap-carrier-json:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:canonicalization:bootstrap-carrier-json:1> <urn:usf:predicate:encoding> "UTF-8" <urn:usf:graph:integration> .
+<urn:usf:canonicalization:bootstrap-carrier-json:1> <urn:usf:predicate:canonicalizationRule> "Validate the declared closed value schema; serialize JSON objects with keys in unsigned UTF-8 byte order, arrays in their field-specific declared order, strings with JSON escaping, integers as minimal base-10 digits, booleans and null as their lowercase JSON tokens, and no insignificant whitespace or trailing newline. SHA-256 digests use lowercase hexadecimal prefixed by sha256:. Unknown keys, duplicate keys, duplicate set members, invalid UTF-8, floats, negative zero and noncanonical values refuse." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:canonicalization> <urn:usf:canonicalization:bootstrap-carrier-json:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:memberDigest> <urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:memberDigest> <urn:usf:digest-membership:bootstrap-carrier-path-effect-sets:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:memberDigest> <urn:usf:digest-membership:bootstrap-carrier-postimage-sets:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:memberDigest> <urn:usf:digest-membership:bootstrap-carrier-adopted-subject-set:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:memberDigest> <urn:usf:digest-membership:bootstrap-carrier-validation-set:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:memberDigest> <urn:usf:digest-membership:bootstrap-carrier-nonclaim-set:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-derived-sets:1> <urn:usf:predicate:aggregateRule> <urn:usf:rule:bootstrap-carrier-aggregate-currentness:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:digestField> "scopedAuthorityDependencyDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:fixedClosureRoot> <urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:fixedClosureRoot> <urn:usf:algorithm:bootstrap-carrier-adoption-transition:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:fixedClosureRoot> <urn:usf:command:bootstrap-carrier:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:fixedClosureRoot> <urn:usf:permission:bootstrap-carrier-receipt-publication:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:fixedClosureRoot> <urn:usf:receipt-boundary:core-completion:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:selectedClosureRoot> "exact selected eligibleCarrierAdoption IRI" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:registeredCommand> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:resultSchema> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:outputSchema> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:topic> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:forAlgorithm> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:receiptBoundary> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:receiptSchema> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:bootstrapCarrierReceiptSchema> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:receiptDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:digestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:derivedSetDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:pathEffectSchema> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:adoptedSubjectSchema> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:validationResultSchema> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:dependencyMemberSchema> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:validationDependencyDerivationRule> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:dependencyDerivationRule> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:canonicalization> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:memberDigest> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:aggregateRule> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:adoptionStateRule> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:requires> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:publicationPermission> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:transitionAlgorithm> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:authorityProfile> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:currentnessAuthority> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:lineage> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:pathEffectScope> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:admissionReceipt> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:validation> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:validationConfinementEnvironment> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:environment> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:executionMode> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:closurePredicate> <urn:usf:predicate:hostToolDependency> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-scoped-authority:1> <urn:usf:predicate:digestRule> "Compute one finite subject set. Start with the five fixedClosureRoot values and the exact selected eligibleCarrierAdoption. Expand only: from the algorithm through registeredCommand, resultSchema, receiptBoundary, receiptSchema, receiptDigestMembership, derivedSetDigestMembership, pathEffectSchema, validationResultSchema, validationDependencyDerivationRule, publicationPermission, adoptionStateRule, validationConfinementEnvironment and every requires object; from the selected adoption through transitionAlgorithm, adoptionStateRule, authorityProfile, currentnessAuthority, lineage, pathEffectScope, admissionReceipt and every validation; from the command through topic and outputSchema; from the permission through forAlgorithm and registeredCommand; from the receipt boundary through bootstrapCarrierReceiptSchema; from receipt/result/validation schemas through only digestMembership, derivedSetDigestMembership, pathEffectSchema, adoptedSubjectSchema, validationResultSchema, dependencyMemberSchema and dependencyDerivationRule; from derived digest-membership subjects through canonicalization, memberDigest and aggregateRule; and from each selected validation through environment, executionMode and hostToolDependency. Every other discovered subject is a leaf. Use a visited set for the known reciprocal metadata edges; any missing subject, extra root/member, non-whitelisted expansion or cycle that escapes this allowed finite subject set refuses. The scoped-authority rule itself is a fixed member: include its ordinary query resourceDigest over its authored RDF statements, which is not the generated scopedAuthorityDependencyDigest and therefore creates no recursive digest paradox. Query every subject through the explicit manifest, build objects containing exactly iri and resourceDigest, sort by IRI using unsigned UTF-8 byte order and hash the canonical JSON array. authorityManifestDigest separately binds SHA-256 of the exact raw manifest bytes; observedAuthorityGraphDigest remains a full-graph audit observation rather than a substitute member." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-path-effect-sets:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-path-effect-sets:1> <urn:usf:predicate:sourceField> "pathEffects" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-path-effect-sets:1> <urn:usf:predicate:memberSchema> <urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-path-effect-sets:1> <urn:usf:predicate:sortKey> "repositoryPath:UTF-8-byte-order" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-path-effect-sets:1> <urn:usf:predicate:digestRule> "scopedPathEffectSetDigest is SHA-256 of the canonical JSON array containing every and only pathEffects member exactly once. includedPathEffectSetDigest is SHA-256 of the canonical JSON array obtained by retaining those same complete member objects whose disposition is included. excludedPathEffectSetDigest is the analogous complete-object array whose disposition is excluded. All three arrays sort by repositoryPath using unsigned UTF-8 byte order, including the canonical empty array when a subset has no members. The scoped array must equal the disjoint union of the included and excluded subsets and counts must match the selected path-effect declarations." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-postimage-sets:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-postimage-sets:1> <urn:usf:predicate:sourceField> "pathEffects" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-postimage-sets:1> <urn:usf:predicate:sortKey> "repositoryPath:UTF-8-byte-order" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-postimage-sets:1> <urn:usf:predicate:digestRule> "carrierPostimageSetDigest is SHA-256 of a canonical JSON array with one projection for every selected pathEffects member, ordered by repositoryPath: repositoryPath, disposition, carrierPostimageState and, exactly when present, carrierPostimageDigest and carrierPostimageMode. observedCurrentPostimageSetDigest is SHA-256 of the analogous every-selected-member array containing repositoryPath, disposition, observedCurrentPostimageState, observedCurrentnessDisposition and, exactly when present, observedCurrentPostimageDigest and observedCurrentPostimageMode. Excluded projections remain classified historical observations and do not enter adopted-subject or included-currentness authority." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-adopted-subject-set:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-adopted-subject-set:1> <urn:usf:predicate:sourceField> "adoptedSubjects" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-adopted-subject-set:1> <urn:usf:predicate:memberSchema> <urn:usf:schema:bootstrap-carrier-adopted-subject:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-adopted-subject-set:1> <urn:usf:predicate:digestRule> "adoptedSubjects must equal every and only adoptedWork and adoptedCarrierIntent object derived from the selected adoption, with kind, IRI and independently queried subjectResourceDigest. Sort by kind then IRI using unsigned UTF-8 byte order and derive adoptedSubjectSetDigest from the canonical JSON array of complete objects." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-set:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-set:1> <urn:usf:predicate:sourceField> "validationResults" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-set:1> <urn:usf:predicate:memberSchema> <urn:usf:schema:bootstrap-carrier-validation-result:1> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-validation-set:1> <urn:usf:predicate:digestRule> "validationResults must contain every and only validation IRI declared by the selected adoption, each once, sorted by validationIri using unsigned UTF-8 byte order. Verify each normalizedResultDigest over its complete object excluding only normalizedResultDigest, then derive validationResultSetDigest over the canonical JSON array of the complete objects including normalizedResultDigest. Within each result, failureSetDigest is SHA-256 of the canonical JSON failureIdentities string array sorted by unsigned UTF-8 byte order; successful receipts require the exact empty array. dependencyDigest is SHA-256 of the canonical JSON dependencyMembers array of complete bootstrap-carrier-validation-dependency objects sorted by kind then identity using unsigned UTF-8 byte order. dependencyMembers must equal exactly bootstrap-carrier-validation-dependencies:1, including the carrier tree/test/input projections, authority/confinement/tool members and authenticated complete lock-closed read-only package mount; no caller member is accepted." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-nonclaim-set:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-nonclaim-set:1> <urn:usf:predicate:sourceField> "nonClaims" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:bootstrap-carrier-nonclaim-set:1> <urn:usf:predicate:digestRule> "nonClaims must equal every and only nonClaim literal directly declared on the selected carrier adoption, with exact UTF-8 bytes, no normalization or caller additions. Sort the strings by unsigned UTF-8 byte order and derive nonClaimSetDigest from the canonical JSON array." <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-aggregate-currentness:1> <urn:usf:predicate:type> <urn:usf:type:CurrentnessAggregationRule> <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-aggregate-currentness:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-aggregate-currentness:1> <urn:usf:predicate:pathRule> "For each selected path, exact-present means both carrier and observed current postimages are present with identical SHA-256 digest and Git mode; exact-absent means both are absent; missing means carrier is present and observed current is absent; unexpected-present means carrier is absent and observed current is present; divergent means both are present and either digest or mode differs. No other per-path disposition is valid." <urn:usf:graph:integration> .
+<urn:usf:rule:bootstrap-carrier-aggregate-currentness:1> <urn:usf:predicate:aggregateRule> "Evaluate every and only included path effect, ordered by repositoryPath only for canonicalization. The aggregate is current iff the included set is nonempty and every included member is exact-present or exact-absent; otherwise it is reconstructable after the raw carrier object and included postimage verification succeeds. Excluded members never improve or degrade this aggregate. Apply this exact rule once to the receipt's recorded currentObservationBasisCommit/tree and independently to the command result's newly derived liveCurrentnessBasisCommit/tree." <urn:usf:graph:integration> .
 <urn:usf:type:BootstrapCarrierPathEffect> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:integration> .
 <urn:usf:type:BootstrapCarrierPathEffect> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
@@ -190,20 +611,38 @@
 <urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:recordType> <urn:usf:type:BootstrapCarrierPathEffect> <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "repositoryPath" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "disposition" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:allowedDisposition> "included" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:allowedDisposition> "excluded" <urn:usf:graph:integration> .
 <urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "changeKind" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "carrierPreimageDigest" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "carrierPreimageMode" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "carrierPostimageDigest" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "carrierPostimageMode" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "currentPostimageDigest" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "currentPostimageMode" <urn:usf:graph:integration> .
-<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "currentnessDisposition" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "carrierPreimageState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "carrierPostimageState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "observedCurrentPostimageState" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:presentCarrierPreimageRequiredField> "carrierPreimageDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:presentCarrierPreimageRequiredField> "carrierPreimageMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:absentCarrierPreimageForbiddenField> "carrierPreimageDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:absentCarrierPreimageForbiddenField> "carrierPreimageMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:presentCarrierPostimageRequiredField> "carrierPostimageDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:presentCarrierPostimageRequiredField> "carrierPostimageMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:absentCarrierPostimageForbiddenField> "carrierPostimageDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:absentCarrierPostimageForbiddenField> "carrierPostimageMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:presentCurrentPostimageRequiredField> "observedCurrentPostimageDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:presentCurrentPostimageRequiredField> "observedCurrentPostimageMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:absentCurrentPostimageForbiddenField> "observedCurrentPostimageDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:absentCurrentPostimageForbiddenField> "observedCurrentPostimageMode" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:requiredField> "observedCurrentnessDisposition" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:allowedCurrentnessDisposition> "exact-present" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:allowedCurrentnessDisposition> "exact-absent" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:allowedCurrentnessDisposition> "missing" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:allowedCurrentnessDisposition> "divergent" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:allowedCurrentnessDisposition> "unexpected-present" <urn:usf:graph:integration> .
+<urn:usf:schema:bootstrap-carrier-path-effect:1> <urn:usf:predicate:stateRule> "carrierPreimageState, carrierPostimageState and observedCurrentPostimageState are exactly present or absent. Added requires absent/present carrier states; deleted requires present/absent; modified and type-changed require present/present. A present state requires its exact SHA-256 digest and Git mode; an absent state forbids both fields. No sentinel digest or mode represents absence. Derive observedCurrentnessDisposition only through bootstrap-carrier-aggregate-currentness:1. The observed-current fields are historical receipt observations, not perpetual live currentness." <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierIntent> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:lineage> <urn:usf:lineage:intent:integration-toolchain-repair:1> <urn:usf:graph:integration> .
-<urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:adoptionState> "not-adopted" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:initialAdoptionState> "not-adopted" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:adoptionStateRule> <urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:completionState> "not-observed" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:allowedPath> "graph/integration.nq" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:allowedPath> "graph/manifests/integration.json" <urn:usf:graph:integration> .
@@ -223,6 +662,39 @@
 <urn:usf:lineage:intent:integration-toolchain-repair:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapManualLineageIntent> <urn:usf:graph:integration> .
 <urn:usf:lineage:intent:integration-toolchain-repair:1> <urn:usf:predicate:lineageMode> "direct-bootstrap/manual-toolchain-repair" <urn:usf:graph:integration> .
 <urn:usf:lineage:intent:integration-toolchain-repair:1> <urn:usf:predicate:carrierIdentityState> "derive-after-coherent-implementation-checkpoint" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierIntent> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:lineage> <urn:usf:lineage:intent:bootstrap-carrier-command:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:initialAdoptionState> "not-adopted" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:adoptionStateRule> <urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:completionState> "not-observed" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "graph/integration.nq" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "docs/handover.md" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "schemas/bootstrap-carrier-adoption-receipt.schema.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "schemas/bootstrap-carrier-result.schema.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "src/cli.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "src/commands/bootstrap-carrier.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "src/commands/dispatcher.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "src/commands/help.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "src/realisation/carrier-adoption.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "src/realisation/index.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "src/realisation/transition.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "tests/contract/cli.test.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:allowedPath> "tests/integration/bootstrap-carrier.test.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:validation> <urn:usf:validation:bootstrap-carrier-command-focused> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:currentImplementationQualificationValidation> <urn:usf:validation:integration-toolchain-authoritative> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:currentImplementationQualificationValidation> <urn:usf:validation:repository-containment-check> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:testEconomics> "Extend the existing CLI contract table and add one compact table-driven integration file owning valid, malformed, stale, selected-subdiff, absent-state, reachability, containment, timeout, idempotence and conflict boundaries; do not create per-carrier test files or replay the full suite inside each case." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:primitiveReuseRule> "Reuse or minimally export the existing scrubbed child-process validation, bounded process-group timeout, repository primary-mutation lock, no-replace publication, containment/readback and detached-worktree primitives from src/realisation/transition.ts. Modify that file only where one narrow export or parameterization is necessary for bootstrap-carrier; do not move unrelated logic, rename public integration behavior, create a shared framework or authorize a generic refactor." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:criticalPathRule> "Implement only behavior needed to authenticate and publish the finite three historical carriers so repository-path-scope and file-asset-index can proceed toward provider qualification. The current implementation full-suite and containment gates run once at the coherent implementation checkpoint, not inside each carrier receipt validation. Add no per-carrier suite, redundant hardening matrix or unrelated abstraction." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:carrierIdentityRule> "Derive the actual parent commit, coherent implementation commit and tree only after the complete allowed-path implementation checkpoint exists; refuse missing, caller-supplied, guessed, partial or out-of-scope carrier identity." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:adoptionRule> "A later graph amendment may add exactly one finite adoption resource for the derived implementation carrier. Until a valid tracked HistoricalCarrierObservation is present, the command implementation remains a direct-bootstrap/manual tool under this intent and cannot claim ordinary integration, evidence, proof or completion." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:nonClaim> "This intent grants no provider, network, GitHub, push, commit, CAS, database, signature, runtime, staging or production authority." <urn:usf:graph:integration> .
+<urn:usf:lineage:intent:bootstrap-carrier-command:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapManualLineageIntent> <urn:usf:graph:integration> .
+<urn:usf:lineage:intent:bootstrap-carrier-command:1> <urn:usf:predicate:lineageMode> "direct-bootstrap/manual-bootstrap-carrier-command" <urn:usf:graph:integration> .
+<urn:usf:lineage:intent:bootstrap-carrier-command:1> <urn:usf:predicate:carrierIdentityState> "derive-after-coherent-implementation-checkpoint" <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:type> <urn:usf:type:TransitionVerificationAlgorithm> <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:version> "2" <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
@@ -394,9 +866,10 @@
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:carrierCommit> "846c5bbf36c1e9cb022a05bb90a7c0b950c0525a" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:carrierTree> "ed489b5e00bcc10ff7fe0dd87392cbd85ec96d25" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:coverageMode> "complete-carrier-diff" <urn:usf:graph:integration> .
-<urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:changedPathCount> "54" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:carrierTotalChangedPathCount> "54" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:selectedPathCount> "54" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:includedPathCount> "44" <urn:usf:graph:integration> .
-<urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:excludedPathCount> "10" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:excludedSelectedPathCount> "10" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:includedModifiedPath> "docs/handover.md" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:includedAddedPath> "evidence/semantic-first-bootstrap-admission.json" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:excludedModifiedPath> "graph/anqr-first-slice.nq" <urn:usf:graph:integration> .
@@ -451,18 +924,40 @@
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:includedModifiedPath> "tests/unit/providers/routing.test.ts" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:includedModifiedPath> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:semantic-first-gate-carrier:1> <urn:usf:predicate:excludedModifiedPath> "tests/unit/schema/validator.test.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierPathEffectSet> <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:carrierParentCommit> "1df0d028fa41fefc92ae61450d06f97e53f08de7" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:carrierCommit> "081129f0101707c75b87f5318d9336303f4f6bc5" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:carrierTree> "d3c5bdb8d31c80170506ece93cd285633eff43ab" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:coverageMode> "complete-carrier-diff" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:carrierTotalChangedPathCount> "10" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:selectedPathCount> "10" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedPathCount> "10" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:excludedSelectedPathCount> "0" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "graph/integration.nq" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "src/cli.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "src/commands/apply.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "src/commands/check.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "src/commands/help.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "src/realisation/index.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "src/realisation/transition.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "tests/adversarial/realisation-check.test.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "tests/contract/cli.test.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:includedModifiedPath> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:integration-toolchain-repair-carrier:1> <urn:usf:predicate:scopeRule> "Derive the complete parent-to-carrier Git diff and require exact equality with these ten modified paths; no unlisted, added, deleted, renamed, copied or type-changing effect is eligible." <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierPathEffectSet> <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:carrierParentCommit> "79379bb64594062ba35d64f9f4e65de20b724f54" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:carrierCommit> "95bce10289403ce5d9383a41c81a1862acc20d3f" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:carrierTree> "001a34b97bf4665719e4b8a6f3f02733152b8958" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:coverageMode> "exact-selected-path-subdiff" <urn:usf:graph:integration> .
-<urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:changedPathCount> "2" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:carrierTotalChangedPathCount> "100" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:selectedPathCount> "2" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:includedPathCount> "2" <urn:usf:graph:integration> .
-<urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:excludedPathCount> "0" <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:excludedSelectedPathCount> "0" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:includedAddedPath> "src/core/scope.ts" <urn:usf:graph:integration> .
 <urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:includedAddedPath> "tests/unit/core/scope.test.ts" <urn:usf:graph:integration> .
-<urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:scopeRule> "Derive only the exact two-path Git subdiff named by includedAddedPath; every other commit path is outside this adoption selector and cannot enter its receipt or adopted postimage set." <urn:usf:graph:integration> .
+<urn:usf:path-effect-set:repository-path-scope-carrier:1> <urn:usf:predicate:scopeRule> "Require the carrier's exact 100-path denominator count, then derive only the exact two selected tree-entry effects named by includedAddedPath. The other 98 effects are unselected, unclassified and outside this adoption; they cannot enter its receipt or adopted postimage set and no completeness claim is made about them." <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .

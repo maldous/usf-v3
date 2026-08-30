@@ -329,9 +329,18 @@ test("graph-derived check enforces graph wall time and mints no timeout receipt"
   const graphPath = join(root, "graph/integration.nq");
   const graph = await readFile(graphPath, "utf8");
   const boundedGraph = graph
-    .replace('candidateValidationWallTimeMilliseconds> "120000"', 'candidateValidationWallTimeMilliseconds> "1"')
-    .replace('validationTerminationGraceMilliseconds> "5000"', 'validationTerminationGraceMilliseconds> "1"')
-    .replace('validationMaximumSettlementWallTimeMilliseconds> "125000"', 'validationMaximumSettlementWallTimeMilliseconds> "2"');
+    .replace(
+      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:candidateValidationWallTimeMilliseconds> "120000"',
+      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:candidateValidationWallTimeMilliseconds> "1"',
+    )
+    .replace(
+      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationTerminationGraceMilliseconds> "5000"',
+      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationTerminationGraceMilliseconds> "1"',
+    )
+    .replace(
+      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationMaximumSettlementWallTimeMilliseconds> "125000"',
+      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationMaximumSettlementWallTimeMilliseconds> "2"',
+    );
   assert.notEqual(boundedGraph, graph);
   await writeFile(graphPath, boundedGraph, "utf8");
   const spec = await candidate(root, "graph-timeout");
