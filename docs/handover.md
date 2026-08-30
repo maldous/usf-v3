@@ -1,25 +1,40 @@
 # USF V3 handover
 
 Updated 2026-08-31. This is the durable continuation boundary after bounded
-semantic-recovery tooling and the graph authority for optional Hermes-Agent
-autonomous management, amended to restore the V1/V2 semantic-first authority
-order before any further realisation.
+semantic-recovery tooling, optional Hermes-Agent authority and the committed
+semantic-first gate. The next boundary is the proofblocked local integration
+transition; provider contact remains downstream of genuine integration and the
+file-asset-index chain.
 
 ## Verified carrier and gate
 
 - The optional Hermes authority baseline is
   `b93026d876d3a6ef8ef08b053d4c0d255cdaf96b`; the bounded recovery-tooling
   checkpoint is `d974570dbe608503ffd94ccbf9ede9eeb06f4d18`.
-- The committed and pushed semantic-first authority checkpoint is
+- The committed and pushed semantic-first model checkpoint is
   `a90228fdb545fab0d031e5db7f713f489247907c`
-  (`feat: define semantic-first authority model`). It was `HEAD == origin/main`
-  at this continuation start.
-- The current coherent worktree packet implements the executable gate and its
-  containment/publication boundaries. It is not yet a committed checkpoint;
-  the primary transition receipt remains absent.
-- Historical test counts above this packet are not current acceptance evidence.
-  Re-run the authoritative, containment and exact isolated-transition commands
-  below on the final bytes. No prior observation authorizes primary apply.
+  (`feat: define semantic-first authority model`). The exact gate was then
+  applied, independently replayed, committed and pushed as
+  `846c5bbf36c1e9cb022a05bb90a7c0b950c0525a`
+  (`feat: admit semantic-first realisation gate`), with
+  `HEAD == origin/main` at that checkpoint.
+- The tracked receipt is
+  `evidence/semantic-first-bootstrap-admission.json`; its canonical
+  `receiptDigest` is
+  `sha256:87c9a1fe5169fa7b3b71f2c5293cef40e717e34b3b19b4f6b0f4700b3021568e`.
+  The exact post-transition semantic digest was
+  `sha256:048b0ccdeb660901f465ada4eeb4a295f88d260fbdfcc770eca142918982886e`.
+- The full dirty-post authoritative suite passed 173/173 at that checkpoint,
+  and containment/diff/readback checks passed. Those observations establish
+  only the admitted gate boundary; rerun affected and full checks on later
+  bytes before each coherent checkpoint.
+- The later handover update in this integration-model checkpoint is a declared
+  dependency of the lifecycle member, so exact receipt replay correctly reports
+  `PUBLISH_RECEIPT_CURRENTNESS_MISMATCH` for that member. The receipt remains an
+  immutable observation of the admitted `846c5bb` transition; it is not current
+  evidence for the changed lifecycle basis. The eligibility and basis-chain
+  members remain independently scoped rather than being serialized by this
+  documentation movement.
 
 The handover previously stopped at the provider slice and reported 156 tests.
 That was stale after the semantic-recovery commits. This version supersedes it.
@@ -129,22 +144,22 @@ not the broader self-host consumer profile:
   --verify
 ```
 
-First use `--apply` in a fresh isolated candidate repository. Once that exact
-packet is independently green and the authoritative checks pass, use the same
-command with `--apply` in the primary repository, verify it there, and commit
-the source and receipt as one coherent checkpoint. The
+The exact packet was first applied in isolated replays, then applied and
+verified in the primary repository before commit `846c5bb`. Do not apply it
+again. Continue to use `--verify` for currentness readback. The
 `urn:usf:profile:v3-self-host:1` and product profiles may consume the same core
 currentness receipt through their required core permission, but they cannot
 mint it or broaden its basis.
 The executable gate, immutable realisation-basis propagation and exact-profile
-CLI selection are implemented and focused-tested. The primary admission is
-still unapplied and its tracked receipt is absent. After the exact transition
-is admitted, its three member packets are only
-`checked-awaiting-integration`: the generic integration-transition verifier is
-explicitly proof-blocked until a real postimage basis, postimage validation and
-evidence derivation are implemented. Neither the admission receipt nor the
-active gate permission is completion proof, and neither unlocks downstream
-work by itself.
+CLI selection are implemented and focused-tested. At the exact committed
+`846c5bb` boundary, its three member packets were
+`checked-awaiting-integration`. In this later worktree, eligibility and
+basis-chain retain that state, while the lifecycle member is reconstructable
+because this handover moves one of its scoped dependencies. The generic
+integration-transition verifier remains explicitly proofblocked until a real
+postimage basis, postimage validation and evidence derivation are implemented.
+Neither the admission receipt nor the active gate permission is completion
+proof, and neither unlocks downstream work by itself.
 
 ## Semantic recovery boundary
 
@@ -227,6 +242,13 @@ and 84 known families. Only 6 of those pairs currently have an installed
 adapter. These are feature declarations, not semantic qualification,
 entitlement, economics or availability evidence.
 
+The six installed-adapter catalogue candidates are exactly Cerebras
+`gemma-4-31b` and `gpt-oss-120b`, plus Groq
+`openai/gpt-oss-120b`, `openai/gpt-oss-20b`,
+`openai/gpt-oss-safeguard-20b` and `qwen/qwen3.6-27b`. Only the two configured
+members named below are route candidates today; installed adapter support does
+not configure or qualify the other four.
+
 This catalogue is not a configured roster or availability result. The tracked
 provider configuration currently declares only:
 
@@ -272,6 +294,38 @@ adapter, credential-name, account-receipt, authenticated-answer,
 hidden-holdout and routing gates in that order. It must first support the
 reasoning + tool-call + structured-output intersection and must not generate a
 per-route/model Cartesian test or probe matrix.
+
+The stable census identity is the tuple
+`transport/provider/providerRoute/requestedModel/underlyingModel/underlyingFamily/adapterPackage/credentialNames`.
+Every row retains all source provenance. Alias candidates such as
+`ARCEE_TOKEN`/`ARCEE_API_KEY`, `ZAI_API_KEY`/`ZHIPU_API_KEY`, API/CLI transports
+and requested/underlying model names remain separate until an explicit mapping
+is reviewed; they are never merged by spelling similarity.
+
+Every candidate has exactly one allocation disposition: `assigned`,
+`eligible-unassigned` or `excluded`. Exclusion reasons include
+`CATALOGUE_ONLY`, `ADAPTER_UNAVAILABLE`, `CREDENTIAL_NAME_UNMAPPED`,
+`ACCOUNT_RECEIPT_MISSING`, `AUTHENTICATED_ANSWER_MISSING`,
+`HIDDEN_HOLDOUT_MISSING`, `UNAVAILABLE`, `AMBIGUOUS_IDENTITY`, `UNQUALIFIED`
+and `PAID_OR_UNKNOWN_ECONOMICS`. Allocation is separate from the orthogonal
+observations `availability = available|unavailable|unknown` and
+`qualification = qualified|unqualified`.
+
+The intended deterministic CLI grouping is:
+
+```text
+usf models summary
+usf models list --capabilities reasoning,tool-call,structured-output
+usf providers census --profile PROFILE --manifest MANIFEST
+usf providers status --route ROUTE
+usf providers aliases
+```
+
+The census is linear over indexed candidates, cursor-bounded and JSON/JSONL
+composable. It replaces the current single-capability, 1,000-item `usf models`
+limit and produces the complete assigned/excluded/eligible-unassigned table.
+Qualification is lazy by candidate and never expands into a
+route-by-model-by-prompt test matrix.
 
 “Full provider/model population” means every currently configured route and
 every currently eligible route under the exact frozen inputs, with complete
@@ -444,33 +498,50 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Finish the final exact-byte review, full authoritative and containment
-   checks, and a fresh isolated apply/verify replay. Keep the primary receipt
-   absent until all of those are green.
-2. Apply and verify the exact registered semantic-first transition in the
-   primary repository, re-read the exact profile and consumer currentness,
-   rerun the full gate, then commit and push the source plus receipt as one
-   coherent checkpoint.
-3. Graph-define and implement the registered integration-transition verifier
-   that derives genuine postimage bases, validations and evidence for the
-   three checked gate members. Do not fabricate completion or downstream
-   readiness from the admission receipt.
-4. Execute the secondary semantic sweep after the existing
-   recovery inventory and Factory-qualification work and before final recovery
-   acceptance. Close tracked-file, declared-semantic, parsed-relationship,
-   unmanifested-candidate and bounded-history denominators, the V1 Git-link
-   representation, independent source universe, connected reviewed mappings,
-   separate ANQR product denominator and unresolved-source nonclaims.
-5. Re-express every reviewed V3-relevant candidate through selective
-   V3-authored graph packets. Do not bulk import legacy RDF or copy V1/V2
-   operational topology. Commit/push one coherent accepted recovery checkpoint
-   only after complete disposition and hermetic independence evidence.
-6. Then resume `urn:usf:work:file-asset-index`. After its isolated V3 chain is
-   complete, build the graph-defined provider candidate census from the fresh
-   models.dev catalogue plus reviewed V1/V2 credential-name and model
-   provenance, followed by account receipt, scrubbed adapter,
-   authenticated-answer and hidden-holdout qualification. Only then run live
-   multi-provider work or the optional Hermes facade.
+1. Complete the proofblocked V3 integration model and independently confirm it
+   does not broaden the self-host profile. Preserve the committed receipt as
+   exact historical transition evidence while recording the scoped lifecycle
+   currentness movement caused by this handover update; do not relabel that
+   receipt as current for changed bytes.
+   The exact historical gate carrier is one direct-bootstrap/manual cohort,
+   not three reconstructed candidates; `repository-path-scope` is a separate
+   bounded historical carrier. Neither adoption is proof of ordinary
+   integration.
+2. Implement the registered local pipeline as explicit Unix stages:
+   `resolve -> apply -> check -> integrate -> evidence -> prove -> publish`.
+   First close the public resolve/apply envelope mismatch and make `check`
+   persist a content-bound graph-derived observation. Then make `integrate`
+   independently rederive candidate lineage, Git byte delta, original and
+   postimage bases and exact postimage validations in a short-lived local Git
+   workspace. It emits an observation only; it never writes semantic evidence
+   or proof and never contacts GitHub.
+3. Use the bounded bootstrap-carrier transition to adopt the exact three gate
+   members atomically and the pre-existing `repository-path-scope` work without
+   fictitious candidate lineage. Independently verify the carrier receipts,
+   scoped postimages, authority graph and exact adoption state before committing
+   one coherent checkpoint. Carrier adoption is not current completion.
+4. Activate and complete `urn:usf:work:file-asset-index` as the first genuine
+   non-no-op candidate through the ordinary isolated V3 chain. Do not edit its
+   already-present files merely to manufacture lineage; require a real accepted
+   delta or truthfully close it as an exact no-change realization if the graph
+   is explicitly remodeled to permit that outcome.
+5. Build the graph-defined provider census from every models.dev candidate plus
+   reviewed V1/V2 credential-name/model provenance and distinct host adapters.
+   Produce the full assigned/excluded/eligible-unassigned table before contact,
+   then acquire account receipts, run scrubbed adapters, authenticate provider
+   answers and perform hidden-holdout qualification. Only afterward demonstrate
+   live multi-provider parallelism, semantic-token reduction or Hermes-Agent.
+
+The secondary semantic-recovery sweep is an independent bounded lane, not a
+serial prerequisite for integration, `file-asset-index` or the provider census.
+Before final recovery acceptance it must close the tracked-file,
+declared-semantic, parsed-relationship, unmanifested-candidate and bounded-history
+denominators, the V1 Git-link representation, independent source universe,
+connected reviewed mappings, separate ANQR product denominator and
+unresolved-source nonclaims. Re-express accepted V3-relevant candidates through
+selective V3-authored graph packets; do not bulk import legacy RDF or copy V1/V2
+operational topology. Commit/push that coherent recovery checkpoint only after
+complete disposition and hermetic independence evidence.
 
 Do not perform an ad hoc historical inventory, prompt for Factory access,
 reintroduce V2 leases/fences/journals/handovers/signatures/state databases, or
