@@ -20,11 +20,14 @@
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-catalogue-freeze> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-availability-tuple> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-probe-boundary> <urn:usf:graph:provider-qualification> .
+<urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-zero-paid-economics> <urn:usf:graph:provider-qualification> .
+<urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-semantic-task-qualification> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-route-purity> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-concurrency-refusal> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-test-economics> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> ".env.example" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "config/providers.json" <urn:usf:graph:provider-qualification> .
+<urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "config/qualification.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0005-provider-qualification.md" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:provider-qualification> .
@@ -34,6 +37,7 @@
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "schemas/probe-result.schema.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "schemas/provider-config.schema.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "schemas/route-result.schema.json" <urn:usf:graph:provider-qualification> .
+<urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "schemas/semantic-qualification-result.schema.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "scripts/bootstrap.sh" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "scripts/env.sh" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:provider-qualification> .
@@ -52,8 +56,11 @@
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "tests/integration/provider-cli.test.ts" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "tests/unit/providers/" <urn:usf:graph:provider-qualification> .
+<urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "docs/v1-v2-lessons.md" <urn:usf:graph:provider-qualification> .
+<urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "provenance/reuse.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:nonClaim> "Credential presence, catalogue membership and adapter installation do not establish current route availability or entitlement." <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:nonClaim> "A successful bounded probe is a time-scoped operational observation, not a future availability guarantee, SLA, accepted contribution, evidence or proof." <urn:usf:graph:provider-qualification> .
+<urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:nonClaim> "Semantic qualification is exact-task and exact-agent-profile evidence; it is not a universal model score, permanent admission roster, write grant, accepted contribution, evidence or proof." <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:nonClaim> "This slice does not establish live multi-provider parallel work, useful-token reduction, full ANQR, staging, production or terminal proof." <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:provider-qualification:localdev> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:provider-qualification:hermetic> <urn:usf:graph:provider-qualification> .
@@ -93,6 +100,10 @@
 <urn:usf:requirement:provider-availability-tuple> <urn:usf:predicate:text> "Classify every configured route by requested route, underlying model, adapter, credential name, capability, privacy, catalogue price, entitlement, quota, health, actual identity and probe freshness; partition all exclusions and preserve unknown distinct from zero." <urn:usf:graph:provider-qualification> .
 <urn:usf:requirement:provider-probe-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-qualification> .
 <urn:usf:requirement:provider-probe-boundary> <urn:usf:predicate:text> "Contact only explicitly selected direct maintained adapters after preflight eligibility, with a fixed public-safe prompt, bounded routes, wall time and tokens, maximum paid cost zero, no fallback, sanitized errors, and recorded requested and actual identity, usage, quota signal and cost evidence." <urn:usf:graph:provider-qualification> .
+<urn:usf:requirement:provider-zero-paid-economics> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-qualification> .
+<urn:usf:requirement:provider-zero-paid-economics> <urn:usf:predicate:text> "Require independently current official provider terms, exact-model economics and exact-account-tier observations with bounded available quota, paid usage disabled, automatic overage disabled and a hard zero spend boundary; reject unknown, stale, paid, promotional and one-time-trial facts." <urn:usf:graph:provider-qualification> .
+<urn:usf:requirement:provider-semantic-task-qualification> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-qualification> .
+<urn:usf:requirement:provider-semantic-task-qualification> <urn:usf:predicate:text> "Qualify the exact provider, requested and actual model, adapter, auth mode, tool profile, prompt version, context config and output config for one task class against a versioned suite and corpus with deterministic dimension thresholds; missing answers score zero, default is unqualified, results are time-bounded and derived role labels grant no authority or permanent admission." <urn:usf:graph:provider-qualification> .
 <urn:usf:requirement:provider-route-purity> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-qualification> .
 <urn:usf:requirement:provider-route-purity> <urn:usf:predicate:text> "Route without provider contact from exact work, policy, catalogue and fresh probe digests; consider every configured route, explain each inclusion and exclusion, apply declared host and provider caps, and make the same inputs byte-repeatable." <urn:usf:graph:provider-qualification> .
 <urn:usf:requirement:provider-concurrency-refusal> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-qualification> .
@@ -102,16 +113,16 @@
 <urn:usf:acceptance:provider-local-readiness> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:provider-qualification> .
 <urn:usf:acceptance:provider-local-readiness> <urn:usf:predicate:text> "Doctor and local model views report exact config, catalogue, adapter and credential-name coverage without network contact, secret values, historical-path dependence or semantic mutation." <urn:usf:graph:provider-qualification> .
 <urn:usf:acceptance:provider-fixture-qualification> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:provider-qualification> .
-<urn:usf:acceptance:provider-fixture-qualification> <urn:usf:predicate:text> "A frozen fixture catalogue and probe set deterministically partition every route, preserve requested and actual identity, select all eligible independent families under caps, and replay to the same assignment digest." <urn:usf:graph:provider-qualification> .
+<urn:usf:acceptance:provider-fixture-qualification> <urn:usf:predicate:text> "A frozen fixture catalogue, economics record, probe set and task-scoped semantic qualification set deterministically partition every route, preserve requested and actual identity, select all eligible independent families under caps, and replay to the same assignment digest." <urn:usf:graph:provider-qualification> .
 <urn:usf:acceptance:provider-planted-refusals> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:provider-qualification> .
-<urn:usf:acceptance:provider-planted-refusals> <urn:usf:predicate:text> "Planted tracked, insecure or symlinked env files, missing credentials, unknown or paid pricing, paid fallback, stale probes, mismatched identity, unsafe egress, malformed catalogue data and non-finite concurrency fail closed before contact or disclosure." <urn:usf:graph:provider-qualification> .
+<urn:usf:acceptance:provider-planted-refusals> <urn:usf:predicate:text> "Planted tracked, insecure or symlinked env files, missing credentials, unknown or paid pricing, paid fallback, promotional credit, stale economics, stale probes, missing semantic answers, mismatched identity/profile/task/suite/corpus/policy/config digests, unsafe egress, malformed catalogue data and non-finite concurrency fail closed before contact or disclosure." <urn:usf:graph:provider-qualification> .
 <urn:usf:validation:provider-qualification-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:provider-qualification> .
-<urn:usf:validation:provider-qualification-tests> <urn:usf:predicate:command> "node --test tests/unit/providers/qualification.test.ts tests/contract/provider-commands.test.ts tests/integration/provider-cli.test.ts tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:provider-qualification> .
+<urn:usf:validation:provider-qualification-tests> <urn:usf:predicate:command> "node --test tests/unit/providers/*.test.ts tests/contract/provider-commands.test.ts tests/integration/provider-cli.test.ts tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:provider-qualification> .
 <urn:usf:validation:provider-qualification-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:provider-qualification> .
 <urn:usf:validation:provider-qualification-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:provider-qualification> .
 <urn:usf:validation:provider-qualification-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:provider-qualification> .
 <urn:usf:proof:provider-qualification> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:provider-qualification> .
-<urn:usf:proof:provider-qualification> <urn:usf:predicate:text> "Exact candidate bytes pass credential-containment, catalogue-normalization, eligibility-partition, zero-paid-cost refusal, route-replay, command-contract and nontermination fixtures without network access." <urn:usf:graph:provider-qualification> .
+<urn:usf:proof:provider-qualification> <urn:usf:predicate:text> "Exact candidate bytes pass credential-containment, catalogue-normalization, three-fact zero-paid economics, task/profile semantic qualification, eligibility-partition, route-replay, command-contract and nontermination fixtures without network access." <urn:usf:graph:provider-qualification> .
 <urn:usf:proof:provider-qualification> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:provider-qualification> .
 <urn:usf:proof:provider-qualification> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:provider-qualification> .
 <urn:usf:proof:provider-qualification> <urn:usf:predicate:applicability> "required" <urn:usf:graph:provider-qualification> .
@@ -127,6 +138,7 @@
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> ".env.example" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "config/providers.json" <urn:usf:graph:provider-qualification> .
+<urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "config/qualification.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "docs/decisions/0005-provider-qualification.md" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:provider-qualification> .
@@ -136,6 +148,7 @@
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "schemas/probe-result.schema.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "schemas/provider-config.schema.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "schemas/route-result.schema.json" <urn:usf:graph:provider-qualification> .
+<urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "schemas/semantic-qualification-result.schema.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "scripts/bootstrap.sh" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "scripts/env.sh" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:provider-qualification> .
@@ -154,6 +167,8 @@
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "tests/integration/provider-cli.test.ts" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "tests/unit/providers/" <urn:usf:graph:provider-qualification> .
+<urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "docs/v1-v2-lessons.md" <urn:usf:graph:provider-qualification> .
+<urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "provenance/reuse.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:modelCapability> "provider-routing" <urn:usf:graph:provider-qualification> .
