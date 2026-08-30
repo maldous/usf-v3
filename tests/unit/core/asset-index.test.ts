@@ -117,7 +117,7 @@ test("non-canonical and alternate-spelling semantic identifiers fail closed", ()
 
 test("absolute, traversal, control and non-canonical paths fail with one stable reason", () => {
   for (const path of [
-    "/var/lib/usf/hero.svg",
+    "/outside/hero.svg",
     "../outside/hero.svg",
     "tests/../outside/hero.svg",
     "./tests/fixtures/assets/hero.svg",
