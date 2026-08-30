@@ -2155,7 +2155,7 @@ async function quarantineIntent(root: string, intent: PreparedIntent, reason: In
   await atomicCanonicalWrite(root, path, { ...quarantined, quarantineReason: reason });
 }
 
-async function acquirePrimaryMutationLock(root: string): Promise<{ handle: Awaited<ReturnType<typeof open>>; waitMilliseconds: number }> {
+export async function acquirePrimaryMutationLock(root: string): Promise<{ handle: Awaited<ReturnType<typeof open>>; waitMilliseconds: number }> {
   const started = performance.now();
   const locks = resolve(root, ".usf", "locks");
   assertPrivateUsfDirectorySync(root, ".usf", true);

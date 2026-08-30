@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { commandRegistry, findHelpTopic, helpCommandResult } from "../../src/commands/help.ts";
 import { exitCodeForReason, integrateCommandHandler, parseApplyArguments, parseCheckArguments, parseIntegrateArguments } from "../../src/commands/apply.ts";
+import { parseBootstrapCarrierArguments } from "../../src/commands/bootstrap-carrier.ts";
 import { dispatchCommand, parseCommand } from "../../src/commands/dispatcher.ts";
 import { parsePublishArguments } from "../../src/commands/publish.ts";
 
@@ -18,7 +19,7 @@ test("dispatcher calls a typed handler without hidden lifecycle state", async ()
 });
 
 test("one static registry covers parsing and every self-describing help topic", () => {
-  const required = ["init", "doctor", "status", "query", "observe", "metrics", "work", "models", "probe", "route", "call", "review", "resolve", "apply", "check", "integrate", "evidence", "prove", "drift", "publish", "start", "stop", "watch", "help"];
+  const required = ["init", "doctor", "status", "query", "observe", "metrics", "work", "models", "probe", "route", "call", "review", "resolve", "apply", "check", "integrate", "bootstrap-carrier", "evidence", "prove", "drift", "publish", "start", "stop", "watch", "help"];
   assert.deepEqual(commandRegistry.map((entry) => entry.name), required);
   for (const entry of commandRegistry) {
     assert.deepEqual(parseCommand([entry.name]), { command: entry.name, args: [] });
@@ -100,6 +101,14 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.deepEqual(integrate.exitCodes, [0, 1, 2, 3, 4, 5, 7]);
   assert.match(integrate.authorityEffect, /observation-only/u);
   assert.match(integrate.authorityEffect, /Neither mode contacts GitHub/u);
+
+  const carrierHelp = helpCommandResult(["bootstrap-carrier", "adopt", "--json"]);
+  const carrier = (carrierHelp.output as { command: { availability: string; externalContact: string; historyScan: string; authorityEffect: string; exitCodes: number[] } }).command;
+  assert.equal(carrier.availability, "implemented");
+  assert.equal(carrier.externalContact, "none");
+  assert.equal(carrier.historyScan, "bounded");
+  assert.deepEqual(carrier.exitCodes, [0, 1, 2, 3, 4, 5, 7]);
+  assert.match(carrier.authorityEffect, /no replacement/u);
 });
 
 test("apply, check and integrate refusals share the GOAL-defined exit taxonomy", () => {
@@ -137,6 +146,20 @@ test("apply, graph-derived check and integration cohort inputs are explicit and 
   assert.throws(() => parseIntegrateArguments(["--candidate", digestA, "--candidate", digestA]), { code: "INTEGRATE_COHORT_INVALID", exitCode: 2 });
   assert.throws(() => parseIntegrateArguments(["--dry-run"]), { code: "INTEGRATE_COHORT_INVALID", exitCode: 2 });
   assert.throws(() => parseIntegrateArguments(Array.from({ length: 33 }, (_, index) => ["--candidate", `sha256:${index.toString(16).padStart(64, "0")}`]).flat()), { code: "INTEGRATE_COHORT_INVALID", exitCode: 2 });
+});
+
+test("bootstrap-carrier parsing admits only one exact graph-selected operation", () => {
+  const valid = ["verify", "--adoption", "urn:usf:carrier-adoption:repository-path-scope:1", "--profile", "urn:usf:profile:v3-self-host:1", "--manifest", "graph/manifests/integration.json"];
+  assert.deepEqual(parseBootstrapCarrierArguments(valid), {
+    mode: "verify",
+    adoptionIri: "urn:usf:carrier-adoption:repository-path-scope:1",
+    profileIri: "urn:usf:profile:v3-self-host:1",
+    manifestPath: "graph/manifests/integration.json",
+  });
+  assert.equal(parseBootstrapCarrierArguments(valid.with(0, "adopt")).mode, "adopt");
+  for (const invalid of [valid.slice(1), [...valid, "extra"], valid.with(4, "urn:usf:profile:v3-self-host"), valid.with(6, "graph/manifest.json"), [...valid, "--adoption", valid[2]!]]) {
+    assert.throws(() => parseBootstrapCarrierArguments(invalid), { code: "BOOTSTRAP_CARRIER_ARGUMENTS_INVALID", exitCode: 2 });
+  }
 });
 
 test("registered integration adapter returns a stable refusal without fabricating an observation", async () => {

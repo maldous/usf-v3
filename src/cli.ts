@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { dispatchCommand, parseCommand, type CommandHandlers } from "./commands/dispatcher.ts";
 import { admissionCheckHandler, applyHandler, integrateCommandHandler } from "./commands/apply.ts";
+import { bootstrapCarrierCommandHandler } from "./commands/bootstrap-carrier.ts";
 import { callCommandHandler } from "./commands/call.ts";
 import { doctorCommandHandler } from "./commands/doctor.ts";
 import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
@@ -35,6 +36,7 @@ const bootstrapHandlers: CommandHandlers = {
   apply: applyHandler,
   check: admissionCheckHandler,
   integrate: integrateCommandHandler,
+  "bootstrap-carrier": bootstrapCarrierCommandHandler,
   metrics: metricsCommandHandler,
   models: modelsCommandHandler,
   probe: probeCommandHandler,

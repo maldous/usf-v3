@@ -2,10 +2,14 @@
 
 Updated 2026-08-31. This is the durable continuation boundary after bounded
 semantic-recovery tooling, optional Hermes-Agent authority, the committed
-semantic-first gate and the committed local candidate-integration toolchain.
-The current safe slice is graph-only authority for historical-carrier
-verification/adoption; provider contact remains downstream of carrier
-admission, the file-asset-index chain and the trusted live-provider sequence.
+semantic-first gate, the committed local candidate-integration toolchain and
+the committed graph authority for historical-carrier verification/adoption.
+The registered carrier command is now the bounded local implementation
+boundary; the next safe slice is clean verification and adoption of the three
+finite carriers. Provider contact remains downstream of carrier admission, the
+file-asset-index chain and the trusted live-provider sequence.
+Until the operator says otherwise, one operator owns repository mutation; do
+not delegate repository work or run concurrent writers.
 
 ## Verified carrier and gate
 
@@ -45,6 +49,13 @@ admission, the file-asset-index chain and the trusted live-provider sequence.
   `HEAD == origin/main`, the full authoritative suite passed 181/181,
   containment passed and `git diff --check` passed. These facts establish the
   local observation-only tool boundary, not completion authority.
+- Historical-carrier authority was independently reviewed, amended, committed
+  and pushed as `59d2699a6b0037e4bb7ddf543a61dae99093fa83`
+  (`feat: define historical carrier adoption authority`). The following
+  coherent implementation checkpoint changes only its exact allowed paths and
+  implements the graph-declared command surface. Re-derive its exact commit and
+  tree from local/remote history rather than attempting a self-referential hash
+  inside the commit that contains this handover.
 
 The handover previously stopped at the provider slice and reported 156 tests.
 That was stale after the semantic-recovery commits. This version supersedes it.
@@ -183,7 +194,7 @@ short-lived local Git worktree and a narrow final mutation lock, then emits an
 ignored observation. It performs no evidence admission, proof, semantic
 publication, push, GitHub, provider, runtime, staging or production effect.
 
-The next graph-only packet closes an operational gap in
+The committed graph packet closes an operational gap in
 `urn:usf:algorithm:bootstrap-carrier-adoption-transition:1`. Before this packet
 the algorithm and receipt type existed, but no registered command, exact
 validation edges, deterministic receipt paths, finite tracked-publication
@@ -202,9 +213,9 @@ interface is deliberately explicit:
   --manifest graph/manifests/integration.json
 ```
 
-The command remains planned/proofblocked until its separately bounded carrier
-intent is implemented and verified. `verify` may write only its exact ignored
-owner-private preparation receipt. `adopt` repeats every verification without
+The command is implemented but remains proofblocked as completion authority.
+`verify` may write only its exact ignored owner-private preparation receipt.
+`adopt` repeats every verification without
 trusting hidden prior state and may no-replace-create only one graph-declared
 tracked `HistoricalCarrierObservation` under `evidence/historical-carriers/`.
 That record is categorically not completion Evidence E: it repeats completion
@@ -265,6 +276,58 @@ intent may minimally reuse or export the existing Git/lock/publication/confineme
 verification disables replacement objects and rejects graft, shallow,
 alternate, partial-clone, promisor and filter effects; it verifies the exact
 single parent, tree and blob bytes locally with no fetch.
+
+The implementation exposed and corrected one semantic defect before receipt
+publication. Two historical carriers predate
+`graph/manifests/integration.json`, so requiring that later manifest and its
+entire source/import closure to exist in each historical tree was impossible
+and would have made unrelated graph bytes a perpetual reproof dependency.
+Historical `carrier-file` dependencies now contain the exact validation tests
+and declared receipt/schema inputs actually present in the carrier. Current
+file-based authority remains independently bound by the exact current manifest
+path and raw digest plus the finite scoped-authority closure digest. This keeps
+historical validation reproducible without weakening current graph authority.
+
+The registered command has successfully verified
+`urn:usf:carrier-adoption:repository-path-scope:1` against the explicit
+`urn:usf:profile:v3-self-host:1` profile and integration manifest. It derived
+an exact content-bound receipt, reported both recorded and live scoped
+currentness as `current`, and left the tracked target absent. The
+semantic-first carrier also passes its three exact historical validations in
+the scrubbed no-network child and truthfully reports `reconstructable` scoped
+currentness. The integration-toolchain carrier passes its one exact historical
+validation and also reports `reconstructable`; all three finite verify paths
+therefore pass from the clean implementation checkpoint. Receipt identity is
+not copied here before adoption because its
+point-in-time clean-HEAD observation is an input; rederive it at the clean
+adoption boundary. No carrier receipt has yet been adopted.
+
+Clean pre-push replay found two confinement defects that were repaired in the
+same implementation checkpoint rather than stacked as follow-up patches.
+Historical tests must be permitted to read their own scratch writes, multiple
+validations must reuse one authenticated synthetic `node_modules` mount point,
+and the admitted semantic-first tests require ignored repository-local `.usf`
+state. The carrier tree and package closure remain read-only: a fresh empty
+scratch child is mounted at `/workspace/.usf`, while Node write permission is
+limited to that alias and `/usf-scratch`. No carrier source, credential,
+network, package-install or provider permission was added.
+
+The finite schema replay also caught a modeled-lineage mismatch before
+publication: the receipt schema admitted only `direct-bootstrap/manual`, while
+the already-declared integration-toolchain carrier truthfully uses
+`direct-bootstrap/manual-toolchain-repair`. The schema and graph now enumerate
+exactly those two current lineage modes. Any later command-implementation
+carrier must extend or version that explicit authority when its exact identity
+is modeled; it is not admitted through a generic string pattern.
+
+For the complete working packet, TypeScript compilation passed, the focused
+CLI/carrier/schema selection passed 15/15, the full authoritative suite passed
+184/184, containment returned `status: pass`, and `git diff --check` passed.
+The current integration-manifest semantic digest is
+`sha256:37c32b64d2aada135be320d0649d5edcbc1e03fafd728e21296727e12a228349`.
+These results qualify the exact implementation bytes at their coherent
+checkpoint; they establish command implementation only, not carrier adoption,
+evidence, proof or completion.
 
 The mathematical/structural review exposed several denominator and topology
 issues that must remain visible:
@@ -599,6 +662,10 @@ Run from `/home/user/src/usf-v3`:
 
 ```sh
 ./scripts/bootstrap.sh
+TMPDIR="$PWD/.usf/tmp" node --test \
+  tests/contract/cli.test.ts \
+  tests/integration/bootstrap-carrier.test.ts \
+  tests/unit/schema/validator.test.ts
 node --test tests/unit/providers/*.test.ts \
   tests/contract/provider-commands.test.ts \
   tests/integration/provider-cli.test.ts \
@@ -634,35 +701,25 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Finish independent review of the graph-only bootstrap-carrier packet. Query
-   every new command, permission, state, schema, adoption, validation and intent
-   resource through `usf`; verify the 54/100/2/10 carrier denominators directly
-   from local Git objects; run the full authoritative and containment gates;
-   then commit and push this semantic checkpoint before implementation.
-2. Implement only the exact `bootstrap-carrier` carrier intent with static help,
-   closed JSON schemas, conditional absent-file fields, detached carrier-basis
-   validations, normalized deterministic results, raw local Git-object
-   authentication, immutable existing-target authentication, transient
-   owner-private preparation and no-replace absent-target adoption. Reuse only
-   the narrowly required existing transition primitives. Extend one CLI contract
-   table and one compact integration test file; independently review, run the
-   full gate once at the coherent checkpoint, then commit and push. Do not add
-   per-carrier suites or create a receipt for the command's own carrier until
-   its exact implementation commit identity exists and a later graph version
-   names it.
-3. Run `usf bootstrap-carrier verify` and then `adopt` for the three finite
-   carriers. Authenticate each tracked HistoricalCarrierObservation and its
-   dynamically derived adoption state. Batch their tracked files into a coherent
-   publication checkpoint rather than committing per graph action. Carrier
-   adoption is not current completion, Evidence E, proof or work readiness.
-4. Re-model and realize the ordinary evidence/proof/permission path needed to
+1. From the clean implementation checkpoint, run `usf bootstrap-carrier
+   verify` and then
+   `adopt` for all three finite carriers. Authenticate each existing or newly
+   created `HistoricalCarrierObservation`, including a repeat matching-target
+   readback. Batch the three tracked receipts into one coherent publication
+   checkpoint rather than committing per graph action. Carrier adoption is not
+   current completion, Evidence E, proof or work readiness.
+2. Model the command implementation's own exact historical carrier only in a
+   later graph packet after its coherent implementation commit/tree and complete
+   allowed-path diff exist. Do not guess, caller-supply or retroactively rewrite
+   that identity.
+3. Re-model and realize the ordinary evidence/proof/permission path needed to
    close `repository-path-scope`, then complete
    `urn:usf:work:file-asset-index` through the profile-bound isolated V3 chain.
    Do not edit its already-present files merely to manufacture lineage; require
    a real accepted delta or truthfully close it as an exact no-change realization
    only after the graph explicitly defines that disposition and its evidence,
    proof and publication semantics.
-5. Build the graph-defined provider census from every models.dev candidate plus
+4. Build the graph-defined provider census from every models.dev candidate plus
    reviewed V1/V2 credential-name/model provenance and distinct host adapters.
    Produce the full assigned/excluded/eligible-unassigned table before contact,
    then acquire account receipts, run scrubbed adapters, authenticate provider

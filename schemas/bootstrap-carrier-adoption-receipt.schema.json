@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:bootstrap-carrier-adoption-receipt:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "authorityClass", "genericEvidenceEligibility", "algorithmIri", "algorithmVersion", "algorithmResourceDigest",
+    "authorityGraphIri", "observedAuthorityGraphDigest", "authorityManifestPath", "authorityManifestDigest", "scopedAuthorityDependencyDigest",
+    "authorityProfileIri", "authorityProfileVersion", "currentnessAuthorityIri", "currentnessAuthorityResourceDigest", "commandIri",
+    "commandResourceDigest", "receiptSchemaIri", "receiptSchemaResourceDigest", "pathEffectSchemaIri", "pathEffectSchemaResourceDigest",
+    "adoptedSubjectSchemaIri", "adoptedSubjectSchemaResourceDigest", "validationResultSchemaIri", "validationResultSchemaResourceDigest",
+    "publicationPermissionIri", "publicationPermissionResourceDigest", "adoptionStateRuleIri", "adoptionStateRuleResourceDigest",
+    "carrierAdoptionIri", "carrierAdoptionResourceDigest", "lineageMode", "parentCommit", "commit", "tree", "pathEffectSetResourceDigest",
+    "coverageMode", "carrierTotalPathEffectCount", "selectedPathEffectCount", "scopedPathEffectSetDigest", "includedPathEffectSetDigest",
+    "excludedPathEffectSetDigest", "pathEffects", "adoptedSubjects", "adoptedSubjectSetDigest", "admissionReceiptApplicability",
+    "carrierPostimageSetDigest", "currentObservationBasisCommit", "currentObservationBasisTree", "observedCurrentPostimageSetDigest",
+    "reachabilityBasisCommit", "reachabilityBasisTree", "carrierReachability", "validationResultSetDigest", "validationResults",
+    "nonClaimSetDigest", "nonClaims", "observedCurrentnessDisposition", "completionState", "evidenceState", "proofState",
+    "ordinaryPermissionState", "runtimeState", "localPreparationReceiptPath", "trackedReceiptPath", "outcome", "receiptDigest"
+  ],
+  "properties": {
+    "schema": {"const": "urn:usf:bootstrap-carrier-adoption-receipt:1"},
+    "authorityClass": {"const": "HistoricalCarrierObservation"},
+    "genericEvidenceEligibility": {"const": "forbidden"},
+    "algorithmIri": {"const": "urn:usf:algorithm:bootstrap-carrier-adoption-transition:1"},
+    "algorithmVersion": {"const": "1"},
+    "algorithmResourceDigest": {"$ref": "#/$defs/digest"},
+    "authorityGraphIri": {"const": "urn:usf:graph:integration"},
+    "observedAuthorityGraphDigest": {"$ref": "#/$defs/digest"},
+    "authorityManifestPath": {"const": "graph/manifests/integration.json"},
+    "authorityManifestDigest": {"$ref": "#/$defs/digest"},
+    "scopedAuthorityDependencyDigest": {"$ref": "#/$defs/digest"},
+    "authorityProfileIri": {"$ref": "#/$defs/iri"},
+    "authorityProfileVersion": {"$ref": "#/$defs/version"},
+    "currentnessAuthorityIri": {"$ref": "#/$defs/iri"},
+    "currentnessAuthorityResourceDigest": {"$ref": "#/$defs/digest"},
+    "commandIri": {"const": "urn:usf:command:bootstrap-carrier:1"},
+    "commandResourceDigest": {"$ref": "#/$defs/digest"},
+    "receiptSchemaIri": {"const": "urn:usf:schema:bootstrap-carrier-adoption-receipt:1"},
+    "receiptSchemaResourceDigest": {"$ref": "#/$defs/digest"},
+    "pathEffectSchemaIri": {"const": "urn:usf:schema:bootstrap-carrier-path-effect:1"},
+    "pathEffectSchemaResourceDigest": {"$ref": "#/$defs/digest"},
+    "adoptedSubjectSchemaIri": {"const": "urn:usf:schema:bootstrap-carrier-adopted-subject:1"},
+    "adoptedSubjectSchemaResourceDigest": {"$ref": "#/$defs/digest"},
+    "validationResultSchemaIri": {"const": "urn:usf:schema:bootstrap-carrier-validation-result:1"},
+    "validationResultSchemaResourceDigest": {"$ref": "#/$defs/digest"},
+    "publicationPermissionIri": {"const": "urn:usf:permission:bootstrap-carrier-receipt-publication:1"},
+    "publicationPermissionResourceDigest": {"$ref": "#/$defs/digest"},
+    "adoptionStateRuleIri": {"const": "urn:usf:rule:bootstrap-carrier-adoption-state:1"},
+    "adoptionStateRuleResourceDigest": {"$ref": "#/$defs/digest"},
+    "carrierAdoptionIri": {"$ref": "#/$defs/iri"},
+    "carrierAdoptionResourceDigest": {"$ref": "#/$defs/digest"},
+    "lineageMode": {"enum": ["direct-bootstrap/manual", "direct-bootstrap/manual-toolchain-repair"]},
+    "parentCommit": {"$ref": "#/$defs/gitObject"},
+    "commit": {"$ref": "#/$defs/gitObject"},
+    "tree": {"$ref": "#/$defs/gitObject"},
+    "pathEffectSetResourceDigest": {"$ref": "#/$defs/digest"},
+    "coverageMode": {"enum": ["complete-carrier-diff", "exact-selected-path-subdiff"]},
+    "carrierTotalPathEffectCount": {"type": "integer", "minimum": 1, "maximum": 20000},
+    "selectedPathEffectCount": {"type": "integer", "minimum": 1, "maximum": 20000},
+    "scopedPathEffectSetDigest": {"$ref": "#/$defs/digest"},
+    "includedPathEffectSetDigest": {"$ref": "#/$defs/digest"},
+    "excludedPathEffectSetDigest": {"$ref": "#/$defs/digest"},
+    "pathEffects": {"type": "array", "minItems": 1, "maxItems": 20000, "items": {"$ref": "#/$defs/pathEffect"}},
+    "adoptedSubjects": {"type": "array", "minItems": 1, "maxItems": 32, "items": {"$ref": "#/$defs/adoptedSubject"}},
+    "adoptedSubjectSetDigest": {"$ref": "#/$defs/digest"},
+    "admissionReceiptApplicability": {"enum": ["required", "not-applicable"]},
+    "existingAdmissionReceiptPath": {"$ref": "#/$defs/path"},
+    "existingAdmissionReceiptContentDigest": {"$ref": "#/$defs/digest"},
+    "existingAdmissionReceiptCanonicalDigest": {"$ref": "#/$defs/digest"},
+    "carrierPostimageSetDigest": {"$ref": "#/$defs/digest"},
+    "currentObservationBasisCommit": {"$ref": "#/$defs/gitObject"},
+    "currentObservationBasisTree": {"$ref": "#/$defs/gitObject"},
+    "observedCurrentPostimageSetDigest": {"$ref": "#/$defs/digest"},
+    "reachabilityBasisCommit": {"$ref": "#/$defs/gitObject"},
+    "reachabilityBasisTree": {"$ref": "#/$defs/gitObject"},
+    "carrierReachability": {"const": "reachable-from-current-head"},
+    "validationResultSetDigest": {"$ref": "#/$defs/digest"},
+    "validationResults": {"type": "array", "minItems": 1, "maxItems": 8, "items": {"$ref": "#/$defs/validationResult"}},
+    "nonClaimSetDigest": {"$ref": "#/$defs/digest"},
+    "nonClaims": {"type": "array", "minItems": 1, "maxItems": 32, "items": {"type": "string", "minLength": 1}},
+    "observedCurrentnessDisposition": {"enum": ["current", "reconstructable"]},
+    "completionState": {"const": "not-observed"},
+    "evidenceState": {"const": "not-admitted"},
+    "proofState": {"const": "not-evaluated"},
+    "ordinaryPermissionState": {"const": "unchanged"},
+    "runtimeState": {"const": "unchanged"},
+    "localPreparationReceiptPath": {"type": "string", "pattern": "^\\.usf/receipts/bootstrap-carrier/[A-Za-z0-9._-]+\\.json$"},
+    "trackedReceiptPath": {"type": "string", "pattern": "^evidence/historical-carriers/[A-Za-z0-9._-]+\\.json$"},
+    "outcome": {"const": "verified"},
+    "receiptDigest": {"$ref": "#/$defs/digest"}
+  },
+  "oneOf": [
+    {
+      "required": ["existingAdmissionReceiptPath", "existingAdmissionReceiptContentDigest", "existingAdmissionReceiptCanonicalDigest"],
+      "properties": {"admissionReceiptApplicability": {"const": "required"}}
+    },
+    {
+      "properties": {
+        "admissionReceiptApplicability": {"const": "not-applicable"},
+        "existingAdmissionReceiptPath": false,
+        "existingAdmissionReceiptContentDigest": false,
+        "existingAdmissionReceiptCanonicalDigest": false
+      }
+    }
+  ],
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "iri": {"type": "string", "pattern": "^urn:[^<>\\s]+$"},
+    "version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "gitObject": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "path": {"type": "string", "pattern": "^(?!\\.git(?:/|$))(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"},
+    "fileMode": {"enum": ["100644", "100755"]},
+    "pathEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repositoryPath", "disposition", "changeKind", "carrierPreimageState", "carrierPostimageState", "observedCurrentPostimageState", "observedCurrentnessDisposition"],
+      "properties": {
+        "repositoryPath": {"$ref": "#/$defs/path"},
+        "disposition": {"enum": ["included", "excluded"]},
+        "changeKind": {"enum": ["added", "deleted", "modified", "type-changed"]},
+        "carrierPreimageState": {"enum": ["present", "absent"]},
+        "carrierPreimageDigest": {"$ref": "#/$defs/digest"},
+        "carrierPreimageMode": {"$ref": "#/$defs/fileMode"},
+        "carrierPostimageState": {"enum": ["present", "absent"]},
+        "carrierPostimageDigest": {"$ref": "#/$defs/digest"},
+        "carrierPostimageMode": {"$ref": "#/$defs/fileMode"},
+        "observedCurrentPostimageState": {"enum": ["present", "absent"]},
+        "observedCurrentPostimageDigest": {"$ref": "#/$defs/digest"},
+        "observedCurrentPostimageMode": {"$ref": "#/$defs/fileMode"},
+        "observedCurrentnessDisposition": {"enum": ["exact-present", "exact-absent", "missing", "divergent", "unexpected-present"]}
+      },
+      "anyOf": [
+        {"required": ["carrierPostimageDigest", "carrierPostimageMode"], "properties": {"changeKind": {"const": "added"}, "carrierPreimageState": {"const": "absent"}, "carrierPreimageDigest": false, "carrierPreimageMode": false, "carrierPostimageState": {"const": "present"}}},
+        {"required": ["carrierPreimageDigest", "carrierPreimageMode"], "properties": {"changeKind": {"const": "deleted"}, "carrierPreimageState": {"const": "present"}, "carrierPostimageState": {"const": "absent"}, "carrierPostimageDigest": false, "carrierPostimageMode": false}},
+        {"required": ["carrierPreimageDigest", "carrierPreimageMode", "carrierPostimageDigest", "carrierPostimageMode"], "properties": {"changeKind": {"enum": ["modified", "type-changed"]}, "carrierPreimageState": {"const": "present"}, "carrierPostimageState": {"const": "present"}}}
+      ],
+      "oneOf": [
+        {"required": ["observedCurrentPostimageDigest", "observedCurrentPostimageMode"], "properties": {"observedCurrentPostimageState": {"const": "present"}}},
+        {"properties": {"observedCurrentPostimageState": {"const": "absent"}, "observedCurrentPostimageDigest": false, "observedCurrentPostimageMode": false}}
+      ]
+    },
+    "adoptedSubject": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "iri", "subjectResourceDigest"],
+      "properties": {"kind": {"enum": ["work", "carrier-intent"]}, "iri": {"$ref": "#/$defs/iri"}, "subjectResourceDigest": {"$ref": "#/$defs/digest"}}
+    },
+    "dependency": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "identity", "contentDigest"],
+      "properties": {
+        "kind": {"enum": ["carrier-tree", "carrier-file", "package", "host-tool", "authority-resource", "confinement-policy"]},
+        "identity": {"type": "string", "minLength": 1}, "contentDigest": {"$ref": "#/$defs/digest"}, "fileMode": {"$ref": "#/$defs/fileMode"},
+        "version": {"type": "string", "minLength": 1}, "lockIntegrity": {"type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$"},
+        "packageLinkTopologyDigest": {"$ref": "#/$defs/digest"}
+      },
+      "oneOf": [
+        {"required": ["fileMode"], "properties": {"kind": {"const": "carrier-file"}, "version": false, "lockIntegrity": false, "packageLinkTopologyDigest": false}},
+        {"required": ["version", "lockIntegrity", "packageLinkTopologyDigest"], "properties": {"kind": {"const": "package"}, "fileMode": false}},
+        {"required": ["version"], "properties": {"kind": {"const": "host-tool"}, "fileMode": false, "lockIntegrity": false, "packageLinkTopologyDigest": false}},
+        {"properties": {"kind": {"enum": ["carrier-tree", "authority-resource", "confinement-policy"]}, "fileMode": false, "version": false, "lockIntegrity": false, "packageLinkTopologyDigest": false}}
+      ]
+    },
+    "validationResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["validationIri", "validationResourceDigest", "carrierCommit", "carrierTree", "commandDigest", "commandTokens", "environmentDigest", "executionModeDigest", "dependencyDigest", "dependencyMembers", "wallTimeLimitMilliseconds", "terminationGraceMilliseconds", "timedOut", "lastTerminationSignal", "exitCode", "outcome", "failureIdentities", "failureSetDigest", "normalizedResultDigest"],
+      "properties": {
+        "validationIri": {"$ref": "#/$defs/iri"}, "validationResourceDigest": {"$ref": "#/$defs/digest"}, "carrierCommit": {"$ref": "#/$defs/gitObject"}, "carrierTree": {"$ref": "#/$defs/gitObject"},
+        "commandDigest": {"$ref": "#/$defs/digest"}, "commandTokens": {"type": "array", "minItems": 3, "maxItems": 16, "items": {"type": "string", "minLength": 1}},
+        "environmentDigest": {"$ref": "#/$defs/digest"}, "executionModeDigest": {"$ref": "#/$defs/digest"}, "dependencyDigest": {"$ref": "#/$defs/digest"},
+        "dependencyMembers": {"type": "array", "minItems": 1, "maxItems": 4096, "items": {"$ref": "#/$defs/dependency"}},
+        "wallTimeLimitMilliseconds": {"const": 120000}, "terminationGraceMilliseconds": {"const": 5000}, "timedOut": {"const": false},
+        "lastTerminationSignal": {"const": "not-used"}, "exitCode": {"const": 0}, "outcome": {"const": "pass"},
+        "failureIdentities": {"type": "array", "maxItems": 0, "items": {"type": "string"}}, "failureSetDigest": {"$ref": "#/$defs/digest"},
+        "normalizedResultDigest": {"$ref": "#/$defs/digest"}
+      }
+    }
+  }
+}
