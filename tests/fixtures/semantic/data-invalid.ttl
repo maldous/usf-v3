@@ -1,4 +1,3 @@
-@prefix ex: <urn:test:> .
-
-ex:service-invalid a ex:Service ;
-  ex:configuration [ ex:mode "safe" ] .
+<urn:test:configuration-invalid> <urn:test:mode> "safe" <urn:test:graph:data> .
+<urn:test:service-invalid> <urn:test:configuration> <urn:test:configuration-invalid> <urn:test:graph:data> .
+<urn:test:service-invalid> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:test:Service> <urn:test:graph:data> .

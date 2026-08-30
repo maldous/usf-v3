@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { canonicalQuadDigest, parseStrictNQuads, sha256, type Quad } from "../../../src/graph/nquads.ts";
 import { queryGraph } from "../../../src/graph/query.ts";
 import { deriveWork, type WorkPacket } from "../../../src/graph/work.ts";
-import { loadSemanticGraph, type GraphManifest, type SemanticGraph } from "../../../src/graph/index.ts";
+import { GraphLoadError, loadSemanticGraph, type GraphManifest, type SemanticGraph } from "../../../src/graph/index.ts";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "../../..");
@@ -123,6 +123,65 @@ test("the manifest loader composes more than one declared named graph", (context
   assert.equal(loaded.manifest.sources.length, 2);
   assert.deepEqual(Object.keys(loaded.graphDigests).sort(), ["urn:fixture:graph:a", "urn:fixture:graph:b"]);
   assert.equal(loaded.quads.length, 2);
+});
+
+test("v2 import expansion deduplicates diamonds and exact sources while bounding count, depth and aggregate bytes", (context) => {
+  const temporaryParent = resolve(root, ".usf/tmp");
+  mkdirSync(temporaryParent, { recursive: true, mode: 0o700 });
+  const temporaryRoot = mkdtempSync(resolve(temporaryParent, "graph-imports-"));
+  context.after(() => rmSync(temporaryRoot, { recursive: true, force: true }));
+  mkdirSync(resolve(temporaryRoot, "graph"));
+  const source = { path: "graph/source.nq", format: "application/n-quads" as const, graph: "urn:fixture:graph:diamond", role: "contract", validationProfile: "bootstrap-nquads-v1" as const };
+  const manifest = (imports: string[], sources: typeof source[] = []): GraphManifest => ({ schema: "urn:usf:graph-manifest:2", version: 2, imports, sources });
+  const writeManifest = (name: string, value: GraphManifest): number => {
+    const content = `${JSON.stringify(value)}\n`;
+    writeFileSync(resolve(temporaryRoot, `graph/${name}.json`), content, { mode: 0o600 });
+    return Buffer.byteLength(content);
+  };
+  writeFileSync(resolve(temporaryRoot, source.path), `${nq("urn:fixture:diamond", "text", "one", source.graph, true)}\n`, { mode: 0o600 });
+  writeManifest("leaf", manifest([], [source]));
+  writeManifest("left", manifest(["graph/leaf.json"]));
+  writeManifest("right", manifest(["graph/leaf.json"]));
+  const rootBytes = writeManifest("manifest", manifest(["graph/left.json", "graph/right.json"], [source]));
+
+  const loaded = loadSemanticGraph(temporaryRoot);
+  const loadedAtSourceBound = loadSemanticGraph(temporaryRoot, "graph/manifest.json", { maxSourceCount: 1 });
+  assert.deepEqual(loaded.manifests.map((entry) => entry.path), ["graph/leaf.json", "graph/left.json", "graph/right.json", "graph/manifest.json"]);
+  assert.equal(loaded.sources.length, 1);
+  assert.equal(loaded.quads.length, 1);
+  assert.equal(loadedAtSourceBound.sources.length, 1, "an exact repeated declaration is one source at the configured bound");
+  assert.throws(() => loadSemanticGraph(temporaryRoot, "graph/manifest.json", { maxManifestCount: 3 }), (error) => error instanceof GraphLoadError && error.reasonCode === "MANIFEST_LIMIT_EXCEEDED");
+  assert.throws(() => loadSemanticGraph(temporaryRoot, "graph/manifest.json", { maxManifestDepth: 2 }), (error) => error instanceof GraphLoadError && error.reasonCode === "MANIFEST_IMPORT_DEPTH_EXCEEDED");
+  assert.throws(() => loadSemanticGraph(temporaryRoot, "graph/manifest.json", { maxTotalManifestBytes: rootBytes + 1 }), (error) => error instanceof GraphLoadError && error.reasonCode === "MANIFEST_TOTAL_BYTES_EXCEEDED");
+
+  writeFileSync(resolve(temporaryRoot, "graph/other.nq"), `${nq("urn:fixture:other", "text", "other", source.graph, true)}\n`, { mode: 0o600 });
+  writeManifest("manifest", manifest([], [{ ...source, path: "graph/source.nq" }, { ...source, path: "graph/other.nq" }]));
+  assert.throws(() => loadSemanticGraph(temporaryRoot), (error) => error instanceof GraphLoadError && error.reasonCode === "MANIFEST_DUPLICATE_SOURCE_OR_GRAPH");
+});
+
+test("self, direct and indirect import cycles plus manifest symlinks fail closed", (context) => {
+  const temporaryParent = resolve(root, ".usf/tmp");
+  mkdirSync(temporaryParent, { recursive: true, mode: 0o700 });
+  const temporaryRoot = mkdtempSync(resolve(temporaryParent, "graph-cycles-"));
+  context.after(() => rmSync(temporaryRoot, { recursive: true, force: true }));
+  mkdirSync(resolve(temporaryRoot, "graph"));
+  const manifest = (imports: string[]): GraphManifest => ({ schema: "urn:usf:graph-manifest:2", version: 2, imports, sources: [] });
+  const writeManifest = (name: string, imports: string[]): void => writeFileSync(resolve(temporaryRoot, `graph/${name}.json`), `${JSON.stringify(manifest(imports))}\n`, { mode: 0o600 });
+  const cycles = [
+    { root: ["graph/manifest.json"], a: [], b: [] },
+    { root: ["graph/a.json"], a: ["graph/manifest.json"], b: [] },
+    { root: ["graph/a.json"], a: ["graph/b.json"], b: ["graph/manifest.json"] },
+  ];
+  for (const cycle of cycles) {
+    writeManifest("manifest", cycle.root);
+    writeManifest("a", cycle.a);
+    writeManifest("b", cycle.b);
+    assert.throws(() => loadSemanticGraph(temporaryRoot), (error) => error instanceof GraphLoadError && error.reasonCode === "MANIFEST_IMPORT_CYCLE");
+  }
+
+  writeManifest("target", []);
+  symlinkSync("target.json", resolve(temporaryRoot, "graph/alias.json"));
+  assert.throws(() => loadSemanticGraph(temporaryRoot, "graph/alias.json"), (error) => error instanceof GraphLoadError && error.reasonCode === "MANIFEST_PATH_ESCAPE");
 });
 
 test("one graph-generic projection derives a non-product contract across two manifest graphs", () => {

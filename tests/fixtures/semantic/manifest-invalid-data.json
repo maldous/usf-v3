@@ -1,18 +1,21 @@
 {
-  "schema": "urn:usf:semantic-store-manifest:1",
-  "version": 1,
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [],
   "sources": [
     {
       "path": "tests/fixtures/semantic/data-invalid.ttl",
-      "format": "text/turtle",
+      "format": "application/n-quads",
       "graph": "urn:test:graph:data",
-      "role": "data"
+      "role": "data",
+      "validationProfile": "bootstrap-nquads-v1"
     },
     {
       "path": "tests/fixtures/semantic/shapes.ttl",
-      "format": "text/turtle",
+      "format": "application/n-quads",
       "graph": "urn:test:graph:shapes",
-      "role": "shapes"
+      "role": "shapes",
+      "validationProfile": "bootstrap-nquads-v1"
     }
   ]
 }

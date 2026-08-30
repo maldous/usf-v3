@@ -1,16 +1,12 @@
-import { lstatSync, readFileSync, realpathSync } from "node:fs";
-import { createRequire } from "node:module";
-import { isAbsolute, relative, resolve, sep } from "node:path";
-import { Ajv2020 } from "ajv/dist/2020.js";
-import { DataFactory, Parser, Store as N3Store, type Quad, type Term } from "n3";
+import { DataFactory, Parser, Store as N3Store, type Quad } from "n3";
 import { Store as OxigraphStore } from "oxigraph";
 import SHACLValidator from "rdf-validate-shacl";
-import { canonicalizeDataset, sha256 } from "./canonical.ts";
+import { GraphLoadError, loadSemanticGraph } from "../graph/index.ts";
+import { canonicalNQuads } from "../graph/nquads.ts";
 import { queryLocalStore } from "./query.ts";
 import {
   SemanticStoreError,
   semanticReasonCodes,
-  type SemanticManifest,
   type SemanticQueryResult,
   type SemanticSnapshot,
   type SemanticStore,
@@ -22,7 +18,12 @@ import {
 
 const defaultLimits: SemanticStoreLimits = {
   maxManifestBytes: 64 * 1024,
+  maxTotalManifestBytes: 4 * 1024 * 1024,
+  maxManifestCount: 256,
+  maxManifestDepth: 32,
+  maxSourceCount: 1_024,
   maxSourceBytes: 2 * 1024 * 1024,
+  maxTotalSourceBytes: 64 * 1024 * 1024,
   maxDatasetQuads: 100_000,
   maxQueryBytes: 64 * 1024,
   maxQueryResults: 1_000,
@@ -30,90 +31,32 @@ const defaultLimits: SemanticStoreLimits = {
   canonicalizationTimeoutMs: 5_000,
 };
 
-const manifestSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["schema", "version", "sources"],
-  properties: {
-    schema: { const: "urn:usf:semantic-store-manifest:1" },
-    version: { const: 1 },
-    sources: {
-      type: "array",
-      minItems: 1,
-      maxItems: 10_000,
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["path", "format", "graph", "role"],
-        properties: {
-          path: { type: "string", minLength: 1 },
-          format: { enum: ["application/n-quads", "application/n-triples", "application/trig", "text/turtle"] },
-          graph: { type: "string", minLength: 1 },
-          role: { type: "string", minLength: 1 },
-        },
-      },
-    },
-  },
-} as const;
-
-const validateManifest = new Ajv2020({ allErrors: true, strict: true }).compile(manifestSchema);
-
-function containedPath(root: string, repositoryPath: string, reasonCode: typeof semanticReasonCodes.MANIFEST_PATH_REFUSED | typeof semanticReasonCodes.SOURCE_PATH_REFUSED): string {
-  if (isAbsolute(repositoryPath) || repositoryPath.split(/[\\/]/u).some((part) => part === ".." || part === "")) {
-    throw new SemanticStoreError(reasonCode, "Semantic store paths must be normalized repository-relative paths.", { path: repositoryPath });
+function checkedStoreLimits(overrides: Partial<SemanticStoreLimits> | undefined): SemanticStoreLimits {
+  const known = new Set(Object.keys(defaultLimits));
+  if (overrides !== undefined && Object.keys(overrides).some((key) => !known.has(key))) {
+    throw new SemanticStoreError(semanticReasonCodes.STORE_LIMIT_INVALID, "Semantic-store limit overrides must use only supported keys.");
   }
-  const candidate = resolve(root, repositoryPath);
-  const relation = relative(root, candidate);
-  if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) {
-    throw new SemanticStoreError(reasonCode, "The semantic store path escapes the repository root.", { path: repositoryPath });
+  const limits = { ...defaultLimits, ...overrides };
+  if (Object.values(limits).some((value) => !Number.isSafeInteger(value) || value < 1)) {
+    throw new SemanticStoreError(semanticReasonCodes.STORE_LIMIT_INVALID, "Semantic-store limits must be positive safe integers.");
   }
-  return candidate;
+  return limits;
 }
 
-function readContainedFile(root: string, repositoryPath: string, maxBytes: number, reasonCode: typeof semanticReasonCodes.MANIFEST_PATH_REFUSED | typeof semanticReasonCodes.SOURCE_PATH_REFUSED): string {
-  const candidate = containedPath(root, repositoryPath, reasonCode);
-  let real: string;
-  try {
-    if (lstatSync(candidate).isSymbolicLink()) throw new Error("symbolic link");
-    real = realpathSync(candidate);
-  } catch (error) {
-    throw new SemanticStoreError(
-      reasonCode === semanticReasonCodes.MANIFEST_PATH_REFUSED ? semanticReasonCodes.MANIFEST_PATH_REFUSED : semanticReasonCodes.SOURCE_UNREADABLE,
-      "The semantic store could not read a regular local file.",
-      { path: repositoryPath, cause: error instanceof Error ? error.message : "unknown" },
-    );
+function graphLoadFailure(error: unknown): SemanticStoreError {
+  if (!(error instanceof GraphLoadError)) {
+    return new SemanticStoreError(semanticReasonCodes.MANIFEST_INVALID, "The graph-manifest v2 loader refused the semantic dataset.", { cause: error instanceof Error ? error.message : "unknown" });
   }
-  const relation = relative(root, real);
-  if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) {
-    throw new SemanticStoreError(reasonCode, "A semantic store path resolves outside the repository root.", { path: repositoryPath });
-  }
-  const bytes = readFileSync(real);
-  if (bytes.byteLength > maxBytes) {
-    throw new SemanticStoreError(
-      reasonCode === semanticReasonCodes.MANIFEST_PATH_REFUSED ? semanticReasonCodes.MANIFEST_INVALID : semanticReasonCodes.SOURCE_TOO_LARGE,
-      "A semantic store input exceeds its configured byte limit.",
-      { path: repositoryPath, bytes: bytes.byteLength, maxBytes },
-    );
-  }
-  return bytes.toString("utf8");
-}
-
-function renameBlankNodes(quads: readonly Quad[], sourcePath: string, graphName: string): Quad[] {
-  const prefix = sha256(sourcePath).slice("sha256:".length, "sha256:".length + 16);
-  const names = new Map<string, Term>();
-  const rename = (term: Term): Term => {
-    if (term.termType === "Quad") {
-      throw new SemanticStoreError(semanticReasonCodes.SOURCE_PARSE_FAILED, "RDF-star terms are outside the current semantic-store fixture profile.");
-    }
-    if (term.termType !== "BlankNode") return term;
-    const existing = names.get(term.value);
-    if (existing !== undefined) return existing;
-    const replacement = DataFactory.blankNode(`${prefix}-${names.size}`);
-    names.set(term.value, replacement);
-    return replacement;
-  };
-  const graph = DataFactory.namedNode(graphName);
-  return quads.map((quad) => DataFactory.quad(rename(quad.subject), rename(quad.predicate), rename(quad.object), graph));
+  const reasonCode = (() => {
+    if (["REPOSITORY_ROOT_UNREADABLE", "MANIFEST_PATH_ESCAPE", "MANIFEST_UNREADABLE"].includes(error.reasonCode)) return semanticReasonCodes.MANIFEST_PATH_REFUSED;
+    if (error.reasonCode === "MANIFEST_SOURCE_PATH_ESCAPE") return semanticReasonCodes.SOURCE_PATH_REFUSED;
+    if (error.reasonCode === "MANIFEST_SOURCE_UNREADABLE") return semanticReasonCodes.SOURCE_UNREADABLE;
+    if (["MANIFEST_SOURCE_TOO_LARGE", "MANIFEST_SOURCE_TOTAL_BYTES_EXCEEDED"].includes(error.reasonCode)) return semanticReasonCodes.SOURCE_TOO_LARGE;
+    if (error.reasonCode === "DATASET_QUAD_LIMIT_EXCEEDED") return semanticReasonCodes.DATASET_TOO_LARGE;
+    if (["MANIFEST_SOURCE_PARSE_FAILED", "MANIFEST_SOURCE_INVALID_UTF8"].includes(error.reasonCode)) return semanticReasonCodes.SOURCE_PARSE_FAILED;
+    return semanticReasonCodes.MANIFEST_INVALID;
+  })();
+  return new SemanticStoreError(reasonCode, "The graph-manifest v2 loader refused the semantic dataset.", { graphReasonCode: error.reasonCode, ...error.details });
 }
 
 function semanticTerm(term: { readonly termType: string; readonly value: string; readonly language?: string; readonly datatype?: { readonly value: string } }): SemanticTerm {
@@ -161,50 +104,35 @@ export class RepositorySemanticStore implements SemanticStore {
     readonly manifestPath: string;
     readonly limits?: Partial<SemanticStoreLimits>;
   }): Promise<RepositorySemanticStore> {
-    const root = realpathSync(resolve(options.repositoryRoot));
-    const limits = { ...defaultLimits, ...options.limits };
-    const manifestBytes = readContainedFile(root, options.manifestPath, limits.maxManifestBytes, semanticReasonCodes.MANIFEST_PATH_REFUSED);
-    let manifestValue: unknown;
-    try { manifestValue = JSON.parse(manifestBytes); }
-    catch { throw new SemanticStoreError(semanticReasonCodes.MANIFEST_INVALID, "The semantic-store manifest is not valid JSON."); }
-    if (!validateManifest(manifestValue)) {
-      throw new SemanticStoreError(semanticReasonCodes.MANIFEST_INVALID, "The semantic-store manifest does not satisfy its closed schema.", { errors: validateManifest.errors ?? [] });
-    }
-    const manifest = manifestValue as SemanticManifest;
-    const paths = new Set<string>();
-    const graphs = new Set<string>();
-    const quads: Quad[] = [];
-    const sourceDigests: Record<string, string> = {};
-    for (const source of manifest.sources) {
-      if (paths.has(source.path) || graphs.has(source.graph)) {
-        throw new SemanticStoreError(semanticReasonCodes.MANIFEST_INVALID, "Manifest source paths and graph names must be unique.");
-      }
-      paths.add(source.path);
-      graphs.add(source.graph);
-      let content: string;
-      try { content = readContainedFile(root, source.path, limits.maxSourceBytes, semanticReasonCodes.SOURCE_PATH_REFUSED); }
-      catch (error) { if (error instanceof SemanticStoreError) throw error; throw new SemanticStoreError(semanticReasonCodes.SOURCE_UNREADABLE, "A semantic source is unreadable."); }
-      let parsed: Quad[];
-      try { parsed = new Parser({ format: source.format }).parse(content); }
-      catch (error) {
-        throw new SemanticStoreError(semanticReasonCodes.SOURCE_PARSE_FAILED, "A manifest-selected RDF source did not parse.", { path: source.path, cause: error instanceof Error ? error.message : "unknown" });
-      }
-      quads.push(...renameBlankNodes(parsed, source.path, source.graph));
-      if (quads.length > limits.maxDatasetQuads) {
-        throw new SemanticStoreError(semanticReasonCodes.DATASET_TOO_LARGE, "The manifest-selected RDF dataset exceeds its configured quad limit.");
-      }
-      sourceDigests[source.path] = sha256(content);
-    }
-    const canonical = await canonicalizeDataset(quads, { timeoutMs: limits.canonicalizationTimeoutMs });
+    const limits = checkedStoreLimits(options.limits);
+    let loaded: ReturnType<typeof loadSemanticGraph>;
+    try {
+      loaded = loadSemanticGraph(options.repositoryRoot, options.manifestPath, {
+        maxManifestBytes: limits.maxManifestBytes,
+        maxTotalManifestBytes: limits.maxTotalManifestBytes,
+        maxManifestCount: limits.maxManifestCount,
+        maxManifestDepth: limits.maxManifestDepth,
+        maxSourceCount: limits.maxSourceCount,
+        maxSourceBytes: limits.maxSourceBytes,
+        maxTotalSourceBytes: limits.maxTotalSourceBytes,
+        maxDatasetQuads: limits.maxDatasetQuads,
+      });
+    } catch (error) { throw graphLoadFailure(error); }
+    const canonical = canonicalNQuads(loaded.quads);
+    // N3 is a query/SHACL projection of the already validated canonical dataset, never a source-ingestion path.
+    const quads = new Parser({ format: "application/n-quads" }).parse(canonical);
+    const graphs = loaded.sources.map((source) => source.graph).sort();
     const oxigraph = new OxigraphStore();
-    oxigraph.load(canonical.canonicalNQuads, { format: "application/n-quads" });
-    return new RepositorySemanticStore(limits, quads, oxigraph, {
-      semanticDigest: canonical.semanticDigest,
-      canonicalNQuads: canonical.canonicalNQuads,
+    oxigraph.load(canonical, { format: "application/n-quads" });
+    const snapshot: SemanticSnapshot = Object.freeze({
+      semanticDigest: loaded.semanticDigest,
+      canonicalNQuads: canonical,
       quadCount: quads.length,
-      graphNames: [...graphs].sort(),
-      sourceDigests: Object.fromEntries(Object.entries(sourceDigests).sort(([left], [right]) => left.localeCompare(right))),
+      graphNames: Object.freeze(graphs),
+      graphDigests: Object.freeze(Object.fromEntries(Object.entries(loaded.graphDigests).sort(([left], [right]) => left.localeCompare(right)))),
+      sourceDigests: Object.freeze(Object.fromEntries(Object.entries(loaded.sourceDigests).sort(([left], [right]) => left.localeCompare(right)))),
     });
+    return new RepositorySemanticStore(limits, quads, oxigraph, snapshot);
   }
 
   snapshot(): SemanticSnapshot {

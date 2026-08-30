@@ -1,10 +1,5 @@
-@prefix ex: <urn:test:> .
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-
-ex:ServiceShape a sh:NodeShape ;
-  sh:targetClass ex:Service ;
-  sh:property [
-    sh:path ex:name ;
-    sh:minCount 1 ;
-    sh:maxCount 1
-  ] .
+<urn:test:ServiceNameProperty> <http://www.w3.org/ns/shacl#hasValue> "Alpha" <urn:test:graph:shapes> .
+<urn:test:ServiceNameProperty> <http://www.w3.org/ns/shacl#path> <urn:test:name> <urn:test:graph:shapes> .
+<urn:test:ServiceShape> <http://www.w3.org/ns/shacl#property> <urn:test:ServiceNameProperty> <urn:test:graph:shapes> .
+<urn:test:ServiceShape> <http://www.w3.org/ns/shacl#targetClass> <urn:test:Service> <urn:test:graph:shapes> .
+<urn:test:ServiceShape> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shacl#NodeShape> <urn:test:graph:shapes> .

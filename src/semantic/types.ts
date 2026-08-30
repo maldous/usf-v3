@@ -1,4 +1,5 @@
 export const semanticReasonCodes = {
+  STORE_LIMIT_INVALID: "SEMANTIC_STORE_LIMIT_INVALID",
   MANIFEST_INVALID: "SEMANTIC_MANIFEST_INVALID",
   MANIFEST_PATH_REFUSED: "SEMANTIC_MANIFEST_PATH_REFUSED",
   SOURCE_PATH_REFUSED: "SEMANTIC_SOURCE_PATH_REFUSED",
@@ -34,28 +35,14 @@ export class SemanticStoreError extends Error {
   }
 }
 
-export type SemanticSourceFormat =
-  | "application/n-quads"
-  | "application/n-triples"
-  | "application/trig"
-  | "text/turtle";
-
-export interface SemanticManifestSource {
-  readonly path: string;
-  readonly format: SemanticSourceFormat;
-  readonly graph: string;
-  readonly role: string;
-}
-
-export interface SemanticManifest {
-  readonly schema: "urn:usf:semantic-store-manifest:1";
-  readonly version: 1;
-  readonly sources: readonly SemanticManifestSource[];
-}
-
 export interface SemanticStoreLimits {
   readonly maxManifestBytes: number;
+  readonly maxTotalManifestBytes: number;
+  readonly maxManifestCount: number;
+  readonly maxManifestDepth: number;
+  readonly maxSourceCount: number;
   readonly maxSourceBytes: number;
+  readonly maxTotalSourceBytes: number;
   readonly maxDatasetQuads: number;
   readonly maxQueryBytes: number;
   readonly maxQueryResults: number;
@@ -68,6 +55,7 @@ export interface SemanticSnapshot {
   readonly canonicalNQuads: string;
   readonly quadCount: number;
   readonly graphNames: readonly string[];
+  readonly graphDigests: Readonly<Record<string, string>>;
   readonly sourceDigests: Readonly<Record<string, string>>;
 }
 

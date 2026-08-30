@@ -1,8 +1,5 @@
-@prefix ex: <urn:test:> .
-
-ex:service-alpha a ex:Service ;
-  ex:name "Alpha" ;
-  ex:configuration [
-    ex:mode "safe" ;
-    ex:replicas 2
-  ] .
+<urn:test:configuration-alpha> <urn:test:mode> "safe" <urn:test:graph:data> .
+<urn:test:configuration-alpha> <urn:test:replicas> "2" <urn:test:graph:data> .
+<urn:test:service-alpha> <urn:test:configuration> <urn:test:configuration-alpha> <urn:test:graph:data> .
+<urn:test:service-alpha> <urn:test:name> "Alpha" <urn:test:graph:data> .
+<urn:test:service-alpha> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:test:Service> <urn:test:graph:data> .

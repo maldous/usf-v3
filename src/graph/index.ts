@@ -1,4 +1,4 @@
-import { readFileSync, realpathSync } from "node:fs";
+import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalQuadDigest, parseStrictNQuads, sha256, type Quad } from "./nquads.ts";
 
@@ -17,14 +17,41 @@ export interface GraphManifestV2 {
   sources: GraphManifestSource[];
 }
 
-/** Kept in the public structural type for in-memory fixtures; the loader accepts only v2. */
-export interface LegacyGraphManifest {
-  schema: "urn:usf:graph-manifest:1";
-  version: 1;
-  sources: GraphManifestSource[];
+export type GraphManifest = GraphManifestV2;
+
+export interface GraphLoadLimits {
+  maxManifestBytes: number;
+  maxTotalManifestBytes: number;
+  maxManifestCount: number;
+  maxManifestDepth: number;
+  maxSourceCount: number;
+  maxSourceBytes: number;
+  maxTotalSourceBytes: number;
+  maxDatasetQuads: number;
 }
 
-export type GraphManifest = GraphManifestV2 | LegacyGraphManifest;
+export const defaultGraphLoadLimits: Readonly<GraphLoadLimits> = {
+  maxManifestBytes: 64 * 1024,
+  maxTotalManifestBytes: 4 * 1024 * 1024,
+  maxManifestCount: 256,
+  maxManifestDepth: 32,
+  maxSourceCount: 1_024,
+  maxSourceBytes: 2 * 1024 * 1024,
+  maxTotalSourceBytes: 64 * 1024 * 1024,
+  maxDatasetQuads: 100_000,
+};
+
+export class GraphLoadError extends Error {
+  readonly reasonCode: string;
+  readonly details?: Readonly<Record<string, unknown>>;
+
+  constructor(reasonCode: string, details?: Readonly<Record<string, unknown>>) {
+    super(reasonCode);
+    this.name = "GraphLoadError";
+    this.reasonCode = reasonCode;
+    this.details = details;
+  }
+}
 
 export interface LoadedGraphManifest {
   path: string;
@@ -51,7 +78,7 @@ export interface LoadedSemanticGraph extends SemanticGraph {
   sources: GraphManifestSource[];
 }
 
-function refuse(reason: string): never { throw new Error(reason); }
+function refuse(reason: string, details?: Readonly<Record<string, unknown>>): never { throw new GraphLoadError(reason, details); }
 
 function isManifest(value: unknown): value is GraphManifestV2 {
   if (typeof value !== "object" || value === null) return false;
@@ -69,12 +96,12 @@ function validateSource(source: unknown): asserts source is GraphManifestSource 
   const item = source as Partial<GraphManifestSource>;
   if (Object.keys(item).sort().join(",") !== "format,graph,path,role,validationProfile"
     || typeof item.path !== "string"
-    || !item.path.endsWith(".nq")
     || item.format !== "application/n-quads"
     || typeof item.graph !== "string"
-    || !item.graph.startsWith("urn:")
+    || !/^urn:[^<>\s]+$/u.test(item.graph)
     || item.validationProfile !== "bootstrap-nquads-v1"
-    || typeof item.role !== "string") refuse("MANIFEST_SOURCE_INVALID");
+    || typeof item.role !== "string"
+    || item.role.length === 0) refuse("MANIFEST_SOURCE_INVALID");
 }
 
 function repositoryRelativePath(value: string, reason: string): string {
@@ -84,15 +111,62 @@ function repositoryRelativePath(value: string, reason: string): string {
   return segments.join("/");
 }
 
-function containedPath(root: string, repositoryPath: string, unreadableReason: string): string {
+function containedPath(root: string, repositoryPath: string, escapeReason: string, unreadableReason: string): string {
   const absolute = resolve(root, repositoryPath);
   const rootRelative = relative(root, absolute);
-  if (rootRelative === "" || rootRelative === ".." || rootRelative.startsWith(`..${sep}`) || isAbsolute(rootRelative)) refuse("MANIFEST_PATH_ESCAPE");
+  if (rootRelative === "" || rootRelative === ".." || rootRelative.startsWith(`..${sep}`) || isAbsolute(rootRelative)) refuse(escapeReason);
+  let cursor = root;
+  try {
+    for (const segment of repositoryPath.split("/")) {
+      cursor = resolve(cursor, segment);
+      const status = lstatSync(cursor);
+      if (status.isSymbolicLink()) refuse(escapeReason, { path: repositoryPath });
+      if (cursor === absolute && !status.isFile()) refuse(unreadableReason, { path: repositoryPath });
+    }
+  } catch (error) {
+    if (error instanceof GraphLoadError) throw error;
+    return refuse(unreadableReason, { path: repositoryPath });
+  }
   let canonical: string;
   try { canonical = realpathSync(absolute); } catch { return refuse(unreadableReason); }
   const canonicalRelative = relative(root, canonical);
-  if (canonicalRelative === "" || canonicalRelative === ".." || canonicalRelative.startsWith(`..${sep}`) || isAbsolute(canonicalRelative)) refuse("MANIFEST_PATH_ESCAPE");
+  if (canonicalRelative === "" || canonicalRelative === ".." || canonicalRelative.startsWith(`..${sep}`) || isAbsolute(canonicalRelative)) refuse(escapeReason);
   return canonical;
+}
+
+function readBoundedFile(
+  root: string,
+  repositoryPath: string,
+  maximumBytes: number,
+  escapeReason: string,
+  unreadableReason: string,
+  tooLargeReason: string,
+  aggregateRemainingBytes: number,
+  aggregateTooLargeReason: string,
+): Buffer {
+  const absolute = containedPath(root, repositoryPath, escapeReason, unreadableReason);
+  let status: ReturnType<typeof lstatSync>;
+  try { status = lstatSync(absolute); } catch { return refuse(unreadableReason, { path: repositoryPath }); }
+  if (status.size > maximumBytes) refuse(tooLargeReason, { path: repositoryPath, bytes: status.size, maximumBytes });
+  if (status.size > aggregateRemainingBytes) refuse(aggregateTooLargeReason, { path: repositoryPath, bytes: status.size, aggregateRemainingBytes });
+  let content: Buffer;
+  try { content = readFileSync(absolute); } catch { return refuse(unreadableReason, { path: repositoryPath }); }
+  if (content.byteLength > maximumBytes) refuse(tooLargeReason, { path: repositoryPath, bytes: content.byteLength, maximumBytes });
+  if (content.byteLength > aggregateRemainingBytes) refuse(aggregateTooLargeReason, { path: repositoryPath, bytes: content.byteLength, aggregateRemainingBytes });
+  return content;
+}
+
+function decodeUtf8(content: Buffer, reason: string, path: string): string {
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(content); }
+  catch { return refuse(reason, { path }); }
+}
+
+function checkedLimits(overrides: Partial<GraphLoadLimits>): GraphLoadLimits {
+  const known = new Set(Object.keys(defaultGraphLoadLimits));
+  if (Object.keys(overrides).some((key) => !known.has(key))) refuse("GRAPH_LOAD_LIMIT_INVALID");
+  const limits = { ...defaultGraphLoadLimits, ...overrides };
+  if (Object.values(limits).some((value) => !Number.isSafeInteger(value) || value < 1)) refuse("GRAPH_LOAD_LIMIT_INVALID");
+  return limits;
 }
 
 function sameSource(left: GraphManifestSource, right: GraphManifestSource): boolean {
@@ -103,9 +177,10 @@ function sameSource(left: GraphManifestSource, right: GraphManifestSource): bool
     && left.validationProfile === right.validationProfile;
 }
 
-export function loadSemanticGraph(repositoryRoot: string, manifestPath = "graph/manifest.json"): LoadedSemanticGraph {
+export function loadSemanticGraph(repositoryRoot: string, manifestPath = "graph/manifest.json", limitOverrides: Partial<GraphLoadLimits> = {}): LoadedSemanticGraph {
   let root: string;
   try { root = realpathSync(resolve(repositoryRoot)); } catch { return refuse("REPOSITORY_ROOT_UNREADABLE"); }
+  const limits = checkedLimits(limitOverrides);
   const selectedManifestPath = repositoryRelativePath(manifestPath, "MANIFEST_PATH_ESCAPE");
   const loadedByPath = new Map<string, LoadedGraphManifest>();
   const active = new Set<string>();
@@ -113,58 +188,94 @@ export function loadSemanticGraph(repositoryRoot: string, manifestPath = "graph/
   const sources: GraphManifestSource[] = [];
   const sourceByPath = new Map<string, GraphManifestSource>();
   const sourceByGraph = new Map<string, GraphManifestSource>();
+  let totalManifestBytes = 0;
+  let totalSourceBytes = 0;
 
   const addSource = (value: unknown): void => {
     validateSource(value);
     const source = value;
-    source.path = repositoryRelativePath(source.path, "MANIFEST_PATH_ESCAPE");
-    const pathMatch = sourceByPath.get(source.path);
-    const graphMatch = sourceByGraph.get(source.graph);
-    if ((pathMatch && !sameSource(pathMatch, source)) || (graphMatch && !sameSource(graphMatch, source))) refuse("MANIFEST_DUPLICATE_SOURCE_OR_GRAPH");
+    const normalized: GraphManifestSource = { ...source, path: repositoryRelativePath(source.path, "MANIFEST_SOURCE_PATH_ESCAPE") };
+    const pathMatch = sourceByPath.get(normalized.path);
+    const graphMatch = sourceByGraph.get(normalized.graph);
+    if ((pathMatch && !sameSource(pathMatch, normalized)) || (graphMatch && !sameSource(graphMatch, normalized))) refuse("MANIFEST_DUPLICATE_SOURCE_OR_GRAPH");
     if (pathMatch || graphMatch) return;
-    sourceByPath.set(source.path, source);
-    sourceByGraph.set(source.graph, source);
-    sources.push(source);
+    if (sources.length >= limits.maxSourceCount) refuse("MANIFEST_SOURCE_LIMIT_EXCEEDED");
+    sourceByPath.set(normalized.path, normalized);
+    sourceByGraph.set(normalized.graph, normalized);
+    sources.push(normalized);
   };
 
-  const loadManifest = (candidate: string): LoadedGraphManifest => {
+  const loadManifest = (candidate: string, depth: number): LoadedGraphManifest => {
+    if (depth > limits.maxManifestDepth) refuse("MANIFEST_IMPORT_DEPTH_EXCEEDED");
     const path = repositoryRelativePath(candidate, "MANIFEST_PATH_ESCAPE");
     if (active.has(path)) refuse("MANIFEST_IMPORT_CYCLE");
     const prior = loadedByPath.get(path);
     if (prior) return prior;
 
-    const absolute = containedPath(root, path, "MANIFEST_UNREADABLE");
-    let content: string;
+    if (loadedByPath.size + active.size >= limits.maxManifestCount) refuse("MANIFEST_LIMIT_EXCEEDED");
+    const bytes = readBoundedFile(
+      root,
+      path,
+      limits.maxManifestBytes,
+      "MANIFEST_PATH_ESCAPE",
+      "MANIFEST_UNREADABLE",
+      "MANIFEST_TOO_LARGE",
+      limits.maxTotalManifestBytes - totalManifestBytes,
+      "MANIFEST_TOTAL_BYTES_EXCEEDED",
+    );
+    totalManifestBytes += bytes.byteLength;
+    if (totalManifestBytes > limits.maxTotalManifestBytes) refuse("MANIFEST_TOTAL_BYTES_EXCEEDED");
+    const content = decodeUtf8(bytes, "MANIFEST_INVALID_UTF8", path);
     let value: unknown;
-    try { content = readFileSync(absolute, "utf8"); } catch { return refuse("MANIFEST_UNREADABLE"); }
     try { value = JSON.parse(content); } catch { return refuse("MANIFEST_INVALID_JSON"); }
     if (!isManifest(value)) refuse("MANIFEST_INVALID");
 
     active.add(path);
     try {
-      for (const importedPath of value.imports) loadManifest(importedPath);
+      for (const importedPath of value.imports) loadManifest(importedPath, depth + 1);
       for (const source of value.sources) addSource(source);
     } finally {
       active.delete(path);
     }
 
-    const loaded = { path, digest: sha256(content), manifest: value };
+    const loaded = { path, digest: sha256(bytes), manifest: value };
     loadedByPath.set(path, loaded);
     manifests.push(loaded);
     return loaded;
   };
 
-  const selected = loadManifest(selectedManifestPath);
+  const selected = loadManifest(selectedManifestPath, 1);
   const quads: Quad[] = [];
-  const sourceDigests: Record<string, string> = {};
+  const quadsByGraph = new Map<string, Quad[]>(sources.map((source) => [source.graph, []]));
+  const sourceDigestEntries: Array<readonly [string, string]> = [];
   for (const source of sources) {
-    const absolute = containedPath(root, source.path, "MANIFEST_SOURCE_UNREADABLE");
-    let content: string;
-    try { content = readFileSync(absolute, "utf8"); } catch { return refuse("MANIFEST_SOURCE_UNREADABLE"); }
-    quads.push(...parseStrictNQuads(content, source.graph));
-    sourceDigests[source.path] = sha256(content);
+    const bytes = readBoundedFile(
+      root,
+      source.path,
+      limits.maxSourceBytes,
+      "MANIFEST_SOURCE_PATH_ESCAPE",
+      "MANIFEST_SOURCE_UNREADABLE",
+      "MANIFEST_SOURCE_TOO_LARGE",
+      limits.maxTotalSourceBytes - totalSourceBytes,
+      "MANIFEST_SOURCE_TOTAL_BYTES_EXCEEDED",
+    );
+    totalSourceBytes += bytes.byteLength;
+    if (totalSourceBytes > limits.maxTotalSourceBytes) refuse("MANIFEST_SOURCE_TOTAL_BYTES_EXCEEDED");
+    const content = decodeUtf8(bytes, "MANIFEST_SOURCE_INVALID_UTF8", source.path);
+    let parsed: Quad[];
+    try { parsed = parseStrictNQuads(content, source.graph, limits.maxDatasetQuads - quads.length); }
+    catch (error) {
+      if (error instanceof Error && error.message === "NQUADS_QUAD_LIMIT_EXCEEDED") refuse("DATASET_QUAD_LIMIT_EXCEEDED");
+      return refuse("MANIFEST_SOURCE_PARSE_FAILED", { path: source.path, cause: error instanceof Error ? error.message : "unknown" });
+    }
+    quads.push(...parsed);
+    quadsByGraph.get(source.graph)?.push(...parsed);
+    sourceDigestEntries.push([source.path, sha256(bytes)]);
   }
-  const graphDigests = Object.fromEntries(sources.map((source) => [source.graph, canonicalQuadDigest(quads.filter((quad) => quad.graph === source.graph))]));
+  const graphDigests = Object.fromEntries(sources
+    .map((source) => [source.graph, canonicalQuadDigest(quadsByGraph.get(source.graph) ?? [])] as const)
+    .sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0));
+  const sourceDigests = Object.fromEntries(sourceDigestEntries.sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0));
   return {
     manifest: selected.manifest,
     manifestPath: selectedManifestPath,

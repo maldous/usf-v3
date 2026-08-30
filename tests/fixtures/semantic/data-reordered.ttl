@@ -1,7 +1,5 @@
-@prefix ex: <urn:test:> .
-
-_:different-label ex:replicas 2 .
-_:different-label ex:mode "safe" .
-ex:service-alpha ex:configuration _:different-label .
-ex:service-alpha ex:name "Alpha" .
-ex:service-alpha a ex:Service .
+<urn:test:service-alpha> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <urn:test:Service> <urn:test:graph:data> .
+<urn:test:service-alpha> <urn:test:name> "Alpha" <urn:test:graph:data> .
+<urn:test:service-alpha> <urn:test:configuration> <urn:test:configuration-alpha> <urn:test:graph:data> .
+<urn:test:configuration-alpha> <urn:test:replicas> "2" <urn:test:graph:data> .
+<urn:test:configuration-alpha> <urn:test:mode> "safe" <urn:test:graph:data> .
