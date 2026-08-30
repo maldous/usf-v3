@@ -26,6 +26,7 @@
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-concurrency-refusal> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-test-economics> <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> ".env.example" <urn:usf:graph:provider-qualification> .
+<urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "bin/usf" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "config/providers.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "config/qualification.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:provider-qualification> .
@@ -137,6 +138,7 @@
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:readPath> "src/observability/metrics.ts" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> ".env.example" <urn:usf:graph:provider-qualification> .
+<urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "bin/usf" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "config/providers.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "config/qualification.json" <urn:usf:graph:provider-qualification> .
 <urn:usf:work:provider-semantic-qualification> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:provider-qualification> .
