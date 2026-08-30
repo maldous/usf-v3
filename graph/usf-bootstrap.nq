@@ -184,7 +184,6 @@
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/commands/dispatcher.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/commands/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/continuous/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0003-foreground-lifecycle.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "package.json" <urn:usf:graph:usf-bootstrap> .
@@ -256,7 +255,6 @@
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/commands/dispatcher.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/commands/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/continuous/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "docs/decisions/0003-foreground-lifecycle.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "package.json" <urn:usf:graph:usf-bootstrap> .
@@ -287,7 +285,6 @@
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-metrics-identity> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-metrics-nonauthority> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-test-economics> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0004-operator-observability.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:usf-bootstrap> .
@@ -360,12 +357,10 @@
 <urn:usf:work:operator-observability> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:contract> <urn:usf:contract:operator-observability:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:objective> "Implement bounded operator help, broad status and factual operational metric aggregation while keeping local observations non-authoritative." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:operator-observability> <urn:usf:predicate:dependsOn> <urn:usf:work:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "config/providers.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/continuous/scheduler.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/decisions/0004-operator-observability.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:usf-bootstrap> .

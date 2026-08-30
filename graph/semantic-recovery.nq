@@ -1,0 +1,333 @@
+<urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:semantic-recovery> .
+<urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:semantic-recovery> .
+<urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:semantic-recovery> .
+<urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:title> "Bounded semantic recovery and graph exchange" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:scope> "v3-semantic-recovery" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:objective> "Create the exact source inventory, explicit dispositions and bounded local graph inspection, coverage, export and candidate-import prerequisites for later graph-defined selective V3 re-expression without adding another authority path." <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:privacy> "private-source" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:constructionRouteConstraint> "Graph commands are local, offline, bounded and deterministic; separately authorized zero-paid-cost construction intelligence may receive only explicitly bounded metadata whose privacy classification permits that exact egress." <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:recoverySourceSet> <urn:usf:source-set:historical-semantic-recovery:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-single-authority-path> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-graph-command-surface> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-inventory-command> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-coverage-command> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-exchange-containment> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-import-candidate-boundary> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-source-set-pin> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-candidate-identity> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-recovery-inventory> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-recovery-denominator> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-layer-isolation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-directional-currentness> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-test-economics> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-performance-ceilings> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-factory-qualification-boundary> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-external-systems-boundary> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "config/semantic-recovery.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "schemas/semantic-recovery.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "schemas/graph-result.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "schemas/legacy-graph-inventory.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "docs/semantic-recovery.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0006-semantic-recovery-and-exchange.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "README.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/graph/index.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/graph/nquads.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/graph/exchange.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/graph/recovery.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/graph/factory-qualification.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/semantic/store.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/semantic/types.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/semantic/index.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/commands/graph.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/commands/dispatcher.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/contract/cli.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/semantic-exchange.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/semantic-recovery.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/factory-qualification.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/unit/semantic/store.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/integration/semantic-exchange-cli.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/data-invalid.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/data-reordered.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/data.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/manifest-invalid-data.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/manifest-path-defect.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/manifest-reordered.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/manifest.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/shapes-reordered.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/semantic/shapes.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "schemas/factory-qualification-result.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:nonClaim> "The tracked recovery inventory and coverage report are dispositions over known historical source identities and remain usable without historical bytes; bounded extraction reads legacy sources only to produce private metadata and does not establish completeness of all prior meaning or make V1 or V2 authority." <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:nonClaim> "Existing V3 operator metrics implement bounded runtime observation but do not establish universal Foundation observability semantic-definition coverage." <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:nonClaim> "Graph inspection, inventory metadata, coverage, export and import candidates are not publication, accepted semantic source, evidence, proof, Git history or a current external projection." <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:nonClaim> "This slice does not establish complete ANQR semantics or realisation, live multi-provider work, staging, production, or terminal proof." <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:nonClaim> "No signatures, V2 operational ceremony, external CAS, mandatory database, self-hosted GitHub runner or semantic endpoint are introduced." <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:nonClaim> "This contract does not authorize writes to recovered core or product semantic graph source; every selective adoption or re-expression requires a later graph-defined versioned slice with its own exact write set, acceptance and currentness." <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-recovery:localdev> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-recovery:hermetic> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-recovery:integrationtest> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-recovery:ci> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-recovery:productionshaped> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-recovery:staging> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-recovery:productionlive> <urn:usf:graph:semantic-recovery> .
+<urn:usf:source-set:historical-semantic-recovery:1> <urn:usf:predicate:type> <urn:usf:type:RecoverySourceSetContract> <urn:usf:graph:semantic-recovery> .
+<urn:usf:source-set:historical-semantic-recovery:1> <urn:usf:predicate:schema> "urn:usf:semantic-recovery-source-set:1" <urn:usf:graph:semantic-recovery> .
+<urn:usf:source-set:historical-semantic-recovery:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-recovery> .
+<urn:usf:source-set:historical-semantic-recovery:1> <urn:usf:predicate:configurationPath> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:source-set:historical-semantic-recovery:1> <urn:usf:predicate:inventoryPath> "config/semantic-recovery.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:source-set:historical-semantic-recovery:1> <urn:usf:predicate:digestField> "sourceSetDigest" <urn:usf:graph:semantic-recovery> .
+<urn:usf:source-set:historical-semantic-recovery:1> <urn:usf:predicate:digestAlgorithm> "sha256-canonical-json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:localdev> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:integrationtest> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:ci> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:semantic-recovery> .
+<urn:usf:environment-applicability:semantic-recovery:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-single-authority-path> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-single-authority-path> <urn:usf:predicate:text> "Use graph-manifest version 2 import expansion, strict source validation and canonical dataset identity as the sole operational semantic ingestion path; unify or retire the incompatible semantic-store manifest path rather than maintaining two truths." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-graph-command-surface> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-graph-command-surface> <urn:usf:predicate:text> "Register usf graph inspect, export and import with stable JSON help and receipts; require an explicit repository manifest and layer core or product, require an explicit versioned profile for product operations, reject ambiguous selections, and impose explicit byte, quad, item and elapsed-time bounds." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-inventory-command> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-inventory-command> <urn:usf:predicate:text> "Register usf graph inventory --sources config/semantic-recovery-sources.json --source-root ID=PATH --out .usf/graph-inventory/FILE.json with repeated explicitly bound source roots and optional bounded --max-bytes N; verify each root against the operator-pinned revision and full tracked-tree closure, expand every declared legacy manifest selection and mechanically inventory every tracked RDF, JSON, YAML, schema, registry, source, test and semantic-document artifact, write only contained atomic owner-only metadata containing source identities, byte digests, named subjects, referenced IRIs, RDF type assertions, predicate vocabulary terms, structured registry keys and counts, never copy payload bytes, and never establish current authority." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-coverage-command> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-coverage-command> <urn:usf:predicate:text> "Register read-only usf graph coverage --inventory config/semantic-recovery.json with optional --domain ID and bounded --max-items N; report total source, semantic-resource, type-vocabulary, predicate-vocabulary and Factory-record disposition coverage, distinguish durable Foundation definition coverage from current operational implementation, preserve unknown distinct from zero, never load historical source bytes, and refuse incomplete, ambiguous or duplicate resolved coverage." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-exchange-containment> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-exchange-containment> <urn:usf:predicate:text> "Export canonical N-Quads only and place import candidates and exports beneath ignored private .usf paths using contained atomic owner-only writes; emit bounded receipts rather than bulk graph bytes on standard output. Ordinary inspect, coverage, export and import use no network, GitHub, provider, Stardog or historical path; only explicit graph inventory may read its bounded selected local legacy inputs and it persists metadata rather than RDF payloads." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-import-candidate-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-import-candidate-boundary> <urn:usf:predicate:text> "Import accepts an explicitly bounded local input and format, parses and normalizes it to a candidate only, never edits a tracked graph or manifest, never publishes, and cannot make the candidate semantic authority without later explicit deterministic review and usf publish." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-source-set-pin> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-source-set-pin> <urn:usf:predicate:text> "Pin exhaustiveness in the separately reviewed operator source-selection contract config/semantic-recovery-sources.json with schema urn:usf:semantic-recovery-source-set:1, integer version 1, exact immutable V1, V2 and every readable Factory release identity, full tracked-tree closure with no discovery-time inclusion filters, and the exact legacy manifests as additional graph indexes rather than scope limits. Define sourceSetDigest as sha256 over canonical JSON excluding only the sourceSetDigest field. Generated config/semantic-recovery.json must reference that digest but cannot create, widen or replace the source-selection contract; inventory and coverage refuse absent, stale or mismatched schema, version, revision, tree, manifest, closure or digest." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-candidate-identity> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-candidate-identity> <urn:usf:predicate:text> "Define canonical candidate identity as the exact tuple source-set-digest, logical-source-id, pinned-source-revision, selected-file-graph-or-registry-id, candidate-kind, candidate-IRI-path-or-registry-key and discriminator, where kind covers tracked source artifact, named semantic resource, RDF type assertion, predicate vocabulary, referenced IRI, structured schema or registry record, test obligation and semantic document. Report tracked-source and graph-selection coverage separately from candidate dispositions; each tracked file and manifest selection is covered once and every canonical candidate resolves to exactly one disposition. Permit compact rules only over exact source selection, candidate kind and exact type, predicate or path class, with deterministic specificity and explicit provenance; ambiguous overlap or unmatched candidates fail closed." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-recovery-inventory> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-recovery-inventory> <urn:usf:predicate:text> "Create a frozen digest-bound inventory whose compiled coverage resolves exactly one deterministic disposition from adopt, re-express, defer, not-claimed, historical-only, reject or unresolved for every tracked artifact in the pinned V1, V2 and readable Factory trees, every graph selected or retired by each historical manifest, every named semantic resource, RDF type assertion, predicate vocabulary term, referenced IRI, structured schema or registry record, test obligation and semantic document, including every Factory schema, entity, contract, service, action and record; record source version, logical identity, evidence location, source digest, licence status, rationale, target V3 IRI, definition coverage state and operational implementation state. Automated V1 versus V2 comparison is only a raw source-identity delta; every claimed semantic split, merge, equivalence or replacement must be an explicit reviewed mapping." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-recovery-denominator> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-recovery-denominator> <urn:usf:predicate:text> "Derive the recovery denominator mechanically from every tracked artifact in the exact V1, V2 and readable Factory trees; every selected, derived, retired, inactive and fixture entry in their manifests and registries; all named semantic resources and relationship vocabulary in RDF; and all structured semantic instances, registries, schemas, taxonomies, vocabularies, tests and architecture or lineage documents rather than any hand-maintained domain or class list. This includes every kind and instance of contract, service, capability, requirement, policy, port, interface, connector, adapter, provider, environment, signal, assurance, test, shape, rule and lifecycle or action model without treating that enumeration as closed. Observability and telemetry, file and malware or virus scanning, database and persistence, test and environment postures, mail and notifications, identity authentication authorization and tenancy, ports interfaces connectors adapters and hexagonal boundaries, configuration and secret references, interaction events import export, evidence proof currentness invalidation, and deployment readiness backup restore upgrade rollback are required planted coverage witnesses only and never the inventory boundary." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-layer-isolation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-layer-isolation> <urn:usf:predicate:text> "Keep reusable USF core definitions and versioned product overlays separate. Core export contains only core-authored named graphs. Product export contains only product-authored named graphs selected by an explicit versioned product profile and carries core dependencies as receipt digests rather than copied core graph bytes. Core authority must not acquire product triples or runtime coupling, and ANQR must receive its own evolving product graph and explicit profile." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-directional-currentness> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-directional-currentness> <urn:usf:predicate:text> "Compute separate content-only scoped dependency digests for core-to-product and product-to-core influence, bind each digest to exact selected resources and profile version, and invalidate only the affected direction so Git carrier movement and unrelated semantic change do not require reproof." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-test-economics> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-test-economics> <urn:usf:predicate:text> "Use one generic invariant test per semantic rule family with a planted defect, one table-driven disposition and coverage test, and only distinct command and containment boundaries; prune subsumed tests, avoid Cartesian domain matrices, generate scale fixtures deterministically, and keep clean-clone checks independent of a warm CAS, GitHub cache or self-hosted runner." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-performance-ceilings> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-performance-ceilings> <urn:usf:predicate:text> "Measure ten clean local runs and initially require 10,000-quad profile load and projection p95 no more than 250 milliseconds, affected validation p95 no more than 2 seconds, 100,000-quad full publication preparation no more than 15 seconds and 512 MiB RSS, and each model packet no more than 65,536 bytes; record any regression above 25 percent as a bottleneck decision rather than weakening bounds." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-factory-qualification-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-factory-qualification-boundary> <urn:usf:predicate:text> "Recreate only behaviour-level V2 Factory qualification in original TypeScript tests: absence never authorizes, canonical inventory fixes the denominator, exact digests and counts fail closed, closed action states cannot infer PROCEED, currentness is exact, and registry, plan, output and receipt parity are deterministic; do not copy Factory source, graph bytes or operational ceremony." <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-external-systems-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:requirement:semantic-external-systems-boundary> <urn:usf:predicate:text> "Use contained local .usf candidates for copy-on-write semantic change. Treat Stardog as an optional disposable projection and GitHub only as a carrier and history service; neither availability, server statistics, workflow status nor commit identity may define semantic authority, currentness or ordinary work readiness." <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-single-path> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-single-path> <urn:usf:predicate:text> "All graph commands and semantic-store callers consume the same graph-manifest version 2 expansion and produce identical canonical dataset and source digests for the same tracked input." <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-tooling-fixtures> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-tooling-fixtures> <urn:usf:predicate:text> "Synthetic full-closure manifests and Factory registries prove exhaustive named-resource, type, predicate, reference and record extraction plus exact and compact-rule disposition resolution; planted omissions, ambiguity, digest drift, selection filters and duplicate coverage fail closed without requiring the historical inventory." <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-command-refusals> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-command-refusals> <urn:usf:predicate:text> "Table-driven valid and planted-defect cases prove graph inspect, inventory, coverage, export and import bounds, explicit layer and profile selection, containment, deterministic receipts, candidate nonauthority, exhaustive metadata-only extraction of tracked artifacts, graph selections, structured semantic documents, named resources, type and predicate vocabulary and Factory records, compact disposition-rule resolution, and zero remote contact." <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-recovery-coverage> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-recovery-coverage> <urn:usf:predicate:text> "The exact configured source-set schema, version and digest bind complete tracked-tree and manifest coverage for V1, V2 and every readable Factory release separately from named-resource, type-vocabulary, predicate-vocabulary, referenced-IRI, structured-document, test-obligation and Factory-record coverage. Every canonical candidate identity resolves through an exact row or deterministic compact rule to exactly one disposition and provenance outcome; the V1-only report is explicitly raw source-identity delta, semantic splits and merges are reviewed mappings, and omitted, ambiguous, conflicting, duplicate, stale, unlicensed or unresolved coverage fails closed." <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-isolation-currentness> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-isolation-currentness> <urn:usf:predicate:text> "Core and product exports are disjoint by declared layer and versioned profile, directional scoped digests change only for relevant semantic resources, and unrelated Git or graph movement preserves current work and proof." <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-performance-economics> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-performance-economics> <urn:usf:predicate:text> "Ten-run clean-host measurements satisfy the declared ceilings with bounded deterministic fixtures, and each retained test owns a distinct semantic rule or process boundary with subsumed assertions removed." <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-qualification-boundary> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:acceptance:semantic-qualification-boundary> <urn:usf:predicate:text> "Planted Factory behaviour defects fail for stable semantic reasons while the implementation remains independent of historical paths, Factory source, external Stardog, GitHub availability, signatures and V2 handover machinery." <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-check> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-check> <urn:usf:predicate:command> "corepack pnpm run check" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-check> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-check> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-check> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-manifest-store-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-manifest-store-focused> <urn:usf:predicate:command> "node --test tests/unit/semantic/store.test.ts tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-manifest-store-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-manifest-store-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-manifest-store-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-tooling-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-tooling-focused> <urn:usf:predicate:command> "node --test tests/unit/graph/semantic-recovery.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-tooling-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-tooling-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-tooling-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-graph-exchange-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-graph-exchange-focused> <urn:usf:predicate:command> "node --test tests/contract/cli.test.ts tests/unit/graph/semantic-exchange.test.ts tests/integration/semantic-exchange-cli.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-graph-exchange-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-graph-exchange-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-graph-exchange-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-inventory-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-inventory-focused> <urn:usf:predicate:command> "./bin/usf graph coverage --inventory config/semantic-recovery.json --max-items 1" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-inventory-focused> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-inventory-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-recovery-inventory-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-factory-qualification-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-factory-qualification-focused> <urn:usf:predicate:command> "node --test tests/unit/graph/factory-qualification.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-factory-qualification-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-factory-qualification-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-recovery> .
+<urn:usf:validation:semantic-factory-qualification-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange> <urn:usf:predicate:text> "Exact candidate bytes pass the single manifest path, bounded command, historical coverage disposition, layer isolation, directional currentness, performance and Factory behaviour fixtures under an empty ignored state without network contact." <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:contract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:objective> "Unify manifest expansion and semantic-store loading on graph-manifest version 2 with bounded source, dataset and canonicalization behavior." <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "graph/manifest.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "src/semantic/store.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "src/semantic/types.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/graph/index.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/graph/nquads.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/semantic/store.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/semantic/types.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/semantic/index.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/unit/semantic/store.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/data-invalid.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/data-reordered.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/data.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/manifest-invalid-data.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/manifest-path-defect.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/manifest-reordered.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/manifest.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/shapes-reordered.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/shapes.ttl" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:modelCapability> "rdf-semantics" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-single-path> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:validation> <urn:usf:validation:semantic-manifest-store-focused> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:contract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:dependsOn> <urn:usf:work:semantic-manifest-store> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:objective> "Implement bounded legacy inventory and total coverage libraries, closed schemas and planted defects without running an ad hoc historical scan or creating the reviewed inventory." <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "graph/manifest.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "schemas/semantic-recovery.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "schemas/legacy-graph-inventory.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "src/graph/recovery.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "tests/unit/graph/semantic-recovery.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:modelCapability> "rdf-semantics" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-tooling-fixtures> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:validation> <urn:usf:validation:semantic-recovery-tooling-focused> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:contract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:dependsOn> <urn:usf:work:semantic-manifest-store> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:dependsOn> <urn:usf:work:semantic-recovery-tooling> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:objective> "Register bounded inspect, inventory, coverage, export and candidate-import commands over the unified manifest and recovery libraries with deterministic help and receipts." <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:readPath> "src/cli.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:readPath> "src/commands/help.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "schemas/graph-result.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "src/graph/exchange.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "src/commands/graph.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "src/commands/dispatcher.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "tests/contract/cli.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "tests/unit/graph/semantic-exchange.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:writePath> "tests/integration/semantic-exchange-cli.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:modelCapability> "cli-design" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-command-refusals> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-isolation-currentness> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:validation> <urn:usf:validation:semantic-graph-exchange-focused> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:contract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:dependsOn> <urn:usf:work:semantic-graph-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:objective> "Use only the registered graph inventory and coverage commands against the separately operator-pinned source-selection contract to create and review source, vocabulary, resource and Factory-record disposition coverage without copying legacy RDF payloads." <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:readPath> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:writePath> "config/semantic-recovery.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:modelCapability> "rdf-semantics" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:modelCapability> "semantic-review" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-recovery-coverage> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:validation> <urn:usf:validation:semantic-recovery-inventory-focused> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:contract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:dependsOn> <urn:usf:work:semantic-recovery-inventory> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:objective> "Implement original behavior-level Factory registry, action-state, denominator, currentness and receipt-parity qualification with planted fail-closed defects." <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:writePath> "src/graph/factory-qualification.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:writePath> "schemas/factory-qualification-result.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:writePath> "tests/unit/graph/factory-qualification.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:modelCapability> "rdf-semantics" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-qualification-boundary> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-factory-qualification> <urn:usf:predicate:validation> <urn:usf:validation:semantic-factory-qualification-focused> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:contract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:dependsOn> <urn:usf:work:semantic-graph-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:dependsOn> <urn:usf:work:semantic-factory-qualification> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:objective> "Run final deterministic acceptance, document exact recovery coverage and bottlenecks, and preserve claims, nonclaims and handover without authorizing recovered graph source." <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "README.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "docs/bottleneck-register.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "docs/handover.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "README.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "docs/semantic-recovery.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "docs/decisions/0006-semantic-recovery-and-exchange.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:modelCapability> "technical-writing" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:modelCapability> "rdf-semantics" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-performance-economics> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-isolation-currentness> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:validation> <urn:usf:validation:semantic-recovery-check> <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:proof> <urn:usf:proof:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .

@@ -1,0 +1,14 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": ["graph/manifests/self-host.json"],
+  "sources": [
+    {
+      "path": "graph/semantic-recovery.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:semantic-recovery",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
