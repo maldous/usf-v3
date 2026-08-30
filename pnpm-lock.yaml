@@ -14,6 +14,9 @@ importers:
       '@ai-sdk/groq':
         specifier: 4.0.34
         version: 4.0.34(zod@4.5.2)
+      '@traqula/parser-sparql-1-1':
+        specifier: 1.2.1
+        version: 1.2.1
       ai:
         specifier: 7.0.84
         version: 7.0.84(zod@4.5.2)
@@ -32,6 +35,9 @@ importers:
       rdf-validate-shacl:
         specifier: 0.6.5
         version: 0.6.5
+      yaml:
+        specifier: 2.9.0
+        version: 2.9.0
     devDependencies:
       '@types/node':
         specifier: 24.10.1
@@ -109,6 +115,22 @@ packages:
 
   '@tpluscode/rdf-ns-builders@5.0.0':
     resolution: {integrity: sha512-rtMFbArdief+s0z2A3TOb/gNe5O5xn9LDiEpilCf6lGYCUIfyqoOvZY80fS/eILwcF2Mj6cUQN1WBQ+1neJmaw==}
+
+  '@traqula/chevrotain@1.1.0':
+    resolution: {integrity: sha512-VpcoQKb2ZnsOQPlPO2mE9hfR0Aidp7drwTCtaXfpdRHGkXeQ5Nv4rnxmxwUoEDRzu6b/3z4n8oTd+sYhe4fAaA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+
+  '@traqula/core@1.2.0':
+    resolution: {integrity: sha512-4NEYjNKD31u1DMbccRNXBnpEQsoeVrTTrJfxbDU11/5zHQdcyrXYlJ7Dq2t3hlZgStMbVJrZbZJsr6p+lZBeZA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+
+  '@traqula/parser-sparql-1-1@1.2.1':
+    resolution: {integrity: sha512-z6t9pzGpScFqBnJcGAbCdh24EnxDpZjirobpJ1Y73Q17T1/qtb6L8T9DaEysX2e7i3O6qnbbiaOdLDKKte4PuA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+
+  '@traqula/rules-sparql-1-1@1.2.1':
+    resolution: {integrity: sha512-rSf/Lck9taQgz5r/6Hds4uBDiL8UVbF05aT8Tv7no9NvqAbGfRA01nyzYTVU+p+JLMnbjfZWaS1ZPOSBnh00zg==}
+    engines: {node: ^20.19.0 || >=22.12.0}
 
   '@types/node@24.10.1':
     resolution: {integrity: sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==}
@@ -256,6 +278,11 @@ packages:
     resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
     engines: {node: '>=20.18.1'}
 
+  yaml@2.9.0:
+    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
   zod@4.5.2:
     resolution: {integrity: sha512-XkYXCol10+ba/6F/cueWV+TezUeOqXW0hdeJt5CdXjTYeAgAQg5N03RQdJ80mhfFE72+pblvYMW4wy2Qp4Qbrg==}
 
@@ -333,6 +360,22 @@ snapshots:
       '@rdfjs/types': 2.0.1
       '@types/rdfjs__namespace': 2.0.10
       '@zazuko/prefixes': 2.6.1
+
+  '@traqula/chevrotain@1.1.0': {}
+
+  '@traqula/core@1.2.0':
+    dependencies:
+      '@traqula/chevrotain': 1.1.0
+
+  '@traqula/parser-sparql-1-1@1.2.1':
+    dependencies:
+      '@traqula/core': 1.2.0
+      '@traqula/rules-sparql-1-1': 1.2.1
+
+  '@traqula/rules-sparql-1-1@1.2.1':
+    dependencies:
+      '@traqula/chevrotain': 1.1.0
+      '@traqula/core': 1.2.0
 
   '@types/node@24.10.1':
     dependencies:
@@ -480,5 +523,7 @@ snapshots:
   undici-types@7.16.0: {}
 
   undici@7.29.0: {}
+
+  yaml@2.9.0: {}
 
   zod@4.5.2: {}

@@ -1,0 +1,326 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:legacy-graph-inventory:1",
+  "type": "object",
+  "required": ["schema", "version", "sourceSetDigest", "sources", "trackedFiles", "graphSelections", "structuredRecords", "semanticRecords", "candidates", "inventoryDigest"],
+  "properties": {
+    "schema": { "const": "urn:usf:legacy-graph-inventory:1" },
+    "version": { "const": 1 },
+    "sourceSetDigest": { "$ref": "#/$defs/digest" },
+    "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } },
+    "trackedFiles": { "type": "array", "items": { "$ref": "#/$defs/trackedFile" } },
+    "graphSelections": { "type": "array", "items": { "$ref": "#/$defs/graphSelection" } },
+    "structuredRecords": { "type": "array", "items": { "$ref": "#/$defs/structuredRecord" } },
+    "semanticRecords": { "type": "array", "items": { "$ref": "#/$defs/semanticRecord" } },
+    "candidates": { "type": "array", "items": { "$ref": "#/$defs/candidate" } },
+    "inventoryDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "iri": { "type": "string", "pattern": "^(?:urn:[^<>\\s]+|https?://[^<>\\s]+)$" },
+    "label": { "type": "string", "minLength": 1 },
+    "path": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*//).+$" },
+    "count": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "source": {
+      "type": "object",
+      "required": ["sourceId", "revision", "tree", "sourceContractDigest", "licenceStatus", "licenceIdentifier", "reuseBoundary", "extractionReceipt", "trackedFileCount", "trackedByteCount", "manifestCount", "graphSelectionCount", "quadObservationCount", "registryCount", "structuredRecordCount", "roleAssertionCount", "candidateCount"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "tree": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "sourceContractDigest": { "$ref": "#/$defs/digest" },
+        "licenceStatus": { "enum": ["declared", "undetermined", "restricted"] },
+        "licenceIdentifier": { "oneOf": [{ "$ref": "#/$defs/label" }, { "type": "null" }] },
+        "reuseBoundary": { "$ref": "#/$defs/label" },
+        "extractionReceipt": { "$ref": "#/$defs/extractionReceipt" },
+        "trackedFileCount": { "$ref": "#/$defs/count" },
+        "trackedByteCount": { "$ref": "#/$defs/count" },
+        "manifestCount": { "$ref": "#/$defs/count" },
+        "graphSelectionCount": { "$ref": "#/$defs/count" },
+        "quadObservationCount": { "$ref": "#/$defs/count" },
+        "registryCount": { "$ref": "#/$defs/count" },
+        "structuredRecordCount": { "$ref": "#/$defs/count" },
+        "roleAssertionCount": { "$ref": "#/$defs/count" },
+        "candidateCount": { "$ref": "#/$defs/count" }
+      },
+      "additionalProperties": false
+    },
+    "trackedFile": {
+      "type": "object",
+      "required": ["sourceId", "path", "mode", "blobOid", "digest", "bytes", "roles", "parserOutcomes"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "path": { "$ref": "#/$defs/path" },
+        "mode": { "enum": ["100644", "100755", "120000"] },
+        "blobOid": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "bytes": { "$ref": "#/$defs/count" },
+        "roles": { "type": "array", "items": { "$ref": "#/$defs/label" } },
+        "parserOutcomes": { "type": "array", "items": { "$ref": "#/$defs/parserOutcome" } }
+      },
+      "additionalProperties": false
+    },
+    "graphSelection": {
+      "oneOf": [
+        { "$ref": "#/$defs/currentSelectedGraphSelection" },
+        { "$ref": "#/$defs/currentDerivedGraphSelection" },
+        { "$ref": "#/$defs/ruleGraphSelection" },
+        { "$ref": "#/$defs/retiredGraphSelection" },
+        { "$ref": "#/$defs/inactiveGraphSelection" },
+        { "$ref": "#/$defs/fixtureGraphSelection" }
+      ]
+    },
+    "parserOutcome": {
+      "type": "object",
+      "required": ["format", "status", "sourceDigest", "semanticDigest", "nodeCount", "recordCount", "quadCount", "operationKind"],
+      "properties": {
+        "format": { "enum": ["yaml-1.2", "json", "turtle", "trig", "sparql-1.1"] },
+        "status": { "const": "parsed" },
+        "sourceDigest": { "$ref": "#/$defs/digest" },
+        "semanticDigest": { "$ref": "#/$defs/digest" },
+        "nodeCount": { "$ref": "#/$defs/count" },
+        "recordCount": { "$ref": "#/$defs/count" },
+        "quadCount": { "$ref": "#/$defs/count" },
+        "operationKind": { "oneOf": [{ "$ref": "#/$defs/label" }, { "type": "null" }] }
+      },
+      "additionalProperties": false
+    },
+    "currentSelectedGraphSelection": {
+      "type": "object",
+      "required": ["sourceId", "manifestPath", "entryId", "kind", "filePath", "digest", "graphIri", "loadOrder", "validationOrder", "role", "section", "outputGraphIri", "classification"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "manifestPath": { "$ref": "#/$defs/path" },
+        "entryId": { "$ref": "#/$defs/label" },
+        "kind": { "enum": ["definition-graph", "authored-graph", "observed-graph", "shape-graph"] },
+        "filePath": { "$ref": "#/$defs/path" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "graphIri": { "$ref": "#/$defs/iri" },
+        "loadOrder": { "$ref": "#/$defs/count" },
+        "validationOrder": { "$ref": "#/$defs/count" },
+        "role": { "$ref": "#/$defs/label" },
+        "section": { "$ref": "#/$defs/label" },
+        "outputGraphIri": { "type": "null" },
+        "classification": { "const": "selected" }
+      },
+      "additionalProperties": false
+    },
+    "currentDerivedGraphSelection": {
+      "type": "object",
+      "required": ["sourceId", "manifestPath", "entryId", "kind", "filePath", "digest", "graphIri", "loadOrder", "validationOrder", "role", "section", "outputGraphIri", "classification"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "manifestPath": { "$ref": "#/$defs/path" },
+        "entryId": { "$ref": "#/$defs/label" },
+        "kind": { "const": "derived-graph" },
+        "filePath": { "$ref": "#/$defs/path" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "graphIri": { "$ref": "#/$defs/iri" },
+        "loadOrder": { "$ref": "#/$defs/count" },
+        "validationOrder": { "$ref": "#/$defs/count" },
+        "role": { "$ref": "#/$defs/label" },
+        "section": { "$ref": "#/$defs/label" },
+        "outputGraphIri": { "type": "null" },
+        "classification": { "const": "derived" }
+      },
+      "additionalProperties": false
+    },
+    "ruleGraphSelection": {
+      "type": "object",
+      "required": ["sourceId", "manifestPath", "entryId", "kind", "filePath", "digest", "graphIri", "loadOrder", "validationOrder", "role", "section", "outputGraphIri", "classification"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "manifestPath": { "$ref": "#/$defs/path" },
+        "entryId": { "$ref": "#/$defs/label" },
+        "kind": { "const": "rule" },
+        "filePath": { "$ref": "#/$defs/path" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "graphIri": { "oneOf": [{ "$ref": "#/$defs/iri" }, { "type": "null" }] },
+        "loadOrder": { "type": "null" },
+        "validationOrder": { "type": "null" },
+        "role": { "$ref": "#/$defs/label" },
+        "section": { "$ref": "#/$defs/label" },
+        "outputGraphIri": { "oneOf": [{ "$ref": "#/$defs/iri" }, { "type": "null" }] },
+        "classification": { "const": "selected" }
+      },
+      "additionalProperties": false
+    },
+    "retiredGraphSelection": {
+      "type": "object",
+      "required": ["sourceId", "manifestPath", "entryId", "kind", "filePath", "digest", "graphIri", "loadOrder", "validationOrder", "role", "section", "outputGraphIri", "classification"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "manifestPath": { "$ref": "#/$defs/path" },
+        "entryId": { "$ref": "#/$defs/label" },
+        "kind": { "const": "retired-graph" },
+        "filePath": { "type": "null" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "graphIri": { "$ref": "#/$defs/iri" },
+        "loadOrder": { "type": "null" },
+        "validationOrder": { "type": "null" },
+        "role": { "$ref": "#/$defs/label" },
+        "section": { "$ref": "#/$defs/label" },
+        "outputGraphIri": { "type": "null" },
+        "classification": { "const": "retired" }
+      },
+      "additionalProperties": false
+    },
+    "inactiveGraphSelection": {
+      "type": "object",
+      "required": ["sourceId", "manifestPath", "entryId", "kind", "filePath", "digest", "graphIri", "loadOrder", "validationOrder", "role", "section", "outputGraphIri", "classification"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "manifestPath": { "$ref": "#/$defs/path" },
+        "entryId": { "$ref": "#/$defs/label" },
+        "kind": { "const": "inactive-source" },
+        "filePath": { "$ref": "#/$defs/path" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "graphIri": { "type": "null" },
+        "loadOrder": { "type": "null" },
+        "validationOrder": { "type": "null" },
+        "role": { "$ref": "#/$defs/label" },
+        "section": { "$ref": "#/$defs/label" },
+        "outputGraphIri": { "type": "null" },
+        "classification": { "const": "inactive" }
+      },
+      "additionalProperties": false
+    },
+    "fixtureGraphSelection": {
+      "type": "object",
+      "required": ["sourceId", "manifestPath", "entryId", "kind", "filePath", "digest", "graphIri", "loadOrder", "validationOrder", "role", "section", "outputGraphIri", "classification"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "manifestPath": { "$ref": "#/$defs/path" },
+        "entryId": { "$ref": "#/$defs/label" },
+        "kind": { "const": "fixture-root" },
+        "filePath": { "$ref": "#/$defs/path" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "graphIri": { "type": "null" },
+        "loadOrder": { "type": "null" },
+        "validationOrder": { "type": "null" },
+        "role": { "$ref": "#/$defs/label" },
+        "section": { "$ref": "#/$defs/label" },
+        "outputGraphIri": { "type": "null" },
+        "classification": { "const": "fixture" }
+      },
+      "additionalProperties": false
+    },
+    "structuredRecord": {
+      "type": "object",
+      "required": ["sourceId", "registryId", "registryPath", "key", "recordKind", "digest"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "registryId": { "$ref": "#/$defs/label" },
+        "registryPath": { "$ref": "#/$defs/path" },
+        "key": { "$ref": "#/$defs/label" },
+        "recordKind": { "$ref": "#/$defs/label" },
+        "digest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "semanticRecord": {
+      "type": "object",
+      "required": ["sourceId", "selectionId", "filePath", "sourceDigest", "graphIri", "subject", "subjectKind", "predicate", "object", "objectKind", "graph", "graphKind", "statementDigest"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "selectionId": { "$ref": "#/$defs/label" },
+        "filePath": { "$ref": "#/$defs/path" },
+        "sourceDigest": { "$ref": "#/$defs/digest" },
+        "graphIri": { "$ref": "#/$defs/iri" },
+        "subject": { "$ref": "#/$defs/label" },
+        "subjectKind": { "enum": ["iri", "blank-node"] },
+        "predicate": { "$ref": "#/$defs/iri" },
+        "object": { "$ref": "#/$defs/label" },
+        "objectKind": { "enum": ["iri", "blank-node", "literal-digest"] },
+        "graph": { "oneOf": [{ "$ref": "#/$defs/label" }, { "type": "null" }] },
+        "graphKind": { "enum": ["iri", "blank-node", "default"] },
+        "statementDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "required": ["sourceSetDigest", "logicalSourceId", "pinnedSourceRevision", "selectedFileGraphOrRegistryId", "candidateKind", "candidateIriPathOrRegistryKey", "discriminator"],
+      "properties": {
+        "sourceSetDigest": { "$ref": "#/$defs/digest" },
+        "logicalSourceId": { "$ref": "#/$defs/iri" },
+        "pinnedSourceRevision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "selectedFileGraphOrRegistryId": { "$ref": "#/$defs/label" },
+        "candidateKind": { "$ref": "#/$defs/candidateKind" },
+        "candidateIriPathOrRegistryKey": { "$ref": "#/$defs/label" },
+        "discriminator": { "$ref": "#/$defs/label" }
+      },
+      "additionalProperties": false
+    },
+    "candidateKind": {
+      "enum": ["tracked-source-artifact", "graph-selection", "named-semantic-resource", "rdf-type-assertion", "predicate-vocabulary", "referenced-iri", "structured-schema-or-registry-record", "test-obligation", "semantic-document"]
+    },
+    "extractionCounts": {
+      "type": "object",
+      "required": ["trackedFiles", "trackedBytes", "manifests", "manifestEntries", "quads", "registries", "registryRecords", "roleAssertions", "parserNodes"],
+      "properties": {
+        "trackedFiles": { "$ref": "#/$defs/count" },
+        "trackedBytes": { "$ref": "#/$defs/count" },
+        "manifests": { "$ref": "#/$defs/count" },
+        "manifestEntries": { "$ref": "#/$defs/count" },
+        "quads": { "$ref": "#/$defs/count" },
+        "registries": { "$ref": "#/$defs/count" },
+        "registryRecords": { "$ref": "#/$defs/count" },
+        "roleAssertions": { "$ref": "#/$defs/count" },
+        "parserNodes": { "$ref": "#/$defs/count" }
+      },
+      "additionalProperties": false
+    },
+    "extractionReceipt": {
+      "type": "object",
+      "required": ["schema", "status", "extractorDigest", "sourceSetDigest", "sourceId", "revision", "tree", "gitVerification", "observationsDigest", "counts", "receiptDigest"],
+      "properties": {
+        "schema": { "const": "urn:usf:legacy-extraction-receipt:1" },
+        "status": { "const": "independently-extracted" },
+        "extractorDigest": { "$ref": "#/$defs/digest" },
+        "sourceSetDigest": { "$ref": "#/$defs/digest" },
+        "sourceId": { "$ref": "#/$defs/iri" },
+        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "tree": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "gitVerification": { "$ref": "#/$defs/gitVerification" },
+        "observationsDigest": { "$ref": "#/$defs/digest" },
+        "counts": { "$ref": "#/$defs/extractionCounts" },
+        "receiptDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "gitVerification": {
+      "type": "object",
+      "required": ["objectFormat", "pathEncoding", "blobMethod", "treeMethod", "commitMethod", "commitBytes", "commitContentDigest", "commitObjectOid", "treeEntriesDigest", "treeObjectOid"],
+      "properties": {
+        "objectFormat": { "const": "sha1" },
+        "pathEncoding": { "const": "utf-8" },
+        "blobMethod": { "const": "git-blob-object-sha1" },
+        "treeMethod": { "const": "recursive-git-tree-object-sha1" },
+        "commitMethod": { "const": "git-commit-object-sha1-with-unique-tree-header" },
+        "commitBytes": { "$ref": "#/$defs/count" },
+        "commitContentDigest": { "$ref": "#/$defs/digest" },
+        "commitObjectOid": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "treeEntriesDigest": { "$ref": "#/$defs/digest" },
+        "treeObjectOid": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["candidateId", "identity", "evidenceLocation", "sourceDigest", "pathClass", "graphIri", "typeIris", "predicate"],
+      "properties": {
+        "candidateId": { "$ref": "#/$defs/digest" },
+        "identity": { "$ref": "#/$defs/identity" },
+        "evidenceLocation": { "$ref": "#/$defs/label" },
+        "sourceDigest": { "$ref": "#/$defs/digest" },
+        "pathClass": { "$ref": "#/$defs/label" },
+        "graphIri": { "oneOf": [{ "$ref": "#/$defs/iri" }, { "type": "null" }] },
+        "typeIris": { "type": "array", "items": { "$ref": "#/$defs/iri" } },
+        "predicate": { "oneOf": [{ "$ref": "#/$defs/iri" }, { "type": "null" }] }
+      },
+      "additionalProperties": false
+    }
+  }
+}
