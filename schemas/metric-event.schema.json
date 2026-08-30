@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:metric-event:1",
+  "oneOf": [
+    { "$ref": "#/$defs/requestEvent" },
+    { "$ref": "#/$defs/completionAcceptedLineageEvent" },
+    { "$ref": "#/$defs/completionClassifiedEvent" },
+    { "$ref": "#/$defs/completionUnclassifiedEvent" },
+    { "$ref": "#/$defs/cacheEvent" },
+    { "$ref": "#/$defs/failureEvent" },
+    { "$ref": "#/$defs/concurrencyEvent" }
+  ],
+  "$defs": {
+    "instant": {
+      "type": "string",
+      "format": "date-time",
+      "oneOf": [
+        {
+          "pattern": "^\\d{4}-(?:(?:01|03|05|07|08|10|12)-(?:0[1-9]|[12]\\d|3[01])|(?:04|06|09|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-8]))T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{3})?Z$"
+        },
+        {
+          "pattern": "^(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d{3})?Z$"
+        }
+      ]
+    },
+    "label": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "aggregatableNatural": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 45000000000
+    },
+    "concurrency": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "concurrencyInterval": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9000000
+    },
+    "usage": {
+      "type": "object",
+      "required": ["inputTokens", "outputTokens"],
+      "properties": {
+        "inputTokens": { "$ref": "#/$defs/aggregatableNatural" },
+        "outputTokens": { "$ref": "#/$defs/aggregatableNatural" },
+        "cachedTokens": { "$ref": "#/$defs/aggregatableNatural" },
+        "reasoningTokens": { "$ref": "#/$defs/aggregatableNatural" },
+        "toolCalls": { "$ref": "#/$defs/aggregatableNatural" },
+        "retries": { "$ref": "#/$defs/aggregatableNatural" }
+      },
+      "additionalProperties": false
+    },
+    "observedCost": {
+      "type": "object",
+      "required": ["costClass", "observedCost", "currency", "evidence"],
+      "properties": {
+        "costClass": { "$ref": "#/$defs/costClass" },
+        "observedCost": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000000
+        },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "evidence": { "const": "observed" }
+      },
+      "additionalProperties": false
+    },
+    "unobservedCost": {
+      "type": "object",
+      "required": ["costClass", "observedCost", "evidence"],
+      "properties": {
+        "costClass": { "$ref": "#/$defs/costClass" },
+        "observedCost": { "const": null },
+        "evidence": { "enum": ["estimated", "unavailable"] }
+      },
+      "additionalProperties": false
+    },
+    "cost": {
+      "oneOf": [
+        { "$ref": "#/$defs/observedCost" },
+        { "$ref": "#/$defs/unobservedCost" }
+      ]
+    },
+    "costClass": {
+      "enum": [
+        "local",
+        "zero-price",
+        "free-quota",
+        "subscription",
+        "paid",
+        "unknown"
+      ]
+    },
+    "requestEvent": {
+      "type": "object",
+      "required": ["schema", "at", "kind"],
+      "properties": {
+        "schema": { "const": "urn:usf:metric-event:1" },
+        "at": { "$ref": "#/$defs/instant" },
+        "kind": { "const": "request" },
+        "run": { "$ref": "#/$defs/label" },
+        "requestedRoute": { "$ref": "#/$defs/label" },
+        "requestedProvider": { "$ref": "#/$defs/label" },
+        "requestedModel": { "$ref": "#/$defs/label" }
+      },
+      "additionalProperties": false
+    },
+    "completionAcceptedLineageEvent": {
+      "type": "object",
+      "required": [
+        "schema",
+        "at",
+        "kind",
+        "outcome",
+        "lineage",
+        "contributionDigest"
+      ],
+      "properties": {
+        "schema": { "const": "urn:usf:metric-event:1" },
+        "at": { "$ref": "#/$defs/instant" },
+        "kind": { "const": "completion" },
+        "run": { "$ref": "#/$defs/label" },
+        "requestedRoute": { "$ref": "#/$defs/label" },
+        "requestedProvider": { "$ref": "#/$defs/label" },
+        "requestedModel": { "$ref": "#/$defs/label" },
+        "actualProvider": { "$ref": "#/$defs/label" },
+        "actualModel": { "$ref": "#/$defs/label" },
+        "usage": { "$ref": "#/$defs/usage" },
+        "cost": { "$ref": "#/$defs/cost" },
+        "outcome": { "const": "accepted" },
+        "reasonCode": { "$ref": "#/$defs/label" },
+        "lineage": {
+          "enum": [
+            "accepted-candidate",
+            "accepted-review",
+            "accepted-repair",
+            "proof-conclusion"
+          ]
+        },
+        "contributionDigest": { "$ref": "#/$defs/digest" },
+        "queueMs": { "$ref": "#/$defs/aggregatableNatural" },
+        "durationMs": { "$ref": "#/$defs/aggregatableNatural" }
+      },
+      "additionalProperties": false
+    },
+    "completionClassifiedEvent": {
+      "type": "object",
+      "required": ["schema", "at", "kind", "lineage"],
+      "properties": {
+        "schema": { "const": "urn:usf:metric-event:1" },
+        "at": { "$ref": "#/$defs/instant" },
+        "kind": { "const": "completion" },
+        "run": { "$ref": "#/$defs/label" },
+        "requestedRoute": { "$ref": "#/$defs/label" },
+        "requestedProvider": { "$ref": "#/$defs/label" },
+        "requestedModel": { "$ref": "#/$defs/label" },
+        "actualProvider": { "$ref": "#/$defs/label" },
+        "actualModel": { "$ref": "#/$defs/label" },
+        "usage": { "$ref": "#/$defs/usage" },
+        "cost": { "$ref": "#/$defs/cost" },
+        "outcome": { "enum": ["accepted", "rejected", "failed"] },
+        "reasonCode": { "$ref": "#/$defs/label" },
+        "lineage": { "enum": ["unattributed", "not-applicable"] },
+        "queueMs": { "$ref": "#/$defs/aggregatableNatural" },
+        "durationMs": { "$ref": "#/$defs/aggregatableNatural" }
+      },
+      "additionalProperties": false
+    },
+    "completionUnclassifiedEvent": {
+      "type": "object",
+      "required": ["schema", "at", "kind"],
+      "properties": {
+        "schema": { "const": "urn:usf:metric-event:1" },
+        "at": { "$ref": "#/$defs/instant" },
+        "kind": { "const": "completion" },
+        "run": { "$ref": "#/$defs/label" },
+        "requestedRoute": { "$ref": "#/$defs/label" },
+        "requestedProvider": { "$ref": "#/$defs/label" },
+        "requestedModel": { "$ref": "#/$defs/label" },
+        "actualProvider": { "$ref": "#/$defs/label" },
+        "actualModel": { "$ref": "#/$defs/label" },
+        "usage": { "$ref": "#/$defs/usage" },
+        "cost": { "$ref": "#/$defs/cost" },
+        "outcome": { "enum": ["accepted", "rejected", "failed"] },
+        "reasonCode": { "$ref": "#/$defs/label" },
+        "queueMs": { "$ref": "#/$defs/aggregatableNatural" },
+        "durationMs": { "$ref": "#/$defs/aggregatableNatural" }
+      },
+      "additionalProperties": false
+    },
+    "cacheEvent": {
+      "type": "object",
+      "required": ["schema", "at", "kind"],
+      "properties": {
+        "schema": { "const": "urn:usf:metric-event:1" },
+        "at": { "$ref": "#/$defs/instant" },
+        "kind": { "const": "cache" },
+        "run": { "$ref": "#/$defs/label" },
+        "requestedRoute": { "$ref": "#/$defs/label" },
+        "requestedProvider": { "$ref": "#/$defs/label" },
+        "requestedModel": { "$ref": "#/$defs/label" },
+        "actualProvider": { "$ref": "#/$defs/label" },
+        "actualModel": { "$ref": "#/$defs/label" },
+        "cacheReuse": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "failureEvent": {
+      "type": "object",
+      "required": ["schema", "at", "kind"],
+      "properties": {
+        "schema": { "const": "urn:usf:metric-event:1" },
+        "at": { "$ref": "#/$defs/instant" },
+        "kind": { "const": "failure" },
+        "run": { "$ref": "#/$defs/label" },
+        "requestedRoute": { "$ref": "#/$defs/label" },
+        "requestedProvider": { "$ref": "#/$defs/label" },
+        "requestedModel": { "$ref": "#/$defs/label" },
+        "actualProvider": { "$ref": "#/$defs/label" },
+        "actualModel": { "$ref": "#/$defs/label" },
+        "usage": { "$ref": "#/$defs/usage" },
+        "cost": { "$ref": "#/$defs/cost" },
+        "reasonCode": { "$ref": "#/$defs/label" },
+        "queueMs": { "$ref": "#/$defs/aggregatableNatural" },
+        "durationMs": { "$ref": "#/$defs/aggregatableNatural" }
+      },
+      "additionalProperties": false
+    },
+    "concurrencyEvent": {
+      "type": "object",
+      "required": ["schema", "at", "kind"],
+      "properties": {
+        "schema": { "const": "urn:usf:metric-event:1" },
+        "at": { "$ref": "#/$defs/instant" },
+        "kind": { "const": "concurrency" },
+        "run": { "$ref": "#/$defs/label" },
+        "targetConcurrency": { "$ref": "#/$defs/concurrency" },
+        "observedConcurrency": { "$ref": "#/$defs/concurrency" },
+        "activeInvocationMs": { "$ref": "#/$defs/concurrencyInterval" },
+        "elapsedMs": { "$ref": "#/$defs/concurrencyInterval" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

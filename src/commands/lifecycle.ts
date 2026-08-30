@@ -46,6 +46,7 @@ export interface LifecycleProfileObservation {
 export const lifecycleCommandReasonCodes = Object.freeze({
   ARGUMENTS_INVALID: "LIFECYCLE_ARGUMENTS_INVALID",
   PROFILE_REQUIRED: "LIFECYCLE_PROFILE_REQUIRED",
+  MANIFEST_REQUIRED: "LIFECYCLE_MANIFEST_REQUIRED",
   AUTOMATION_INVALID: "LIFECYCLE_AUTOMATION_INVALID",
   AUTOMATION_UNREADABLE: "LIFECYCLE_AUTOMATION_UNREADABLE",
   AUTOMATION_INTEGRATION_REFUSED: "LIFECYCLE_AUTOMATIC_INTEGRATION_REFUSED",
@@ -58,7 +59,6 @@ export const lifecycleCommandReasonCodes = Object.freeze({
 const automationPath = "config/automation.json";
 const maximumAutomationBytes = 16 * 1024;
 const defaultInstance = "default";
-const defaultManifest = "graph/manifest.json";
 const defaultStopWaitMs = 5_000;
 const digestPattern = /^sha256:[0-9a-f]{64}$/;
 const lifecycleToolPaths = Object.freeze([
@@ -255,13 +255,15 @@ function parseForegroundArguments(args: readonly string[]): ForegroundArguments 
   if (values === undefined) throw new UsfError(lifecycleCommandReasonCodes.ARGUMENTS_INVALID, exitCodes.INVALID_INPUT, "Lifecycle start/watch arguments are invalid.");
   const profile = values.get("--profile");
   if (profile === undefined) throw new UsfError(lifecycleCommandReasonCodes.PROFILE_REQUIRED, exitCodes.INVALID_INPUT, "Lifecycle start/watch requires --profile with an explicitly versioned URN.");
+  const manifest = values.get("--manifest");
+  if (manifest === undefined) throw new UsfError(lifecycleCommandReasonCodes.MANIFEST_REQUIRED, exitCodes.INVALID_INPUT, "Lifecycle start/watch requires an explicit repository-relative --manifest; no product overlay is selected implicitly.");
   const throughValue = values.get("--through");
   if (throughValue !== undefined && !["check", "integrate", "publish"].includes(throughValue)) {
     throw new UsfError(lifecycleCommandReasonCodes.ARGUMENTS_INVALID, exitCodes.INVALID_INPUT, "Lifecycle --through must be check, integrate, or publish.");
   }
   return {
     profile: validateVersionedProfile(profile),
-    manifest: validateRepositoryManifest(values.get("--manifest") ?? defaultManifest),
+    manifest: validateRepositoryManifest(manifest),
     through: throughValue as LifecycleThrough | undefined,
     instance: validateInstanceSlug(values.get("--instance") ?? defaultInstance),
   };

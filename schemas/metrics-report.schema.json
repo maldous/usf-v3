@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:metrics-report:1",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "view",
+    "coverage",
+    "denominators",
+    "totals",
+    "items",
+    "nonclaims"
+  ],
+  "properties": {
+    "schema": { "const": "urn:usf:metrics-report:1" },
+    "status": { "enum": ["ok", "incomplete", "not-observed"] },
+    "view": {
+      "enum": [
+        "summary",
+        "providers",
+        "models",
+        "tokens",
+        "runs",
+        "cache",
+        "failures",
+        "concurrency"
+      ]
+    },
+    "coverage": { "$ref": "#/$defs/coverage" },
+    "denominators": { "$ref": "#/$defs/denominators" },
+    "totals": { "$ref": "#/$defs/totals" },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/groupItem" }
+    },
+    "source": { "$ref": "#/$defs/source" },
+    "nonclaims": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "natural": { "type": "integer", "minimum": 0 },
+    "nullableNatural": { "type": ["integer", "null"], "minimum": 0 },
+    "nullableNumber": { "type": ["number", "null"], "minimum": 0 },
+    "label": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$"
+    },
+    "nullableLabel": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$"
+    },
+    "nullableInstant": {
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d{3})?Z$"
+    },
+    "dimensionCoverage": {
+      "type": "object",
+      "required": ["applicableEvents", "observedEvents", "unknownEvents"],
+      "properties": {
+        "applicableEvents": { "$ref": "#/$defs/natural" },
+        "observedEvents": { "$ref": "#/$defs/natural" },
+        "unknownEvents": { "$ref": "#/$defs/natural" }
+      },
+      "additionalProperties": false
+    },
+    "identityCoverage": {
+      "type": "object",
+      "required": [
+        "requestedRoute",
+        "requestedProvider",
+        "requestedModel",
+        "actualProvider",
+        "actualModel",
+        "run"
+      ],
+      "properties": {
+        "requestedRoute": { "$ref": "#/$defs/dimensionCoverage" },
+        "requestedProvider": { "$ref": "#/$defs/dimensionCoverage" },
+        "requestedModel": { "$ref": "#/$defs/dimensionCoverage" },
+        "actualProvider": { "$ref": "#/$defs/dimensionCoverage" },
+        "actualModel": { "$ref": "#/$defs/dimensionCoverage" },
+        "run": { "$ref": "#/$defs/dimensionCoverage" }
+      },
+      "additionalProperties": false
+    },
+    "usageComponents": {
+      "type": "object",
+      "required": ["cachedTokens", "reasoningTokens", "toolCalls", "retries"],
+      "properties": {
+        "cachedTokens": { "$ref": "#/$defs/dimensionCoverage" },
+        "reasoningTokens": { "$ref": "#/$defs/dimensionCoverage" },
+        "toolCalls": { "$ref": "#/$defs/dimensionCoverage" },
+        "retries": { "$ref": "#/$defs/dimensionCoverage" }
+      },
+      "additionalProperties": false
+    },
+    "filters": {
+      "type": "object",
+      "required": ["since", "until", "run", "provider", "model"],
+      "properties": {
+        "since": { "$ref": "#/$defs/nullableInstant" },
+        "until": { "$ref": "#/$defs/nullableInstant" },
+        "run": { "$ref": "#/$defs/nullableLabel" },
+        "provider": { "$ref": "#/$defs/nullableLabel" },
+        "model": { "$ref": "#/$defs/nullableLabel" }
+      },
+      "additionalProperties": false
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "observedEvents",
+        "matchedEvents",
+        "invalidEvents",
+        "filteredOutEvents",
+        "sourceTruncated",
+        "labelsTruncated",
+        "usageUnknownEvents",
+        "usefulClassificationUnknownEvents",
+        "costUnknownEvents",
+        "durationUnknownEvents",
+        "queueUnknownEvents",
+        "concurrencyUnknownEvents",
+        "identity",
+        "usage",
+        "usageComponents",
+        "useful",
+        "outcome",
+        "cost",
+        "duration",
+        "queue",
+        "cache",
+        "failureReason",
+        "concurrency",
+        "filters"
+      ],
+      "properties": {
+        "observedEvents": { "$ref": "#/$defs/natural" },
+        "matchedEvents": { "$ref": "#/$defs/natural" },
+        "invalidEvents": { "$ref": "#/$defs/natural" },
+        "filteredOutEvents": { "$ref": "#/$defs/natural" },
+        "sourceTruncated": { "type": "boolean" },
+        "labelsTruncated": { "type": "boolean" },
+        "usageUnknownEvents": { "$ref": "#/$defs/natural" },
+        "usefulClassificationUnknownEvents": { "$ref": "#/$defs/natural" },
+        "costUnknownEvents": { "$ref": "#/$defs/natural" },
+        "durationUnknownEvents": { "$ref": "#/$defs/natural" },
+        "queueUnknownEvents": { "$ref": "#/$defs/natural" },
+        "concurrencyUnknownEvents": { "$ref": "#/$defs/natural" },
+        "identity": { "$ref": "#/$defs/identityCoverage" },
+        "usage": { "$ref": "#/$defs/dimensionCoverage" },
+        "usageComponents": { "$ref": "#/$defs/usageComponents" },
+        "useful": { "$ref": "#/$defs/dimensionCoverage" },
+        "outcome": { "$ref": "#/$defs/dimensionCoverage" },
+        "cost": { "$ref": "#/$defs/dimensionCoverage" },
+        "duration": { "$ref": "#/$defs/dimensionCoverage" },
+        "queue": { "$ref": "#/$defs/dimensionCoverage" },
+        "cache": { "$ref": "#/$defs/dimensionCoverage" },
+        "failureReason": { "$ref": "#/$defs/dimensionCoverage" },
+        "concurrency": { "$ref": "#/$defs/dimensionCoverage" },
+        "filters": { "$ref": "#/$defs/filters" }
+      },
+      "additionalProperties": false
+    },
+    "denominators": {
+      "type": "object",
+      "required": [
+        "requestedRoutes",
+        "requestedProviders",
+        "requestedModels",
+        "actualProviders",
+        "actualModels",
+        "runs"
+      ],
+      "properties": {
+        "requestedRoutes": { "$ref": "#/$defs/nullableNatural" },
+        "requestedProviders": { "$ref": "#/$defs/nullableNatural" },
+        "requestedModels": { "$ref": "#/$defs/nullableNatural" },
+        "actualProviders": { "$ref": "#/$defs/nullableNatural" },
+        "actualModels": { "$ref": "#/$defs/nullableNatural" },
+        "runs": { "$ref": "#/$defs/nullableNatural" }
+      },
+      "additionalProperties": false
+    },
+    "currencyTotal": {
+      "type": "object",
+      "required": ["currency", "amount", "events"],
+      "properties": {
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "amount": { "type": "number", "minimum": 0 },
+        "events": { "$ref": "#/$defs/natural" }
+      },
+      "additionalProperties": false
+    },
+    "costClassCount": {
+      "type": "object",
+      "required": ["costClass", "events"],
+      "properties": {
+        "costClass": {
+          "enum": [
+            "local",
+            "zero-price",
+            "free-quota",
+            "subscription",
+            "paid",
+            "unknown"
+          ]
+        },
+        "events": { "$ref": "#/$defs/natural" }
+      },
+      "additionalProperties": false
+    },
+    "totals": {
+      "type": "object",
+      "required": [
+        "events",
+        "inputTokens",
+        "outputTokens",
+        "totalTokens",
+        "cachedTokens",
+        "reasoningTokens",
+        "toolCalls",
+        "retries",
+        "usefulTokens",
+        "usefulAttributedTokens",
+        "accepted",
+        "rejected",
+        "failed",
+        "failureEvents",
+        "failureReasonUnknown",
+        "cacheReuses",
+        "cacheMisses",
+        "cacheUnknown",
+        "cacheObserved",
+        "cacheReuseRatio",
+        "observedCost",
+        "observedCostCurrency",
+        "observedCostCount",
+        "observedCostByCurrency",
+        "costClassCounts",
+        "durationMs",
+        "queueMs",
+        "activeInvocationMs",
+        "elapsedMs",
+        "targetConcurrency",
+        "observedConcurrency",
+        "availableSlotMs",
+        "utilisation"
+      ],
+      "properties": {
+        "events": { "$ref": "#/$defs/natural" },
+        "inputTokens": { "$ref": "#/$defs/nullableNatural" },
+        "outputTokens": { "$ref": "#/$defs/nullableNatural" },
+        "totalTokens": { "$ref": "#/$defs/nullableNatural" },
+        "cachedTokens": { "$ref": "#/$defs/nullableNatural" },
+        "reasoningTokens": { "$ref": "#/$defs/nullableNatural" },
+        "toolCalls": { "$ref": "#/$defs/nullableNatural" },
+        "retries": { "$ref": "#/$defs/nullableNatural" },
+        "usefulTokens": { "$ref": "#/$defs/nullableNatural" },
+        "usefulAttributedTokens": { "$ref": "#/$defs/nullableNatural" },
+        "accepted": { "$ref": "#/$defs/nullableNatural" },
+        "rejected": { "$ref": "#/$defs/nullableNatural" },
+        "failed": { "$ref": "#/$defs/nullableNatural" },
+        "failureEvents": { "$ref": "#/$defs/nullableNatural" },
+        "failureReasonUnknown": { "$ref": "#/$defs/nullableNatural" },
+        "cacheReuses": { "$ref": "#/$defs/nullableNatural" },
+        "cacheMisses": { "$ref": "#/$defs/nullableNatural" },
+        "cacheUnknown": { "$ref": "#/$defs/nullableNatural" },
+        "cacheObserved": { "$ref": "#/$defs/nullableNatural" },
+        "cacheReuseRatio": { "$ref": "#/$defs/nullableNumber" },
+        "observedCost": { "$ref": "#/$defs/nullableNumber" },
+        "observedCostCurrency": {
+          "type": ["string", "null"],
+          "pattern": "^[A-Z]{3}$"
+        },
+        "observedCostCount": { "$ref": "#/$defs/nullableNatural" },
+        "observedCostByCurrency": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/currencyTotal" }
+        },
+        "costClassCounts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/costClassCount" }
+        },
+        "durationMs": { "$ref": "#/$defs/nullableNatural" },
+        "queueMs": { "$ref": "#/$defs/nullableNatural" },
+        "activeInvocationMs": { "$ref": "#/$defs/nullableNatural" },
+        "elapsedMs": { "$ref": "#/$defs/nullableNatural" },
+        "targetConcurrency": { "$ref": "#/$defs/nullableNatural" },
+        "observedConcurrency": { "$ref": "#/$defs/nullableNatural" },
+        "availableSlotMs": { "$ref": "#/$defs/nullableNatural" },
+        "utilisation": { "$ref": "#/$defs/nullableNumber" }
+      },
+      "additionalProperties": false
+    },
+    "groupItem": {
+      "type": "object",
+      "required": [
+        "group",
+        "value",
+        "events",
+        "overflowedGroups",
+        "usage",
+        "useful",
+        "outcome",
+        "inputTokens",
+        "outputTokens",
+        "totalTokens",
+        "cachedTokens",
+        "reasoningTokens",
+        "toolCalls",
+        "retries",
+        "usefulTokens",
+        "usefulAttributedTokens",
+        "acceptedEvents",
+        "rejectedEvents",
+        "failureEvents"
+      ],
+      "properties": {
+        "group": {
+          "enum": [
+            "requestedRoute",
+            "requestedProvider",
+            "requestedModel",
+            "actualProvider",
+            "actualModel",
+            "run",
+            "failureReason"
+          ]
+        },
+        "value": { "$ref": "#/$defs/label" },
+        "events": { "$ref": "#/$defs/natural" },
+        "overflowedGroups": { "$ref": "#/$defs/natural" },
+        "usage": { "$ref": "#/$defs/dimensionCoverage" },
+        "useful": { "$ref": "#/$defs/dimensionCoverage" },
+        "outcome": { "$ref": "#/$defs/dimensionCoverage" },
+        "inputTokens": { "$ref": "#/$defs/nullableNatural" },
+        "outputTokens": { "$ref": "#/$defs/nullableNatural" },
+        "totalTokens": { "$ref": "#/$defs/nullableNatural" },
+        "cachedTokens": { "$ref": "#/$defs/nullableNatural" },
+        "reasoningTokens": { "$ref": "#/$defs/nullableNatural" },
+        "toolCalls": { "$ref": "#/$defs/nullableNatural" },
+        "retries": { "$ref": "#/$defs/nullableNatural" },
+        "usefulTokens": { "$ref": "#/$defs/nullableNatural" },
+        "usefulAttributedTokens": { "$ref": "#/$defs/nullableNatural" },
+        "acceptedEvents": { "$ref": "#/$defs/natural" },
+        "rejectedEvents": { "$ref": "#/$defs/natural" },
+        "failureEvents": { "$ref": "#/$defs/natural" }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "status",
+        "kind",
+        "path",
+        "eventLimit",
+        "eventsRead",
+        "bytesRead",
+        "truncated",
+        "digest",
+        "digestBasis"
+      ],
+      "properties": {
+        "status": { "enum": ["observed", "not-observed"] },
+        "kind": { "enum": ["stdin", "repository-relative-jsonl"] },
+        "path": {
+          "type": ["string", "null"],
+          "pattern": "^\\.usf/metrics/[A-Za-z0-9][A-Za-z0-9._-]{0,95}\\.jsonl$"
+        },
+        "eventLimit": { "$ref": "#/$defs/natural" },
+        "eventsRead": { "$ref": "#/$defs/natural" },
+        "bytesRead": { "$ref": "#/$defs/natural" },
+        "truncated": { "type": "boolean" },
+        "digest": {
+          "type": ["string", "null"],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "digestBasis": { "enum": ["raw-input-bytes", "not-observed"] }
+      },
+      "additionalProperties": false
+    }
+  }
+}

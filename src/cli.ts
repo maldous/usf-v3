@@ -1,12 +1,14 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
-import { dispatchCommand, type CommandHandlers } from "./commands/dispatcher.ts";
+import { dispatchCommand, parseCommand, type CommandHandlers } from "./commands/dispatcher.ts";
 import { applyHandler } from "./commands/apply.ts";
 import { callCommandHandler } from "./commands/call.ts";
 import { checkHandler } from "./commands/check.ts";
-import { startCommandHandler, statusCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
+import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
+import { metricsCommandHandler } from "./commands/metrics.ts";
 import { queryCommand } from "./commands/query.ts";
 import { resolveCommandHandler } from "./commands/resolve.ts";
+import { broadStatusCommandHandler } from "./commands/status.ts";
 import { workCommand } from "./commands/work.ts";
 import { errorOutput, exitCodes, UsfError } from "./core/errors.ts";
 import { resolveRepositoryRoot } from "./core/repository.ts";
@@ -19,13 +21,14 @@ const bootstrapHandlers: CommandHandlers = {
     if (result.status !== 0) throw new UsfError("INIT_FAILED", exitCodes.CONTAINMENT_REFUSAL, "Initialization failed.");
     return { output: undefined };
   },
-  status: statusCommandHandler,
+  status: broadStatusCommandHandler,
   query: queryCommand,
   work: workCommand,
   call: callCommandHandler,
   resolve: resolveCommandHandler,
   apply: applyHandler,
   check: checkHandler,
+  metrics: metricsCommandHandler,
   start: startCommandHandler,
   stop: stopCommandHandler,
   watch: watchCommandHandler,
@@ -33,9 +36,14 @@ const bootstrapHandlers: CommandHandlers = {
 
 async function main(): Promise<void> {
   try {
-    const repositoryRoot = resolveRepositoryRoot();
-    const result = await dispatchCommand(process.argv.slice(2), repositoryRoot, bootstrapHandlers);
-    if (result.output !== undefined) process.stdout.write(`${JSON.stringify(result.output)}\n`);
+    const argv = process.argv.slice(2);
+    const parsed = parseCommand(argv);
+    const repositoryRoot = parsed.command === "help" ? "" : resolveRepositoryRoot();
+    const result = await dispatchCommand(argv, repositoryRoot, bootstrapHandlers);
+    if (result.output !== undefined) {
+      if (result.outputMode === "text") process.stdout.write(`${String(result.output)}\n`);
+      else process.stdout.write(`${JSON.stringify(result.output)}\n`);
+    }
     process.exitCode = result.exitCode ?? exitCodes.SUCCESS;
   } catch (error) {
     process.stderr.write(`${JSON.stringify(errorOutput(error))}\n`);

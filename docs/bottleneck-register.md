@@ -14,12 +14,14 @@ exists; unmeasured entries are not evidence of acceptable performance.
 | Context construction | CACHE | One work packet | Canonical bounded packet cache | unmeasured | Build independent packets concurrently |
 | Candidate resolution | LOCALISE | One chain | Deterministic disjoint merge first | unmeasured | Resolve independent chains concurrently |
 | Review fanout | SIMPLIFY | Risk dimensions of one candidate | Targeted independent review, not all-to-all | unmeasured | Parallel risk-specific reviews |
-| Test execution | PARALLELISE / CACHE | Affected dependency closure | Named no-force-exit unit, contract, integration, lifecycle, adversarial and scale lanes; full gate remains authoritative | 11.05 s one sample before lifecycle repair; p95 not yet established | Run the smallest risk-owning lane during iteration; full gate at integration/publication/acceptance; shard only isolated files |
+| Test execution | PARALLELISE / CACHE | Affected dependency closure | Named no-force-exit unit, contract, integration, lifecycle, adversarial and scale lanes; full gate remains authoritative | latest sample: 2.72 s test runner / 4.6 s full command, 94 tests; p95 not yet established | Run the smallest risk-owning lane during iteration; full gate at integration/publication/acceptance; shard only isolated files |
 | Evidence admission | BATCH | Proof-relevant normalized evidence | Admit only conclusion-changing evidence | unmeasured | Normalize candidates concurrently, mutate source once |
 | Proof evaluation | CACHE | One obligation and exact evidence set | Pure deterministic evaluation | unmeasured | Evaluate independent obligations concurrently |
 | Package generation | DEFER | First ANQR slice output | Add only when slice needs it | unmeasured | Cache by exact source/config digest |
 | Content/object storage | LOCALISE | `.usf/objects` | Repository-local digest-addressed files | unmeasured | Concurrent immutable writes by digest |
-| Continuous supervisor | SIMPLIFY | Ready work composition | Disposable foreground process, no global state machine | unmeasured | Multiple processes may use short local claims |
+| Continuous supervisor | SIMPLIFY | One named lifecycle instance | Disposable foreground process with one OS-released instance lock, no global state machine | lifecycle focused lane 1.90 s; runtime duration unmeasured | Independent named instances/scopes may run separately; external commodity supervision owns restart/forced kill |
+| Operator metrics aggregation | LOCALISE / DEFER | One explicit bounded JSONL input and selected dimensions | Pure local aggregation on operator request; never scan from the composer loop | unmeasured | Cache rollups by exact input digest later; optional exporters remain off the critical path |
+| CLI help | REMOVE FROM CRITICAL PATH | Static command registry | Render without repository or any external contact | unmeasured | No runtime dependency, history scan or serialization stage |
 
 ## Test portfolio maintenance
 
