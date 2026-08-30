@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { commandRegistry, findHelpTopic, helpCommandResult } from "../../src/commands/help.ts";
+import { exitCodeForReason, integrateCommandHandler, parseApplyArguments, parseCheckArguments, parseIntegrateArguments } from "../../src/commands/apply.ts";
 import { dispatchCommand, parseCommand } from "../../src/commands/dispatcher.ts";
 import { parsePublishArguments } from "../../src/commands/publish.ts";
 
@@ -78,6 +79,82 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.match(publish.synopsis[0]!, /--profile urn:usf:profile:v3-semantic-first:1/u);
   assert.match(publish.options[0]!.description, /isolated core authority profile/u);
   assert.match(publish.authorityEffect, /No Git, signature, provider, runtime or historical-repository effect/u);
+
+  const applyHelp = helpCommandResult(["apply", "--json"]);
+  const apply = (applyHelp.output as { command: { synopsis: string[]; options: Array<{ syntax: string }>; exitCodes: number[] } }).command;
+  assert.ok(apply.synopsis.some((entry) => entry.includes("usf apply --input -")));
+  assert.ok(apply.options.some((option) => option.syntax === "--input PATH|-"));
+  assert.deepEqual(apply.exitCodes, [0, 2, 4, 5, 7]);
+
+  const checkHelp = helpCommandResult(["check", "--json"]);
+  const check = (checkHelp.output as { command: { exitCodes: number[]; exitCodeMeanings: Array<{ code: number; meaning: string }>; options: Array<{ description: string }> } }).command;
+  assert.deepEqual(check.exitCodes, [0, 1, 2, 3, 4, 5, 7]);
+  assert.match(check.exitCodeMeanings.find((entry) => entry.code === 1)!.meaning, /validation failure/u);
+  assert.match(check.options[1]!.description, /120000 millisecond wall-time limit/u);
+
+  const integrateHelp = helpCommandResult(["integrate", "--json"]);
+  const integrate = (integrateHelp.output as { command: { availability: string; authorityEffect: string; options: Array<{ syntax: string; description: string }>; exitCodes: number[] } }).command;
+  assert.equal(integrate.availability, "implemented");
+  assert.ok(integrate.options.some((option) => option.syntax === "--dry-run"));
+  assert.match(integrate.options.find((option) => option.syntax === "--dry-run")!.description, /5000 millisecond termination grace/u);
+  assert.deepEqual(integrate.exitCodes, [0, 1, 2, 3, 4, 5, 7]);
+  assert.match(integrate.authorityEffect, /observation-only/u);
+  assert.match(integrate.authorityEffect, /Neither mode contacts GitHub/u);
+});
+
+test("apply, check and integrate refusals share the GOAL-defined exit taxonomy", () => {
+  const cases = [
+    [1, ["CHECK_FAILED", "CHECK_TIMEOUT", "INTEGRATION_VALIDATION_FAILED", "INTEGRATION_GIT_FAILED"]],
+    [2, ["APPLY_CANDIDATE_INVALID", "CHECK_ARGUMENTS_INVALID", "INTEGRATION_CANDIDATE_COUNT_INVALID"]],
+    [3, ["CHECK_CONFINEMENT_UNAVAILABLE", "INTEGRATION_GIT_UNAVAILABLE"]],
+    [4, ["CANDIDATE_BASIS_MISMATCH", "CHECK_RECEIPT_INVALID", "INTEGRATION_VALIDATION_INVALID", "INTEGRATION_CHECK_RECEIPT_MISSING", "INTEGRATION_TEMP_REF_INVALID"]],
+    [5, ["APPLY_INPUT_REFUSED", "CHECK_NOT_ALLOWLISTED", "SYMLINK_ESCAPE", "INTEGRATION_FILTER_ATTRIBUTE", "INTEGRATION_DRY_RUN_PRIMARY_MUTATED"]],
+    [6, ["NO_ELIGIBLE_ZERO_PAID_COST_ROUTE"]],
+    [7, ["CANDIDATE_BUSY", "CHECK_RECEIPT_CONFLICT", "INTEGRATION_EMPTY_DELTA", "INTEGRATION_PROFILE_MISMATCH"]],
+  ] as const;
+  for (const [expected, reasons] of cases) for (const reason of reasons) assert.equal(exitCodeForReason(reason), expected, reason);
+  assert.equal(exitCodeForReason("UNRECOGNIZED_DOMAIN_REFUSAL"), 1);
+});
+
+test("apply, graph-derived check and integration cohort inputs are explicit and bounded", () => {
+  const digestA = `sha256:${"a".repeat(64)}`;
+  const digestB = `sha256:${"b".repeat(64)}`;
+  assert.deepEqual(parseApplyArguments(["--input", "-"]), { mode: "input", source: "-" });
+  assert.deepEqual(parseApplyArguments(["{\"candidate\":{}}"]), { mode: "legacy-inline", json: "{\"candidate\":{}}" });
+  assert.throws(() => parseApplyArguments(["--input", "-", "extra"]), { code: "APPLY_ARGUMENTS_INVALID", exitCode: 2 });
+
+  assert.deepEqual(parseCheckArguments(["--validation", "urn:usf:validation:focused:1", "--candidate", digestA]), {
+    mode: "graph-derived",
+    candidateDigest: digestA,
+    validationId: "urn:usf:validation:focused:1",
+  });
+  assert.throws(() => parseCheckArguments(["--candidate", digestA, "--candidate", digestB]), { code: "CHECK_ARGUMENTS_INVALID", exitCode: 2 });
+
+  assert.deepEqual(parseIntegrateArguments(["--candidate", digestA, "--dry-run", "--candidate", digestB]), {
+    candidateDigests: [digestA, digestB],
+    dryRun: true,
+  });
+  assert.throws(() => parseIntegrateArguments(["--candidate", digestA, "--candidate", digestA]), { code: "INTEGRATE_COHORT_INVALID", exitCode: 2 });
+  assert.throws(() => parseIntegrateArguments(["--dry-run"]), { code: "INTEGRATE_COHORT_INVALID", exitCode: 2 });
+  assert.throws(() => parseIntegrateArguments(Array.from({ length: 33 }, (_, index) => ["--candidate", `sha256:${index.toString(16).padStart(64, "0")}`]).flat()), { code: "INTEGRATE_COHORT_INVALID", exitCode: 2 });
+});
+
+test("registered integration adapter returns a stable refusal without fabricating an observation", async () => {
+  const digest = `sha256:${"a".repeat(64)}`;
+  const result = await dispatchCommand(["integrate", "--candidate", digest, "--dry-run"], "/repo", { integrate: integrateCommandHandler });
+  assert.equal(result.exitCode, 4);
+  assert.deepEqual(result.output, {
+    schema: "urn:usf:integrate-result:1",
+    status: "refused",
+    reasonCode: "INTEGRATION_VALIDATION_INVALID",
+    candidateDigests: [digest],
+    dryRun: true,
+    nonClaims: [
+      "no-integration-observation-created",
+      "no-evidence-proof-publication-or-completion-effect",
+      "no-github-push-provider-runtime-staging-or-production-effect",
+    ],
+  });
 });
 
 test("bootstrap transition publish parsing is one compact exact success/refusal table", () => {

@@ -229,6 +229,14 @@
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:objective> "Verify one deterministic ordered cohort of 1 through 32 exact checked-candidate receipts in local short-lived Git worktrees, perform one bounded local carrier mutation under one narrow lock, and emit only a content-bound cohort integration observation for later independent evidence and proof." <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:minimumCandidateCount> "1" <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:maximumCandidateCount> "32" <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:candidateValidationWallTimeMilliseconds> "120000" <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:postimageValidationWallTimeMilliseconds> "120000" <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationTerminationSignal> "SIGTERM" <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationTerminationGraceMilliseconds> "5000" <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationForcedTerminationSignal> "SIGKILL" <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationMaximumSettlementWallTimeMilliseconds> "125000" <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:candidateValidationTimeoutReasonCode> "CHECK_TIMEOUT" <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:postimageValidationTimeoutReasonCode> "INTEGRATION_VALIDATION_TIMEOUT" <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:checkedCandidateRecordType> <urn:usf:type:CheckedCandidateReceipt> <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:checkedCandidateSchema> <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:integrationObservationRecordType> <urn:usf:type:IntegrationObservation> <urn:usf:graph:integration> .
@@ -251,6 +259,7 @@
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:requires> <urn:usf:requirement:integration-observation-only> <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:requires> <urn:usf:requirement:integration-observation-authority-binding> <urn:usf:graph:integration> .
 <urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:requires> <urn:usf:requirement:integration-observation-conditional-outcome> <urn:usf:graph:integration> .
+<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:requires> <urn:usf:requirement:integration-validation-wall-time-bound> <urn:usf:graph:integration> .
 <urn:usf:requirement:integration-basis-independence> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
 <urn:usf:requirement:integration-basis-independence> <urn:usf:predicate:text> "Bind the exact original construction RealisationBasis and independently derive the postimage RealisationBasis from the observed integrated tree and selected explicit versioned profile; never relabel or reuse the construction basis as the postimage basis." <urn:usf:graph:integration> .
 <urn:usf:requirement:integration-candidate-lineage-bytes> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
@@ -274,7 +283,9 @@
 <urn:usf:requirement:integration-observation-authority-binding> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
 <urn:usf:requirement:integration-observation-authority-binding> <urn:usf:predicate:text> "Bind the scoped integration-authority dependency digest, exact algorithm IRI, version and current resource digest, selected integration manifest identity and byte digest, explicit versioned profile and current checked-candidate, cohort-member and integration-observation schema dependency digests. Recompute all authority fields from the selected graph and files; caller values cannot establish authority." <urn:usf:graph:integration> .
 <urn:usf:requirement:integration-observation-conditional-outcome> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
-<urn:usf:requirement:integration-observation-conditional-outcome> <urn:usf:predicate:text> "Canonical requestDigest and observationDigest membership is graph-declared and excludes each digest field from its own preimage. Success requires exact integrated tree, observed carrier, independently derived postimage basis and postimage validations and forbids refusalReason. Refusal requires a stable refusalReason and forbids every integrated-tree, observed-carrier, postimage-basis and postimage-validation field so failure cannot fabricate a postimage." <urn:usf:graph:integration> .
+<urn:usf:requirement:integration-observation-conditional-outcome> <urn:usf:predicate:text> "Canonical requestDigest and observationDigest membership is graph-declared and excludes each digest field from its own preimage. Success requires exact integrated tree, observed carrier, independently derived postimage basis and postimage validation result set and forbids refusalReason. Refusal requires a stable refusalReason and forbids every integrated-tree, observed-carrier, postimage-basis and successful postimage-validation-result-set field so failure cannot fabricate a postimage. Every outcome still binds the factual postimage-validation execution observation; a refusal before execution binds only the canonical not-executed result." <urn:usf:graph:integration> .
+<urn:usf:requirement:integration-validation-wall-time-bound> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:integration> .
+<urn:usf:requirement:integration-validation-wall-time-bound> <urn:usf:predicate:text> "For both candidate check and postimage validation, start the graph-declared 120000 millisecond wall-time timer when the confined child is spawned. At the limit, mark timedOut before sending SIGTERM; if the child remains unsettled after the graph-declared 5000 millisecond grace, send SIGKILL and settle no later than 125000 milliseconds. Settle exactly once, clear both timers on every exit or error, and treat timeout as CHECK_TIMEOUT or INTEGRATION_VALIDATION_TIMEOUT even if a later exit code is zero. A candidate timeout cannot mint a CheckedCandidateReceipt. Every pass or timeout output-result digest binds the wall-time limit, grace, timedOut value and last timeout termination signal; an integration observation additionally binds its postimage validation output-result digest." <urn:usf:graph:integration> .
 <urn:usf:type:CheckedCandidateReceipt> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:integration> .
 <urn:usf:type:CheckedCandidateReceipt> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
@@ -282,6 +293,7 @@
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:schemaIdentity> <urn:usf:checked-candidate-receipt:1> <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:recordType> <urn:usf:type:CheckedCandidateReceipt> <urn:usf:graph:integration> .
+<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:validationExecutionAuthority> <urn:usf:algorithm:work-integration-transition:2> <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "workIri" <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "explicitProfileIri" <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "originalConstructionBasisDigest" <urn:usf:graph:integration> .
@@ -298,8 +310,14 @@
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationExecutionModeDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationToolDependencyDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationSchemaDependencyDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationExecutionAuthorityResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationWallTimeMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationTerminationGraceMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationTimedOut" <urn:usf:graph:integration> .
+<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationTimeoutTerminationSignal" <urn:usf:graph:integration> .
+<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "outputResultDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:requiredField> "validationResultSetDigest" <urn:usf:graph:integration> .
-<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:authorityRule> "Every digest and identity is derived from the graph-selected work, exact candidate bytes, lineage and executed observations; caller prose, mutable labels and GitHub state are non-authoritative." <urn:usf:graph:integration> .
+<urn:usf:schema:checked-candidate-receipt:1> <urn:usf:predicate:authorityRule> "Every digest and identity is derived from the graph-selected work, exact candidate bytes, lineage and executed observations; caller prose, mutable labels and GitHub state are non-authoritative. The receipt digest excludes only receiptDigest and binds every other closed receipt field. outputResultDigest and validationResultSetDigest bind the exact graph-derived validation execution authority resource digest, wall-time limit, termination grace, timedOut=false and timeout termination signal none; a timeout emits CHECK_TIMEOUT and cannot mint this pass-only receipt." <urn:usf:graph:integration> .
 <urn:usf:type:IntegrationObservation> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:integration> .
 <urn:usf:type:IntegrationObservation> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
@@ -329,6 +347,12 @@
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "cohortMemberSetDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "startingCarrierCommit" <urn:usf:graph:integration> .
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "startingCarrierTree" <urn:usf:graph:integration> .
+<urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "candidateValidationWallTimeMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "postimageValidationWallTimeMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "validationTerminationGraceMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "postimageValidationTimedOut" <urn:usf:graph:integration> .
+<urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "postimageValidationTimeoutTerminationSignal" <urn:usf:graph:integration> .
+<urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "postimageValidationOutputResultDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:requiredField> "outcome" <urn:usf:graph:integration> .
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:allowedOutcome> <urn:usf:outcome:integration-success> <urn:usf:graph:integration> .
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:allowedOutcome> <urn:usf:outcome:integration-refused> <urn:usf:graph:integration> .
@@ -346,7 +370,7 @@
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:refusalForbiddenField> "observedCarrierTree" <urn:usf:graph:integration> .
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:refusalForbiddenField> "independentlyDerivedPostimageBasisDigest" <urn:usf:graph:integration> .
 <urn:usf:schema:integration-observation:1> <urn:usf:predicate:refusalForbiddenField> "postimageValidationResultSetDigest" <urn:usf:graph:integration> .
-<urn:usf:schema:integration-observation:1> <urn:usf:predicate:authorityRule> "The record is an ignored local observation only. It cannot be typed as admitted integration evidence, cannot satisfy completion, and cannot cause evidence, proof or publication without a later exact graph-defined transition." <urn:usf:graph:integration> .
+<urn:usf:schema:integration-observation:1> <urn:usf:predicate:authorityRule> "The record is an ignored local observation only. It cannot be typed as admitted integration evidence, cannot satisfy completion, and cannot cause evidence, proof or publication without a later exact graph-defined transition. Every outcome binds postimageValidationTimedOut, the last timeout termination signal and postimageValidationOutputResultDigest. A pre-validation refusal binds a canonical not-executed result with timedOut=false and signal none; a timeout binds timedOut=true, the last signal actually sent and refusalReason INTEGRATION_VALIDATION_TIMEOUT." <urn:usf:graph:integration> .
 <urn:usf:type:IntegrationCohortMember> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:integration> .
 <urn:usf:type:IntegrationCohortMember> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:schema:integration-cohort-member:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
@@ -460,6 +484,9 @@
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:memberField> "cohortMemberSetDigest" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:memberField> "startingCarrierCommit" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:memberField> "startingCarrierTree" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:memberField> "candidateValidationWallTimeMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:memberField> "postimageValidationWallTimeMilliseconds" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:memberField> "validationTerminationGraceMilliseconds" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:memberField> "requestMemberSetDigest" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:memberField> "requestDigestMembershipResourceDigest" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-request:1> <urn:usf:predicate:canonicalizationRule> "Canonicalize the exact member-field map by UTF-8 bytewise key order and the registered value grammar; reject missing, extra, duplicate, unknown or noncanonical values and derive requestDigest without requestDigest in its own preimage." <urn:usf:graph:integration> .
@@ -472,6 +499,9 @@
 <urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:memberField> "outcome" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:memberField> "observationMemberSetDigest" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:memberField> "observationDigestMembershipResourceDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:memberField> "postimageValidationTimedOut" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:memberField> "postimageValidationTimeoutTerminationSignal" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:memberField> "postimageValidationOutputResultDigest" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:successMemberField> "workspaceIdentityDigest" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:successMemberField> "primaryMutationLockIdentity" <urn:usf:graph:integration> .
 <urn:usf:digest-membership:integration-observation:1> <urn:usf:predicate:successMemberField> "integratedTreeDigest" <urn:usf:graph:integration> .

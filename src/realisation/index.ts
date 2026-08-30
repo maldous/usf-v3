@@ -85,6 +85,41 @@ export interface ByteDelta {
   readonly afterDigest: string | null;
 }
 
+export type GitFileMode = "100644" | "100755";
+
+export interface AuthenticatedPathDelta extends ByteDelta {
+  readonly beforeMode: GitFileMode | null;
+  readonly afterMode: GitFileMode | null;
+}
+
+export interface AuthenticatedTreeEntry {
+  readonly path: string;
+  readonly mode: GitFileMode;
+  readonly digest: string;
+}
+
+/**
+ * A caller can name an existing workspace only by its content-addressed
+ * locator. Every identity below is independently reconstructed while the
+ * workspace's process-held candidate lock is owned.
+ */
+export interface AuthenticatedCandidateWorkspace {
+  readonly schema: "urn:usf:authenticated-candidate-workspace:1";
+  readonly candidateDigest: string;
+  readonly workspace: string;
+  readonly constructionBasis: RealisationBasis;
+  readonly acceptedContributionDigests: readonly string[];
+  readonly lineageDigest: string;
+  readonly actualOperationDelta: readonly AuthenticatedPathDelta[];
+  readonly byteDeltaDigest: string;
+  readonly fileModeDigest: string;
+  readonly writeSet: readonly string[];
+  readonly writeSetDigest: string;
+  readonly scopedTree: readonly AuthenticatedTreeEntry[];
+  readonly candidateTreeDigest: string;
+  readonly workspaceIdentityDigest: string;
+}
+
 interface WorkspaceManifest {
   readonly schema: "urn:usf:workspace-manifest:1";
   readonly digest: string;
@@ -162,19 +197,102 @@ function toSnapshot(bytes: Buffer | null): string | null {
   return bytes === null ? null : bytes.toString("base64");
 }
 
-async function writeAtomically(target: string, bytes: Buffer): Promise<void> {
+async function writeAtomically(target: string, bytes: Buffer, mode = 0o600): Promise<void> {
   await mkdir(dirname(target), { recursive: true });
   const temporary = `${target}.usf-${process.pid}-${Math.random().toString(16).slice(2)}`;
   await writeFile(temporary, bytes, { flag: "wx", mode: 0o600 });
+  await chmod(temporary, mode);
   await rename(temporary, target);
 }
+
+function processUid(fallback: number): number { return typeof process.getuid === "function" ? process.getuid() : fallback; }
+
+async function assertPrivateUsfDirectory(root: string, repositoryPath: string, create: boolean): Promise<string> {
+  if (!repositoryPath.startsWith(".usf") || repositoryPath.split("/").some((part) => part.length === 0 || part === "." || part === "..")) {
+    throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Private state path is invalid");
+  }
+  let cursor = root;
+  for (const part of repositoryPath.split("/")) {
+    cursor = resolve(cursor, part);
+    let created = false;
+    try {
+      await lstat(cursor);
+    } catch (error: unknown) {
+      if (!create || (error as NodeJS.ErrnoException).code !== "ENOENT") throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Private state ancestry is unavailable");
+      await mkdir(cursor, { mode: 0o700 });
+      created = true;
+    }
+    const entry = await lstat(cursor);
+    if (entry.isSymbolicLink() || !entry.isDirectory() || entry.uid !== processUid(entry.uid) || (entry.mode & 0o077) !== 0) {
+      throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Private state ancestry is unsafe");
+    }
+    if (created) await chmod(cursor, 0o700);
+    const canonical = await realpath(cursor);
+    if (canonical !== cursor || relative(root, canonical).split(sep).join("/") !== relative(root, cursor).split(sep).join("/")) {
+      throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Private state ancestry escapes the repository");
+    }
+  }
+  return cursor;
+}
+
+async function assertPrivateWorkspaceRoot(root: string, workspace: string, create = false): Promise<void> {
+  const repositoryPath = relative(root, workspace).split(sep).join("/");
+  if (!/^\.usf\/workspaces\/[a-f0-9]{64}$/u.test(repositoryPath)) {
+    throw new RealisationError("MISSING_WORKSPACE", "Candidate workspace location is invalid");
+  }
+  await assertPrivateUsfDirectory(root, ".usf", create);
+  await assertPrivateUsfDirectory(root, ".usf/workspaces", create);
+  await assertPrivateUsfDirectory(root, repositoryPath, create);
+}
+
+async function readPrivateWorkspaceFile(root: string, workspace: string, fileName: string, maximumBytes = 512 * 1024): Promise<Buffer> {
+  await assertPrivateWorkspaceRoot(root, workspace);
+  const path = resolve(workspace, fileName);
+  const handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW).catch(() => {
+    throw new RealisationError("MISSING_WORKSPACE", "Candidate workspace file is missing");
+  });
+  try {
+    const opened = await handle.stat();
+    const named = await lstat(path);
+    if (!opened.isFile() || named.isSymbolicLink() || !named.isFile() || opened.uid !== processUid(opened.uid)
+      || opened.nlink !== 1 || named.nlink !== 1 || (opened.mode & 0o177) !== 0 || opened.dev !== named.dev || opened.ino !== named.ino
+      || opened.size > maximumBytes || await realpath(path) !== path) {
+      throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate workspace file identity is unsafe");
+    }
+    const bytes = await handle.readFile();
+    if (bytes.byteLength !== opened.size || bytes.byteLength > maximumBytes) throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate workspace file is oversized");
+    return bytes;
+  } finally {
+    await handle.close();
+  }
+}
+
+function gitFileMode(entry: { isFile(): boolean; readonly mode: number | bigint }): GitFileMode {
+  if (!entry.isFile()) throw new RealisationError("INVALID_OPERATION", "Only regular files have authenticated Git modes");
+  return (Number(entry.mode) & 0o111) === 0 ? "100644" : "100755";
+}
+
+async function modeAt(root: string, repositoryPath: string): Promise<GitFileMode | null> {
+  const target = await assertNoSymlink(root, repositoryPath);
+  try {
+    const entry = await lstat(target);
+    if (entry.isSymbolicLink()) throw new RealisationError("SYMLINK_ESCAPE", "Symlink target is forbidden");
+    if (!entry.isFile()) throw new RealisationError("INVALID_OPERATION", "Only regular files may be authenticated");
+    return gitFileMode(entry);
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function permissionMode(mode: GitFileMode): number { return mode === "100755" ? 0o755 : 0o644; }
 
 async function copyRegularTree(sourceRoot: string, workspace: string, repositoryPath: string): Promise<void> {
   const source = await assertNoSymlink(sourceRoot, repositoryPath);
   try {
     const entry = await lstat(source);
     if (entry.isFile()) {
-      await writeAtomically(await assertNoSymlink(workspace, repositoryPath), await readFile(source));
+      await writeAtomically(await assertNoSymlink(workspace, repositoryPath), await readFile(source), permissionMode(gitFileMode(entry)));
       return;
     }
     if (!entry.isDirectory()) throw new RealisationError("INVALID_OPERATION", "Candidate scope must name a regular file or directory");
@@ -214,7 +332,7 @@ function assertExactKeys(value: object, keys: readonly string[]): void {
 async function loadManifest(sourceRoot: string, workspace: string): Promise<WorkspaceManifest> {
   let value: unknown;
   try {
-    value = JSON.parse(await readFile(resolve(workspace, manifestName), "utf8"));
+    value = JSON.parse((await readPrivateWorkspaceFile(sourceRoot, workspace, manifestName)).toString("utf8"));
   } catch (error: unknown) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
       throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate workspace manifest is invalid");
@@ -265,27 +383,33 @@ function workspaceFor(root: string, candidateDigest: string): string {
   return resolve(root, ".usf", "workspaces", hex);
 }
 
-async function ensurePrivateDirectory(path: string): Promise<void> {
-  await mkdir(path, { recursive: true, mode: 0o700 });
-  const entry = await lstat(path);
-  if (entry.isSymbolicLink() || !entry.isDirectory()) throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Candidate lock directory is not a private directory");
-  await chmod(path, 0o700);
-}
-
 async function acquireCandidateLock(root: string, candidateDigest: string): Promise<Awaited<ReturnType<typeof open>>> {
   assertDigest(candidateDigest);
   const locksRoot = resolve(root, ".usf", "locks", "candidates");
-  await ensurePrivateDirectory(resolve(root, ".usf"));
-  await ensurePrivateDirectory(resolve(root, ".usf", "locks"));
-  await ensurePrivateDirectory(locksRoot);
-  const handle = await open(
-    resolve(locksRoot, `${candidateDigest.slice("sha256:".length)}.lock`),
-    constants.O_CREAT | constants.O_RDWR | constants.O_NOFOLLOW | constants.O_NONBLOCK,
-    0o600,
-  ).catch(() => { throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Candidate lock file cannot be opened safely"); });
+  await assertPrivateUsfDirectory(root, ".usf", true);
+  await assertPrivateUsfDirectory(root, ".usf/locks", true);
+  await assertPrivateUsfDirectory(root, ".usf/locks/candidates", true);
+  const lockPath = resolve(locksRoot, `${candidateDigest.slice("sha256:".length)}.lock`);
+  let created = false;
+  let handle: Awaited<ReturnType<typeof open>>;
   try {
-    if (!(await handle.stat()).isFile()) throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Candidate lock is not a regular file");
-    await handle.chmod(0o600);
+    handle = await open(lockPath, constants.O_CREAT | constants.O_EXCL | constants.O_RDWR | constants.O_NOFOLLOW | constants.O_NONBLOCK, 0o600);
+    created = true;
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Candidate lock file cannot be opened safely");
+    handle = await open(lockPath, constants.O_RDWR | constants.O_NOFOLLOW | constants.O_NONBLOCK)
+      .catch(() => { throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Candidate lock file cannot be opened safely"); });
+  }
+  try {
+    if (created) await handle.chmod(0o600);
+    const opened = await handle.stat();
+    const named = await lstat(lockPath);
+    if (!opened.isFile() || named.isSymbolicLink() || !named.isFile() || opened.uid !== processUid(opened.uid)
+      || opened.nlink !== 1 || named.nlink !== 1 || (opened.mode & 0o777) !== 0o600 || (named.mode & 0o777) !== 0o600
+      || opened.dev !== named.dev || opened.ino !== named.ino
+      || await realpath(lockPath) !== lockPath) {
+      throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Candidate lock identity is unsafe");
+    }
     const exitCode = await new Promise<number>((finish) => {
       const child = spawn("/usr/bin/flock", ["--nonblock", "--conflict-exit-code", "75", "3"], {
         stdio: ["ignore", "ignore", "ignore", handle.fd],
@@ -301,6 +425,10 @@ async function acquireCandidateLock(root: string, candidateDigest: string): Prom
     });
     if (exitCode === 75) throw new RealisationError("CANDIDATE_BUSY", "Candidate is held by another cooperative USF operation");
     if (exitCode !== 0) throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "util-linux flock could not acquire the candidate lock");
+    const held = await handle.stat();
+    if (held.dev !== opened.dev || held.ino !== opened.ino || held.nlink !== 1 || (held.mode & 0o777) !== 0o600) {
+      throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Candidate lock identity changed while acquiring ownership");
+    }
     return handle;
   } catch (error) {
     await handle.close();
@@ -443,8 +571,17 @@ export async function materialiseCandidate(root: string, candidate: CandidateSpe
         throw new RealisationError("STALE_RELEVANT_PREIMAGE", `Relevant pre-image is stale: ${path}`);
       }
     }
+    await assertPrivateUsfDirectory(canonicalRoot, ".usf", true);
+    await assertPrivateUsfDirectory(canonicalRoot, ".usf/workspaces", true);
+    try {
+      await lstat(workspace);
+      await assertPrivateWorkspaceRoot(canonicalRoot, workspace);
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
     await rm(workspace, { recursive: true, force: true });
-    await mkdir(workspace, { recursive: true, mode: 0o700 });
+    await mkdir(workspace, { mode: 0o700 });
+    await assertPrivateWorkspaceRoot(canonicalRoot, workspace);
     try {
       for (const path of scope) await copyRegularTree(canonicalRoot, workspace, path);
       const manifest: WorkspaceManifest = {
@@ -490,10 +627,18 @@ export async function applyCandidateOperations(root: string, candidateDigest: st
     }
     const changed = [...new Set(validated.map((operation) => operation.path))].sort();
     const before = new Map<string, Buffer | null>();
-    for (const path of changed) before.set(path, await bytesAt(workspace, path));
+    const beforeModes = new Map<string, GitFileMode | null>();
+    for (const path of changed) {
+      before.set(path, await bytesAt(workspace, path));
+      beforeModes.set(path, await modeAt(workspace, path));
+    }
     for (const operation of validated) {
       const target = await assertNoSymlink(workspace, operation.path);
-      if (operation.kind === "write") await writeAtomically(target, Buffer.from(operation.bytes, "base64"));
+      if (operation.kind === "write") await writeAtomically(
+        target,
+        Buffer.from(operation.bytes, "base64"),
+        permissionMode(beforeModes.get(operation.path) ?? "100644"),
+      );
       else await rm(target, { force: true });
     }
     return Promise.all(changed.map(async (path) => {
@@ -610,16 +755,120 @@ async function assertWorkspaceCandidateBytes(sourceRoot: string, workspace: stri
 
   for (const [path, sourceDigest] of sourceDigests) {
     const bytes = await bytesAt(workspace, path);
+    const sourceMode = await modeAt(sourceRoot, path);
+    const workspaceMode = await modeAt(workspace, path);
     const operation = operations.get(path);
     if (operation?.kind === "write") {
       const expected = operation.encoding === "base64" ? Buffer.from(operation.content ?? "", "base64") : Buffer.from(operation.content ?? "");
       if (bytes === null || !bytes.equals(expected)) throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace post-image does not match resolved operation: ${path}`);
+      if (workspaceMode !== (sourceMode ?? "100644")) throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace has an undeclared mode effect: ${path}`);
     } else if (operation?.kind === "delete") {
       if (bytes !== null) throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace deletion post-image is present: ${path}`);
     } else if ((bytes === null ? null : digest(bytes)) !== sourceDigest) {
       throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace has an undeclared scoped effect: ${path}`);
+    } else if (workspaceMode !== sourceMode) {
+      throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace has an undeclared mode effect: ${path}`);
     }
   }
+}
+
+function freezeCandidate<T>(value: T): T {
+  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value as Record<string, unknown>)) freezeCandidate(child);
+  }
+  return value;
+}
+
+async function scopedWorkspaceTree(workspace: string): Promise<AuthenticatedTreeEntry[]> {
+  const entries: AuthenticatedTreeEntry[] = [];
+  const walk = async (repositoryPath: string): Promise<void> => {
+    const target = repositoryPath === "" ? workspace : resolve(workspace, repositoryPath);
+    const entry = await lstat(target);
+    if (entry.isSymbolicLink() || (!entry.isDirectory() && !entry.isFile())) {
+      throw new RealisationError("CANDIDATE_BASIS_MISMATCH", `Workspace contains a symlink or nonregular entry: ${repositoryPath}`);
+    }
+    if (entry.isFile()) {
+      if (repositoryPath !== manifestName && !repositoryPath.startsWith(".usf-check-tmp/")) {
+        entries.push({ path: repositoryPath, digest: digest(await readFile(target)), mode: gitFileMode(entry) });
+      }
+      return;
+    }
+    for (const child of (await readdir(target)).sort((left, right) => left.localeCompare(right))) {
+      await walk(repositoryPath === "" ? child : `${repositoryPath}/${child}`);
+    }
+  };
+  await walk("");
+  return entries.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+/** Authenticate one already-applied candidate without trusting caller-authored identity fields. */
+export async function authenticateCandidateWorkspace(root: string, candidateDigest: string): Promise<AuthenticatedCandidateWorkspace> {
+  return withCandidateLock(root, candidateDigest, async (canonicalRoot) => {
+    const workspace = workspaceFor(canonicalRoot, candidateDigest);
+    const manifest = await loadManifest(canonicalRoot, workspace);
+    if (manifest.digest !== candidateDigest) throw new RealisationError("MISSING_WORKSPACE", "Workspace digest does not match its location");
+    const constructionBasis = await currentBasis(canonicalRoot, manifest.basis);
+    for (const [path, expected] of Object.entries(manifest.preimages)) {
+      const primary = await bytesAt(canonicalRoot, path);
+      if ((primary === null ? null : digest(primary)) !== expected) {
+        throw new RealisationError("STALE_RELEVANT_PREIMAGE", `Relevant pre-image is stale: ${path}`);
+      }
+    }
+    await assertWorkspaceCandidateBytes(canonicalRoot, workspace, manifest);
+    const actualOperationDelta: AuthenticatedPathDelta[] = [];
+    for (const path of manifest.writeSet) {
+      const beforeBytes = await bytesAt(canonicalRoot, path);
+      const afterBytes = await bytesAt(workspace, path);
+      const beforeMode = await modeAt(canonicalRoot, path);
+      const afterMode = await modeAt(workspace, path);
+      actualOperationDelta.push({
+        path,
+        before: toSnapshot(beforeBytes),
+        after: toSnapshot(afterBytes),
+        beforeDigest: beforeBytes === null ? null : digest(beforeBytes),
+        afterDigest: afterBytes === null ? null : digest(afterBytes),
+        beforeMode,
+        afterMode,
+      });
+    }
+    const acceptedContributionDigests = [...manifest.lineage.acceptedContributionDigests];
+    const scopedTree = await scopedWorkspaceTree(workspace);
+    const writeSet = [...manifest.writeSet];
+    const lineageDigest = canonicalDigest(manifest.lineage, { rejectAbsolutePaths: true });
+    const operations = new Map(manifest.operations.map((operation) => [operation.path, operation.kind]));
+    const byteDeltaDigest = canonicalDigest(actualOperationDelta.map(({ path, beforeDigest, afterDigest }) => ({
+      kind: operations.get(path),
+      path,
+      beforeDigest,
+      afterDigest,
+    })), { rejectAbsolutePaths: true });
+    const fileModeDigest = canonicalDigest(actualOperationDelta.map(({ path, beforeMode, afterMode }) => ({ path, beforeMode, afterMode })));
+    const writeSetDigest = canonicalDigest(writeSet);
+    const candidateTreeDigest = canonicalDigest(scopedTree);
+    const workspaceIdentityDigest = canonicalDigest({
+      candidateDigest: manifest.digest,
+      originalConstructionBasisDigest: constructionBasis.basisDigest,
+      scope: manifest.scope,
+      candidateTreeDigest,
+    }, { rejectAbsolutePaths: true });
+    return freezeCandidate({
+      schema: "urn:usf:authenticated-candidate-workspace:1" as const,
+      candidateDigest: manifest.digest,
+      workspace,
+      constructionBasis,
+      acceptedContributionDigests,
+      lineageDigest,
+      actualOperationDelta,
+      byteDeltaDigest,
+      fileModeDigest,
+      writeSet,
+      writeSetDigest,
+      scopedTree,
+      candidateTreeDigest,
+      workspaceIdentityDigest,
+    });
+  });
 }
 
 export async function currentCandidateWorkspace(root: string, candidateDigest: string): Promise<{ readonly workspace: string; readonly basis: RealisationBasis }> {
