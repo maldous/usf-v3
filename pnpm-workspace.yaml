@@ -1,0 +1,10 @@
+packages:
+  - apps/*
+
+storeDir: .usf/cache/pnpm-store
+virtualStoreDir: .usf/cache/pnpm-virtual-store
+cacheDir: .usf/cache/pnpm
+ignoreScripts: true
+strictPeerDependencies: true
+sharedWorkspaceLockfile: true
+saveExact: true

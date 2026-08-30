@@ -1,0 +1,70 @@
+<urn:fixture:product:orchard-studio> <urn:usf:predicate:type> <urn:usf:type:ProductModel> <urn:fixture:graph:orchard-product> .
+<urn:fixture:product:orchard-studio> <urn:usf:predicate:title> "Orchard campaign studio" <urn:fixture:graph:orchard-product> .
+<urn:fixture:product:orchard-studio> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:fixture:graph:orchard-product> .
+<urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:fixture:graph:orchard-product> .
+<urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:product> <urn:fixture:product:orchard-studio> <urn:fixture:graph:orchard-product> .
+<urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:selectsContract> <urn:fixture:contract:orchard-launch-assets:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:fixture:graph:orchard-product> .
+<urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:title> "Orchard launch creative assets" <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:scope> "non-authoritative-dynamic-product-fixture" <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:objective> "Create a coherent vector hero, design-token palette and launch-copy asset set from product-specific semantics." <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:realisesProduct> <urn:fixture:product:orchard-studio> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:privacy> "public" <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:targetRuntimeProvider> "static-web-runtime" <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:constructionRouteConstraint> "select routes dynamically from graph-declared creative capabilities" <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:requires> <urn:fixture:asset:orchard-hero> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:requires> <urn:fixture:asset:orchard-design-tokens> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:requires> <urn:fixture:asset:orchard-launch-copy> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/generated/orchard/" <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:nonClaim> "This fixture proves dynamic projection only; it does not claim that the illustrative product or assets are delivered." <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:environmentApplicability> <urn:fixture:binding:orchard:hermetic> <urn:fixture:graph:orchard-product> .
+<urn:fixture:binding:orchard:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:fixture:graph:orchard-product> .
+<urn:fixture:binding:orchard:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:fixture:graph:orchard-product> .
+<urn:fixture:binding:orchard:hermetic> <urn:usf:predicate:applicability> "required" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-hero> <urn:usf:predicate:type> <urn:usf:type:ArtifactRequirement> <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-hero> <urn:usf:predicate:artifactRole> "creative" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-hero> <urn:usf:predicate:artifactKind> <urn:usf:artifact-kind:vector-illustration> <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-hero> <urn:usf:predicate:mediaType> "image/svg+xml" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-hero> <urn:usf:predicate:targetPath> "tests/fixtures/generated/orchard/hero.svg" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-hero> <urn:usf:predicate:modelCapability> "vector-illustration" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-hero> <urn:usf:predicate:creativeDirection> "Abstract branching orchard canopy using the product palette." <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-design-tokens> <urn:usf:predicate:type> <urn:usf:type:ArtifactRequirement> <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-design-tokens> <urn:usf:predicate:artifactRole> "creative" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-design-tokens> <urn:usf:predicate:artifactKind> <urn:usf:artifact-kind:design-tokens> <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-design-tokens> <urn:usf:predicate:mediaType> "application/json" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-design-tokens> <urn:usf:predicate:targetPath> "tests/fixtures/generated/orchard/tokens.json" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-design-tokens> <urn:usf:predicate:modelCapability> "design-token-authoring" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-launch-copy> <urn:usf:predicate:type> <urn:usf:type:ArtifactRequirement> <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-launch-copy> <urn:usf:predicate:artifactRole> "creative" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-launch-copy> <urn:usf:predicate:artifactKind> <urn:usf:artifact-kind:marketing-copy> <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-launch-copy> <urn:usf:predicate:mediaType> "text/markdown" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-launch-copy> <urn:usf:predicate:targetPath> "tests/fixtures/generated/orchard/launch-copy.md" <urn:fixture:graph:orchard-product> .
+<urn:fixture:asset:orchard-launch-copy> <urn:usf:predicate:modelCapability> "copywriting" <urn:fixture:graph:orchard-product> .
+<urn:fixture:acceptance:orchard-assets> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:fixture:graph:orchard-product> .
+<urn:fixture:acceptance:orchard-assets> <urn:usf:predicate:text> "The vector, tokens and copy satisfy their own media-specific validators and share the declared creative direction." <urn:fixture:graph:orchard-product> .
+<urn:fixture:validation:orchard-assets> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:fixture:graph:orchard-product> .
+<urn:fixture:validation:orchard-assets> <urn:usf:predicate:command> "node tests/fixtures/product-assets/validate.test.ts" <urn:fixture:graph:orchard-product> .
+<urn:fixture:validation:orchard-assets> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:fixture:graph:orchard-product> .
+<urn:fixture:validation:orchard-assets> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:fixture:graph:orchard-product> .
+<urn:fixture:validation:orchard-assets> <urn:usf:predicate:applicability> "required" <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-assets> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-assets> <urn:usf:predicate:text> "A current isolated check over exact generated asset bytes is required before acceptance." <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-assets> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-assets> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-assets> <urn:usf:predicate:applicability> "required" <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:contract> <urn:fixture:contract:orchard-launch-assets:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:objective> "Create the three graph-declared Orchard assets without product-specific engine branches." <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:writePath> "tests/fixtures/generated/orchard/hero.svg" <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:writePath> "tests/fixtures/generated/orchard/tokens.json" <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:writePath> "tests/fixtures/generated/orchard/launch-copy.md" <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:toolPath> "package.json" <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:acceptance> <urn:fixture:acceptance:orchard-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:validation> <urn:fixture:validation:orchard-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:work:orchard-assets> <urn:usf:predicate:proof> <urn:fixture:proof:orchard-assets> <urn:fixture:graph:orchard-product> .

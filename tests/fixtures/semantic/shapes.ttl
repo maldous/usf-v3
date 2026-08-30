@@ -1,0 +1,10 @@
+@prefix ex: <urn:test:> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+ex:ServiceShape a sh:NodeShape ;
+  sh:targetClass ex:Service ;
+  sh:property [
+    sh:path ex:name ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] .

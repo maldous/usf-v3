@@ -1,0 +1,8 @@
+@prefix ex: <urn:test:> .
+
+ex:service-alpha a ex:Service ;
+  ex:name "Alpha" ;
+  ex:configuration [
+    ex:mode "safe" ;
+    ex:replicas 2
+  ] .

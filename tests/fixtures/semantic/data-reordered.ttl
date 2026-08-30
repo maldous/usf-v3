@@ -1,0 +1,7 @@
+@prefix ex: <urn:test:> .
+
+_:different-label ex:replicas 2 .
+_:different-label ex:mode "safe" .
+ex:service-alpha ex:configuration _:different-label .
+ex:service-alpha ex:name "Alpha" .
+ex:service-alpha a ex:Service .

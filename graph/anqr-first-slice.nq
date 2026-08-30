@@ -1,0 +1,149 @@
+<urn:anqr:product:platform> <urn:usf:predicate:type> <urn:usf:type:ProductModel> <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:product:platform> <urn:usf:predicate:title> "ANQR platform" <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:product:platform> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:product> <urn:anqr:product:platform> <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:title> "ANQR decoded-payload content analysis" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:scope> "bootstrap" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:objective> "Classify an already-decoded QR payload and expose a bounded HTTP URL detail projection without I/O." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:constructionRouteConstraint> "zero-paid-cost provider routes, if used, are construction intelligence only" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:anqr-decoded-payload:localdev> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:anqr-decoded-payload:hermetic> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:anqr-decoded-payload:integrationtest> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:anqr-decoded-payload:ci> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:anqr-decoded-payload:productionshaped> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:anqr-decoded-payload:staging> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:anqr-decoded-payload:productionlive> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:requires> <urn:usf:requirement:anqr-api> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:requires> <urn:usf:requirement:anqr-input-boundary> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:requires> <urn:usf:requirement:anqr-url-projection> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:permitsWrite> "apps/anqr/index.ts" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:permitsWrite> "apps/anqr/test/" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:nonClaim> "Does not decode images or QR matrices." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:nonClaim> "Does not validate, resolve, navigate, or assess the safety of a payload destination." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:nonClaim> "Does not validate payment, crypto, OTP, contact, Wi-Fi, calendar, or issuer data." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:nonClaim> "Passing deterministic development or test checks does not establish staging or production-live readiness." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:nonClaim> "A construction-intelligence provider route is not an ANQR runtime provider or target execution dependency." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:localdev> <urn:usf:predicate:applicability> "required" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:ci> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:environment-applicability:anqr-decoded-payload:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:requirement:anqr-api> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:requirement:anqr-api> <urn:usf:predicate:text> "Expose analysis, classification, label, and bounded HTTP URL-detail functions with JSON-validatable results." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:requirement:anqr-input-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:requirement:anqr-input-boundary> <urn:usf:predicate:text> "Accept only strings up to 8192 UTF-16 code units; refuse other inputs and oversized values without echoing them." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:requirement:anqr-url-projection> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:requirement:anqr-url-projection> <urn:usf:predicate:text> "Project only HTTP(S) protocol, host, pathname, UTM presence and selected UTM fields; malformed values produce null." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-determinism> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-determinism> <urn:usf:predicate:text> "Repeated analysis and canonical JSON serialization of the same input are byte-identical." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-schema> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-schema> <urn:usf:predicate:text> "Public results and components have runtime-validatable JSON fixtures and a checked schema." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-content-types> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-content-types> <urn:usf:predicate:text> "Every declared content type has a stable label fixture and emitted types have positive and near-miss vectors." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-precedence> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-precedence> <urn:usf:predicate:text> "Tests prove whitespace and case normalization plus ordered lexical classification precedence." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-payment-boundary> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-payment-boundary> <urn:usf:predicate:text> "Payment vectors preserve broad BCD and SPC labels as non-validation and require both EMV lexical patterns." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-url> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-url> <urn:usf:predicate:text> "URL vectors cover HTTP(S), bounded projection, UTM fields, malformed input, and excluded sensitive fields." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-input-boundary> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-input-boundary> <urn:usf:predicate:text> "Boundary vectors cover 8192 and 8193 code units plus non-string refusal without payload echo." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-public-entrypoint> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-public-entrypoint> <urn:usf:predicate:text> "Unit tests cover components and a contract test imports only the package public entrypoint." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-historical-independence> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-historical-independence> <urn:usf:predicate:text> "Build and tests pass with historical sources unavailable." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-packageability> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:acceptance:anqr-packageability> <urn:usf:predicate:text> "The package is callable under Node 22 or later without external services or deployment." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-analysis-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-analysis-tests> <urn:usf:predicate:command> "node apps/anqr/test/analysis.test.ts" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-analysis-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-analysis-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-analysis-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-schema-test> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-schema-test> <urn:usf:predicate:command> "node apps/anqr/test/contract-schema.test.ts" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-schema-test> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-schema-test> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-schema-test> <urn:usf:predicate:applicability> "required" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-public-entrypoint-test> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-public-entrypoint-test> <urn:usf:predicate:command> "node apps/anqr/test/public-entry.test.ts" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-public-entrypoint-test> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-public-entrypoint-test> <urn:usf:predicate:executionMode> <urn:usf:mode:repository-local-service> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:validation:anqr-public-entrypoint-test> <urn:usf:predicate:applicability> "required" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:proof:anqr-decoded-payload> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:proof:anqr-decoded-payload> <urn:usf:predicate:text> "Passing focused tests demonstrate only the declared decoded-payload contract and its explicit nonclaims." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:proof:anqr-decoded-payload> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:proof:anqr-decoded-payload> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:proof:anqr-decoded-payload> <urn:usf:predicate:applicability> "required" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:contract> <urn:usf:contract:anqr-decoded-payload:1> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:objective> "Implement the declared decoded-payload API with fail-closed input and URL behavior." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:readPath> "docs/anqr-first-slice.md" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:writePath> "apps/anqr/index.ts" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:schemaPath> "apps/anqr/contract.schema.json" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-determinism> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-content-types> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-precedence> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-payment-boundary> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-url> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-input-boundary> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-packageability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:validation> <urn:usf:validation:anqr-analysis-tests> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:validation> <urn:usf:validation:anqr-schema-test> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-implementation> <urn:usf:predicate:proof> <urn:usf:proof:anqr-decoded-payload> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:contract> <urn:usf:contract:anqr-decoded-payload:1> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:dependsOn> <urn:usf:work:anqr-implementation> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:objective> "Add unit and public-entrypoint contract vectors for the bounded decoded-payload behavior." <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:readPath> "apps/anqr/index.ts" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:writePath> "apps/anqr/test/" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:schemaPath> "apps/anqr/contract.schema.json" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-schema> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-content-types> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-precedence> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-payment-boundary> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-url> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-input-boundary> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-determinism> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-public-entrypoint> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-historical-independence> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:acceptance> <urn:usf:acceptance:anqr-packageability> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:validation> <urn:usf:validation:anqr-analysis-tests> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:validation> <urn:usf:validation:anqr-schema-test> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:validation> <urn:usf:validation:anqr-public-entrypoint-test> <urn:usf:graph:anqr-first-slice> .
+<urn:usf:work:anqr-tests> <urn:usf:predicate:proof> <urn:usf:proof:anqr-decoded-payload> <urn:usf:graph:anqr-first-slice> .

@@ -1,0 +1,13 @@
+<urn:usf:foundation:v3> <urn:usf:predicate:type> <urn:usf:type:SemanticFoundation> <urn:usf:graph:foundation> .
+<urn:usf:foundation:v3> <urn:usf:predicate:title> "USF V3 semantic foundation" <urn:usf:graph:foundation> .
+<urn:usf:environment:localdev> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
+<urn:usf:environment:hermetic> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
+<urn:usf:environment:integrationtest> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
+<urn:usf:environment:ci> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
+<urn:usf:environment:productionshaped> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
+<urn:usf:environment:staging> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
+<urn:usf:environment:productionlive> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
+<urn:usf:mode:deterministic-test-substitute> <urn:usf:predicate:type> <urn:usf:type:ExecutionMode> <urn:usf:graph:foundation> .
+<urn:usf:mode:repository-local-service> <urn:usf:predicate:type> <urn:usf:type:ExecutionMode> <urn:usf:graph:foundation> .
+<urn:usf:mode:external-sandbox> <urn:usf:predicate:type> <urn:usf:type:ExecutionMode> <urn:usf:graph:foundation> .
+<urn:usf:mode:live-external> <urn:usf:predicate:type> <urn:usf:type:ExecutionMode> <urn:usf:graph:foundation> .

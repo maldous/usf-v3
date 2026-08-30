@@ -1,0 +1,14 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": ["graph/manifest.json"],
+  "sources": [
+    {
+      "path": "graph/fixtures/product-assets.nq",
+      "format": "application/n-quads",
+      "graph": "urn:fixture:graph:orchard-product",
+      "role": "non-authoritative-product-fixture",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

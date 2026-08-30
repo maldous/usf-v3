@@ -1,0 +1,165 @@
+<urn:usf:product:v3> <urn:usf:predicate:type> <urn:usf:type:ProductModel> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:product:v3> <urn:usf:predicate:title> "USF V3 delivery kernel" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:title> "Canonical repository path scope" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:objective> "Validate canonical repository-relative file and directory declarations and permission containment without filesystem access." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:constructionRouteConstraint> "zero-paid-cost provider routes, if used, are construction intelligence only" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:requires> <urn:usf:requirement:repository-path-canonical> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:requires> <urn:usf:requirement:repository-path-control-boundary> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:requires> <urn:usf:requirement:repository-path-permission> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:permitsWrite> "src/core/scope.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:permitsWrite> "tests/unit/core/scope.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:nonClaim> "Lexical path validation does not prove filesystem containment or symlink safety." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:nonClaim> "The helper grants no mutation, integration, or semantic authority." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:repository-path-scope:localdev> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:repository-path-scope:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:repository-path-scope:integrationtest> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:repository-path-scope:ci> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:repository-path-scope:productionshaped> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:repository-path-scope:staging> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:repository-path-scope:productionlive> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:localdev> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:integrationtest> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:ci> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:repository-path-scope:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:repository-path-canonical> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:repository-path-canonical> <urn:usf:predicate:text> "Accept only normalized POSIX repository-relative file paths or explicitly slash-terminated directory paths without glob magic." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:repository-path-control-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:repository-path-control-boundary> <urn:usf:predicate:text> "Reject absolute, traversal, empty-segment, backslash, NUL, .git, .usf, and .env control paths." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:repository-path-permission> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:repository-path-permission> <urn:usf:predicate:text> "An exact file permission covers only that file and an explicit directory permission covers descendants but not sibling prefixes." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:acceptance:repository-path-vectors> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:acceptance:repository-path-vectors> <urn:usf:predicate:text> "Positive file/directory vectors and planted absolute, traversal, glob, control, and prefix-confusion defects pass with deterministic results." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:repository-path-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:repository-path-tests> <urn:usf:predicate:command> "node tests/unit/core/scope.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:repository-path-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:repository-path-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:repository-path-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope> <urn:usf:predicate:text> "The isolated focused check passes every declared lexical scope and permission vector over the exact candidate bytes." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:contract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:objective> "Add and test the shared canonical repository-path scope helper." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:readPath> "src/core/" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:readPath> "tests/unit/core/" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:writePath> "src/core/scope.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:writePath> "tests/unit/core/scope.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:acceptance> <urn:usf:acceptance:repository-path-vectors> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:validation> <urn:usf:validation:repository-path-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:repository-path-scope> <urn:usf:predicate:proof> <urn:usf:proof:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:title> "Deterministic file-based asset index" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:objective> "Build a deterministic metadata index for product assets without a persistent database or external service." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:constructionRouteConstraint> "zero-paid-cost provider routes, if used, are construction intelligence only" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:requires> <urn:usf:requirement:file-asset-index-canonical> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:requires> <urn:usf:requirement:file-asset-index-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:requires> <urn:usf:requirement:file-asset-index-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:permitsWrite> "src/core/asset-index.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:permitsWrite> "tests/unit/core/asset-index.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:nonClaim> "An asset index is metadata, not the indexed asset bytes, semantic authority, evidence, proof, or a database." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:nonClaim> "Passing a hermetic index check does not establish staging or production-live asset delivery." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:file-asset-index:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:file-asset-index:localdev> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:file-asset-index:integrationtest> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:file-asset-index:ci> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:file-asset-index:productionshaped> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:file-asset-index:staging> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:file-asset-index:productionlive> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:localdev> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:integrationtest> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:ci> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:file-asset-index:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:file-asset-index-canonical> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:file-asset-index-canonical> <urn:usf:predicate:text> "Sort validated entries and derive one canonical content digest independent of input order." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:file-asset-index-scope> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:file-asset-index-scope> <urn:usf:predicate:text> "Require unique semantic identifiers and repository-relative asset paths, bounded media types and exact content digests." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:file-asset-index-authority> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:file-asset-index-authority> <urn:usf:predicate:text> "Keep the index as deterministic file data; any cache or third-party embedded store is disposable and repository-contained under ignored .usf state." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:acceptance:file-asset-index> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:acceptance:file-asset-index> <urn:usf:predicate:text> "Positive multi-product entries are byte-order deterministic and planted duplicate, path, media-type and digest defects fail with stable reasons." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:file-asset-index-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:file-asset-index-tests> <urn:usf:predicate:command> "node tests/unit/core/asset-index.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:file-asset-index-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:file-asset-index-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:file-asset-index-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index> <urn:usf:predicate:text> "The exact candidate bytes pass deterministic index construction and planted-refusal vectors in an isolated workspace." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:contract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:objective> "Add and test the deterministic file-based asset index." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:dependsOn> <urn:usf:work:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:readPath> "src/core/scope.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:readPath> "tests/unit/core/scope.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:writePath> "src/core/asset-index.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:writePath> "tests/unit/core/asset-index.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:acceptance> <urn:usf:acceptance:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:validation> <urn:usf:validation:file-asset-index-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:file-asset-index> <urn:usf:predicate:proof> <urn:usf:proof:file-asset-index> <urn:usf:graph:usf-bootstrap> .

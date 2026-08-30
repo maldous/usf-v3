@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:envelope:1",
+  "type": "object",
+  "required": ["schema", "kind", "producer", "identity", "semantic", "repository", "inputs", "payload", "metrics", "claims", "nonclaims", "createdAt"],
+  "properties": {
+    "schema": { "const": "urn:usf:envelope:1" },
+    "kind": { "type": "string", "minLength": 1 },
+    "producer": { "type": "object", "required": ["command", "version"], "properties": { "command": { "type": "string" }, "version": { "type": "string" } }, "additionalProperties": false },
+    "identity": { "type": "object", "required": ["artifactDigest", "chainDigest"], "properties": { "artifactDigest": { "$ref": "#/$defs/digest" }, "chainDigest": { "$ref": "#/$defs/digest" } }, "additionalProperties": false },
+    "semantic": { "type": "object", "required": ["globalRevisionDigest", "dependencyDigest", "dependencies"], "properties": { "globalRevisionDigest": { "anyOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] }, "dependencyDigest": { "$ref": "#/$defs/digest" }, "dependencies": { "type": "array", "items": { "$ref": "#/$defs/dependency" } } }, "additionalProperties": false },
+    "repository": { "type": "object", "required": ["carrierCommit", "carrierTree", "pathDependencies"], "properties": { "carrierCommit": { "type": ["string", "null"] }, "carrierTree": { "type": ["string", "null"] }, "pathDependencies": { "type": "array", "items": { "$ref": "#/$defs/dependency" } } }, "additionalProperties": false },
+    "inputs": { "type": "array" }, "payload": {}, "metrics": {}, "claims": { "type": "array" }, "nonclaims": { "type": "array" }, "createdAt": { "type": "string", "format": "date-time" }
+  },
+  "$defs": { "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }, "dependency": { "type": "object", "required": ["key", "digest"], "properties": { "key": { "type": "string", "minLength": 1 }, "digest": { "$ref": "#/$defs/digest" }, "kind": { "type": "string" } }, "additionalProperties": false } },
+  "additionalProperties": false
+}

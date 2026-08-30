@@ -89,8 +89,11 @@ values were neither read nor copied.
   the child is a repository or inspect identity, state, licence, or source.
 - Operator clarification: this exact path contains the intended Factory files
   and requires root because it came from a chroot environment.
-- Disposition: unresolved evidence under the required ordinary-user/no-`sudo`
-  boundary. A differently located Factory-looking copy was not substituted.
+- A later operator-authorized read-only `sudo -n` attempt could not elevate:
+  this container has `no new privileges`, and its preserved `/etc/sudo.conf`
+  ownership is not accepted by `sudo`.
+- Disposition: unresolved evidence under the effective host boundary. A
+  differently located Factory-looking copy was not substituted.
 
 ## USF V2 operator
 
@@ -115,8 +118,9 @@ values were neither read nor copied.
 ## USF V2 proof cockpit
 
 - Mandated evidence path: `/home/user/.local/share/usf-proof-cockpit`.
-- Availability: inaccessible. It is `root:root`, mode `0700`; ordinary-user
-  and bounded read-only attempts could not inspect contents.
+- Availability: inaccessible. It is `nobody:nogroup`, mode `0700` in this
+  preserved environment; ordinary-user access failed and an operator-authorized
+  `sudo -n` read-only attempt was prevented by `no new privileges`.
 - Disposition: identity, purpose, Git state, licence, reuse candidates, and
   coupling remain unresolved. No reuse decision is permitted from silence.
 

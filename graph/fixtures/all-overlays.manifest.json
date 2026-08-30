@@ -1,0 +1,10 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/self-host.json",
+    "graph/products/anqr/manifest.json",
+    "graph/fixtures/product-assets.manifest.json"
+  ],
+  "sources": []
+}

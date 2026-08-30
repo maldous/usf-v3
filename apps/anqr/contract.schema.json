@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anqr.example/schema/decoded-payload-analysis.json",
+  "title": "ANQR decoded payload analysis",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "reason"],
+      "properties": {
+        "ok": { "const": false },
+        "reason": { "enum": ["INVALID_INPUT", "RESOURCE_LIMIT"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "contentType", "label", "payloadLength", "urlDetails"],
+      "properties": {
+        "ok": { "const": true },
+        "contentType": {
+          "enum": [
+            "url", "wifi", "vcard", "mecard", "email", "tel", "sms", "geo",
+            "crypto_bitcoin", "crypto_ethereum", "crypto_other", "epc_sepa", "upi",
+            "emv_qr", "swiss_qr_bill", "calendar_event", "otp_auth", "plain_text", "unknown"
+          ]
+        },
+        "label": { "type": "string" },
+        "payloadLength": { "type": "integer", "minimum": 0, "maximum": 8192 },
+        "urlDetails": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["protocol", "host", "pathname", "hasUtmParams"],
+              "properties": {
+                "protocol": { "enum": ["http", "https"] },
+                "host": { "type": "string" },
+                "pathname": { "type": "string" },
+                "hasUtmParams": { "type": "boolean" },
+                "utmSource": { "type": "string" },
+                "utmMedium": { "type": "string" },
+                "utmCampaign": { "type": "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

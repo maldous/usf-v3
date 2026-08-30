@@ -1,0 +1,4 @@
+@prefix ex: <urn:test:> .
+
+ex:service-invalid a ex:Service ;
+  ex:configuration [ ex:mode "safe" ] .

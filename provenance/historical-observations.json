@@ -1,0 +1,235 @@
+{
+  "$schema": "urn:usf:historical-observations:1",
+  "authorityEffect": "none",
+  "documents": [
+    "docs/historical-value.md",
+    "docs/v1-v2-lessons.md",
+    "docs/linear-historical-review.md"
+  ],
+  "sourceReuse": false,
+  "repositories": [
+    {
+      "id": "anqr",
+      "repository": "maldous/anqr",
+      "branch": "symphony/integration",
+      "head": "a03cee561f2ad7bf9cb83f15eb857925c967e34f",
+      "dirty": true,
+      "dirtySummary": [
+        "tracked MEMORY.md modified"
+      ],
+      "licenceObservation": "no tracked root licence established",
+      "historicalValue": [
+        "product capability and implementation pressure",
+        "later parallel provider and orchestration evidence"
+      ],
+      "milestones": [
+        {
+          "commit": "62581f045fa7784edaa727b50875983c0f0fe862",
+          "subject": "feat: Complete ANQR React UI with comprehensive QR generator settings"
+        },
+        {
+          "commit": "563ade695516d8941f90df5f32e0b9d8c189a124",
+          "subject": "Add support for all 87 Google Play languages"
+        },
+        {
+          "commit": "814879a792a6596c4cceb3357d18369b8ff25fd8",
+          "subject": "feat: implement our own QR decoder to replace jsQR dependency"
+        },
+        {
+          "commit": "ec717e4fa7de1a7bff2b18ac83da04fae9b4ceb9",
+          "subject": "chore(main): bootstrap ANQR 1.0 Product OS"
+        },
+        {
+          "commit": "3d5ec22e7544a1264ff8c637bc98d74390d617ab",
+          "subject": "feat(symphony): complete autonomous infrastructure — runner, queue feeder, self-feeding",
+          "reachableFromInspectedAdvertisedRefs": false
+        },
+        {
+          "commit": "386355e1752593894b38601640e7ff3db7b70a1b",
+          "subject": "feat(harness): add parallel startup exploration cycle to Symphony bridge"
+        },
+        {
+          "commit": "7dfc0484afc2516715fcafb1a70f0f11247cb203",
+          "subject": "feat(harness): implement continuous parallel provider probe with re-evaluation"
+        },
+        {
+          "commit": "28b7521061e3e65634d1ceda483ed24f55e3af9f",
+          "subject": "docs(harness): Phase 8 — documentation finalized, all phases complete"
+        },
+        {
+          "commit": "e825da499f953fe6da39f77820812788d6976bf2",
+          "subject": "feat(harness): implement Scenarios 1-4 — complete all 6 live lifecycle e2e tests"
+        },
+        {
+          "commit": "d7fcff39d62549f4ae8b12463990540cb9a39a1a",
+          "subject": "fix(web): wire frame colours + ADR for pass-2 wiring deferrals"
+        }
+      ]
+    },
+    {
+      "id": "usf-v1",
+      "repository": "maldous/usf",
+      "branch": "main",
+      "head": "028a9f964fd25c2fd774c1b4fde6ea1cebdf8312",
+      "dirty": true,
+      "dirtySummary": [
+        "tracked v2/.gitignore deleted",
+        "tracked v2/etc/profile.d/stardog.sh deleted",
+        "tracked v2/usf deleted",
+        "TID-Draft.pdf untracked"
+      ],
+      "licenceObservation": "Apache-2.0 at inspected HEAD",
+      "historicalValue": [
+        "complete semantic product and platform denominator",
+        "authority separation and explicit claims and nonclaims",
+        "environment applicability and realisation posture",
+        "validation evidence and proof traceability"
+      ],
+      "milestones": [
+        {
+          "commit": "72bb80f15ebc4f588263fe0489ee9d8919924280",
+          "pullRequestFromSubject": 68,
+          "subject": "spec(instances): complete semantic coverage of every React capability (USF-97) (#68)"
+        },
+        {
+          "commit": "b62549bc71015cd19bb74269fc708c3ffae9652c",
+          "pullRequestFromSubject": 181,
+          "subject": "Merge pull request #181 from maldous/codex/usf-215-semantic-completeness-audit"
+        },
+        {
+          "commit": "c084b88029e3952eaf826269f71a291e20f97e46",
+          "subject": "docs(readiness): add final semantic completeness audit"
+        },
+        {
+          "commit": "28aa03456007e550f84d1b5128d9c0c5ef83a81b",
+          "pullRequestFromSubject": 240,
+          "subject": "Merge pull request #240 from maldous/codex/usf-268-external-http-semantics"
+        },
+        {
+          "commit": "16537455213b01e7da122005bafe52d138bc9e20",
+          "pullRequestFromSubject": 258,
+          "subject": "feat(constitution): re-found USF as self-defined, retire external ../react lineage (ADR 0014) (#258)"
+        },
+        {
+          "commit": "cd5e977afe9e840608004a65345cadcc17c0e37b",
+          "pullRequestFromSubject": 299,
+          "subject": "Complete app surface, optimisation, and Linear delivery (#299)"
+        },
+        {
+          "commit": "a5b9e1a036f6c10cf1a9f632bd3fa6bf5d8bc9c4",
+          "pullRequestFromSubject": 336,
+          "subject": "USF-1039 realise parallel validate aggregator with fail-closed family authority (#336)"
+        },
+        {
+          "commit": "417fdde39fcf3d8e0834772fe1be05b1d2965e1d",
+          "pullRequestFromSubject": 352,
+          "subject": "USF-1069: Dev Realisation Exhaustion Before Test Proof Ladder (USF-1070–1079) (#352)"
+        }
+      ]
+    },
+    {
+      "id": "usf-v2-graph",
+      "repository": "maldous/usf-graph",
+      "branch": "graph/v2-bau-protected-2d7eb31",
+      "head": "2d7eb31f0d586b32008ba854dfca0fa8437054cf",
+      "dirty": false,
+      "dirtySummary": [],
+      "licenceObservation": "no tracked licence or notice established",
+      "historicalValue": [
+        "safe parallel candidate materialisation and convergence",
+        "scoped currentness and proof obligation closure",
+        "conflict-aware narrow semantic publication",
+        "restart and recovery semantics"
+      ],
+      "milestones": [
+        {
+          "commit": "c21e2dccbbaa303192b3447eaa85ad41e6e8b0e9",
+          "subject": "init: USF v2 semantic authority as standalone repository (usf-graph)"
+        },
+        {
+          "commit": "65ddc51a8965332318de2a8de9a4c6304e1e86d8",
+          "pullRequestFromSubject": 1,
+          "subject": "Merge pull request #1 from maldous/foundation/external-materialisation"
+        },
+        {
+          "commit": "5243c1656145971b9e4f62c7ff5e281c1176994f",
+          "subject": "Complete initial USF realisation programme"
+        },
+        {
+          "commit": "219e05b2906ac89b4017ce70be16d37a95cc6a76",
+          "pullRequestFromSubject": 1,
+          "subject": "Merge PR #1: gated runtime foundation (routing-driven brokered execution)"
+        },
+        {
+          "commit": "4cf1b99243bb7566913a4788293c722dfe0fc1ee",
+          "pullRequestFromSubject": 2,
+          "subject": "Merge PR #2: align factory delivery with graph authority"
+        },
+        {
+          "commit": "68355537a01a03c979ab6530b5d5cb4d2f74ba15",
+          "pullRequestFromSubject": 3,
+          "subject": "Merge pull request #3 from maldous/factory/canonical-authority-digest"
+        },
+        {
+          "commit": "8c4335ddb24ea7baf839337d25ba5c95e11a3cc0",
+          "pullRequestFromSubject": 4,
+          "subject": "Merge PR #4: harden factory runtime readiness"
+        },
+        {
+          "commit": "8f5d468e8a49197f286ed799c924358f3fbbbb39",
+          "pullRequestFromSubject": 3,
+          "subject": "Merge pull request #3 from maldous/agent/materialisation-validation-producer"
+        },
+        {
+          "commit": "e6d4e199f1215754190a4ada8d0ac0ed5ce9743b",
+          "pullRequestFromSubject": 75,
+          "subject": "Merge pull request #75 from maldous/graph/proof-obligation-bijection-shacl"
+        },
+        {
+          "commit": "25083996d2126ee6f40fbab50b0947ed3fb1870c",
+          "subject": "Complete final V1 V2 source scope"
+        },
+        {
+          "commit": "f486979043cdd7ad0e78de95cc4c0ab9cf8c8d98",
+          "subject": "Add V2 production publication adapter"
+        },
+        {
+          "commit": "2d7eb31f0d586b32008ba854dfca0fa8437054cf",
+          "pullRequestFromSubject": 169,
+          "subject": "Rebind closure executor to accepted D1 recovery release (#169)"
+        }
+      ]
+    }
+  ],
+  "retainedSemantics": [
+    "graph-defined complete requirement denominator",
+    "stable content-derived semantic identity",
+    "distinct semantic implementation observation evidence proof and operational authority classes",
+    "explicit environment applicability realisation state claim nonclaim and disposition",
+    "construction provider identity distinct from target runtime provider identity",
+    "scoped read write and dependency currentness",
+    "isolated candidate work and conflict-safe convergence",
+    "deterministic validation before evidence proof integration or publication",
+    "narrow significant semantic publication",
+    "restart from durable artefacts instead of mutable coordinator state",
+    "graph-generic delivery verified by a non-ANQR fixture"
+  ],
+  "rejectedTopology": [
+    "Stardog as canonical authority",
+    "external CAS or programme directories as runtime prerequisites",
+    "chroot ownership as a runtime prerequisite",
+    "Factory operator or proof cockpit as hidden authority planes",
+    "coordinator database leases fences handovers witnesses or system services as the default single-host path",
+    "per-edit Git commits branches or semantic publications",
+    "historical environment bindings with inconsistent semantics"
+  ],
+  "nonclaims": [
+    "The observations do not incorporate historical source bytes.",
+    "Local Git history does not prove current remote authority or pull request state.",
+    "No live GitLab merge request state was observed; review numbers come from local commit subjects.",
+    "Local Git history does not prove external staging or production deployment.",
+    "Semantic coverage does not by itself prove complete implementation or production readiness.",
+    "The protected Factory and proof cockpit contents were not observed.",
+    "Historical licence observations do not establish permission to copy ANQR or V2 source."
+  ]
+}

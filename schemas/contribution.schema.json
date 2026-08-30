@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:contribution:1",
+  "type": "object",
+  "required": ["schema", "kind", "identity", "requested", "actual", "cost", "usage", "payload"],
+  "properties": {
+    "schema": {"const": "urn:usf:contribution:1"}, "kind": {"const": "contribution"},
+    "identity": {"type": "object", "required": ["artifactDigest"]},
+    "requested": {"$ref": "#/$defs/providerIdentity"}, "actual": {"$ref": "#/$defs/providerIdentity"},
+    "cost": {"type": "object", "required": ["costClass", "observedCost", "evidence"]},
+    "usage": {"type": "object", "required": ["inputTokens", "outputTokens", "toolCalls", "retries"]},
+    "payload": {"type": "object", "required": ["operations"], "properties": {"operations": {"type": "array", "items": {"$ref": "#/$defs/operation"}}}}
+  },
+  "$defs": {"providerIdentity": {"type": "object", "required": ["family", "provider", "model"]}, "operation": {"type": "object", "required": ["kind", "path"], "properties": {"kind": {"enum": ["write", "delete"]}, "path": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+"}, "content": {"type": "string"}, "encoding": {"enum": ["utf8", "base64"]}, "mediaType": {"type": "string", "pattern": "^[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+$"}}}}
+}

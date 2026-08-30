@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:metrics:1",
+  "type": "object",
+  "required": ["targetConcurrency", "observedConcurrency", "utilisation", "totalTokens", "usefulTokens", "yield", "cacheReuses"],
+  "properties": {
+    "targetConcurrency": { "type": "integer", "minimum": 0 },
+    "observedConcurrency": { "type": "integer", "minimum": 0 },
+    "utilisation": { "type": "number", "minimum": 0 },
+    "totalTokens": { "type": "integer", "minimum": 0 },
+    "usefulTokens": { "type": "integer", "minimum": 0 },
+    "yield": { "type": "number", "minimum": 0 },
+    "cacheReuses": { "type": "integer", "minimum": 0 }
+  },
+  "additionalProperties": true
+}
