@@ -1,0 +1,17 @@
+{
+  "name": "usf-v3",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Repository-contained semantic delivery foundation for ANQR",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "bootstrap": "./scripts/bootstrap.sh",
+    "check:containment": "./scripts/verify-contained.sh",
+    "test": "node --test tests/**/*.test.ts"
+  },
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "urn:usf:validation-policy:1",
+  "profiles": [
+    "graph-affected",
+    "graph-full",
+    "source-affected",
+    "candidate",
+    "integration-batch",
+    "full",
+    "acceptance"
+  ]
+}

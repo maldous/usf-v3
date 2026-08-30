@@ -1,0 +1,18 @@
+# Repository-contained mutable state
+.usf/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Dependency and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Editor and operating-system state
+.DS_Store
+*.swp
+*.swo

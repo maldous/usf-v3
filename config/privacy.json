@@ -1,0 +1,7 @@
+{
+  "$schema": "urn:usf:privacy:1",
+  "defaultClassification": "restricted",
+  "classifications": ["public", "private-metadata", "private-source", "restricted"],
+  "externalRouteDefault": ["public"],
+  "restrictedRoutes": ["local"]
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "urn:usf:policy:1",
+  "maximumPaidCost": 0,
+  "paidFallback": "prohibited",
+  "unknownPrice": "ineligible",
+  "acceptedCostClasses": ["local", "zero-price", "free-quota"]
+}

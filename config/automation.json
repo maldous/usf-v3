@@ -1,0 +1,7 @@
+{
+  "$schema": "urn:usf:automation:1",
+  "defaultThrough": "check",
+  "allowAutomaticIntegration": false,
+  "allowAutomaticPublication": false,
+  "hostConcurrencyCap": 8
+}
