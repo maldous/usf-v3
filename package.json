@@ -30,6 +30,9 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@ai-sdk/cerebras": "3.0.40",
+    "@ai-sdk/groq": "4.0.34",
+    "ai": "7.0.84",
     "ajv": "8.20.0",
     "n3": "2.0.1",
     "oxigraph": "0.5.9",

@@ -3,6 +3,8 @@
   "entries": [],
   "nonclaims": [
     "Historical inspection does not authorize copying unlicensed source.",
-    "No historical component has been incorporated at Gate 0."
+    "No historical component source or corpus bytes have been incorporated through the provider-qualification slice.",
+    "The inspected V2 Factory release carries an all-rights-reserved LICENSE-NOTICE; no V2 Factory source or corpus bytes have been incorporated.",
+    "Design inspection and documented behavioural lessons are not incorporated code or source reuse."
   ]
 }

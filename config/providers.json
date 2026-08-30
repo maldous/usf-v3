@@ -1,5 +1,36 @@
 {
   "$schema": "urn:usf:providers:1",
   "catalogueSource": "models.dev",
-  "routes": []
+  "routes": [
+    {
+      "id": "cerebras-gpt-oss-120b",
+      "family": "cerebras",
+      "provider": "cerebras",
+      "adapterPackage": "@ai-sdk/cerebras",
+      "credentialName": "CEREBRAS_API_KEY",
+      "model": "gpt-oss-120b",
+      "capabilities": ["cli-design", "node-test", "provider-routing", "text-generation", "typescript"],
+      "privacy": ["public"],
+      "cost": "free-quota",
+      "entitlement": "free-quota",
+      "paidFallback": false,
+      "concurrency": 2,
+      "probeFreshnessSeconds": 900
+    },
+    {
+      "id": "groq-qwen3.6-27b",
+      "family": "groq",
+      "provider": "groq",
+      "adapterPackage": "@ai-sdk/groq",
+      "credentialName": "GROQ_API_KEY",
+      "model": "qwen/qwen3.6-27b",
+      "capabilities": ["cli-design", "node-test", "provider-routing", "text-generation", "typescript"],
+      "privacy": ["public"],
+      "cost": "free-quota",
+      "entitlement": "free-quota",
+      "paidFallback": false,
+      "concurrency": 2,
+      "probeFreshnessSeconds": 900
+    }
+  ]
 }

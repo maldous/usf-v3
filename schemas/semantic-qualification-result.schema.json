@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:semantic-qualification-result:1",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "taskClass",
+    "profile",
+    "inputs",
+    "caseEvaluations",
+    "dimensionEvaluations",
+    "taskScore",
+    "casesAnswered",
+    "casesPassed",
+    "casesTotal",
+    "derivedRoles",
+    "observedAt",
+    "evaluatedAt",
+    "validUntil",
+    "externalContact",
+    "authorityEffect",
+    "nonclaims",
+    "qualificationDigest"
+  ],
+  "properties": {
+    "schema": { "const": "urn:usf:semantic-qualification-result:1" },
+    "status": { "enum": ["qualified", "unqualified"] },
+    "taskClass": { "$ref": "#/$defs/label" },
+    "profile": {
+      "type": "object",
+      "required": ["profileDigest", "requested", "actual"],
+      "properties": {
+        "profileDigest": { "$ref": "#/$defs/digest" },
+        "requested": {
+          "type": "object",
+          "required": ["family", "provider", "model", "adapter", "adapterVersion", "adapterLockDigest", "authMode", "toolProfile", "toolProfileDigest", "promptVersion", "promptDigest", "contextConfig", "contextConfigDigest", "outputConfig", "outputConfigDigest"],
+          "properties": {
+            "family": { "$ref": "#/$defs/label" },
+            "provider": { "$ref": "#/$defs/label" },
+            "model": { "$ref": "#/$defs/label" },
+            "adapter": { "$ref": "#/$defs/adapter" },
+            "adapterVersion": { "$ref": "#/$defs/label" },
+            "adapterLockDigest": { "$ref": "#/$defs/digest" },
+            "authMode": { "enum": ["api_token", "oidc_cli", "local", "none"] },
+            "toolProfile": { "$ref": "#/$defs/label" },
+            "toolProfileDigest": { "$ref": "#/$defs/digest" },
+            "promptVersion": { "$ref": "#/$defs/label" },
+            "promptDigest": { "$ref": "#/$defs/digest" },
+            "contextConfig": { "$ref": "#/$defs/label" },
+            "contextConfigDigest": { "$ref": "#/$defs/digest" },
+            "outputConfig": { "$ref": "#/$defs/label" },
+            "outputConfigDigest": { "$ref": "#/$defs/digest" }
+          },
+          "additionalProperties": false
+        },
+        "actual": {
+          "type": "object",
+          "required": ["family", "provider", "model", "sdkProvider"],
+          "properties": {
+            "family": { "$ref": "#/$defs/label" },
+            "provider": { "$ref": "#/$defs/label" },
+            "model": { "$ref": "#/$defs/label" },
+            "sdkProvider": {
+              "oneOf": [
+                { "$ref": "#/$defs/label" },
+                { "type": "null" }
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "inputs": {
+      "type": "object",
+      "required": [
+        "suiteDigest",
+        "corpusDigest",
+        "qualificationPolicyDigest",
+        "effectivePolicyDigest",
+        "providerConfigDigest",
+        "routeDigest",
+        "probeResultDigest",
+        "catalogueRawDigest",
+        "catalogueNormalizedDigest",
+        "answersDigest"
+      ],
+      "properties": {
+        "suiteDigest": { "$ref": "#/$defs/digest" },
+        "corpusDigest": { "$ref": "#/$defs/digest" },
+        "qualificationPolicyDigest": { "$ref": "#/$defs/digest" },
+        "effectivePolicyDigest": { "$ref": "#/$defs/digest" },
+        "providerConfigDigest": { "$ref": "#/$defs/digest" },
+        "routeDigest": { "$ref": "#/$defs/digest" },
+        "probeResultDigest": { "$ref": "#/$defs/digest" },
+        "catalogueRawDigest": { "$ref": "#/$defs/digest" },
+        "catalogueNormalizedDigest": { "$ref": "#/$defs/digest" },
+        "answersDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "caseEvaluations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/caseEvaluation" }
+    },
+    "dimensionEvaluations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dimensionEvaluation" }
+    },
+    "taskScore": { "$ref": "#/$defs/score" },
+    "casesAnswered": { "$ref": "#/$defs/count" },
+    "casesPassed": { "$ref": "#/$defs/count" },
+    "casesTotal": { "$ref": "#/$defs/count" },
+    "derivedRoles": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/role" }
+    },
+    "observedAt": { "$ref": "#/$defs/instant" },
+    "evaluatedAt": { "$ref": "#/$defs/instant" },
+    "validUntil": { "$ref": "#/$defs/instant" },
+    "externalContact": { "const": false },
+    "authorityEffect": { "const": "none" },
+    "nonclaims": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "qualificationDigest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "instant": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+    },
+    "label": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+~-]{0,191}$"
+    },
+    "adapter": {
+      "type": "string",
+      "pattern": "^(?:@[a-z0-9][a-z0-9._-]{0,63}/)?[a-z0-9][a-z0-9._-]{0,95}$"
+    },
+    "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "weight": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000
+    },
+    "dimension": {
+      "enum": [
+        "semantic_planning",
+        "rdf_owl_reasoning",
+        "shacl_sparql",
+        "repository_navigation",
+        "implementation",
+        "debugging",
+        "tool_selection",
+        "structured_output",
+        "scope_discipline",
+        "evidence_discipline",
+        "uncertainty_handling",
+        "review",
+        "wave_integration",
+        "latency",
+        "cost",
+        "false_completion",
+        "later_regression"
+      ]
+    },
+    "role": {
+      "enum": [
+        "UNQUALIFIED",
+        "READ_ONLY_ANALYST",
+        "PLANNER_CANDIDATE",
+        "PATCH_PRODUCER",
+        "REVIEWER",
+        "INTEGRATOR",
+        "ADJUDICATOR",
+        "TRUSTED_COORDINATOR"
+      ]
+    },
+    "caseEvaluation": {
+      "type": "object",
+      "required": ["caseId", "taskClass", "dimension", "answerPresent", "score", "weight", "passed"],
+      "properties": {
+        "caseId": { "$ref": "#/$defs/label" },
+        "taskClass": { "$ref": "#/$defs/label" },
+        "dimension": { "$ref": "#/$defs/dimension" },
+        "answerPresent": { "type": "boolean" },
+        "score": { "$ref": "#/$defs/score" },
+        "weight": { "$ref": "#/$defs/weight" },
+        "passed": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "dimensionEvaluation": {
+      "type": "object",
+      "required": ["taskClass", "dimension", "score", "answered", "passed", "total"],
+      "properties": {
+        "taskClass": { "$ref": "#/$defs/label" },
+        "dimension": { "$ref": "#/$defs/dimension" },
+        "score": { "$ref": "#/$defs/score" },
+        "answered": { "$ref": "#/$defs/count" },
+        "passed": { "$ref": "#/$defs/count" },
+        "total": { "$ref": "#/$defs/count" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -89,12 +89,52 @@ posture; it does not establish an external staging or production deployment.
 
 V1 has an Apache-2.0 licence and contains patterns worth consulting, especially
 manifest registration, deterministic digests, bounded results, and adversarial
-filesystem checks. V2 graph, historical ANQR, and accessible operator material
-do not establish copying terms. Factory and proof-cockpit sources are not
-readable at their mandated paths. Therefore no historical source bytes have
-been incorporated; `provenance/reuse.json` remains empty. The chronology in
-`provenance/historical-observations.json` records observations only and is not a
-reuse declaration.
+filesystem checks. The inspected V2 Factory release is readable but its
+`LICENSE-NOTICE.md` is all rights reserved; historical ANQR and operator
+material also do not establish copying terms. Therefore no historical source
+or corpus bytes have been incorporated and `provenance/reuse.json` remains
+empty. The chronology in `provenance/historical-observations.json` records
+observations only and is not a reuse declaration.
 
 Future reuse must name the exact commit/tree, source files, licence, V3
 requirement, removed couplings, retained or new tests, and containment result.
+
+## Provider and process lessons carried into V3
+
+V2 demonstrated useful parallel convergence and bounded provider observation,
+but its Factory release carries an all-rights-reserved `LICENSE-NOTICE`.
+Consequently V3 is a clean TypeScript reimplementation informed by observed
+behaviour and documented requirements; no V2 source bytes, corpus bytes, or
+Factory implementation have been copied. The lesson retained is the boundary
+between derived parallel work and semantic authority, not the historical
+Factory topology.
+
+Provider qualification must be two separate questions: can this exact adapter,
+credential, model, capability, quota and explicitly pinned service tier be
+used under the cost/privacy policy; and does its output satisfy the semantic
+task and accepted lineage? Neither a catalogue entry nor a successful probe
+answers the second question. Unknown account tier, unknown pricing, implicit
+fallback, and missing actual identity remain refusals for a zero-cost claim.
+Semantic evaluation binds the full agent profile, including adapter lock and
+the content digests behind tool, prompt, context and output versions; labels
+alone would recreate V2's stale-profile repair loop. Missing answers score zero
+and the default remains `UNQUALIFIED`.
+
+USF core and product semantics each retain their own version and digest because
+their dependencies run both ways. Separate core-to-product and product-to-core
+digests show which interpretation moved, while a composite digest binds the
+exact pair. This prevents unrelated product or core movement from turning
+GitHub, a global graph revision, or a whole-programme reproof into the critical
+path.
+
+The external process must be able to run unattended between invocations. That
+requires registered, composable `usf` commands with stable JSON, bounded
+inputs, explicit `usf start` and `usf stop` lifecycle records, and deliverables
+that carry their own start/stop boundary. Shell inspection is permitted only
+while closing a missing command boundary; it is not the operating interface.
+
+Test growth is governed by semantic ownership: retain one test per distinct
+acceptance/refusal or process boundary, replace duplicates, prefer injected
+clocks/transports and fixture data, and keep live-provider work out of default
+lanes. This preserves V2's safety properties without repeating its iterative
+governance bottleneck.

@@ -2,4 +2,4 @@
 set -eu
 
 usf_bin_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
-exec node "$usf_bin_root/src/cli.ts" "$@"
+exec node -- "$usf_bin_root/src/cli.ts" "$@"

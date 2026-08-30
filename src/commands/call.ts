@@ -2,8 +2,20 @@ import { DeterministicFakeProvider, type CallAssignment, type CallBatchResult, t
 import type { CommandHandler } from "./dispatcher.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 
+function isValidConcurrency(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && Number.isSafeInteger(value) && value > 0;
+}
+
 export async function callAssignments(assignments: readonly CallAssignment[], hostConcurrency = 8): Promise<CallBatchResult> {
-  const capped = Math.max(1, hostConcurrency);
+  if (!isValidConcurrency(hostConcurrency)) {
+    throw new UsfError("CALL_HOST_CONCURRENCY_INVALID", exitCodes.INVALID_INPUT, "Call host concurrency must be a positive finite safe integer.");
+  }
+  for (const assignment of assignments) {
+    if (!isValidConcurrency(assignment.route.concurrency)) {
+      throw new UsfError("CALL_ROUTE_CONCURRENCY_INVALID", exitCodes.INVALID_INPUT, "Every call route concurrency must be a positive finite safe integer.");
+    }
+  }
+  const capped = hostConcurrency;
   const providers = new Map<string, DeterministicFakeProvider>();
   const activeByProvider = new Map<string, number>();
   const pending = [...assignments];
@@ -15,7 +27,10 @@ export async function callAssignments(assignments: readonly CallAssignment[], ho
       const assignment = pending[index]!;
       const key = `${assignment.route.requested.family}:${assignment.route.requested.provider}`;
       const active = activeByProvider.get(key) ?? 0;
-      if (active < Math.max(1, assignment.route.concurrency)) { batch.push(assignment); pending.splice(index, 1); activeByProvider.set(key, active + 1); } else index += 1;
+      if (active < assignment.route.concurrency) { batch.push(assignment); pending.splice(index, 1); activeByProvider.set(key, active + 1); } else index += 1;
+    }
+    if (batch.length === 0) {
+      throw new UsfError("CALL_SCHEDULER_NO_PROGRESS", exitCodes.DOMAIN_FAILURE, "The call scheduler refused a pending set that could not make progress.");
     }
     const results = await Promise.all(batch.map(async (assignment) => {
       const key = `${assignment.route.requested.family}:${assignment.route.requested.provider}`;

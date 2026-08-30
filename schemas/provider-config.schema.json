@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:provider-config:1",
+  "type": "object",
+  "required": ["$schema", "catalogueSource", "routes"],
+  "properties": {
+    "$schema": { "const": "urn:usf:providers:1" },
+    "catalogueSource": { "const": "models.dev" },
+    "routes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/route" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "label": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]{0,95}$"
+    },
+    "model": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+~-]{0,191}$"
+    },
+    "adapterPackage": {
+      "type": "string",
+      "pattern": "^(?:@[a-z0-9][a-z0-9._-]{0,63}/)?[a-z0-9][a-z0-9._-]{0,95}$"
+    },
+    "credentialName": {
+      "type": "string",
+      "pattern": "^[A-Z_][A-Z0-9_]{0,127}$"
+    },
+    "capability": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]{0,95}$"
+    },
+    "privacy": {
+      "enum": ["public", "private-metadata", "private-source", "restricted"]
+    },
+    "cost": {
+      "enum": ["local", "zero-price", "free-quota", "subscription", "paid", "unknown"]
+    },
+    "entitlement": {
+      "enum": ["local", "zero-price", "free-quota", "subscription", "promotional-credit", "paid", "unknown"]
+    },
+    "route": {
+      "type": "object",
+      "required": [
+        "id",
+        "family",
+        "provider",
+        "adapterPackage",
+        "credentialName",
+        "model",
+        "capabilities",
+        "privacy",
+        "cost",
+        "entitlement",
+        "paidFallback",
+        "concurrency",
+        "probeFreshnessSeconds"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/label" },
+        "family": { "$ref": "#/$defs/label" },
+        "provider": { "$ref": "#/$defs/label" },
+        "adapterPackage": { "$ref": "#/$defs/adapterPackage" },
+        "credentialName": { "$ref": "#/$defs/credentialName" },
+        "model": { "$ref": "#/$defs/model" },
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/capability" }
+        },
+        "privacy": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/privacy" }
+        },
+        "cost": { "$ref": "#/$defs/cost" },
+        "entitlement": { "$ref": "#/$defs/entitlement" },
+        "paidFallback": { "type": "boolean" },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "probeFreshnessSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

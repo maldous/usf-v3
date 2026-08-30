@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:route-result:1",
+  "type": "object",
+  "required": ["schema", "status", "strategy", "inputs", "denominators", "caps", "assessments", "semanticQualifications", "assignments", "resultDigest", "externalContact", "authorityEffect", "nonclaims"],
+  "properties": {
+    "schema": { "const": "urn:usf:route-result:1" },
+    "status": { "enum": ["ok", "refused"] },
+    "reasonCode": { "const": "NO_ELIGIBLE_ROUTE" },
+    "strategy": { "enum": ["all-eligible", "diverse", "fastest", "review-diverse", "deterministic-fixture"] },
+    "inputs": {
+      "type": "object",
+      "required": ["workDigest", "semanticBindingDigest", "catalogueRawDigest", "catalogueNormalizedDigest", "probeSetDigest", "policyDigest", "semanticQualificationSuiteDigest", "semanticQualificationCorpusDigest", "semanticQualificationPolicyDigest", "semanticQualificationSetDigest", "providerConfigDigest", "qualificationAt"],
+      "properties": {
+        "workDigest": { "$ref": "#/$defs/digest" },
+        "semanticBindingDigest": { "$ref": "#/$defs/digest" },
+        "catalogueRawDigest": { "$ref": "#/$defs/digest" },
+        "catalogueNormalizedDigest": { "$ref": "#/$defs/digest" },
+        "probeSetDigest": { "$ref": "#/$defs/digest" },
+        "policyDigest": { "$ref": "#/$defs/digest" },
+        "semanticQualificationSuiteDigest": { "$ref": "#/$defs/digest" },
+        "semanticQualificationCorpusDigest": { "$ref": "#/$defs/digest" },
+        "semanticQualificationPolicyDigest": { "$ref": "#/$defs/digest" },
+        "semanticQualificationSetDigest": { "$ref": "#/$defs/digest" },
+        "providerConfigDigest": { "$ref": "#/$defs/digest" },
+        "qualificationAt": { "$ref": "#/$defs/instant" }
+      },
+      "additionalProperties": false
+    },
+    "denominators": {
+      "type": "object",
+      "required": ["configuredRoutes", "assessedRoutes", "eligibleRoutes", "excludedRoutes", "eligibleUnassignedRoutes", "eligibleProviderFamilies", "assignedRoutes"],
+      "properties": {
+        "configuredRoutes": { "$ref": "#/$defs/count" },
+        "assessedRoutes": { "$ref": "#/$defs/count" },
+        "eligibleRoutes": { "$ref": "#/$defs/count" },
+        "excludedRoutes": { "$ref": "#/$defs/count" },
+        "eligibleUnassignedRoutes": { "$ref": "#/$defs/count" },
+        "eligibleProviderFamilies": { "$ref": "#/$defs/count" },
+        "assignedRoutes": { "$ref": "#/$defs/count" }
+      },
+      "additionalProperties": false
+    },
+    "caps": {
+      "type": "object",
+      "required": ["hostConcurrency", "maxAssignments"],
+      "properties": {
+        "hostConcurrency": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "maxAssignments": { "type": "integer", "minimum": 1, "maximum": 10000 }
+      },
+      "additionalProperties": false
+    },
+    "assessments": { "type": "array", "items": { "$ref": "#/$defs/assessment" } },
+    "semanticQualifications": { "type": "array", "items": { "$ref": "#/$defs/semanticQualificationReference" } },
+    "assignments": { "type": "array", "items": { "$ref": "#/$defs/assignment" } },
+    "resultDigest": { "$ref": "#/$defs/digest" },
+    "externalContact": { "const": false },
+    "authorityEffect": { "const": "none" },
+    "nonclaims": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "instant": { "type": "string", "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$" },
+    "count": { "type": "integer", "minimum": 0, "maximum": 100000 },
+    "label": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+-]{0,191}$" },
+    "model": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+~-]{0,191}$" },
+    "capability": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{0,95}$" },
+    "identity": {
+      "type": "object",
+      "required": ["family", "provider", "model"],
+      "properties": {
+        "family": { "$ref": "#/$defs/label" },
+        "provider": { "$ref": "#/$defs/label" },
+        "model": { "$ref": "#/$defs/model" }
+      },
+      "additionalProperties": false
+    },
+    "semanticQualificationBinding": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["applicability", "requiredCapabilities", "requiredTaskClasses", "qualificationDigests", "validityDigest"],
+          "properties": {
+            "applicability": { "const": "required" },
+            "requiredCapabilities": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+            "requiredTaskClasses": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+            "qualificationDigests": { "type": "array", "items": { "$ref": "#/$defs/digest" } },
+            "validityDigest": { "$ref": "#/$defs/digest" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["applicability", "requiredCapabilities", "requiredTaskClasses", "reason", "validityDigest"],
+          "properties": {
+            "applicability": { "const": "not-required" },
+            "requiredCapabilities": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+            "requiredTaskClasses": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+            "reason": { "const": "no-semantic-capabilities-required" },
+            "validityDigest": { "const": "not-applicable" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "semanticQualificationReference": {
+      "type": "object",
+      "required": ["taskClass", "status", "qualificationDigest", "profileDigest", "suiteDigest", "corpusDigest", "qualificationPolicyDigest", "effectivePolicyDigest", "providerConfigDigest", "routeDigest", "probeResultDigest", "actualIdentityDigest", "validityDigest", "validUntil"],
+      "properties": {
+        "taskClass": { "$ref": "#/$defs/capability" }, "status": { "enum": ["qualified", "unqualified"] },
+        "qualificationDigest": { "$ref": "#/$defs/digest" }, "profileDigest": { "$ref": "#/$defs/digest" },
+        "suiteDigest": { "$ref": "#/$defs/digest" }, "corpusDigest": { "$ref": "#/$defs/digest" },
+        "qualificationPolicyDigest": { "$ref": "#/$defs/digest" }, "effectivePolicyDigest": { "$ref": "#/$defs/digest" },
+        "providerConfigDigest": { "$ref": "#/$defs/digest" }, "routeDigest": { "$ref": "#/$defs/digest" },
+        "probeResultDigest": { "$ref": "#/$defs/digest" }, "actualIdentityDigest": { "$ref": "#/$defs/digest" },
+        "validityDigest": { "$ref": "#/$defs/digest" }, "validUntil": { "$ref": "#/$defs/instant" }
+      },
+      "additionalProperties": false
+    },
+    "semanticBinding": {
+      "type": "object",
+      "required": ["core", "product", "directional", "compositeDigest"],
+      "properties": {
+        "core": {
+          "type": "object",
+          "required": ["profile", "version", "profileDigest"],
+          "properties": {
+            "profile": { "$ref": "#/$defs/label" },
+            "version": { "$ref": "#/$defs/label" },
+            "profileDigest": { "$ref": "#/$defs/digest" }
+          },
+          "additionalProperties": false
+        },
+        "product": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["applicability", "profile", "version", "profileDigest"],
+              "properties": {
+                "applicability": { "const": "applicable" },
+                "profile": { "$ref": "#/$defs/label" },
+                "version": { "$ref": "#/$defs/label" },
+                "profileDigest": { "$ref": "#/$defs/digest" }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": ["applicability", "profile", "version", "profileDigest"],
+              "properties": {
+                "applicability": { "const": "not-applicable" },
+                "profile": { "const": "not-applicable" },
+                "version": { "const": "not-applicable" },
+                "profileDigest": { "const": "not-applicable" }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "directional": {
+          "type": "object",
+          "required": ["coreToProductDigest", "productToCoreDigest"],
+          "properties": {
+            "coreToProductDigest": { "$ref": "#/$defs/digest" },
+            "productToCoreDigest": { "$ref": "#/$defs/digest" }
+          },
+          "additionalProperties": false
+        },
+        "compositeDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "assessment": {
+      "type": "object",
+      "required": ["routeId", "family", "provider", "model", "underlyingModelFamily", "underlyingModel", "eligible", "disposition", "exclusionReason", "concurrency", "latencyMs", "mechanicalCapabilities", "semanticCapabilities", "semanticTaskClasses", "semanticQualificationDigest", "semanticQualificationInputDigest", "semanticQualificationValidUntil", "qualificationDigest", "qualificationValidUntil"],
+      "properties": {
+        "routeId": { "$ref": "#/$defs/label" },
+        "family": { "$ref": "#/$defs/label" },
+        "provider": { "$ref": "#/$defs/label" },
+        "model": { "$ref": "#/$defs/model" },
+        "underlyingModelFamily": { "oneOf": [{ "$ref": "#/$defs/label" }, { "type": "null" }] },
+        "underlyingModel": { "oneOf": [{ "$ref": "#/$defs/model" }, { "type": "null" }] },
+        "eligible": { "type": "boolean" },
+        "disposition": { "enum": ["assigned", "excluded", "eligible-unassigned"] },
+        "exclusionReason": {
+          "oneOf": [
+            { "type": "null" },
+            { "enum": ["ADAPTER_UNAVAILABLE", "CREDENTIAL_MISSING", "CATALOGUE_ROUTE_MISSING", "CATALOGUE_UNDERLYING_IDENTITY_MISMATCH", "CAPABILITY_MISMATCH", "PRIVACY_INELIGIBLE", "COST_CLASS_INELIGIBLE", "CATALOGUE_PRICE_UNKNOWN", "CATALOGUE_PRICE_NONZERO", "ENTITLEMENT_UNVERIFIED", "ENTITLEMENT_ROUTE_MISMATCH", "ENTITLEMENT_STALE", "ENTITLEMENT_QUOTA_UNKNOWN", "ENTITLEMENT_QUOTA_EXHAUSTED", "FREE_QUOTA_UNAVAILABLE", "PAID_FALLBACK_PROHIBITED", "PROBE_MISSING", "PROBE_INPUT_MISMATCH", "PROBE_STALE", "PROBE_FAILED", "PROBE_QUOTA_UNKNOWN", "PROBE_QUOTA_EXHAUSTED", "PROBE_HEALTH_UNAVAILABLE", "PROBE_ACTUAL_IDENTITY_MISSING", "PROBE_ACTUAL_IDENTITY_MISMATCH", "PROBE_COST_NONZERO", "PROBE_COST_BASIS_UNKNOWN", "SEMANTIC_QUALIFICATION_MISSING", "SEMANTIC_QUALIFICATION_MISMATCH", "SEMANTIC_QUALIFICATION_STALE", "SEMANTIC_CAPABILITY_UNQUALIFIED"] }
+          ]
+        },
+        "concurrency": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "latencyMs": { "type": ["number", "null"], "minimum": 0, "maximum": 9000000 },
+        "mechanicalCapabilities": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+        "semanticCapabilities": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+        "semanticTaskClasses": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+        "semanticQualificationDigest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] },
+        "semanticQualificationInputDigest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] },
+        "semanticQualificationValidUntil": { "oneOf": [{ "$ref": "#/$defs/instant" }, { "type": "null" }] },
+        "qualificationDigest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] },
+        "qualificationValidUntil": { "oneOf": [{ "$ref": "#/$defs/instant" }, { "type": "null" }] }
+      },
+      "additionalProperties": false
+    },
+    "qualification": {
+      "type": "object",
+      "required": ["routeDigest", "providerRouteConfigDigest", "catalogueFactDigest", "probeDigest", "catalogueRawDigest", "catalogueNormalizedDigest", "probeSetDigest", "policyDigest", "entitlementEvidenceDigest", "probeObservedAt", "probeExpiresAt", "latencyMs", "mechanicalCapabilities", "semanticQualification", "validAt", "validUntil", "qualificationDigest"],
+      "properties": {
+        "routeDigest": { "$ref": "#/$defs/digest" },
+        "providerRouteConfigDigest": { "$ref": "#/$defs/digest" },
+        "catalogueFactDigest": { "$ref": "#/$defs/digest" },
+        "probeDigest": { "$ref": "#/$defs/digest" },
+        "catalogueRawDigest": { "$ref": "#/$defs/digest" },
+        "catalogueNormalizedDigest": { "$ref": "#/$defs/digest" },
+        "probeSetDigest": { "$ref": "#/$defs/digest" },
+        "policyDigest": { "$ref": "#/$defs/digest" },
+        "entitlementEvidenceDigest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "const": "not-applicable" }] },
+        "probeObservedAt": { "$ref": "#/$defs/instant" },
+        "probeExpiresAt": { "$ref": "#/$defs/instant" },
+        "latencyMs": { "type": ["number", "null"], "minimum": 0, "maximum": 9000000 },
+        "mechanicalCapabilities": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+        "semanticQualification": { "$ref": "#/$defs/semanticQualificationBinding" },
+        "validAt": { "$ref": "#/$defs/instant" },
+        "validUntil": { "$ref": "#/$defs/instant" },
+        "qualificationDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    },
+    "assignment": {
+      "type": "object",
+      "required": ["routeId", "requested", "actual", "underlying", "workId", "workDigest", "semanticBinding", "qualification", "concurrency", "assignmentDigest"],
+      "properties": {
+        "routeId": { "$ref": "#/$defs/label" },
+        "requested": { "$ref": "#/$defs/identity" },
+        "actual": { "$ref": "#/$defs/identity" },
+        "underlying": {
+          "type": "object",
+          "required": ["family", "model"],
+          "properties": {
+            "family": { "oneOf": [{ "$ref": "#/$defs/label" }, { "type": "null" }] },
+            "model": { "$ref": "#/$defs/model" }
+          },
+          "additionalProperties": false
+        },
+        "workId": { "$ref": "#/$defs/label" },
+        "workDigest": { "$ref": "#/$defs/digest" },
+        "semanticBinding": { "$ref": "#/$defs/semanticBinding" },
+        "qualification": { "$ref": "#/$defs/qualification" },
+        "concurrency": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "assignmentDigest": { "$ref": "#/$defs/digest" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

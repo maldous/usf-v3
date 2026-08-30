@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:model-catalogue:1",
+  "type": "object",
+  "required": ["schema", "source", "rawDigest", "normalizedDigest", "denominators", "providers", "nonclaims"],
+  "properties": {
+    "schema": { "const": "urn:usf:model-catalogue:1" },
+    "source": { "const": "models.dev/api.json" },
+    "rawDigest": { "$ref": "#/$defs/digest" },
+    "normalizedDigest": { "$ref": "#/$defs/digest" },
+    "denominators": { "$ref": "#/$defs/denominators" },
+    "providers": { "type": "array", "items": { "$ref": "#/$defs/provider" } },
+    "nonclaims": { "type": "array", "items": { "$ref": "#/$defs/text" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "natural": { "type": "integer", "minimum": 0 },
+    "nullableNatural": { "type": ["integer", "null"], "minimum": 0 },
+    "nullableNumber": { "type": ["number", "null"], "minimum": 0 },
+    "nullableBoolean": { "type": ["boolean", "null"] },
+    "text": { "type": "string", "minLength": 1, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" },
+    "nullableText": { "type": ["string", "null"], "pattern": "^[^\\u0000-\\u001f\\u007f]+$" },
+    "token": { "type": "string", "minLength": 1, "pattern": "^[^\\s\\\\\\u0000-\\u001f\\u007f]+$" },
+    "nullableToken": { "type": ["string", "null"], "pattern": "^[^\\s\\\\\\u0000-\\u001f\\u007f]+$" },
+    "adapter": {
+      "type": "object",
+      "required": ["package", "installedVersion"],
+      "properties": {
+        "package": { "$ref": "#/$defs/nullableToken" },
+        "installedVersion": { "$ref": "#/$defs/nullableToken" }
+      },
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "object",
+      "required": ["attachment", "reasoning", "structuredOutput", "temperature", "toolCall"],
+      "properties": {
+        "attachment": { "$ref": "#/$defs/nullableBoolean" },
+        "reasoning": { "$ref": "#/$defs/nullableBoolean" },
+        "structuredOutput": { "$ref": "#/$defs/nullableBoolean" },
+        "temperature": { "$ref": "#/$defs/nullableBoolean" },
+        "toolCall": { "$ref": "#/$defs/nullableBoolean" }
+      },
+      "additionalProperties": false
+    },
+    "modalities": {
+      "type": "object",
+      "required": ["input", "output"],
+      "properties": {
+        "input": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "array", "items": { "$ref": "#/$defs/token" } }
+          ]
+        },
+        "output": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "array", "items": { "$ref": "#/$defs/token" } }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "cost": {
+      "type": "object",
+      "required": ["currency", "unit", "input", "output", "reasoning", "cacheRead", "cacheWrite", "inputAudio", "outputAudio"],
+      "properties": {
+        "currency": { "const": "USD" },
+        "unit": { "const": "per-million-tokens" },
+        "input": { "$ref": "#/$defs/nullableNumber" },
+        "output": { "$ref": "#/$defs/nullableNumber" },
+        "reasoning": { "$ref": "#/$defs/nullableNumber" },
+        "cacheRead": { "$ref": "#/$defs/nullableNumber" },
+        "cacheWrite": { "$ref": "#/$defs/nullableNumber" },
+        "inputAudio": { "$ref": "#/$defs/nullableNumber" },
+        "outputAudio": { "$ref": "#/$defs/nullableNumber" }
+      },
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "required": ["context", "input", "output"],
+      "properties": {
+        "context": { "$ref": "#/$defs/nullableNatural" },
+        "input": { "$ref": "#/$defs/nullableNatural" },
+        "output": { "$ref": "#/$defs/nullableNatural" }
+      },
+      "additionalProperties": false
+    },
+    "model": {
+      "type": "object",
+      "required": ["route", "underlying", "name", "nameSource", "capabilities", "capabilityNames", "modalities", "openWeights", "cost", "limits"],
+      "properties": {
+        "route": {
+          "type": "object",
+          "required": ["provider", "model"],
+          "properties": {
+            "provider": { "$ref": "#/$defs/token" },
+            "model": { "$ref": "#/$defs/token" }
+          },
+          "additionalProperties": false
+        },
+        "underlying": {
+          "type": "object",
+          "required": ["family", "model"],
+          "properties": {
+            "family": { "$ref": "#/$defs/nullableToken" },
+            "model": { "$ref": "#/$defs/token" }
+          },
+          "additionalProperties": false
+        },
+        "name": { "$ref": "#/$defs/text" },
+        "nameSource": { "enum": ["catalogue", "route-id-fallback"] },
+        "capabilities": { "$ref": "#/$defs/capabilities" },
+        "capabilityNames": {
+          "type": "array",
+          "items": { "enum": ["attachment", "reasoning", "structured-output", "temperature", "tool-call"] }
+        },
+        "modalities": { "$ref": "#/$defs/modalities" },
+        "openWeights": { "$ref": "#/$defs/nullableBoolean" },
+        "cost": { "$ref": "#/$defs/cost" },
+        "limits": { "$ref": "#/$defs/limits" }
+      },
+      "additionalProperties": false
+    },
+    "provider": {
+      "type": "object",
+      "required": ["providerRoute", "name", "adapter", "credentialNames", "models"],
+      "properties": {
+        "providerRoute": { "$ref": "#/$defs/token" },
+        "name": { "$ref": "#/$defs/text" },
+        "adapter": { "$ref": "#/$defs/adapter" },
+        "credentialNames": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z0-9_]{1,128}$" } },
+        "models": { "type": "array", "items": { "$ref": "#/$defs/model" } }
+      },
+      "additionalProperties": false
+    },
+    "denominators": {
+      "type": "object",
+      "required": ["providerRoutes", "modelRoutes", "underlyingModels", "underlyingFamilies", "unknownUnderlyingFamilies", "adapterPackages", "installedAdapterPackages", "credentialNames", "cataloguePriceKnownModels", "cataloguePriceUnknownModels", "catalogueZeroPriceModels"],
+      "properties": {
+        "providerRoutes": { "$ref": "#/$defs/natural" },
+        "modelRoutes": { "$ref": "#/$defs/natural" },
+        "underlyingModels": { "$ref": "#/$defs/natural" },
+        "underlyingFamilies": { "$ref": "#/$defs/natural" },
+        "unknownUnderlyingFamilies": { "$ref": "#/$defs/natural" },
+        "adapterPackages": { "$ref": "#/$defs/natural" },
+        "installedAdapterPackages": { "$ref": "#/$defs/natural" },
+        "credentialNames": { "$ref": "#/$defs/natural" },
+        "cataloguePriceKnownModels": { "$ref": "#/$defs/natural" },
+        "cataloguePriceUnknownModels": { "$ref": "#/$defs/natural" },
+        "catalogueZeroPriceModels": { "$ref": "#/$defs/natural" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

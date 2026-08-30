@@ -38,7 +38,7 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.deepEqual(parseCommand(["metrics", "tokens", "--help", "--json"]), { command: "help", args: ["metrics", "tokens", "--json"] });
   const machine = helpCommandResult(["metrics", "tokens", "--json"]);
   assert.equal(machine.outputMode, "json");
-  const output = machine.output as { schema: string; status: string; topic: string[]; command: { outputSchema: string; externalContact: string; historyScan: string; availability: string } };
+  const output = machine.output as { schema: string; status: string; topic: string[]; command: { outputSchema: string; externalContact: string; historyScan: string; availability: string; exitCodeMeanings: Array<{ code: number; meaning: string }> } };
   assert.equal(output.schema, "urn:usf:cli-help:1");
   assert.equal(output.status, "ok");
   assert.deepEqual(output.topic, ["metrics", "tokens"]);
@@ -46,4 +46,26 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.equal(output.command.externalContact, "none");
   assert.equal(output.command.historyScan, "bounded");
   assert.equal(output.command.availability, "implemented");
+  assert.deepEqual(output.command.exitCodeMeanings[0], { code: 0, meaning: "success" });
+
+  const queryHelp = helpCommandResult(["query", "--json"]);
+  const queryOptions = (queryHelp.output as { command: { options: Array<{ syntax: string }> } }).command.options.map((option) => option.syntax);
+  assert.ok(queryOptions.includes("--selector IRI | --iri IRI | --contract IRI"));
+
+  const workHelp = helpCommandResult(["work", "--json"]);
+  const workOptions = (workHelp.output as { command: { options: Array<{ syntax: string }> } }).command.options.map((option) => option.syntax);
+  assert.ok(workOptions.includes("--ready"));
+  assert.ok(workOptions.includes("--stream"));
+  assert.ok(workOptions.includes("--shard ID"));
+
+  const availabilityHelp = helpCommandResult(["probe", "availability", "--json"]);
+  const availability = (availabilityHelp.output as { command: { externalContact: string; exitCodes: number[] } }).command;
+  assert.equal(availability.externalContact, "none");
+  assert.deepEqual(availability.exitCodes, [2, 4, 5]);
+
+  const routeHelp = helpCommandResult(["route", "--json"]);
+  const route = (routeHelp.output as { command: { externalContact: string; exitCodes: number[]; options: Array<{ description: string }> } }).command;
+  assert.equal(route.externalContact, "none");
+  assert.ok(route.exitCodes.includes(4));
+  assert.match(route.options[0]!.description, /config\/qualification\.json/u);
 });

@@ -1,0 +1,227 @@
+{
+  "$schema": "urn:usf:qualification-config:1",
+  "suite": {
+    "suiteId": "usf-v3-provider-semantic",
+    "suiteVersion": "1.0.0",
+    "corpusId": "usf-v3-provider-semantic-corpus",
+    "corpusVersion": "1.0.0",
+    "cases": [
+      {
+        "caseId": "cli-plan-operator-intent",
+        "taskClass": "cli-design",
+        "dimension": "semantic_planning",
+        "prompt": "State the organizing principle for a reusable operator CLI in four words.",
+        "grader": { "kind": "exact", "value": "group by operator intent" },
+        "holdout": false,
+        "weight": 1
+      },
+      {
+        "caseId": "cli-foreground-lifecycle",
+        "taskClass": "cli-design",
+        "dimension": "implementation",
+        "prompt": "Choose the Unix execution mode that leaves supervision to the caller: foreground or daemonized.",
+        "grader": { "kind": "choice", "value": "foreground" },
+        "holdout": true,
+        "weight": 1
+      },
+      {
+        "caseId": "cli-structured-invocation",
+        "taskClass": "cli-design",
+        "dimension": "structured_output",
+        "prompt": "Return JSON containing one command string and its ordered string arguments.",
+        "grader": {
+          "kind": "json-schema",
+          "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": ["command", "arguments"],
+            "properties": {
+              "command": { "type": "string", "minLength": 1 },
+              "arguments": { "type": "array", "items": { "type": "string" } }
+            },
+            "additionalProperties": false
+          }
+        },
+        "holdout": false,
+        "weight": 1
+      },
+      {
+        "caseId": "cli-reusable-command-boundary",
+        "taskClass": "cli-design",
+        "dimension": "scope_discipline",
+        "prompt": "Name both constraints that keep operator work reusable and deterministic.",
+        "grader": { "kind": "contains", "all": ["registered usf command", "no ad hoc command"] },
+        "holdout": true,
+        "weight": 1
+      },
+      {
+        "caseId": "node-test-runner",
+        "taskClass": "node-test",
+        "dimension": "implementation",
+        "prompt": "Give the repository-native Node test runner invocation without extra arguments.",
+        "grader": { "kind": "exact", "value": "node --test" },
+        "holdout": false,
+        "weight": 1
+      },
+      {
+        "caseId": "node-test-diagnostic-fixture",
+        "taskClass": "node-test",
+        "dimension": "debugging",
+        "prompt": "State the two properties needed for a provider failure fixture to be diagnostically useful.",
+        "grader": { "kind": "contains", "all": ["deterministic fixture", "failure reason"] },
+        "holdout": true,
+        "weight": 1
+      },
+      {
+        "caseId": "node-test-evidence-boundary",
+        "taskClass": "node-test",
+        "dimension": "evidence_discipline",
+        "prompt": "Complete the boundary: hermetic tests establish fixture behavior, but they do not establish what two live-system claims?",
+        "grader": { "kind": "contains", "all": ["production", "provider availability"] },
+        "holdout": true,
+        "weight": 1
+      },
+      {
+        "caseId": "node-test-regression-economy",
+        "taskClass": "node-test",
+        "dimension": "later_regression",
+        "prompt": "Name the narrow check used while iterating and the broader check required before acceptance.",
+        "grader": { "kind": "contains", "all": ["focused test", "full gate"] },
+        "holdout": false,
+        "weight": 1
+      },
+      {
+        "caseId": "route-complete-partition",
+        "taskClass": "provider-routing",
+        "dimension": "semantic_planning",
+        "prompt": "List the configured denominator and the three mutually exclusive routing dispositions.",
+        "grader": { "kind": "set-equal", "values": ["configured", "assigned", "excluded", "eligible-unassigned"] },
+        "holdout": false,
+        "weight": 1
+      },
+      {
+        "caseId": "route-contact-order",
+        "taskClass": "provider-routing",
+        "dimension": "tool_selection",
+        "prompt": "Choose the routing posture that completes deterministic preflight before any provider contact: local-first or contact-first.",
+        "grader": { "kind": "choice", "value": "local-first" },
+        "holdout": true,
+        "weight": 1
+      },
+      {
+        "caseId": "route-unknown-entitlement",
+        "taskClass": "provider-routing",
+        "dimension": "uncertainty_handling",
+        "prompt": "A route has no current exact-account entitlement observation. State what can be concluded about its zero-paid eligibility.",
+        "grader": { "kind": "uncertainty" },
+        "holdout": true,
+        "weight": 1
+      },
+      {
+        "caseId": "route-noncompletion-boundary",
+        "taskClass": "provider-routing",
+        "dimension": "false_completion",
+        "prompt": "State both nonclaims needed after a successful mechanical provider probe and deterministic assignment.",
+        "grader": { "kind": "contains", "all": ["probe is not semantic qualification", "assignment is not proof"] },
+        "holdout": false,
+        "weight": 1
+      },
+      {
+        "caseId": "typescript-readonly-contract",
+        "taskClass": "typescript",
+        "dimension": "implementation",
+        "prompt": "Name the TypeScript modifier used for immutable interface fields.",
+        "grader": { "kind": "exact", "value": "readonly" },
+        "holdout": false,
+        "weight": 1
+      },
+      {
+        "caseId": "typescript-two-layer-validation",
+        "taskClass": "typescript",
+        "dimension": "debugging",
+        "prompt": "Name both layers needed when untrusted JSON enters a statically typed program.",
+        "grader": { "kind": "contains", "all": ["runtime validation", "type checking"] },
+        "holdout": true,
+        "weight": 1
+      },
+      {
+        "caseId": "typescript-bounded-result",
+        "taskClass": "typescript",
+        "dimension": "structured_output",
+        "prompt": "Return JSON with a files array and risk set exactly to bounded.",
+        "grader": {
+          "kind": "json-schema",
+          "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": ["files", "risk"],
+            "properties": {
+              "files": { "type": "array", "items": { "type": "string" } },
+              "risk": { "const": "bounded" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "holdout": false,
+        "weight": 1
+      },
+      {
+        "caseId": "typescript-authorized-scope",
+        "taskClass": "typescript",
+        "dimension": "scope_discipline",
+        "prompt": "State the change-size rule at the Graph authority boundary.",
+        "grader": { "kind": "exact", "value": "smallest graph-authorized change" },
+        "holdout": true,
+        "weight": 1
+      }
+    ]
+  },
+  "policy": {
+    "policyId": "usf-v3-provider-semantic-policy",
+    "policyVersion": "1.0.0",
+    "defaultRole": "UNQUALIFIED",
+    "validitySeconds": 900,
+    "thresholds": [
+      {
+        "taskClass": "cli-design",
+        "role": "PATCH_PRODUCER",
+        "minimumScores": [
+          { "dimension": "semantic_planning", "minimum": 1 },
+          { "dimension": "implementation", "minimum": 1 },
+          { "dimension": "structured_output", "minimum": 1 },
+          { "dimension": "scope_discipline", "minimum": 1 }
+        ]
+      },
+      {
+        "taskClass": "node-test",
+        "role": "REVIEWER",
+        "minimumScores": [
+          { "dimension": "implementation", "minimum": 1 },
+          { "dimension": "debugging", "minimum": 1 },
+          { "dimension": "evidence_discipline", "minimum": 1 },
+          { "dimension": "later_regression", "minimum": 1 }
+        ]
+      },
+      {
+        "taskClass": "provider-routing",
+        "role": "PLANNER_CANDIDATE",
+        "minimumScores": [
+          { "dimension": "semantic_planning", "minimum": 1 },
+          { "dimension": "tool_selection", "minimum": 1 },
+          { "dimension": "uncertainty_handling", "minimum": 1 },
+          { "dimension": "false_completion", "minimum": 1 }
+        ]
+      },
+      {
+        "taskClass": "typescript",
+        "role": "PATCH_PRODUCER",
+        "minimumScores": [
+          { "dimension": "implementation", "minimum": 1 },
+          { "dimension": "debugging", "minimum": 1 },
+          { "dimension": "structured_output", "minimum": 1 },
+          { "dimension": "scope_discipline", "minimum": 1 }
+        ]
+      }
+    ]
+  }
+}
