@@ -1096,6 +1096,7 @@ usf doctor
 usf status
 usf query
 usf observe
+usf metrics
 usf work
 usf models
 usf probe
@@ -1128,6 +1129,15 @@ Every command MUST:
 - support repository-relative output paths;
 - never require another command to have advanced a hidden lifecycle state.
 
+The command registry is the single source for parsing and help. `usf --help`,
+`usf help`, `usf help <command> [subcommand]` and
+`usf <command> [subcommand] --help` MUST work without a repository, GitHub,
+provider credentials, a supervisor or network access. Help states the purpose,
+synopsis, bounded options, output schema, exit codes, implementation status,
+external contact, history scan and authority/mutation effect for the selected
+topic. Human help is text; `usf help ... --json` is stable machine-readable
+metadata.
+
 ### 12.1 `usf init`
 
 Create `.usf/`, verify containment, install/verify dependencies, retrieve catalogue snapshots, compile the local graph and contact no provider unless explicitly requested.
@@ -1149,6 +1159,40 @@ Read bounded semantic projections by IRI, contract, selector or SPARQL. Refuse m
 ### 12.5 `usf observe`
 
 Produce factual observations for repository, graph, runtime, provider, validation and artefact state. Observation identity binds only observed facts, not summaries containing the observation identity.
+
+### 12.5.1 `usf metrics`
+
+Aggregate bounded operational history without becoming telemetry authority.
+Keep `status` as the cheap current summary and `observe` as a point-in-time
+factual observation. `metrics` reads explicit JSONL or ignored
+`.usf/metrics/` records and exposes:
+
+```text
+usf metrics summary
+usf metrics providers
+usf metrics models
+usf metrics tokens
+usf metrics runs
+usf metrics cache
+usf metrics failures
+usf metrics concurrency
+```
+
+Every view MUST accept bounded source and result limits, explicit time/run and
+provider/model filters where applicable, and report input coverage,
+truncation/incompleteness, numerators and denominators. Requested identity,
+actual provider route and underlying model are separate dimensions. Missing
+usage, cost, lineage, quota or identity is `unknown` / `not-observed`, never
+zero. `T_useful` is reported only for tokens whose contribution digest is
+referenced by accepted candidate, review, repair or proof-relevant lineage;
+accepted adapter output alone is insufficient.
+
+The command contacts no provider, GitHub or remote and performs no implicit
+probe, publication, commit, push or semantic mutation. Operational events and
+rollups contain no prompt/response bytes, credentials, endpoints, absolute
+paths or unbounded labels. They are rebuildable local observations, not
+evidence, proof, work completion or semantic source. Do not add a duplicate
+`stats` alias or provider-specific top-level commands.
 
 ### 12.6 `usf work`
 
@@ -1266,8 +1310,9 @@ authority plane or service manager.
 
 `usf start` MUST:
 
-- require an explicit versioned realisation profile; bind the process-control
-  identity to the profile selector, manifest selector, through boundary,
+- require an explicit versioned realisation profile and explicit
+  repository-relative product manifest; bind the process-control identity to
+  the profile selector, manifest selector, through boundary,
   tracked automation-policy digest and exact lifecycle-tool digest;
 - record the global semantic revision and selected per-work scoped dependency
   digests as dynamic observations rather than process-wide invalidation keys;
@@ -2030,6 +2075,29 @@ speedup(k) ≥ 0.60 × k
 or produce a measured bottleneck finding, correct it and rerun. Do not waive the result by narration.
 
 Every critical rule has a planted defect that fails for its intended stable reason, not an unrelated parse error.
+
+### 22.7 Test portfolio economics
+
+The full no-force-exit suite remains the authoritative local gate. Named unit,
+contract, integration, lifecycle, adversarial and scale lanes exist for focused
+iteration; they never waive the full gate at integration, publication or
+acceptance. Every test owns one distinct semantic acceptance/refusal,
+serialization invariant or real process boundary. When a new lower-cost test
+subsumes an existing assertion, prune the duplicate in the same change.
+
+Use table-driven pure tests, injected clocks, fake providers and isolated
+runtime roots. Do not grow Cartesian per-command matrices, wall-clock sleeps,
+network/GitHub dependencies, hidden flaky retries or repeated scale fixtures.
+Ignored repository-local caches, including any future `.usf/objects` adapter,
+MUST be reconstructable from tracked inputs or explicit test fixtures. Tests
+MUST pass from a clean clone with an empty `.usf/`, MUST NOT require a warm CAS
+or GitHub-hosted cache, and MUST exercise any future content-store invariants
+locally before merely repeating them in optional hosted CI. No self-hosted
+GitHub runner is a V3 prerequisite.
+Establish duration budgets from at least ten clean runs on the same host class,
+record p95 and slowest files, and treat a regression as a measured bottleneck.
+Do not use forced test-runner exit because it can conceal leaked descriptors or
+child processes.
 
 ---
 

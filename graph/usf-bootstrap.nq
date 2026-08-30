@@ -5,6 +5,7 @@
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:foreground-lifecycle:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:operator-observability:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
@@ -273,3 +274,123 @@
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:acceptance> <urn:usf:acceptance:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:validation> <urn:usf:validation:foreground-lifecycle-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:proof> <urn:usf:proof:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:title> "Bounded operator help and observability" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:objective> "Expose repository-independent help and bounded factual operational metrics with explicit coverage, denominators and nonauthority." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:constructionRouteConstraint> "zero-paid-cost provider routes, if used, are construction intelligence only" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-help-registry> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-metrics-bounded> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-metrics-identity> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-metrics-nonauthority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-test-economics> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0004-operator-observability.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "package.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "schemas/metric-event.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "schemas/metrics-report.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/dispatcher.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/metrics.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/observability/metrics.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/contract/cli.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/integration/observability-cli.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/unit/observability/metrics.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:nonClaim> "Operational status, observations and metrics are not semantic source, work completion, accepted evidence, proof, integration or publication." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:nonClaim> "This slice does not establish live provider census, quota, pricing, latency, useful-token achievement, ANQR completion, staging, production or terminal proof." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operator-observability:localdev> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operator-observability:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operator-observability:integrationtest> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operator-observability:ci> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operator-observability:productionshaped> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operator-observability:staging> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operator-observability:productionlive> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:localdev> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:ci> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:operator-observability:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-help-registry> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-help-registry> <urn:usf:predicate:text> "Use one static command registry for parsing and help; render human help and stable JSON help without repository, GitHub, provider, supervisor or network access, including synopsis, options, schema, exit codes, availability, external contact, history scan and authority effects." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-metrics-bounded> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-metrics-bounded> <urn:usf:predicate:text> "Keep status a cheap current summary, observe a factual point-in-time command and metrics a bounded aggregate over explicit JSONL or ignored local operational records with source coverage, filters, limits, truncation and no unbounded scan or label cardinality." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-metrics-identity> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-metrics-identity> <urn:usf:predicate:text> "Separate requested route, actual provider and underlying model denominators; distinguish unknown from zero; count useful tokens only when exact accepted candidate, review, repair or proof lineage names the contribution." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-metrics-nonauthority> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-metrics-nonauthority> <urn:usf:predicate:text> "Make help, status and metrics local and read-only with no provider or remote contact, implicit probe, semantic mutation, commit or push; exclude prompts, responses, credentials, endpoints, absolute paths and unbounded labels from events and output." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-test-economics> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:operator-test-economics> <urn:usf:predicate:text> "Keep one registry/help contract, table-driven pure aggregation coverage and one subprocess boundary; retain named no-force-exit lanes, map every test to a unique risk and prune duplicates rather than growing repeated matrices; clean-clone tests recreate ignored local cache fixtures and require neither a warm CAS nor a self-hosted GitHub runner." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:acceptance:operator-observability> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:acceptance:operator-observability> <urn:usf:predicate:text> "Help works outside a repository; status remains a broad bounded summary; all metric views have stable JSON, filters, coverage and denominators; planted unknown, truncation, identity and useful-lineage cases remain factual and local-only." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:command> "node --test tests/unit/observability/metrics.test.ts tests/contract/cli.test.ts tests/integration/observability-cli.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:text> "Exact candidate bytes pass pure metrics classification, bounded JSONL, registry/help and repository-independent subprocess fixtures without network or authority mutation." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:contract> <urn:usf:contract:operator-observability:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:objective> "Implement bounded operator help, broad status and factual operational metric aggregation while keeping local observations non-authoritative." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:dependsOn> <urn:usf:work:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "config/providers.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/continuous/scheduler.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/decisions/0004-operator-observability.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "package.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "schemas/metric-event.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "schemas/metrics-report.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/dispatcher.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/metrics.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/observability/metrics.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/contract/cli.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/integration/observability-cli.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/unit/observability/metrics.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:modelCapability> "cli-design" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:acceptance> <urn:usf:acceptance:operator-observability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:validation> <urn:usf:validation:operator-observability-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:proof> <urn:usf:proof:operator-observability> <urn:usf:graph:usf-bootstrap> .
