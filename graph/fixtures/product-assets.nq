@@ -4,9 +4,20 @@
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:product> <urn:fixture:product:orchard-studio> <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:selectsContract> <urn:fixture:contract:orchard-launch-assets:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:fixture:graph:orchard-product> .
 <urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:realisationPermission> <urn:fixture:permission:orchard-launch-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:evidenceRequirement> <urn:fixture:evidence-requirement:orchard-launch-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:mandatoryProofObligation> <urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:fixture:evidence-requirement:orchard-launch-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:constructionProofObligation> <urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:fixture:evidence-requirement:orchard-launch-assets:completion> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:completionValidationObligation> <urn:fixture:validation:orchard-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:completionProofObligation> <urn:fixture:proof:orchard-assets> <urn:fixture:graph:orchard-product> .
 <urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:title> "Orchard launch creative assets" <urn:fixture:graph:orchard-product> .
 <urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:scope> "non-authoritative-dynamic-product-fixture" <urn:fixture:graph:orchard-product> .
 <urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:objective> "Create a coherent vector hero, design-token palette and launch-copy asset set from product-specific semantics." <urn:fixture:graph:orchard-product> .
@@ -68,3 +79,30 @@
 <urn:fixture:work:orchard-assets> <urn:usf:predicate:acceptance> <urn:fixture:acceptance:orchard-assets> <urn:fixture:graph:orchard-product> .
 <urn:fixture:work:orchard-assets> <urn:usf:predicate:validation> <urn:fixture:validation:orchard-assets> <urn:fixture:graph:orchard-product> .
 <urn:fixture:work:orchard-assets> <urn:usf:predicate:proof> <urn:fixture:proof:orchard-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-assets> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-assets> <urn:usf:predicate:requiresEvidence> <urn:fixture:evidence-requirement:orchard-launch-assets:completion> <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:forContract> <urn:fixture:contract:orchard-launch-assets:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:maximumThrough> "integrate" <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:evidenceRequirement> <urn:fixture:evidence-requirement:orchard-launch-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:proofObligation> <urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:constructionEvidenceRequirement> <urn:fixture:evidence-requirement:orchard-launch-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:constructionProofObligation> <urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:fixture:graph:orchard-product> .
+<urn:fixture:permission:orchard-launch-assets> <urn:usf:predicate:completionValidationObligation> <urn:fixture:validation:orchard-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets> <urn:usf:predicate:forContract> <urn:fixture:contract:orchard-launch-assets:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets> <urn:usf:predicate:text> "Require the exact current product-only creative semantics, three asset requirements, shared direction, output paths/media types, profile isolation, scoped dependencies, write set and stop conditions before fixture construction." <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets> <urn:usf:predicate:applicability> "required" <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:fixture:evidence-requirement:orchard-launch-assets> <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:usf:predicate:text> "Prove the selected Orchard product semantics are current, isolated and complete and warrant only the exact three declared fixture asset writes." <urn:fixture:graph:orchard-product> .
+<urn:fixture:proof:orchard-launch-assets:construction-authority> <urn:usf:predicate:applicability> "required" <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets:completion> <urn:usf:predicate:forContract> <urn:fixture:contract:orchard-launch-assets:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets:completion> <urn:usf:predicate:text> "Require current exact isolated validation observations for all three graph-declared Orchard fixture asset bytes and shared creative direction after realisation." <urn:fixture:graph:orchard-product> .
+<urn:fixture:evidence-requirement:orchard-launch-assets:completion> <urn:usf:predicate:applicability> "required" <urn:fixture:graph:orchard-product> .

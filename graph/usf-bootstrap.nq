@@ -6,9 +6,21 @@
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:foreground-lifecycle:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:operator-observability:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:repository-path-scope:completion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:repository-path-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:title> "Canonical repository path scope" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:objective> "Validate canonical repository-relative file and directory declarations and permission containment without filesystem access." <urn:usf:graph:usf-bootstrap> .
@@ -87,6 +99,16 @@
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:validation> <urn:usf:validation:repository-path-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:proof> <urn:usf:proof:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:file-asset-index:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:file-asset-index:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:file-asset-index:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:file-asset-index:completion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:file-asset-index-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:file-asset-index:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:file-asset-index> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:file-asset-index:1> <urn:usf:predicate:title> "Deterministic file-based asset index" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:file-asset-index:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:file-asset-index:1> <urn:usf:predicate:objective> "Build a deterministic metadata index for product assets without a persistent database or external service." <urn:usf:graph:usf-bootstrap> .
@@ -166,6 +188,16 @@
 <urn:usf:work:file-asset-index> <urn:usf:predicate:validation> <urn:usf:validation:file-asset-index-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:proof> <urn:usf:proof:file-asset-index> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:foreground-lifecycle:completion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:foreground-lifecycle-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:title> "Foreground unattended process lifecycle" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:objective> "Run and stop the disposable foreground composer through explicit repository-contained process contracts without conversational intervention." <urn:usf:graph:usf-bootstrap> .
@@ -273,6 +305,16 @@
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:validation> <urn:usf:validation:foreground-lifecycle-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:proof> <urn:usf:proof:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:operator-observability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:operator-observability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:operator-observability:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:operator-observability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:operator-observability:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:operator-observability-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:operator-observability> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:title> "Bounded operator help and observability" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:objective> "Expose repository-independent help and bounded factual operational metrics with explicit coverage, denominators and nonauthority." <urn:usf:graph:usf-bootstrap> .
@@ -389,3 +431,111 @@
 <urn:usf:work:operator-observability> <urn:usf:predicate:acceptance> <urn:usf:acceptance:operator-observability> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:validation> <urn:usf:validation:operator-observability-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:proof> <urn:usf:proof:operator-observability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:repository-path-scope:completion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:forContract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:proofObligation> <urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:repository-path-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope> <urn:usf:predicate:forContract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope> <urn:usf:predicate:text> "Require the exact current profile, path grammar, containment policy, declared read/write set, applicability and acceptance/refusal semantics before any repository-path implementation write." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:predicate:text> "Prove the selected path model is current, complete, contained and sufficient to warrant only its exact declared implementation scope." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope:completion> <urn:usf:predicate:forContract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope:completion> <urn:usf:predicate:text> "Require current exact candidate-byte validation observations for every declared repository-path acceptance and refusal vector after realisation." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:repository-path-scope:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:file-asset-index:completion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:forContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:proofObligation> <urn:usf:proof:file-asset-index:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:file-asset-index:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:file-asset-index-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index> <urn:usf:predicate:forContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index> <urn:usf:predicate:text> "Require the exact current asset model, input/output schema, file-authority and optional-state boundaries, duplicate/path/media/digest semantics, applicability, scoped dependencies, write set and stop conditions before index construction." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:text> "Prove the selected file-index contract is current, non-persistent by authority, fully bounded and sufficient to warrant only its exact isolated implementation scope." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index:completion> <urn:usf:predicate:forContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index:completion> <urn:usf:predicate:text> "Require current exact isolated candidate-byte observations for deterministic index output and every duplicate, path, media-type and digest refusal after realisation." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:file-asset-index:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:foreground-lifecycle:completion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:forContract> <urn:usf:contract:foreground-lifecycle:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:proofObligation> <urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:foreground-lifecycle> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:foreground-lifecycle-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:predicate:forContract> <urn:usf:contract:foreground-lifecycle:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:predicate:text> "Require the exact current lifecycle state model, process and lock boundary, atomicity/drain/restart semantics, profile binding, scoped inputs, operating-system applicability, write set and stop conditions before lifecycle construction." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:predicate:text> "Prove the selected foreground lifecycle model is current, bounded, restart-safe and sufficient to warrant only its exact local process implementation scope." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle:completion> <urn:usf:predicate:forContract> <urn:usf:contract:foreground-lifecycle:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle:completion> <urn:usf:predicate:text> "Require current exact lifecycle state, process identity, atomicity, drain, stop and restart observations over the declared candidate bytes and operating-system boundary after realisation." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:foreground-lifecycle:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:forContract> <urn:usf:contract:operator-observability:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:operator-observability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:proofObligation> <urn:usf:proof:operator-observability:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:operator-observability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:operator-observability:construction-authority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:operator-observability-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability> <urn:usf:predicate:forContract> <urn:usf:contract:operator-observability:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability> <urn:usf:predicate:text> "Require the exact current command/metric model, denominator and unknown semantics, lineage/privacy bounds, applicability, scoped inputs, write set and stop conditions before observability construction." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:operator-observability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability:construction-authority> <urn:usf:predicate:text> "Prove the selected observability model is current, bounded, factual and nonauthoritative and warrants only its exact declared command and metric implementation scope." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:operator-observability:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:forContract> <urn:usf:contract:operator-observability:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:text> "Require current exact observations for bounded help, status and metric semantics, including unknown, truncation, identity and useful-lineage refusals without external contact after realisation." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .

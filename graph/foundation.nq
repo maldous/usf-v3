@@ -11,3 +11,47 @@
 <urn:usf:mode:repository-local-service> <urn:usf:predicate:type> <urn:usf:type:ExecutionMode> <urn:usf:graph:foundation> .
 <urn:usf:mode:external-sandbox> <urn:usf:predicate:type> <urn:usf:type:ExecutionMode> <urn:usf:graph:foundation> .
 <urn:usf:mode:live-external> <urn:usf:predicate:type> <urn:usf:type:ExecutionMode> <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:type> <urn:usf:type:SemanticOrderPolicy> <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:title> "USF semantic-first realisation order" <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:objective> "Prevent build-first inversion by separating authored contract definitions from proof-warranted realisation permission and preserving the exact semantic-model, remodel-currentness, evidence, proof, activated-contract, realisation and validation order." <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:firstStage> <urn:usf:stage:semantic-model> <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:defaultStopCondition> "Refuse every write outside the exact graph-projected write set." <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:defaultStopCondition> "Stop before provider contact, integration, publication or runtime authority when the exact current realisation basis lacks a required predecessor, admitted evidence, passing proof or active permission." <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:defaultStopCondition> "Stop when focused validation passes at the selected ceiling or a declared constraint is contradicted." <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:nonClaim> "A complete semantic trace is topology, not evidence that evidence exists, proof passed, a contract is active, realisation was accepted or validation succeeded." <urn:usf:graph:foundation> .
+<urn:usf:stage:semantic-model> <urn:usf:predicate:type> <urn:usf:type:SemanticStage> <urn:usf:graph:foundation> .
+<urn:usf:stage:semantic-model> <urn:usf:predicate:order> "1" <urn:usf:graph:foundation> .
+<urn:usf:stage:semantic-model> <urn:usf:predicate:precedes> <urn:usf:stage:remodel-currentness> <urn:usf:graph:foundation> .
+<urn:usf:stage:remodel-currentness> <urn:usf:predicate:type> <urn:usf:type:SemanticStage> <urn:usf:graph:foundation> .
+<urn:usf:stage:remodel-currentness> <urn:usf:predicate:order> "2" <urn:usf:graph:foundation> .
+<urn:usf:stage:remodel-currentness> <urn:usf:predicate:precedes> <urn:usf:stage:evidence> <urn:usf:graph:foundation> .
+<urn:usf:stage:evidence> <urn:usf:predicate:type> <urn:usf:type:SemanticStage> <urn:usf:graph:foundation> .
+<urn:usf:stage:evidence> <urn:usf:predicate:order> "3" <urn:usf:graph:foundation> .
+<urn:usf:stage:evidence> <urn:usf:predicate:precedes> <urn:usf:stage:proof> <urn:usf:graph:foundation> .
+<urn:usf:stage:proof> <urn:usf:predicate:type> <urn:usf:type:SemanticStage> <urn:usf:graph:foundation> .
+<urn:usf:stage:proof> <urn:usf:predicate:order> "4" <urn:usf:graph:foundation> .
+<urn:usf:stage:proof> <urn:usf:predicate:precedes> <urn:usf:stage:activated-contract> <urn:usf:graph:foundation> .
+<urn:usf:stage:activated-contract> <urn:usf:predicate:type> <urn:usf:type:SemanticStage> <urn:usf:graph:foundation> .
+<urn:usf:stage:activated-contract> <urn:usf:predicate:order> "5" <urn:usf:graph:foundation> .
+<urn:usf:stage:activated-contract> <urn:usf:predicate:precedes> <urn:usf:stage:realisation> <urn:usf:graph:foundation> .
+<urn:usf:stage:realisation> <urn:usf:predicate:type> <urn:usf:type:SemanticStage> <urn:usf:graph:foundation> .
+<urn:usf:stage:realisation> <urn:usf:predicate:order> "6" <urn:usf:graph:foundation> .
+<urn:usf:stage:realisation> <urn:usf:predicate:precedes> <urn:usf:stage:validation> <urn:usf:graph:foundation> .
+<urn:usf:stage:validation> <urn:usf:predicate:type> <urn:usf:type:SemanticStage> <urn:usf:graph:foundation> .
+<urn:usf:stage:validation> <urn:usf:predicate:order> "7" <urn:usf:graph:foundation> .
+<urn:usf:stage:validation> <urn:usf:predicate:feeds> <urn:usf:stage:evidence> <urn:usf:graph:foundation> .
+<urn:usf:stage:validation> <urn:usf:predicate:mayRefine> <urn:usf:stage:semantic-model> <urn:usf:graph:foundation> .
+<urn:usf:contract-state:proofblocked> <urn:usf:predicate:type> <urn:usf:type:ContractActivationState> <urn:usf:graph:foundation> .
+<urn:usf:contract-state:active> <urn:usf:predicate:type> <urn:usf:type:ContractActivationState> <urn:usf:graph:foundation> .
+<urn:usf:exception-state:open> <urn:usf:predicate:type> <urn:usf:type:ConstructionExceptionState> <urn:usf:graph:foundation> .
+<urn:usf:exception-state:closed> <urn:usf:predicate:type> <urn:usf:type:ConstructionExceptionState> <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ProofAlgorithm> <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:predicate:objective> "Deterministically prove that exact admitted pre-realisation evidence satisfies the selected contract model, applicability, currentness, dependency, write, stop, privacy and cost constraints without using post-realisation observations as prior authority." <urn:usf:graph:foundation> .
+<urn:usf:contract-shape:semantic-first:1> <urn:usf:predicate:type> <urn:usf:type:ContractShape> <urn:usf:graph:foundation> .
+<urn:usf:contract-shape:semantic-first:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
+<urn:usf:contract-shape:semantic-first:1> <urn:usf:predicate:objective> "Require one construction evidence requirement, construction proof obligation and proofblocked-or-active realisation permission, plus post-realisation completion validation, evidence and proof that never feed the permission for the same realisation; bind the exact contract resource digest so stale pre-shape packets refuse." <urn:usf:graph:foundation> .
+<urn:usf:algorithm:verified-transition-receipt:1> <urn:usf:predicate:type> <urn:usf:type:TransitionVerificationAlgorithm> <urn:usf:graph:foundation> .
+<urn:usf:algorithm:verified-transition-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
+<urn:usf:algorithm:verified-transition-receipt:1> <urn:usf:predicate:objective> "Verify a closed tracked transition receipt by reconstructing the exact pre-state from the current source and reversible ordered delta, re-evaluating the pre-state proof, applying the same delta in memory, and matching the exact expected post-state source and semantic currentness without hashing the receipt into the state it attests." <urn:usf:graph:foundation> .
+<urn:usf:transition-state:verified> <urn:usf:predicate:type> <urn:usf:type:TransitionState> <urn:usf:graph:foundation> .

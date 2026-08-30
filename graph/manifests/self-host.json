@@ -9,6 +9,13 @@
       "graph": "urn:usf:graph:usf-bootstrap",
       "role": "contract",
       "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/semantic-first.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:semantic-first",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
     }
   ]
 }

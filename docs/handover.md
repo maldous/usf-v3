@@ -2,13 +2,15 @@
 
 Updated 2026-08-30. This is the durable continuation boundary after bounded
 semantic-recovery tooling and the graph authority for optional Hermes-Agent
-autonomous management.
+autonomous management, amended to restore the V1/V2 semantic-first authority
+order before any further realisation.
 
 ## Verified carrier and gate
 
-- The pre-authority baseline was clean and pushed at
-  `d974570dbe608503ffd94ccbf9ede9eeb06f4d18`
-  (`feat: add bounded semantic recovery tooling`).
+- The pre-semantic-first-authority baseline was clean and pushed at
+  `b93026d876d3a6ef8ef08b053d4c0d255cdaf96b`
+  (`feat: define optional Hermes management boundary`). The earlier recovery
+  tooling checkpoint remains `d974570dbe608503ffd94ccbf9ede9eeb06f4d18`.
 - `HEAD == origin/main` held before the authority change.
 - The focused provider lane passed 71 tests, 71 pass, 0 fail; the observed
   runner duration was 1.963 seconds.
@@ -18,16 +20,16 @@ autonomous management.
 - These are single observations, not a ten-run p95 baseline.
 - After the authority corrections, the focused provider/product lane passed 72
   tests, 72 pass, 0 fail; the observed runner duration was 2.038 seconds. The
-  full no-force-exit check passed 166 tests, 166 pass, 0 fail; the observed
-  latest runner duration was 5.643 seconds and full command wall time 8.656
-  seconds.
+  full no-force-exit check passed 166 tests, 166 pass, 0 fail. After the
+  construction/completion split and typed-exception correction, the latest
+  observed runner duration was 4.464 seconds; the command completed in about
+  7.8 seconds wall time.
   Bootstrap again reported `providerContacted:false`, containment passed and
   `git diff --check` passed.
-- The commit carrying this handover deliberately amends `GOAL.md`, adds
-  `graph/hermes-management.nq` and
-  `graph/manifests/self-host-hermes.json`, plus the isolated ANQR intent overlay
-  under `graph/products/anqr/`, and documents the exact management boundary
-  before implementation. Resolve its final identity with
+- The baseline commit already carries the optional Hermes authority and
+  isolated ANQR intent overlay. The next coherent commit deliberately adds the
+  semantic-first graph authority, definition/activation separation and this
+  corrected handover before executable gate implementation. Resolve its final identity with
   `git rev-parse HEAD` and require `HEAD == origin/main` before continuing.
 
 The handover previously stopped at the provider slice and reported 156 tests.
@@ -72,19 +74,73 @@ The future tracked Hermes policy binds ANQR through its ordinary exact
 copying ANQR triples into core. The exact ANQR binding packet refuses through
 the core-only manifest.
 
-The two packets are the implementation authority. Respect each exact read/write
-set: the core packet authorizes only the product-neutral facade; the product
-packet authorizes the ANQR config and overlay proof. Their projected
-construction constraints prohibit provider, credential and Hermes-Agent
-contact in this hermetic slice. They do not authorize credential migration,
-Docker runtime wiring or changes to provider qualification gates.
+The two Hermes packets remain authored implementation definitions, but they are
+not currently active realisation permissions. Hermes facade work now depends on
+`urn:usf:work:semantic-first-lifecycle-admission`; the ANQR binding remains
+downstream of the facade. Their projected construction constraints prohibit
+provider, credential and Hermes-Agent contact in this hermetic slice. They do
+not authorize credential migration, Docker runtime wiring or changes to
+provider qualification gates.
 
-The corrected core manifest semantic digest is
-`sha256:3ac817ca9f981ff90bf54cc745fa50fd1627f6bb4cc7e2021e150759b1063595`;
-the combined ANQR manifest semantic digest is
-`sha256:ef0134f2d75c383093370ac1c2297500b9bb5f692dd885515ae896cfd49fb10b`.
+The current core self-host manifest semantic digest is
+`sha256:80f32e26f6f4ef6c4cbde0be4ac5e5f6048064d62df36f620bd3709924b3d06d`;
+the current combined ANQR manifest semantic digest is
+`sha256:d774874a35f4cc65da447404b6a6489113846651ad33762d3c6ab941b33091e0`.
 Scoped packet digests include this handover and must be re-derived after the
 authority commit rather than copied from this self-changing document.
+
+## Semantic-first authority boundary
+
+The primary order is now explicit in `GOAL.md`, `AGENTS.md`,
+`graph/foundation.nq`, `graph/semantic-first.nq` and decision 0008:
+
+```text
+semantic model
+  -> deterministic remodel and scoped currentness
+  -> admitted evidence
+  -> deterministic proof
+  -> proof-warranted contract activation
+  -> realisation
+  -> validation
+```
+
+Validation feeds a later evidence, proof or significant remodel cycle; it does
+not retroactively authorize build-first work. Every current profile declares
+the semantic-order policy. Every current semantic contract separates
+pre-realisation construction evidence/proof/permission from post-realisation
+completion validation/evidence/proof. A permission never depends on candidate
+observations that can exist only after the realisation it authorises.
+Product-overlay permissions remain in the product graph and explicitly require
+the core permission they narrow.
+
+No existing test result or prior commit has been promoted by narration.
+Ordinary permissions therefore remain `proofblocked`; their declared ceiling
+grants no authority while inactive. The semantic-first gate has one graph-typed
+exception, `urn:usf:exception:semantic-first-bootstrap:1`, bound to exactly its
+three packets, deterministic fixtures, isolated writes and a `check` ceiling.
+It explicitly prohibits provider/credential contact, integration, runtime
+activation and historical-source mutation. Every semantic publication is also
+prohibited except one exact self-closing authority-admission delta in
+`graph/semantic-first.nq`. That delta is limited to the three named focused
+evidence records, one aggregate proof result, activation of the ordinary gate
+permission and closure of the exception itself; every extra subject, predicate,
+graph, path or sibling effect refuses.
+The admission must also emit the one closed tracked transition receipt at
+`evidence/semantic-first-bootstrap-admission.json`, outside every semantic
+manifest. It binds reversible exact source operations, the immutable pre-state
+basis, and the independently recomputed expected post-state source and semantic
+currentness. Verification reverses and replays the delta, so the exact admitted
+mutation does not stale its own proof; any other relevant movement refuses.
+The executable gate, immutable realisation basis, admitted evidence, proof
+results and activated permissions remain pending; until they exist,
+dependency-ready output is not semantic readiness.
+
+Independent CLI verification also found that `usf work --selector` currently
+refuses a valid bare RealisationProfile IRI even though help documents profile
+scope selection; the `profile:IRI` compatibility spelling works. The
+semantic-first eligibility packet now carries an explicit acceptance criterion
+to make direct exact profile IRIs and help agree. Do not work around this with
+ad hoc graph commands.
 
 ## Semantic recovery boundary
 
@@ -108,6 +164,44 @@ The tooling is not the final recovery result. The accepted
 not yet exist; the later final packet correctly refuses. Factory behavior-level
 qualification and selective V3 re-expression remain future work. Do not claim
 complete historical semantics, final recovery or Factory acceptance.
+
+The operator-directed secondary audit found additional denominator defects
+that the next graph-authorized recovery packet must close:
+
+- file coverage is not relationship coverage: the current extractor parses
+  semantic candidates only from active manifest-selected RDF;
+- the pinned V1 tree has 144 RDF files but only 54 active/derived
+  manifest-selected RDF entries, leaving 90 fixture or otherwise unselected
+  RDF files at file-level only;
+- the pinned V2 tree has 57 RDF files; one manifest-named source is inactive
+  and four fixture/defect RDF files are unselected, leaving five files outside
+  active relationship parsing;
+- the V1 tree contains a mode-`160000` Git link that the closed recovery entry
+  model does not yet represent;
+- the current source declaration is self-scoping and does not independently
+  disposition the authorized operator and proof-cockpit sources;
+- reviewed mappings are not yet proven to bind exact candidates to typed
+  authenticated V3 targets or graph-typed rejection/defer reasons;
+- one pinned snapshot per repository does not expose removed/intermediate
+  semantic definitions for disposition. Read-only Git-object observations found
+  additional distinct semantic blobs outside the selected pins, but no
+  relevance or incorporation claim is made from those counts;
+- ANQR has no historical semantic graph and requires a separate product
+  denominator over its source, contracts, ADRs, tests and manifests; and
+- the mandated protected Factory path and proof-cockpit remain unreadable under
+  the ordinary-user boundary. The two exact configured Factory release
+  snapshots are independently byte-readable through their declared historical
+  source identities, but using them requires the source-selection contract to
+  accept their exact matching commit/tree identities; this does not establish
+  equivalence to the protected path.
+  Unavailable identities remain explicit unresolved nonclaims without an
+  access prompt.
+
+The secondary sweep must distinguish tracked-file, declared-semantic,
+parsed-relationship, unmanifested-candidate and bounded-history denominators.
+Every candidate needs exactly one reviewed disposition plus a typed V3
+connection or graph-typed exclusion/revisit reason. Historical RDF is never
+bulk imported; retained meaning is re-expressed in later V3-authored packets.
 
 ## Provider and model population
 
@@ -305,32 +399,31 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-Two independent lanes are available; optional Hermes work must not delay the
-provider-critical lane.
+1. Validate, independently review, commit and push the semantic-first
+   graph/documentation authority packet.
+2. Re-derive and implement the three semantic-first packets in dependency
+   order: eligibility, immutable realisation-basis propagation, then lifecycle
+   sibling admission. Use only the three focused table/process tests declared
+   by the graph.
+3. Admit the exact validation observations, evaluate the exact proof and
+   activate only the permissions actually warranted before integration or
+   runtime authority; then run the full gate and containment, independently
+   review, commit and push the coherent gate implementation.
+4. Graph-define and execute the secondary semantic sweep after the existing
+   recovery inventory and Factory-qualification work and before final recovery
+   acceptance. Close tracked-file, declared-semantic, parsed-relationship,
+   unmanifested-candidate and bounded-history denominators, the V1 Git-link
+   representation, independent source universe, connected reviewed mappings,
+   separate ANQR product denominator and unresolved-source nonclaims.
+5. Re-express every reviewed V3-relevant candidate through selective
+   V3-authored graph packets. Do not bulk import legacy RDF or copy V1/V2
+   operational topology. Commit/push one coherent accepted recovery checkpoint
+   only after complete disposition and hermetic independence evidence.
+6. Then resume `urn:usf:work:file-asset-index`, provider receipt/adapter/
+   authenticated-answer/hidden-holdout qualification, live provider work and
+   optional Hermes facade work in their graph-derived order.
 
-Provider-critical lane:
-
-1. Continue trusted account receipt acquisition, the scrubbed
-   content-verified adapter child, authenticated answers and genuine
-   hidden-holdout qualification before any live-parallel or token-reduction
-   demonstration.
-
-Explicitly requested optional facade lane:
-
-1. Validate, independently review, commit and push this graph/documentation
-   authority packet.
-2. Re-derive `urn:usf:work:hermes-management-facade` and the profile-selected
-   `urn:usf:work:hermes-bau-binding` from the committed manifests; obey the
-   union of their exact write sets.
-3. Implement the smallest closed config/schema and registered
-   bare/start/status/stop/doctor facade over the existing lifecycle and provider
-   readiness result, with no provider, credential or Hermes-Agent contact.
-4. Run ordinary USF, ordinary ANQR and Hermes fixture-backed start/stop, both
-   graph-defined test commands, full check and containment; independently
-   adversarially review the exact diff.
-5. Commit/push the coherent implementation and update this handover with exact
-   evidence and nonclaims.
-
-Do not restart historical inventory, prompt for Factory access, reintroduce V2
-leases/fences/journals/handovers/signatures/state databases, or claim full ANQR,
-staging, production, production BAU or terminal proof without exact evidence.
+Do not perform an ad hoc historical inventory, prompt for Factory access,
+reintroduce V2 leases/fences/journals/handovers/signatures/state databases, or
+claim complete semantic incorporation, full ANQR, staging, production,
+production BAU or terminal proof without exact evidence.

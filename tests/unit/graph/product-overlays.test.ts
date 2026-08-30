@@ -37,6 +37,7 @@ test("manifest overlays isolate products while safely deduplicating shared knowl
     "urn:usf:contract:foreground-lifecycle:1",
     "urn:usf:contract:operator-observability:1",
     "urn:usf:contract:repository-path-scope:1",
+    "urn:usf:contract:semantic-first-order:1",
   ]);
   assert.deepEqual(semanticContracts(anqr), ["urn:usf:contract:anqr-decoded-payload:1"]);
   assert.deepEqual(semanticContracts(orchard), ["urn:fixture:contract:orchard-launch-assets:1"]);
@@ -47,8 +48,9 @@ test("manifest overlays isolate products while safely deduplicating shared knowl
     "urn:usf:contract:foreground-lifecycle:1",
     "urn:usf:contract:operator-observability:1",
     "urn:usf:contract:repository-path-scope:1",
+    "urn:usf:contract:semantic-first-order:1",
   ]);
-  assert.equal(all.sources.length, 4);
+  assert.equal(all.sources.length, 5);
   assert.equal(all.manifests.length, 5);
 });
 

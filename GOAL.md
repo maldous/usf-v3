@@ -53,28 +53,58 @@ Deterministic evidence decides.
 Parallel delivery must outrun coordination overhead.
 ```
 
+Every realisation path MUST preserve this semantic authority order:
+
+```text
+semantic model
+  → deterministic remodel and scoped currentness
+  → admitted evidence
+  → deterministic proof
+  → proof-warranted contract activation
+  → realisation
+  → validation
+```
+
+Validation produces observations that may become new admitted evidence and may
+justify a significant remodel. It never retroactively authorises the
+realisation that produced it. A contract definition, dependency-ready work
+packet, process-ready lifecycle record, test result, Git state, or model answer
+is not proof-warranted realisation permission.
+
+Construction evidence/proof and completion validation/evidence/proof are
+different obligations. The former warrants an exact bounded realisation; the
+latter evaluates the realised bytes and feeds later acceptance, reproof or
+remodel. A permission MUST NOT depend on the completion observations that can
+exist only after the realisation it authorises.
+
 ---
 
 ## 1. North Light
 
 USF V3 succeeds by increasing the rate at which valid semantic intent becomes valid ANQR realisation.
 
-The required loop is:
+The primary authority loop is:
 
 ```text
-semantic intent
+semantic model
+  → deterministic remodel and scoped currentness
+  → admitted evidence
+  → deterministic proof
+  → activated contract and exact realisation permission
   → bounded work graph
   → eligible zero-paid-cost provider/model routes
   → parallel reasoning, implementation and critique
   → resolved candidate realisations
   → iterative engineering in isolated workspaces
-  → deterministic validation
-  → observations
-  → admitted evidence
-  → proof
+  → deterministic validation observations
+  → admitted evidence and reproof when applicable
   → significant semantic learning, when genuinely required
-  → further ANQR delivery
 ```
+
+The pre-realisation evidence and proof establish that the exact model,
+obligations, applicability, currentness and permission warrant construction.
+Post-realisation validation closes or challenges those obligations and feeds
+the next loop. These are related evidence cycles, not a licence to build first.
 
 V3 does not succeed merely by producing:
 
@@ -589,7 +619,15 @@ Read-only work may run concurrently without write isolation.
 
 Writing work receives separate workspaces unless `Independent` and the implementation explicitly proves a shared workspace safe. The default is separate workspaces.
 
-The ready set at time `t` is the maximal set of vertices whose dependencies are accepted and whose scoped inputs are fresh.
+The dependency-ready set at time `t` is the maximal set of vertices whose
+declared work dependencies are accepted and whose scoped inputs are fresh.
+It is not yet the realisation-ready set. Realisation readiness additionally
+requires one exact graph-derived current basis, declared applicability,
+required admitted evidence, passing current proof and proof-warranted
+permission through the requested ceiling. A narrowly graph-declared bootstrap
+exception may permit isolated local check-only construction of the gate that
+enforces this rule; it grants no provider contact, integration, publication,
+runtime activation or completion authority.
 
 ### 7.6 Chains
 
@@ -646,6 +684,8 @@ A candidate `k` is accepted for integration only when:
 ```text
 Accepted(k) ⇔
     schemaValid(k)
+ AND realisationBasisCurrent(k)
+ AND constructionAndActivationEligible(k)
  AND scopedDependenciesFresh(k)
  AND authorizedWriteSet(k)
  AND noUnresolvedBlocker(k)
@@ -718,6 +758,8 @@ I21  Unchanged material inputs permit deterministic or model-result reuse.
 I22  External source egress never exceeds the work packet privacy policy.
 I23  Model-generated code is never executed with provider credentials or unrestricted host access.
 I24  Every core abstraction is justified by ANQR delivery or a measured bottleneck.
+I25  Semantic model, remodel/currentness, evidence, proof and activated permission precede realisation; validation feeds the next evidence cycle.
+I26  Contract definition, work readiness and process readiness never imply contract activation.
 ```
 
 A design or implementation that violates an invariant must be corrected at the responsible boundary rather than compensated for by a new global workflow layer.
@@ -952,6 +994,7 @@ Define only the concepts required by realisation:
 
 ```text
 SemanticContract
+SemanticOrderPolicy
 Requirement
 Constraint
 AcceptanceCriterion
@@ -965,10 +1008,16 @@ Implementation
 Observation
 EvidenceRequirement
 Evidence
+ConstructionEvidenceRequirement
 ValidationObligation
 TestObligation
 ProofObligation
+ConstructionProofObligation
+CompletionEvidenceRequirement
+CompletionProofObligation
 ProofResult
+RealisationPermission
+RealisationBasis
 WorkPacket
 ProviderCapabilityRequirement
 Claim
@@ -1009,18 +1058,27 @@ Silence cannot mean not required.
 ### 10.6 Lifecycle
 
 ```text
-Model
+Semantic Model
+  → Remodel and Scoped Currentness
+  → Admitted Evidence
+  → Deterministic Proof
+  → Activated Contract and Realisation Permission
   → Work Graph
   → Contribution
   → Candidate
   → Realisation
   → Validation Observation
-  → Evidence
-  → Proof
-  → Significant Publication
+  → Admitted Evidence / Reproof / Significant Remodel when applicable
 ```
 
 No stage grants authority because a file or label claims the stage completed.
+The authored contract definition is distinct from its proof-warranted active
+permission. Every command from `work` through `check` carries or rederives
+one immutable `RealisationBasis`; mixed, fabricated or stale bases refuse.
+Pre-realisation construction evidence and proof gate the permission.
+Post-realisation validation observations, completion evidence and completion
+proof evaluate the result without participating in the permission that
+authorised it.
 
 ---
 
@@ -1219,9 +1277,15 @@ Derive the current work DAG and emit bounded work packets. Support:
 --max-items
 ```
 
-A packet includes objective, semantic dependencies, read/write sets, constraints, acceptance criteria, validation plan, proof obligations, model capabilities, privacy, output schema and stop conditions.
+A packet includes objective, semantic dependencies, read/write sets,
+constraints, acceptance criteria, validation plan, evidence requirements,
+proof obligations, contract permission, construction and activation
+eligibility, immutable realisation basis, model capabilities, privacy, output
+schema and graph-defined stop conditions.
 
-No ticket is required. The packet grants no authority beyond its exact scope.
+No ticket is required. Dependency-ready alone is not semantic readiness. The
+packet grants no authority beyond its exact current graph-derived basis and
+permission ceiling.
 
 ### 12.7 `usf models`
 
@@ -1233,7 +1297,11 @@ Perform bounded live capability and zero-cost verification. Probe lazily for act
 
 ### 12.9 `usf route`
 
-Purely match ready work packets to fresh probe results and empirical validated performance observations. Explain every inclusion/exclusion. Support diverse, all-eligible, fastest, review-diverse and deterministic-fixture strategies.
+Purely match semantically eligible work packets with current realisation bases
+to fresh probe results and empirical validated performance observations.
+Explain every inclusion/exclusion. Refuse external contact for proofblocked,
+missing-evidence, failed-proof, stale or fabricated bases. Support diverse,
+all-eligible, fastest, review-diverse and deterministic-fixture strategies.
 
 Routing metrics are operational observations, not semantic authority or a fixed roster.
 
@@ -1479,7 +1547,7 @@ The command surface is complete only when the following composition holds withou
 | Health/current state | `doctor`, `status` | repository/runtime | observations | none |
 | Semantic context | `query` | semantic selector | bounded context | none |
 | Factual state | `observe` | repo/graph/provider/runtime | observation | none |
-| Work derivation | `work` | contract + observations | work DAG/packets | none |
+| Work derivation | `work` | profile + contract + evidence/proof/currentness | eligible/refused work DAG/packets + realisation basis | none |
 | Model ecosystem | `models`, `probe` | catalogue/config/credential | route observations | none |
 | Assignment | `route` | work + probe snapshot | assignments | none |
 | Contribution | `call` | assignment + bounded packet | contribution/workspace candidate | none |
@@ -2208,6 +2276,32 @@ focused check
 
 Do not implement all commands to theoretical completeness before this path works.
 
+Bootstrap does not waive semantic-first authority. When the gate needed to
+enforce that authority does not yet exist, one graph-typed local, hermetic,
+deterministic-fixture-only, isolated check-only construction exception may
+name the exact gate work packets and build/validate only those candidates. The
+resource must define its open/closed state, exact work set, prohibited effects,
+ceiling and deterministic closure condition. It may publish only one exact
+self-closing authority-admission delta: the named focused evidence records,
+one aggregate proof result, activation of the ordinary gate permission and
+closure of the exception itself in the one declared graph path. The resulting
+permission must activate before integration or runtime authority. Every other
+semantic publication and every sibling effect remain prohibited; the exception
+cannot reopen after accepted gate integration.
+
+That admission MUST NOT invalidate its own proof by treating the warranted
+post-state as unrelated semantic movement. Before mutation, derive one closed,
+reversible transition receipt over the immutable pre-state basis, every exact
+source and graph operation, and the expected post-state source and scoped
+semantic projection. Store the sanitized receipt as tracked evidence outside
+all semantic manifests. Its bytes, timestamps and Git metadata are not proof
+inputs; every closed field is independently recomputed. A clean clone verifies
+the current active permission by reversing the exact delta to the proven
+pre-state, re-evaluating the proof, replaying the delta in memory and matching
+the expected post-state. Any extra or changed operation, resource, predicate,
+graph, path, preimage, postimage, receipt field or relevant scoped dependency
+invalidates activation currentness.
+
 ### 23.2 Self-hosting gate
 
 The bootstrap gate passes when a graph-defined work packet, fake heterogeneous providers and the real isolated workspace/check path produce a valid non-trivial change to V3 itself.
@@ -2221,17 +2315,19 @@ The primary proof is a real ANQR vertical slice selected under Section 5.
 The accepted chain must:
 
 1. originate from a graph-defined ANQR contract;
-2. derive a scoped work DAG;
-3. use all currently eligible configured zero-paid-cost routes subject to useful-work and concurrency caps;
-4. obtain material contributions or critique from at least two provider families;
-5. use iterative developer-like workspace operation;
-6. resolve and check a coherent candidate;
-7. integrate it through normal Git in a batch;
-8. produce observations, evidence and passing proof;
-9. publish only significant semantic/evidence learning;
-10. end with zero drift;
-11. repeat successfully with one prior provider excluded;
-12. record exactly zero paid cost.
+2. admit the exact required current evidence, pass deterministic proof and
+   obtain proof-warranted realisation permission;
+3. derive a scoped eligible work DAG with immutable realisation bases;
+4. use all currently eligible configured zero-paid-cost routes subject to useful-work and concurrency caps;
+5. obtain material contributions or critique from at least two provider families;
+6. use iterative developer-like workspace operation;
+7. resolve and check a coherent candidate;
+8. integrate it through normal Git in a batch;
+9. produce validation observations and admit/reprove any applicable resulting evidence;
+10. publish only significant semantic/evidence learning;
+11. end with zero drift;
+12. repeat successfully with one prior provider excluded;
+13. record exactly zero paid cost.
 
 ### 23.4 Accepted terminal bundle
 
@@ -2340,13 +2436,15 @@ Do not block on full provider-universe qualification.
 
 ### Gate 3 — First real ANQR slice
 
-1. finalize the first ANQR contract from historical evidence;
-2. derive its work DAG;
-3. run useful multi-provider parallel implementation/review;
-4. integrate source/tests/package;
-5. create evidence/proof;
-6. publish significant semantic learning;
-7. require zero drift.
+1. finalize and currentness-check the first ANQR semantic model and contract;
+2. admit its required exact evidence, pass deterministic proof and activate its
+   bounded realisation permission;
+3. derive its eligible work DAG and immutable realisation bases;
+4. run useful multi-provider parallel implementation/review;
+5. validate and integrate source/tests/package;
+6. admit validation evidence and reprove or remodel when applicable;
+7. publish significant semantic learning;
+8. require zero drift.
 
 This is the earliest board-visible product deliverable.
 

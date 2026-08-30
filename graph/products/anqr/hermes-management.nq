@@ -6,6 +6,8 @@
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:operator-observability:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:provider-semantic-qualification:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:bau:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:anqr:graph:hermes-management> .
@@ -17,6 +19,8 @@
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:provider-semantic-qualification:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:hermes-autonomous-management:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:anqr:graph:hermes-management> .
 <urn:anqr:intent:hermes-bau:1> <urn:usf:predicate:type> <urn:usf:type:OperatingIntent> <urn:anqr:graph:hermes-management> .
@@ -48,6 +52,7 @@
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:contract> <urn:usf:contract:hermes-autonomous-management:1> <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:objective> "Bind the product-neutral Hermes facade to the exact versioned ANQR BAU operating intent and stable policy envelope without making Hermes a prerequisite for ANQR or USF realization." <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:dependsOn> <urn:usf:work:hermes-management-facade> <urn:anqr:graph:hermes-management> .
+<urn:usf:work:hermes-bau-binding> <urn:usf:predicate:realisationPermission> <urn:anqr:permission:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:operatingIntent> <urn:anqr:intent:hermes-bau:1> <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:readPath> "GOAL.md" <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:readPath> "config/automation.json" <urn:anqr:graph:hermes-management> .
@@ -77,3 +82,33 @@
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:acceptance> <urn:anqr:acceptance:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:validation> <urn:anqr:validation:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:proof> <urn:anqr:proof:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
+<urn:anqr:proof:hermes-bau-binding> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:anqr:graph:hermes-management> .
+<urn:anqr:proof:hermes-bau-binding> <urn:usf:predicate:requiresEvidence> <urn:anqr:evidence-requirement:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:forWork> <urn:usf:work:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:requiresPermission> <urn:usf:permission:hermes-autonomous-management> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:maximumThrough> "integrate" <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:evidenceRequirement> <urn:anqr:evidence-requirement:hermes-bau-binding:construction> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:proofObligation> <urn:anqr:proof:hermes-bau-binding:construction-authority> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:constructionEvidenceRequirement> <urn:anqr:evidence-requirement:hermes-bau-binding:construction> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:constructionProofObligation> <urn:anqr:proof:hermes-bau-binding:construction-authority> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:completionValidationObligation> <urn:anqr:validation:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:completionEvidenceRequirement> <urn:anqr:evidence-requirement:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
+<urn:anqr:permission:hermes-bau-binding> <urn:usf:predicate:completionProofObligation> <urn:anqr:proof:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding:construction> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding:construction> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding:construction> <urn:usf:predicate:forWork> <urn:usf:work:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding:construction> <urn:usf:predicate:text> "Require the exact current ANQR-only operating intent, core/product profile and directional digest bindings, core permission, configuration schema, no-contact fallback, scoped write set and stop conditions before product binding construction." <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding:construction> <urn:usf:predicate:applicability> "required" <urn:anqr:graph:hermes-management> .
+<urn:anqr:proof:hermes-bau-binding:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:anqr:graph:hermes-management> .
+<urn:anqr:proof:hermes-bau-binding:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:anqr:graph:hermes-management> .
+<urn:anqr:proof:hermes-bau-binding:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:proof:hermes-bau-binding:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:anqr:evidence-requirement:hermes-bau-binding:construction> <urn:anqr:graph:hermes-management> .
+<urn:anqr:proof:hermes-bau-binding:construction-authority> <urn:usf:predicate:text> "Prove the ANQR overlay only narrows an already active core Hermes permission and warrants only the exact product-local intent/config binding scope." <urn:anqr:graph:hermes-management> .
+<urn:anqr:proof:hermes-bau-binding:construction-authority> <urn:usf:predicate:applicability> "required" <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding> <urn:usf:predicate:forWork> <urn:usf:work:hermes-bau-binding> <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding> <urn:usf:predicate:text> "Require current exact ANQR overlay isolation, directional core-product digest, config binding and deterministic no-contact lifecycle observations for this product work packet after realisation." <urn:anqr:graph:hermes-management> .
+<urn:anqr:evidence-requirement:hermes-bau-binding> <urn:usf:predicate:applicability> "required" <urn:anqr:graph:hermes-management> .

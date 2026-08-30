@@ -11,6 +11,45 @@ The current decoded-payload graph is deliberately a bootstrap fixture. It does
 not satisfy the later `ANQR_PLATFORM_REALISATION_COMPLETE` denominator and must
 not be mistaken for the complete V1 proposition.
 
+V3 has not yet incorporated that complete historical semantic denominator.
+The current recovery tooling and pinned source declarations establish a
+bounded recovery mechanism, not accepted semantic migration. A secondary
+mechanical sweep must disposition every tracked, manifest-declared,
+relationship-parsed, unmanifested and bounded history-only semantic candidate.
+Each retained item requires an explicit V3 consumer or approved root,
+applicability/currentness, evidence/proof and adverse-lesson treatment. Deferred,
+rejected, historical-only and unresolved items remain visible and cannot be
+counted as incorporated.
+
+## Semantic-first authority retained
+
+V1 and V2 require this primary order:
+
+```text
+semantic model
+  -> deterministic remodel and scoped currentness
+  -> admitted evidence
+  -> deterministic proof
+  -> proof-warranted contract activation
+  -> realisation
+  -> validation
+```
+
+Validation feeds the next evidence and remodel cycle. It does not authorise the
+realisation that produced it. V3 therefore keeps contract definitions separate
+from active realisation permissions, separates pre-realisation construction
+evidence/proof from post-realisation completion validation/evidence/proof, and
+requires one immutable graph-derived realisation basis across work, route,
+call, resolve, apply and check. A permission never depends on the candidate
+observations that can exist only after its realisation. Dependency-ready and
+process-ready labels alone are never semantic eligibility.
+
+V3 also makes a self-closing activation transition non-circular: a closed
+tracked receipt outside semantic manifests binds the reversible exact
+pre-state, admitted delta and expected post-state. The current graph cannot
+prove its own activation merely by containing an active flag, while the exact
+warranted transition does not immediately stale the proof that authorised it.
+
 ## Retained properties
 
 - The complete product/platform requirement denominator is graph-defined. ANQR
@@ -79,22 +118,31 @@ applicable environment/service obligations in repository-contained source.
 - The TypeScript/Node bootstrap does not inherit Java, Maven, chroot, external
   database, production compose, or multi-service prerequisites.
 
-This simplification does not waive enterprise-service requirements. The full
-ANQR denominator still needs explicit service, persistence, security,
-observability, backup/restore, upgrade, rollback, and environment dispositions.
-Repository-contained production-shaped evidence may prove only its declared
-posture; it does not establish an external staging or production deployment.
+This simplification does not waive any historical semantic requirement. The
+secondary denominator is mechanical rather than a hand-picked list of service
+examples: every historical contract, named resource, vocabulary term, rule,
+shape, registry record, interface, interaction, environment, assurance,
+execution, realisation and permutation candidate receives exactly one reviewed
+disposition. Repository-contained production-shaped evidence may prove only
+its declared posture; it does not establish an external staging or production
+deployment.
 
 ## Selective-reuse status
 
 V1 has an Apache-2.0 licence and contains patterns worth consulting, especially
 manifest registration, deterministic digests, bounded results, and adversarial
-filesystem checks. The inspected V2 Factory release is readable but its
-`LICENSE-NOTICE.md` is all rights reserved; historical ANQR and operator
-material also do not establish copying terms. Therefore no historical source
-or corpus bytes have been incorporated and `provenance/reuse.json` remains
-empty. The chronology in `provenance/historical-observations.json` records
-observations only and is not a reuse declaration.
+filesystem checks. Recorded V2 Factory observations identify an all-rights-
+reserved `LICENSE-NOTICE.md`. The protected mandated Factory path and
+proof-cockpit are not currently readable under the ordinary-user boundary; two
+separately located exact configured Factory release snapshots are byte-readable
+but may be used only after the source-selection contract verifies and accepts
+their matching commit/tree identities. Historical ANQR and operator material
+also do not establish copying terms. Therefore no historical source or corpus
+bytes have been incorporated and `provenance/reuse.json` remains empty. The
+chronology in `provenance/historical-observations.json` records observations
+only and is not a reuse declaration. Unavailable identities remain explicit
+unresolved nonclaims; the process does not prompt for access or infer their
+content.
 
 Future reuse must name the exact commit/tree, source files, licence, V3
 requirement, removed couplings, retained or new tests, and containment result.

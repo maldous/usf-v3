@@ -1,9 +1,21 @@
 <urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:semantic-recovery> .
 <urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:semantic-recovery> .
 <urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:semantic-recovery> .
 <urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:semantic-recovery> .
 <urn:usf:profile:v3-semantic-recovery:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:semantic-recovery-exchange:completion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:semantic-recovery-check> <urn:usf:graph:semantic-recovery> .
+<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:title> "Bounded semantic recovery and graph exchange" <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:scope> "v3-semantic-recovery" <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:objective> "Create the exact source inventory, explicit dispositions and bounded local graph inspection, coverage, export and candidate-import prerequisites for later graph-defined selective V3 re-expression without adding another authority path." <urn:usf:graph:semantic-recovery> .
@@ -383,3 +395,30 @@
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-hermetic-reproducibility> <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:validation> <urn:usf:validation:semantic-recovery-check> <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:proof> <urn:usf:proof:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:semantic-recovery-exchange:completion> <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:proofObligation> <urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:graph:semantic-recovery> .
+<urn:usf:permission:semantic-recovery-exchange> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:semantic-recovery-check> <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:predicate:text> "Require the exact current recovery profile, independently authorized source identities, licences, read-only byte boundaries, parser and burden ceilings, product/core isolation, scoped inputs, write set and unresolved-source stop conditions before recovery construction or historical-byte reading." <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:predicate:text> "Prove the selected recovery model, source authority, licence, parser, containment and non-import boundaries are current and warrant only the exact bounded read-only recovery scope." <urn:usf:graph:semantic-recovery> .
+<urn:usf:proof:semantic-recovery-exchange:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange:completion> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange:completion> <urn:usf:predicate:text> "Require current exact source-denominator, manifest-store, graph-exchange, inventory, Factory-qualification, reviewed-disposition, connected-adoption and hermetic-independence observations from the final recovery validation boundary after realisation." <urn:usf:graph:semantic-recovery> .
+<urn:usf:evidence-requirement:semantic-recovery-exchange:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-recovery> .

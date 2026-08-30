@@ -144,7 +144,12 @@ independent provider API access.
 ## Non-serializing process flow
 
 ```text
-USF derives ready work and deterministic plan
+USF derives semantic model and scoped currentness
+  -> admits exact required construction evidence
+  -> evaluates deterministic construction proof
+  -> activates exact bounded realisation permission
+  -> derives eligible work and immutable realisation bases
+  -> deterministic plan
   |-- independent provider/candidate/check work continues under caps
   |-- optional bounded Hermes assignment uses its own visible slot and budgets
   `-- current proposal may rank unclaimed prompts, roles or cohorts
@@ -167,9 +172,12 @@ a commit.
 ## Start/stop without and with Hermes
 
 The deterministic path remains independently usable. On each cycle, ordinary
-`usf start` rederives ready work from the exact selected profile/manifest and
-current files through its selected ceiling. It does not invent missing
-contracts, accept absent evidence or bypass provider gates:
+`usf start` rederives per-work semantic eligibility and realisation bases from
+the exact selected profile/manifest, construction evidence/proof and current files through
+its selected ceiling. Process readiness may be ready and idle while
+proofblocked work is excluded. It does not invent missing contracts, treat
+dependency readiness as activation, accept absent evidence or bypass provider
+gates:
 
 ```sh
 ./bin/usf start \
