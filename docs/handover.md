@@ -6,7 +6,8 @@ bootstrap and dynamic-product architecture pass.
 ## Verified state
 
 - Authoritative TypeScript and Node check: 64 tests, 64 pass, 0 fail.
-- Gate 0 repository/bootstrap/containment is committed and pushed.
+- Gate 0 and the profile-scoped Gate 1 bootstrap checkpoint are committed and
+  pushed on `main`; use `git rev-parse HEAD` as the durable carrier identity.
 - The minimal query → work → fake call → resolve → isolated apply → graph-
   selected focused-check path works.
 - A graph-defined USF path-scope change was produced by two deterministic fake
