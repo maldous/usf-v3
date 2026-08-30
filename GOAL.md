@@ -1194,6 +1194,11 @@ paths or unbounded labels. They are rebuildable local observations, not
 evidence, proof, work completion or semantic source. Do not add a duplicate
 `stats` alias or provider-specific top-level commands.
 
+The bootstrap operator-observability slice implements help, broad `status` and
+bounded `metrics`; it reserves `observe` as a distinct planned command for a
+later graph-defined point-in-time observation slice rather than conflating it
+with historical aggregation.
+
 ### 12.6 `usf work`
 
 Derive the current work DAG and emit bounded work packets. Support:

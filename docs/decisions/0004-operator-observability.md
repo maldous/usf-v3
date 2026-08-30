@@ -10,7 +10,8 @@ Accepted for the first operator-facing CLI slice.
   `status lifecycle` while preserving the initial `status --instance` spelling.
 - Keep `observe` for factual point-in-time observations and use one `metrics`
   group for bounded historical aggregation. Do not add `stats` or top-level
-  provider-specific aliases.
+  provider-specific aliases. This slice reserves `observe` as planned; it does
+  not claim to implement that later point-in-time observation boundary.
 - Read explicit JSONL or repository-local ignored `.usf/metrics/` input. Every
   report carries source coverage, filters, truncation and unknown counts.
 - Separate requested provider route, actual provider and underlying model.
