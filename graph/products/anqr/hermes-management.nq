@@ -1,4 +1,5 @@
 <urn:anqr:profile:bau:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:bau:1> <urn:usf:predicate:version> "1" <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:product> <urn:anqr:product:platform> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:repository-path-scope:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:file-asset-index:1> <urn:anqr:graph:hermes-management> .
@@ -8,9 +9,11 @@
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:bau:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:version> "1" <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:product> <urn:anqr:product:platform> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:repository-path-scope:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:file-asset-index:1> <urn:anqr:graph:hermes-management> .
@@ -21,6 +24,7 @@
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:anqr:graph:hermes-management> .
 <urn:anqr:intent:hermes-bau:1> <urn:usf:predicate:type> <urn:usf:type:OperatingIntent> <urn:anqr:graph:hermes-management> .

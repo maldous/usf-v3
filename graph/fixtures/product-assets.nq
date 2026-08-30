@@ -1,10 +1,13 @@
 <urn:fixture:product:orchard-studio> <urn:usf:predicate:type> <urn:usf:type:ProductModel> <urn:fixture:graph:orchard-product> .
+<urn:fixture:product:orchard-studio> <urn:usf:predicate:version> "1" <urn:fixture:graph:orchard-product> .
 <urn:fixture:product:orchard-studio> <urn:usf:predicate:title> "Orchard campaign studio" <urn:fixture:graph:orchard-product> .
 <urn:fixture:product:orchard-studio> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:fixture:graph:orchard-product> .
+<urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:version> "1" <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:product> <urn:fixture:product:orchard-studio> <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:selectsContract> <urn:fixture:contract:orchard-launch-assets:1> <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:fixture:graph:orchard-product> .
+<urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:fixture:graph:orchard-product> .
 <urn:fixture:profile:orchard-launch:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:fixture:graph:orchard-product> .
 <urn:fixture:contract:orchard-launch-assets:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:fixture:graph:orchard-product> .

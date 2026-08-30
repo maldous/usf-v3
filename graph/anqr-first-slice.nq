@@ -1,10 +1,13 @@
 <urn:anqr:product:platform> <urn:usf:predicate:type> <urn:usf:type:ProductModel> <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:product:platform> <urn:usf:predicate:version> "1" <urn:usf:graph:anqr-first-slice> .
 <urn:anqr:product:platform> <urn:usf:predicate:title> "ANQR platform" <urn:usf:graph:anqr-first-slice> .
 <urn:anqr:product:platform> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:anqr-first-slice> .
 <urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:version> "1" <urn:usf:graph:anqr-first-slice> .
 <urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:product> <urn:anqr:product:platform> <urn:usf:graph:anqr-first-slice> .
 <urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:usf:graph:anqr-first-slice> .
 <urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:anqr-first-slice> .
+<urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:anqr-first-slice> .
 <urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:anqr-first-slice> .
 <urn:anqr:profile:decoded-payload-bootstrap:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:anqr-first-slice> .
 <urn:usf:contract:anqr-decoded-payload:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:anqr-first-slice> .

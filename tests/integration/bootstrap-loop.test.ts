@@ -1,65 +1,113 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import test from "node:test";
-import { runBootstrapLoop } from "../../src/bootstrap/loop.ts";
-import type { WorkPacket } from "../../src/graph/work.ts";
-import { fakeProviderRoutes } from "../../src/providers/index.ts";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
+import test, { type TestContext } from "node:test";
+import { runBootstrapLoop, type BootstrapLoopInput, type ProfileBoundWorkPacket } from "../../src/bootstrap/loop.ts";
+import { loadSemanticGraph } from "../../src/graph/index.ts";
+import { deriveWork } from "../../src/graph/work.ts";
+import { fakeProviderRoutes } from "../../src/providers/fake.ts";
+import type { RealisationBasis } from "../../src/realisation/basis.ts";
+import { applyTransitionOperations, reverseTransitionOperations, verifyTransitionActivationCurrentness } from "../../src/realisation/transition.ts";
 
-const dependencyDigest = `sha256:${"a".repeat(64)}`;
+const sourceRoot = resolve(import.meta.dirname, "../..");
+const workspaceTemporaryRoot = process.env.TMPDIR === undefined ? resolve(sourceRoot, ".usf/tmp") : resolve(process.env.TMPDIR);
+const manifestPath = "graph/manifests/self-host.json";
+const profile = "urn:usf:profile:v3-self-host:1";
+const workId = "urn:usf:work:realisation-basis-chain";
+const implementationPath = "tests/unit/realisation/workspace.test.ts";
+const checkPath = "tests/adversarial/realisation-check.test.ts";
+const sourcePath = "graph/semantic-first.nq";
+const gatePermission = "urn:usf:permission:semantic-first-order";
+const gateCurrentness = "urn:usf:currentness:semantic-first-bootstrap-transition:1";
+const outerValidation = "node --test --test-isolation=none tests/unit/providers/routing.test.ts tests/contract/fake-call-resolve.test.ts tests/unit/realisation/workspace.test.ts tests/adversarial/realisation-check.test.ts tests/integration/bootstrap-loop.test.ts";
+const innerValidation = "node --test --test-isolation=none tests/unit/providers/routing.test.ts tests/contract/fake-call-resolve.test.ts tests/unit/realisation/workspace.test.ts tests/adversarial/realisation-check.test.ts";
 
-function workPacket(): WorkPacket {
-  return {
-    schema: "urn:usf:work-packet:1",
-    id: "urn:example:work:health-implementation",
-    contract: "urn:example:contract:health",
-    decisionBoundary: { kind: "work", root: "urn:example:work:health-implementation" },
-    objective: "Implement and test a deterministic health response.",
-    dependsOn: [],
-    semanticDependencies: [{ key: "urn:example:contract:health", digest: dependencyDigest, kind: "semantic-resource" }],
-    readSet: [],
-    writeSet: ["src/health.ts", "tests/health.test.ts"],
-    constraints: ["No network access."],
-    requirements: [],
-    artifacts: [],
-    acceptanceCriteria: [{ id: "urn:example:acceptance:health", text: "Health is exactly ok." }],
-    validationPlan: [{ id: "urn:example:validation:health", command: "node tests/health.test.ts", environment: "urn:usf:environment:hermetic", executionMode: "urn:usf:mode:deterministic-test-substitute", applicability: "required" }],
-    proofObligations: [{ id: "urn:example:proof:health", text: "The focused check passes.", environment: "urn:usf:environment:hermetic", executionMode: "urn:usf:mode:deterministic-test-substitute", applicability: "required" }],
-    modelCapabilities: ["typescript", "node-test"],
-    constructionRouteConstraints: ["zero-paid-cost"],
-    targetRuntimeProvider: "none",
-    privacy: "public",
-    environmentPosture: [{ environment: "urn:usf:environment:hermetic", applicability: "required" }],
-    outputSchema: "urn:usf:contribution:1",
-    stopConditions: ["Stop when the focused check passes."],
-    scopedDependencyDigest: dependencyDigest,
-  };
+async function canonicalPreSource(): Promise<string> {
+  const currentSource = await readFile(resolve(sourceRoot, sourcePath), "utf8");
+  const currentGraph = loadSemanticGraph(sourceRoot, manifestPath);
+  const states = currentGraph.quads
+    .filter((quad) => quad.subject === gatePermission && quad.predicate === "urn:usf:predicate:activationState" && quad.objectKind === "iri")
+    .map((quad) => quad.object);
+  assert.equal(states.length, 1, "the source gate permission state is exact");
+  if (states[0] === "urn:usf:contract-state:proofblocked") return currentSource;
+  assert.equal(states[0], "urn:usf:contract-state:active", "only the exact pre or verified post state may seed a bootstrap fixture");
+  const verified = verifyTransitionActivationCurrentness(currentGraph, gateCurrentness, gatePermission, profile);
+  const sourceBefore = reverseTransitionOperations(currentSource, verified.receipt.operations);
+  assert.equal(applyTransitionOperations(sourceBefore, verified.receipt.operations), currentSource, "the verified receipt exactly reconstructs the canonical post-state");
+  return sourceBefore;
 }
 
-test("query-derived work can drive heterogeneous calls through an isolated focused check", async () => {
-  const root = await mkdtemp(join(tmpdir(), "usf-bootstrap-loop-"));
-  await mkdir(join(root, "src"), { recursive: true });
-  await mkdir(join(root, "tests"), { recursive: true });
+async function fixture(context: TestContext): Promise<string> {
+  await mkdir(workspaceTemporaryRoot, { recursive: true, mode: 0o700 });
+  const parent = await mkdtemp(join(workspaceTemporaryRoot, "usf-bootstrap-loop-"));
+  const root = join(parent, "repo");
+  await mkdir(root);
+  for (const entry of await readdir(sourceRoot, { withFileTypes: true })) {
+    if (entry.name === ".git" || entry.name === "node_modules" || entry.name.startsWith(".usf")) continue;
+    await cp(join(sourceRoot, entry.name), join(root, entry.name), { recursive: true });
+  }
+  const graphPath = join(root, sourcePath);
+  const canonicalGraph = await canonicalPreSource();
+  assert.equal(canonicalGraph.split(outerValidation).length - 1, 1, "the canonical outer validation must include this integration test exactly once");
+  const specialisedGraph = canonicalGraph.replace(outerValidation, innerValidation);
+  assert.equal(specialisedGraph.includes(outerValidation), false);
+  assert.equal(specialisedGraph.split(innerValidation).length - 1, 1, "the inner focused check must remain one exact graph-defined component suite");
+  await writeFile(graphPath, specialisedGraph, "utf8");
+  context.after(() => rm(parent, { recursive: true, force: true }));
+  return root;
+}
+
+function packet(root: string): ProfileBoundWorkPacket {
+  const result = deriveWork(loadSemanticGraph(root, manifestPath), { profile, selector: workId });
+  assert.equal(result.status, "ok");
+  const value = result.items?.[0] as ProfileBoundWorkPacket | undefined;
+  assert.ok(value?.realisationBasis, "bootstrap work must be graph-derived and profile-bound");
+  return value;
+}
+
+test("profile-bound work preserves one current basis through heterogeneous calls and isolated check", async (context) => {
+  const root = await fixture(context);
+  const work = packet(root);
+  const implementationBefore = await readFile(join(root, implementationPath), "utf8");
+  const checkBefore = await readFile(join(root, checkPath), "utf8");
   const [implementationRoute, testRoute] = fakeProviderRoutes();
-  const result = await runBootstrapLoop({
+
+  const input: BootstrapLoopInput = {
     repositoryRoot: root,
-    work: workPacket(),
+    work,
     proposals: [
-      {
-        route: implementationRoute!,
-        operations: [{ kind: "write", path: "src/health.ts", content: "export const health = () => ({ status: 'ok' as const });\n" }],
-      },
-      {
-        route: testRoute!,
-        operations: [{ kind: "write", path: "tests/health.test.ts", content: "import assert from 'node:assert/strict';\nimport test from 'node:test';\nimport { health } from '../src/health.ts';\ntest('health', () => assert.deepEqual(health(), { status: 'ok' }));\n" }],
-      },
+      { route: implementationRoute!, operations: [{ kind: "write", path: implementationPath, content: implementationBefore }] },
+      { route: testRoute!, operations: [{ kind: "write", path: checkPath, content: checkBefore }] },
     ],
     hostConcurrency: 2,
-  });
-  assert.equal(result.status, "checked");
-  assert.equal(result.calls.metrics.succeeded, 2);
-  assert.equal(result.contributionDigests.length, 2);
-  assert.equal(result.check.status, "pass");
-  await assert.rejects(() => readFile(join(root, "src", "health.ts")), { code: "ENOENT" });
+  };
+  const permission = (process as typeof process & { permission?: { has(scope: string): boolean } }).permission;
+  if (permission !== undefined && !permission.has("child_process")) {
+    assert.equal(work.decisionBoundary.kind, "realisation-profile");
+    assert.equal(work.realisationBasis.work.id, work.id);
+    assert.equal(work.realisationBasis.work.scopedDependencyDigest, work.scopedDependencyDigest);
+    assert.equal(work.eligibility?.construction.eligible, true);
+    assert.equal(input.proposals.length, 2);
+  } else {
+    const result = await runBootstrapLoop(input);
+    assert.equal(result.status, "checked");
+    assert.equal(result.basis.basisDigest, work.realisationBasis.basisDigest);
+    assert.equal(result.calls.basis.basisDigest, result.basis.basisDigest);
+    assert.equal(result.calls.metrics.succeeded, 2);
+    assert.equal(result.calls.contributions.every((contribution) => contribution.identity.basisDigest === result.basis.basisDigest), true);
+    assert.equal(result.contributionDigests.length, 2);
+    assert.equal(result.check.status, "pass");
+    assert.equal(result.check.basis.basisDigest, result.basis.basisDigest);
+  }
+  assert.equal(await readFile(join(root, implementationPath), "utf8"), implementationBefore);
+  assert.equal(await readFile(join(root, checkPath), "utf8"), checkBefore);
+
+  await assert.rejects(
+    () => runBootstrapLoop({
+      repositoryRoot: root,
+      work: { ...work, realisationBasis: undefined as unknown as RealisationBasis },
+      proposals: [{ route: implementationRoute!, operations: [{ kind: "write", path: implementationPath, content: implementationBefore }] }],
+    }),
+    (error: unknown) => error instanceof Error && "code" in error && error.code === "BOOTSTRAP_BASIS_INVALID",
+  );
 });

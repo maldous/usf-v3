@@ -17,6 +17,7 @@ import {
   type RoutingStrategy,
   type TrustedSemanticQualificationAuthorityForRouting,
 } from "../providers/routing.ts";
+import { parseRealisationBasis } from "../realisation/basis.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 
 const runFile = promisify(execFile);
@@ -212,8 +213,14 @@ function routingInput(value: unknown, parsed: ParsedRouteArguments): RoutingInpu
   if (parsed.strategy !== undefined && inputStrategy !== undefined && parsed.strategy !== inputStrategy) invalid("--strategy conflicts with the input envelope.");
   if (parsed.hostConcurrency !== undefined && inputHostConcurrency !== undefined && parsed.hostConcurrency !== inputHostConcurrency) invalid("--host-concurrency conflicts with the input envelope.");
   if (parsed.maxAssignments !== undefined && inputMaxAssignments !== undefined && parsed.maxAssignments !== inputMaxAssignments) invalid("--max-assignments conflicts with the input envelope.");
+  let basis;
+  try { basis = parseRealisationBasis(rest.basis); }
+  catch (error) {
+    throw new UsfError("ROUTE_INPUT_INVALID", exitCodes.INVALID_INPUT, "Route input has no valid canonical realisation basis.", { reasonCode: error instanceof Error ? error.message : "BASIS_SHAPE_INVALID" });
+  }
   return {
     ...rest,
+    basis,
     installedAdapters: new Set(installedAdapters as string[]),
     credentialNamesPresent: new Set(credentialNamesPresent as string[]),
     strategy: parsed.strategy ?? inputStrategy as RoutingStrategy,
@@ -225,8 +232,9 @@ function routingInput(value: unknown, parsed: ParsedRouteArguments): RoutingInpu
 /** Local-only routing: it consumes exact facts and never invokes a provider. */
 export const routeCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
   const parsed = parse(args);
-  const input = routingInput(await readInput(repositoryRoot, parsed.input), parsed);
+  const rawInput = await readInput(repositoryRoot, parsed.input);
   const trustedAuthority = await readTrustedQualificationAuthority(repositoryRoot);
+  const input = routingInput(rawInput, parsed);
   let output;
   try { output = routeWork(input, trustedAuthority); }
   catch (error) {

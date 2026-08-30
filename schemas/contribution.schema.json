@@ -2,14 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:usf:contribution:1",
   "type": "object",
-  "required": ["schema", "kind", "identity", "requested", "actual", "cost", "usage", "payload"],
+  "required": ["schema", "kind", "basis", "identity", "assignment", "requested", "actual", "cost", "usage", "limits", "payload", "claims", "nonclaims"],
   "properties": {
     "schema": {"const": "urn:usf:contribution:1"}, "kind": {"const": "contribution"},
-    "identity": {"type": "object", "required": ["artifactDigest"]},
+    "basis": {"type": "object"},
+    "identity": {"type": "object", "required": ["artifactDigest", "basisDigest"], "additionalProperties": false, "properties": {"artifactDigest": {"$ref": "#/$defs/digest"}, "basisDigest": {"$ref": "#/$defs/digest"}}},
+    "assignment": {"type": "object", "required": ["basisDigest", "workPacketDigest", "promptTemplateDigest", "scopedDependencyDigest", "purpose"], "additionalProperties": false, "properties": {"basisDigest": {"$ref": "#/$defs/digest"}, "workPacketDigest": {"$ref": "#/$defs/digest"}, "promptTemplateDigest": {"$ref": "#/$defs/digest"}, "scopedDependencyDigest": {"$ref": "#/$defs/digest"}, "purpose": {"enum": ["proposal", "independence", "freshness"]}}},
     "requested": {"$ref": "#/$defs/providerIdentity"}, "actual": {"$ref": "#/$defs/providerIdentity"},
     "cost": {"type": "object", "required": ["costClass", "observedCost", "evidence"]},
     "usage": {"type": "object", "required": ["inputTokens", "outputTokens", "toolCalls", "retries"]},
     "payload": {"type": "object", "required": ["operations"], "properties": {"operations": {"type": "array", "items": {"$ref": "#/$defs/operation"}}}}
   },
-  "$defs": {"providerIdentity": {"type": "object", "required": ["family", "provider", "model"]}, "operation": {"type": "object", "required": ["kind", "path"], "properties": {"kind": {"enum": ["write", "delete"]}, "path": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+"}, "content": {"type": "string"}, "encoding": {"enum": ["utf8", "base64"]}, "mediaType": {"type": "string", "pattern": "^[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+$"}}}}
+  "$defs": {"digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "providerIdentity": {"type": "object", "required": ["family", "provider", "model"]}, "operation": {"type": "object", "required": ["kind", "path"], "properties": {"kind": {"enum": ["write", "delete"]}, "path": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+"}, "content": {"type": "string"}, "encoding": {"enum": ["utf8", "base64"]}, "mediaType": {"type": "string", "pattern": "^[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+$"}}}}
 }

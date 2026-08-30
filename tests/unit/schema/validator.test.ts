@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { createJsonSchemaValidator, SchemaPolicyError } from "../../../src/schema/index.ts";
+import { proposalBasis } from "../../fixtures/proposal-packet.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const digest = `sha256:${"a".repeat(64)}`;
@@ -51,6 +52,28 @@ test("external references and unapproved schema capabilities fail before compila
   );
 });
 
+test("array cardinality bounds are admitted and report stable failures", () => {
+  const validator = createJsonSchemaValidator({
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "array",
+    minItems: 2,
+    maxItems: 3,
+    items: { type: "string" },
+  });
+
+  assert.equal(validator.validate(["one", "two"]).valid, true);
+  const tooShort = validator.validate(["one"]);
+  const tooLong = validator.validate(["one", "two", "three", "four"]);
+  assert.equal(tooShort.valid, false);
+  assert.equal(tooLong.valid, false);
+  if (!tooShort.valid) assert.deepEqual(tooShort.errors.map(({ keyword, message }) => ({ keyword, message })), [
+    { keyword: "minItems", message: "must contain at least the minimum number of items" },
+  ]);
+  if (!tooLong.valid) assert.deepEqual(tooLong.errors.map(({ keyword, message }) => ({ keyword, message })), [
+    { keyword: "maxItems", message: "must not contain more than the maximum number of items" },
+  ]);
+});
+
 test("envelope validation rejects additional properties and malformed digests with stable bounded errors", () => {
   const validator = createJsonSchemaValidator(readSchema(join(repositoryRoot, "schemas/envelope.schema.json")), { maxErrors: 2 });
   const envelope = {
@@ -86,11 +109,13 @@ test("envelope validation rejects additional properties and malformed digests wi
 
 test("candidate validation distinguishes resolved fixtures from required-field and status defects", () => {
   const validator = createJsonSchemaValidator(readSchema(join(repositoryRoot, "schemas/candidate.schema.json")));
+  const basis = proposalBasis();
   const candidate = {
     schema: "urn:usf:candidate:1",
     kind: "candidate",
     status: "resolved",
-    identity: { artifactDigest: digest },
+    basis,
+    identity: { artifactDigest: digest, basisDigest: basis.basisDigest },
     payload: { operations: [] },
     lineage: { acceptedContributionDigests: [], rejected: [] },
   };

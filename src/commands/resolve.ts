@@ -1,5 +1,5 @@
-import { resolveContributions, type Resolution } from "../collaboration/index.ts";
-import type { Contribution } from "../providers/index.ts";
+import { resolveContributions, type Resolution } from "../collaboration/resolve.ts";
+import type { Contribution } from "../providers/types.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 

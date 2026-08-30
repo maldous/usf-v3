@@ -1,19 +1,20 @@
 import { realpath } from "node:fs/promises";
-import { applyCandidateOperations, materialiseCandidate, RealisationError, stableReason } from "../realisation/index.ts";
-import type { CandidateSpec, FileOperation } from "../realisation/index.ts";
+import { applyCandidateOperations, candidateOperations, materialiseCandidate, RealisationError, stableReason } from "../realisation/index.ts";
+import type { CandidateSpec } from "../realisation/index.ts";
+import type { RealisationBasis } from "../realisation/basis.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { exitCodes } from "../core/errors.ts";
 
-export interface ApplyInput { readonly candidate: CandidateSpec; readonly operations?: readonly FileOperation[]; }
-export type ApplyResult = { readonly status: "applied"; readonly workspace: string; readonly delta: Awaited<ReturnType<typeof applyCandidateOperations>> } | { readonly status: "refused"; readonly reasonCode: string };
+export interface ApplyInput { readonly candidate: CandidateSpec; }
+export type ApplyResult = { readonly status: "applied"; readonly basis: RealisationBasis; readonly workspace: string; readonly delta: Awaited<ReturnType<typeof applyCandidateOperations>> } | { readonly status: "refused"; readonly reasonCode: string };
 
 /** Command-facing wrapper. It deliberately has no primary-tree write path. */
 export async function apply(root: string, input: ApplyInput): Promise<ApplyResult> {
   try {
     const resolvedRoot = await realpath(root);
     const materialised = await materialiseCandidate(resolvedRoot, input.candidate);
-    const delta = input.operations ? await applyCandidateOperations(resolvedRoot, input.candidate.digest, input.operations) : [];
-    return { status: "applied", workspace: materialised.workspace, delta };
+    const delta = await applyCandidateOperations(resolvedRoot, input.candidate.digest, candidateOperations(input.candidate));
+    return { status: "applied", basis: materialised.basis, workspace: materialised.workspace, delta };
   } catch (error) {
     return { status: "refused", reasonCode: stableReason(error) ?? "INVALID_OPERATION" };
   }

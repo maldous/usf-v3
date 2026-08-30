@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { resolve } from "node:path";
 import test from "node:test";
-import { loadSemanticGraph } from "../../../src/graph/index.ts";
+import { loadSemanticGraph, type GraphManifestSource, type LoadedSemanticGraph } from "../../../src/graph/index.ts";
 import { semanticContracts } from "../../../src/graph/query.ts";
 import { deriveWork, semanticWorkPackets } from "../../../src/graph/work.ts";
+import { assertBasisMatchesPacket } from "../../../src/realisation/basis.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
 const selfHostManifest = "graph/manifests/self-host.json";
@@ -59,12 +60,71 @@ test("a versioned profile selects an exact closure and unrelated product overlay
   const work = "urn:usf:work:repository-path-scope";
   const isolated = profilePacket(selfHostManifest, profile, work);
   const composed = profilePacket(allManifest, profile, work);
-  assert.deepEqual(composed.decisionBoundary, { kind: "realisation-profile", root: profile });
+  assert.deepEqual(composed.decisionBoundary, {
+    kind: "realisation-profile",
+    root: profile,
+    profileVersion: "1",
+    product: "urn:usf:product:v3",
+    foundation: "urn:usf:foundation:v3",
+  });
   assert.equal(composed.scopedDependencyDigest, isolated.scopedDependencyDigest);
+  assert.equal(composed.realisationBasis?.selection.manifestDigest, isolated.realisationBasis?.selection.manifestDigest);
+  assert.ok(isolated.realisationBasis);
+  assert.ok(composed.realisationBasis);
+  assertBasisMatchesPacket(isolated.realisationBasis, isolated);
+  assertBasisMatchesPacket(composed.realisationBasis, composed);
   assert.deepEqual(composed.writeSet, isolated.writeSet);
   assert.deepEqual(composed.modelCapabilities, isolated.modelCapabilities);
   assert.equal(composed.semanticDependencies.some((dependency) => dependency.key.includes("anqr") || dependency.key.includes("orchard")), false);
   assert.equal(composed.semanticDependencies.some((dependency) => dependency.key === profile), true);
+
+  const expanded = loadSemanticGraph(root, allManifest);
+  const unrelatedSource: GraphManifestSource = {
+    path: "graph/fixtures/unrelated.nq",
+    format: "application/n-quads",
+    graph: "urn:fixture:graph:unrelated",
+    role: "non-authoritative-product-fixture",
+    validationProfile: "bootstrap-nquads-v1",
+  };
+  const withUnrelatedTopology: LoadedSemanticGraph = {
+    ...expanded,
+    sources: [...expanded.sources, unrelatedSource],
+    manifests: [...expanded.manifests, {
+      path: "graph/fixtures/unrelated.manifest.json",
+      digest: `sha256:${"0".repeat(64)}`,
+      manifest: { schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [unrelatedSource] },
+    }],
+  };
+  const unrelated = deriveWork(withUnrelatedTopology, { profile, selector: work, maxItems: 1 }).items?.[0];
+  assert.equal(unrelated?.realisationBasis?.selection.manifestDigest, isolated.realisationBasis?.selection.manifestDigest);
+
+  const selectedGraph = "urn:usf:graph:foundation";
+  const changedRole = "selected-foundation-fixture";
+  const changedSelectedTopology: LoadedSemanticGraph = {
+    ...expanded,
+    sources: expanded.sources.map((source) => source.graph === selectedGraph ? { ...source, role: changedRole } : source),
+    manifests: expanded.manifests.map((entry) => ({
+      ...entry,
+      manifest: {
+        ...entry.manifest,
+        sources: entry.manifest.sources.map((source) => source.graph === selectedGraph ? { ...source, role: changedRole } : source),
+      },
+    })),
+  };
+  const changed = deriveWork(changedSelectedTopology, { profile, selector: work, maxItems: 1 }).items?.[0];
+  assert.notEqual(changed?.realisationBasis?.selection.manifestDigest, isolated.realisationBasis?.selection.manifestDigest);
+
+  const undeclaredSelectedTopology: LoadedSemanticGraph = {
+    ...expanded,
+    manifests: expanded.manifests.map((entry) => ({
+      ...entry,
+      manifest: { ...entry.manifest, sources: entry.manifest.sources.filter((source) => source.graph !== selectedGraph) },
+    })),
+  };
+  assert.throws(
+    () => deriveWork(undeclaredSelectedTopology, { profile, selector: work, maxItems: 1 }),
+    /BASIS_MANIFEST_SELECTION_INVALID/,
+  );
 });
 
 test("Hermes facade authority stays product-neutral while ANQR binding requires its overlay", () => {
@@ -190,8 +250,8 @@ test("a profile refuses a work dependency it did not explicitly select", () => {
       canonical: "planted unselected dependency",
     }],
   };
-  assert.throws(
-    () => deriveWork(planted, { selector: "profile:urn:fixture:profile:orchard-launch:1" }),
-    /REALISATION_PROFILE_DEPENDENCY_NOT_SELECTED/,
+  assert.equal(
+    deriveWork(planted, { selector: "profile:urn:fixture:profile:orchard-launch:1" }).reasonCode,
+    "REALISATION_PROFILE_DEPENDENCY_NOT_SELECTED:urn:fixture:profile:orchard-launch:1:urn:fixture:work:orchard-assets:urn:unselected:work:shared",
   );
 });

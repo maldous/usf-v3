@@ -1,6 +1,7 @@
 import { canonicalDigest, canonicalJson as coreCanonicalJson } from "../core/canonical.ts";
 import { isRepositoryRelativePath } from "../core/scope.ts";
 import type { ArtifactProjection, DecisionBoundary, RequirementProjection, WorkPacket } from "../graph/work.ts";
+import type { RealisationBasis } from "../realisation/basis.ts";
 
 export { isRepositoryRelativePath };
 
@@ -71,8 +72,10 @@ export interface FakeRoute {
 export interface Contribution {
   schema: "urn:usf:contribution:1";
   kind: "contribution";
-  identity: { artifactDigest: string };
+  basis: RealisationBasis;
+  identity: { artifactDigest: string; basisDigest: string };
   assignment: {
+    basisDigest: string;
     workPacketDigest: string;
     promptTemplateDigest: string;
     scopedDependencyDigest: string;
@@ -96,6 +99,7 @@ export interface CallFailure {
 
 export interface CallBatchResult {
   schema: "urn:usf:call-result:1";
+  basis: RealisationBasis;
   status: "ok" | "partial" | "refused";
   contributions: readonly Contribution[];
   failures: readonly CallFailure[];
@@ -104,6 +108,7 @@ export interface CallBatchResult {
 
 export interface CallAssignment {
   route: FakeRoute;
+  basis: RealisationBasis;
   packet: WorkPacketForProposal;
   workPacketDigest: string;
   promptTemplateDigest: string;

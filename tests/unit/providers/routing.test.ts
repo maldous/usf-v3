@@ -25,6 +25,8 @@ import {
   type TrustedSemanticQualificationAuthorityForRouting,
 } from "../../../src/providers/routing.ts";
 import { createJsonSchemaValidator } from "../../../src/schema/index.ts";
+import { proposalBasis } from "../../fixtures/proposal-packet.ts";
+import { createRealisationBasis } from "../../../src/realisation/basis.ts";
 
 const digest = (character: string) => `sha256:${character.repeat(64)}`;
 const exactDigest = (value: unknown) => canonicalDigest(value, { rejectAbsolutePaths: true });
@@ -188,9 +190,18 @@ function input(): RoutingInput {
   const policyDigest = exactDigest(effectivePolicy);
   const catalogueRawDigest = digest("0");
   const catalogueNormalizedDigest = digest("b");
+  const binding = semanticBinding();
+  const baseBasis = proposalBasis("urn:usf:work:test", digest("a"));
+  const { basisDigest: _baseDigest, ...baseDraft } = baseBasis;
+  const basis = createRealisationBasis({ ...baseDraft, selection: {
+    ...baseBasis.selection, profile: binding.core.profile, profileVersion: binding.core.version, profileDigest: binding.core.profileDigest,
+    product: binding.product.profile, productVersion: binding.product.version, productDigest: binding.product.profileDigest,
+    coreToProductDigest: binding.directional.coreToProductDigest, productToCoreDigest: binding.directional.productToCoreDigest, compositeDigest: binding.compositeDigest,
+  } });
   return requalify({
+    basis,
     work: {
-      id: "urn:usf:work:test", digest: digest("a"), semanticBinding: semanticBinding(), capabilities: ["typescript"],
+      id: "urn:usf:work:test", digest: digest("a"), semanticBinding: binding, capabilities: ["typescript"],
       semanticRequirements: [{ capability: "typescript", taskClass: semanticTaskClass }], privacy: "public",
     },
     routes,
@@ -217,6 +228,17 @@ function withRoutes(value: RoutingInput, routes: readonly ConfiguredRouteForRout
     ...value, routes: reboundRoutes, probes: probesFor(reboundRoutes, value.catalogueRawDigest, value.catalogueNormalizedDigest, value.policyDigest),
     semanticQualificationProfiles: [], semanticQualifications: [],
   });
+}
+
+function withSemanticBinding(value: RoutingInput, binding: RoutingSemanticBinding): RoutingInput {
+  const { basisDigest: _basisDigest, ...basisDraft } = value.basis;
+  const basis = createRealisationBasis({ ...basisDraft, selection: {
+    ...value.basis.selection, profile: binding.core.profile, profileVersion: binding.core.version, profileDigest: binding.core.profileDigest,
+    product: binding.product.profile, productVersion: binding.product.version,
+    productDigest: binding.product.profileDigest === "not-applicable" ? value.basis.selection.productDigest : binding.product.profileDigest,
+    coreToProductDigest: binding.directional.coreToProductDigest, productToCoreDigest: binding.directional.productToCoreDigest, compositeDigest: binding.compositeDigest,
+  } });
+  return { ...value, basis, work: { ...value.work, semanticBinding: binding } };
 }
 
 function withPolicy(value: RoutingInput, nextPolicy: EffectiveRoutingPolicy): RoutingInput {
@@ -405,7 +427,7 @@ test("assignment digests change with scoped operational and semantic bindings", 
     changedProviderConfig,
     changedProbe,
     withPolicy(base, { ...base.policy, acceptedCostClasses: ["free-quota"] }),
-    { ...base, work: { ...base.work, semanticBinding: createRoutingSemanticBinding({ ...base.work.semanticBinding.core, profileDigest: digest("e") }, base.work.semanticBinding.product) } },
+    withSemanticBinding(base, createRoutingSemanticBinding({ ...base.work.semanticBinding.core, profileDigest: digest("e") }, base.work.semanticBinding.product)),
   ];
   for (const value of cases) assert.notEqual(routeWork(value).assignments[0]!.assignmentDigest, baseDigest);
   assert.notEqual(routeWork(changedProbe).inputs.probeSetDigest, routeWork(base).inputs.probeSetDigest);
@@ -417,7 +439,7 @@ test("product non-applicability is explicit and directional claims are construct
     value.work.semanticBinding.core,
     { applicability: "not-applicable", profile: "not-applicable", version: "not-applicable", profileDigest: "not-applicable" },
   );
-  const result = routeWork({ ...value, work: { ...value.work, semanticBinding: notApplicable } });
+  const result = routeWork(withSemanticBinding(value, notApplicable));
   assert.equal(result.assignments[0]!.semanticBinding.product.applicability, "not-applicable");
   assert.throws(() => routeWork({
     ...value,

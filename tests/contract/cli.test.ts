@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { commandRegistry, findHelpTopic, helpCommandResult } from "../../src/commands/help.ts";
 import { dispatchCommand, parseCommand } from "../../src/commands/dispatcher.ts";
+import { parsePublishArguments } from "../../src/commands/publish.ts";
 
 test("CLI command parsing returns stable invalid-input codes", () => {
   assert.throws(() => parseCommand(["unknown"]), { code: "COMMAND_UNKNOWN", exitCode: 2 });
@@ -68,4 +69,40 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.equal(route.externalContact, "none");
   assert.ok(route.exitCodes.includes(4));
   assert.match(route.options[0]!.description, /config\/qualification\.json/u);
+
+  const publishHelp = helpCommandResult(["publish", "bootstrap-transition", "--json"]);
+  const publish = (publishHelp.output as { command: { availability: string; authorityEffect: string; externalContact: string; historyScan: string; synopsis: string[]; options: Array<{ description: string }> } }).command;
+  assert.equal(publish.availability, "implemented");
+  assert.equal(publish.externalContact, "none");
+  assert.equal(publish.historyScan, "none");
+  assert.match(publish.synopsis[0]!, /--profile urn:usf:profile:v3-semantic-first:1/u);
+  assert.match(publish.options[0]!.description, /isolated core authority profile/u);
+  assert.match(publish.authorityEffect, /No Git, signature, provider, runtime or historical-repository effect/u);
+});
+
+test("bootstrap transition publish parsing is one compact exact success/refusal table", () => {
+  const valid = ["bootstrap-transition", "--profile", "urn:usf:profile:v3-semantic-first:1", "--manifest", "graph/manifests/self-host.json", "--receipt", "evidence/semantic-first-bootstrap-admission.json", "--verify"];
+  assert.deepEqual(parsePublishArguments(valid), {
+    operation: "bootstrap-transition",
+    profile: "urn:usf:profile:v3-semantic-first:1",
+    manifestPath: "graph/manifests/self-host.json",
+    receiptPath: "evidence/semantic-first-bootstrap-admission.json",
+    mode: "verify",
+  });
+  assert.equal(parsePublishArguments(valid.with(-1, "--apply")).mode, "apply");
+
+  const refusals = [
+    valid.slice(1),
+    [...valid, "--apply"],
+    valid.with(2, "profile-without-versioned-iri"),
+    valid.with(4, "../graph/manifests/self-host.json"),
+    valid.with(6, "/tmp/receipt.json"),
+    [...valid, "--unknown"],
+    [...valid.slice(0, -1), "--verify", "--verify"],
+  ];
+  for (const args of refusals) assert.throws(() => parsePublishArguments(args), (error: unknown) => {
+    assert.ok(error instanceof Error);
+    assert.match((error as Error & { code?: string }).code ?? "", /^PUBLISH_/u);
+    return true;
+  });
 });

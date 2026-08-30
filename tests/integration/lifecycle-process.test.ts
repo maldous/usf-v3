@@ -3,12 +3,37 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { readFile, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 import test from "node:test";
+import { admitEligibleLifecycleWork, composeLifecycleWork, deriveEligibleLifecycleWork, type LifecycleEligibleWork } from "../../src/commands/lifecycle.ts";
+import { createLifecycleBinding } from "../../src/continuous/lifecycle.ts";
+import { loadSemanticGraph } from "../../src/graph/index.ts";
+import { createRealisationBasis, packetDigest, type RealisationBasis } from "../../src/realisation/basis.ts";
+import { verifyTransitionActivationCurrentness } from "../../src/realisation/transition.ts";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 const profile = "urn:usf:profile:v3-self-host:1";
 const manifest = "graph/manifests/self-host.json";
+const gatePermission = "urn:usf:permission:semantic-first-order";
+const gateCurrentness = "urn:usf:currentness:semantic-first-bootstrap-transition:1";
+const postEligibleWorkIds = [
+  "urn:usf:work:realisation-basis-chain",
+  "urn:usf:work:semantic-first-eligibility",
+  "urn:usf:work:semantic-first-lifecycle-admission",
+] as const;
 
 type Json = Record<string, unknown>;
+const digest = (seed: string): `sha256:${string}` => `sha256:${seed.repeat(64).slice(0, 64)}`;
+
+function canonicalSourceState(): "pre" | "post" {
+  const currentGraph = loadSemanticGraph(repositoryRoot, manifest);
+  const states = currentGraph.quads
+    .filter((quad) => quad.subject === gatePermission && quad.predicate === "urn:usf:predicate:activationState" && quad.objectKind === "iri")
+    .map((quad) => quad.object);
+  assert.equal(states.length, 1, "the canonical gate permission state is exact");
+  if (states[0] === "urn:usf:contract-state:proofblocked") return "pre";
+  assert.equal(states[0], "urn:usf:contract-state:active", "the lifecycle suite accepts only the exact pre or verified post gate state");
+  verifyTransitionActivationCurrentness(currentGraph, gateCurrentness, gatePermission, profile);
+  return "post";
+}
 
 function instanceName(): string {
   return `lifecycle-it-${process.pid}-${Date.now().toString(36)}`;
@@ -99,6 +124,7 @@ function assertNoAbsolutePathsOrSecrets(value: unknown): void {
 }
 
 test("foreground start/status/stop, signal shutdown, and stale restart are isolated and bounded", async (t) => {
+  const sourceState = canonicalSourceState();
   const instance = instanceName();
   const runtimeRoot = resolve(repositoryRoot, ".usf/runs/watch", instance);
   const owned: ChildProcess[] = [];
@@ -116,6 +142,13 @@ test("foreground start/status/stop, signal shutdown, and stale restart are isola
   assert.equal(ready.manifest, manifest);
   assert.equal(ready.through, "check");
   assertNoAbsolutePathsOrSecrets(ready);
+
+  // Process readiness is an operational fact, not semantic admission. The
+  // eligible set follows only the exact current pre/verified-post authority.
+  const workObservation = await untilEvent(first, (event) => event.schema === "urn:usf:lifecycle-work-observation:1");
+  assert.equal(workObservation.processReady, true);
+  assert.deepEqual(workObservation.semanticEligibleWorkIds, sourceState === "post" ? postEligibleWorkIds : []);
+  assert.equal(workObservation.semanticEligibilityIsNotProcessReadiness, true);
 
   const status = await invoke(["status", "--instance", instance]);
   assert.equal(status.output.status, "running");
@@ -207,4 +240,64 @@ test("concurrent real starts have one winner, and an unreachable configured GitH
   const remoteStopped = await invoke(["stop", "--instance", remoteInstance, "--wait-ms", "3000"]);
   assert.equal(remoteStopped.output.status, "stopped");
   assert.equal((await waitForExit(unreachable)).code, 0);
+});
+
+test("semantic-lifecycle-admission: readiness is not semantic eligibility and Hermes cannot serialize siblings", async () => {
+  const sourceState = canonicalSourceState();
+  const canonicalEligible = await deriveEligibleLifecycleWork({ repositoryRoot, profile, manifest, through: "check" });
+  assert.deepEqual(
+    canonicalEligible.map((entry) => entry.packet.id),
+    sourceState === "post" ? postEligibleWorkIds : [],
+    "ordinary lifecycle composition must follow only exact pre or verified-post authority",
+  );
+
+  const binding = createLifecycleBinding({
+    profile, manifest, through: "check",
+    automationPolicyDigest: `sha256:${"1".repeat(64)}`,
+    lifecycleToolDigest: `sha256:${"2".repeat(64)}`,
+    graphSemanticDigest: `sha256:${"3".repeat(64)}`,
+    scopedDependencyDigests: [],
+  });
+  // The composer receives only work that has already passed graph eligibility;
+  // proofblocked and stale siblings are intentionally absent from this set.
+  const packet = (id: string, authority: "active-permission" | "none", maximumThrough: string | null): WorkPacketFixture => ({
+    schema: "urn:usf:work-packet:1", id, contract: `urn:usf:contract:${id}:1`, decisionBoundary: { kind: "realisation-profile", root: profile },
+    semanticDigest: digest("8"), scopedDependencyDigest: digest("9"),
+    eligibility: { dependencyReady: true, dependencyAuthority: "no-dependencies", authorityBasisDigest: digest("4"), construction: { eligible: authority === "active-permission", authority, maximumThrough, reasonCodes: authority === "active-permission" ? [] : ["PROOFBLOCKED"] }, activation: { eligible: authority === "active-permission", reasonCodes: [] } },
+  });
+  const withBasis = (value: WorkPacketFixture): LifecycleEligibleWork => {
+    const basis = createRealisationBasis({ selection: { manifestPath: manifest, manifestDigest: digest("1"), profile, profileVersion: "1", profileDigest: digest("2"), product: "urn:usf:product:v3", foundation: "urn:usf:foundation:v3", coreToProductDigest: digest("3"), productToCoreDigest: digest("4"), compositeDigest: digest("5") }, authority: { contract: value.contract, contractDigest: digest("6"), contractShape: "urn:usf:contract-shape:semantic-first:1", permission: `urn:usf:permission:${value.id}`, permissionDigest: digest("7"), permissionState: "active", maximumThrough: "integrate" }, work: { id: value.id, resourceDigest: digest("6"), packetCoreDigest: digest("7"), semanticDigest: digest("8"), scopedDependencyDigest: digest("9"), dependencies: [] }, semanticTrace: { policy: "urn:usf:policy:semantic-first:1", stages: [] }, scope: { readSet: [], writeSet: [], preimages: {} }, trace: { requirements: [], evidence: [], proof: [], validation: [] }, inputs: { policyDigest: digest("a"), schemaDigests: [], toolDigests: [] } } as never);
+    return { packet: Object.freeze({ ...value, realisationBasis: basis }) as unknown as LifecycleEligibleWork["packet"], basis };
+  };
+  type WorkPacketFixture = { schema: "urn:usf:work-packet:1"; id: string; contract: string; decisionBoundary: { kind: "realisation-profile"; root: string }; semanticDigest: string; scopedDependencyDigest: string; eligibility: NonNullable<LifecycleEligibleWork["packet"]["eligibility"]> };
+  const eligible = [withBasis(packet("active-a", "active-permission", "integrate")), withBasis(packet("active-b", "active-permission", "publish"))];
+  const stale = withBasis(packet("stale-sibling", "active-permission", "publish"));
+  const filtered = await admitEligibleLifecycleWork([...eligible.map((entry) => entry.packet), stale.packet, packet("proofblocked", "none", null)] as unknown as import("../../src/graph/work.ts").WorkPacket[], (basis) => {
+    if (basis.work.id === "stale-sibling") throw new Error("scoped basis moved");
+    return basis;
+  }, "check");
+  assert.deepEqual(filtered.map((entry) => entry.packet.id), ["active-a", "active-b"]);
+  const ceilingFiltered = await admitEligibleLifecycleWork(eligible.map((entry) => entry.packet) as unknown as import("../../src/graph/work.ts").WorkPacket[], (basis) => basis, "publish");
+  assert.deepEqual(ceilingFiltered.map((entry) => entry.packet.id), ["active-b"]);
+  const cases: Array<{ name: string; ranker?: (ids: readonly string[]) => readonly string[] | Promise<readonly string[]>; expected: string[] }> = [
+    { name: "absent", expected: ["active-a", "active-b"] },
+    { name: "reverse", ranker: (ids) => [...ids].reverse(), expected: ["active-b", "active-a"] },
+    { name: "malformed", ranker: () => ["stale-sibling"], expected: ["active-a", "active-b"] },
+    { name: "refused", ranker: () => { throw new Error("ranker refused"); }, expected: ["active-a", "active-b"] },
+  ];
+  for (const item of cases) {
+    let received: readonly string[] = [];
+    const result = await composeLifecycleWork({ binding, eligibleWork: Object.freeze(eligible) }, async (input) => {
+      received = input.eligibleWork.map((entry) => entry.packet.id);
+      return { state: "idle", plannedWorkIds: received };
+    }, item.ranker);
+    assert.deepEqual(received, item.expected, item.name);
+    assert.deepEqual(result.plannedWorkIds, item.expected, item.name);
+    assert.equal(result.state, "idle");
+    assert.equal(received.includes("stale-sibling"), false);
+  }
+
+  const scopedMovement = await composeLifecycleWork({ binding, eligibleWork: Object.freeze([eligible[0]!]) }, undefined);
+  assert.deepEqual(scopedMovement.plannedWorkIds, ["active-a"], "scoped movement must only invalidate its affected sibling");
+  assert.equal(scopedMovement.state, "idle", "planning alone cannot claim realisation progress");
 });

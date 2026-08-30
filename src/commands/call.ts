@@ -1,14 +1,29 @@
-import { DeterministicFakeProvider, type CallAssignment, type CallBatchResult, type CallFailure, type Contribution } from "../providers/index.ts";
+import { DeterministicFakeProvider } from "../providers/fake.ts";
+import type { CallAssignment, CallBatchResult, CallFailure, Contribution } from "../providers/types.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
+import { assertRealisationBasis, assertSameBasis } from "../realisation/basis.ts";
 
 function isValidConcurrency(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && Number.isSafeInteger(value) && value > 0;
 }
 
 export async function callAssignments(assignments: readonly CallAssignment[], hostConcurrency = 8): Promise<CallBatchResult> {
+  if (assignments.length === 0) throw new UsfError("CALL_ASSIGNMENTS_REQUIRED", exitCodes.INVALID_INPUT, "Call requires at least one basis-bound assignment.");
   if (!isValidConcurrency(hostConcurrency)) {
     throw new UsfError("CALL_HOST_CONCURRENCY_INVALID", exitCodes.INVALID_INPUT, "Call host concurrency must be a positive finite safe integer.");
+  }
+  for (const assignment of assignments) {
+    try { assertRealisationBasis(assignment.basis); } catch { throw new UsfError("CALL_BASIS_INVALID", exitCodes.INVALID_INPUT, "Every call assignment requires a valid immutable realisation basis."); }
+    if (assignment.workPacketDigest !== assignment.basis.work.packetCoreDigest
+      || assignment.scopedDependencyDigest !== assignment.basis.work.scopedDependencyDigest
+      || assignment.promptTemplateDigest !== assignment.basis.inputs.policyDigest
+      || assignment.packet.id !== assignment.basis.work.id) throw new UsfError("CALL_BASIS_BINDING_MISMATCH", exitCodes.INVALID_INPUT, "Call assignment lineage does not match its realisation basis.");
+  }
+  if (assignments.length > 1) {
+    for (const assignment of assignments.slice(1)) {
+      try { assertSameBasis(assignments[0]!.basis, assignment.basis); } catch { throw new UsfError("CALL_BASIS_MIXED", exitCodes.INVALID_INPUT, "Call assignments must use one realisation basis."); }
+    }
   }
   for (const assignment of assignments) {
     if (!isValidConcurrency(assignment.route.concurrency)) {
@@ -52,7 +67,7 @@ export async function callAssignments(assignments: readonly CallAssignment[], ho
   contributions.sort((a, b) => a.identity.artifactDigest.localeCompare(b.identity.artifactDigest));
   failures.sort((a, b) => `${a.route.family}:${a.route.provider}`.localeCompare(`${b.route.family}:${b.route.provider}`));
   const observedCost = contributions.reduce((sum, contribution) => sum + (contribution.cost.observedCost ?? 0), 0);
-  return Object.freeze({ schema: "urn:usf:call-result:1", status: failures.length === 0 ? "ok" : contributions.length > 0 ? "partial" : "refused", contributions: Object.freeze(contributions), failures: Object.freeze(failures), metrics: { requested: assignments.length, succeeded: contributions.length, failed: failures.length, observedCost } });
+  return Object.freeze({ schema: "urn:usf:call-result:1", basis: assignments[0]!.basis, status: failures.length === 0 ? "ok" : contributions.length > 0 ? "partial" : "refused", contributions: Object.freeze(contributions), failures: Object.freeze(failures), metrics: { requested: assignments.length, succeeded: contributions.length, failed: failures.length, observedCost } });
 }
 
 /** Bootstrap CLI format: a single canonical JSON argument containing assignments and optional hostConcurrency. */

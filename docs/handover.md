@@ -1,36 +1,25 @@
 # USF V3 handover
 
-Updated 2026-08-30. This is the durable continuation boundary after bounded
+Updated 2026-08-31. This is the durable continuation boundary after bounded
 semantic-recovery tooling and the graph authority for optional Hermes-Agent
 autonomous management, amended to restore the V1/V2 semantic-first authority
 order before any further realisation.
 
 ## Verified carrier and gate
 
-- The pre-semantic-first-authority baseline was clean and pushed at
-  `b93026d876d3a6ef8ef08b053d4c0d255cdaf96b`
-  (`feat: define optional Hermes management boundary`). The earlier recovery
-  tooling checkpoint remains `d974570dbe608503ffd94ccbf9ede9eeb06f4d18`.
-- `HEAD == origin/main` held before the authority change.
-- The focused provider lane passed 71 tests, 71 pass, 0 fail; the observed
-  runner duration was 1.963 seconds.
-- The full no-force-exit check passed 165 tests, 165 pass, 0 fail; the observed
-  runner duration was 5.132 seconds and full command wall time 8.183 seconds.
-- Containment passed and no provider was contacted.
-- These are single observations, not a ten-run p95 baseline.
-- After the authority corrections, the focused provider/product lane passed 72
-  tests, 72 pass, 0 fail; the observed runner duration was 2.038 seconds. The
-  full no-force-exit check passed 166 tests, 166 pass, 0 fail. After the
-  construction/completion split and typed-exception correction, the latest
-  observed runner duration was 4.464 seconds; the command completed in about
-  7.8 seconds wall time.
-  Bootstrap again reported `providerContacted:false`, containment passed and
-  `git diff --check` passed.
-- The baseline commit already carries the optional Hermes authority and
-  isolated ANQR intent overlay. The next coherent commit deliberately adds the
-  semantic-first graph authority, definition/activation separation and this
-  corrected handover before executable gate implementation. Resolve its final identity with
-  `git rev-parse HEAD` and require `HEAD == origin/main` before continuing.
+- The optional Hermes authority baseline is
+  `b93026d876d3a6ef8ef08b053d4c0d255cdaf96b`; the bounded recovery-tooling
+  checkpoint is `d974570dbe608503ffd94ccbf9ede9eeb06f4d18`.
+- The committed and pushed semantic-first authority checkpoint is
+  `a90228fdb545fab0d031e5db7f713f489247907c`
+  (`feat: define semantic-first authority model`). It was `HEAD == origin/main`
+  at this continuation start.
+- The current coherent worktree packet implements the executable gate and its
+  containment/publication boundaries. It is not yet a committed checkpoint;
+  the primary transition receipt remains absent.
+- Historical test counts above this packet are not current acceptance evidence.
+  Re-run the authoritative, containment and exact isolated-transition commands
+  below on the final bytes. No prior observation authorizes primary apply.
 
 The handover previously stopped at the provider slice and reported 156 tests.
 That was stale after the semantic-recovery commits. This version supersedes it.
@@ -82,12 +71,10 @@ provider, credential and Hermes-Agent contact in this hermetic slice. They do
 not authorize credential migration, Docker runtime wiring or changes to
 provider qualification gates.
 
-The current core self-host manifest semantic digest is
-`sha256:80f32e26f6f4ef6c4cbde0be4ac5e5f6048064d62df36f620bd3709924b3d06d`;
-the current combined ANQR manifest semantic digest is
-`sha256:d774874a35f4cc65da447404b6a6489113846651ad33762d3c6ab941b33091e0`.
-Scoped packet digests include this handover and must be re-derived after the
-authority commit rather than copied from this self-changing document.
+Do not copy semantic digests from this self-changing handover. Re-derive the
+current core and combined ANQR identities from their explicit versioned
+profiles and manifests with the registered `usf query` and `usf work`
+commands above after every authority change.
 
 ## Semantic-first authority boundary
 
@@ -131,16 +118,33 @@ manifest. It binds reversible exact source operations, the immutable pre-state
 basis, and the independently recomputed expected post-state source and semantic
 currentness. Verification reverses and replays the delta, so the exact admitted
 mutation does not stale its own proof; any other relevant movement refuses.
-The executable gate, immutable realisation basis, admitted evidence, proof
-results and activated permissions remain pending; until they exist,
-dependency-ready output is not semantic readiness.
+The registered admission selects the graph-declared isolated authority profile,
+not the broader self-host consumer profile:
 
-Independent CLI verification also found that `usf work --selector` currently
-refuses a valid bare RealisationProfile IRI even though help documents profile
-scope selection; the `profile:IRI` compatibility spelling works. The
-semantic-first eligibility packet now carries an explicit acceptance criterion
-to make direct exact profile IRIs and help agree. Do not work around this with
-ad hoc graph commands.
+```sh
+./bin/usf publish bootstrap-transition \
+  --profile urn:usf:profile:v3-semantic-first:1 \
+  --manifest graph/manifests/self-host.json \
+  --receipt evidence/semantic-first-bootstrap-admission.json \
+  --verify
+```
+
+First use `--apply` in a fresh isolated candidate repository. Once that exact
+packet is independently green and the authoritative checks pass, use the same
+command with `--apply` in the primary repository, verify it there, and commit
+the source and receipt as one coherent checkpoint. The
+`urn:usf:profile:v3-self-host:1` and product profiles may consume the same core
+currentness receipt through their required core permission, but they cannot
+mint it or broaden its basis.
+The executable gate, immutable realisation-basis propagation and exact-profile
+CLI selection are implemented and focused-tested. The primary admission is
+still unapplied and its tracked receipt is absent. After the exact transition
+is admitted, its three member packets are only
+`checked-awaiting-integration`: the generic integration-transition verifier is
+explicitly proof-blocked until a real postimage basis, postimage validation and
+evidence derivation are implemented. Neither the admission receipt nor the
+active gate permission is completion proof, and neither unlocks downstream
+work by itself.
 
 ## Semantic recovery boundary
 
@@ -205,10 +209,10 @@ bulk imported; retained meaning is re-expressed in later V3-authored packets.
 
 ## Provider and model population
 
-The frozen local models.dev snapshot currently observes, at raw digest
-`sha256:cf152b9edf266b2caf567f2d8d92735a6d5976ccf7e69f44f97e769f93ec1d6b`
-and normalized digest
-`sha256:21d809321eb0a31a8b346c686dac206cf3fd9026274d5e83a0b5525de3de9e6a`:
+The frozen local models.dev snapshot observes the population below. Re-derive
+its exact raw and normalized digests from the tracked snapshot with
+`./bin/usf models summary --max-items 1`; do not copy digest literals from this
+self-changing handover:
 
 - 211 provider routes;
 - 7,488 provider-route/model pairs;
@@ -216,6 +220,12 @@ and normalized digest
 - 171 known underlying model families;
 - 28 adapter packages, of which 2 are installed; and
 - 208 credential names.
+
+The catalogue-only reasoning + tool-call + structured-output intersection is
+3,216 route/model pairs across 163 routes, representing 1,391 underlying models
+and 84 known families. Only 6 of those pairs currently have an installed
+adapter. These are feature declarations, not semantic qualification,
+entitlement, economics or availability evidence.
 
 This catalogue is not a configured roster or availability result. The tracked
 provider configuration currently declares only:
@@ -227,6 +237,41 @@ Both remain live-ineligible and `UNQUALIFIED`: no trusted current exact-account
 zero-paid receipt, live successful probe or authenticated provider-produced
 semantic answer set has been admitted. OpenAI/Codex catalogue entries and this
 Codex session do not make a Codex route configured or qualified.
+
+The reviewed V2 environment-name denominator (names only, never values) is:
+`ARCEE_TOKEN`, `CEREBRAS_API_KEY`, `CLOUDFLARE_API_KEY`, `COHERE_API_KEY`,
+`DEEPSEEK_API_KEY`, `FIREWORKS_API_KEY`, `GEMINI_API_KEY`,
+`GITHUB_PERSONAL_ACCESS_TOKEN`, `GROQ_API_KEY`, `HF_TOKEN`, `LINEAR_API_KEY`,
+`MISTRAL_API_KEY`, `NOUS_API_KEY`, `NVIDIA_API_KEY`, `OPENAI_API_KEY`,
+`OPENROUTER_API_KEY`, `SAMBANOVA_API_KEY`, `TOGETHER_API_KEY`, `ZAI_API_KEY`
+and the five Stardog names `STARDOG_DATABASE`, `STARDOG_PASSWORD`,
+`STARDOG_SERVER`, `STARDOG_TOKEN`, `STARDOG_USERNAME`. GitHub, Linear and
+Stardog names are not automatically AI-provider routes. Name differences such
+as `ARCEE_TOKEN` versus models.dev `ARCEE_API_KEY`, and `ZAI_API_KEY` versus
+`ZHIPU_API_KEY`, remain reviewed mappings rather than inferred aliases.
+
+Historical provider observations also include distinct `codex-cli`,
+`claude-cli` and `antigravity-cli` subscription transports; Codex models
+`gpt-5.6-sol` and `gpt-5.5`; OpenRouter
+`anthropic/claude-sonnet-4.6`; MiniMax OAuth `MiniMax-M3`; a direct OpenAI API
+credit/fallback refusal; and an unresolved Nous identity. These observations
+come from the reviewed V1/V2 provider graph, V2 workforce proof and local
+operator admissions. They are provenance candidates only, not current V3
+configuration, entitlement or qualification. `codex-cli` must remain a host
+adapter distinct from `OPENAI_API_KEY`; the absent local Claude CLI remains an
+explicit pre-contact unavailable/`UNQUALIFIED` candidate. The protected
+root-owned Factory tree remains unreadable, so complete Factory-source coverage
+is not claimed and no access prompt is required.
+
+The provider-census packet must deterministically union the fresh frozen
+models.dev catalogue, current V3 configuration, this reviewed legacy
+denominator and host CLI capabilities. It deduplicates only exact normalized
+transport/provider/route/model identities, preserves every source and
+direction, assigns one disposition per candidate, and applies capability,
+adapter, credential-name, account-receipt, authenticated-answer,
+hidden-holdout and routing gates in that order. It must first support the
+reasoning + tool-call + structured-output intersection and must not generate a
+per-route/model Cartesian test or probe matrix.
 
 “Full provider/model population” means every currently configured route and
 every currently eligible route under the exact frozen inputs, with complete
@@ -399,17 +444,18 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Validate, independently review, commit and push the semantic-first
-   graph/documentation authority packet.
-2. Re-derive and implement the three semantic-first packets in dependency
-   order: eligibility, immutable realisation-basis propagation, then lifecycle
-   sibling admission. Use only the three focused table/process tests declared
-   by the graph.
-3. Admit the exact validation observations, evaluate the exact proof and
-   activate only the permissions actually warranted before integration or
-   runtime authority; then run the full gate and containment, independently
-   review, commit and push the coherent gate implementation.
-4. Graph-define and execute the secondary semantic sweep after the existing
+1. Finish the final exact-byte review, full authoritative and containment
+   checks, and a fresh isolated apply/verify replay. Keep the primary receipt
+   absent until all of those are green.
+2. Apply and verify the exact registered semantic-first transition in the
+   primary repository, re-read the exact profile and consumer currentness,
+   rerun the full gate, then commit and push the source plus receipt as one
+   coherent checkpoint.
+3. Graph-define and implement the registered integration-transition verifier
+   that derives genuine postimage bases, validations and evidence for the
+   three checked gate members. Do not fabricate completion or downstream
+   readiness from the admission receipt.
+4. Execute the secondary semantic sweep after the existing
    recovery inventory and Factory-qualification work and before final recovery
    acceptance. Close tracked-file, declared-semantic, parsed-relationship,
    unmanifested-candidate and bounded-history denominators, the V1 Git-link
@@ -419,9 +465,12 @@ exactly as emitted by the core and ANQR packets.
    V3-authored graph packets. Do not bulk import legacy RDF or copy V1/V2
    operational topology. Commit/push one coherent accepted recovery checkpoint
    only after complete disposition and hermetic independence evidence.
-6. Then resume `urn:usf:work:file-asset-index`, provider receipt/adapter/
-   authenticated-answer/hidden-holdout qualification, live provider work and
-   optional Hermes facade work in their graph-derived order.
+6. Then resume `urn:usf:work:file-asset-index`. After its isolated V3 chain is
+   complete, build the graph-defined provider candidate census from the fresh
+   models.dev catalogue plus reviewed V1/V2 credential-name and model
+   provenance, followed by account receipt, scrubbed adapter,
+   authenticated-answer and hidden-holdout qualification. Only then run live
+   multi-provider work or the optional Hermes facade.
 
 Do not perform an ad hoc historical inventory, prompt for Factory access,
 reintroduce V2 leases/fences/journals/handovers/signatures/state databases, or

@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
-import { runBootstrapLoop } from "../src/bootstrap/loop.ts";
+import { runBootstrapLoop, type ProfileBoundWorkPacket } from "../src/bootstrap/loop.ts";
 import { loadSemanticGraph } from "../src/graph/index.ts";
 import { deriveWork } from "../src/graph/work.ts";
 import { fakeProviderRoutes } from "../src/providers/index.ts";
@@ -76,14 +76,19 @@ test("file and directory permissions cannot be confused by sibling prefixes", ()
 `;
 
 export async function executePathScopeSelfHost(repositoryRoot = resolve(import.meta.dirname, "..")) {
-  const result = deriveWork(loadSemanticGraph(repositoryRoot, "graph/manifests/self-host.json"), { selector: "profile:urn:usf:profile:v3-self-host:1" });
-  const work = result.status === "ok" ? result.items?.find((item) => item.id === "urn:usf:work:repository-path-scope") : undefined;
-  if (!work) throw new Error(`SELF_HOST_WORK_REFUSED:${result.reasonCode ?? "NOT_EXACT"}`);
+  const result = deriveWork(loadSemanticGraph(repositoryRoot, "graph/manifests/self-host.json"), {
+    profile: "urn:usf:profile:v3-self-host:1",
+    selector: "urn:usf:work:repository-path-scope",
+  });
+  const work = result.status === "ok" ? result.items?.[0] : undefined;
+  if (!work?.realisationBasis || work.decisionBoundary.kind !== "realisation-profile") {
+    throw new Error(`SELF_HOST_PROFILE_BASIS_REFUSED:${result.reasonCode ?? "NOT_EXACT"}`);
+  }
   const [sourceRoute, testRoute] = fakeProviderRoutes();
   if (!sourceRoute || !testRoute) throw new Error("SELF_HOST_ROUTES_UNAVAILABLE");
   return runBootstrapLoop({
     repositoryRoot,
-    work,
+    work: work as ProfileBoundWorkPacket,
     proposals: [
       { route: sourceRoute, operations: [{ kind: "write", path: "src/core/scope.ts", content: pathScopeSource }] },
       { route: testRoute, operations: [{ kind: "write", path: "tests/unit/core/scope.test.ts", content: pathScopeTests }] },

@@ -1,4 +1,16 @@
 <urn:usf:foundation:v3> <urn:usf:predicate:type> <urn:usf:type:SemanticFoundation> <urn:usf:graph:foundation> .
+<urn:usf:foundation:v3> <urn:usf:predicate:version> "3" <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:type> <urn:usf:type:DirectionalCurrentnessPolicy> <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:algorithm> <urn:usf:algorithm:directional-profile-closure:1> <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:coreScopePolicy> "selected-profile-closure-resources-classified-core" <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:productScopePolicy> "selected-profile-closure-resources-classified-product" <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:productManifestRolePrefix> "product-" <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:scopePartitionPolicy> "exactly-once-by-expanded-manifest-role-with-profile-product-foundation-boundaries" <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:boundaryIdentityPolicy> "opposite-identity-and-version-without-opposite-content" <urn:usf:graph:foundation> .
+<urn:usf:policy:directional-currentness:1> <urn:usf:predicate:productVersionPolicy> "selected-product-must-have-exactly-one-explicit-nonnegative-integer-version" <urn:usf:graph:foundation> .
+<urn:usf:algorithm:directional-profile-closure:1> <urn:usf:predicate:type> <urn:usf:type:DirectionalDigestAlgorithm> <urn:usf:graph:foundation> .
+<urn:usf:algorithm:directional-profile-closure:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
 <urn:usf:foundation:v3> <urn:usf:predicate:title> "USF V3 semantic foundation" <urn:usf:graph:foundation> .
 <urn:usf:environment:localdev> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
 <urn:usf:environment:hermetic> <urn:usf:predicate:type> <urn:usf:type:Environment> <urn:usf:graph:foundation> .
@@ -15,10 +27,31 @@
 <urn:usf:policy:semantic-first:1> <urn:usf:predicate:title> "USF semantic-first realisation order" <urn:usf:graph:foundation> .
 <urn:usf:policy:semantic-first:1> <urn:usf:predicate:objective> "Prevent build-first inversion by separating authored contract definitions from proof-warranted realisation permission and preserving the exact semantic-model, remodel-currentness, evidence, proof, activated-contract, realisation and validation order." <urn:usf:graph:foundation> .
 <urn:usf:policy:semantic-first:1> <urn:usf:predicate:firstStage> <urn:usf:stage:semantic-model> <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:governingPermission> <urn:usf:permission:semantic-first-order> <urn:usf:graph:foundation> .
+<urn:usf:policy:semantic-first:1> <urn:usf:predicate:completionProofAlgorithm> <urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:graph:foundation> .
 <urn:usf:policy:semantic-first:1> <urn:usf:predicate:defaultStopCondition> "Refuse every write outside the exact graph-projected write set." <urn:usf:graph:foundation> .
 <urn:usf:policy:semantic-first:1> <urn:usf:predicate:defaultStopCondition> "Stop before provider contact, integration, publication or runtime authority when the exact current realisation basis lacks a required predecessor, admitted evidence, passing proof or active permission." <urn:usf:graph:foundation> .
 <urn:usf:policy:semantic-first:1> <urn:usf:predicate:defaultStopCondition> "Stop when focused validation passes at the selected ceiling or a declared constraint is contradicted." <urn:usf:graph:foundation> .
 <urn:usf:policy:semantic-first:1> <urn:usf:predicate:nonClaim> "A complete semantic trace is topology, not evidence that evidence exists, proof passed, a contract is active, realisation was accepted or validation succeeded." <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:ProofAlgorithm> <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:integrationRecordType> <urn:usf:type:AdmittedIntegrationReceipt> <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:integrationReceiptSchema> <urn:usf:schema:admitted-integration-receipt:1> <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:acceptedIntegrationState> "accepted" <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:integrationTransitionVerifier> <urn:usf:algorithm:work-integration-transition:1> <urn:usf:graph:foundation> .
+<urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:objective> "Deterministically admit completion for one exact work only after a registered integration-transition verifier binds the original construction RealisationBasis, exact candidate and lineage, integrated tree postimage, independently rederived postimage RealisationBasis and exact postimage validation results." <urn:usf:graph:foundation> .
+<urn:usf:algorithm:work-integration-transition:1> <urn:usf:predicate:type> <urn:usf:type:TransitionVerificationAlgorithm> <urn:usf:graph:foundation> .
+<urn:usf:algorithm:work-integration-transition:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
+<urn:usf:algorithm:work-integration-transition:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:foundation> .
+<urn:usf:algorithm:work-integration-transition:1> <urn:usf:predicate:objective> "Verify one work integration transition by binding the original construction RealisationBasis, exact candidate digest, lineage digest and integrated tree digest, then independently deriving the postimage basis and exact postimage validation results." <urn:usf:graph:foundation> .
+<urn:usf:algorithm:work-integration-transition:1> <urn:usf:predicate:postimageBasisDerivationRequirement> "Derive the postimage RealisationBasis and scoped currentness from the integrated tree and selected versioned profile; never reuse or relabel the pre-integration construction basis as the postimage basis." <urn:usf:graph:foundation> .
+<urn:usf:algorithm:work-integration-transition:1> <urn:usf:predicate:validationDigestDerivationRequirement> "Derive the validation-result digest canonically from the graph-declared validation obligation identities and exact postimage observations, including their commands, environments, execution modes and current tool and schema dependencies; refuse caller-supplied digest authority." <urn:usf:graph:foundation> .
+<urn:usf:algorithm:work-integration-transition:1> <urn:usf:predicate:evidenceDigestDerivationRequirement> "Derive the completion-evidence content digest canonically from the admitted integration transition, exact postimage basis, exact required validation-result digest set and completion evidence requirement; refuse caller-supplied digest authority." <urn:usf:graph:foundation> .
+<urn:usf:implementation-state:proofblocked> <urn:usf:predicate:type> <urn:usf:type:ImplementationState> <urn:usf:graph:foundation> .
+<urn:usf:type:AdmittedIntegrationReceipt> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:foundation> .
+<urn:usf:type:AdmittedIntegrationReceipt> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
+<urn:usf:schema:admitted-integration-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:foundation> .
+<urn:usf:schema:admitted-integration-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
 <urn:usf:stage:semantic-model> <urn:usf:predicate:type> <urn:usf:type:SemanticStage> <urn:usf:graph:foundation> .
 <urn:usf:stage:semantic-model> <urn:usf:predicate:order> "1" <urn:usf:graph:foundation> .
 <urn:usf:stage:semantic-model> <urn:usf:predicate:precedes> <urn:usf:stage:remodel-currentness> <urn:usf:graph:foundation> .
@@ -54,4 +87,5 @@
 <urn:usf:algorithm:verified-transition-receipt:1> <urn:usf:predicate:type> <urn:usf:type:TransitionVerificationAlgorithm> <urn:usf:graph:foundation> .
 <urn:usf:algorithm:verified-transition-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
 <urn:usf:algorithm:verified-transition-receipt:1> <urn:usf:predicate:objective> "Verify a closed tracked transition receipt by reconstructing the exact pre-state from the current source and reversible ordered delta, re-evaluating the pre-state proof, applying the same delta in memory, and matching the exact expected post-state source and semantic currentness without hashing the receipt into the state it attests." <urn:usf:graph:foundation> .
+<urn:usf:algorithm:verified-transition-receipt:1> <urn:usf:predicate:verifiedState> <urn:usf:transition-state:verified> <urn:usf:graph:foundation> .
 <urn:usf:transition-state:verified> <urn:usf:predicate:type> <urn:usf:type:TransitionState> <urn:usf:graph:foundation> .

@@ -17,9 +17,12 @@ function parseWorkArgs(args: readonly string[]): ParsedWorkArgs | undefined {
     const option = args[index];
     if (option === "--ready") options.ready = true;
     else if (option === "--stream") options.stream = true;
-    else if (["--selector", "--shard", "--max-items", "--manifest"].includes(option)) {
+    else if (["--selector", "--profile", "--stage", "--shard", "--max-items", "--manifest"].includes(option)) {
       const value = args[++index]; if (value === undefined) return undefined;
       if (option === "--selector") options.selector = value;
+      if (option === "--profile") options.profile = value;
+      if (option === "--stage" && (value === "construct" || value === "integrate")) options.stage = value;
+      else if (option === "--stage") return undefined;
       if (option === "--shard") options.shard = value;
       if (option === "--manifest") manifestPath = value;
       if (option === "--max-items" && /^\d+$/.test(value)) options.maxItems = Number(value);

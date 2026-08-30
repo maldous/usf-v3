@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { DeterministicFakeProvider, fakeProviderRoutes, type CallAssignment, type FakeRoute } from "../../../src/providers/index.ts";
+import { DeterministicFakeProvider, fakeProviderRoutes } from "../../../src/providers/fake.ts";
+import type { CallAssignment, FakeRoute } from "../../../src/providers/types.ts";
 import { callAssignments } from "../../../src/commands/call.ts";
-import { proposalPacket } from "../../fixtures/proposal-packet.ts";
+import { proposalBasis, proposalPacket } from "../../fixtures/proposal-packet.ts";
 
 const limits = { maxTurns: 1, maxWallTimeMs: 100, maxInputTokens: 100, maxOutputTokens: 100, maxToolCalls: 0, maxRetries: 0 };
-const assignment = (route: FakeRoute, path = "src/example.ts"): CallAssignment => ({ route, workPacketDigest: "sha256:work", promptTemplateDigest: "sha256:prompt", scopedDependencyDigest: "sha256:scope", limits, packet: proposalPacket("packet", "write a small source file", [path], [{ kind: "write", path, content: "export {};\n" }]) });
+const assignment = (route: FakeRoute, path = "src/example.ts"): CallAssignment => { const basis = proposalBasis(); return ({ route, basis, workPacketDigest: basis.work.packetCoreDigest, promptTemplateDigest: basis.inputs.policyDigest, scopedDependencyDigest: basis.work.scopedDependencyDigest, limits, packet: proposalPacket(basis.work.id, "write a small source file", [path], [{ kind: "write", path, content: "export {};\n" }]) }); };
 
 test("two deterministic fake families retain distinct requested and actual identities", () => {
   const [orbit, harbor] = fakeProviderRoutes();

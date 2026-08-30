@@ -13,6 +13,7 @@ import {
 } from "./qualification.ts";
 import type { ProviderRouteConfig } from "./config.ts";
 import type { ProviderProbeResult } from "./probe.ts";
+import { assertRealisationBasis, type RealisationBasis } from "../realisation/basis.ts";
 
 export type RoutingStrategy = "all-eligible" | "diverse" | "fastest" | "review-diverse" | "deterministic-fixture";
 export type RouteDisposition = "assigned" | "excluded" | "eligible-unassigned";
@@ -221,6 +222,7 @@ export interface RoutingWork {
 }
 
 export interface RoutingInput {
+  readonly basis: RealisationBasis;
   readonly work: RoutingWork;
   readonly routes: readonly ConfiguredRouteForRouting[];
   readonly catalogue: readonly CatalogueFactForRouting[];
@@ -323,6 +325,7 @@ export interface RouteAssignment {
   readonly actual: Readonly<{ family: string; provider: string; model: string }>;
   readonly underlying: Readonly<{ family: string | null; model: string }>;
   readonly workId: string;
+  readonly basisDigest: string;
   readonly workDigest: string;
   readonly semanticBinding: Readonly<RoutingSemanticBinding>;
   readonly qualification: Readonly<RouteQualificationBinding>;
@@ -332,6 +335,7 @@ export interface RouteAssignment {
 
 export interface RouteResult {
   readonly schema: "urn:usf:route-result:1";
+  readonly basis: RealisationBasis;
   readonly status: "ok" | "refused";
   readonly reasonCode?: "NO_ELIGIBLE_ROUTE";
   readonly strategy: RoutingStrategy;
@@ -892,6 +896,20 @@ function copySemanticBinding(binding: RoutingSemanticBinding): RoutingSemanticBi
 }
 
 export function routeWork(input: RoutingInput, trustedAuthority: TrustedSemanticQualificationAuthorityForRouting): RouteResult {
+  assertRealisationBasis(input.basis);
+  validateSemanticBinding(input.work.semanticBinding);
+  const productBinding = input.work.semanticBinding.product;
+  const productMatches = productBinding.applicability === "not-applicable"
+    ? input.basis.selection.product === "not-applicable" && input.basis.selection.productVersion === "not-applicable"
+    : input.basis.selection.product === productBinding.profile && input.basis.selection.productVersion === productBinding.version && input.basis.selection.productDigest === productBinding.profileDigest;
+  if (input.basis.work.id !== input.work.id || input.basis.work.packetCoreDigest !== input.work.digest
+    || input.work.semanticBinding.core.profile !== input.basis.selection.profile
+    || input.work.semanticBinding.core.version !== input.basis.selection.profileVersion
+    || input.work.semanticBinding.core.profileDigest !== input.basis.selection.profileDigest
+    || !productMatches
+    || input.basis.selection.coreToProductDigest !== input.work.semanticBinding.directional.coreToProductDigest
+    || input.basis.selection.productToCoreDigest !== input.work.semanticBinding.directional.productToCoreDigest
+    || input.basis.selection.compositeDigest !== input.work.semanticBinding.compositeDigest) throw new Error("ROUTE_BASIS_BINDING_MISMATCH");
   const now = validateInput(input, trustedAuthority);
   const catalogue = new Map(input.catalogue.map((fact) => [catalogueKey(fact.provider, fact.model), fact]));
   const probes = new Map(input.probes.map((probe) => [probe.routeId, probe]));
@@ -942,7 +960,7 @@ export function routeWork(input: RoutingInput, trustedAuthority: TrustedSemantic
       routeId: route.id, requested: Object.freeze({ family: route.family, provider: route.provider, model: route.model }),
       actual: Object.freeze({ family: actual.family, provider: actual.provider, model: actual.model }),
       underlying: Object.freeze({ family: fact!.underlyingModelFamily, model: fact!.underlyingModel }),
-      workId: input.work.id, workDigest: input.work.digest, semanticBinding, qualification,
+      workId: input.work.id, basisDigest: input.basis.basisDigest, workDigest: input.work.digest, semanticBinding, qualification,
       concurrency: Math.min(route.concurrency, input.hostConcurrency),
     };
     return Object.freeze({ ...basis, assignmentDigest: exactDigest(basis) });
@@ -964,7 +982,7 @@ export function routeWork(input: RoutingInput, trustedAuthority: TrustedSemantic
     eligibleProviderFamilies: new Set(eligible.map((row) => row.family)).size, assignedRoutes: assignments.length,
   });
   const basis = {
-    schema: "urn:usf:route-result:1" as const, status: assignments.length > 0 ? "ok" as const : "refused" as const,
+    schema: "urn:usf:route-result:1" as const, basis: input.basis, status: assignments.length > 0 ? "ok" as const : "refused" as const,
     ...(assignments.length > 0 ? {} : { reasonCode: "NO_ELIGIBLE_ROUTE" as const }), strategy: input.strategy,
     inputs: Object.freeze({
       workDigest: input.work.digest, semanticBindingDigest: exactDigest(input.work.semanticBinding), catalogueRawDigest: input.catalogueRawDigest,

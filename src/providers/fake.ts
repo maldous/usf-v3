@@ -2,6 +2,7 @@ import {
   type CallAssignment, type CallFailure, type Contribution, type FakeRoute, type FileOperation,
   type Usage, contributionDigest, eligibleZeroCost, immutable, isOperation,
 } from "./types.ts";
+import { assertRealisationBasis } from "../realisation/basis.ts";
 
 const defaultRoutes: readonly FakeRoute[] = [
   {
@@ -35,6 +36,7 @@ export class DeterministicFakeProvider {
   constructor(route: FakeRoute) { this.route = immutable({ ...route, requested: { ...route.requested }, actual: { ...route.actual } }); }
 
   invoke(assignment: CallAssignment, retries = 0): Contribution | CallFailure {
+    try { assertRealisationBasis(assignment.basis); } catch { return { route: this.route.requested, reasonCode: "BASIS_INVALID", retryable: false }; }
     if (!eligibleZeroCost(this.route)) return { route: this.route.requested, reasonCode: "ZERO_COST_POLICY_REFUSAL", retryable: false };
     if (this.route.failure === "always" || (this.route.failure === "once" && !this.#failedOnce)) {
       this.#failedOnce = true;
@@ -46,12 +48,12 @@ export class DeterministicFakeProvider {
     const outputTokens = Math.min(assignment.limits.maxOutputTokens, Math.max(1, operations.reduce((sum, operation) => sum + (operation.content?.length ?? 1), 0)));
     const usage: Usage = { inputTokens: Math.min(assignment.limits.maxInputTokens, assignment.packet.objective.length), outputTokens, toolCalls: 0, retries };
     const basis = {
-      assignment: { workPacketDigest: assignment.workPacketDigest, promptTemplateDigest: assignment.promptTemplateDigest, scopedDependencyDigest: assignment.scopedDependencyDigest, purpose: assignment.purpose ?? "proposal" },
+      assignment: { basisDigest: assignment.basis.basisDigest, workPacketDigest: assignment.workPacketDigest, promptTemplateDigest: assignment.promptTemplateDigest, scopedDependencyDigest: assignment.scopedDependencyDigest, purpose: assignment.purpose ?? "proposal" },
       requested: this.route.requested, actual: this.route.actual, cost: { costClass: this.route.costClass, observedCost: this.route.observedCost, evidence: "fake-route-fixed-zero-cost" }, usage,
       payload: { operations },
     };
     return immutable({
-      schema: "urn:usf:contribution:1", kind: "contribution", identity: { artifactDigest: contributionDigest(basis) },
+      schema: "urn:usf:contribution:1", kind: "contribution", basis: assignment.basis, identity: { artifactDigest: contributionDigest(basis), basisDigest: assignment.basis.basisDigest },
       ...basis, limits: { ...assignment.limits },
       claims: ["structured-file-operations-proposed"],
       nonclaims: ["not-validated", "not-accepted", "not-written-to-repository"],

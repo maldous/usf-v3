@@ -21,7 +21,9 @@ const ALLOWED_KEYWORDS = new Set([
   "enum",
   "format",
   "items",
+  "maxItems",
   "maximum",
+  "minItems",
   "minLength",
   "minimum",
   "oneOf",
@@ -176,6 +178,8 @@ function stableMessage(keyword: string): string {
     case "enum": return "must equal an allowed value";
     case "format": return "must match the required format";
     case "maximum": return "must not exceed the maximum";
+    case "maxItems": return "must not contain more than the maximum number of items";
+    case "minItems": return "must contain at least the minimum number of items";
     case "minLength": return "must satisfy the minimum length";
     case "minimum": return "must not be below the minimum";
     case "oneOf": return "must match exactly one allowed schema";

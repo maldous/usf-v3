@@ -8,6 +8,7 @@ import { canonicalDigest } from "../../src/core/canonical.ts";
 import { createQualificationPolicy, createQualificationSuite } from "../../src/providers/qualification.ts";
 import { createRoutingSemanticBinding } from "../../src/providers/routing.ts";
 import { observeInstalledAdapter } from "../../src/commands/models.ts";
+import { proposalBasis } from "../fixtures/proposal-packet.ts";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 const usf = resolve(repositoryRoot, "bin/usf");
@@ -82,6 +83,18 @@ test("registered provider CLI evaluates semantic inputs and routes fixture facts
     { profile: "urn:usf:profile:v3-self-host:2", version: "2", profileDigest: digest("1") },
     { applicability: "not-applicable", profile: "not-applicable", version: "not-applicable", profileDigest: "not-applicable" },
   );
+  const basis = proposalBasis("urn:usf:work:fixture", digest("2"), {
+    selection: {
+      profile: binding.core.profile,
+      profileVersion: binding.core.version,
+      profileDigest: binding.core.profileDigest,
+      product: binding.product.profile,
+      productVersion: binding.product.version,
+      coreToProductDigest: binding.directional.coreToProductDigest,
+      productToCoreDigest: binding.directional.productToCoreDigest,
+      compositeDigest: binding.compositeDigest,
+    },
+  });
   const temporaryRoot = resolve(repositoryRoot, ".usf/tmp");
   mkdirSync(temporaryRoot, { recursive: true, mode: 0o700 });
   const shimRoot = mkdtempSync(resolve(temporaryRoot, "route-git-shim-"));
@@ -90,6 +103,7 @@ test("registered provider CLI evaluates semantic inputs and routes fixture facts
   writeFileSync(shimPath, `#!/bin/sh\nprintf called > '${markerPath}'\nexit 97\n`, { mode: 0o700 });
   chmodSync(shimPath, 0o700);
   const routeInput = JSON.stringify({
+    basis,
     work: { id: "urn:usf:work:fixture", digest: digest("2"), semanticBinding: binding, capabilities: ["text-generation"], semanticRequirements: [], privacy: "public" },
     routes: [{ id: route.id, configDigest: routeDigest, family: route.family, provider: route.provider, model: route.model, underlyingModelFamily: "fixture", underlyingModel: "fixture/model-v1", adapter: route.adapterPackage, credential: route.credentialName, capabilities: ["text-generation"], privacy: ["public"], costClass: "free-quota", paidFallback: false, entitlement: "verified", concurrency: 2 }],
     catalogue: [{ provider: route.provider, model: route.model, underlyingModelFamily: "fixture", underlyingModel: "fixture/model-v1", capabilities: [], prices: { input: 0, output: 0, reasoning: 0, cacheRead: 0, cacheWrite: 0, inputAudio: 0, outputAudio: 0 } }],
@@ -185,14 +199,14 @@ test("availability containment refusals retain exit 5 before any provider contac
 });
 
 test("the shell launcher passes --env-file to USF instead of Node", () => {
-  const result = spawnSync(usf, ["doctor", "--env-file", "/definitely/not/a/usf-env-file"], {
+  const result = spawnSync(usf, ["help", "--env-file", "/definitely/not/a/usf-env-file"], {
     cwd: repositoryRoot,
     encoding: "utf8",
     timeout: 5_000,
   });
   assert.equal(result.error, undefined);
-  assert.equal(result.status, 5);
+  assert.equal(result.status, 2);
   assert.equal(result.stdout, "");
   const refusal = JSON.parse(String(result.stderr).trim()) as Record<string, unknown>;
-  assert.equal(refusal.reasonCode, "DOCTOR_ENV_FILE_REFUSED");
+  assert.equal(refusal.reasonCode, "HELP_ARGUMENTS_INVALID");
 });

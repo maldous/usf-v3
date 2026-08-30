@@ -5,7 +5,8 @@ import { relative, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { exitCodes, type ExitCode, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
-import { deriveWork } from "../graph/work.ts";
+import { deriveCurrentRealisationBasis, deriveWork, type WorkPacket } from "../graph/work.ts";
+import { assertBasisMatchesPacket, assertRealisationBasis, assertSameBasis, type RealisationBasis } from "../realisation/basis.ts";
 import {
   createLifecycleBinding,
   lifecycleNonclaims,
@@ -41,6 +42,124 @@ export interface AutomationPolicy {
 export interface LifecycleProfileObservation {
   readonly binding: LifecycleBinding;
   readonly carrier: LifecycleCarrier;
+}
+
+/**
+ * The lifecycle composer consumes this frozen projection.  Process readiness
+ * is deliberately not part of it: a ready process may have an empty set.
+ * Bootstrap-exception work is excluded here; only proof-warranted active
+ * permissions may enter ordinary start/watch scheduling.
+ */
+export interface LifecycleEligibleWork {
+  readonly packet: WorkPacket & Readonly<{ realisationBasis: RealisationBasis }>;
+  readonly basis: RealisationBasis;
+}
+
+export interface LifecycleComposerInput {
+  readonly binding: LifecycleBinding;
+  readonly eligibleWork: readonly LifecycleEligibleWork[];
+}
+
+export interface LifecycleComposerResult {
+  readonly state: "idle" | "progress" | "stop";
+  readonly plannedWorkIds: readonly string[];
+  readonly reasonCode?: string;
+}
+
+/** Optional ranker: it can reorder IDs only and has no claim or authority effect. */
+export type LifecycleHermesRanker = (workIds: readonly string[]) => readonly string[] | Promise<readonly string[]>;
+export type LifecycleComposer = (input: LifecycleComposerInput) => LifecycleComposerResult | Promise<LifecycleComposerResult>;
+
+const throughRank: Readonly<Record<LifecycleThrough, number>> = Object.freeze({ check: 1, integrate: 2, publish: 3 });
+
+export type LifecycleBasisRederiver = (basis: RealisationBasis) => RealisationBasis | Promise<RealisationBasis>;
+
+/**
+ * Admission kernel over already projected packets.  Graph loading is kept in
+ * the adapter below so this remains independently testable and one stale
+ * sibling cannot reject unrelated eligible work.
+ */
+export async function admitEligibleLifecycleWork(
+  packets: readonly WorkPacket[],
+  rederive: LifecycleBasisRederiver,
+  through: LifecycleThrough,
+): Promise<readonly LifecycleEligibleWork[]> {
+  const candidates = packets.filter((packet) => packet.eligibility?.construction.eligible === true
+    && packet.eligibility.construction.authority === "active-permission"
+    && packet.eligibility.construction.maximumThrough !== null
+    && throughRank[through] <= (packet.eligibility.construction.maximumThrough === "publish" ? 3 : packet.eligibility.construction.maximumThrough === "integrate" ? 2 : 1));
+  const admitted = await Promise.all(candidates.map(async (packet) => {
+    try {
+      const basis = (packet as WorkPacket & { realisationBasis?: RealisationBasis }).realisationBasis;
+      if (basis === undefined) return undefined;
+      const current = await rederive(basis);
+      return Object.freeze({ packet: Object.freeze({ ...packet, realisationBasis: current }), basis: current });
+    } catch {
+      return undefined;
+    }
+  }));
+  return Object.freeze(admitted.filter((entry): entry is LifecycleEligibleWork => entry !== undefined)
+    .sort((left, right) => left.packet.id.localeCompare(right.packet.id)));
+}
+
+/** Re-derive eligible work independently; one stale sibling cannot poison others. */
+export async function deriveEligibleLifecycleWork(input: {
+  readonly repositoryRoot: string;
+  readonly profile: string;
+  readonly manifest: string;
+  readonly through: LifecycleThrough;
+}): Promise<readonly LifecycleEligibleWork[]> {
+  const graph = loadSemanticGraph(input.repositoryRoot, input.manifest);
+  const result = deriveWork(graph, { profile: validateVersionedProfile(input.profile) });
+  if (result.status !== "ok" || result.items === undefined) throw new UsfError(lifecycleCommandReasonCodes.PROFILE_REFUSED, exitCodes.CURRENTNESS_FAILURE, "The selected profile could not produce a current lifecycle work projection.");
+  return admitEligibleLifecycleWork(result.items, (basis) => {
+    assertRealisationBasis(basis);
+    const { realisationBasis: _attachedBasis, ...projectedPacket } = result.items!.find((packet) => packet.id === basis.work.id) as WorkPacket & { realisationBasis?: RealisationBasis };
+    assertBasisMatchesPacket(basis, projectedPacket);
+    return deriveCurrentRealisationBasis(input.repositoryRoot, basis).then((current) => { assertBasisMatchesPacket(current, projectedPacket); assertSameBasis(basis, current); return current; });
+  }, input.through);
+}
+
+function deterministicIds(work: readonly LifecycleEligibleWork[]): string[] {
+  return work.map((entry) => entry.packet.id).sort((left, right) => left.localeCompare(right));
+}
+
+function validRank(ids: readonly string[], ranked: readonly string[]): boolean {
+  return ranked.length === ids.length && new Set(ranked).size === ids.length && ranked.every((id) => ids.includes(id));
+}
+
+/**
+ * Invoke an optional Hermes ranker without allowing it to reserve, suppress,
+ * duplicate, or authorize work. Any refusal, timeout, or malformed ordering
+ * falls back to the exact deterministic eligible ordering.
+ */
+export async function composeLifecycleWork(
+  input: LifecycleComposerInput,
+  composer: LifecycleComposer | undefined,
+  ranker?: LifecycleHermesRanker,
+  rankTimeoutMs = 100,
+): Promise<LifecycleComposerResult> {
+  const deterministic = deterministicIds(input.eligibleWork);
+  let ordered = deterministic;
+  if (ranker !== undefined && deterministic.length > 0) {
+    try {
+      const ranked = await Promise.race([
+        Promise.resolve(ranker(Object.freeze([...deterministic]))),
+        new Promise<readonly string[]>((resolve) => setTimeout(() => resolve([]), rankTimeoutMs)),
+      ]);
+      if (validRank(deterministic, ranked)) ordered = [...ranked];
+    } catch { /* deterministic fallback is authoritative */ }
+  }
+  const byId = new Map(input.eligibleWork.map((entry) => [entry.packet.id, entry]));
+  const rankedWork = ordered.map((id) => byId.get(id)!).filter((entry): entry is LifecycleEligibleWork => entry !== undefined);
+  const frozenInput: LifecycleComposerInput = Object.freeze({ binding: input.binding, eligibleWork: Object.freeze(rankedWork) });
+  if (composer === undefined) return Object.freeze({ state: "idle", plannedWorkIds: Object.freeze(ordered) });
+  const result = await composer(frozenInput);
+  if (!isRecord(result) || !["idle", "progress", "stop"].includes(String(result.state))
+    || !Array.isArray(result.plannedWorkIds) || !validRank(deterministic, result.plannedWorkIds)) {
+    throw new UsfError("LIFECYCLE_COMPOSER_RESULT_INVALID", exitCodes.CONTINUOUS_DEGRADED, "The lifecycle composer returned an invalid or non-eligible plan.");
+  }
+  return Object.freeze({ state: result.state as LifecycleComposerResult["state"], plannedWorkIds: Object.freeze([...result.plannedWorkIds]), ...(result.reasonCode === undefined ? {} : { reasonCode: result.reasonCode }) });
 }
 
 export const lifecycleCommandReasonCodes = Object.freeze({
@@ -288,6 +407,8 @@ export interface LifecycleCommandDependencies {
   readonly ids: LifecycleIdGenerator;
   readonly emit: LifecycleEventEmitter;
   readonly buildObservation: typeof buildLifecycleProfileObservation;
+  readonly composer?: LifecycleComposer;
+  readonly hermesRanker?: LifecycleHermesRanker;
   readonly cycleFactory?: (input: { readonly repositoryRoot: string; readonly profile: string; readonly manifest: string; readonly through: LifecycleThrough }) => LifecycleCycle;
   readonly installSignalHandlers?: boolean;
 }
@@ -323,9 +444,37 @@ function createForegroundHandler(command: "start" | "watch", dependencies: Lifec
       const parsed = parseForegroundArguments(args);
       const initial = await dependencies.buildObservation({ repositoryRoot, profile: parsed.profile, manifest: parsed.manifest, through: parsed.through });
       const through = initial.binding.through;
+      let lastEligibleObservation: string | undefined;
       const cycle = dependencies.cycleFactory?.({ repositoryRoot, profile: parsed.profile, manifest: parsed.manifest, through }) ?? (async () => {
         const current = await dependencies.buildObservation({ repositoryRoot, profile: parsed.profile, manifest: parsed.manifest, through });
-        return { state: "idle" as const, binding: current.binding };
+        // This is an observation-only admission pass.  The returned set is
+        // intentionally discarded by the lifecycle control plane; a future
+        // composer/Hermes adapter consumes the same frozen set.  In
+        // particular, process readiness never activates authority or turns a
+        // dependency-ready packet into semantic eligibility.
+        const eligible = await deriveEligibleLifecycleWork({ repositoryRoot, profile: parsed.profile, manifest: parsed.manifest, through });
+        const eligibleIds = eligible.map((entry) => entry.packet.id);
+        const eligibleDigest = canonicalDigest(eligibleIds, { rejectAbsolutePaths: true });
+        const plan = await composeLifecycleWork({ binding: current.binding, eligibleWork: eligible }, dependencies.composer, dependencies.hermesRanker);
+        if (eligibleDigest !== lastEligibleObservation) {
+          lastEligibleObservation = eligibleDigest;
+          await dependencies.emit({
+            schema: "urn:usf:lifecycle-work-observation:1",
+            version: 1,
+            command,
+            instance: parsed.instance,
+            profile: parsed.profile,
+            manifest: parsed.manifest,
+            through,
+            processReady: true,
+            semanticEligibleWorkIds: eligibleIds,
+            plannedWorkIds: plan.plannedWorkIds,
+            composerState: plan.state,
+            semanticEligibilityIsNotProcessReadiness: true,
+            nonclaims: lifecycleNonclaims,
+          });
+        }
+        return { state: plan.state, binding: current.binding, reasonCode: plan.reasonCode };
       });
       const result = await runForegroundLifecycle({
         command,

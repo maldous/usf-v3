@@ -1,7 +1,9 @@
 <urn:usf:profile:v3-semantic-first:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:semantic-first> .
+<urn:usf:profile:v3-semantic-first:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-first> .
 <urn:usf:profile:v3-semantic-first:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:semantic-first> .
 <urn:usf:profile:v3-semantic-first:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:usf:graph:semantic-first> .
 <urn:usf:profile:v3-semantic-first:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:semantic-first> .
+<urn:usf:profile:v3-semantic-first:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:semantic-first> .
 <urn:usf:profile:v3-semantic-first:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:semantic-first> .
 <urn:usf:profile:v3-semantic-first:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:semantic-first> .
@@ -27,41 +29,77 @@
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-order-primary> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-definition-activation-separation> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-realisation-basis> <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-focused-network-confinement> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-construction-eligibility> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-activation-eligibility> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-transition-readback> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-transition-receipt-currentness> <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-work-completion> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-lifecycle-isolation> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-nonserializing-currentness> <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-directional-basis> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-first-test-economics> <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/graph/work.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/work.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/publish.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/realisation/basis.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/realisation/index.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/realisation/transition.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "schemas/realisation-basis.schema.json" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "schemas/verified-transition-receipt.schema.json" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/providers/routing.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/providers/types.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/providers/fake.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/route.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/call.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/collaboration/resolve.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/resolve.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/apply.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/check.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/bootstrap/loop.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "recipes/self-host-path-scope.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "src/commands/lifecycle.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "schemas/contribution.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "schemas/candidate.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "schemas/route-result.schema.json" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/semantic-first.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/foundation.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/usf-bootstrap.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/provider-qualification.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/hermes-management.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/semantic-recovery.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/anqr-first-slice.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/products/anqr/hermes-management.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "graph/fixtures/product-assets.nq" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "evidence/semantic-first-bootstrap-admission.json" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/semantic.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/contract/provider-commands.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/contract/cli.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/proposal-packet.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/unit/providers/fake.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/unit/providers/routing.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/unit/collaboration/resolve.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/realisation-check.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/providers/" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/integration/bootstrap-loop.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/integration/provider-cli.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0008-semantic-first-realisation.md" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "docs/hermes-management.md" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:nonClaim> "A contract definition, work packet, dependency-ready label, complete trace or process-ready lifecycle record is not an active contract, accepted realisation, evidence, proof or permission for live contact, integration, publication or runtime authority." <urn:usf:graph:semantic-first> .
 <urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:nonClaim> "The bootstrap check-only exception does not activate this or any sibling contract and closes once the exact gate implementation is accepted." <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:nonClaim> "The owner-private per-candidate util-linux advisory lock coordinates cooperative USF materialise, apply and focused-check execution only; it does not claim containment against an arbitrary hostile same-UID writer that ignores advisory locks." <urn:usf:graph:semantic-first> .
+<urn:usf:contract:semantic-first-order:1> <urn:usf:predicate:nonClaim> "The exact root-owned /usr/bin/bwrap boundary provides the admitted child network namespace and minimal explicit mount view; it does not claim containment against a hostile same-UID process outside that namespace or compromise of the host kernel, root account or trusted bwrap executable." <urn:usf:graph:semantic-first> .
 <urn:usf:permission:semantic-first-order> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:semantic-first> .
 <urn:usf:permission:semantic-first-order> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-first-order:1> <urn:usf:graph:semantic-first> .
-<urn:usf:permission:semantic-first-order> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:semantic-first> .
+<urn:usf:permission:semantic-first-order> <urn:usf:predicate:activationState> <urn:usf:contract-state:active> <urn:usf:graph:semantic-first> .
 <urn:usf:permission:semantic-first-order> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:semantic-first> .
 <urn:usf:permission:semantic-first-order> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:semantic-first-order> <urn:usf:graph:semantic-first> .
 <urn:usf:permission:semantic-first-order> <urn:usf:predicate:proofObligation> <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:graph:semantic-first> .
@@ -70,11 +108,12 @@
 <urn:usf:permission:semantic-first-order> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:semantic-first-order> <urn:usf:graph:semantic-first> .
 <urn:usf:permission:semantic-first-order> <urn:usf:predicate:activationCurrentness> <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapConstructionException> <urn:usf:graph:semantic-first> .
-<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:state> <urn:usf:exception-state:open> <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:state> <urn:usf:exception-state:closed> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-first-order:1> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:forWork> <urn:usf:work:semantic-first-eligibility> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:forWork> <urn:usf:work:realisation-basis-chain> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:forWork> <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionWorkSet> <urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:maximumThrough> "check" <urn:usf:graph:semantic-first> .
@@ -103,6 +142,10 @@
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionResource> <urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionResource> <urn:usf:permission:semantic-first-order> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionResource> <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionEvidence> <urn:usf:evidence:semantic-first-eligibility:bootstrap> <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionEvidence> <urn:usf:evidence:realisation-basis-chain:bootstrap> <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionEvidence> <urn:usf:evidence:semantic-first-lifecycle-admission:bootstrap> <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionProofResult> <urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionValidation> <urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionValidation> <urn:usf:validation:realisation-basis-chain-focused> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionValidation> <urn:usf:validation:semantic-first-lifecycle-focused> <urn:usf:graph:semantic-first> .
@@ -112,6 +155,8 @@
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:validationResultDigest> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:realisationBasisDigest> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:scopedDependencyDigest> <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:forWork> <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:admissionSetDigest> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:contentDigest> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:forObligation> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:algorithm> <urn:usf:graph:semantic-first> .
@@ -119,9 +164,22 @@
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:outcome> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:activationState> <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionPredicate> <urn:usf:predicate:state> <urn:usf:graph:semantic-first> .
-<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionMutationRule> "Create only the three named sanitized evidence records and one named passing proof result bound to the same exact immutable pre-state basis; replace only this permission activationState proofblocked with active and this exception state open with closed; encode every exact added or replaced N-Quad source line, graph operation and preimage in the reversible receipt delta; refuse any extra subject, predicate, graph, path, sibling effect or non-current input." <urn:usf:graph:semantic-first> .
+<urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionMutationRule> "Create only the three named sanitized evidence records, each bound to its exact work, immutable pre-state RealisationBasis, scoped dependency digest and focused validation result, and one named passing aggregate proof result bound to the exact ordered admission-set digest and evidence digest; replace only this permission activationState proofblocked with active and this exception state open with closed; encode every exact added or replaced N-Quad source line, graph operation and preimage in the reversible receipt delta; refuse any extra subject, predicate, graph, path, sibling effect or non-current input." <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:admissionReceiptRule> "Write one closed schema-valid tracked receipt outside every semantic manifest. Its pre-state is the exact missing-file dependency preimage and its creation at the one declared path is the only permitted nonsemantic evidence output. It must bind the exact pre-state source and scoped basis digests, the reversible ordered semantic delta digest, the exact expected post-state source and semantic currentness digests, the six admitted resources, the two replacement operations, this algorithm and verified state. Receipt bytes, timestamps and Git metadata are not semantic state and cannot satisfy their own proof." <urn:usf:graph:semantic-first> .
 <urn:usf:exception:semantic-first-bootstrap:1> <urn:usf:predicate:closureCondition> "Close deterministically only when all three exact focused validation observations are admitted, the aggregate construction-authority proof passes for the immutable pre-state basis, the exact delta produces the expected post-state, the external transition receipt verifies and the ordinary permission is activated; later relevant movement invalidates activation currentness and never reopens the exception." <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapAtomicAdmissionSet> <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:member> <urn:usf:work:semantic-first-eligibility> <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:member> <urn:usf:work:realisation-basis-chain> <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:member> <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:memberCount> "3" <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:dependencyPolicy> "atomic-construction-set-topological-execution" <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:closurePolicy> "aggregate-after-all-focused-validations" <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:memberCompletionAuthority> "none" <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:postClosureMemberStage> "checked-awaiting-integration" <urn:usf:graph:semantic-first> .
+<urn:usf:admission-work-set:semantic-first-bootstrap:1> <urn:usf:predicate:postClosureStageAuthority> <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:bootstrapOrder> "1" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:bootstrapOrder> "2" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:bootstrapOrder> "3" <urn:usf:graph:semantic-first> .
 <urn:usf:state:semantic-first-bootstrap:pre:1> <urn:usf:predicate:type> <urn:usf:type:AuthorityTransitionState> <urn:usf:graph:semantic-first> .
 <urn:usf:state:semantic-first-bootstrap:pre:1> <urn:usf:predicate:permissionState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:semantic-first> .
 <urn:usf:state:semantic-first-bootstrap:pre:1> <urn:usf:predicate:exceptionState> <urn:usf:exception-state:open> <urn:usf:graph:semantic-first> .
@@ -134,11 +192,13 @@
 <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:sourcePath> "graph/semantic-first.nq" <urn:usf:graph:semantic-first> .
 <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:receiptPath> "evidence/semantic-first-bootstrap-admission.json" <urn:usf:graph:semantic-first> .
 <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:receiptSchemaPath> "schemas/verified-transition-receipt.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:v3-semantic-first:1> <urn:usf:graph:semantic-first> .
+<urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:authorityManifestPath> "graph/manifests/self-host.json" <urn:usf:graph:semantic-first> .
 <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:preStateDigestScope> "Reconstruct the exact pre-state source bytes by reversing the receipt's unique ordered N-Quad additions and replacements from the current exact source; require its source digest, selected manifest/profile, six-resource pre-state projections, scoped dependency entries including the exact missing-file receipt preimage, exact semantic preimages and algorithm version to reproduce the receipt's immutable pre-state basis digest." <urn:usf:graph:semantic-first> .
 <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:deltaDigestScope> "Canonicalize every ordered operation kind, exact old and new N-Quad source line, subject, predicate, object, graph and expected preimage. Require exactly four resource additions and the two named state replacements, with no other source or semantic operation." <urn:usf:graph:semantic-first> .
-<urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:postStateDigestScope> "Apply the verified delta in memory, then bind the exact post-state source digest, semantic graph digest, six-resource projections, replacement postimages, unchanged manifest/profile and unaffected scoped dependency identities, and the exact source path. Compare all of them to the current tracked source before treating active as current." <urn:usf:graph:semantic-first> .
+<urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:postStateDigestScope> "At admission, apply the verified delta in memory and require exact equality of all three current post-state RealisationBasis values, source digest, six-resource projections, replacement postimages and the separately loaded core authority manifest/profile selection before writing or accepting the receipt. Preserve those exact member basis and scoped dependency digests as immutable admission evidence. Later permission currentness rederives the core authority semantic projection: exact source and reversible delta, authority manifest/profile/product/foundation identities and versions, directional digests, ordered work identities and work-resource digests, and the six admitted resource projections. Separately, post-closure stage currentness compares each checked member's exact basis and therefore its declared gate source, test, policy, schema, tool and preimage dependencies. Changed member dependencies make only that checked candidate stale and reconstructable; unrelated ANQR, provider-qualification, Hermes, recovery overlay or Git movement is outside this gate scope and does not force reproof." <urn:usf:graph:semantic-first> .
 <urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:receiptExclusion> "The receipt is tracked evidence but is not imported by any semantic manifest. Its path and missing-file preimage are bound by the pre-state basis, while its expected creation is removed only from the unchanged-dependency comparison; its content bytes are excluded from the semantic delta and post-state semantic digests to avoid self-reference. Every closed field is independently recomputed, so changing, omitting or adding a field refuses rather than becoming authority." <urn:usf:graph:semantic-first> .
-<urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:verificationOrder> "Validate receipt schema and exact identities; reconstruct and verify pre-state; re-evaluate focused evidence and construction proof; verify and apply the exact reversible delta in memory; recompute expected post-state; compare current source; then and only then accept active permission currentness." <urn:usf:graph:semantic-first> .
+<urn:usf:currentness:semantic-first-bootstrap-transition:1> <urn:usf:predicate:verificationOrder> "For admission, validate receipt schema and exact identities; reconstruct and verify pre-state; re-evaluate focused evidence and construction proof; verify and apply the exact reversible delta in memory; recompute and strictly compare all three post-state bases; then atomically write and read back source and receipt. For later permission checks, load the graph-declared core authority manifest/profile independently of any consumer profile and validate the immutable receipt, reversible source transition and exact scoped semantic post-state projection. For post-closure member stage, compare the current exact member basis with its immutable receipt basis; exact matches are checked-awaiting-integration, mismatches reconstruct under ordinary active permission, and neither state is completion." <urn:usf:graph:semantic-first> .
 <urn:usf:evidence-requirement:semantic-first-order> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:semantic-first> .
 <urn:usf:evidence-requirement:semantic-first-order> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:semantic-first> .
 <urn:usf:evidence-requirement:semantic-first-order> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-first-order:1> <urn:usf:graph:semantic-first> .
@@ -152,7 +212,12 @@
 <urn:usf:requirement:semantic-definition-activation-separation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-definition-activation-separation> <urn:usf:predicate:text> "Keep an authored SemanticContract definition distinct from proof-warranted RealisationPermission. A proofblocked definition grants no construction, contact, integration, publication, runtime or completion authority; only an exact typed BootstrapConstructionException may bound the one local isolated check-only gate construction." <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-realisation-basis> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
-<urn:usf:requirement:semantic-realisation-basis> <urn:usf:predicate:text> "Derive one immutable RealisationBasis binding exact manifest, profile, contract, permission, work packet, semantic trace, scoped dependency entries, write/preimage scope, evidence, proof, validation, policy, schema and tool digests." <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-realisation-basis> <urn:usf:predicate:text> "Derive one immutable RealisationBasis binding exact manifest, profile, contract, permission, work packet, semantic trace, scoped dependency entries, write/preimage scope, evidence, proof, validation, policy, schema and tool digests. Reverify every slash-terminated directory dependency against its deterministic canonical source aggregate, expand it to the exact regular-file leaf path and digest closure, apply exact operation postimages to overlapping leaves and refuse missing, extra, modified, symlink or nonregular candidate entries. Candidate directory topology admits only ancestors of those authenticated regular source leaves and exact operation paths plus the one controlled .usf-check-tmp directory; an untracked empty source directory is neither copied nor semantic authority, while any extra candidate directory refuses. An exact operation beneath a slash-terminated write scope derives its file digest or null absent-file preimage only from that current reverified aggregate closure, then carries and rechecks that exact preimage like every other operation target; caller-authored child preimages grant no authority. The isolated publication-proof shadow expands the same exact authorized directory leaf closure before applying its tracked, ignored and secret-path screening per leaf, and copies only those admitted regular files. Use one owner-private, O_NOFOLLOW, nonblocking, process-released per-candidate util-linux advisory lock for each materialise/apply mutation and hold that same lock continuously from focused workspace cleanup and authentication through child exit." <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-focused-network-confinement> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-focused-network-confinement> <urn:usf:predicate:text> "Launch focused candidate and publication-shadow validation only through the exact trusted /usr/bin/bwrap host dependency with a new user, pid and network namespace, process-death release and an empty tmpfs root. Mount only explicit read-only /usr, /lib, /lib64, authenticated candidate workspace, node_modules and repository-local .usf/cache roots, a private proc and dev, and one read-write bind for the controlled scratch directory; host home, run, tmp, var-tmp and session sockets remain absent. Inside that boundary retain Node file, child-process and worker permission confinement and a cleared environment. Admit only the literal bounded graph command form node --test --test-isolation=none, one optional safe name pattern and repository-relative .test.ts paths; refuse eval, env-file, require, import, loader and every caller permission override before spawn. Missing or unsafe bwrap fails closed. One bounded in-child adversarial hook must machine-check denial of .env, .usf/home and historical-source reads, an outside-workspace write, an unapproved child spawn, a route and network request, and attempted secret-shaped canary exfiltration without weakening unrelated validation." <urn:usf:graph:semantic-first> .
+<urn:usf:host-tool:bwrap:0.9.0> <urn:usf:predicate:type> <urn:usf:type:HostToolDependency> <urn:usf:graph:semantic-first> .
+<urn:usf:host-tool:bwrap:0.9.0> <urn:usf:predicate:executablePath> "/usr/bin/bwrap" <urn:usf:graph:semantic-first> .
+<urn:usf:host-tool:bwrap:0.9.0> <urn:usf:predicate:version> "0.9.0" <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-construction-eligibility> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-construction-eligibility> <urn:usf:predicate:text> "Derive ConstructionEligible per work item only from a complete current graph basis, declared applicability, exact stop/write boundaries and accepted prerequisites; dependency-ready alone is not semantic readiness." <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-activation-eligibility> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
@@ -160,13 +225,17 @@
 <urn:usf:requirement:semantic-transition-readback> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-transition-readback> <urn:usf:predicate:text> "Route, call, resolve, apply and check must rederive or read back the same current RealisationBasis, refuse mixed or stale bases and preserve it in every result rather than trusting caller-supplied identities." <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-transition-receipt-currentness> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
-<urn:usf:requirement:semantic-transition-receipt-currentness> <urn:usf:predicate:text> "A self-closing admission must not hash itself into its own proof or become stale merely because its exact warranted mutation occurred. Use the closed external verified-transition receipt to bind reversible pre-state bytes and basis, the exact admitted delta and the exact expected post-state bytes and semantic projection; any other relevant movement invalidates activation." <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-transition-receipt-currentness> <urn:usf:predicate:text> "A self-closing admission must not hash itself into its own proof or become stale merely because its exact warranted mutation occurred. Use the closed external verified-transition receipt to bind reversible pre-state bytes and basis, the exact admitted delta and the exact expected post-state bytes and semantic projection; any other relevant movement invalidates activation. Every atomic source, receipt and recovery-journal temporary must write all intended bytes through a progress-checked loop, fsync, reread the exact size and digest through the same descriptor, and only then rename or link into place." <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-work-completion> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-work-completion> <urn:usf:predicate:text> "Derive verified-complete only from exactly one admitted post-integration receipt, one typed current Evidence and one typed current ProofResult for the exact work and its contract-declared completion obligations. The receipt binds the exact work, current RealisationBasis and scoped dependency digests, accepted candidate lineage and integrated byte-tree digests under a canonical receipt digest. Evidence and proof each bind that exact receipt and digest in addition to their current basis, evidence and passing algorithm bindings. Missing, ambiguous, stale, failed, sibling or aggregate construction records fail closed. Exclude completed work from ready results; every direct predecessor must be verified-complete and unrelated sibling completion is irrelevant." <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-lifecycle-isolation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-lifecycle-isolation> <urn:usf:predicate:text> "Process start may become ready and idle with no eligible work; proofblocked or stale work is excluded without blocking eligible siblings. Hermes may rank only the already eligible set and never defines evidence, proof or activation." <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-nonserializing-currentness> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-nonserializing-currentness> <urn:usf:predicate:text> "Cache eligibility and proof by exact scoped inputs, invalidate only affected work, and never reprove because of unrelated graph/product movement, provider retry, prompt iteration, lifecycle cycle or Git checkpoint." <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-directional-basis> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-directional-basis> <urn:usf:predicate:text> "Derive core-to-product and product-to-core content identities only through the exact profile-selected directional-currentness policy: hash the foundation plus selected non-product contract closure toward the product boundary, and hash the profile, product and selected product-contract closure toward the core boundary, carrying the opposite stable identity and version without its content so unrelated movement invalidates only the affected direction." <urn:usf:graph:semantic-first> .
 <urn:usf:requirement:semantic-first-test-economics> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-first> .
-<urn:usf:requirement:semantic-first-test-economics> <urn:usf:predicate:text> "Use one table-driven semantic eligibility test, one table-driven cross-transition basis test and one lifecycle sibling-isolation test; replace duplicate matrices rather than multiplying tests per command, provider, model or stage." <urn:usf:graph:semantic-first> .
+<urn:usf:requirement:semantic-first-test-economics> <urn:usf:predicate:text> "Use one table-driven semantic eligibility test, one table-driven cross-transition basis test and one lifecycle sibling-isolation test; replace duplicate matrices rather than multiplying tests per command, provider, model or stage. The authoritative suite must pass against both the exact bootstrap pre-state and the exact verified post-state. A post-state is accepted only through its current closed transition receipt; any test needing a fresh pre-state must deterministically reverse that verified receipt's exact source operations rather than fabricate authority." <urn:usf:graph:semantic-first> .
 <urn:usf:acceptance:semantic-order-topology> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-first> .
 <urn:usf:acceptance:semantic-order-topology> <urn:usf:predicate:text> "The exact seven-stage policy and graph-projected stop conditions are deterministic; missing, duplicated, unknown, skipped or code-invented stages fail closed." <urn:usf:graph:semantic-first> .
 <urn:usf:acceptance:semantic-profile-selector> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-first> .
@@ -174,33 +243,38 @@
 <urn:usf:acceptance:semantic-eligibility-refusals> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-first> .
 <urn:usf:acceptance:semantic-eligibility-refusals> <urn:usf:predicate:text> "Missing evidence requirement, unresolved applicability, missing/failed/stale proof, proofblocked activation at a higher ceiling and relevant movement refuse while unrelated movement remains current." <urn:usf:graph:semantic-first> .
 <urn:usf:acceptance:semantic-basis-integrity> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-first> .
-<urn:usf:acceptance:semantic-basis-integrity> <urn:usf:predicate:text> "Route through check preserves one exact current basis and refuses caller fabrication, mixed-basis contributions, stale preimages and policy/schema/tool mismatch before external contact or mutation." <urn:usf:graph:semantic-first> .
+<urn:usf:acceptance:semantic-basis-integrity> <urn:usf:predicate:text> "Route through check preserves one exact current basis and refuses caller fabrication, mixed-basis contributions, stale preimages and policy/schema/tool mismatch before external contact or mutation. A graph-declared directory aggregate is reverified and expanded to exact candidate leaves; an exact directory candidate passes, while a changed leaf or missing, extra, symlink or nonregular entry refuses. Materialise, apply and focused execution use the same narrow per-candidate nonblocking advisory lock; a second cooperative operation refuses while execution holds it. Focused-check command arguments refuse every permission-affecting Node allow, no-allow, permission or no-permission spelling supported by the executing Node surface before spawn, including --no-permission; each admitted test path has canonical non-dot segments and resolves to a current regular non-symlink file contained by the authenticated candidate workspace; scrubbed NODE_OPTIONS grants no alternative. prepareFocusedCheck reports readiness only and never execution, checked status or authority." <urn:usf:graph:semantic-first> .
 <urn:usf:acceptance:semantic-transition-receipt-currentness> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-first> .
-<urn:usf:acceptance:semantic-transition-receipt-currentness> <urn:usf:predicate:text> "The closed tracked receipt is outside semantic manifests, exactly reverses the current post-state to the proven pre-state, reproduces the exact admitted delta and post-state, keeps the warranted activation current, and refuses a changed receipt, operation, preimage, postimage, source, scoped dependency or extra effect." <urn:usf:graph:semantic-first> .
+<urn:usf:acceptance:semantic-transition-receipt-currentness> <urn:usf:predicate:text> "The closed tracked receipt is outside semantic manifests, exactly reverses the current post-state to the proven pre-state, reproduces the exact admitted delta, requires strict equality of every post-state member basis at admission and preserves those bases as immutable evidence. Subsequent permission currentness refuses changed receipt, operation, semantic preimage or postimage, source, core authority selection, directional digest, ordered work resource, admitted resource or extra effect. Exact gate code, test, policy, schema, tool or preimage movement makes the affected checked member stale and reconstructable without treating it as completion or necessarily deactivating the permission; unrelated ANQR, provider-qualification, Hermes, recovery overlay or Git movement preserves the checked stage and does not trigger reproof." <urn:usf:graph:semantic-first> .
+<urn:usf:acceptance:semantic-work-completion> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-first> .
+<urn:usf:acceptance:semantic-work-completion> <urn:usf:predicate:text> "The bootstrap aggregate transition activates construction only and leaves all three exact members checked-awaiting-integration. usf work --ready defaults to the construct stage; --ready --stage construct returns only construction-ready work and --ready --stage integrate returns only checked-awaiting-integration work. Evidence and proof without one exact admitted current integration receipt never complete work. A missing, ambiguous, stale or sibling receipt fails closed. Exact receipt-bound typed per-work Evidence and ProofResult mark that work verified-complete, exclude it from both ready stages and unlock a dependant only when every direct predecessor is complete." <urn:usf:graph:semantic-first> .
 <urn:usf:acceptance:semantic-lifecycle-siblings> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-first> .
 <urn:usf:acceptance:semantic-lifecycle-siblings> <urn:usf:predicate:text> "A process is ready while proofblocked work is excluded, an eligible sibling progresses, affected movement invalidates only affected work and Hermes absence yields the same deterministic eligible plan." <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-order> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-first> .
-<urn:usf:validation:semantic-first-order> <urn:usf:predicate:command> "node --test tests/unit/graph/semantic-first.test.ts tests/contract/fake-call-resolve.test.ts tests/integration/lifecycle-process.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:validation:semantic-first-order> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/graph/semantic-first.test.ts tests/contract/fake-call-resolve.test.ts tests/contract/cli.test.ts tests/integration/lifecycle-process.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-order> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-order> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-order> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-first> .
-<urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:predicate:command> "node --test tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-first> .
 <urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-first> .
-<urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:command> "node --test tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/providers/routing.test.ts tests/contract/fake-call-resolve.test.ts tests/unit/realisation/workspace.test.ts tests/adversarial/realisation-check.test.ts tests/integration/bootstrap-loop.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
 <urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-first> .
 <urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-first> .
+<urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:semantic-first> .
+<urn:usf:validation:realisation-basis-chain-focused> <urn:usf:predicate:admissionConfinementPolicy> "The outer self-admission proof grants no child-process permission. In that exact mode the integration fixture proves its graph/profile basis and leaves lock-owning preparation to this validation command's direct outer component execution; it does not recursively acquire candidate locks inside the no-child child. Outside the outer proof the same test invokes the real confined child check under the process-released per-candidate lock from controlled temporary cleanup and authentication through child exit. Before spawn, the command allowlist refuses every permission-affecting allow, no-allow, permission or no-permission argument spelling recognized by that Node runtime; the child receives only USF-injected read/write permissions, a scrubbed NODE_OPTIONS environment, a private route-free network namespace and the minimal explicit mount set. Lock-owning materialise/apply fixture cases run in the direct outer component validation and are not recursively re-executed inside that no-child candidate process; the nested check cannot gain child-process authority merely to retest its parent's lock boundary. Preparation never holds an execution lock and never returns checked status or authority." <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-lifecycle-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-first> .
-<urn:usf:validation:semantic-first-lifecycle-focused> <urn:usf:predicate:command> "node --test tests/integration/lifecycle-process.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:validation:semantic-first-lifecycle-focused> <urn:usf:predicate:command> "node --test --test-isolation=none --test-name-pattern=semantic-lifecycle-admission tests/integration/lifecycle-process.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-lifecycle-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-lifecycle-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-first> .
 <urn:usf:validation:semantic-first-lifecycle-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:semantic-first> .
+<urn:usf:proof:semantic-first-order> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order> <urn:usf:predicate:text> "After integration, exact current bytes and aggregate validation prove definition/activation separation, seven-stage predecessor ordering, scoped currentness, immutable basis propagation, transition refusal and sibling non-serialization with planted defects." <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:semantic-first-order:completion> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
@@ -210,23 +284,26 @@
 <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:semantic-first-order> <urn:usf:graph:semantic-first> .
-<urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:predicate:text> "Prove the exact three focused gate candidates share one current immutable pre-state basis, satisfy the typed bootstrap exception, and warrant only the exact reversible admission delta whose independently recomputed expected post-state and external verified-transition receipt close that exception and activate the ordinary semantic-first permission without self-invalidating." <urn:usf:graph:semantic-first> .
+<urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:predicate:text> "Prove the exact three focused gate candidates share one current immutable selection and each carries its own exact member basis, satisfy the typed bootstrap exception, and warrant only the exact reversible admission delta whose independently recomputed expected post-state and external verified-transition receipt close that exception and activate the ordinary semantic-first permission without self-invalidating." <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-eligibility-focused> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:semantic-first> .
+<urn:usf:proof:semantic-first-eligibility-focused> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-eligibility-focused> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:semantic-first-eligibility:completion> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-eligibility-focused> <urn:usf:predicate:text> "Prove the exact eligibility packet implements only graph-derived topology, pre/post authority separation and fail-closed per-work admission." <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-eligibility-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-eligibility-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-eligibility-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-first> .
 <urn:usf:proof:realisation-basis-chain-focused> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:semantic-first> .
+<urn:usf:proof:realisation-basis-chain-focused> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:realisation-basis-chain-focused> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:realisation-basis-chain:completion> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:realisation-basis-chain-focused> <urn:usf:predicate:text> "Prove the exact basis packet preserves and rederives one current immutable RealisationBasis across every candidate transition and planted refusal." <urn:usf:graph:semantic-first> .
 <urn:usf:proof:realisation-basis-chain-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:realisation-basis-chain-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:realisation-basis-chain-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-lifecycle-focused> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:semantic-first> .
+<urn:usf:proof:semantic-first-lifecycle-focused> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-lifecycle-focused> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:semantic-first-lifecycle-admission:completion> <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-lifecycle-focused> <urn:usf:predicate:text> "Prove process readiness remains separate from per-work semantic eligibility, proofblocked siblings do not serialize eligible work and Hermes absence preserves the plan." <urn:usf:graph:semantic-first> .
 <urn:usf:proof:semantic-first-lifecycle-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-first> .
@@ -285,10 +362,14 @@
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:readPath> "src/commands/work.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:readPath> "tests/unit/graph/semantic.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:readPath> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:writePath> "src/graph/work.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:writePath> "src/commands/work.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:writePath> "tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:writePath> "tests/unit/graph/semantic.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:writePath> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:modelCapability> "rdf-semantics" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-first> .
@@ -300,6 +381,7 @@
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-order-topology> <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-profile-selector> <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-eligibility-refusals> <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-work-completion> <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:validation> <urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-eligibility> <urn:usf:predicate:proof> <urn:usf:proof:semantic-first-eligibility-focused> <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:semantic-first> .
@@ -308,29 +390,95 @@
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:dependsOn> <urn:usf:work:semantic-first-eligibility> <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:objective> "Carry and revalidate one immutable graph-derived RealisationBasis through route, call, resolve, apply and check, refusing mixed, fabricated or stale authority before contact or mutation." <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/providers/routing.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/graph/query.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/providers/fake.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/providers/config.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/providers/economics.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/providers/local-git.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/providers/probe.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/providers/qualification.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/schema/index.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/commands/route.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/commands/dispatcher.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/commands/call.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/collaboration/resolve.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/commands/resolve.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/realisation/index.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/commands/apply.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/commands/check.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/bootstrap/loop.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "recipes/self-host-path-scope.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "src/core/scope.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "graph/foundation.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "graph/manifest.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "graph/manifests/self-host.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "graph/semantic-first.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "graph/usf-bootstrap.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/fixtures/proposal-packet.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/fixtures/providers/" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/fixtures/providers/" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/unit/providers/fake.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/unit/providers/routing.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/unit/collaboration/resolve.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/contract/provider-commands.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/contract/cli.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/adversarial/realisation-check.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/integration/bootstrap-loop.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:readPath> "tests/integration/provider-cli.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/realisation/basis.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "schemas/realisation-basis.schema.json" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/realisation/transition.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "schemas/verified-transition-receipt.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/graph/work.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/providers/routing.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/providers/types.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/providers/fake.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/commands/route.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/commands/call.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/collaboration/resolve.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/commands/resolve.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/realisation/index.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/commands/apply.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/commands/check.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/bootstrap/loop.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "recipes/self-host-path-scope.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "graph/foundation.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "graph/usf-bootstrap.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "schemas/candidate.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "schemas/route-result.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/fixtures/proposal-packet.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/unit/providers/fake.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/unit/providers/routing.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/unit/collaboration/resolve.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/contract/provider-commands.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/contract/cli.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/adversarial/realisation-check.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/integration/bootstrap-loop.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:writePath> "tests/integration/provider-cli.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:schemaPath> "schemas/candidate.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:schemaPath> "schemas/route-result.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:schemaPath> "schemas/realisation-basis.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:schemaPath> "schemas/verified-transition-receipt.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:realisation-basis-chain> <urn:usf:predicate:schemaPath> "schemas/provider-config.schema.json" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-first> .
 <urn:usf:work:realisation-basis-chain> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-basis-integrity> <urn:usf:graph:semantic-first> .
@@ -344,10 +492,34 @@
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:dependsOn> <urn:usf:work:realisation-basis-chain> <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:objective> "Make start/watch process readiness distinct from semantic work readiness, isolate proofblocked or stale work per basis, and require Hermes to consume only the same deterministic eligible ready set." <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/commands/lifecycle.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/commands/dispatcher.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/continuous/lifecycle.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/graph/query.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/realisation/basis.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/realisation/transition.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/commands/check.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/commands/help.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "src/cli.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "graph/semantic-first.nq" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "tests/contract/cli.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "docs/hermes-management.md" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:readPath> "docs/handover.md" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "src/commands/lifecycle.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "src/commands/publish.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "graph/semantic-first.nq" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "evidence/semantic-first-bootstrap-admission.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "tests/contract/cli.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "docs/hermes-management.md" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:semantic-first> .
@@ -355,7 +527,10 @@
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:policyPath> "config/automation.json" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:schemaPath> "schemas/realisation-basis.schema.json" <urn:usf:graph:semantic-first> .
+<urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:schemaPath> "schemas/verified-transition-receipt.schema.json" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-lifecycle-siblings> <urn:usf:graph:semantic-first> .
@@ -365,3 +540,31 @@
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:validation> <urn:usf:validation:semantic-first-order> <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:proof> <urn:usf:proof:semantic-first-lifecycle-focused> <urn:usf:graph:semantic-first> .
 <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:predicate:proof> <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-eligibility:bootstrap> <urn:usf:predicate:contentDigest> "sha256:0447157a9a4a5129fded2e5853be941fe8485e3d08ccd158b23b49bdc1708661" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-eligibility:bootstrap> <urn:usf:predicate:forWork> <urn:usf:work:semantic-first-eligibility> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-eligibility:bootstrap> <urn:usf:predicate:realisationBasisDigest> "sha256:39fa2be08802289b9a9e342ba1a712726797dafdd22e8944e9c2d24badcefe85" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-eligibility:bootstrap> <urn:usf:predicate:satisfiesEvidenceRequirement> <urn:usf:evidence-requirement:semantic-first-eligibility:completion> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-eligibility:bootstrap> <urn:usf:predicate:scopedDependencyDigest> "sha256:1fcdc073649477372a898442317b5d5428a8bbd8a7b7af83ec005cf1ecbd2f70" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-eligibility:bootstrap> <urn:usf:predicate:type> <urn:usf:type:Evidence> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-eligibility:bootstrap> <urn:usf:predicate:validationResultDigest> "sha256:8113c8924485c6ebe73f4987cd11c4bd18a5bf4504bb30f59a56c8ba13adb66f" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:realisation-basis-chain:bootstrap> <urn:usf:predicate:contentDigest> "sha256:2be3d9756b95aa7c8e4150f8beff6021c0dbe76504bceb4c4ce90e58f7234e8f" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:realisation-basis-chain:bootstrap> <urn:usf:predicate:forWork> <urn:usf:work:realisation-basis-chain> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:realisation-basis-chain:bootstrap> <urn:usf:predicate:realisationBasisDigest> "sha256:c84e48c46a6c052db249e18cf5b71bfd4b78b2b167067c363911050fab57f768" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:realisation-basis-chain:bootstrap> <urn:usf:predicate:satisfiesEvidenceRequirement> <urn:usf:evidence-requirement:realisation-basis-chain:completion> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:realisation-basis-chain:bootstrap> <urn:usf:predicate:scopedDependencyDigest> "sha256:01ecbb1edf9cb74f34abf691d1b7b07757d3ec83b540ddfb9c6b970d0c0b0210" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:realisation-basis-chain:bootstrap> <urn:usf:predicate:type> <urn:usf:type:Evidence> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:realisation-basis-chain:bootstrap> <urn:usf:predicate:validationResultDigest> "sha256:5eb9b83520c76b333de2e181a4514fdd3c9342f15554b25f35b180df7fea58f1" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-lifecycle-admission:bootstrap> <urn:usf:predicate:contentDigest> "sha256:a3900ae90d9e858e28e5883da35c74943dbff556f2f004849ff34750437407d7" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-lifecycle-admission:bootstrap> <urn:usf:predicate:forWork> <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-lifecycle-admission:bootstrap> <urn:usf:predicate:realisationBasisDigest> "sha256:a06b5f65529de884ecb35fb372def9307109fe5777693b64dab3afd442e06120" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-lifecycle-admission:bootstrap> <urn:usf:predicate:satisfiesEvidenceRequirement> <urn:usf:evidence-requirement:semantic-first-lifecycle-admission:completion> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-lifecycle-admission:bootstrap> <urn:usf:predicate:scopedDependencyDigest> "sha256:ddd7c8a42bc5b16df2f87e807e0a1e505c6c92eba0bc44b3af55a7a7da1ecd1c" <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-lifecycle-admission:bootstrap> <urn:usf:predicate:type> <urn:usf:type:Evidence> <urn:usf:graph:semantic-first> .
+<urn:usf:evidence:semantic-first-lifecycle-admission:bootstrap> <urn:usf:predicate:validationResultDigest> "sha256:dfdbb8768a3b6b82512f34e9e28026dc2bd58e7660d6f1ad946838ceeb81f138" <urn:usf:graph:semantic-first> .
+<urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:predicate:admissionSetDigest> "sha256:62bde791b277cf28e73020f9de55013e74b24da4d2253837e4d14e18cd191674" <urn:usf:graph:semantic-first> .
+<urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:semantic-first> .
+<urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:predicate:contentDigest> "sha256:762f9e6f77383c0a65926ff7e7cb5c24a7dacf1e74d39a8251eacaa1bae76e47" <urn:usf:graph:semantic-first> .
+<urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:predicate:evidenceDigest> "sha256:35269ff74d26eb5b736a68caee73333e85445fadb5cae8c986dca85433bed096" <urn:usf:graph:semantic-first> .
+<urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:predicate:forObligation> <urn:usf:proof:semantic-first-order:construction-authority> <urn:usf:graph:semantic-first> .
+<urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:predicate:outcome> "pass" <urn:usf:graph:semantic-first> .
+<urn:usf:proof-result:semantic-first-order:bootstrap> <urn:usf:predicate:type> <urn:usf:type:ProofResult> <urn:usf:graph:semantic-first> .

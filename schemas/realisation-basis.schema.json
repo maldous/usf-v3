@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:realisation-basis:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "basisDigest", "selection", "authority", "work", "semanticTrace", "scope", "trace", "inputs"],
+  "properties": {
+    "schema": {"const": "urn:usf:realisation-basis:1"},
+    "basisDigest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "selection": {"$ref": "#/$defs/selection"},
+    "authority": {"$ref": "#/$defs/authority"},
+    "work": {"$ref": "#/$defs/work"},
+    "semanticTrace": {"type": "object", "additionalProperties": false, "required": ["policy", "stages"], "properties": {"policy": {"type": ["string", "null"]}, "stages": {"type": "array", "items": {"$ref": "#/$defs/stage"}}}},
+    "scope": {"type": "object", "additionalProperties": false, "required": ["readSet", "writeSet", "preimages"], "properties": {"readSet": {"type": "array", "items": {"type": "string"}}, "writeSet": {"type": "array", "items": {"type": "string"}}, "preimages": {"type": "object", "additionalProperties": {"type": ["string", "null"]}}}},
+    "trace": {"$ref": "#/$defs/trace"},
+    "inputs": {"type": "object", "additionalProperties": false, "required": ["policyDigest", "schemaDigests", "toolDigests"], "properties": {"policyDigest": {"type": "string"}, "schemaDigests": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "toolDigests": {"type": "array", "items": {"$ref": "#/$defs/ref"}}}}
+  },
+  "$defs": {
+    "ref": {"type": "object", "additionalProperties": false, "required": ["id", "digest"], "properties": {"id": {"type": "string"}, "key": {"type": "string"}, "kind": {"type": "string"}, "digest": {"type": "string"}}},
+    "stage": {"type": "object", "additionalProperties": false, "required": ["id", "order"], "properties": {"id": {"type": "string"}, "order": {"type": "integer", "minimum": 1}}},
+    "selection": {"type": "object", "additionalProperties": false, "required": ["manifestPath", "manifestDigest", "profile", "profileVersion", "profileDigest", "product", "productVersion", "productDigest", "foundation", "foundationVersion", "foundationDigest", "coreToProductDigest", "productToCoreDigest", "compositeDigest"], "properties": {"manifestPath": {"type": "string"}, "manifestDigest": {"type": "string"}, "profile": {"type": "string"}, "profileVersion": {"type": "string"}, "profileDigest": {"type": "string"}, "product": {"type": "string"}, "productVersion": {"type": "string"}, "productDigest": {"type": "string"}, "foundation": {"type": "string"}, "foundationVersion": {"type": "string"}, "foundationDigest": {"type": "string"}, "coreToProductDigest": {"type": "string"}, "productToCoreDigest": {"type": "string"}, "compositeDigest": {"type": "string"}}},
+    "authority": {"type": "object", "additionalProperties": false, "required": ["contract", "contractDigest", "contractShape", "permission", "permissionDigest", "permissionState", "maximumThrough", "effectiveAuthority", "effectiveMaximumThrough"], "properties": {"contract": {"type": "string"}, "contractDigest": {"type": "string"}, "contractShape": {"type": "string"}, "permission": {"type": "string"}, "permissionDigest": {"type": "string"}, "permissionState": {"type": "string"}, "maximumThrough": {"type": "string"}, "effectiveAuthority": {"enum": ["active-permission", "bootstrap-exception", "none"]}, "effectiveMaximumThrough": {"type": "string"}}},
+    "work": {"type": "object", "additionalProperties": false, "required": ["id", "resourceDigest", "packetCoreDigest", "semanticDigest", "scopedDependencyDigest", "dependencies"], "properties": {"id": {"type": "string"}, "resourceDigest": {"type": "string"}, "packetCoreDigest": {"type": "string"}, "semanticDigest": {"type": "string"}, "scopedDependencyDigest": {"type": "string"}, "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}}}},
+    "dependency": {"type": "object", "additionalProperties": false, "required": ["key", "digest", "kind"], "properties": {"key": {"type": "string"}, "digest": {"type": "string"}, "kind": {"enum": ["semantic-resource", "semantic-graph", "file", "manifest", "policy", "schema", "tool"]}}},
+    "trace": {"type": "object", "additionalProperties": false, "required": ["requirements", "evidence", "proof", "validation"], "properties": {"requirements": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "evidence": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "proof": {"type": "array", "items": {"$ref": "#/$defs/ref"}}, "validation": {"type": "array", "items": {"$ref": "#/$defs/ref"}}}}
+  }
+}

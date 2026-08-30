@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:verified-transition-receipt:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "algorithm", "transition", "status", "sourcePath", "receiptPath", "profile", "manifestPath", "preState", "operations", "deltaDigest", "postState", "admission", "receiptDigest"],
+  "properties": {
+    "schema": {"const": "urn:usf:verified-transition-receipt:1"},
+    "algorithm": {"const": "urn:usf:algorithm:verified-transition-receipt:1"},
+    "transition": {"$ref": "#/$defs/iri"},
+    "status": {"const": "verified"},
+    "sourcePath": {"$ref": "#/$defs/path"},
+    "receiptPath": {"$ref": "#/$defs/path"},
+    "profile": {"$ref": "#/$defs/iri"},
+    "manifestPath": {"$ref": "#/$defs/path"},
+    "preState": {"$ref": "#/$defs/state"},
+    "operations": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/operation"}},
+    "deltaDigest": {"$ref": "#/$defs/digest"},
+    "postState": {"$ref": "#/$defs/state"},
+    "admission": {"$ref": "#/$defs/admission"},
+    "receiptDigest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "iri": {"type": "string", "pattern": "^urn:[^<>\\s]+$"},
+    "path": {"type": "string", "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"},
+    "selection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["manifestPath", "manifestDigest", "profile", "profileVersion", "profileDigest", "product", "productVersion", "productDigest", "foundation", "foundationVersion", "foundationDigest"],
+      "properties": {
+        "manifestPath": {"$ref": "#/$defs/path"}, "manifestDigest": {"$ref": "#/$defs/digest", "description": "Profile-scoped manifest selection digest; unrelated manifest members are excluded."},
+        "profile": {"$ref": "#/$defs/iri"}, "profileVersion": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}, "profileDigest": {"$ref": "#/$defs/digest"},
+        "product": {"$ref": "#/$defs/iri"}, "productVersion": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}, "productDigest": {"$ref": "#/$defs/digest"},
+        "foundation": {"$ref": "#/$defs/iri"}, "foundationVersion": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}, "foundationDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "directional": {
+      "type": "object", "additionalProperties": false,
+      "required": ["coreToProductDigest", "productToCoreDigest", "compositeDigest"],
+      "properties": {"coreToProductDigest": {"$ref": "#/$defs/digest"}, "productToCoreDigest": {"$ref": "#/$defs/digest"}, "compositeDigest": {"$ref": "#/$defs/digest"}}
+    },
+    "member": {
+      "type": "object", "additionalProperties": false,
+      "required": ["order", "workId", "basisDigest", "scopedDependencyDigest", "workDigest"],
+      "properties": {"order": {"type": "integer", "minimum": 1, "maximum": 3}, "workId": {"$ref": "#/$defs/iri"}, "basisDigest": {"$ref": "#/$defs/digest"}, "scopedDependencyDigest": {"$ref": "#/$defs/digest"}, "workDigest": {"$ref": "#/$defs/digest"}}
+    },
+    "resource": {
+      "type": "object", "additionalProperties": false, "required": ["id", "digest"],
+      "properties": {"id": {"$ref": "#/$defs/iri"}, "digest": {"$ref": "#/$defs/digest"}}
+    },
+    "state": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "stateDigest", "sourceDigest", "semanticDigest", "selection", "directional", "members", "scopedDependencyDigest", "resources"],
+      "properties": {
+        "id": {"$ref": "#/$defs/iri"}, "stateDigest": {"$ref": "#/$defs/digest"}, "sourceDigest": {"$ref": "#/$defs/digest"}, "semanticDigest": {"$ref": "#/$defs/digest", "description": "Transition-scoped digest of selection, directional projection, ordered work semantic identities, and the exact six semantic resources; never the global graph digest."},
+        "selection": {"$ref": "#/$defs/selection"}, "directional": {"$ref": "#/$defs/directional"},
+        "members": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/member"}},
+        "scopedDependencyDigest": {"$ref": "#/$defs/digest"},
+        "resources": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/resource"}}
+      }
+    },
+    "quad": {
+      "type": "object", "additionalProperties": false,
+      "required": ["line", "subject", "predicate", "object", "objectKind", "graph"],
+      "properties": {"line": {"type": "string", "minLength": 1}, "subject": {"$ref": "#/$defs/iri"}, "predicate": {"$ref": "#/$defs/iri"}, "object": {"type": "string"}, "objectKind": {"enum": ["iri", "literal"]}, "graph": {"$ref": "#/$defs/iri"}}
+    },
+    "operation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ordinal", "kind", "path", "lineIndex", "before", "after"],
+      "properties": {"ordinal": {"type": "integer", "minimum": 1}, "kind": {"enum": ["add", "replace"]}, "path": {"$ref": "#/$defs/path"}, "lineIndex": {"type": "integer", "minimum": 0}, "before": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/quad"}]}, "after": {"$ref": "#/$defs/quad"}}
+    },
+    "validation": {
+      "type": "object", "additionalProperties": false, "required": ["id", "command", "outcome", "resultDigest"],
+      "properties": {"id": {"$ref": "#/$defs/iri"}, "command": {"type": "string", "minLength": 1}, "outcome": {"const": "pass"}, "resultDigest": {"$ref": "#/$defs/digest"}}
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "workId", "requirementId", "validationId", "validationResultDigest", "basisDigest", "scopedDependencyDigest", "contentDigest"],
+      "properties": {"id": {"$ref": "#/$defs/iri"}, "workId": {"$ref": "#/$defs/iri"}, "requirementId": {"$ref": "#/$defs/iri"}, "validationId": {"$ref": "#/$defs/iri"}, "validationResultDigest": {"$ref": "#/$defs/digest"}, "basisDigest": {"$ref": "#/$defs/digest"}, "scopedDependencyDigest": {"$ref": "#/$defs/digest"}, "contentDigest": {"$ref": "#/$defs/digest"}}
+    },
+    "proof": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "obligation", "algorithm", "evidenceDigest", "admissionSetDigest", "outcome", "contentDigest"],
+      "properties": {"id": {"$ref": "#/$defs/iri"}, "obligation": {"$ref": "#/$defs/iri"}, "algorithm": {"$ref": "#/$defs/iri"}, "evidenceDigest": {"$ref": "#/$defs/digest"}, "admissionSetDigest": {"$ref": "#/$defs/digest"}, "outcome": {"const": "pass"}, "contentDigest": {"$ref": "#/$defs/digest"}}
+    },
+    "admission": {
+      "type": "object", "additionalProperties": false,
+      "required": ["admissionSet", "admissionSetDigest", "members", "validations", "evidence", "proof", "admissionDigest"],
+      "properties": {"admissionSet": {"$ref": "#/$defs/iri"}, "admissionSetDigest": {"$ref": "#/$defs/digest"}, "members": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/member"}}, "validations": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/validation"}}, "evidence": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/evidence"}}, "proof": {"$ref": "#/$defs/proof"}, "admissionDigest": {"$ref": "#/$defs/digest"}}
+    }
+  }
+}

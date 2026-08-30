@@ -30,7 +30,7 @@ test("bounded query is exact, refuses unknown selectors, and reports truncation"
   assert.equal(bounded.truncation?.truncated, true);
 });
 
-test("work packets are deterministic, bounded, and ready only after exact dependencies", () => {
+test("work packets are deterministic and construction readiness requires profile-bound semantic authority", () => {
   const graph = loadSemanticGraph(root, manifest);
   const all = deriveWork(graph, { selector: `contract:${contract}` });
   assert.equal(all.status, "ok");
@@ -61,10 +61,10 @@ test("work packets are deterministic, bounded, and ready only after exact depend
   assert.equal(canSatisfyEnvironment(implementation, "urn:usf:environment:hermetic"), true);
   assert.equal(canSatisfyEnvironment(implementation, "urn:usf:environment:staging"), false);
   assert.equal(canSatisfyEnvironment(implementation, "urn:usf:environment:absent"), false);
-  assert.deepEqual(deriveWork(graph, { ready: true }).items?.map((item) => item.id), ["urn:usf:work:anqr-implementation"]);
-  assert.deepEqual(deriveWork(graph, { ready: true, accepted: ["urn:usf:work:anqr-implementation"] }).items?.map((item) => item.id), [
-    "urn:usf:work:anqr-tests",
-  ]);
+  assert.equal(implementation.eligibility?.dependencyReady, true);
+  assert.equal(all.items?.find((item) => item.id === "urn:usf:work:anqr-tests")?.eligibility?.dependencyReady, false);
+  assert.equal(deriveWork(graph, { ready: true }).reasonCode, "REALISATION_PROFILE_REQUIRED");
+  assert.deepEqual(deriveWork(graph, { profile: "urn:anqr:profile:decoded-payload-bootstrap:1", ready: true }).items, []);
   const allIds = deriveWork(graph).items?.map((item) => item.id) ?? [];
   const shardOne = deriveWork(graph, { shard: "1/2" }).items?.map((item) => item.id) ?? [];
   const shardTwo = deriveWork(graph, { shard: "2/2" }).items?.map((item) => item.id) ?? [];

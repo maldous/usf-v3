@@ -1,21 +1,20 @@
-import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import { callAssignments } from "../commands/call.ts";
 import { runFocusedCheck, type FocusedCheck, type FocusedCheckResult } from "../commands/check.ts";
 import { resolveCommand } from "../commands/resolve.ts";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
-import type { WorkPacket } from "../graph/work.ts";
-import type { CallAssignment, CallBatchResult, FakeRoute, FileOperation as ProposalOperation } from "../providers/index.ts";
+import { deriveCurrentRealisationBasis, type WorkPacket } from "../graph/work.ts";
+import { isOperation, type CallAssignment, type CallBatchResult, type FakeRoute, type FileOperation as ProposalOperation } from "../providers/types.ts";
 import {
   applyCandidateOperations,
-  encodeBytes,
+  candidateScope,
+  candidateOperations as realisationCandidateOperations,
+  deriveCandidatePreimages,
   materialiseCandidate,
   type ByteDelta,
   type CandidateSpec,
-  type FileOperation as RealisationOperation,
 } from "../realisation/index.ts";
+import { assertBasisMatchesPacket, assertRealisationBasis, assertSameBasis, type RealisationBasis } from "../realisation/basis.ts";
 
 export interface BootstrapProposal {
   readonly route: FakeRoute;
@@ -25,7 +24,7 @@ export interface BootstrapProposal {
 
 export interface BootstrapLoopInput {
   readonly repositoryRoot: string;
-  readonly work: WorkPacket;
+  readonly work: ProfileBoundWorkPacket;
   readonly proposals: readonly BootstrapProposal[];
   /** Selects one graph-derived required validation when a packet declares more than one. */
   readonly validationId?: string;
@@ -35,6 +34,7 @@ export interface BootstrapLoopInput {
 export interface BootstrapLoopResult {
   readonly schema: "urn:usf:bootstrap-loop-result:1";
   readonly status: "checked";
+  readonly basis: RealisationBasis;
   readonly workPacketDigest: string;
   readonly calls: CallBatchResult;
   readonly resolutionDigest: string;
@@ -46,6 +46,26 @@ export interface BootstrapLoopResult {
   readonly nonclaims: readonly string[];
 }
 
+/**
+ * Non-authoritative decomposition boundary used before the separate confined
+ * check step. A prepared candidate is not checked, accepted, or integrated.
+ */
+export interface BootstrapLoopPreparation {
+  readonly schema: "urn:usf:bootstrap-loop-preparation:1";
+  readonly status: "candidate";
+  readonly basis: RealisationBasis;
+  readonly workPacketDigest: string;
+  readonly calls: CallBatchResult;
+  readonly resolutionDigest: string;
+  readonly candidateDigest: string;
+  readonly contributionDigests: readonly string[];
+  readonly delta: readonly ByteDelta[];
+  readonly focusedCheck: FocusedCheck;
+  readonly nonclaims: readonly string[];
+}
+
+export type ProfileBoundWorkPacket = WorkPacket & Readonly<{ realisationBasis: RealisationBasis }>;
+
 const defaultLimits = Object.freeze({
   maxTurns: 1,
   maxWallTimeMs: 1_000,
@@ -55,37 +75,12 @@ const defaultLimits = Object.freeze({
   maxRetries: 1,
 });
 
-function sha256Hex(bytes: Uint8Array): string {
-  return createHash("sha256").update(bytes).digest("hex");
-}
-
-async function preimage(root: string, path: string): Promise<string | null> {
-  try {
-    return sha256Hex(await readFile(resolve(root, path)));
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
-    throw error;
-  }
-}
-
-function toRealisationOperation(operation: ProposalOperation): RealisationOperation {
-  return operation.kind === "write"
-    ? { kind: "write", path: operation.path, bytes: operation.encoding === "base64" ? operation.content ?? "" : encodeBytes(operation.content ?? "") }
-    : { kind: "delete", path: operation.path };
-}
-
-function assignmentsFor(work: WorkPacket, proposals: readonly BootstrapProposal[]): CallAssignment[] {
-  const workPacketDigest = canonicalDigest(work, { rejectAbsolutePaths: true });
-  const promptTemplateDigest = canonicalDigest({
-    schema: "urn:usf:bootstrap-prompt-template:1",
-    objective: work.objective,
-    outputSchema: work.outputSchema,
-    stopConditions: work.stopConditions,
-  });
+function assignmentsFor(work: ProfileBoundWorkPacket, proposals: readonly BootstrapProposal[], basis: RealisationBasis): CallAssignment[] {
   return proposals.map((proposal) => ({
     route: proposal.route,
+    basis,
     packet: {
-      id: work.id,
+      id: basis.work.id,
       objective: work.objective,
       permittedPaths: work.writeSet,
       decisionBoundary: work.decisionBoundary,
@@ -105,9 +100,9 @@ function assignmentsFor(work: WorkPacket, proposals: readonly BootstrapProposal[
       stopConditions: work.stopConditions,
       proposedFileOperations: proposal.operations,
     },
-    workPacketDigest,
-    promptTemplateDigest,
-    scopedDependencyDigest: work.scopedDependencyDigest,
+    workPacketDigest: basis.work.packetCoreDigest,
+    promptTemplateDigest: basis.inputs.policyDigest,
+    scopedDependencyDigest: basis.work.scopedDependencyDigest,
     limits: defaultLimits,
     purpose: proposal.purpose,
   }));
@@ -131,20 +126,46 @@ function selectedCheck(work: WorkPacket, validationId: string | undefined): Focu
   return { id: validation.id, command };
 }
 
-function candidateScope(work: WorkPacket): string[] {
-  return [...new Set([...work.readSet, ...work.writeSet].map((path) => path.endsWith("/") ? path.slice(0, -1) : path))].sort();
+function writePermitted(path: string, writeSet: readonly string[]): boolean {
+  return writeSet.some((entry) => entry === path || (entry.endsWith("/") && path.startsWith(entry)));
 }
 
 /**
- * Stitches the Gate 1 construction path without granting primary-tree authority.
- * Integration remains a separate, explicit operation after the checked byte delta
- * has been reviewed.
+ * Stitches route through isolated candidate materialisation without granting
+ * check, primary-tree, integration, or publication authority.
  */
-export async function runBootstrapLoop(input: BootstrapLoopInput): Promise<BootstrapLoopResult> {
+export async function prepareBootstrapLoop(input: BootstrapLoopInput): Promise<BootstrapLoopPreparation> {
   if (input.proposals.length === 0) {
     throw new UsfError("BOOTSTRAP_PROPOSALS_REQUIRED", exitCodes.INVALID_INPUT, "At least one proposal is required.");
   }
-  const assignments = assignmentsFor(input.work, input.proposals);
+  if (input.work.decisionBoundary.kind !== "realisation-profile" || input.work.decisionBoundary.root === null
+    || input.work.eligibility?.construction.eligible !== true) {
+    throw new UsfError("BOOTSTRAP_PROFILE_BASIS_REQUIRED", exitCodes.INVALID_INPUT, "Bootstrap requires one construction-eligible profile-bound graph work packet.");
+  }
+  let basis: RealisationBasis;
+  try {
+    assertRealisationBasis(input.work.realisationBasis);
+    assertBasisMatchesPacket(input.work.realisationBasis, input.work);
+    basis = await deriveCurrentRealisationBasis(input.repositoryRoot, input.work.realisationBasis);
+    assertSameBasis(input.work.realisationBasis, basis);
+  } catch {
+    throw new UsfError("BOOTSTRAP_BASIS_INVALID", exitCodes.CURRENTNESS_FAILURE, "Bootstrap requires one exact current graph-derived realisation basis.");
+  }
+  if (!input.work.eligibility?.construction.maximumThrough
+    || !["check", "integrate", "publish", "runtime"].includes(input.work.eligibility.construction.maximumThrough)) {
+    throw new UsfError("BOOTSTRAP_CHECK_CEILING_REQUIRED", exitCodes.INVALID_INPUT, "Bootstrap work must be graph-authorized through focused check.");
+  }
+  const focusedCheck = selectedCheck(input.work, input.validationId);
+  for (const proposal of input.proposals) {
+    if (proposal.operations.length === 0 || !proposal.operations.every(isOperation)) {
+      throw new UsfError("BOOTSTRAP_OPERATIONS_INVALID", exitCodes.INVALID_INPUT, "Every proposal requires closed typed file operations.");
+    }
+    const unauthorized = proposal.operations.find((operation) => !writePermitted(operation.path, basis.scope.writeSet));
+    if (unauthorized) {
+      throw new UsfError("BOOTSTRAP_WRITE_UNAUTHORIZED", exitCodes.CONTAINMENT_REFUSAL, "A proposal exceeds the exact basis write set.", { path: unauthorized.path });
+    }
+  }
+  const assignments = assignmentsFor(input.work, input.proposals, basis);
   const calls = await callAssignments(assignments, input.hostConcurrency);
   if (calls.status !== "ok") {
     throw new UsfError("BOOTSTRAP_CALL_REFUSED", exitCodes.DOMAIN_FAILURE, "Every bootstrap proposal must complete successfully.");
@@ -153,37 +174,75 @@ export async function runBootstrapLoop(input: BootstrapLoopInput): Promise<Boots
   if (resolution.status !== "resolved" || !resolution.candidate) {
     throw new UsfError("BOOTSTRAP_RESOLUTION_REFUSED", exitCodes.INTEGRATION_CONFLICT, "Bootstrap contributions did not resolve to one candidate.");
   }
-  const candidateOperations = resolution.candidate.payload.operations;
-  const unauthorized = candidateOperations.find((operation) => !input.work.writeSet.includes(operation.path));
+  try {
+    assertSameBasis(basis, calls.basis);
+    assertSameBasis(basis, resolution.basis);
+    assertSameBasis(basis, resolution.candidate.basis);
+  } catch {
+    throw new UsfError("BOOTSTRAP_BASIS_MIXED", exitCodes.CURRENTNESS_FAILURE, "Call and resolve must preserve the exact current realisation basis.");
+  }
+  const resolvedOperations = resolution.candidate.payload.operations;
+  const unauthorized = resolvedOperations.find((operation) => !writePermitted(operation.path, basis.scope.writeSet));
   if (unauthorized) {
     throw new UsfError("BOOTSTRAP_WRITE_UNAUTHORIZED", exitCodes.CONTAINMENT_REFUSAL, "Resolved candidate exceeds the work packet write set.", { path: unauthorized.path });
   }
-  const realisationOperations = candidateOperations.map(toRealisationOperation);
-  const writeSet = [...new Set(realisationOperations.map((operation) => operation.path))].sort();
-  const preimages = Object.fromEntries(await Promise.all(writeSet.map(async (path) => [path, await preimage(input.repositoryRoot, path)] as const)));
-  const candidateDigest = resolution.candidate.identity.artifactDigest.replace(/^sha256:/, "");
+  const writeSet = [...new Set(resolvedOperations.map((operation) => operation.path))].sort();
+  let preimages: Record<string, string | null>;
+  try {
+    preimages = await deriveCandidatePreimages(input.repositoryRoot, basis, writeSet);
+  } catch {
+    throw new UsfError("BOOTSTRAP_PREIMAGE_REQUIRED", exitCodes.CURRENTNESS_FAILURE, "Resolved candidate paths lack current exact basis pre-images.");
+  }
+  const candidateDigest = resolution.candidate.identity.artifactDigest;
   const candidateSpec: CandidateSpec = {
     digest: candidateDigest,
-    scope: candidateScope(input.work),
+    basis,
+    operations: resolvedOperations,
+    lineage: resolution.candidate.lineage,
+    scope: candidateScope(basis),
     writeSet,
     preimages,
   };
   await materialiseCandidate(input.repositoryRoot, candidateSpec);
-  const delta = await applyCandidateOperations(input.repositoryRoot, candidateDigest, realisationOperations);
-  const focusedCheck = selectedCheck(input.work, input.validationId);
-  const check = await runFocusedCheck(input.repositoryRoot, candidateDigest, [focusedCheck], focusedCheck.id);
-  if (check.status !== "pass") {
-    throw new UsfError("BOOTSTRAP_CHECK_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "The isolated focused check did not pass.", { reasonCode: check.reasonCode ?? "CHECK_FAILED" });
-  }
+  const delta = await applyCandidateOperations(input.repositoryRoot, candidateDigest, realisationCandidateOperations(candidateSpec));
   return Object.freeze({
-    schema: "urn:usf:bootstrap-loop-result:1",
-    status: "checked",
+    schema: "urn:usf:bootstrap-loop-preparation:1",
+    status: "candidate",
+    basis,
     workPacketDigest: assignments[0]!.workPacketDigest,
     calls,
     resolutionDigest: canonicalDigest(resolution, { rejectAbsolutePaths: true }),
     candidateDigest: resolution.candidate.identity.artifactDigest,
     contributionDigests: resolution.acceptedContributionDigests,
     delta,
+    focusedCheck,
+    nonclaims: ["not-checked", "not-integrated", "not-semantic-authority", "fake-providers-only"],
+  });
+}
+
+/**
+ * Composes the non-authoritative preparation with the separate confined check.
+ * Integration remains a separate explicit operation after the checked byte
+ * delta has been reviewed.
+ */
+export async function runBootstrapLoop(input: BootstrapLoopInput): Promise<BootstrapLoopResult> {
+  const prepared = await prepareBootstrapLoop(input);
+  const check = await runFocusedCheck(input.repositoryRoot, prepared.candidateDigest, [prepared.focusedCheck], prepared.focusedCheck.id);
+  if (check.status !== "pass") {
+    throw new UsfError("BOOTSTRAP_CHECK_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "The isolated focused check did not pass.", { reasonCode: check.reasonCode ?? "CHECK_FAILED" });
+  }
+  try { assertSameBasis(prepared.basis, check.basis); }
+  catch { throw new UsfError("BOOTSTRAP_CHECK_BASIS_MISMATCH", exitCodes.CURRENTNESS_FAILURE, "Focused check did not return the exact current basis."); }
+  return Object.freeze({
+    schema: "urn:usf:bootstrap-loop-result:1",
+    status: "checked",
+    basis: prepared.basis,
+    workPacketDigest: prepared.workPacketDigest,
+    calls: prepared.calls,
+    resolutionDigest: prepared.resolutionDigest,
+    candidateDigest: prepared.candidateDigest,
+    contributionDigests: prepared.contributionDigests,
+    delta: prepared.delta,
     check,
     claims: ["candidate-materialised-outside-primary-tree", "focused-check-passed"],
     nonclaims: ["not-integrated", "not-semantic-authority", "fake-providers-only"],

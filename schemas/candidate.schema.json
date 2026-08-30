@@ -2,10 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:usf:candidate:1",
   "type": "object",
-  "required": ["schema", "kind", "status", "identity", "payload", "lineage"],
+  "required": ["schema", "kind", "status", "basis", "identity", "payload", "lineage"],
   "properties": {
     "schema": {"const": "urn:usf:candidate:1"}, "kind": {"const": "candidate"}, "status": {"const": "resolved"},
-    "identity": {"type": "object", "required": ["artifactDigest"]},
+    "basis": {"type": "object"},
+    "identity": {"type": "object", "required": ["artifactDigest", "basisDigest"]},
     "payload": {"type": "object", "required": ["operations"]},
     "lineage": {"type": "object", "required": ["acceptedContributionDigests", "rejected"]}
   }

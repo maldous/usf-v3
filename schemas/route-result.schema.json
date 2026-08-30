@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:usf:route-result:1",
   "type": "object",
-  "required": ["schema", "status", "strategy", "inputs", "denominators", "caps", "assessments", "semanticQualifications", "assignments", "resultDigest", "externalContact", "authorityEffect", "nonclaims"],
+  "required": ["schema", "basis", "status", "strategy", "inputs", "denominators", "caps", "assessments", "semanticQualifications", "assignments", "resultDigest", "externalContact", "authorityEffect", "nonclaims"],
   "properties": {
     "schema": { "const": "urn:usf:route-result:1" },
+    "basis": { "type": "object" },
     "status": { "enum": ["ok", "refused"] },
     "reasonCode": { "const": "NO_ELIGIBLE_ROUTE" },
     "strategy": { "enum": ["all-eligible", "diverse", "fastest", "review-diverse", "deterministic-fixture"] },
@@ -228,7 +229,7 @@
     },
     "assignment": {
       "type": "object",
-      "required": ["routeId", "requested", "actual", "underlying", "workId", "workDigest", "semanticBinding", "qualification", "concurrency", "assignmentDigest"],
+      "required": ["routeId", "requested", "actual", "underlying", "workId", "basisDigest", "workDigest", "semanticBinding", "qualification", "concurrency", "assignmentDigest"],
       "properties": {
         "routeId": { "$ref": "#/$defs/label" },
         "requested": { "$ref": "#/$defs/identity" },
@@ -243,6 +244,7 @@
           "additionalProperties": false
         },
         "workId": { "$ref": "#/$defs/label" },
+        "basisDigest": { "$ref": "#/$defs/digest" },
         "workDigest": { "$ref": "#/$defs/digest" },
         "semanticBinding": { "$ref": "#/$defs/semanticBinding" },
         "qualification": { "$ref": "#/$defs/qualification" },
