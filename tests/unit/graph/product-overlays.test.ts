@@ -7,7 +7,9 @@ import { deriveWork, semanticWorkPackets } from "../../../src/graph/work.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
 const selfHostManifest = "graph/manifests/self-host.json";
+const selfHostHermesManifest = "graph/manifests/self-host-hermes.json";
 const anqrManifest = "graph/products/anqr/manifest.json";
+const anqrHermesManifest = "graph/products/anqr/hermes-manifest.json";
 const orchardManifest = "graph/fixtures/product-assets.manifest.json";
 const allManifest = "graph/fixtures/all-overlays.manifest.json";
 
@@ -61,6 +63,51 @@ test("a versioned profile selects an exact closure and unrelated product overlay
   assert.deepEqual(composed.modelCapabilities, isolated.modelCapabilities);
   assert.equal(composed.semanticDependencies.some((dependency) => dependency.key.includes("anqr") || dependency.key.includes("orchard")), false);
   assert.equal(composed.semanticDependencies.some((dependency) => dependency.key === profile), true);
+});
+
+test("Hermes facade authority stays product-neutral while ANQR binding requires its overlay", () => {
+  const coreGraph = loadSemanticGraph(root, selfHostHermesManifest);
+  const productGraph = loadSemanticGraph(root, anqrHermesManifest);
+  const coreWork = "urn:usf:work:hermes-management-facade";
+  const productWork = "urn:usf:work:hermes-bau-binding";
+  const managementProfile = "urn:anqr:profile:hermes-bau:1";
+  const ordinaryProductProfile = "urn:anqr:profile:bau:1";
+  const intent = "urn:anqr:intent:hermes-bau:1";
+
+  assert.equal(coreGraph.quads.some((quad) => [quad.subject, quad.predicate, quad.object, quad.graph].some((value) => value.startsWith("urn:anqr:"))), false);
+  assert.deepEqual(semanticWorkPackets(coreGraph).filter((id) => id.includes("hermes")), [coreWork]);
+  assert.deepEqual(deriveWork(coreGraph, { selector: productWork }), {
+    schema: "urn:usf:work-result:1",
+    status: "refused",
+    reasonCode: "WORK_SELECTOR_UNKNOWN",
+  });
+
+  for (const iri of [intent, ordinaryProductProfile, managementProfile]) {
+    assert.equal(productGraph.quads.some((quad) => quad.subject === iri), true);
+  }
+  const ordinary = deriveWork(productGraph, { selector: `profile:${ordinaryProductProfile}` });
+  assert.equal(ordinary.status, "ok");
+  assert.equal(ordinary.items?.some((packet) => packet.id === coreWork || packet.id === productWork), false);
+  const selected = deriveWork(productGraph, { selector: `profile:${managementProfile}` });
+  assert.equal(selected.status, "ok");
+  assert.equal(selected.items?.some((packet) => packet.id === coreWork), true);
+  const productPacket = selected.items?.find((packet) => packet.id === productWork);
+  assert.ok(productPacket);
+  for (const dependency of [
+    "urn:usf:profile:v3-self-host-hermes:1",
+    ordinaryProductProfile,
+    managementProfile,
+    intent,
+  ]) {
+    assert.equal(productPacket.semanticDependencies.some((entry) => entry.key === dependency), true);
+  }
+
+  const isolatedCore = deriveWork(coreGraph, { selector: coreWork }).items?.[0];
+  const composedCore = deriveWork(productGraph, { selector: coreWork }).items?.[0];
+  assert.ok(isolatedCore);
+  assert.ok(composedCore);
+  assert.equal(composedCore.scopedDependencyDigest, isolatedCore.scopedDependencyDigest);
+  assert.equal(composedCore.semanticDependencies.some((entry) => entry.key.startsWith("urn:anqr:")), false);
 });
 
 test("a different product projects different creative assets and model capabilities with no engine branch", () => {

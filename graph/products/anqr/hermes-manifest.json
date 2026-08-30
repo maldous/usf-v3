@@ -1,0 +1,17 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/self-host-hermes.json",
+    "graph/products/anqr/manifest.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/products/anqr/hermes-management.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:hermes-management",
+      "role": "product-contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

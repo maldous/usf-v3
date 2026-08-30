@@ -20,7 +20,9 @@ advance semantic work.
 
 ## Decision
 
-- `usf watch` is the only continuous composer.
+- `usf watch` is the only continuous composer. Optional `usf hermes` resolves a
+  tracked operating intent and enters this same composer; it is not another
+  scheduler, lifecycle protocol, state machine or service manager.
 - `usf start` runs that composer in the foreground. On the supported unattended
   host it acquires an instance-scoped Linux kernel lock through util-linux
   `flock`, validates an explicit versioned profile and tracked automation
@@ -53,6 +55,10 @@ advance semantic work.
   repository and explicit chain artefacts; it never replays a lifecycle log.
 - Lifecycle state is operational observation. It cannot establish work
   completion, acceptance, evidence, proof, integration or semantic publication.
+- `usf start`, `usf watch` and `usf stop` remain sufficient when Hermes-Agent is
+  unavailable. An exact Hermes lifecycle instance is stopped through the same
+  instance-bound stop intent, including through ordinary
+  `usf stop --instance NAME`.
 - Executable and continuous deliverables declare start, readiness, drain and
   stop behavior. Libraries and static/file artefacts declare lifecycle not
   applicable.

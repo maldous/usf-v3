@@ -138,3 +138,36 @@ acceptance/refusal or process boundary, replace duplicates, prefer injected
 clocks/transports and fixture data, and keep live-provider work out of default
 lanes. This preserves V2's safety properties without repeating its iterative
 governance bottleneck.
+
+## Hermes lesson carried forward without its topology
+
+Historical Hermes added value when it decomposed bounded semantic work,
+improved prompts and context, selected complementary agents, commissioned
+review or repair, and turned recurring operational learning into reusable
+procedure candidates. Those are optimization properties, not authority or
+runtime prerequisites.
+
+V3 therefore admits Hermes-Agent only behind `usf hermes`, over the same
+registered `work`, `route`, `call`, `resolve`, `apply`, `check`, lifecycle and
+observability contracts. The foreground composer remains the only scheduler.
+Hermes receives bounded digest-addressed inputs and may return typed proposals;
+USF retains provider admission, credentials, concurrency, currentness,
+validation, mutation, commit and publication decisions. A future Hermes call
+uses its own visible capped assignment and cannot reserve unrelated provider
+slots. Proposals bind the exact base plan, ready set and all prompt/context/tool
+inputs, apply only to unclaimed work and are ignored when late or stale.
+Absence, refusal, timeout or crash falls back to the deterministic plan without
+stopping unrelated work.
+
+Hermes may use the providers available to V3 only through those same route
+boundaries. It never receives the whole environment or calls a copied provider
+roster independently. A Codex catalogue entry or this interactive Codex
+session is not a schedulable route: a future Codex agent runtime needs its own
+adapter identity, authentication/entitlement receipt, tool and skill bundle,
+sandbox, nested-agent accounting, budgets and task/profile qualification.
+
+Routine AI tuning belongs in ignored, schema-validated, digest-bound instance
+configuration. A repeated learning may become an isolated skill candidate,
+but it cannot activate itself or silently change the profile against which a
+provider was qualified. Likewise, Hermes may propose compatible integration
+cohorts but cannot turn prompts, triples or chain stages into commit boundaries.

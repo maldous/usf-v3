@@ -422,6 +422,13 @@ V3 MUST NOT recreate the following unless a concrete failing V3 fixture proves t
 
 The properties may survive. The historical mechanisms do not survive by default.
 
+`usf hermes` is permitted only as an optional, removable management facade
+over the same V3 command contracts and foreground composer. It is not the
+rejected separate Hermes platform: it owns no scheduler, provider roster,
+credential plane, authority, state database, daemon, lifecycle lock or service
+manager. Deterministic `usf start`, `usf watch` and `usf stop` remain complete
+without Hermes-Agent.
+
 ### 6.3 Component admission test
 
 A new V3 component belongs on the critical path only if removing it prevents at least one of:
@@ -1114,6 +1121,7 @@ usf publish
 usf start
 usf stop
 usf watch
+usf hermes
 ```
 
 Every command MUST:
@@ -1363,7 +1371,81 @@ file artefacts declare lifecycle not applicable rather than gaining a
 fictitious process. Lifecycle declarations grant no integration, publication
 or runtime-provider authority.
 
-### 12.21 `usf watch`
+### 12.21 `usf hermes`
+
+Provide an optional Hermes-Agent management facade without creating another
+composer or authority plane.
+
+`usf hermes` MUST:
+
+- resolve bare invocation to exactly one tracked, versioned default operating
+  intent or refuse before provider or Hermes-Agent contact when the intent is
+  absent, invalid or ambiguous;
+- bind an exact USF core profile and manifest plus an exact selected-product
+  profile and manifest, retaining separate core-to-product, product-to-core and
+  composite content digests so unrelated movement does not require global
+  reproof. ANQR is one product overlay, not a Hermes-only execution mode;
+- invoke the same disposable foreground composer, lifecycle owner lock, stop
+  intent, bounded drain and restart-by-rescan path used by `usf start` and
+  `usf watch`; ordinary `usf stop --instance NAME` can stop the exact Hermes
+  lifecycle instance;
+- consume the same provider configuration, availability, economics,
+  qualification, routing and concurrency decisions as ordinary USF commands,
+  considering every currently configured and eligible route dynamically rather
+  than maintaining a Hermes roster;
+- preserve the live-provider sequence: trusted exact-account receipt,
+  content-verified scrubbed adapter child, authenticated provider-produced
+  answers, genuine hidden-holdout qualification, then live call and unattended
+  composition;
+- perform no credential lookup in the initial hermetic facade. Later live work
+  names one exact repository-relative ignored owner-only credential file,
+  never falls back to ambient inherited variables, and forwards at most the
+  selected route's allowlisted variable through the same future scrubbed child;
+  never copy or export the complete V3 credential environment to Hermes-Agent;
+- keep Hermes optimization optional, asynchronous and bounded. It may propose
+  prompt/context compression, agent roles, route mixtures, review, repair,
+  batch cohorts and skill candidates, but failure, timeout or absence preserves
+  the deterministic plan. A future Hermes call consumes its own visible
+  assignment, provider slot and budgets, but cannot reserve unrelated slots or
+  the `primary-mutation` lock. Every proposal binds the exact base plan, ready
+  set, scoped dependencies, prompts, context, output, tools, skills and
+  optimizer runtime, applies only to unclaimed work, and is ignored when late,
+  stale or mismatched; it cannot cancel, duplicate or suppress assignments;
+- keep one stable closed policy envelope tracked, while each AI-tuned resolved
+  instance configuration is schema-validated, fully input-digest-bound and
+  atomically stored owner-only beneath ignored `.usf/runs/hermes/`. Status and
+  restart rederive it from tracked authority rather than trusting ignored
+  state; routine tuning creates no Git commit or semantic publication;
+- treat generated skills as isolated, versioned candidates that require normal
+  validation, independent review and later graph-authorized activation. A live
+  run cannot hot-mutate active instructions, tools, qualifications, acceptance
+  or authority;
+- require no Docker daemon, GitHub, hosted or self-hosted runner, external CAS,
+  database, Stardog, V1/V2 checkout or separate repository for deterministic
+  help, doctor, lifecycle, fallback, restart or verification.
+
+Hermes may propose coherent commit or publication batches, but USF decides
+eligibility from checked candidates, fresh scoped dependencies, compatible
+write sets and validation boundaries, unresolved blockers and rollback scope.
+A chain stage is not automatically a commit boundary. Every flush is limited
+by the selected `through` ceiling and tracked automation policy. At `check`,
+stop leaves checked candidates queued and performs no integration, commit or
+publication. At an explicitly authorized higher ceiling, flush on
+coherent-unit closure, risk/diff/age ceilings, explicit checkpoint or stop
+drain, with no minimum batch size that can starve a lone accepted candidate.
+
+Hermes is never required to select a product. Ordinary `usf start` can select
+the USF-only profile, ANQR profile or any later product profile directly. A
+different product may provide a different versioned operating intent and
+stable Hermes policy configuration while using the same optional facade.
+
+The initial Hermes slice may prove only local configuration, provider
+population evaluation, deterministic fallback and foreground start/status/stop
+through fixtures. It MUST NOT claim that Hermes-Agent ran, that a provider was
+contacted, live parallelism or semantic-token reduction, production BAU, full
+ANQR, staging, production or terminal proof without the exact evidence.
+
+### 12.22 `usf watch`
 
 Provide continuous foreground semantic realisation without introducing a second authority or workflow engine.
 
@@ -1387,7 +1469,7 @@ Provide continuous foreground semantic realisation without introducing a second 
 
 `watch` is a disposable composer. Killing it must not require a recovery protocol.
 
-### 12.22 Command stitching and authority effects
+### 12.23 Command stitching and authority effects
 
 The command surface is complete only when the following composition holds without hidden stages:
 
@@ -1412,6 +1494,7 @@ The command surface is complete only when the following composition holds withou
 | Semantic admission | `publish` | significant checked semantic/evidence delta | validated semantic source | local semantic authority |
 | Process start/stop | `start`, `stop` | explicit profile + tracked automation policy | lifecycle observations | none |
 | Continuous composition | `watch` | policy + ready work | repeated chains | only through explicit called boundaries |
+| Optional autonomous management | `hermes` | exact tracked default intent + current core/product/provider inputs | proposals and the same foreground lifecycle observations | none beyond explicit called boundaries |
 
 No other hidden application is required to move an artefact between rows. Standard Git push is outside the semantic lifecycle and remains an explicit source-publication action.
 

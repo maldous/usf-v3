@@ -1,0 +1,168 @@
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:foreground-lifecycle:1> <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:operator-observability:1> <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:hermes-autonomous-management:1> <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:hermes-management> .
+<urn:usf:profile:v3-self-host-hermes:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:title> "Optional Hermes-Agent autonomous management facade" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:objective> "Expose Hermes-Agent as an optional, removable and non-serializing management facade over the same graph-authorized USF composer, provider evaluation and foreground lifecycle while preserving deterministic operation without Hermes." <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:constructionRouteConstraint> "Hermes-Agent may propose bounded prompt, context, role, route, repair, batch and skill candidates only through registered USF contracts; provider contact remains gated by current exact-account zero-paid and semantic qualification evidence." <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:constructionRouteConstraint> "The initial hermetic facade lane permits only its exact work-packet write set and no provider, credential, Hermes-Agent, Docker, GitHub, CAS, database, semantic-endpoint or historical-repository contact. It ends after registered config, help, doctor and foreground start-status-stop pass with deterministic fallback; trusted receipt, scrubbed adapter, provider-produced answers, hidden-holdout qualification and live composition remain later graph-defined work." <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-command-surface> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-same-composer> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-core-product-binding> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-provider-parity> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-provider-sequence> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-credential-containment> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-async-fallback> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-generated-config> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-coherent-batching> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-isolated-skills> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-no-recursion> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-remote-independent> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-test-economics> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "config/hermes.json" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "schemas/hermes-config.schema.json" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "docs/hermes-management.md" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "tests/contract/cli.test.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "tests/unit/commands/hermes.test.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:nonClaim> "A Hermes lifecycle-ready record is not evidence that Hermes-Agent ran, a provider was contacted, work completed, semantic tokens were reduced, or the selected product changed." <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:nonClaim> "Configured or catalogue routes are not available, authenticated, zero-paid eligible or semantically qualified routes." <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:nonClaim> "This slice does not establish live multi-provider parallelism, genuine hidden-holdout qualification, useful-token reduction, complete selected-product realization, staging, production, production BAU or terminal proof." <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:nonClaim> "Hermes-Agent, Docker, GitHub, a remote runner, external CAS, database, Stardog, semantic endpoint or V1/V2 checkout is not required for deterministic USF start, stop, restart, currentness or local validation." <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:hermes-management:localdev> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:hermes-management:hermetic> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:hermes-management:integrationtest> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:hermes-management:ci> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:hermes-management:productionshaped> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:hermes-management:staging> <urn:usf:graph:hermes-management> .
+<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:hermes-management:productionlive> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:localdev> <urn:usf:predicate:applicability> "required" <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:ci> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:hermes-management> .
+<urn:usf:environment-applicability:hermes-management:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-command-surface> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-command-surface> <urn:usf:predicate:text> "Register usf hermes with start, status, stop and doctor topics in the static help registry. Bare usf hermes resolves exactly one tracked default BAU intent and starts it; absent, invalid or ambiguous intent refuses before external contact. Every topic emits stable JSON or JSONL with explicit effects and bounded options." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-same-composer> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-same-composer> <urn:usf:predicate:text> "Implement Hermes management by reusing the exact foreground watch composer, lifecycle ownership, stop intent, bounded drain and restart-by-rescan contracts. Deterministic usf start and usf stop remain sufficient when Hermes-Agent is absent, disabled, fails or times out; usf stop can target a Hermes instance by its exact name." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-core-product-binding> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-core-product-binding> <urn:usf:predicate:text> "Bind one exact versioned USF core profile and manifest plus one exact versioned selected-product profile and manifest without copying product triples into core. Preserve separate core-to-product and product-to-core content digests, the composite digest and scoped invalidation so either side may evolve without global reproof. Product-specific intent and implementation authority live only in that product overlay." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-provider-parity> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-provider-parity> <urn:usf:predicate:text> "Consume the same tracked provider, policy, privacy, catalogue, availability, qualification and routing inputs as ordinary USF commands. Consider every configured route and every currently eligible route dynamically with complete dispositions; never maintain a Hermes provider roster, infer eligibility from catalogue presence or treat the current Codex session as a route." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-provider-sequence> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-provider-sequence> <urn:usf:predicate:text> "Preserve the provider gate order: trusted exact-account tier receipt, content-verified scrubbed adapter child, authenticated provider-produced qualification answers, genuine hidden-holdout qualification, then live call and unattended composition. A local lifecycle or fixture evaluator cannot advance or bypass any gate." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-credential-containment> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-credential-containment> <urn:usf:predicate:text> "The initial hermetic facade selects no credential file and performs no credential lookup. Future live-provider work must require one exact repository-relative ignored owner-only credential-file reference and must never fall back to ambient inherited variables; only the selected route's allowlisted variable may enter the content-verified scrubbed provider child. Hermes-Agent receives no wholesale environment, credential copy, provider home, secret value, billing authority or independent provider invocation path." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-async-fallback> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-async-fallback> <urn:usf:predicate:text> "Hermes optimization is optional and asynchronous. A future Hermes model call consumes its own visible ordinary assignment and provider slot under host, provider, token, turn, tool and wall-time caps, but may not reserve or block unrelated slots, lifecycle ownership or the primary-mutation lock. Each proposal binds exact base-plan, ready-set, scoped-dependency, prompt, context, output, tool, skill-bundle and optimizer-runtime digests; it applies only to still-unclaimed work. Late, stale or mismatched proposals are ignored and cannot cancel, duplicate or suppress assignments. Route advice is a ranking hint only; eligibility, aging, fairness and cap decisions remain with USF. Timeout, refusal, crash or absence immediately preserves the deterministic plan and unrelated work." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-generated-config> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-generated-config> <urn:usf:predicate:text> "Track only one closed stable policy envelope in config/hermes.json. Validate each AI-tuned resolved instance against the tracked schema; bind exact core, product, provider, base-plan, ready-set, scoped-dependency, prompt, context, output, tool, skill-bundle and optimizer-runtime digests; write it atomically owner-only beneath ignored .usf/runs/hermes/<digest>. Status and restart rederive it from authority and never trust ignored state as scheduling authority. Routine tuning creates no graph or Git change and grants no authority." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-coherent-batching> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-coherent-batching> <urn:usf:predicate:text> "Hermes may propose but cannot authorize commit or publication cohorts. Batch only checked candidates with fresh scoped dependencies, compatible write sets and validation boundaries, no unresolved blocker and one coherent rollback unit. A flush is bounded by the selected through ceiling and tracked automation policy: at check, stop leaves checked candidates queued and performs no integration, commit or publication. At an explicitly authorized higher ceiling, flush on semantic-unit closure, risk, diff or age ceiling, explicit checkpoint or stop drain, with no minimum batch size and no commit per prompt, triple or chain stage." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-isolated-skills> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-isolated-skills> <urn:usf:predicate:text> "Treat generated procedures and skills as isolated versioned candidates with explicit scope, content digest, tests, review and later graph-authorized activation. A running agent cannot hot-mutate active prompts, tools, route qualification, acceptance, semantic authority or credentials." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-no-recursion> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-no-recursion> <urn:usf:predicate:text> "Refuse recursive usf hermes, usf start or hidden subagent fanout that escapes host, provider, token, turn, tool and wall-time accounting. A future Codex agent runtime is a separately configured and qualified adapter, not this conversation or a catalogue label." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-remote-independent> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-remote-independent> <urn:usf:predicate:text> "Require no Docker daemon, GitHub API, hosted or self-hosted runner, external CAS, database, Stardog, semantic endpoint, V1 or V2 checkout, separate Hermes executable or external repository for local help, doctor, lifecycle, deterministic fallback, restart or verification. Optional implementations remain removable adapters rather than critical-path authority." <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-test-economics> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-management> .
+<urn:usf:requirement:hermes-test-economics> <urn:usf:predicate:text> "Extend existing table-driven provider, lifecycle, product-overlay and process-boundary fixtures. Add only distinct command/config refusal and one Hermes start-status-ordinary-stop boundary; replace duplicates, make live-provider and Hermes-Agent execution explicit non-default lanes, and keep the full gate independent of Docker, GitHub, CAS and provider credentials." <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-command-lifecycle> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-command-lifecycle> <urn:usf:predicate:text> "Registered help, bare and explicit start, status, Hermes stop and ordinary usf stop deterministically share one lifecycle instance, foreground owner lock, bounded drain and receipt; ordinary profile-bound start and stop continue to pass with Hermes unavailable." <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-config-currentness> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-config-currentness> <urn:usf:predicate:text> "The tracked closed config resolves one exact product-overlay BAU intent and binds the exact USF and selected-product profiles, manifests, directional semantic identities, provider-evaluation inputs and effective policy digest; missing, extra, stale, ambiguous, symlinked or mismatched input refuses before external contact, while unrelated movement remains scoped." <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-provider-population> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-provider-population> <urn:usf:predicate:text> "A hermetic doctor and lifecycle fixture use the ordinary provider configuration and evaluator to report every configured route with complete named dispositions, unknown distinct from zero and credential names only; no fixture, catalogue entry or local authentication is promoted to live eligibility or qualification." <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-nonserializing-fallback> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-nonserializing-fallback> <urn:usf:predicate:text> "Injected Hermes absence, refusal, timeout, route failure and late or stale proposal preserve the deterministic plan, leave unrelated fixture work progressing under existing caps, reserve no unrelated provider slot or mutation lock, never alter claimed work, and emit bounded overhead and fallback observations. Any injected Hermes call accounts its own slot and budgets." <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-candidate-boundaries> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:hermes-management> .
+<urn:usf:acceptance:hermes-candidate-boundaries> <urn:usf:predicate:text> "Generated configuration, prompt plans, batch proposals and skill candidates remain ignored or isolated, atomically owner-only, fully input-digest-bound and non-authoritative; restart rederives them and late or stale proposals cannot affect claimed work. Planted hot activation, recursive control, ambient or wholesale credential forwarding, per-stage commit and independent-provider paths fail closed." <urn:usf:graph:hermes-management> .
+<urn:usf:validation:hermes-management-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:hermes-management> .
+<urn:usf:validation:hermes-management-focused> <urn:usf:predicate:command> "node --test tests/unit/commands/hermes.test.ts tests/contract/cli.test.ts tests/integration/lifecycle-process.test.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:validation:hermes-management-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:hermes-management> .
+<urn:usf:validation:hermes-management-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:hermes-management> .
+<urn:usf:validation:hermes-management-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:hermes-management> .
+<urn:usf:proof:hermes-management-nonauthority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:hermes-management> .
+<urn:usf:proof:hermes-management-nonauthority> <urn:usf:predicate:text> "Exact candidate bytes prove only registered local command/config behavior, ordinary lifecycle equivalence, complete configured-route observation, product/core binding and deterministic fallback without provider or remote contact; every lifecycle, plan and candidate record remains non-authoritative." <urn:usf:graph:hermes-management> .
+<urn:usf:proof:hermes-management-nonauthority> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:hermes-management> .
+<urn:usf:proof:hermes-management-nonauthority> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:hermes-management> .
+<urn:usf:proof:hermes-management-nonauthority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:contract> <urn:usf:contract:hermes-autonomous-management:1> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:objective> "Implement a registered product-neutral optional Hermes-Agent management facade that reuses the existing lifecycle and provider evaluation model, remains useful without Hermes, and cannot bypass the live-provider safe sequence." <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "config/automation.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "config/policy.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "config/providers.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "config/qualification.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "graph/manifests/self-host-hermes.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "graph/manifests/self-host-provider.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "src/commands/doctor.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "src/commands/lifecycle.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "src/continuous/lifecycle.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "src/continuous/scheduler.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "src/providers/config.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:readPath> "src/providers/routing.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "schemas/hermes-config.schema.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "src/commands/hermes.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "docs/hermes-management.md" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "tests/contract/cli.test.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "tests/unit/commands/hermes.test.ts" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:modelCapability> "cli-design" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:modelCapability> "process-lifecycle" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:modelCapability> "provider-routing" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:policyPath> "config/automation.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:policyPath> "config/policy.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:acceptance> <urn:usf:acceptance:hermes-command-lifecycle> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:acceptance> <urn:usf:acceptance:hermes-config-currentness> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:acceptance> <urn:usf:acceptance:hermes-provider-population> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:acceptance> <urn:usf:acceptance:hermes-nonserializing-fallback> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:acceptance> <urn:usf:acceptance:hermes-candidate-boundaries> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:validation> <urn:usf:validation:hermes-management-focused> <urn:usf:graph:hermes-management> .
+<urn:usf:work:hermes-management-facade> <urn:usf:predicate:proof> <urn:usf:proof:hermes-management-nonauthority> <urn:usf:graph:hermes-management> .
