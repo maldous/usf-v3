@@ -757,9 +757,16 @@ GitHub CLI for remote setup only
 Node.js 22 or later
 Corepack / pnpm
 POSIX-compatible shell
+Linux procfs and util-linux `flock` for unattended `start` / `stop` / `watch`
 ```
 
-Do not require Docker, systemd, Java, Stardog, chroot, external database or external CAS for the V3 core.
+The Linux and `flock` requirement is conditional on the process-lifecycle
+commands; pure graph, query, work, validation and artefact commands do not gain
+that dependency. Do not require Docker, systemd, Java, Stardog, chroot,
+external database or external CAS for the V3 core. A commodity supervisor such
+as a systemd user service, s6 or runit MAY own backgrounding, restart and forced
+termination outside USF, but it is never semantic, scheduling or proof
+authority.
 
 ### 8.2 Primary implementation
 
@@ -1103,6 +1110,8 @@ usf evidence
 usf prove
 usf drift
 usf publish
+usf start
+usf stop
 usf watch
 ```
 
@@ -1250,7 +1259,61 @@ Requirements:
 - create no implicit push or release;
 - permit a later coherent Git checkpoint to contain several publications.
 
-### 12.20 `usf watch`
+### 12.20 `usf start` and `usf stop`
+
+Expose an explicit process lifecycle without creating a second scheduler,
+authority plane or service manager.
+
+`usf start` MUST:
+
+- require an explicit versioned realisation profile; bind the process-control
+  identity to the profile selector, manifest selector, through boundary,
+  tracked automation-policy digest and exact lifecycle-tool digest;
+- record the global semantic revision and selected per-work scoped dependency
+  digests as dynamic observations rather than process-wide invalidation keys;
+  semantic or product-overlay movement rederives the selected work projection
+  and re-evaluates only affected work rather than restarting the composer or
+  requiring whole-run reproof;
+- require no GitHub or Git-remote availability for local query, work,
+  contribution, candidate, check or lifecycle progress. Local Git carrier
+  identity may be observed, but commit batching and explicit push remain
+  separate boundaries and remote failure cannot stop unrelated local work;
+- acquire one exact instance-scoped, OS-released repository-local ownership
+  lock before any provider contact and retain it while admitted work exists;
+  this is neither a distributed lease nor a global lifecycle checkpoint;
+- run the same composer as `usf watch` in the foreground, emit a
+  machine-readable readiness record only after identity and policy checks pass,
+  and leave backgrounding or restart policy to ordinary Unix process
+  supervision;
+- be retry-safe: an identical live instance reports `already-running`, while a
+  conflicting live instance fails closed;
+- keep all process records beneath ignored `.usf/runs`, mode-restricted and
+  operational only. A running or ready record never establishes semantic
+  completion, evidence or proof.
+
+`usf stop` MUST:
+
+- target an exact named instance, defaulting only to the unambiguous default
+  instance;
+- validate the complete recorded process identity and write an instance-bound
+  graceful-stop intent beneath `.usf/` rather than signalling a PID blindly;
+- stop new assignment admission, wait for bounded drain and return an explicit
+  `stopped`, `already-stopped`, `degraded` or refused result;
+- be idempotent, never signal an unrelated process, and leave forced
+  termination to an explicit external-supervisor action. If admitted work
+  ignores cancellation beyond the drain bound, return a degraded observation
+  to the waiting stop command but retain instance ownership until that work
+  actually settles or the external supervisor terminates the process;
+- permit restart to quarantine demonstrably stale operational records and
+  rescan current artefacts, Git and semantic source without replay.
+
+Every executable or continuously operating deliverable MUST declare its start,
+readiness, drain and stop contract. Pure libraries, metadata indexes and static
+file artefacts declare lifecycle not applicable rather than gaining a
+fictitious process. Lifecycle declarations grant no integration, publication
+or runtime-provider authority.
+
+### 12.21 `usf watch`
 
 Provide continuous foreground semantic realisation without introducing a second authority or workflow engine.
 
@@ -1274,7 +1337,7 @@ Provide continuous foreground semantic realisation without introducing a second 
 
 `watch` is a disposable composer. Killing it must not require a recovery protocol.
 
-### 12.21 Command stitching and authority effects
+### 12.22 Command stitching and authority effects
 
 The command surface is complete only when the following composition holds without hidden stages:
 
@@ -1297,6 +1360,7 @@ The command surface is complete only when the following composition holds withou
 | Proof evaluation | `prove` | obligation + exact evidence | proof result | none until publication |
 | Consistency | `drift` | semantic/repo/evidence/current observations | drift report | none |
 | Semantic admission | `publish` | significant checked semantic/evidence delta | validated semantic source | local semantic authority |
+| Process start/stop | `start`, `stop` | explicit profile + tracked automation policy | lifecycle observations | none |
 | Continuous composition | `watch` | policy + ready work | repeated chains | only through explicit called boundaries |
 
 No other hidden application is required to move an artefact between rows. Standard Git push is outside the semantic lifecycle and remains an explicit source-publication action.
@@ -2133,12 +2197,14 @@ This is the earliest board-visible product deliverable.
 ### Gate 4 — Continuous and massive parallel operation
 
 1. implement `usf watch` using explicit artefacts and local claims;
-2. add provider-specific backpressure and adaptive routing observations;
-3. add fine-grained validation caches;
-4. pass synthetic scale and speedup requirements;
-5. run the continuous live proof across at least three batches;
-6. force restart/provider failure/candidate rejection;
-7. repeat with one provider excluded.
+2. implement and adversarially test foreground `usf start`, instance-bound
+   `usf stop`, signal drain, concurrent start and forced-restart recovery;
+3. add provider-specific backpressure and adaptive routing observations;
+4. add fine-grained validation caches;
+5. pass synthetic scale and speedup requirements;
+6. run the continuous live proof across at least three batches;
+7. force restart/provider failure/candidate rejection;
+8. repeat with one provider excluded.
 
 ### Gate 5 — Complete command surface and fresh-clone proof
 
@@ -2214,6 +2280,8 @@ It requires all conditions below.
 - peak live concurrent provider calls reach `min(8, C_target)` and never fall below two while two independent eligible assignments are ready;
 - the pre-run live useful-token target is at least 100,000 and is achieved;
 - continuous foreground operation processes at least three batches;
+- the same composer is operable through explicit `usf start` and `usf stop`
+  contracts without conversational intervention or hidden lifecycle state;
 - multiple chains run concurrently;
 - forced supervisor restart is safe;
 - provider and candidate failures remain scoped;

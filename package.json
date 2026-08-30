@@ -11,9 +11,18 @@
   "scripts": {
     "bootstrap": "./scripts/bootstrap.sh",
     "check:containment": "./scripts/verify-contained.sh",
-    "test": "node --test --test-force-exit 'tests/**/*.test.ts' 'apps/**/test/**/*.test.ts'",
+    "test:unit": "node --test 'tests/unit/**/*.test.ts'",
+    "test:contract": "node --test 'tests/contract/**/*.test.ts'",
+    "test:integration": "node --test 'tests/integration/**/*.test.ts' 'apps/**/test/**/*.test.ts'",
+    "test:adversarial": "node --test 'tests/adversarial/**/*.test.ts'",
+    "test:scale": "node --test 'tests/scale/**/*.test.ts'",
+    "test:lifecycle": "node --test tests/unit/continuous/lifecycle.test.ts tests/integration/lifecycle-process.test.ts",
+    "test:fast": "node --test 'tests/unit/**/*.test.ts' 'tests/contract/**/*.test.ts'",
+    "test:full": "node --test 'tests/**/*.test.ts' 'apps/**/test/**/*.test.ts'",
+    "test": "node --run test:full",
     "typecheck": "tsc --noEmit",
-    "check": "node --run typecheck && node --run test"
+    "check:fast": "node --run typecheck && node --run test:fast",
+    "check": "node --run typecheck && node --run test:full"
   },
   "devDependencies": {
     "@types/node": "24.10.1",

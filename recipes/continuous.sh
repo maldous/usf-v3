@@ -1,11 +1,9 @@
 #!/usr/bin/env sh
-# Transparent bridge only: state and scheduling remain in explicit USF artefacts.
+# Transparent foreground bridge only: state and scheduling remain in explicit
+# USF artefacts, and ordinary Unix supervision owns backgrounding or restart.
 set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
-if "$root/bin/usf" watch --through check; then
-  exit 0
-else
-  status=$?
-fi
-echo "usf watch --through check is unavailable; install the CLI watch command before running continuous composition." >&2
-exit "$status"
+exec "$root/bin/usf" start \
+  --profile urn:usf:profile:v3-self-host:1 \
+  --manifest graph/manifests/self-host.json \
+  --through check

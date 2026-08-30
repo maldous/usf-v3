@@ -4,6 +4,7 @@
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:profile:v3-self-host:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:foreground-lifecycle:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:repository-path-scope:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
@@ -163,3 +164,112 @@
 <urn:usf:work:file-asset-index> <urn:usf:predicate:acceptance> <urn:usf:acceptance:file-asset-index> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:validation> <urn:usf:validation:file-asset-index-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:proof> <urn:usf:proof:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:title> "Foreground unattended process lifecycle" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:objective> "Run and stop the disposable foreground composer through explicit repository-contained process contracts without conversational intervention." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:constructionRouteConstraint> "zero-paid-cost provider routes, if used, are construction intelligence only" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:requires> <urn:usf:requirement:lifecycle-explicit-binding> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:requires> <urn:usf:requirement:lifecycle-unix-foreground> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:requires> <urn:usf:requirement:lifecycle-safe-stop-restart> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:requires> <urn:usf:requirement:lifecycle-nonauthority> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:requires> <urn:usf:requirement:lifecycle-remote-independent> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "config/automation.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "recipes/continuous.sh" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/commands/dispatcher.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/commands/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/continuous/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0003-foreground-lifecycle.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "package.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "tests/unit/continuous/lifecycle.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:nonClaim> "Lifecycle readiness is not work completion, acceptance, evidence, proof, integration or semantic publication." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:nonClaim> "This slice does not establish live provider routing, autonomous live-agent delivery, exactly-once execution, production BAU, staging or production operation." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:foreground-lifecycle:localdev> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:foreground-lifecycle:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:foreground-lifecycle:integrationtest> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:foreground-lifecycle:ci> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:foreground-lifecycle:productionshaped> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:foreground-lifecycle:staging> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:foreground-lifecycle:productionlive> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:localdev> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:ci> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:environment-applicability:foreground-lifecycle:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-explicit-binding> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-explicit-binding> <urn:usf:predicate:text> "Bind each process-control instance to one explicit versioned profile selector, repository-relative manifest selector, through boundary, tracked automation-policy digest and exact lifecycle-tool digest before provider contact; keep global semantic revision and per-work scoped dependency digests as dynamic observations so graph movement rederives only affected work without whole-process restart or reproof." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-unix-foreground> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-unix-foreground> <urn:usf:predicate:text> "Keep the composer foreground and JSONL-composable; use an explicit Linux util-linux flock instance boundary whose descriptor is released by process death, while ordinary Unix supervision owns backgrounding, restart and forced termination rather than a USF daemon, socket or service manager." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-safe-stop-restart> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-safe-stop-restart> <urn:usf:predicate:text> "Use an OS-released exact-instance ownership lock and nonce-bound graceful-stop intent, retain ownership while any admitted work survives the drain bound, reject ambiguous identity and recover a killed process by stale quarantine and current-state rescan without replay." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-nonauthority> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-nonauthority> <urn:usf:predicate:text> "Treat lifecycle files as disposable operational observations that grant no work-completion, integration, evidence, proof or publication authority." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-remote-independent> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:requirement:lifecycle-remote-independent> <urn:usf:predicate:text> "Require no GitHub or Git-remote access for start, watch, stop or through-check progress; keep local carrier identity, coherent commit batching and explicit push separate so remote unavailability cannot block unrelated local work." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:acceptance:foreground-lifecycle> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:acceptance:foreground-lifecycle> <urn:usf:predicate:text> "Foreground start, JSONL readiness, idempotent and concurrent start, instance-bound stop, SIGINT/SIGTERM drain, stale restart, unrelated semantic movement preservation and planted malformed or mismatched identity cases have deterministic outcomes without PID-only signalling or whole-graph reproof." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:foreground-lifecycle-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:foreground-lifecycle-tests> <urn:usf:predicate:command> "node tests/unit/continuous/lifecycle.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:foreground-lifecycle-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:foreground-lifecycle-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:foreground-lifecycle-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle> <urn:usf:predicate:text> "The exact candidate bytes pass deterministic lifecycle state, identity, atomicity, stop and restart fixtures; post-integration process checks separately exercise the operating-system boundary." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:proof:foreground-lifecycle> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:contract> <urn:usf:contract:foreground-lifecycle:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:objective> "Implement and test foreground start, instance-bound graceful stop, process identity and restart-safe lifecycle control around the disposable composer." <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:dependsOn> <urn:usf:work:file-asset-index> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:readPath> "src/continuous/scheduler.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:readPath> "tests/integration/continuous-restart.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "config/automation.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "recipes/continuous.sh" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/commands/dispatcher.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/commands/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/continuous/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "docs/decisions/0003-foreground-lifecycle.md" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "package.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "tests/unit/continuous/lifecycle.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:modelCapability> "process-lifecycle" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:policyPath> "config/automation.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:acceptance> <urn:usf:acceptance:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:validation> <urn:usf:validation:foreground-lifecycle-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:proof> <urn:usf:proof:foreground-lifecycle> <urn:usf:graph:usf-bootstrap> .

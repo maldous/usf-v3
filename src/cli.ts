@@ -4,6 +4,7 @@ import { dispatchCommand, type CommandHandlers } from "./commands/dispatcher.ts"
 import { applyHandler } from "./commands/apply.ts";
 import { callCommandHandler } from "./commands/call.ts";
 import { checkHandler } from "./commands/check.ts";
+import { startCommandHandler, statusCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
 import { queryCommand } from "./commands/query.ts";
 import { resolveCommandHandler } from "./commands/resolve.ts";
 import { workCommand } from "./commands/work.ts";
@@ -18,12 +19,16 @@ const bootstrapHandlers: CommandHandlers = {
     if (result.status !== 0) throw new UsfError("INIT_FAILED", exitCodes.CONTAINMENT_REFUSAL, "Initialization failed.");
     return { output: undefined };
   },
+  status: statusCommandHandler,
   query: queryCommand,
   work: workCommand,
   call: callCommandHandler,
   resolve: resolveCommandHandler,
   apply: applyHandler,
   check: checkHandler,
+  start: startCommandHandler,
+  stop: stopCommandHandler,
+  watch: watchCommandHandler,
 };
 
 async function main(): Promise<void> {

@@ -30,13 +30,18 @@ test("manifest overlays isolate products while safely deduplicating shared knowl
   const anqr = loadSemanticGraph(root, anqrManifest);
   const orchard = loadSemanticGraph(root, orchardManifest);
   const all = loadSemanticGraph(root, allManifest);
-  assert.deepEqual(semanticContracts(selfHost), ["urn:usf:contract:file-asset-index:1", "urn:usf:contract:repository-path-scope:1"]);
+  assert.deepEqual(semanticContracts(selfHost), [
+    "urn:usf:contract:file-asset-index:1",
+    "urn:usf:contract:foreground-lifecycle:1",
+    "urn:usf:contract:repository-path-scope:1",
+  ]);
   assert.deepEqual(semanticContracts(anqr), ["urn:usf:contract:anqr-decoded-payload:1"]);
   assert.deepEqual(semanticContracts(orchard), ["urn:fixture:contract:orchard-launch-assets:1"]);
   assert.deepEqual(semanticContracts(all), [
     "urn:fixture:contract:orchard-launch-assets:1",
     "urn:usf:contract:anqr-decoded-payload:1",
     "urn:usf:contract:file-asset-index:1",
+    "urn:usf:contract:foreground-lifecycle:1",
     "urn:usf:contract:repository-path-scope:1",
   ]);
   assert.equal(all.sources.length, 4);

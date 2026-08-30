@@ -1,6 +1,6 @@
 import { exitCodes, type ExitCode, UsfError } from "../core/errors.ts";
 
-export const commandNames = ["init", "doctor", "status", "query", "observe", "work", "models", "probe", "route", "call", "review", "resolve", "apply", "check", "integrate", "evidence", "prove", "drift", "publish", "watch"] as const;
+export const commandNames = ["init", "doctor", "status", "query", "observe", "work", "models", "probe", "route", "call", "review", "resolve", "apply", "check", "integrate", "evidence", "prove", "drift", "publish", "start", "stop", "watch"] as const;
 export type CommandName = (typeof commandNames)[number];
 export interface CommandRequest { command: CommandName; args: readonly string[]; repositoryRoot: string; }
 export interface CommandResult { output: unknown; exitCode?: ExitCode; }
