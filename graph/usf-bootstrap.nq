@@ -220,7 +220,6 @@
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/commands/dispatcher.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/commands/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "src/continuous/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0003-foreground-lifecycle.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "package.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:foreground-lifecycle:1> <urn:usf:predicate:permitsWrite> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:usf-bootstrap> .
@@ -291,7 +290,6 @@
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/commands/dispatcher.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/commands/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "src/continuous/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "docs/decisions/0003-foreground-lifecycle.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "package.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:usf-bootstrap> .
@@ -331,9 +329,7 @@
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-metrics-identity> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-metrics-nonauthority> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-test-economics> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0004-operator-observability.md" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "package.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "schemas/metric-event.schema.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "schemas/metrics-report.schema.json" <urn:usf:graph:usf-bootstrap> .
@@ -344,9 +340,8 @@
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/metrics.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/observability/metrics.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/contract/cli.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/contract/operator-observability.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/integration/observability-cli.test.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/unit/observability/metrics.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:nonClaim> "Operational status, observations and metrics are not semantic source, work completion, accepted evidence, proof, integration or publication." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:nonClaim> "This slice does not establish live provider census, quota, pricing, latency, useful-token achievement, ANQR completion, staging, production or terminal proof." <urn:usf:graph:usf-bootstrap> .
@@ -391,10 +386,12 @@
 <urn:usf:acceptance:operator-observability> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:acceptance:operator-observability> <urn:usf:predicate:text> "Help works outside a repository; status remains a broad bounded summary; all metric views have stable JSON, filters, coverage and denominators; planted unknown, truncation, identity and useful-lineage cases remain factual and local-only." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:operator-observability-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:command> "node --test tests/unit/observability/metrics.test.ts tests/contract/cli.test.ts tests/integration/observability-cli.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/observability/metrics.test.ts tests/contract/operator-observability.test.ts tests/integration/observability-cli.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:operator-observability-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:operator-observability-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:operator-observability-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation:operator-observability-tests> <urn:usf:predicate:admissionConfinementPolicy> "The confined candidate child executes the pure metrics and static registry coverage but cannot recursively spawn the repository-independent CLI subprocess fixture because unapproved child processes remain denied. That fixture emits an explicit skip only when the Node permission model confirms child_process is unavailable; the ordinary outer authoritative suite executes the same tracked test without the permission restriction and must pass before checkpoint acceptance. Neither lane contacts a provider or network, and the confined completion receipt makes no claim that the outer subprocess lane ran inside the candidate child." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:proof:operator-observability> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:proof:operator-observability> <urn:usf:predicate:text> "Exact candidate bytes pass pure metrics classification, bounded JSONL, registry/help and repository-independent subprocess fixtures without network or authority mutation." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:proof:operator-observability> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
@@ -407,9 +404,7 @@
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "config/providers.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/continuous/scheduler.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/decisions/0004-operator-observability.md" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "package.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "schemas/metric-event.schema.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "schemas/metrics-report.schema.json" <urn:usf:graph:usf-bootstrap> .
@@ -420,9 +415,8 @@
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/metrics.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/status.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/observability/metrics.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/contract/cli.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/contract/operator-observability.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/integration/observability-cli.test.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/unit/observability/metrics.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:usf-bootstrap> .
@@ -488,6 +482,12 @@
 <urn:usf:type:ConstructionAuthorityGrant> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:type:ValidationRuntimeClosure> <urn:usf:predicate:type> <urn:usf:type:SemanticPolicyType> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:type:ValidationRuntimeClosure> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:operator-observability:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:operator-observability:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:operator-observability:1> <urn:usf:predicate:forValidation> <urn:usf:validation:operator-observability-tests> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:operator-observability:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:operator-observability:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:operator-observability:1> <urn:usf:predicate:authorityRule> "Supply exactly the two shared implementation files imported by the focused metrics, registry and dispatcher validation but absent from the operator work scope. The check receipt binds their current bytes without coupling operator completion to unrelated apply, publish, carrier or provider command implementations." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:semantic-first-focused:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:semantic-first-focused:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:semantic-first-focused:1> <urn:usf:predicate:forValidation> <urn:usf:validation:semantic-first-eligibility-focused> <urn:usf:graph:usf-bootstrap> .

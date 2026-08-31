@@ -1,0 +1,139 @@
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapToolchainIntent> <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:objective> "Replace the bootstrap-only hard-coded construction and no-change completion selectors with one manifest-selected profile-scoped protocol so isolated product overlays can close exact predecessor and construction authority without mutating historical policy identities." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "graph/manifests/profile-authority.json" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "graph/manifests/self-host-provider.json" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "graph/profile-authority.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "graph/provider-qualification.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "graph/usf-bootstrap.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "src/commands/construction-authority.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "src/commands/help.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "src/commands/work-completion.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "src/graph/work.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "src/realisation/construction-authority.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "src/realisation/work-completion.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "tests/contract/cli.test.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "tests/contract/operator-observability.test.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "tests/integration/profile-scoped-authority.test.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "tests/integration/observability-cli.test.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:testEconomics> "Add one compact provider-profile chain proving isolated selection, exact target publication and predecessor completion. Reuse existing construction and completion cases; add no per-work matrix or compatibility suite." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:criticalPathRule> "Implement only graph-selected manifest, policy, source, named graph, schema, tool and closed confined-validation bindings needed to close operator-observability and activate provider-semantic-qualification construction. Validation commands use explicit repository test paths partitioned at the existing Unix-composable eight-file ceiling; preserve historical version-one records as immutable history and do not build a generic workflow framework." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:nonClaim> "This repair grants no provider contact, credential read, authenticated answer, qualification, runtime, Git commit, push, ANQR, staging, production or terminal-proof authority." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapToolchainIntent> <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#7.4" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#21" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:objective> "Remove mutable operator checkpoint documents and tests outside a packet's focused validation from current realisation scopes so routine reporting and unrelated test maintenance cannot force functional reproof." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "graph/profile-authority.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "graph/usf-bootstrap.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "graph/provider-qualification.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "graph/hermes-management.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "graph/products/anqr/hermes-management.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "graph/semantic-recovery.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "tests/integration/profile-scoped-authority.test.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "docs/bottleneck-register.md" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "docs/handover.md" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:testEconomics> "Extend the existing profile-chain integration case with direct scope assertions; add no new test file, per-command matrix or historical replay." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:criticalPathRule> "Preserve immutable historical carrier and bootstrap receipts. Remove docs/handover.md from current ordinary work scopes, remove the shared bottleneck register from provider-path and Hermes scopes, and remove operator/provider tests not executed by their exact focused validations. Genuine implementation, decision, validation and recovery-deliverable dependencies remain bound." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:nonClaim> "This scope correction is not a reproof bypass: every affected current grant and completion record must be rederived once from the corrected basis, while old records remain immutable history." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapToolchainIntent> <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#7.4" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:objective> "Correct the directional basis traversal so a selected work binds its exact contract and predecessor closure plus profile boundary identity, without traversing the profile's other selected contracts as content dependencies." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:allowedPath> "graph/profile-authority.nq" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:allowedPath> "src/graph/work.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:allowedPath> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:allowedPath> "docs/bottleneck-register.md" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:allowedPath> "docs/handover.md" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:testEconomics> "Extend the existing directional overlay test with one sibling-contract mutation and prove both sides: the selected work remains identical while the mutated sibling changes. Add no new test file or receipt matrix." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:criticalPathRule> "The profile resource digest still binds exact membership and version. Its selectsContract edges establish eligibility only; sibling contract contents enter a basis only through an explicit work dependency or another selected work's own derivation." <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:nonClaim> "This correction does not preserve stale authority when profile membership, the selected contract, an explicit predecessor, shared policy, tool, schema or scoped repository input changes." <urn:usf:graph:profile-authority> .
+<urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPolicyType> <urn:usf:graph:profile-authority> .
+<urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPolicyType> <urn:usf:graph:profile-authority> .
+<urn:usf:type:AdmittedNoChangeRealisationReceipt> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:profile-authority> .
+<urn:usf:type:AdmittedNoChangeRealisationReceipt> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceNormalizationAlgorithm> <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:predicate:objective> "Normalize one exact current profile-bound work projection into pre-realisation construction evidence without admitting it or writing semantic source." <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeRealisationAlgorithm> <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:predicate:objective> "Create and reauthenticate a Git-less isolated snapshot containing exactly the current scoped basis, empty operations and empty provider lineage." <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceNormalizationAlgorithm> <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
+<urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:predicate:objective> "Normalize exact current no-change workspace authentication and every graph-declared passing confined check receipt into completion evidence." <urn:usf:graph:profile-authority> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:ProofAlgorithm> <urn:usf:graph:profile-authority> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:realisationRecordType> <urn:usf:type:AdmittedNoChangeRealisationReceipt> <urn:usf:graph:profile-authority> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:realisationReceiptSchema> <urn:usf:schema:admitted-no-change-realisation-receipt:1> <urn:usf:graph:profile-authority> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:acceptedRealisationState> "accepted-no-change" <urn:usf:graph:profile-authority> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:realisationVerifier> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-evidence-candidate:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-evidence-candidate:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-evidence-candidate:1> <urn:usf:predicate:repositoryPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-proof-bundle:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-proof-bundle:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-proof-bundle:1> <urn:usf:predicate:repositoryPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:predicate:repositoryPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-authority-publication-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-authority-publication-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:construction-authority-publication-result:1> <urn:usf:predicate:repositoryPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:predicate:repositoryPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:admitted-no-change-realisation-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:admitted-no-change-realisation-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:no-change-realisation-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:no-change-realisation-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:no-change-realisation-result:1> <urn:usf:predicate:repositoryPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:completion-evidence-candidate:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:completion-evidence-candidate:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:completion-evidence-candidate:1> <urn:usf:predicate:repositoryPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:completion-proof-bundle:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:completion-proof-bundle:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:completion-proof-bundle:1> <urn:usf:predicate:repositoryPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:repositoryPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:repositoryPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:command:evidence-construction:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:profile-authority> .
+<urn:usf:command:evidence-construction:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:command:evidence-construction:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:profile-authority> .
+<urn:usf:command:evidence-construction:1> <urn:usf:predicate:commandPath> "evidence construction" <urn:usf:graph:profile-authority> .
+<urn:usf:command:prove-construction:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:profile-authority> .
+<urn:usf:command:prove-construction:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:command:prove-construction:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:profile-authority> .
+<urn:usf:command:prove-construction:1> <urn:usf:predicate:commandPath> "prove construction" <urn:usf:graph:profile-authority> .
+<urn:usf:command:publish-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:profile-authority> .
+<urn:usf:command:publish-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:command:publish-construction-authority:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:profile-authority> .
+<urn:usf:command:publish-construction-authority:1> <urn:usf:predicate:commandPath> "publish construction-authority" <urn:usf:graph:profile-authority> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:profile-authority> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:profile-authority> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:commandPath> "realise no-change" <urn:usf:graph:profile-authority> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:profile-authority> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:profile-authority> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:commandPath> "evidence completion" <urn:usf:graph:profile-authority> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:profile-authority> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:profile-authority> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:commandPath> "prove completion" <urn:usf:graph:profile-authority> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:profile-authority> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:profile-authority> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:commandPath> "publish work-completion" <urn:usf:graph:profile-authority> .

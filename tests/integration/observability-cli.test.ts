@@ -3,13 +3,20 @@ import { spawnSync } from "node:child_process";
 import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import test from "node:test";
+import test, { type TestContext } from "node:test";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 const usf = resolve(repositoryRoot, "bin/usf");
 const digest = `sha256:${"a".repeat(64)}`;
 
 type Json = Record<string, unknown>;
+
+function childProcessUnavailable(context: TestContext): boolean {
+  const permission = (process as typeof process & { permission?: { has(scope: string): boolean } }).permission;
+  if (permission === undefined || permission.has("child_process")) return false;
+  context.skip("the repository-independent subprocess boundary runs in the direct outer authoritative validation");
+  return true;
+}
 
 async function optionalText(path: string): Promise<string> {
   try {
@@ -65,6 +72,7 @@ function assertNoAbsolutePathsOrSecrets(value: unknown): void {
 }
 
 test("help is repository-free; status stays local; and metrics preserve unknown coverage", async (t) => {
+  if (childProcessUnavailable(t)) return;
   const temporary = await mkdtemp(join(tmpdir(), "usf-observability-cli-"));
   const nonRepository = join(temporary, "not-a-repository");
   const shimDirectory = join(temporary, "bin");

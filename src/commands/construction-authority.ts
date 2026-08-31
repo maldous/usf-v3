@@ -24,6 +24,7 @@ import {
 import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
+import { parseRepositoryPath } from "../core/scope.ts";
 import { loadSemanticGraph, objectValues, objectsFor, resourceDigest, type LoadedSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../graph/nquads.ts";
 import { deriveWork, type WorkPacket } from "../graph/work.ts";
@@ -32,15 +33,18 @@ import {
   constructionAuthorityNonClaims,
   constructionGrantIri,
   constructionPublicationIntentDigest,
+  constructionReceiptPath,
   createConstructionAuthorityReceipt,
   createConstructionEvidenceCandidate,
   createConstructionGrant,
   createConstructionProofBundle,
   constructionRecordLines,
+  deriveConstructionAuthority,
   validateConstructionBundleShape,
   validateConstructionEvidenceShape,
   validateConstructionReceiptShape,
   type ConstructionAuthorityPublicationReceipt,
+  type ConstructionAuthorityDescriptor,
   type ConstructionEvidenceCandidate,
   type ConstructionProofBundle,
   type ConstructionPublicationMemberInput,
@@ -119,13 +123,19 @@ function assertKnownOptions(options: Map<string, string[]>, allowed: readonly st
   if (unknown.length > 0) refuse("CONSTRUCTION_OPTION_UNKNOWN", "An unknown construction option was supplied.", exitCodes.INVALID_INPUT, { options: unknown.sort() });
 }
 
+function assertManifestPath(value: string): void {
+  if (parseRepositoryPath(value, "file") === null || !/^graph\/manifests\/[A-Za-z0-9._-]+\.json$/u.test(value)) {
+    refuse("CONSTRUCTION_MANIFEST_INVALID", "The manifest must be an explicit repository-local graph manifest.", exitCodes.CONTAINMENT_REFUSAL);
+  }
+}
+
 function parseEvidenceRequest(args: readonly string[]): EvidenceRequest {
   if (args[0] !== "construction") refuse("EVIDENCE_TOPIC_INVALID", "Use the graph-registered evidence construction topic.");
   const options = optionMap(args.slice(1));
   assertKnownOptions(options, ["--work", "--profile", "--manifest", "--output"]);
   const request = { work: exactlyOne(options, "--work"), profile: exactlyOne(options, "--profile"), manifestPath: exactlyOne(options, "--manifest"), ...(options.has("--output") ? { output: exactlyOne(options, "--output") } : {}) };
   if (!iriPattern.test(request.work) || !iriPattern.test(request.profile)) refuse("CONSTRUCTION_IRI_INVALID", "Work and profile must be exact URN IRIs.");
-  if (request.manifestPath !== constructionAuthorityConstants.manifestPath) refuse("CONSTRUCTION_MANIFEST_INVALID", "The construction-authority chain requires the explicit integration manifest.");
+  assertManifestPath(request.manifestPath);
   if (request.output !== undefined && request.output !== "-" && !candidatePathPattern.test(request.output)) refuse("CONSTRUCTION_OUTPUT_PATH_INVALID", "Candidate output must remain under the ignored construction-authority candidate root.", exitCodes.CONTAINMENT_REFUSAL);
   return Object.freeze(request);
 }
@@ -136,7 +146,7 @@ function parseProofRequest(args: readonly string[]): ProofRequest {
   assertKnownOptions(options, ["--obligation", "--evidence", "--profile", "--manifest", "--output"]);
   const request = { obligation: exactlyOne(options, "--obligation"), evidencePath: exactlyOne(options, "--evidence"), profile: exactlyOne(options, "--profile"), manifestPath: exactlyOne(options, "--manifest"), ...(options.has("--output") ? { output: exactlyOne(options, "--output") } : {}) };
   if (!iriPattern.test(request.obligation) || !iriPattern.test(request.profile)) refuse("CONSTRUCTION_IRI_INVALID", "Obligation and profile must be exact URN IRIs.");
-  if (request.manifestPath !== constructionAuthorityConstants.manifestPath) refuse("CONSTRUCTION_MANIFEST_INVALID", "The construction-authority chain requires the explicit integration manifest.");
+  assertManifestPath(request.manifestPath);
   if (request.evidencePath !== "-" && !candidatePathPattern.test(request.evidencePath)) refuse("CONSTRUCTION_EVIDENCE_PATH_INVALID", "Evidence input must be bounded stdin or an ignored construction-authority candidate.", exitCodes.CONTAINMENT_REFUSAL);
   if (request.output !== undefined && request.output !== "-" && !candidatePathPattern.test(request.output)) refuse("CONSTRUCTION_OUTPUT_PATH_INVALID", "Candidate output must remain under the ignored construction-authority candidate root.", exitCodes.CONTAINMENT_REFUSAL);
   return Object.freeze(request);
@@ -155,7 +165,8 @@ function parsePublishConstructionRequest(args: readonly string[]): PublishConstr
   if (bundlePaths.some((path) => path !== "-" && !candidatePathPattern.test(path))) refuse("CONSTRUCTION_BUNDLE_PATH_INVALID", "Bundle input must be bounded stdin or an ignored construction-authority candidate.", exitCodes.CONTAINMENT_REFUSAL);
   const profile = exactlyOne(options, "--profile");
   const selectedManifestPath = exactlyOne(options, "--manifest");
-  if (!iriPattern.test(profile) || selectedManifestPath !== constructionAuthorityConstants.manifestPath) refuse("CONSTRUCTION_PUBLICATION_SELECTION_INVALID", "Publication requires an exact versioned profile and the integration manifest.");
+  if (!iriPattern.test(profile)) refuse("CONSTRUCTION_PUBLICATION_SELECTION_INVALID", "Publication requires an exact versioned profile and explicit graph manifest.");
+  assertManifestPath(selectedManifestPath);
   return Object.freeze({ mode, bundlePaths: Object.freeze(bundlePaths), profile, manifestPath: selectedManifestPath });
 }
 
@@ -372,37 +383,43 @@ function selectedProfileVersion(packet: WorkPacket): string {
 function deriveEvidence(root: string, request: EvidenceRequest): ConstructionEvidenceCandidate {
   const graph = loadSemanticGraph(root, request.manifestPath);
   const packet = exactStaticPacket(graph, request.profile, request.work);
+  const authority = deriveConstructionAuthority(graph, packet.id, request.manifestPath);
   const evidence = createConstructionEvidenceCandidate(graph, packet, request.manifestPath);
-  if (!validateConstructionEvidenceShape(root, evidence)) refuse("CONSTRUCTION_EVIDENCE_SCHEMA_INVALID", "Derived construction evidence failed its graph-selected closed schema.", exitCodes.CURRENTNESS_FAILURE);
+  if (!validateConstructionEvidenceShape(root, evidence, authority)) refuse("CONSTRUCTION_EVIDENCE_SCHEMA_INVALID", "Derived construction evidence failed its graph-selected closed schema.", exitCodes.CURRENTNESS_FAILURE);
   return evidence;
 }
 
-function authenticateEvidence(root: string, graph: LoadedSemanticGraph, profile: string, selectedManifestPath: string, value: unknown): { evidence: ConstructionEvidenceCandidate; packet: WorkPacket } {
-  if (!validateConstructionEvidenceShape(root, value)) refuse("CONSTRUCTION_EVIDENCE_SCHEMA_INVALID", "Construction evidence does not satisfy the closed graph-selected schema.");
+function authenticateEvidence(root: string, graph: LoadedSemanticGraph, profile: string, selectedManifestPath: string, value: unknown): { evidence: ConstructionEvidenceCandidate; packet: WorkPacket; authority: ConstructionAuthorityDescriptor } {
+  const workIri = typeof value === "object" && value !== null && "workIri" in value && typeof value.workIri === "string" ? value.workIri : "";
+  if (!iriPattern.test(workIri)) refuse("CONSTRUCTION_EVIDENCE_SCHEMA_INVALID", "Construction evidence does not identify one exact work.");
+  const packet = exactStaticPacket(graph, profile, workIri);
+  const authority = deriveConstructionAuthority(graph, packet.id, selectedManifestPath);
+  if (!validateConstructionEvidenceShape(root, value, authority)) refuse("CONSTRUCTION_EVIDENCE_SCHEMA_INVALID", "Construction evidence does not satisfy the closed graph-selected schema.");
   const evidence = value as ConstructionEvidenceCandidate;
   if (canonicalDigest(Object.fromEntries(Object.entries(evidence).filter(([key]) => key !== "contentDigest")), { rejectAbsolutePaths: true }) !== evidence.contentDigest) refuse("CONSTRUCTION_EVIDENCE_DIGEST_INVALID", "Construction evidence content digest is invalid.", exitCodes.CURRENTNESS_FAILURE);
-  const packet = exactStaticPacket(graph, profile, evidence.workIri);
   const expected = createConstructionEvidenceCandidate(graph, packet, selectedManifestPath, evidence.observedSemanticDigest);
   if (canonicalJson(expected, { rejectAbsolutePaths: true }) !== canonicalJson(evidence, { rejectAbsolutePaths: true })) refuse("CONSTRUCTION_EVIDENCE_NOT_CURRENT", "Construction evidence no longer matches its scoped authority basis.", exitCodes.CURRENTNESS_FAILURE);
-  return { evidence, packet };
+  return { evidence, packet, authority };
 }
 
 function deriveProof(root: string, request: ProofRequest, value: unknown): ConstructionProofBundle {
   const graph = loadSemanticGraph(root, request.manifestPath);
-  const { evidence, packet } = authenticateEvidence(root, graph, request.profile, request.manifestPath, value);
+  const { evidence, packet, authority } = authenticateEvidence(root, graph, request.profile, request.manifestPath, value);
   const bundle = createConstructionProofBundle(graph, packet, evidence, request.obligation, request.manifestPath);
-  if (!validateConstructionBundleShape(root, bundle)) refuse("CONSTRUCTION_PROOF_SCHEMA_INVALID", "Derived construction proof failed its graph-selected closed schema.", exitCodes.CURRENTNESS_FAILURE);
+  if (!validateConstructionBundleShape(root, bundle, authority)) refuse("CONSTRUCTION_PROOF_SCHEMA_INVALID", "Derived construction proof failed its graph-selected closed schema.", exitCodes.CURRENTNESS_FAILURE);
   return bundle;
 }
 
-function authenticateBundle(root: string, graph: LoadedSemanticGraph, profile: string, selectedManifestPath: string, value: unknown): { bundle: ConstructionProofBundle; packet: WorkPacket } {
-  if (!validateConstructionBundleShape(root, value)) refuse("CONSTRUCTION_BUNDLE_SCHEMA_INVALID", "Construction proof bundle does not satisfy the closed graph-selected schema.");
+function authenticateBundle(root: string, graph: LoadedSemanticGraph, profile: string, selectedManifestPath: string, value: unknown): { bundle: ConstructionProofBundle; packet: WorkPacket; authority: ConstructionAuthorityDescriptor } {
+  const evidenceValue = typeof value === "object" && value !== null && "evidence" in value ? value.evidence : undefined;
+  const authenticatedEvidence = authenticateEvidence(root, graph, profile, selectedManifestPath, evidenceValue);
+  if (!validateConstructionBundleShape(root, value, authenticatedEvidence.authority)) refuse("CONSTRUCTION_BUNDLE_SCHEMA_INVALID", "Construction proof bundle does not satisfy the closed graph-selected schema.");
   const bundle = value as ConstructionProofBundle;
-  const { evidence, packet } = authenticateEvidence(root, graph, profile, selectedManifestPath, bundle.evidence);
+  const { evidence, packet, authority } = authenticatedEvidence;
   const expected = createConstructionProofBundle(graph, packet, evidence, bundle.proof.obligationIri, selectedManifestPath);
   if (canonicalJson(expected, { rejectAbsolutePaths: true }) !== canonicalJson(bundle, { rejectAbsolutePaths: true })) refuse("CONSTRUCTION_BUNDLE_NOT_CURRENT", "Construction proof bundle no longer matches its scoped authority basis.", exitCodes.CURRENTNESS_FAILURE);
   if (!digestPattern.test(bundle.bundleDigest)) refuse("CONSTRUCTION_BUNDLE_DIGEST_INVALID", "Construction bundle digest is invalid.", exitCodes.CURRENTNESS_FAILURE);
-  return { bundle, packet };
+  return { bundle, packet, authority };
 }
 
 function utf8Compare(left: string, right: string): number { return Buffer.compare(Buffer.from(left, "utf8"), Buffer.from(right, "utf8")); }
@@ -438,13 +455,20 @@ function copyCandidateRepository(root: string): string {
   return candidate;
 }
 
-function validateCandidateRepository(root: string, sourceAfter: string, receipt: ConstructionAuthorityPublicationReceipt, affectedWorks: readonly string[], profile: string): string {
+function validateCandidateRepository(
+  root: string,
+  sourceAfter: string,
+  receipt: ConstructionAuthorityPublicationReceipt,
+  affectedWorks: readonly string[],
+  profile: string,
+  authority: ConstructionAuthorityDescriptor,
+): string {
   const candidate = copyCandidateRepository(root);
   try {
-    atomicWrite(resolve(candidate, constructionAuthorityConstants.sourcePath), sourceAfter, statSync(resolve(candidate, constructionAuthorityConstants.sourcePath)).mode & 0o777);
+    atomicWrite(resolve(candidate, authority.sourcePath), sourceAfter, statSync(resolve(candidate, authority.sourcePath)).mode & 0o777);
     const receiptAbsolute = publicationReceiptPath(candidate, receipt.publicationReceiptPath, true);
     atomicCreate(receiptAbsolute, `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, 0o644);
-    const candidateGraph = loadSemanticGraph(candidate, constructionAuthorityConstants.manifestPath);
+    const candidateGraph = loadSemanticGraph(candidate, authority.manifestPath);
     const full = deriveWork(candidateGraph, { profile, maxItems: 100 });
     if (full.status !== "ok") refuse("CONSTRUCTION_CANDIDATE_GRAPH_INVALID", "The complete candidate graph projection refused.", exitCodes.CURRENTNESS_FAILURE, { reasonCode: full.reasonCode });
     for (const workIri of affectedWorks) {
@@ -452,7 +476,13 @@ function validateCandidateRepository(root: string, sourceAfter: string, receipt:
       const packet = result.status === "ok" ? result.items?.[0] : undefined;
       if (packet?.realisationAuthority?.permission?.activationState !== constructionAuthorityConstants.activeState
         || packet.eligibility?.activation.eligible !== true || packet.eligibility.construction.eligible !== true
-        || packet.eligibility.construction.authority !== "active-permission") refuse("CONSTRUCTION_CANDIDATE_READBACK_INVALID", "The candidate grant did not establish exact effective construction authority.", exitCodes.CURRENTNESS_FAILURE, { workIri });
+        || packet.eligibility.construction.authority !== "active-permission") refuse("CONSTRUCTION_CANDIDATE_READBACK_INVALID", "The candidate grant did not establish exact effective construction authority.", exitCodes.CURRENTNESS_FAILURE, {
+        workIri,
+        activationState: packet?.realisationAuthority?.permission?.activationState,
+        activationEligible: packet?.eligibility?.activation.eligible,
+        construction: packet?.eligibility?.construction,
+        reasonCodes: packet?.eligibility?.activation.reasonCodes,
+      });
     }
     return candidateGraph.semanticDigest;
   } finally {
@@ -465,7 +495,13 @@ function receiptWithoutDigest(receipt: ConstructionAuthorityPublicationReceipt):
   return draft;
 }
 
-function authenticateExistingReceipt(root: string, path: string, expectedIntent: string, expectedLines: readonly string[]): ConstructionAuthorityPublicationReceipt {
+function authenticateExistingReceipt(
+  root: string,
+  path: string,
+  expectedIntent: string,
+  expectedLines: readonly string[],
+  authority: ConstructionAuthorityDescriptor,
+): ConstructionAuthorityPublicationReceipt {
   let value: unknown;
   let bytes: Buffer;
   const absolute = publicationReceiptPath(root, path, false);
@@ -491,7 +527,7 @@ function authenticateExistingReceipt(root: string, path: string, expectedIntent:
     return refuse("CONSTRUCTION_RECEIPT_INVALID", "Existing construction receipt is unreadable or invalid JSON.", exitCodes.CURRENTNESS_FAILURE);
   }
   finally { if (descriptor !== undefined) closeSync(descriptor); }
-  if (!validateConstructionReceiptShape(root, value)) refuse("CONSTRUCTION_RECEIPT_SCHEMA_INVALID", "Existing construction receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
+  if (!validateConstructionReceiptShape(root, value, authority)) refuse("CONSTRUCTION_RECEIPT_SCHEMA_INVALID", "Existing construction receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
   const receipt = value as ConstructionAuthorityPublicationReceipt;
   if (`${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n` !== bytes.toString("utf8")
     || canonicalDigest(receiptWithoutDigest(receipt), { rejectAbsolutePaths: true }) !== receipt.receiptDigest
@@ -504,6 +540,11 @@ function preparePublication(root: string, request: PublishConstructionRequest, v
   const graph = loadSemanticGraph(root, request.manifestPath);
   const authenticated = values.map((value) => authenticateBundle(root, graph, request.profile, request.manifestPath, value))
     .sort((left, right) => utf8Compare(left.bundle.evidence.workIri, right.bundle.evidence.workIri));
+  const authority = authenticated[0]?.authority;
+  if (authority === undefined || authenticated.length < authority.minimumBundleCount || authenticated.length > authority.maximumBundleCount
+    || authenticated.some((entry) => canonicalJson(entry.authority) !== canonicalJson(authority))) {
+    refuse("CONSTRUCTION_PUBLICATION_AUTHORITY_MIXED", "A publication batch must bind one exact graph-selected authority policy.", exitCodes.CURRENTNESS_FAILURE);
+  }
   if (new Set(authenticated.map(({ bundle }) => bundle.evidence.workIri)).size !== authenticated.length) refuse("CONSTRUCTION_BUNDLE_WORK_DUPLICATE", "A publication batch cannot repeat a work.");
   const profileVersions = new Set(authenticated.map(({ packet }) => selectedProfileVersion(packet)));
   if (profileVersions.size !== 1) refuse("CONSTRUCTION_PROFILE_VERSION_MIXED", "A publication batch must bind one profile version.", exitCodes.CURRENTNESS_FAILURE);
@@ -517,22 +558,22 @@ function preparePublication(root: string, request: PublishConstructionRequest, v
     members.map((member) => constructionGrantIri(member.bundle.evidence.workIri, member.permissionIri, member.bundle.evidence.scopedDependencyDigest)),
   ];
   if (identitySets.some((values) => new Set(values).size !== values.length)) refuse("CONSTRUCTION_PUBLICATION_IDENTITY_DUPLICATE", "A publication batch contains duplicate semantic identities.");
-  const intentDigest = constructionPublicationIntentDigest(members.map(({ bundle }) => bundle.bundleDigest), request.profile, request.manifestPath);
+  const intentDigest = constructionPublicationIntentDigest(members.map(({ bundle }) => bundle.bundleDigest), request.profile, request.manifestPath, authority);
   const recordLines = members.flatMap((member) => {
-    const { grantIri, grant } = createConstructionGrant(member, request.profile, request.manifestPath, intentDigest);
-    return constructionRecordLines(member.bundle, grantIri, grant);
+    const { grantIri, grant } = createConstructionGrant(member, request.profile, request.manifestPath, intentDigest, authority);
+    return constructionRecordLines(member.bundle, grantIri, grant, authority);
   }).sort();
   if (new Set(recordLines).size !== recordLines.length) refuse("CONSTRUCTION_PUBLICATION_LINE_DUPLICATE", "The publication batch produced duplicate graph lines.");
-  parseStrictNQuads(`${recordLines.join("\n")}\n`, constructionAuthorityConstants.targetGraphIri, 1_024);
-  const sourceAbsolute = resolve(root, constructionAuthorityConstants.sourcePath);
+  parseStrictNQuads(`${recordLines.join("\n")}\n`, authority.targetGraphIri, 1_024);
+  const sourceAbsolute = resolve(root, authority.sourcePath);
   const sourceBefore = readFileSync(sourceAbsolute, "utf8");
   const currentLines = new Set(sourceBefore.split("\n").filter((line) => line.length > 0));
   const present = recordLines.filter((line) => currentLines.has(line)).length;
-  const receiptPath = `evidence/construction-authority/${intentDigest.slice("sha256:".length)}.json`;
+  const receiptPath = constructionReceiptPath(intentDigest, authority);
   const receiptExists = existsSync(publicationReceiptPath(root, receiptPath, false));
   if ((present > 0 && present < recordLines.length) || (present === 0 && receiptExists) || (present === recordLines.length && !receiptExists)) refuse("CONSTRUCTION_PUBLICATION_PARTIAL_STATE", "Construction publication state is partial or conflicting.", exitCodes.INTEGRATION_CONFLICT);
   if (present === recordLines.length) {
-    const receipt = authenticateExistingReceipt(root, receiptPath, intentDigest, recordLines);
+    const receipt = authenticateExistingReceipt(root, receiptPath, intentDigest, recordLines, authority);
     for (const { bundle } of authenticated) {
       const result = deriveWork(graph, { profile: request.profile, selector: bundle.evidence.workIri, maxItems: 1 });
       const packet = result.status === "ok" ? result.items?.[0] : undefined;
@@ -544,13 +585,14 @@ function preparePublication(root: string, request: PublishConstructionRequest, v
   const temporary = copyCandidateRepository(root);
   let resultingSemanticDigest: string;
   try {
-    atomicWrite(resolve(temporary, constructionAuthorityConstants.sourcePath), sourceAfter, statSync(resolve(temporary, constructionAuthorityConstants.sourcePath)).mode & 0o777);
+    atomicWrite(resolve(temporary, authority.sourcePath), sourceAfter, statSync(resolve(temporary, authority.sourcePath)).mode & 0o777);
     resultingSemanticDigest = loadSemanticGraph(temporary, request.manifestPath).semanticDigest;
   } finally { rmSync(temporary, { recursive: true, force: true }); }
   const firstPacket = authenticated[0]?.packet;
   if (firstPacket?.realisationBasis === undefined) refuse("CONSTRUCTION_BASIS_MISSING", "Publication basis is absent.", exitCodes.CURRENTNESS_FAILURE);
   const receipt = createConstructionAuthorityReceipt({
     graph,
+    authority,
     profileIri: request.profile,
     profileVersion: selectedProfileVersion(firstPacket),
     selectedManifestPath: request.manifestPath,
@@ -561,10 +603,10 @@ function preparePublication(root: string, request: PublishConstructionRequest, v
     resultingSource: sourceAfter,
     resultingSemanticDigest,
   });
-  if (!validateConstructionReceiptShape(root, receipt)) refuse("CONSTRUCTION_RECEIPT_SCHEMA_INVALID", "Prepared construction receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
+  if (!validateConstructionReceiptShape(root, receipt, authority)) refuse("CONSTRUCTION_RECEIPT_SCHEMA_INVALID", "Prepared construction receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
   const receiptBytes = `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`;
   if (candidateValidation) {
-    const validatedDigest = validateCandidateRepository(root, sourceAfter, receipt, authenticated.map(({ bundle }) => bundle.evidence.workIri), request.profile);
+    const validatedDigest = validateCandidateRepository(root, sourceAfter, receipt, authenticated.map(({ bundle }) => bundle.evidence.workIri), request.profile, authority);
     if (validatedDigest !== resultingSemanticDigest) refuse("CONSTRUCTION_CANDIDATE_SEMANTIC_DIGEST_MISMATCH", "Candidate semantic digest changed during validation.", exitCodes.CURRENTNESS_FAILURE);
   }
   return Object.freeze({ graph, receipt, receiptBytes, sourceBefore, sourceAfter, recordLines: Object.freeze(recordLines), state: "absent" as const, affectedWorks: Object.freeze(authenticated.map(({ bundle }) => bundle.evidence.workIri)) });
@@ -595,7 +637,7 @@ async function publishConstruction(root: string, request: PublishConstructionReq
     const locked = preparePublication(root, request, values, false);
     if (locked.state === "matching") return publicationResult("apply", "matching", locked.receipt);
     if (locked.receipt.receiptDigest !== prepared.receipt.receiptDigest || locked.sourceBefore !== prepared.sourceBefore || locked.sourceAfter !== prepared.sourceAfter) refuse("CONSTRUCTION_PUBLICATION_CURRENTNESS_CHANGED", "Construction publication currentness changed while waiting for the mutation lock.", exitCodes.INTEGRATION_CONFLICT);
-    const sourceAbsolute = resolve(root, constructionAuthorityConstants.sourcePath);
+    const sourceAbsolute = resolve(root, locked.receipt.semanticSourcePath);
     const receiptAbsolute = publicationReceiptPath(root, locked.receipt.publicationReceiptPath, true);
     if (readFileSync(sourceAbsolute, "utf8") !== locked.sourceBefore || existsSync(receiptAbsolute)) refuse("CONSTRUCTION_PUBLICATION_PREIMAGE_CHANGED", "Construction publication preimage changed under lock.", exitCodes.INTEGRATION_CONFLICT);
     const sourceMode = statSync(sourceAbsolute).mode & 0o777;

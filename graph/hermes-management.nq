@@ -50,8 +50,6 @@
 <urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:hermes-management> .
 <urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:hermes-management> .
 <urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "docs/hermes-management.md" <urn:usf:graph:hermes-management> .
-<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:hermes-management> .
-<urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:hermes-management> .
 <urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "tests/contract/cli.test.ts" <urn:usf:graph:hermes-management> .
 <urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:hermes-management> .
 <urn:usf:contract:hermes-autonomous-management:1> <urn:usf:predicate:permitsWrite> "tests/unit/commands/hermes.test.ts" <urn:usf:graph:hermes-management> .
@@ -157,8 +155,6 @@
 <urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:hermes-management> .
 <urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:hermes-management> .
 <urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "docs/hermes-management.md" <urn:usf:graph:hermes-management> .
-<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:hermes-management> .
-<urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:hermes-management> .
 <urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "tests/contract/cli.test.ts" <urn:usf:graph:hermes-management> .
 <urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "tests/integration/lifecycle-process.test.ts" <urn:usf:graph:hermes-management> .
 <urn:usf:work:hermes-management-facade> <urn:usf:predicate:writePath> "tests/unit/commands/hermes.test.ts" <urn:usf:graph:hermes-management> .

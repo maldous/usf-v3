@@ -69,7 +69,6 @@
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:readPath> "graph/products/anqr/hermes-management.nq" <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:writePath> "config/hermes.json" <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:writePath> "docs/hermes-management.md" <urn:anqr:graph:hermes-management> .
-<urn:usf:work:hermes-bau-binding> <urn:usf:predicate:writePath> "docs/handover.md" <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:writePath> "tests/unit/commands/hermes.test.ts" <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:writePath> "tests/unit/graph/product-overlays.test.ts" <urn:anqr:graph:hermes-management> .
 <urn:usf:work:hermes-bau-binding> <urn:usf:predicate:modelCapability> "cli-design" <urn:anqr:graph:hermes-management> .

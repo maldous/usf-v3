@@ -2,13 +2,15 @@
 
 Updated 2026-08-31. This is the durable continuation boundary after the
 semantic-first gate, local candidate integration, finite historical-carrier
-adoption and the generic copy-on-write no-change completion chain. The exact
-profile-bound `repository-path-scope` and `file-asset-index` packets are now
-`verified-complete`; the latter depends on the former through verified
-completion rather than a label or Git state. The next safe slice is the
-earliest trusted provider vertical slice. Full-universe provider qualification
-is explicitly not its prerequisite: discovery and qualification remain lazy,
-bounded and candidate-driven while the configured routes progress through the
+adoption and the profile-scoped copy-on-write authority/completion correction.
+The exact `repository-path-scope`, `file-asset-index` and
+`operator-observability` packets are now `verified-complete`; file-asset depends
+on repository-path through verified completion rather than a label or Git
+state. Routine checkpoint documentation, shared bottleneck notes and unrelated
+tests are not functional work dependencies. The next safe slice is the earliest
+trusted provider vertical slice. Full-universe provider qualification is
+explicitly not its prerequisite: discovery and qualification remain lazy,
+bounded and candidate-driven while configured routes progress through the
 mandatory trusted provider sequence.
 Until the operator says otherwise, one operator owns repository mutation; do
 not delegate repository work or run concurrent writers.
@@ -35,13 +37,10 @@ not delegate repository work or run concurrent writers.
   and containment/diff/readback checks passed. Those observations establish
   only the admitted gate boundary; rerun affected and full checks on later
   bytes before each coherent checkpoint.
-- The later handover update in this integration-model checkpoint is a declared
-  dependency of the lifecycle member, so exact receipt replay correctly reports
-  `PUBLISH_RECEIPT_CURRENTNESS_MISMATCH` for that member. The receipt remains an
-  immutable observation of the admitted `846c5bb` transition; it is not current
-  evidence for the changed lifecycle basis. The eligibility and basis-chain
-  members remain independently scoped rather than being serialized by this
-  documentation movement.
+- Earlier bootstrap receipts that bound this handover remain immutable
+  historical observations. Current ordinary work packets do not include this
+  checkpoint narrative in their read/write basis, so routine continuation notes
+  cannot serialize construction or force reproof.
 - The local integration authority model was committed and pushed as
   `1df0d028fa41fefc92ae61450d06f97e53f08de7`; its implementation was then
   independently verified, committed and pushed as
@@ -65,7 +64,7 @@ not delegate repository work or run concurrent writers.
 The handover previously stopped at the provider slice and reported 156 tests.
 That was stale after the semantic-recovery commits. This version supersedes it.
 
-## Current no-change completion checkpoint
+## Current profile-scoped authority and completion checkpoint
 
 The graph-defined `realise no-change`, `evidence completion`, `prove
 completion` and `publish work-completion` commands are implemented as separate
@@ -79,34 +78,49 @@ integration.
 The current tracked transition receipts are:
 
 - `repository-path-scope` construction:
-  `evidence/construction-authority/3cb92bd3eb3cbbc6239acd5e94fc5c2272e12769eb4c079ead9e168c735ce4e3.json`,
+  `evidence/construction-authority/d612320c71976e3e1d4e9b68fac4497e9f3f1300738206699dd47c8434c57818.json`,
   receipt digest
-  `sha256:87346d8f99d0f5ff48946ac224c710988e6a4591ddf88938c57ce230bf09e9fd`;
+  `sha256:02b54736b1cd28f737fc48c7316e556e9515f6f59bbacf60dc309387803a8779`;
 - `repository-path-scope` completion:
-  `evidence/work-completion/7e9c886499ec840c0612a1919e14b015cc28a6ad3380e5e39aca09e7bcb7431b.json`,
+  `evidence/work-completion/11bede32d3b63416112d0db226eeca3a832127b364b77b5fd435230f9ddd0dd4.json`,
   receipt digest
-  `sha256:f49239af03595b78b7ad7fb71027e484daab4ff68b15adc2e2c25a7982461e6d`;
+  `sha256:fac67f856c3b600c0a426346847fe98465bc74f35e7fd7c8f27ccc2d950a9d31`;
 - `file-asset-index` construction:
-  `evidence/construction-authority/d0068705f7ca2afd6369db03fb68a564a53bd6bdc1bde38a6978f6a3103fda7f.json`,
+  `evidence/construction-authority/15736720300d102709d7bbd3ad19a6893be3c3025b654aa086d331a017391d6b.json`,
   receipt digest
-  `sha256:a8045ae066ad285d8fdfebf6c6682f08797ff051d44af42bdd71b373f471ca29`;
-  and
+  `sha256:fd4a1f8accd527545d7145e1990f3c1f93da23a3b8c32fab9880c80de79fc178`;
 - `file-asset-index` completion:
-  `evidence/work-completion/4a7f7d20fdd277409ff18f0c9836978893caa5d837bdc871164159170a1038fb.json`,
+  `evidence/work-completion/195bb00a55534790a11f9220a28b7d51cb16ce4e6dacdb483e8f7ae53d001467.json`,
   receipt digest
-  `sha256:22819afa9af479ef6287e9bf914ef4863139363907d0efa89de4906d216396fa`.
+  `sha256:60c243edb0ea1bfa104aa6af817db653fd32897b2dad1af5cc6639bd314c792e`;
+- `operator-observability` construction under
+  `urn:usf:profile:v3-self-host:2`:
+  `evidence/construction-authority/22c8c7284f35cdcec0c0088ea825e7d9d1e3d007cc2f0e6ab9efe4e2c283936a.json`,
+  receipt digest
+  `sha256:cb263ed61a811d78ed65f9738c132500d5d9da4e7dbcbfed7931320eecbfaedd`;
+  and
+- `operator-observability` completion:
+  `evidence/work-completion/6e93007a7acfa1c89097ad1f02f3a17395dc7968657fffc0359b039ee8dd87ee.json`,
+  receipt digest
+  `sha256:2dfff9fe38fd65036215d93bf7f46e457840d337af7e9ee8032077298c1032fc`.
 
-Exact `usf work` readback reports both packets at `verified-complete` against
-the current integration semantic digest
-`sha256:0a0ff2e6e4691bef7c80116c7021205acffc44bed8577760f08558ff27286f45`.
-During the final gate, three existing focused checks correctly exposed one
-missing graph-declared runtime dependency for the newly imported completion
-evaluator. Adding exactly `src/realisation/work-completion.ts` to that semantic
-runtime closure fixed the common defect without weakening containment or
-adding tests. The focused boundary then passed 10/10, the complete authoritative
-suite passed 187/187, containment passed and `git diff --check` passed. These
-facts establish only the local completion/checkpoint boundary; no provider,
-ANQR, staging, production, Hermes-Agent or terminal proof is claimed.
+Exact `usf work` readback reports all three packets at `verified-complete`.
+The integration profile semantic digest is
+`sha256:37d21d45ddbbd8226cecf6cc9cc26ddb613597e42750bbbc73fa2bae8c68260f`;
+the provider profile semantic digest is
+`sha256:c589342acd9c8c764f6920109dea285ca4b46d1ea92c8464518dc303e63af4ca`.
+Their current RealisationBasis digests are respectively
+`sha256:7ba2d9687995c4116aaf9789e0fc413d68ef1d9e27ef6d74b1a55fd03805063d`,
+`sha256:1d87bcde085c74383d0fbcae6058484793b133a069f6a89a2892bce9fac52140`
+and
+`sha256:669f4aa9b24aea6ef3f5be89a87479a5e16f22b9727483d4ab0f80b6d8079c69`.
+The final TypeScript plus authoritative suite passed 188/188, containment
+returned `status: pass`, and `git diff --check` passed after the last functional
+change and receipt publication. A handover-only update then left all three
+semantic, basis and scoped-dependency digests unchanged and all three stages at
+`verified-complete`. These records establish only the local completion
+boundary; no provider, ANQR, staging, production, Hermes-Agent or terminal
+proof is claimed.
 
 ## Current graph authority
 
@@ -155,7 +169,7 @@ provider, credential and Hermes-Agent contact in this hermetic slice. They do
 not authorize credential migration, Docker runtime wiring or changes to
 provider qualification gates.
 
-Do not copy semantic digests from this self-changing handover. Re-derive the
+Do not treat semantic digests in this checkpoint narrative as authority. Re-derive the
 current core and combined ANQR identities from their explicit versioned
 profiles and manifests with the registered `usf query` and `usf work`
 commands above after every authority change.
@@ -222,9 +236,9 @@ mint it or broaden its basis.
 The executable gate, immutable realisation-basis propagation and exact-profile
 CLI selection are implemented and focused-tested. At the exact committed
 `846c5bb` boundary, its three member packets were
-`checked-awaiting-integration`. In this later worktree, eligibility and
-basis-chain retain that state, while the lifecycle member is reconstructable
-because this handover moves one of its scoped dependencies. The generic
+`checked-awaiting-integration`. Later immutable receipts retain that historical
+state. Current ordinary work no longer binds handover movement as a functional
+dependency. The generic
 integration-transition verifier is implemented for isolated candidate
 materialisation, graph-derived checks, detached Git integration,
 postimage-basis derivation and postimage validation, but remains explicitly
@@ -475,14 +489,15 @@ immutable historical carrier observations then reverified as `matching` from
 the clean commit: repository-path currentness was `current`; semantic-first
 and integration-toolchain currentness remained truthfully `reconstructable`.
 
-The registered Unix pipeline subsequently published one exact copy-on-write
-construction grant for `repository-path-scope`. Receipt
+The registered Unix pipeline initially published one exact copy-on-write
+construction grant for `repository-path-scope`. Historical receipt
 `evidence/construction-authority/937bdbadf9fda27dc413bb1f5c09bdb923d84b95cb77844d8ba208e57a7c3f7c.json`
 has receipt digest
 `sha256:fa469217c45d92984f3ddfaf8b01b061be557b28f7fea9b07fd75578ec40393f`;
-readback projects active construction permission with no completion claim.
-`file-asset-index` remains correctly dependency-blocked because current
-completion for `repository-path-scope` is still absent.
+readback projected active construction permission with no completion claim.
+At that historical boundary `file-asset-index` was correctly
+dependency-blocked because current completion for `repository-path-scope` was
+absent. The current checkpoint above supersedes that state.
 
 The next semantic gap is explicit rather than patched around: both predecessor
 implementations already exist, while the integrated-candidate path correctly
@@ -493,7 +508,7 @@ is a relevant adverse-learning guardrail: no action is a separate axis and
 must never be promoted to validation satisfaction or completion without exact
 current evidence and proof.
 
-That gap now has a model-only, proofblocked definition in
+That gap next received a model-only, proofblocked definition in
 `graph/integration.nq`: `no-change-work-completion:1` selects only
 `repository-path-scope` and `file-asset-index`, binds four registered command
 stages, six closed repository schemas, seven implementation paths and four
@@ -505,11 +520,9 @@ does not change the existing integration proof algorithm or reinterpret an
 empty delta. All 14 directly referenced command, algorithm and schema
 resources resolve through `usf query`; the policy cardinalities are 2 eligible
 works, 4 commands, 6 schemas, 7 tools and 4 algorithms. The full model-boundary
-authoritative suite passed 186/186, containment passed and the current
-repository-path construction grant remained active while file-asset-index
-remained dependency-blocked. The four commands still report planned semantic
-availability and confer no completion until implemented and independently
-qualified.
+authoritative suite passed 186/186 and containment passed at that historical
+model-only checkpoint. The four commands were later implemented and
+independently exercised through the current receipts recorded above.
 
 The mathematical/structural review exposed several denominator and topology
 issues that must remain visible:
@@ -531,9 +544,9 @@ issues that must remain visible:
 - proofblocked work can have implementation bytes while still lacking the
   evidence/proof/permission path required for readiness; byte presence and Git
   ancestry are not graph reachability or semantic completion;
-- `file-asset-index` is not cyclic: its target-labelled aggregate refusal comes
-  from the unready `repository-path-scope` predecessor; a true dependency cycle
-  must be reported separately as `WORK_DEPENDENCY_CYCLE`; and
+- `file-asset-index` was not cyclic when blocked: its refusal came from the
+  then-unready `repository-path-scope` predecessor; a true dependency cycle is
+  reported separately as `WORK_DEPENDENCY_CYCLE`; and
 - the graph defines the required bounded structural qualification—quad/node/IRI
   edge denominators, weak/strong components, typed in/out-degree statistics,
   zero-degree classification, profile reachability, dependency and semantic
@@ -607,8 +620,8 @@ bulk imported; retained meaning is re-expressed in later V3-authored packets.
 
 The frozen local models.dev snapshot observes the population below. Re-derive
 its exact raw and normalized digests from the tracked snapshot with
-`./bin/usf models summary --max-items 1`; do not copy digest literals from this
-self-changing handover:
+`./bin/usf models summary --max-items 1`; do not use digest literals from this
+checkpoint narrative as current authority:
 
 - 211 provider routes;
 - 7,488 provider-route/model pairs;
@@ -795,6 +808,16 @@ core-to-product, product-to-core and composite content identities. A change
 invalidates only its declared direction/scope; unrelated Git or graph movement
 does not force reproof.
 
+The root currentness correction is intentional and high leverage. An exact
+profile resource binds profile identity, version and selected membership, but a
+work packet traverses only its own contract/work closure and explicit
+`dependsOn` predecessors. It does not traverse the contents of sibling
+`selectsContract` members. Therefore a sibling contract change can change that
+sibling's basis without invalidating unrelated completed work. Operational
+handover text and shared bottleneck notes are likewise excluded from ordinary
+functional scopes; historical bootstrap/carrier references remain immutable
+history, not current work dependencies.
+
 Commits are coherent durable checkpoints, not prompt, retry, triple or chain
 stage records. A batch requires checked candidates, fresh scoped dependencies,
 compatible write sets and validation boundaries, no unresolved blocker and one
@@ -854,6 +877,7 @@ node --test tests/unit/providers/*.test.ts \
   tests/contract/provider-commands.test.ts \
   tests/integration/provider-cli.test.ts \
   tests/unit/graph/product-overlays.test.ts
+node --test tests/integration/profile-scoped-authority.test.ts
 TMPDIR="$PWD/.usf/tmp" \
   COREPACK_HOME="$PWD/.usf/cache/corepack" \
   corepack pnpm run check
@@ -885,14 +909,18 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Preserve the completed no-change chain and its four immutable transition
-   receipts. Do not create another version-1 carrier observation or reinterpret
-   any historical carrier, test result or Git state as provider authority.
-2. Use registered `usf` commands to project the exact currently configured
-   provider/model candidates and their local dispositions. Reuse the frozen
-   models.dev catalogue and reviewed V1/V2 credential-name provenance, but do
-   not block the first useful Gate 2 slice on exhaustive catalogue
-   qualification or a Cartesian test matrix.
+1. Confirm the profile-authority checkpoint containing this handover is the
+   clean pushed `HEAD == origin/main` before new mutation. Its complete
+   authoritative and containment checks passed, and handover movement left
+   repository-path, file-asset and operator readback `verified-complete`. Do
+   not create another version-1 carrier observation or reinterpret any
+   historical carrier, test result or Git state as provider authority.
+2. Semantic-first define and then implement the bounded registered
+   `usf providers census`, `status` and `aliases` surfaces needed to project the
+   exact configured provider/model candidates and local dispositions. Reuse the
+   frozen models.dev catalogue and reviewed V1/V2 credential-name provenance;
+   do not use an ad hoc work command, block the first useful Gate 2 slice on
+   exhaustive catalogue qualification, or create a Cartesian test matrix.
 3. Graph-define and acquire one trusted exact-account zero-paid tier receipt,
    then run its content-verified adapter in a scrubbed child with only the
    selected credential and bounded public input. Refuse before contact if the

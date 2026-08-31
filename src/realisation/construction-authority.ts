@@ -37,11 +37,80 @@ export const constructionAuthorityConstants = Object.freeze({
   manifestPath,
 });
 
+const policyType = "urn:usf:type:ConstructionAuthorityPublicationPolicy";
+
+export interface ConstructionAuthorityDescriptor {
+  readonly policyIri: string;
+  readonly derivationRuleIri: string;
+  readonly evidenceAlgorithmIri: string;
+  readonly proofAlgorithmIri: string;
+  readonly publicationAlgorithmIri: string;
+  readonly targetGraphIri: string;
+  readonly sourcePath: string;
+  readonly manifestPath: string;
+  readonly receiptRoot: string;
+  readonly candidateRoot: string;
+  readonly primaryMutationLockPath: string;
+  readonly minimumBundleCount: number;
+  readonly maximumBundleCount: number;
+  readonly registeredCommands: readonly string[];
+  readonly schemaPaths: readonly string[];
+  readonly toolPaths: readonly string[];
+  readonly evidenceSchemaIri: string;
+  readonly evidenceSchemaPath: string;
+  readonly proofBundleSchemaIri: string;
+  readonly proofBundleSchemaPath: string;
+  readonly publicationReceiptSchemaIri: string;
+  readonly publicationReceiptSchemaPath: string;
+  readonly publicationReceiptRecordSchema: string;
+  readonly publicationResultSchemaIri: string;
+  readonly publicationResultSchemaPath: string;
+  readonly publicationResultRecordSchema: string;
+}
+
+const legacyConstructionAuthority: ConstructionAuthorityDescriptor = Object.freeze({
+  policyIri,
+  derivationRuleIri,
+  evidenceAlgorithmIri,
+  proofAlgorithmIri,
+  publicationAlgorithmIri,
+  targetGraphIri,
+  sourcePath,
+  manifestPath,
+  receiptRoot: "evidence/construction-authority/",
+  candidateRoot: ".usf/candidates/construction-authority/",
+  primaryMutationLockPath: ".usf/locks/primary-mutation.lock",
+  minimumBundleCount: 1,
+  maximumBundleCount: 32,
+  registeredCommands: Object.freeze([
+    "urn:usf:command:evidence-construction:1",
+    "urn:usf:command:prove-construction:1",
+    "urn:usf:command:publish-construction-authority:1",
+  ]),
+  schemaPaths: Object.freeze([
+    "schemas/construction-evidence-candidate.schema.json",
+    "schemas/construction-proof-bundle.schema.json",
+    "schemas/construction-authority-publication-receipt.schema.json",
+    "schemas/construction-authority-publication-result.schema.json",
+  ]),
+  toolPaths: Object.freeze([]),
+  evidenceSchemaIri: "urn:usf:schema:construction-evidence-candidate:1",
+  evidenceSchemaPath: "schemas/construction-evidence-candidate.schema.json",
+  proofBundleSchemaIri: "urn:usf:schema:construction-proof-bundle:1",
+  proofBundleSchemaPath: "schemas/construction-proof-bundle.schema.json",
+  publicationReceiptSchemaIri: "urn:usf:schema:construction-authority-publication-receipt:1",
+  publicationReceiptSchemaPath: "schemas/construction-authority-publication-receipt.schema.json",
+  publicationReceiptRecordSchema: "urn:usf:construction-authority-publication-receipt:1",
+  publicationResultSchemaIri: "urn:usf:schema:construction-authority-publication-result:1",
+  publicationResultSchemaPath: "schemas/construction-authority-publication-result.schema.json",
+  publicationResultRecordSchema: "urn:usf:construction-authority-publication-result:1",
+});
+
 export interface ConstructionEvidenceCandidate {
   readonly schema: "urn:usf:construction-evidence-candidate:1";
   readonly status: "candidate";
   readonly stage: "construction-evidence";
-  readonly algorithmIri: typeof evidenceAlgorithmIri;
+  readonly algorithmIri: string;
   readonly algorithmVersion: "1";
   readonly algorithmResourceDigest: string;
   readonly workIri: string;
@@ -76,7 +145,7 @@ export interface ConstructionProofResult {
   readonly workIri: string;
   readonly obligationIri: string;
   readonly obligationDigest: string;
-  readonly algorithmIri: typeof proofAlgorithmIri;
+  readonly algorithmIri: string;
   readonly algorithmResourceDigest: string;
   readonly evidenceDigest: string;
   readonly realisationBasisDigest: string;
@@ -102,7 +171,7 @@ export interface ConstructionAuthorityGrant {
   readonly permissionIri: string;
   readonly profileIri: string;
   readonly manifestPath: string;
-  readonly publicationPolicyIri: typeof policyIri;
+  readonly publicationPolicyIri: string;
   readonly evidenceIri: string;
   readonly evidenceDigest: string;
   readonly proofResultIri: string;
@@ -130,20 +199,20 @@ export interface ConstructionAuthorityReceiptMember {
 }
 
 export interface ConstructionAuthorityPublicationReceipt {
-  readonly schema: "urn:usf:construction-authority-publication-receipt:1";
+  readonly schema: string;
   readonly status: "verified";
-  readonly algorithmIri: typeof publicationAlgorithmIri;
+  readonly algorithmIri: string;
   readonly algorithmVersion: "1";
   readonly algorithmResourceDigest: string;
-  readonly publicationPolicyIri: typeof policyIri;
+  readonly publicationPolicyIri: string;
   readonly publicationPolicyDigest: string;
   readonly publicationIntentDigest: string;
-  readonly targetGraphIri: typeof targetGraphIri;
-  readonly semanticSourcePath: typeof sourcePath;
+  readonly targetGraphIri: string;
+  readonly semanticSourcePath: string;
   readonly publicationReceiptPath: string;
   readonly profileIri: string;
   readonly profileVersion: string;
-  readonly manifestPath: typeof manifestPath;
+  readonly manifestPath: string;
   readonly manifestDigest: string;
   readonly baseSourceDigest: string;
   readonly resultingSourceDigest: string;
@@ -151,7 +220,7 @@ export interface ConstructionAuthorityPublicationReceipt {
   readonly resultingSemanticDigest: string;
   readonly memberCount: number;
   readonly members: readonly ConstructionAuthorityReceiptMember[];
-  readonly operations: readonly Readonly<{ ordinal: number; kind: "add"; sourcePath: typeof sourcePath; line: string }>[];
+  readonly operations: readonly Readonly<{ ordinal: number; kind: "add"; sourcePath: string; line: string }>[];
   readonly deltaDigest: string;
   readonly validationResultDigest: string;
   readonly nonClaims: readonly string[];
@@ -211,6 +280,114 @@ function typedSubjects(graph: SemanticGraph, type: string): string[] {
     .map((quad) => quad.subject))].sort();
 }
 
+function requiredValue(graph: SemanticGraph, subject: string, name: string, kind: "iri" | "literal"): string {
+  const values = objectsFor(graph, subject, predicate(name));
+  if (values.length !== 1 || values[0]?.objectKind !== kind) throw new Error(`CONSTRUCTION_AUTHORITY_${name.toUpperCase()}_INVALID`);
+  return values[0].object;
+}
+
+function schemaBinding(graph: SemanticGraph, policy: string, name: string, schemaPaths: readonly string[]): Readonly<{ iri: string; path: string; recordSchema: string }> {
+  const iri = requiredValue(graph, policy, name, "iri");
+  if (!hasType(graph, iri, "urn:usf:type:SemanticRecordSchema") || requiredValue(graph, iri, "version", "literal") !== "1") {
+    throw new Error(`CONSTRUCTION_AUTHORITY_${name.toUpperCase()}_INVALID`);
+  }
+  const path = requiredValue(graph, iri, "repositoryPath", "literal");
+  if (parseRepositoryPath(path, "file") === null || !schemaPaths.includes(path)) {
+    throw new Error(`CONSTRUCTION_AUTHORITY_${name.toUpperCase()}_PATH_INVALID`);
+  }
+  let recordSchema: unknown;
+  try { recordSchema = (JSON.parse(readFileSync(resolve(graph.repositoryRoot, path), "utf8")) as { $id?: unknown }).$id; }
+  catch { throw new Error(`CONSTRUCTION_AUTHORITY_${name.toUpperCase()}_SCHEMA_INVALID`); }
+  if (typeof recordSchema !== "string" || !/^urn:[^<>\s]+$/u.test(recordSchema)) throw new Error(`CONSTRUCTION_AUTHORITY_${name.toUpperCase()}_SCHEMA_INVALID`);
+  return Object.freeze({ iri, path, recordSchema });
+}
+
+export function deriveConstructionAuthority(
+  graph: SemanticGraph,
+  workIri: string,
+  selectedManifestPath = (graph as SemanticGraph & { manifestPath?: string }).manifestPath,
+): ConstructionAuthorityDescriptor {
+  const policies = typedSubjects(graph, policyType).filter((candidate) =>
+    objectsFor(graph, candidate, predicate("eligibleWork")).some((quad) => quad.objectKind === "iri" && quad.object === workIri));
+  if (policies.length !== 1) throw new Error(policies.length === 0 ? "CONSTRUCTION_WORK_NOT_ELIGIBLE" : "CONSTRUCTION_AUTHORITY_POLICY_AMBIGUOUS");
+  const selectedPolicy = policies[0] as string;
+  const requiredManifestPath = requiredValue(graph, selectedPolicy, "requiredManifestPath", "literal");
+  const selectedSourcePath = requiredValue(graph, selectedPolicy, "targetSemanticSourcePath", "literal");
+  const selectedTargetGraphIri = requiredValue(graph, selectedPolicy, "targetNamedGraph", "iri");
+  const receiptRoot = requiredValue(graph, selectedPolicy, "publicationReceiptRoot", "literal");
+  const candidateRoot = requiredValue(graph, selectedPolicy, "ignoredCandidateRoot", "literal");
+  const primaryMutationLockPath = requiredValue(graph, selectedPolicy, "primaryMutationLockPath", "literal");
+  const minimumBundleCount = Number(requiredValue(graph, selectedPolicy, "minimumBundleCount", "literal"));
+  const maximumBundleCount = Number(requiredValue(graph, selectedPolicy, "maximumBundleCount", "literal"));
+  const registeredCommands = exactValues(graph, selectedPolicy, "registeredCommand", "iri");
+  const schemaPaths = exactValues(graph, selectedPolicy, "schemaPath", "literal");
+  const toolPaths = exactValues(graph, selectedPolicy, "toolPath", "literal");
+  if (requiredValue(graph, selectedPolicy, "version", "literal") !== "1"
+    || selectedManifestPath === undefined || requiredManifestPath !== selectedManifestPath
+    || parseRepositoryPath(requiredManifestPath, "file") === null || parseRepositoryPath(selectedSourcePath, "file") === null
+    || receiptRoot !== "evidence/construction-authority/" || candidateRoot !== ".usf/candidates/construction-authority/"
+    || primaryMutationLockPath !== ".usf/locks/primary-mutation.lock"
+    || minimumBundleCount !== 1 || maximumBundleCount !== 32
+    || registeredCommands.length !== 3 || schemaPaths.length !== 4 || toolPaths.length === 0) {
+    throw new Error("CONSTRUCTION_AUTHORITY_POLICY_INVALID");
+  }
+  for (const command of registeredCommands) {
+    if (!hasType(graph, command, "urn:usf:type:RegisteredCliCommand")
+      || requiredValue(graph, command, "version", "literal") !== "1"
+      || requiredValue(graph, command, "availability", "literal") !== "implemented") {
+      throw new Error("CONSTRUCTION_AUTHORITY_COMMAND_INVALID");
+    }
+  }
+  for (const path of [...schemaPaths, ...toolPaths]) if (parseRepositoryPath(path, "file") === null) throw new Error("CONSTRUCTION_AUTHORITY_DEPENDENCY_PATH_INVALID");
+  const selectedEvidenceAlgorithm = requiredValue(graph, selectedPolicy, "evidenceAlgorithm", "iri");
+  const selectedProofAlgorithm = requiredValue(graph, selectedPolicy, "proofAlgorithm", "iri");
+  const selectedPublicationAlgorithm = requiredValue(graph, selectedPolicy, "publicationAlgorithm", "iri");
+  const selectedDerivationRule = requiredValue(graph, selectedPolicy, "activationDerivationRule", "iri");
+  for (const [iri, type] of [
+    [selectedEvidenceAlgorithm, "urn:usf:type:EvidenceNormalizationAlgorithm"],
+    [selectedProofAlgorithm, "urn:usf:type:ProofAlgorithm"],
+    [selectedPublicationAlgorithm, "urn:usf:type:SemanticPublicationAlgorithm"],
+    [selectedDerivationRule, "urn:usf:type:PermissionActivationDerivationRule"],
+  ] as const) {
+    if (!hasType(graph, iri, type) || requiredValue(graph, iri, "version", "literal") !== "1") throw new Error("CONSTRUCTION_AUTHORITY_ALGORITHM_INVALID");
+  }
+  if (requiredValue(graph, selectedPublicationAlgorithm, "publicationPolicy", "iri") !== selectedPolicy) {
+    throw new Error("CONSTRUCTION_AUTHORITY_PUBLICATION_CHAIN_INVALID");
+  }
+  const evidenceSchema = schemaBinding(graph, selectedPolicy, "evidenceSchema", schemaPaths);
+  const proofBundleSchema = schemaBinding(graph, selectedPolicy, "proofBundleSchema", schemaPaths);
+  const publicationReceiptSchema = schemaBinding(graph, selectedPolicy, "publicationReceiptSchema", schemaPaths);
+  const publicationResultSchema = schemaBinding(graph, selectedPolicy, "publicationResultSchema", schemaPaths);
+  return Object.freeze({
+    policyIri: selectedPolicy,
+    derivationRuleIri: selectedDerivationRule,
+    evidenceAlgorithmIri: selectedEvidenceAlgorithm,
+    proofAlgorithmIri: selectedProofAlgorithm,
+    publicationAlgorithmIri: selectedPublicationAlgorithm,
+    targetGraphIri: selectedTargetGraphIri,
+    sourcePath: selectedSourcePath,
+    manifestPath: requiredManifestPath,
+    receiptRoot,
+    candidateRoot,
+    primaryMutationLockPath,
+    minimumBundleCount,
+    maximumBundleCount,
+    registeredCommands: Object.freeze(registeredCommands),
+    schemaPaths: Object.freeze(schemaPaths),
+    toolPaths: Object.freeze(toolPaths),
+    evidenceSchemaIri: evidenceSchema.iri,
+    evidenceSchemaPath: evidenceSchema.path,
+    proofBundleSchemaIri: proofBundleSchema.iri,
+    proofBundleSchemaPath: proofBundleSchema.path,
+    publicationReceiptSchemaIri: publicationReceiptSchema.iri,
+    publicationReceiptSchemaPath: publicationReceiptSchema.path,
+    publicationReceiptRecordSchema: publicationReceiptSchema.recordSchema,
+    publicationResultSchemaIri: publicationResultSchema.iri,
+    publicationResultSchemaPath: publicationResultSchema.path,
+    publicationResultRecordSchema: publicationResultSchema.recordSchema,
+  });
+}
+
 function withoutField<T extends Record<string, unknown>>(value: T, field: keyof T): Record<string, unknown> {
   const copy = { ...value };
   delete copy[field];
@@ -233,30 +410,41 @@ export function constructionGrantIri(workIri: string, permissionIri: string, sco
   return digestIri("urn:usf:grant:construction-authority:", { permissionIri, scopedDependencyDigest, workIri });
 }
 
-export function constructionReceiptPath(publicationIntentDigest: string): string {
+export function constructionReceiptPath(publicationIntentDigest: string, authority: ConstructionAuthorityDescriptor = legacyConstructionAuthority): string {
   if (!digestPattern.test(publicationIntentDigest)) throw new Error("CONSTRUCTION_PUBLICATION_INTENT_DIGEST_INVALID");
-  return `evidence/construction-authority/${publicationIntentDigest.slice("sha256:".length)}.json`;
+  return `${authority.receiptRoot}${publicationIntentDigest.slice("sha256:".length)}.json`;
 }
 
-export function constructionPublicationIntentDigest(bundleDigests: readonly string[], profileIri: string, selectedManifestPath: string): string {
+export function constructionPublicationIntentDigest(
+  bundleDigests: readonly string[],
+  profileIri: string,
+  selectedManifestPath: string,
+  authority: ConstructionAuthorityDescriptor = legacyConstructionAuthority,
+): string {
   return canonicalDigest({
     bundleDigests,
     manifestPath: selectedManifestPath,
     profileIri,
-    publicationPolicyIri: policyIri,
-    semanticSourcePath: sourcePath,
-    targetGraphIri,
+    publicationPolicyIri: authority.policyIri,
+    semanticSourcePath: authority.sourcePath,
+    targetGraphIri: authority.targetGraphIri,
   }, { rejectAbsolutePaths: true });
 }
 
-export function createConstructionGrant(member: ConstructionPublicationMemberInput, profileIri: string, selectedManifestPath: string, publicationIntentDigest: string): Readonly<{ grantIri: string; grant: ConstructionAuthorityGrant; grantDigest: string }> {
+export function createConstructionGrant(
+  member: ConstructionPublicationMemberInput,
+  profileIri: string,
+  selectedManifestPath: string,
+  publicationIntentDigest: string,
+  authority: ConstructionAuthorityDescriptor = legacyConstructionAuthority,
+): Readonly<{ grantIri: string; grant: ConstructionAuthorityGrant; grantDigest: string }> {
   const { evidence, proof } = member.bundle;
   const grant: ConstructionAuthorityGrant = Object.freeze({
     workIri: evidence.workIri,
     permissionIri: member.permissionIri,
     profileIri,
     manifestPath: selectedManifestPath,
-    publicationPolicyIri: policyIri,
+    publicationPolicyIri: authority.policyIri,
     evidenceIri: evidence.evidenceIri,
     evidenceDigest: evidence.contentDigest,
     proofResultIri: proof.proofResultIri,
@@ -276,6 +464,7 @@ export function createConstructionGrant(member: ConstructionPublicationMemberInp
 
 export function createConstructionAuthorityReceipt(input: Readonly<{
   graph: SemanticGraph;
+  authority?: ConstructionAuthorityDescriptor;
   profileIri: string;
   profileVersion: string;
   selectedManifestPath: string;
@@ -286,11 +475,13 @@ export function createConstructionAuthorityReceipt(input: Readonly<{
   resultingSource: string;
   resultingSemanticDigest: string;
 }>): ConstructionAuthorityPublicationReceipt {
-  if (input.selectedManifestPath !== manifestPath || input.members.length < 1 || input.members.length > 32) throw new Error("CONSTRUCTION_PUBLICATION_INPUT_INVALID");
+  const authority = input.authority ?? legacyConstructionAuthority;
+  if (input.selectedManifestPath !== authority.manifestPath
+    || input.members.length < authority.minimumBundleCount || input.members.length > authority.maximumBundleCount) throw new Error("CONSTRUCTION_PUBLICATION_INPUT_INVALID");
   const receiptMembers: ConstructionAuthorityReceiptMember[] = [];
   const lines: string[] = [];
   input.members.forEach((member, index) => {
-    const { grantIri, grant, grantDigest } = createConstructionGrant(member, input.profileIri, input.selectedManifestPath, input.publicationIntentDigest);
+    const { grantIri, grant, grantDigest } = createConstructionGrant(member, input.profileIri, input.selectedManifestPath, input.publicationIntentDigest, authority);
     receiptMembers.push(Object.freeze({
       ordinal: index + 1,
       workIri: member.bundle.evidence.workIri,
@@ -305,27 +496,27 @@ export function createConstructionAuthorityReceipt(input: Readonly<{
       grantDigest,
       publicationIntentDigest: input.publicationIntentDigest,
     }));
-    lines.push(...constructionRecordLines(member.bundle, grantIri, grant));
+    lines.push(...constructionRecordLines(member.bundle, grantIri, grant, authority));
   });
   const sortedLines = [...new Set(lines)].sort();
   if (sortedLines.length !== lines.length) throw new Error("CONSTRUCTION_PUBLICATION_DUPLICATE_RECORD");
-  const operations = Object.freeze(sortedLines.map((line, index) => Object.freeze({ ordinal: index + 1, kind: "add" as const, sourcePath, line })));
+  const operations = Object.freeze(sortedLines.map((line, index) => Object.freeze({ ordinal: index + 1, kind: "add" as const, sourcePath: authority.sourcePath, line })));
   const nonClaims = constructionAuthorityNonClaims();
   const draft: Omit<ConstructionAuthorityPublicationReceipt, "receiptDigest"> = {
-    schema: "urn:usf:construction-authority-publication-receipt:1" as const,
+    schema: authority.publicationReceiptRecordSchema,
     status: "verified" as const,
-    algorithmIri: publicationAlgorithmIri,
+    algorithmIri: authority.publicationAlgorithmIri,
     algorithmVersion: "1" as const,
-    algorithmResourceDigest: resourceDigest(input.graph, publicationAlgorithmIri),
-    publicationPolicyIri: policyIri,
-    publicationPolicyDigest: resourceDigest(input.graph, policyIri),
+    algorithmResourceDigest: resourceDigest(input.graph, authority.publicationAlgorithmIri),
+    publicationPolicyIri: authority.policyIri,
+    publicationPolicyDigest: resourceDigest(input.graph, authority.policyIri),
     publicationIntentDigest: input.publicationIntentDigest,
-    targetGraphIri,
-    semanticSourcePath: sourcePath,
-    publicationReceiptPath: constructionReceiptPath(input.publicationIntentDigest),
+    targetGraphIri: authority.targetGraphIri,
+    semanticSourcePath: authority.sourcePath,
+    publicationReceiptPath: constructionReceiptPath(input.publicationIntentDigest, authority),
     profileIri: input.profileIri,
     profileVersion: input.profileVersion,
-    manifestPath,
+    manifestPath: authority.manifestPath,
     manifestDigest: input.manifestDigest,
     baseSourceDigest: sha256(input.baseSource),
     resultingSourceDigest: sha256(input.resultingSource),
@@ -360,6 +551,7 @@ export function createConstructionEvidenceCandidate(
   selectedManifestPath: string,
   observedSemanticDigest = graph.semanticDigest,
 ): ConstructionEvidenceCandidate {
+  const selectedAuthority = deriveConstructionAuthority(graph, packet.id, selectedManifestPath);
   const authority = packet.realisationAuthority;
   const basis = packet.realisationBasis;
   const eligibility = packet.eligibility;
@@ -367,7 +559,7 @@ export function createConstructionEvidenceCandidate(
   const profileVersion = packet.decisionBoundary.profileVersion;
   const evidenceRequirementIri = authority?.constructionEvidenceRequirement;
   const proofObligationIri = authority?.constructionProofObligation;
-  if (selectedManifestPath !== manifestPath) throw new Error("CONSTRUCTION_MANIFEST_INVALID");
+  if (selectedManifestPath !== selectedAuthority.manifestPath) throw new Error("CONSTRUCTION_MANIFEST_INVALID");
   if (packet.decisionBoundary.kind !== "realisation-profile" || profileIri === null || profileVersion === undefined) throw new Error("CONSTRUCTION_PROFILE_REQUIRED");
   if (!packet.semanticTrace?.complete || packet.semanticTrace.stages.length !== 7) throw new Error("CONSTRUCTION_SEMANTIC_TRACE_INCOMPLETE");
   if (!eligibility?.dependencyReady) throw new Error("CONSTRUCTION_DEPENDENCY_NOT_READY");
@@ -375,8 +567,8 @@ export function createConstructionEvidenceCandidate(
   if (evidenceRequirementIri === null || evidenceRequirementIri === undefined || proofObligationIri === null || proofObligationIri === undefined) throw new Error("CONSTRUCTION_AUTHORITY_INCOMPLETE");
   if (!expectedActivationReasons(packet, evidenceRequirementIri, proofObligationIri)) throw new Error("CONSTRUCTION_ACTIVATION_PRECONDITION_INVALID");
   if (basis === undefined || eligibility.authorityBasisDigest.length === 0) throw new Error("CONSTRUCTION_BASIS_MISSING");
-  if (!exactValues(graph, policyIri, "eligibleWork", "iri").includes(packet.id)) throw new Error("CONSTRUCTION_WORK_NOT_ELIGIBLE");
-  if (oneValue(graph, evidenceAlgorithmIri, "version", "literal") !== "1") throw new Error("CONSTRUCTION_EVIDENCE_ALGORITHM_INVALID");
+  if (!exactValues(graph, selectedAuthority.policyIri, "eligibleWork", "iri").includes(packet.id)) throw new Error("CONSTRUCTION_WORK_NOT_ELIGIBLE");
+  if (oneValue(graph, selectedAuthority.evidenceAlgorithmIri, "version", "literal") !== "1") throw new Error("CONSTRUCTION_EVIDENCE_ALGORITHM_INVALID");
   const observation = Object.freeze({
     semanticTraceDigest: canonicalDigest(packet.semanticTrace),
     decisionBoundaryDigest: canonicalDigest(packet.decisionBoundary),
@@ -396,9 +588,9 @@ export function createConstructionEvidenceCandidate(
     schema: "urn:usf:construction-evidence-candidate:1" as const,
     status: "candidate" as const,
     stage: "construction-evidence" as const,
-    algorithmIri: evidenceAlgorithmIri,
+    algorithmIri: selectedAuthority.evidenceAlgorithmIri,
     algorithmVersion: "1" as const,
-    algorithmResourceDigest: resourceDigest(graph, evidenceAlgorithmIri),
+    algorithmResourceDigest: resourceDigest(graph, selectedAuthority.evidenceAlgorithmIri),
     workIri: packet.id,
     contractIri: packet.contract,
     profileIri,
@@ -425,17 +617,18 @@ export function createConstructionProofBundle(
   obligationIri: string,
   selectedManifestPath: string,
 ): ConstructionProofBundle {
+  const selectedAuthority = deriveConstructionAuthority(graph, packet.id, selectedManifestPath);
   const expectedEvidence = createConstructionEvidenceCandidate(graph, packet, selectedManifestPath, evidence.observedSemanticDigest);
   if (canonicalJson(expectedEvidence, { rejectAbsolutePaths: true }) !== canonicalJson(evidence, { rejectAbsolutePaths: true })) throw new Error("CONSTRUCTION_EVIDENCE_NOT_CURRENT");
   if (packet.realisationAuthority?.constructionProofObligation !== obligationIri) throw new Error("CONSTRUCTION_OBLIGATION_MISMATCH");
-  if (oneValue(graph, obligationIri, "algorithm", "iri") !== proofAlgorithmIri || oneValue(graph, obligationIri, "applicability", "literal") !== "required") throw new Error("CONSTRUCTION_OBLIGATION_INVALID");
+  if (oneValue(graph, obligationIri, "algorithm", "iri") !== selectedAuthority.proofAlgorithmIri || oneValue(graph, obligationIri, "applicability", "literal") !== "required") throw new Error("CONSTRUCTION_OBLIGATION_INVALID");
   const proofDraft: Omit<ConstructionProofResult, "contentDigest"> = {
     proofResultIri: constructionProofResultIri(packet.id, obligationIri, evidence.contentDigest, evidence.scopedDependencyDigest),
     workIri: packet.id,
     obligationIri,
     obligationDigest: resourceDigest(graph, obligationIri),
-    algorithmIri: proofAlgorithmIri,
-    algorithmResourceDigest: resourceDigest(graph, proofAlgorithmIri),
+    algorithmIri: selectedAuthority.proofAlgorithmIri,
+    algorithmResourceDigest: resourceDigest(graph, selectedAuthority.proofAlgorithmIri),
     evidenceDigest: evidence.contentDigest,
     realisationBasisDigest: evidence.realisationBasisDigest,
     scopedDependencyDigest: evidence.scopedDependencyDigest,
@@ -443,8 +636,8 @@ export function createConstructionProofBundle(
     outcome: "pass" as const,
     reasonCodes: Object.freeze([]) as readonly [],
     evaluationDigest: canonicalDigest({
-      algorithmIri: proofAlgorithmIri,
-      algorithmResourceDigest: resourceDigest(graph, proofAlgorithmIri),
+      algorithmIri: selectedAuthority.proofAlgorithmIri,
+      algorithmResourceDigest: resourceDigest(graph, selectedAuthority.proofAlgorithmIri),
       applicability: "required",
       evidenceDigest: evidence.contentDigest,
       obligationDigest: resourceDigest(graph, obligationIri),
@@ -461,12 +654,12 @@ export function createConstructionProofBundle(
   return Object.freeze({ ...bundleDraft, bundleDigest: canonicalDigest(bundleDraft, { rejectAbsolutePaths: true }) });
 }
 
-export function validateConstructionEvidenceShape(root: string, value: unknown): value is ConstructionEvidenceCandidate {
-  return validateSchema<ConstructionEvidenceCandidate>(root, "schemas/construction-evidence-candidate.schema.json", value);
+export function validateConstructionEvidenceShape(root: string, value: unknown, authority: ConstructionAuthorityDescriptor = legacyConstructionAuthority): value is ConstructionEvidenceCandidate {
+  return validateSchema<ConstructionEvidenceCandidate>(root, authority.evidenceSchemaPath, value);
 }
 
-export function validateConstructionBundleShape(root: string, value: unknown): value is ConstructionProofBundle {
-  return validateSchema<ConstructionProofBundle>(root, "schemas/construction-proof-bundle.schema.json", value);
+export function validateConstructionBundleShape(root: string, value: unknown, authority: ConstructionAuthorityDescriptor = legacyConstructionAuthority): value is ConstructionProofBundle {
+  return validateSchema<ConstructionProofBundle>(root, authority.proofBundleSchemaPath, value);
 }
 
 function validateSchema<T>(root: string, path: string, value: unknown): value is T {
@@ -478,48 +671,53 @@ function validateSchema<T>(root: string, path: string, value: unknown): value is
   }
 }
 
-function quad(subject: string, name: string, object: string, objectKind: "iri" | "literal"): Quad {
-  const value: Quad = { subject, predicate: predicate(name), object, objectKind, graph: targetGraphIri, canonical: "" };
+function quad(subject: string, name: string, object: string, objectKind: "iri" | "literal", authority: ConstructionAuthorityDescriptor): Quad {
+  const value: Quad = { subject, predicate: predicate(name), object, objectKind, graph: authority.targetGraphIri, canonical: "" };
   value.canonical = canonicalQuadLine(value);
   return value;
 }
 
-export function constructionRecordLines(bundle: ConstructionProofBundle, grantIri: string, grant: ConstructionAuthorityGrant): string[] {
+export function constructionRecordLines(
+  bundle: ConstructionProofBundle,
+  grantIri: string,
+  grant: ConstructionAuthorityGrant,
+  authority: ConstructionAuthorityDescriptor = legacyConstructionAuthority,
+): string[] {
   const evidence = bundle.evidence;
   const proof = bundle.proof;
   const lines = [
-    quad(evidence.evidenceIri, "type", evidenceType, "iri"),
-    quad(evidence.evidenceIri, "forWork", evidence.workIri, "iri"),
-    quad(evidence.evidenceIri, "satisfiesEvidenceRequirement", evidence.evidenceRequirementIri, "iri"),
-    quad(evidence.evidenceIri, "validationResultDigest", evidence.validation.resultDigest, "literal"),
-    quad(evidence.evidenceIri, "realisationBasisDigest", evidence.realisationBasisDigest, "literal"),
-    quad(evidence.evidenceIri, "scopedDependencyDigest", evidence.scopedDependencyDigest, "literal"),
-    quad(evidence.evidenceIri, "contentDigest", evidence.contentDigest, "literal"),
-    quad(proof.proofResultIri, "type", proofResultType, "iri"),
-    quad(proof.proofResultIri, "forWork", proof.workIri, "iri"),
-    quad(proof.proofResultIri, "forObligation", proof.obligationIri, "iri"),
-    quad(proof.proofResultIri, "algorithm", proof.algorithmIri, "iri"),
-    quad(proof.proofResultIri, "evidenceDigest", proof.evidenceDigest, "literal"),
-    quad(proof.proofResultIri, "realisationBasisDigest", proof.realisationBasisDigest, "literal"),
-    quad(proof.proofResultIri, "scopedDependencyDigest", proof.scopedDependencyDigest, "literal"),
-    quad(proof.proofResultIri, "outcome", proof.outcome, "literal"),
-    quad(proof.proofResultIri, "contentDigest", proof.contentDigest, "literal"),
-    quad(grantIri, "type", grantType, "iri"),
-    quad(grantIri, "forWork", grant.workIri, "iri"),
-    quad(grantIri, "forPermission", grant.permissionIri, "iri"),
-    quad(grantIri, "authorityProfile", grant.profileIri, "iri"),
-    quad(grantIri, "authorityManifestPath", grant.manifestPath, "literal"),
-    quad(grantIri, "publicationPolicy", grant.publicationPolicyIri, "iri"),
-    quad(grantIri, "evidence", grant.evidenceIri, "iri"),
-    quad(grantIri, "evidenceDigest", grant.evidenceDigest, "literal"),
-    quad(grantIri, "proofResult", grant.proofResultIri, "iri"),
-    quad(grantIri, "proofDigest", grant.proofDigest, "literal"),
-    quad(grantIri, "realisationBasisDigest", grant.realisationBasisDigest, "literal"),
-    quad(grantIri, "scopedDependencyDigest", grant.scopedDependencyDigest, "literal"),
-    quad(grantIri, "publicationIntentDigest", grant.publicationIntentDigest, "literal"),
-    quad(grantIri, "activationState", grant.activationState, "iri"),
-    quad(grantIri, "maximumThrough", grant.maximumThrough, "literal"),
-    quad(grantIri, "contentDigest", canonicalDigest(grant, { rejectAbsolutePaths: true }), "literal"),
+    quad(evidence.evidenceIri, "type", evidenceType, "iri", authority),
+    quad(evidence.evidenceIri, "forWork", evidence.workIri, "iri", authority),
+    quad(evidence.evidenceIri, "satisfiesEvidenceRequirement", evidence.evidenceRequirementIri, "iri", authority),
+    quad(evidence.evidenceIri, "validationResultDigest", evidence.validation.resultDigest, "literal", authority),
+    quad(evidence.evidenceIri, "realisationBasisDigest", evidence.realisationBasisDigest, "literal", authority),
+    quad(evidence.evidenceIri, "scopedDependencyDigest", evidence.scopedDependencyDigest, "literal", authority),
+    quad(evidence.evidenceIri, "contentDigest", evidence.contentDigest, "literal", authority),
+    quad(proof.proofResultIri, "type", proofResultType, "iri", authority),
+    quad(proof.proofResultIri, "forWork", proof.workIri, "iri", authority),
+    quad(proof.proofResultIri, "forObligation", proof.obligationIri, "iri", authority),
+    quad(proof.proofResultIri, "algorithm", proof.algorithmIri, "iri", authority),
+    quad(proof.proofResultIri, "evidenceDigest", proof.evidenceDigest, "literal", authority),
+    quad(proof.proofResultIri, "realisationBasisDigest", proof.realisationBasisDigest, "literal", authority),
+    quad(proof.proofResultIri, "scopedDependencyDigest", proof.scopedDependencyDigest, "literal", authority),
+    quad(proof.proofResultIri, "outcome", proof.outcome, "literal", authority),
+    quad(proof.proofResultIri, "contentDigest", proof.contentDigest, "literal", authority),
+    quad(grantIri, "type", grantType, "iri", authority),
+    quad(grantIri, "forWork", grant.workIri, "iri", authority),
+    quad(grantIri, "forPermission", grant.permissionIri, "iri", authority),
+    quad(grantIri, "authorityProfile", grant.profileIri, "iri", authority),
+    quad(grantIri, "authorityManifestPath", grant.manifestPath, "literal", authority),
+    quad(grantIri, "publicationPolicy", grant.publicationPolicyIri, "iri", authority),
+    quad(grantIri, "evidence", grant.evidenceIri, "iri", authority),
+    quad(grantIri, "evidenceDigest", grant.evidenceDigest, "literal", authority),
+    quad(grantIri, "proofResult", grant.proofResultIri, "iri", authority),
+    quad(grantIri, "proofDigest", grant.proofDigest, "literal", authority),
+    quad(grantIri, "realisationBasisDigest", grant.realisationBasisDigest, "literal", authority),
+    quad(grantIri, "scopedDependencyDigest", grant.scopedDependencyDigest, "literal", authority),
+    quad(grantIri, "publicationIntentDigest", grant.publicationIntentDigest, "literal", authority),
+    quad(grantIri, "activationState", grant.activationState, "iri", authority),
+    quad(grantIri, "maximumThrough", grant.maximumThrough, "literal", authority),
+    quad(grantIri, "contentDigest", canonicalDigest(grant, { rejectAbsolutePaths: true }), "literal", authority),
   ].map(canonicalQuadLine).sort();
   if (new Set(lines).size !== lines.length) throw new Error("CONSTRUCTION_RECORD_DUPLICATE_LINE");
   return lines;
@@ -564,22 +762,22 @@ function graphResourceLines(graph: SemanticGraph, subjects: readonly string[]): 
   return graph.quads.filter((quad) => selected.has(quad.subject)).map(canonicalQuadLine).sort();
 }
 
-function readReceipt(graph: SemanticGraph, intentDigest: string): { receipt: ConstructionAuthorityPublicationReceipt; path: string; bytes: Buffer } {
-  const path = constructionReceiptPath(intentDigest);
+function readReceipt(graph: SemanticGraph, intentDigest: string, authority: ConstructionAuthorityDescriptor): { receipt: ConstructionAuthorityPublicationReceipt; path: string; bytes: Buffer } {
+  const path = constructionReceiptPath(intentDigest, authority);
   const bytes = containedReceiptBytes(graph.repositoryRoot, path);
   let value: unknown;
   try { value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
   catch { throw new Error("CONSTRUCTION_RECEIPT_JSON_INVALID"); }
-  if (!validateSchema<ConstructionAuthorityPublicationReceipt>(graph.repositoryRoot, "schemas/construction-authority-publication-receipt.schema.json", value)) throw new Error("CONSTRUCTION_RECEIPT_SCHEMA_INVALID");
+  if (!validateSchema<ConstructionAuthorityPublicationReceipt>(graph.repositoryRoot, authority.publicationReceiptSchemaPath, value)) throw new Error("CONSTRUCTION_RECEIPT_SCHEMA_INVALID");
   const receipt = value as ConstructionAuthorityPublicationReceipt;
   if (`${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n` !== bytes.toString("utf8")) throw new Error("CONSTRUCTION_RECEIPT_NONCANONICAL");
   if (canonicalDigest(withoutField(receipt as unknown as Record<string, unknown>, "receiptDigest"), { rejectAbsolutePaths: true }) !== receipt.receiptDigest) throw new Error("CONSTRUCTION_RECEIPT_DIGEST_INVALID");
   if (receipt.publicationIntentDigest !== intentDigest || receipt.publicationReceiptPath !== path || receipt.memberCount !== receipt.members.length) throw new Error("CONSTRUCTION_RECEIPT_IDENTITY_INVALID");
   if (canonicalDigest(receipt.operations, { rejectAbsolutePaths: true }) !== receipt.deltaDigest) throw new Error("CONSTRUCTION_RECEIPT_DELTA_INVALID");
   const operationLines = receipt.operations.map(({ line }) => line);
-  const parsed = parseStrictNQuads(`${operationLines.join("\n")}\n`, targetGraphIri, 1_024);
+  const parsed = parseStrictNQuads(`${operationLines.join("\n")}\n`, authority.targetGraphIri, 1_024);
   if (parsed.some((entry, index) => canonicalQuadLine(entry) !== operationLines[index]) || new Set(operationLines).size !== operationLines.length) throw new Error("CONSTRUCTION_RECEIPT_OPERATION_INVALID");
-  const source = readFileSync(resolve(graph.repositoryRoot, sourcePath), "utf8");
+  const source = readFileSync(resolve(graph.repositoryRoot, authority.sourcePath), "utf8");
   const currentLines = new Set(source.split("\n").filter((line) => line.length > 0));
   if (operationLines.some((line) => !currentLines.has(line))) throw new Error("CONSTRUCTION_RECEIPT_OPERATION_MISSING");
   return { receipt, path, bytes };
@@ -602,7 +800,15 @@ function invalidProjection(reasonCodes: string[], dynamicResources: string[] = [
 export function evaluateConstructionAuthorityGrant(graph: SemanticGraph, input: GrantProjectionInput): GrantProjection {
   const derivationRules = exactValues(graph, input.permissionIri, "activationDerivationRule", "iri");
   if (derivationRules.length === 0) return Object.freeze({ applicable: false, active: false, grantIri: null, evidenceIri: null, proofResultIri: null, reasonCodes: Object.freeze([]), dynamicResources: Object.freeze([]) });
-  if (derivationRules.length !== 1 || derivationRules[0] !== derivationRuleIri || !hasType(graph, derivationRuleIri, "urn:usf:type:PermissionActivationDerivationRule")) return invalidProjection([`CONSTRUCTION_AUTHORITY_DERIVATION_RULE_INVALID:${input.permissionIri}`]);
+  let authority: ConstructionAuthorityDescriptor;
+  try { authority = deriveConstructionAuthority(graph, input.workIri, input.manifestPath); }
+  catch (error) {
+    if (error instanceof Error && error.message === "CONSTRUCTION_WORK_NOT_ELIGIBLE") {
+      return Object.freeze({ applicable: true, active: false, grantIri: null, evidenceIri: null, proofResultIri: null, reasonCodes: Object.freeze([]), dynamicResources: Object.freeze([]) });
+    }
+    return invalidProjection([`CONSTRUCTION_AUTHORITY_POLICY_INVALID:${input.workIri}`]);
+  }
+  if (derivationRules.length !== 1 || derivationRules[0] !== authority.derivationRuleIri || !hasType(graph, authority.derivationRuleIri, "urn:usf:type:PermissionActivationDerivationRule")) return invalidProjection([`CONSTRUCTION_AUTHORITY_DERIVATION_RULE_INVALID:${input.permissionIri}`]);
   const candidates = typedSubjects(graph, grantType).filter((id) =>
     oneValue(graph, id, "forWork", "iri") === input.workIri
     && oneValue(graph, id, "forPermission", "iri") === input.permissionIri
@@ -627,7 +833,7 @@ export function evaluateConstructionAuthorityGrant(graph: SemanticGraph, input: 
     permissionIri: grantFields.forPermission as string,
     profileIri: grantFields.authorityProfile as string,
     manifestPath: grantFields.authorityManifestPath as string,
-    publicationPolicyIri: grantFields.publicationPolicy as typeof policyIri,
+    publicationPolicyIri: grantFields.publicationPolicy as string,
     evidenceIri: grantFields.evidence as string,
     evidenceDigest: grantFields.evidenceDigest as string,
     proofResultIri: grantFields.proofResult as string,
@@ -638,7 +844,7 @@ export function evaluateConstructionAuthorityGrant(graph: SemanticGraph, input: 
     activationState: grantFields.activationState as typeof activeState,
     maximumThrough: grantFields.maximumThrough as string,
   };
-  if (grantIri !== expectedGrantIri || grant.publicationPolicyIri !== policyIri || grant.activationState !== activeState
+  if (grantIri !== expectedGrantIri || grant.publicationPolicyIri !== authority.policyIri || grant.activationState !== activeState
     || grant.maximumThrough !== input.maximumThrough || !digestPattern.test(grant.evidenceDigest) || !digestPattern.test(grant.proofDigest)
     || !digestPattern.test(grant.realisationBasisDigest) || !digestPattern.test(grant.publicationIntentDigest)
     || canonicalDigest(grant, { rejectAbsolutePaths: true }) !== grantFields.contentDigest) return invalidProjection([`CONSTRUCTION_AUTHORITY_GRANT_INVALID:${grantIri}`], [grantIri]);
@@ -667,11 +873,13 @@ export function evaluateConstructionAuthorityGrant(graph: SemanticGraph, input: 
     return invalidProjection([`CONSTRUCTION_AUTHORITY_PROOF_INVALID:${proofResultIri}`], [grantIri, evidenceIri, proofResultIri]);
   }
   try {
-    const { receipt, path, bytes } = readReceipt(graph, grant.publicationIntentDigest);
-    if (receipt.profileIri !== input.profileIri || receipt.manifestPath !== input.manifestPath || receipt.publicationPolicyIri !== policyIri
-      || receipt.semanticSourcePath !== sourcePath || receipt.targetGraphIri !== targetGraphIri
-      || receipt.algorithmResourceDigest !== resourceDigest(graph, publicationAlgorithmIri)
-      || receipt.publicationPolicyDigest !== resourceDigest(graph, policyIri)) throw new Error("CONSTRUCTION_RECEIPT_AUTHORITY_MISMATCH");
+    const { receipt, path, bytes } = readReceipt(graph, grant.publicationIntentDigest, authority);
+    if (receipt.profileIri !== input.profileIri || receipt.manifestPath !== input.manifestPath || receipt.publicationPolicyIri !== authority.policyIri
+      || receipt.semanticSourcePath !== authority.sourcePath || receipt.targetGraphIri !== authority.targetGraphIri
+      || receipt.algorithmIri !== authority.publicationAlgorithmIri
+      || receipt.schema !== authority.publicationReceiptRecordSchema
+      || receipt.algorithmResourceDigest !== resourceDigest(graph, authority.publicationAlgorithmIri)
+      || receipt.publicationPolicyDigest !== resourceDigest(graph, authority.policyIri)) throw new Error("CONSTRUCTION_RECEIPT_AUTHORITY_MISMATCH");
     const matchingMembers = receipt.members.filter((member) => member.grantIri === grantIri);
     if (matchingMembers.length !== 1) throw new Error("CONSTRUCTION_RECEIPT_MEMBER_INVALID");
     const member = matchingMembers[0] as ConstructionAuthorityReceiptMember;
@@ -680,7 +888,7 @@ export function evaluateConstructionAuthorityGrant(graph: SemanticGraph, input: 
       || member.proofResultIri !== proofResultIri || member.proofDigest !== grant.proofDigest || member.grantDigest !== grantFields.contentDigest
       || member.publicationIntentDigest !== grant.publicationIntentDigest) throw new Error("CONSTRUCTION_RECEIPT_MEMBER_MISMATCH");
     const receiptSubjectLines = receipt.operations.map(({ line }) => line).filter((line) => {
-      const parsed = parseStrictNQuads(`${line}\n`, targetGraphIri, 1)[0];
+      const parsed = parseStrictNQuads(`${line}\n`, authority.targetGraphIri, 1)[0];
       return parsed !== undefined && [evidenceIri, proofResultIri, grantIri].includes(parsed.subject);
     }).sort();
     if (canonicalJson(receiptSubjectLines) !== canonicalJson(graphResourceLines(graph, [evidenceIri, proofResultIri, grantIri]))) throw new Error("CONSTRUCTION_RECEIPT_RESOURCE_MISMATCH");
@@ -707,6 +915,6 @@ export function constructionAuthorityNonClaims(): readonly string[] {
   ]);
 }
 
-export function validateConstructionReceiptShape(root: string, value: unknown): value is ConstructionAuthorityPublicationReceipt {
-  return validateSchema<ConstructionAuthorityPublicationReceipt>(root, "schemas/construction-authority-publication-receipt.schema.json", value);
+export function validateConstructionReceiptShape(root: string, value: unknown, authority: ConstructionAuthorityDescriptor = legacyConstructionAuthority): value is ConstructionAuthorityPublicationReceipt {
+  return validateSchema<ConstructionAuthorityPublicationReceipt>(root, authority.publicationReceiptSchemaPath, value);
 }

@@ -56,7 +56,6 @@
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "docs/semantic-recovery.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "docs/decisions/0006-semantic-recovery-and-exchange.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "docs/bottleneck-register.md" <urn:usf:graph:semantic-recovery> .
-<urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "docs/handover.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "README.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/graph/index.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:contract:semantic-recovery-exchange:1> <urn:usf:predicate:permitsWrite> "src/graph/nquads.ts" <urn:usf:graph:semantic-recovery> .
@@ -386,7 +385,6 @@
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:objective> "Run final deterministic acceptance, document exact recovery coverage and bottlenecks, and preserve claims, nonclaims and handover without authorizing recovered graph source." <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "README.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "docs/bottleneck-register.md" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "docs/handover.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "config/semantic-recovery-inventory.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "config/semantic-recovery.json" <urn:usf:graph:semantic-recovery> .
@@ -394,7 +392,6 @@
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "docs/semantic-recovery.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "docs/decisions/0006-semantic-recovery-and-exchange.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "docs/bottleneck-register.md" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "docs/handover.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:writePath> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:modelCapability> "technical-writing" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-recovery> .

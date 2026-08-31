@@ -24,6 +24,7 @@ import {
 import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
+import { parseRepositoryPath } from "../core/scope.ts";
 import { loadSemanticGraph, objectValues, type LoadedSemanticGraph } from "../graph/index.ts";
 import { parseStrictNQuads } from "../graph/nquads.ts";
 import { deriveWork, type WorkPacket } from "../graph/work.ts";
@@ -41,7 +42,6 @@ import {
   validateCompletionBundleShape,
   validateCompletionEvidenceShape,
   validateWorkCompletionReceiptShape,
-  workCompletionConstants,
   workCompletionAuthorityDependencies,
   workCompletionNonClaims,
   workCompletionRecordLines,
@@ -91,6 +91,7 @@ interface PreparedPublication {
   readonly recordLines: readonly string[];
   readonly state: "absent" | "matching";
   readonly affectedWorks: readonly string[];
+  readonly authority: NoChangeCompletionAuthority;
 }
 
 function refuse(code: string, message: string, exitCode: ExitCode = exitCodes.INVALID_INPUT, details?: Record<string, unknown>): never {
@@ -144,8 +145,9 @@ function optionalOutput(options: Map<string, string[]>): Readonly<{ output?: str
 }
 
 function assertSelection(profile: string, manifestPath: string): void {
-  if (!iriPattern.test(profile) || manifestPath !== workCompletionConstants.manifestPath) {
-    refuse("WORK_COMPLETION_SELECTION_INVALID", "Work completion requires an exact versioned profile and the integration manifest.");
+  if (!iriPattern.test(profile) || parseRepositoryPath(manifestPath, "file") === null
+    || !/^graph\/manifests\/[A-Za-z0-9._-]+\.json$/u.test(manifestPath)) {
+    refuse("WORK_COMPLETION_SELECTION_INVALID", "Work completion requires an exact versioned profile and explicit repository-local graph manifest.", exitCodes.CONTAINMENT_REFUSAL);
   }
 }
 
@@ -440,7 +442,7 @@ async function deriveEvidence(
   const references = await validationReferences(root, packet, workspace);
   const evidence = createCompletionEvidenceCandidate(graph, packet, workspace, references);
   validateCompletionEvidenceShape(evidence);
-  if (!validateSchema<CompletionEvidenceCandidate>(root, "schemas/completion-evidence-candidate.schema.json", evidence)) {
+  if (!validateSchema<CompletionEvidenceCandidate>(root, authority.evidenceSchemaPath, evidence)) {
     refuse("WORK_COMPLETION_EVIDENCE_SCHEMA_INVALID", "Derived completion evidence failed its closed graph-selected schema.", exitCodes.CURRENTNESS_FAILURE);
   }
   return evidence;
@@ -453,11 +455,12 @@ async function authenticateEvidence(
   value: unknown,
 ): Promise<{ evidence: CompletionEvidenceCandidate; packet: WorkPacket }> {
   validateCompletionEvidenceShape(value);
-  if (!validateSchema<CompletionEvidenceCandidate>(root, "schemas/completion-evidence-candidate.schema.json", value)) {
-    refuse("WORK_COMPLETION_EVIDENCE_SCHEMA_INVALID", "Completion evidence does not satisfy the closed graph-selected schema.");
-  }
   const evidence = value as CompletionEvidenceCandidate;
   const packet = exactPacket(graph, profile, evidence.workIri);
+  const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
+  if (!validateSchema<CompletionEvidenceCandidate>(root, authority.evidenceSchemaPath, value)) {
+    refuse("WORK_COMPLETION_EVIDENCE_SCHEMA_INVALID", "Completion evidence does not satisfy the closed graph-selected schema.");
+  }
   const expected = await deriveEvidence(root, graph, packet, evidence.candidateDigest);
   if (canonicalJson(expected, { rejectAbsolutePaths: true }) !== canonicalJson(evidence, { rejectAbsolutePaths: true })) {
     refuse("WORK_COMPLETION_EVIDENCE_NOT_CURRENT", "Completion evidence no longer matches its scoped authority basis.", exitCodes.CURRENTNESS_FAILURE);
@@ -472,11 +475,12 @@ async function authenticateBundle(
   value: unknown,
 ): Promise<{ bundle: CompletionProofBundle; packet: WorkPacket }> {
   validateCompletionBundleShape(value);
-  if (!validateSchema<CompletionProofBundle>(root, "schemas/completion-proof-bundle.schema.json", value)) {
-    refuse("WORK_COMPLETION_BUNDLE_SCHEMA_INVALID", "Completion proof bundle does not satisfy the closed graph-selected schema.");
-  }
   const bundle = value as CompletionProofBundle;
   const { evidence, packet } = await authenticateEvidence(root, graph, profile, bundle.evidence);
+  const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
+  if (!validateSchema<CompletionProofBundle>(root, authority.proofBundleSchemaPath, value)) {
+    refuse("WORK_COMPLETION_BUNDLE_SCHEMA_INVALID", "Completion proof bundle does not satisfy the closed graph-selected schema.");
+  }
   const expected = createCompletionProofBundle(graph, packet, evidence, bundle.proof.obligationIri);
   if (canonicalJson(expected, { rejectAbsolutePaths: true }) !== canonicalJson(bundle, { rejectAbsolutePaths: true })) {
     refuse("WORK_COMPLETION_BUNDLE_NOT_CURRENT", "Completion proof bundle no longer matches its scoped authority basis.", exitCodes.CURRENTNESS_FAILURE);
@@ -510,7 +514,7 @@ async function realiseNoChange(root: string, request: RealiseRequest): Promise<R
     validationObligations: Object.freeze([...(packet.realisationAuthority?.completionValidationObligations ?? [])].sort()),
     nonClaims: workCompletionNonClaims,
   });
-  if (!validateSchema(root, "schemas/no-change-realisation-result.schema.json", result)) {
+  if (!validateSchema(root, authority.realisationResultSchemaPath, result)) {
     refuse("WORK_COMPLETION_REALISATION_RESULT_INVALID", "No-change realisation result failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
   }
   return result;
@@ -525,9 +529,10 @@ async function produceEvidence(root: string, request: EvidenceRequest): Promise<
 async function produceProof(root: string, request: ProofRequest, value: unknown): Promise<CompletionProofBundle> {
   const graph = loadSemanticGraph(root, request.manifestPath);
   const { evidence, packet } = await authenticateEvidence(root, graph, request.profile, value);
+  const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
   const bundle = createCompletionProofBundle(graph, packet, evidence, request.obligation);
   validateCompletionBundleShape(bundle);
-  if (!validateSchema<CompletionProofBundle>(root, "schemas/completion-proof-bundle.schema.json", bundle)) {
+  if (!validateSchema<CompletionProofBundle>(root, authority.proofBundleSchemaPath, bundle)) {
     refuse("WORK_COMPLETION_PROOF_SCHEMA_INVALID", "Derived completion proof failed its closed graph-selected schema.", exitCodes.CURRENTNESS_FAILURE);
   }
   return bundle;
@@ -615,6 +620,7 @@ function authenticateExistingReceipt(
   expectedIntent: string,
   expectedMembers: readonly WorkCompletionPublicationMember[],
   expectedOperations: readonly WorkCompletionPublicationOperation[],
+  authority: NoChangeCompletionAuthority,
 ): WorkCompletionPublicationReceipt {
   const absolute = publicationReceiptPath(root, path, false);
   let bytes: Buffer;
@@ -639,7 +645,7 @@ function authenticateExistingReceipt(
     if (error instanceof UsfError) throw error;
     return refuse("WORK_COMPLETION_RECEIPT_INVALID", "Existing completion receipt is unreadable or invalid JSON.", exitCodes.CURRENTNESS_FAILURE);
   } finally { if (descriptor !== undefined) closeSync(descriptor); }
-  if (!validateWorkCompletionReceiptShape(root, value)) refuse("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID", "Existing completion receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
+  if (!validateWorkCompletionReceiptShape(root, value, authority)) refuse("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID", "Existing completion receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
   const receipt = value as WorkCompletionPublicationReceipt;
   const expectedValidationDigest = canonicalDigest({
     members: receipt.members.map(({ workIri, realisationDigest, evidenceDigest, proofDigest }) => ({ workIri, realisationDigest, evidenceDigest, proofDigest })),
@@ -667,14 +673,15 @@ function validateCandidateRepository(
   receipt: WorkCompletionPublicationReceipt,
   affectedWorks: readonly string[],
   profile: string,
+  authority: NoChangeCompletionAuthority,
 ): string {
   const candidate = copyCandidateRepository(root);
   try {
-    const sourceAbsolute = resolve(candidate, workCompletionConstants.sourcePath);
+    const sourceAbsolute = resolve(candidate, authority.sourcePath);
     atomicWrite(sourceAbsolute, sourceAfter, statSync(sourceAbsolute).mode & 0o777);
     const receiptAbsolute = publicationReceiptPath(candidate, receipt.publicationReceiptPath, true);
     atomicCreate(receiptAbsolute, `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, 0o644);
-    const graph = loadSemanticGraph(candidate, workCompletionConstants.manifestPath);
+    const graph = loadSemanticGraph(candidate, authority.manifestPath);
     const full = deriveWork(graph, { profile, maxItems: 100 });
     if (full.status !== "ok") refuse("WORK_COMPLETION_CANDIDATE_GRAPH_INVALID", "The complete candidate graph projection refused.", exitCodes.CURRENTNESS_FAILURE, { reasonCode: full.reasonCode });
     for (const workIri of affectedWorks) {
@@ -742,7 +749,7 @@ async function preparePublication(
     refuse("WORK_COMPLETION_PUBLICATION_PARTIAL_STATE", "Completion publication state is partial or conflicting.", exitCodes.INTEGRATION_CONFLICT);
   }
   if (present === recordLines.length) {
-    const receipt = authenticateExistingReceipt(root, receiptPath, intentDigest, members, operations);
+    const receipt = authenticateExistingReceipt(root, receiptPath, intentDigest, members, operations, authority);
     for (const { bundle } of authenticated) {
       const result = deriveWork(graph, { profile: request.profile, selector: bundle.evidence.workIri, maxItems: 1 });
       const packet = result.status === "ok" ? result.items?.[0] : undefined;
@@ -750,7 +757,7 @@ async function preparePublication(
         refuse("WORK_COMPLETION_PUBLICATION_MATCHING_READBACK_INVALID", "Existing completion authority did not authenticate on readback.", exitCodes.CURRENTNESS_FAILURE);
       }
     }
-    return Object.freeze({ graph, receipt, receiptBytes: `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, sourceBefore, sourceAfter: sourceBefore, recordLines: Object.freeze(recordLines), state: "matching" as const, affectedWorks: Object.freeze([...workSet]) });
+    return Object.freeze({ graph, authority, receipt, receiptBytes: `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, sourceBefore, sourceAfter: sourceBefore, recordLines: Object.freeze(recordLines), state: "matching" as const, affectedWorks: Object.freeze([...workSet]) });
   }
 
   const sourceAfter = sourcePostimage(sourceBefore, recordLines);
@@ -778,13 +785,13 @@ async function preparePublication(
     members,
     operations,
   });
-  if (!validateWorkCompletionReceiptShape(root, receipt)) refuse("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID", "Prepared completion receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
+  if (!validateWorkCompletionReceiptShape(root, receipt, authority)) refuse("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID", "Prepared completion receipt failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
   const receiptBytes = `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`;
   if (candidateValidation) {
-    const validatedDigest = validateCandidateRepository(root, sourceAfter, receipt, [...workSet], request.profile);
+    const validatedDigest = validateCandidateRepository(root, sourceAfter, receipt, [...workSet], request.profile, authority);
     if (validatedDigest !== resultingSemanticDigest) refuse("WORK_COMPLETION_CANDIDATE_SEMANTIC_DIGEST_MISMATCH", "Candidate semantic digest changed during validation.", exitCodes.CURRENTNESS_FAILURE);
   }
-  return Object.freeze({ graph, receipt, receiptBytes, sourceBefore, sourceAfter, recordLines: Object.freeze(recordLines), state: "absent" as const, affectedWorks: Object.freeze([...workSet]) });
+  return Object.freeze({ graph, authority, receipt, receiptBytes, sourceBefore, sourceAfter, recordLines: Object.freeze(recordLines), state: "absent" as const, affectedWorks: Object.freeze([...workSet]) });
 }
 
 function publicationResult(
@@ -792,9 +799,10 @@ function publicationResult(
   mode: "verify" | "apply",
   state: "absent" | "matching" | "created",
   receipt: WorkCompletionPublicationReceipt,
+  authority: NoChangeCompletionAuthority,
 ): Record<string, unknown> {
   const result = Object.freeze({
-    schema: "urn:usf:work-completion-publication-result:1" as const,
+    schema: authority.publicationResultRecordSchema,
     status: "verified" as const,
     mode,
     publicationState: state,
@@ -808,7 +816,7 @@ function publicationResult(
     resultingSemanticDigest: receipt.resultingSemanticDigest,
     nonClaims: workCompletionNonClaims,
   });
-  if (!validateSchema(root, "schemas/work-completion-publication-result.schema.json", result)) {
+  if (!validateSchema(root, authority.publicationResultSchemaPath, result)) {
     refuse("WORK_COMPLETION_PUBLICATION_RESULT_INVALID", "Completion publication result failed its closed schema.", exitCodes.CURRENTNESS_FAILURE);
   }
   return result;
@@ -816,16 +824,16 @@ function publicationResult(
 
 async function publishCompletion(root: string, request: PublishRequest, values: readonly unknown[]): Promise<Record<string, unknown>> {
   const prepared = await preparePublication(root, request, values, true);
-  if (request.mode === "verify") return publicationResult(root, "verify", prepared.state, prepared.receipt);
+  if (request.mode === "verify") return publicationResult(root, "verify", prepared.state, prepared.receipt, prepared.authority);
   const lock = await acquirePrimaryMutationLock(root);
   try {
     const locked = await preparePublication(root, request, values, false);
-    if (locked.state === "matching") return publicationResult(root, "apply", "matching", locked.receipt);
+    if (locked.state === "matching") return publicationResult(root, "apply", "matching", locked.receipt, locked.authority);
     if (locked.receipt.receiptDigest !== prepared.receipt.receiptDigest
       || locked.sourceBefore !== prepared.sourceBefore || locked.sourceAfter !== prepared.sourceAfter) {
       refuse("WORK_COMPLETION_PUBLICATION_CURRENTNESS_CHANGED", "Completion publication currentness changed while waiting for the mutation lock.", exitCodes.INTEGRATION_CONFLICT);
     }
-    const sourceAbsolute = resolve(root, workCompletionConstants.sourcePath);
+    const sourceAbsolute = resolve(root, locked.authority.sourcePath);
     const receiptAbsolute = publicationReceiptPath(root, locked.receipt.publicationReceiptPath, true);
     if (readFileSync(sourceAbsolute, "utf8") !== locked.sourceBefore || existsSync(receiptAbsolute)) {
       refuse("WORK_COMPLETION_PUBLICATION_PREIMAGE_CHANGED", "Completion publication preimage changed under lock.", exitCodes.INTEGRATION_CONFLICT);
@@ -840,7 +848,7 @@ async function publishCompletion(root: string, request: PublishRequest, values: 
       if (readback.state !== "matching" || readback.receipt.receiptDigest !== locked.receipt.receiptDigest) {
         refuse("WORK_COMPLETION_PUBLICATION_READBACK_INVALID", "Completion publication readback failed.", exitCodes.CURRENTNESS_FAILURE);
       }
-      return publicationResult(root, "apply", "created", locked.receipt);
+      return publicationResult(root, "apply", "created", locked.receipt, locked.authority);
     } catch (error) {
       atomicWrite(sourceAbsolute, locked.sourceBefore, sourceMode);
       if (receiptCreated && existsSync(receiptAbsolute)) {

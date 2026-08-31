@@ -78,6 +78,25 @@ test("a versioned profile selects an exact closure and unrelated product overlay
   assert.equal(composed.semanticDependencies.some((dependency) => dependency.key.includes("anqr") || dependency.key.includes("orchard")), false);
   assert.equal(composed.semanticDependencies.some((dependency) => dependency.key === profile), true);
 
+  const isolatedGraph = loadSemanticGraph(root, selfHostManifest);
+  const siblingContract = "urn:usf:contract:operator-observability:1";
+  const siblingWork = "urn:usf:work:operator-observability";
+  const changedSiblingGraph: LoadedSemanticGraph = {
+    ...isolatedGraph,
+    quads: isolatedGraph.quads.map((quad) => quad.subject === siblingContract && quad.predicate === "urn:usf:predicate:title"
+      ? { ...quad, object: `${quad.object} changed`, canonical: `${quad.canonical}|changed-sibling-contract` }
+      : quad),
+  };
+  const changedSiblingSelected = deriveWork(changedSiblingGraph, { profile, selector: work, maxItems: 1 }).items?.[0];
+  const baselineSibling = deriveWork(isolatedGraph, { profile, selector: siblingWork, maxItems: 1 }).items?.[0];
+  const changedSibling = deriveWork(changedSiblingGraph, { profile, selector: siblingWork, maxItems: 1 }).items?.[0];
+  assert.ok(changedSiblingSelected?.realisationBasis);
+  assert.equal(changedSiblingSelected.scopedDependencyDigest, isolated.scopedDependencyDigest);
+  assert.equal(changedSiblingSelected.realisationBasis.selection.manifestDigest, isolated.realisationBasis.selection.manifestDigest);
+  assert.equal(changedSiblingSelected.realisationBasis.selection.coreToProductDigest, isolated.realisationBasis.selection.coreToProductDigest);
+  assert.equal(changedSiblingSelected.realisationBasis.selection.productToCoreDigest, isolated.realisationBasis.selection.productToCoreDigest);
+  assert.notEqual(changedSibling?.scopedDependencyDigest, baselineSibling?.scopedDependencyDigest);
+
   const expanded = loadSemanticGraph(root, allManifest);
   const unrelatedSource: GraphManifestSource = {
     path: "graph/fixtures/unrelated.nq",

@@ -13,7 +13,7 @@ import {
   type VerifiedTransitionCandidateCurrentness,
 } from "../realisation/transition.ts";
 import { evaluateConstructionAuthorityGrant } from "../realisation/construction-authority.ts";
-import { evaluateNoChangeCompletionRecords, workCompletionConstants } from "../realisation/work-completion.ts";
+import { evaluateNoChangeCompletionRecords } from "../realisation/work-completion.ts";
 
 const typePredicate = "urn:usf:predicate:type";
 const workType = "urn:usf:type:WorkPacket";
@@ -839,11 +839,9 @@ function evaluateLegacyCompletion(graph: SemanticGraph, packet: WorkPacket, basi
 }
 
 function evaluateCompletion(graph: SemanticGraph, packet: WorkPacket, basis: RealisationBasis): CompletionEvaluation {
-  const policyImplemented = objectsFor(graph, workCompletionConstants.policyIri, predicate("implementationState"))
-    .some((entry) => entry.objectKind === "iri" && entry.object === workCompletionConstants.implementedState);
-  const workEligible = objectsFor(graph, workCompletionConstants.policyIri, predicate("eligibleWork"))
-    .some((entry) => entry.objectKind === "iri" && entry.object === packet.id);
-  if (!policyImplemented || !workEligible) return evaluateLegacyCompletion(graph, packet, basis);
+  const completionPolicies = typedSubjects(graph, "urn:usf:type:NoChangeWorkCompletionPublicationPolicy").filter((policy) =>
+    objectsFor(graph, policy, predicate("eligibleWork")).some((entry) => entry.objectKind === "iri" && entry.object === packet.id));
+  if (completionPolicies.length === 0) return evaluateLegacyCompletion(graph, packet, basis);
 
   try {
     const projection = evaluateNoChangeCompletionRecords(graph, packet, basis);
@@ -889,13 +887,13 @@ function evaluateCompletion(graph: SemanticGraph, packet: WorkPacket, basis: Rea
       evidence: null,
       proofResult: null,
       reasonCodes,
-      dynamicResources: [workCompletionConstants.policyIri],
+      dynamicResources: completionPolicies,
       basisDependencies: basis.work.dependencies.map((dependency) => ({ ...dependency })),
       authorityDigest: canonicalDigest({
         work: packet.id,
         basis: basis.basisDigest,
         scopedDependencyDigest: basis.work.scopedDependencyDigest,
-        policy: workCompletionConstants.policyIri,
+        policies: completionPolicies,
         reasons: reasonCodes,
       }),
     };
@@ -1427,14 +1425,19 @@ function selectedSourceTopology(
 ): { manifestDigest: string; selectedClosure: string[] } {
   const loaded = graph as Partial<LoadedSemanticGraph>;
   if (!Array.isArray(loaded.sources) || !Array.isArray(loaded.manifests)) throw new Error("BASIS_MANIFEST_SELECTION_INVALID");
-  const selectedContracts = objectValues(graph, selection.profile, predicate("selectsContract"));
-  const selectedClosure = transitiveResourceIris(graph, [
+  // The profile resource itself binds exact membership and version. Traversing
+  // every selectsContract edge would incorrectly turn sibling contract content
+  // into a dependency of this work. The selected contract and explicit work
+  // dependency edges already provide the exact relevant outbound closure.
+  const selectedClosure = [...new Set([
     selection.profile,
+    ...transitiveResourceIris(graph, [
     selection.product,
     selection.foundation,
+    selection.contract,
     selection.work,
-    ...selectedContracts,
-  ]);
+    ]),
+  ])].sort();
   const selectedGraphs = new Set(graph.quads
     .filter((quad) => selectedClosure.includes(quad.subject))
     .map((quad) => quad.graph));

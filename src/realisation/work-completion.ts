@@ -9,6 +9,7 @@ import {
 } from "node:fs";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
+import { parseRepositoryPath } from "../core/scope.ts";
 import { objectValues, objectsFor, resourceDigest, type SemanticGraph } from "../graph/index.ts";
 import { canonicalQuadLine, parseStrictNQuads } from "../graph/nquads.ts";
 import type { WorkPacket } from "../graph/work.ts";
@@ -114,6 +115,7 @@ export interface NoChangeCompletionAuthority {
   readonly publicationAlgorithmDigest: string;
   readonly completionRuleIri: string;
   readonly completionRuleDigest: string;
+  readonly manifestPath: string;
   readonly sourcePath: string;
   readonly targetGraphIri: string;
   readonly receiptRoot: string;
@@ -121,92 +123,145 @@ export interface NoChangeCompletionAuthority {
   readonly primaryMutationLockPath: string;
   readonly schemaPaths: readonly string[];
   readonly toolPaths: readonly string[];
-  readonly minimumBundleCount: 1;
-  readonly maximumBundleCount: 32;
+  readonly commands: readonly string[];
+  readonly workspaceSchemaIri: string;
+  readonly workspaceSchemaPath: string;
+  readonly realisationResultSchemaIri: string;
+  readonly realisationResultSchemaPath: string;
+  readonly realisationReceiptType: string;
+  readonly realisationReceiptSchemaIri: string;
+  readonly evidenceSchemaIri: string;
+  readonly evidenceSchemaPath: string;
+  readonly proofBundleSchemaIri: string;
+  readonly proofBundleSchemaPath: string;
+  readonly publicationReceiptSchemaIri: string;
+  readonly publicationReceiptSchemaPath: string;
+  readonly publicationReceiptRecordSchema: string;
+  readonly publicationResultSchemaIri: string;
+  readonly publicationResultSchemaPath: string;
+  readonly publicationResultRecordSchema: string;
+  readonly minimumBundleCount: number;
+  readonly maximumBundleCount: number;
 }
 
-export function deriveNoChangeCompletionAuthority(graph: SemanticGraph, workIri: string): NoChangeCompletionAuthority {
-  const c = workCompletionConstants;
-  if (!c.eligibleWorks.includes(workIri)) throw new Error("WORK_COMPLETION_WORK_NOT_ELIGIBLE");
-  if (!hasExactType(graph, c.policyIri, c.policyType) || oneValue(graph, c.policyIri, "version", "literal") !== "1"
-    || oneValue(graph, c.policyIri, "implementationState", "iri") !== c.implementedState
-    || !sameSet(exactValues(graph, c.policyIri, "eligibleWork", "iri"), c.eligibleWorks)
-    || oneValue(graph, c.policyIri, "requiredManifestPath", "literal") !== c.manifestPath
-    || oneValue(graph, c.policyIri, "targetSemanticSourcePath", "literal") !== c.sourcePath
-    || oneValue(graph, c.policyIri, "targetNamedGraph", "iri") !== c.targetGraphIri
-    || oneValue(graph, c.policyIri, "publicationReceiptRoot", "literal") !== c.receiptRoot
-    || oneValue(graph, c.policyIri, "ignoredCandidateRoot", "literal") !== c.candidateRoot
-    || oneValue(graph, c.policyIri, "primaryMutationLockPath", "literal") !== c.primaryMutationLockPath
-    || oneValue(graph, c.policyIri, "minimumBundleCount", "literal") !== "1"
-    || oneValue(graph, c.policyIri, "maximumBundleCount", "literal") !== "32"
-    || !sameSet(exactValues(graph, c.policyIri, "registeredCommand", "iri"), c.commands)
-    || !sameSet(exactValues(graph, c.policyIri, "schemaPath", "literal"), c.schemaPaths)
-    || !sameSet(exactValues(graph, c.policyIri, "toolPath", "literal"), c.toolPaths)) {
-    throw new Error("WORK_COMPLETION_POLICY_INVALID");
+function completionSchemaBinding(graph: SemanticGraph, policy: string, name: string, schemaPaths: readonly string[]): Readonly<{ iri: string; path: string; recordSchema: string }> {
+  const iri = oneValue(graph, policy, name, "iri");
+  if (!hasExactType(graph, iri, "urn:usf:type:SemanticRecordSchema") || oneValue(graph, iri, "version", "literal") !== "1") {
+    throw new Error(`WORK_COMPLETION_${name.toUpperCase()}_INVALID`);
   }
-  for (const command of c.commands) {
+  const path = oneValue(graph, iri, "repositoryPath", "literal");
+  if (parseRepositoryPath(path, "file") === null || !schemaPaths.includes(path)) throw new Error(`WORK_COMPLETION_${name.toUpperCase()}_PATH_INVALID`);
+  let recordSchema: unknown;
+  try { recordSchema = (JSON.parse(readFileSync(resolve(graph.repositoryRoot, path), "utf8")) as { $id?: unknown }).$id; }
+  catch { throw new Error(`WORK_COMPLETION_${name.toUpperCase()}_SCHEMA_INVALID`); }
+  if (typeof recordSchema !== "string" || !iriPattern.test(recordSchema)) throw new Error(`WORK_COMPLETION_${name.toUpperCase()}_SCHEMA_INVALID`);
+  return Object.freeze({ iri, path, recordSchema });
+}
+
+export function deriveNoChangeCompletionAuthority(
+  graph: SemanticGraph,
+  workIri: string,
+  selectedManifestPath = (graph as SemanticGraph & { manifestPath?: string }).manifestPath,
+): NoChangeCompletionAuthority {
+  const c = workCompletionConstants;
+  const policies = typedSubjects(graph, c.policyType).filter((candidate) =>
+    objectsFor(graph, candidate, predicate("eligibleWork")).some((quad) => quad.objectKind === "iri" && quad.object === workIri));
+  if (policies.length !== 1) throw new Error(policies.length === 0 ? "WORK_COMPLETION_WORK_NOT_ELIGIBLE" : "WORK_COMPLETION_POLICY_AMBIGUOUS");
+  const policyIri = policies[0] as string;
+  const manifestPath = oneValue(graph, policyIri, "requiredManifestPath", "literal");
+  const sourcePath = oneValue(graph, policyIri, "targetSemanticSourcePath", "literal");
+  const targetGraphIri = oneValue(graph, policyIri, "targetNamedGraph", "iri");
+  const receiptRoot = oneValue(graph, policyIri, "publicationReceiptRoot", "literal");
+  const candidateRoot = oneValue(graph, policyIri, "ignoredCandidateRoot", "literal");
+  const primaryMutationLockPath = oneValue(graph, policyIri, "primaryMutationLockPath", "literal");
+  const minimumBundleCount = Number(oneValue(graph, policyIri, "minimumBundleCount", "literal"));
+  const maximumBundleCount = Number(oneValue(graph, policyIri, "maximumBundleCount", "literal"));
+  const commands = exactValues(graph, policyIri, "registeredCommand", "iri");
+  const schemaPaths = exactValues(graph, policyIri, "schemaPath", "literal");
+  const toolPaths = exactValues(graph, policyIri, "toolPath", "literal");
+  if (oneValue(graph, policyIri, "version", "literal") !== "1"
+    || oneValue(graph, policyIri, "implementationState", "iri") !== c.implementedState
+    || selectedManifestPath === undefined || manifestPath !== selectedManifestPath
+    || parseRepositoryPath(manifestPath, "file") === null || parseRepositoryPath(sourcePath, "file") === null
+    || receiptRoot !== c.receiptRoot || candidateRoot !== c.candidateRoot || primaryMutationLockPath !== c.primaryMutationLockPath
+    || minimumBundleCount !== 1 || maximumBundleCount !== 32 || commands.length !== 4
+    || schemaPaths.length !== 6 || toolPaths.length === 0) throw new Error("WORK_COMPLETION_POLICY_INVALID");
+  for (const path of [...schemaPaths, ...toolPaths]) if (parseRepositoryPath(path, "file") === null) throw new Error("WORK_COMPLETION_DEPENDENCY_PATH_INVALID");
+  for (const command of commands) {
     if (!hasExactType(graph, command, "urn:usf:type:RegisteredCliCommand") || oneValue(graph, command, "version", "literal") !== "1"
       || oneValue(graph, command, "availability", "literal") !== "implemented") throw new Error("WORK_COMPLETION_COMMAND_INVALID");
   }
+  const realisationAlgorithmIri = oneValue(graph, policyIri, "realisationAlgorithm", "iri");
+  const evidenceAlgorithmIri = oneValue(graph, policyIri, "evidenceAlgorithm", "iri");
+  const proofAlgorithmIri = oneValue(graph, policyIri, "proofAlgorithm", "iri");
+  const publicationAlgorithmIri = oneValue(graph, policyIri, "publicationAlgorithm", "iri");
+  const completionRuleIri = oneValue(graph, policyIri, "completionDerivationRule", "iri");
   const algorithms = [
-    [c.realisationAlgorithmIri, "urn:usf:type:NoChangeRealisationAlgorithm"],
-    [c.evidenceAlgorithmIri, "urn:usf:type:EvidenceNormalizationAlgorithm"],
-    [c.proofAlgorithmIri, "urn:usf:type:ProofAlgorithm"],
-    [c.publicationAlgorithmIri, "urn:usf:type:SemanticPublicationAlgorithm"],
+    [realisationAlgorithmIri, "urn:usf:type:NoChangeRealisationAlgorithm"],
+    [evidenceAlgorithmIri, "urn:usf:type:EvidenceNormalizationAlgorithm"],
+    [proofAlgorithmIri, "urn:usf:type:ProofAlgorithm"],
+    [publicationAlgorithmIri, "urn:usf:type:SemanticPublicationAlgorithm"],
   ] as const;
   for (const [algorithm, type] of algorithms) {
     if (!hasExactType(graph, algorithm, type) || oneValue(graph, algorithm, "version", "literal") !== "1"
       || oneValue(graph, algorithm, "implementationState", "iri") !== c.implementedState) throw new Error("WORK_COMPLETION_ALGORITHM_INVALID");
   }
-  if (oneValue(graph, c.policyIri, "realisationAlgorithm", "iri") !== c.realisationAlgorithmIri
-    || oneValue(graph, c.policyIri, "evidenceAlgorithm", "iri") !== c.evidenceAlgorithmIri
-    || oneValue(graph, c.policyIri, "proofAlgorithm", "iri") !== c.proofAlgorithmIri
-    || oneValue(graph, c.policyIri, "publicationAlgorithm", "iri") !== c.publicationAlgorithmIri
-    || oneValue(graph, c.policyIri, "completionDerivationRule", "iri") !== c.completionRuleIri
-    || oneValue(graph, c.proofAlgorithmIri, "realisationRecordType", "iri") !== c.realisationReceiptType
-    || oneValue(graph, c.proofAlgorithmIri, "realisationReceiptSchema", "iri") !== c.realisationReceiptSchemaIri
-    || oneValue(graph, c.proofAlgorithmIri, "acceptedRealisationState", "literal") !== "accepted-no-change"
-    || oneValue(graph, c.proofAlgorithmIri, "realisationVerifier", "iri") !== c.realisationAlgorithmIri
-    || oneValue(graph, c.publicationAlgorithmIri, "publicationPolicy", "iri") !== c.policyIri
-    || !hasExactType(graph, c.completionRuleIri, "urn:usf:type:CompletionDerivationRule")
-    || oneValue(graph, c.completionRuleIri, "version", "literal") !== "1") throw new Error("WORK_COMPLETION_CHAIN_INVALID");
-  const schemaIris = [
-    "urn:usf:schema:no-change-workspace-manifest:1",
-    "urn:usf:schema:no-change-realisation-result:1",
-    c.evidenceSchemaIri,
-    c.proofBundleSchemaIri,
-    c.publicationReceiptSchemaIri,
-    c.publicationResultSchemaIri,
-  ];
-  for (const schemaIri of schemaIris) {
-    if (!hasExactType(graph, schemaIri, "urn:usf:type:SemanticRecordSchema") || oneValue(graph, schemaIri, "version", "literal") !== "1") {
-      throw new Error("WORK_COMPLETION_SCHEMA_INVALID");
-    }
-  }
-  if (!hasExactType(graph, c.realisationReceiptSchemaIri, "urn:usf:type:SemanticRecordSchema")
-    || oneValue(graph, c.realisationReceiptSchemaIri, "version", "literal") !== "1") throw new Error("WORK_COMPLETION_REALISATION_SCHEMA_INVALID");
+  const realisationReceiptType = oneValue(graph, proofAlgorithmIri, "realisationRecordType", "iri");
+  const realisationReceiptSchemaIri = oneValue(graph, proofAlgorithmIri, "realisationReceiptSchema", "iri");
+  if (oneValue(graph, proofAlgorithmIri, "acceptedRealisationState", "literal") !== "accepted-no-change"
+    || oneValue(graph, proofAlgorithmIri, "realisationVerifier", "iri") !== realisationAlgorithmIri
+    || oneValue(graph, publicationAlgorithmIri, "publicationPolicy", "iri") !== policyIri
+    || !hasExactType(graph, completionRuleIri, "urn:usf:type:CompletionDerivationRule")
+    || oneValue(graph, completionRuleIri, "version", "literal") !== "1"
+    || !hasExactType(graph, realisationReceiptType, "urn:usf:type:SemanticRecordType")
+    || !hasExactType(graph, realisationReceiptSchemaIri, "urn:usf:type:SemanticRecordSchema")
+    || oneValue(graph, realisationReceiptSchemaIri, "version", "literal") !== "1") throw new Error("WORK_COMPLETION_CHAIN_INVALID");
+  const workspaceSchema = completionSchemaBinding(graph, policyIri, "workspaceSchema", schemaPaths);
+  const realisationResultSchema = completionSchemaBinding(graph, policyIri, "realisationResultSchema", schemaPaths);
+  const evidenceSchema = completionSchemaBinding(graph, policyIri, "evidenceSchema", schemaPaths);
+  const proofBundleSchema = completionSchemaBinding(graph, policyIri, "proofBundleSchema", schemaPaths);
+  const publicationReceiptSchema = completionSchemaBinding(graph, policyIri, "publicationReceiptSchema", schemaPaths);
+  const publicationResultSchema = completionSchemaBinding(graph, policyIri, "publicationResultSchema", schemaPaths);
   return Object.freeze({
     policy: Object.freeze({
-      iri: c.policyIri,
-      resourceDigest: resourceDigest(graph, c.policyIri),
-      algorithmIri: c.realisationAlgorithmIri,
-      algorithmResourceDigest: resourceDigest(graph, c.realisationAlgorithmIri),
+      iri: policyIri,
+      resourceDigest: resourceDigest(graph, policyIri),
+      algorithmIri: realisationAlgorithmIri,
+      algorithmResourceDigest: resourceDigest(graph, realisationAlgorithmIri),
     }),
-    evidenceAlgorithmIri: c.evidenceAlgorithmIri,
-    evidenceAlgorithmDigest: resourceDigest(graph, c.evidenceAlgorithmIri),
-    proofAlgorithmIri: c.proofAlgorithmIri,
-    proofAlgorithmDigest: resourceDigest(graph, c.proofAlgorithmIri),
-    publicationAlgorithmIri: c.publicationAlgorithmIri,
-    publicationAlgorithmDigest: resourceDigest(graph, c.publicationAlgorithmIri),
-    completionRuleIri: c.completionRuleIri,
-    completionRuleDigest: resourceDigest(graph, c.completionRuleIri),
-    sourcePath: c.sourcePath,
-    targetGraphIri: c.targetGraphIri,
-    receiptRoot: c.receiptRoot,
-    candidateRoot: c.candidateRoot,
-    primaryMutationLockPath: c.primaryMutationLockPath,
-    schemaPaths: c.schemaPaths,
-    toolPaths: c.toolPaths,
+    evidenceAlgorithmIri,
+    evidenceAlgorithmDigest: resourceDigest(graph, evidenceAlgorithmIri),
+    proofAlgorithmIri,
+    proofAlgorithmDigest: resourceDigest(graph, proofAlgorithmIri),
+    publicationAlgorithmIri,
+    publicationAlgorithmDigest: resourceDigest(graph, publicationAlgorithmIri),
+    completionRuleIri,
+    completionRuleDigest: resourceDigest(graph, completionRuleIri),
+    manifestPath,
+    sourcePath,
+    targetGraphIri,
+    receiptRoot,
+    candidateRoot,
+    primaryMutationLockPath,
+    schemaPaths: Object.freeze(schemaPaths),
+    toolPaths: Object.freeze(toolPaths),
+    commands: Object.freeze(commands),
+    workspaceSchemaIri: workspaceSchema.iri,
+    workspaceSchemaPath: workspaceSchema.path,
+    realisationResultSchemaIri: realisationResultSchema.iri,
+    realisationResultSchemaPath: realisationResultSchema.path,
+    realisationReceiptType,
+    realisationReceiptSchemaIri,
+    evidenceSchemaIri: evidenceSchema.iri,
+    evidenceSchemaPath: evidenceSchema.path,
+    proofBundleSchemaIri: proofBundleSchema.iri,
+    proofBundleSchemaPath: proofBundleSchema.path,
+    publicationReceiptSchemaIri: publicationReceiptSchema.iri,
+    publicationReceiptSchemaPath: publicationReceiptSchema.path,
+    publicationReceiptRecordSchema: publicationReceiptSchema.recordSchema,
+    publicationResultSchemaIri: publicationResultSchema.iri,
+    publicationResultSchemaPath: publicationResultSchema.path,
+    publicationResultRecordSchema: publicationResultSchema.recordSchema,
     minimumBundleCount: 1,
     maximumBundleCount: 32,
   });
@@ -456,7 +511,7 @@ export interface WorkCompletionAuthorityDependency {
 }
 
 export interface WorkCompletionPublicationReceipt {
-  readonly schema: "urn:usf:work-completion-publication-receipt:1";
+  readonly schema: string;
   readonly status: "verified";
   readonly algorithmIri: string;
   readonly algorithmVersion: "1";
@@ -502,7 +557,7 @@ export function createWorkCompletionPublicationReceipt(input: Readonly<{
   operations: readonly WorkCompletionPublicationOperation[];
 }>): WorkCompletionPublicationReceipt {
   const draft: Omit<WorkCompletionPublicationReceipt, "receiptDigest"> = {
-    schema: "urn:usf:work-completion-publication-receipt:1",
+    schema: input.authority.publicationReceiptRecordSchema,
     status: "verified",
     algorithmIri: input.authority.publicationAlgorithmIri,
     algorithmVersion: "1",
@@ -555,15 +610,13 @@ export function completionPublicationIntentDigest(
   }, { rejectAbsolutePaths: true });
 }
 
-function quad(subject: string, name: string, object: string, objectKind: "iri" | "literal"): string {
-  return canonicalQuadLine({ subject, predicate: predicate(name), object, objectKind, graph: workCompletionConstants.targetGraphIri, canonical: "" });
-}
-
 export function workCompletionRecordLines(
   bundle: CompletionProofBundle,
   authority: NoChangeCompletionAuthority,
   publicationIntentDigest: string,
 ): { readonly lines: readonly string[]; readonly member: Omit<WorkCompletionPublicationMember, "ordinal"> } {
+  const quad = (subject: string, name: string, object: string, objectKind: "iri" | "literal"): string =>
+    canonicalQuadLine({ subject, predicate: predicate(name), object, objectKind, graph: authority.targetGraphIri, canonical: "" });
   const evidence = bundle.evidence;
   const proof = bundle.proof;
   const realisationSeed = canonicalDigest({
@@ -576,7 +629,7 @@ export function workCompletionRecordLines(
   });
   const realisationReceiptIri = `urn:usf:receipt:no-change-realisation:${realisationSeed.slice("sha256:".length)}`;
   const realisationDraft = {
-    schema: workCompletionConstants.realisationReceiptSchemaIri,
+    schema: authority.realisationReceiptSchemaIri,
     state: "accepted-no-change",
     disposition: "verified-no-change",
     workIri: evidence.workIri,
@@ -598,8 +651,8 @@ export function workCompletionRecordLines(
   };
   const realisationDigest = canonicalDigest(realisationDraft, { rejectAbsolutePaths: true });
   const lines = [
-    quad(realisationReceiptIri, "type", workCompletionConstants.realisationReceiptType, "iri"),
-    quad(realisationReceiptIri, "schema", workCompletionConstants.realisationReceiptSchemaIri, "iri"),
+    quad(realisationReceiptIri, "type", authority.realisationReceiptType, "iri"),
+    quad(realisationReceiptIri, "schema", authority.realisationReceiptSchemaIri, "iri"),
     quad(realisationReceiptIri, "state", "accepted-no-change", "literal"),
     quad(realisationReceiptIri, "disposition", "verified-no-change", "literal"),
     quad(realisationReceiptIri, "forWork", evidence.workIri, "iri"),
@@ -692,9 +745,9 @@ export function validateCompletionBundleShape(value: unknown): asserts value is 
   if (!digestPattern.test(bundleDigest) || bundleDigest !== canonicalDigest(bundleDraft, { rejectAbsolutePaths: true })) throw new Error("WORK_COMPLETION_BUNDLE_DIGEST_INVALID");
 }
 
-export function validateWorkCompletionReceiptShape(root: string, value: unknown): value is WorkCompletionPublicationReceipt {
+export function validateWorkCompletionReceiptShape(root: string, value: unknown, authority?: NoChangeCompletionAuthority): value is WorkCompletionPublicationReceipt {
   try {
-    const schema = JSON.parse(readFileSync(resolve(root, "schemas/work-completion-publication-receipt.schema.json"), "utf8")) as unknown;
+    const schema = JSON.parse(readFileSync(resolve(root, authority?.publicationReceiptSchemaPath ?? "schemas/work-completion-publication-receipt.schema.json"), "utf8")) as unknown;
     return createJsonSchemaValidator<WorkCompletionPublicationReceipt>(schema).validate(value).valid;
   } catch {
     return false;
@@ -783,20 +836,21 @@ function graphResourceLines(graph: SemanticGraph, subjects: readonly string[]): 
 function readCompletionReceipt(
   graph: SemanticGraph,
   intentDigest: string,
+  authority: NoChangeCompletionAuthority,
 ): { receipt: WorkCompletionPublicationReceipt; path: string; bytes: Buffer } {
-  const path = `${workCompletionConstants.receiptRoot}${intentDigest.slice("sha256:".length)}.json`;
+  const path = `${authority.receiptRoot}${intentDigest.slice("sha256:".length)}.json`;
   const bytes = containedCompletionReceiptBytes(graph.repositoryRoot, path);
   let value: unknown;
   try { value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
   catch { throw new Error("WORK_COMPLETION_RECEIPT_JSON_INVALID"); }
-  if (!validateWorkCompletionReceiptShape(graph.repositoryRoot, value)) throw new Error("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID");
+  if (!validateWorkCompletionReceiptShape(graph.repositoryRoot, value, authority)) throw new Error("WORK_COMPLETION_RECEIPT_SCHEMA_INVALID");
   const receipt = value as WorkCompletionPublicationReceipt;
   if (`${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n` !== bytes.toString("utf8")
     || canonicalDigest(withoutReceiptDigest(receipt), { rejectAbsolutePaths: true }) !== receipt.receiptDigest
     || receipt.publicationIntentDigest !== intentDigest || receipt.publicationReceiptPath !== path
     || receipt.memberCount !== receipt.members.length
     || receipt.members.some((member, index) => member.ordinal !== index + 1 || member.publicationIntentDigest !== intentDigest)
-    || receipt.operations.some((operation, index) => operation.ordinal !== index + 1 || operation.sourcePath !== workCompletionConstants.sourcePath)
+    || receipt.operations.some((operation, index) => operation.ordinal !== index + 1 || operation.sourcePath !== authority.sourcePath)
     || canonicalDigest(receipt.authorityDependencies, { rejectAbsolutePaths: true }) !== receipt.authorityDependencyDigest
     || canonicalDigest(receipt.operations, { rejectAbsolutePaths: true }) !== receipt.deltaDigest
     || canonicalDigest({
@@ -808,11 +862,11 @@ function readCompletionReceipt(
     throw new Error("WORK_COMPLETION_RECEIPT_DIGEST_INVALID");
   }
   const operationLines = receipt.operations.map(({ line }) => line);
-  const parsed = parseStrictNQuads(`${operationLines.join("\n")}\n`, workCompletionConstants.targetGraphIri, 4_096);
+  const parsed = parseStrictNQuads(`${operationLines.join("\n")}\n`, authority.targetGraphIri, 4_096);
   if (parsed.some((entry, index) => canonicalQuadLine(entry) !== operationLines[index]) || new Set(operationLines).size !== operationLines.length) {
     throw new Error("WORK_COMPLETION_RECEIPT_OPERATION_INVALID");
   }
-  const source = readFileSync(resolve(graph.repositoryRoot, workCompletionConstants.sourcePath), "utf8");
+  const source = readFileSync(resolve(graph.repositoryRoot, authority.sourcePath), "utf8");
   const currentLines = new Set(source.split("\n").filter((line) => line.length > 0));
   if (operationLines.some((line) => !currentLines.has(line))) throw new Error("WORK_COMPLETION_RECEIPT_OPERATION_MISSING");
   return { receipt, path, bytes };
@@ -826,14 +880,14 @@ function noChangeAuthorityResources(authority: NoChangeCompletionAuthority): str
     authority.proofAlgorithmIri,
     authority.publicationAlgorithmIri,
     authority.completionRuleIri,
-    ...workCompletionConstants.commands,
-    "urn:usf:schema:no-change-workspace-manifest:1",
-    "urn:usf:schema:no-change-realisation-result:1",
-    workCompletionConstants.realisationReceiptSchemaIri,
-    workCompletionConstants.evidenceSchemaIri,
-    workCompletionConstants.proofBundleSchemaIri,
-    workCompletionConstants.publicationReceiptSchemaIri,
-    workCompletionConstants.publicationResultSchemaIri,
+    ...authority.commands,
+    authority.workspaceSchemaIri,
+    authority.realisationResultSchemaIri,
+    authority.realisationReceiptSchemaIri,
+    authority.evidenceSchemaIri,
+    authority.proofBundleSchemaIri,
+    authority.publicationReceiptSchemaIri,
+    authority.publicationResultSchemaIri,
   ])].sort();
 }
 
@@ -883,7 +937,7 @@ export function evaluateNoChangeCompletionRecords(
     return finish();
   }
 
-  const receiptCandidates = typedSubjects(graph, workCompletionConstants.realisationReceiptType).filter((subject) =>
+  const receiptCandidates = typedSubjects(graph, authority.realisationReceiptType).filter((subject) =>
     recordMatches(graph, subject, "forWork", "iri", packet.id)
     && recordMatches(graph, subject, "authorityProfile", "iri", profileIri)
     && recordMatches(graph, subject, "authorityManifestPath", "literal", basis.selection.manifestPath)
@@ -926,7 +980,7 @@ export function evaluateNoChangeCompletionRecords(
   const realisationDigest = exactRecordValue(graph, realisationReceipt, "contentDigest", "literal");
   const requiredRealisationValues = Object.values(realisationFields);
   if (requiredRealisationValues.some((value) => value === null) || realisationDigest === null
-    || realisationFields.schema !== workCompletionConstants.realisationReceiptSchemaIri
+    || realisationFields.schema !== authority.realisationReceiptSchemaIri
     || realisationFields.state !== "accepted-no-change" || realisationFields.disposition !== "verified-no-change"
     || realisationFields.workIri !== packet.id || realisationFields.profileIri !== profileIri
     || realisationFields.manifestPath !== basis.selection.manifestPath
@@ -999,7 +1053,7 @@ export function evaluateNoChangeCompletionRecords(
   try {
     const publicationIntentDigest = realisationFields.publicationIntentDigest as string;
     if (!digestPattern.test(publicationIntentDigest)) throw new Error("WORK_COMPLETION_INTENT_INVALID");
-    const { receipt, path, bytes } = readCompletionReceipt(graph, publicationIntentDigest);
+    const { receipt, path, bytes } = readCompletionReceipt(graph, publicationIntentDigest, authority);
     if (receipt.profileIri !== profileIri || receipt.profileVersion !== profileVersion
       || receipt.manifestPath !== basis.selection.manifestPath || receipt.manifestDigest !== basis.selection.manifestDigest
       || receipt.publicationPolicyIri !== authority.policy.iri || receipt.publicationPolicyDigest !== authority.policy.resourceDigest
