@@ -6,6 +6,11 @@ import test from "node:test";
 
 import { admissionCheckHandler } from "../../src/commands/apply.ts";
 import {
+  constructionAwarePublishCommandHandler,
+  evidenceCommandHandler as constructionEvidenceCommandHandler,
+  proveCommandHandler as constructionProveCommandHandler,
+} from "../../src/commands/construction-authority.ts";
+import {
   completionAwareEvidenceCommandHandler,
   completionAwareProveCommandHandler,
   completionAwarePublishCommandHandler,
@@ -21,6 +26,7 @@ const profile = "urn:usf:profile:v3-self-host:1";
 const work = "urn:usf:work:repository-path-scope";
 const validation = "urn:usf:validation:repository-path-tests";
 const obligation = "urn:usf:proof:repository-path-scope";
+const constructionObligation = "urn:usf:proof:repository-path-scope:construction-authority";
 
 async function isolatedPrecompletionRepository(): Promise<{ root: string; cleanup: () => Promise<void> }> {
   await mkdir(resolve(canonicalRoot, ".usf/tmp"), { recursive: true, mode: 0o700 });
@@ -33,16 +39,29 @@ async function isolatedPrecompletionRepository(): Promise<{ root: string; cleanu
   }
   const receiptDirectory = resolve(root, "evidence/work-completion");
   if (existsSync(receiptDirectory)) {
-    const sourcePath = resolve(root, "graph/integration.nq");
-    const removed = new Set<string>();
+    const removedBySource = new Map<string, Set<string>>();
     for (const name of (await readdir(receiptDirectory)).sort()) {
-      const receipt = JSON.parse(await readFile(resolve(receiptDirectory, name), "utf8")) as WorkCompletionPublicationReceipt;
-      for (const operation of receipt.operations) removed.add(operation.line);
+      const receiptPath = resolve(receiptDirectory, name);
+      const receipt = JSON.parse(await readFile(receiptPath, "utf8")) as WorkCompletionPublicationReceipt;
+      if (receipt.manifestPath !== manifest || receipt.profileIri !== profile) continue;
+      for (const operation of receipt.operations) {
+        const removed = removedBySource.get(operation.sourcePath) ?? new Set<string>();
+        removed.add(operation.line);
+        removedBySource.set(operation.sourcePath, removed);
+      }
+      await unlink(receiptPath);
     }
-    const source = await readFile(sourcePath, "utf8");
-    await writeFile(sourcePath, `${source.split("\n").filter((line) => line.length > 0 && !removed.has(line)).join("\n")}\n`, "utf8");
-    await rm(receiptDirectory, { recursive: true, force: true });
+    for (const [relativeSourcePath, removed] of removedBySource) {
+      const sourcePath = resolve(root, relativeSourcePath);
+      const source = await readFile(sourcePath, "utf8");
+      await writeFile(sourcePath, `${source.split("\n").filter((line) => line.length > 0 && !removed.has(line)).join("\n")}\n`, "utf8");
+    }
   }
+  const constructionEvidencePath = ".usf/candidates/construction-authority/work-completion-fixture-evidence.json";
+  const constructionBundlePath = ".usf/candidates/construction-authority/work-completion-fixture-bundle.json";
+  await constructionEvidenceCommandHandler({ command: "evidence", repositoryRoot: root, args: ["construction", "--work", work, "--profile", profile, "--manifest", manifest, "--output", constructionEvidencePath] });
+  await constructionProveCommandHandler({ command: "prove", repositoryRoot: root, args: ["construction", "--obligation", constructionObligation, "--evidence", constructionEvidencePath, "--profile", profile, "--manifest", manifest, "--output", constructionBundlePath] });
+  await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root, args: ["construction-authority", "--bundle", constructionBundlePath, "--profile", profile, "--manifest", manifest, "--apply"] });
   return { root, cleanup: async () => rm(parent, { recursive: true, force: true }) };
 }
 
