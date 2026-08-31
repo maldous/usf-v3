@@ -3,7 +3,7 @@ import { chmod, link, lstat, mkdir, open, readFile, realpath, rename, rm } from 
 import { spawn, spawnSync } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
-import { loadSemanticGraph, objectValues, objectsFor, resourceDigest, type LoadedSemanticGraph, type SemanticGraph } from "../graph/index.ts";
+import { loadSemanticGraph, objectValues, objectsFor, resourceDigest, validationRuntimeClosure, type LoadedSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { deriveCurrentRealisationBasis, deriveWork } from "../graph/work.ts";
 import type { CheckedCandidateReceipt as DurableCheckedCandidateReceipt } from "../commands/check.ts";
 import { canonicalQuadLine, parseStrictNQuads } from "../graph/nquads.ts";
@@ -1806,6 +1806,26 @@ async function authenticatedCheckedReceipt(
     || receipt.validationTerminationGraceMilliseconds !== authority.terminationGraceMilliseconds
     || receipt.validationTimedOut !== false || receipt.validationTimeoutTerminationSignal !== "none"
     || receipt.validationResultSetDigest !== canonicalDigest({ validationObligationIri: authority.obligationIri, outcome: "pass", outputResultDigest: receipt.outputResultDigest })) {
+    throw new IntegrationError("INTEGRATION_CHECK_RECEIPT_INVALID");
+  }
+  let expectedAuthorityPaths: string[];
+  try {
+    const currentGraph = loadSemanticGraph(authorityRoot, basis.selection.manifestPath);
+    const closurePaths = validationRuntimeClosure(currentGraph, authority.obligationIri).repositoryReadFiles.map(safeRepositoryPath);
+    const currentnessValues = objectsFor(currentGraph, basis.authority.permission, predicateIri("activationCurrentness"));
+    if (currentnessValues.length > 1 || currentnessValues.some((quad) => quad.objectKind !== "iri")) throw new Error("CURRENTNESS_INVALID");
+    const receiptPaths = currentnessValues.length === 0
+      ? []
+      : [safeRepositoryPath(integrationOne(currentGraph, currentnessValues[0]!.object, "receiptPath", "literal"))];
+    const candidatePaths = new Set(authenticated.scopedTree.map((entry) => entry.path));
+    expectedAuthorityPaths = [...new Set([...closurePaths, ...receiptPaths])]
+      .filter((path) => !candidatePaths.has(path))
+      .sort();
+  } catch {
+    throw new IntegrationError("INTEGRATION_CHECK_RECEIPT_INVALID");
+  }
+  const receiptAuthorityPaths = receipt.validationAuthorityDependencies.map((dependency) => dependency.path).sort();
+  if (canonicalJson(receiptAuthorityPaths) !== canonicalJson(expectedAuthorityPaths)) {
     throw new IntegrationError("INTEGRATION_CHECK_RECEIPT_INVALID");
   }
   for (const dependency of receipt.validationAuthorityDependencies) {

@@ -6,9 +6,10 @@ semantic-first gate, the committed local candidate-integration toolchain and
 the committed historical-carrier verification/adoption chain. All three finite
 historical carrier observations have now been authenticated, recorded in one
 coherent checkpoint and pushed. The next safe slice is the graph-defined,
-copy-on-write ordinary construction-evidence/proof/permission path for
-`repository-path-scope`, followed by `file-asset-index`. Provider contact
-remains downstream of that chain and the trusted live-provider sequence.
+implemented copy-on-write ordinary construction-evidence/proof/permission
+path for `repository-path-scope`, followed by the graph-defined isolated
+realisation of `file-asset-index`. Provider contact remains downstream of that
+chain and the trusted live-provider sequence.
 Until the operator says otherwise, one operator owns repository mutation; do
 not delegate repository work or run concurrent writers.
 
@@ -406,15 +407,32 @@ movement cannot force reproof, while movement of any declared dependency does.
 This is the ordinary copy-on-write mechanism, not a claim that GitHub itself is
 copy-on-write.
 
-The command resources remain graph-declared `planned` and the implementation
-intent remains `proofblocked` until the next bounded realization checkpoint.
-That implementation is an explicitly recorded
-`direct-bootstrap/manual-toolchain-repair` boundary because the commands needed
-to process their own ordinary work do not yet exist. It may touch only the
-intent's exact paths, reuse existing local canonicalization/containment/atomic
-publication primitives, and add one compact test family. After implementation,
-rederive the work basis again; do not form repository-path evidence against the
-planned-command basis.
+The command resources are now graph-declared `implemented`. The CLI derives a
+static basis before selecting dynamic records, emits composable canonical JSON,
+supports one through thirty-two compatible publication members, validates a
+complete isolated postimage before taking the narrow primary mutation lock,
+and derives effective permission without rewriting the proofblocked permission
+resource. Stale valid records remain historical and are ignored; malformed or
+duplicate current records refuse.
+
+The implementation also removed one legacy internal bottleneck: the bootstrap
+loop now invokes the graph-derived check rather than a caller-supplied allowlist
+checker. A typed incoming validation-runtime closure supplies only the current
+construction-authority module when it is absent from an isolated candidate,
+and the checked receipt binds its exact path and bytes. Integration rederives
+the same finite path set. The incoming edge deliberately leaves the admitted
+validation and work resource identities unchanged; it is not a blanket source
+tree mount or a reproof bypass.
+
+At this coherent implementation boundary, the composable registered pipeline
+verified `repository-path-scope` without mutation, the focused construction and
+bootstrap command suite passed 12/12, TypeScript plus the full authoritative
+suite passed 186/186, containment returned `status: pass`, and
+`git diff --check` passed. No canonical construction grant or receipt has yet
+been published. The pre-commit carrier verification correctly refused
+`BOOTSTRAP_CARRIER_RELEVANT_WORKTREE_DIRTY`; repeat all three immutable carrier
+verifications only after this packet is committed and the relevant tree is
+clean.
 
 The mathematical/structural review exposed several denominator and topology
 issues that must remain visible:
@@ -788,19 +806,12 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Independently review the copy-on-write construction-authority semantic
-   packet, run the full authoritative and containment checks, then commit and
-   push it as one coherent model checkpoint. On the resulting clean HEAD,
-   repeat all three `usf bootstrap-carrier verify` calls to confirm the
-   immutable receipts remain authenticated under unrelated graph movement.
-2. Implement only the graph-registered `evidence construction`,
-   `prove construction` and `publish construction-authority` surface plus the
-   copy-on-write grant projection. Keep candidates ignored/stdout, batch one
-   through thirty-two compatible bundles, keep full graph validation outside
-   the narrow mutation lock except final readback, and use one compact test
-   family. Update command resources from `planned` to `implemented` only in
-   that qualified realization checkpoint.
-3. Use those registered commands to form exact current evidence, proof and a
+1. Commit and push the already-qualified construction-authority implementation
+   as one coherent checkpoint. On the resulting clean HEAD, repeat all three
+   `usf bootstrap-carrier verify` calls to confirm the immutable receipts remain
+   authenticated under unrelated graph movement. Do not create a fourth
+   version-1 carrier observation.
+2. Use the registered commands to form exact current evidence, proof and a
    copy-on-write grant for `repository-path-scope`; truthfully close its
    already-present realization only through graph-defined no-change semantics
    if the exact source needs no delta. Then complete
@@ -809,13 +820,13 @@ exactly as emitted by the core and ANQR packets.
    a real accepted delta or truthfully close it as an exact no-change realization
    only after the graph explicitly defines that disposition and its evidence,
    proof and publication semantics.
-4. Model the construction-command implementation's own exact historical
+3. Model the construction-command implementation's own exact historical
    carrier only in a later copy-on-write versioned authority after its coherent
    implementation commit/tree and complete allowed-path diff exist. Do not
    mutate the immutable version-1 permission, guess, caller-supply or
    retroactively rewrite that identity; it is not a serial prerequisite for
    repository-path-scope or file-asset-index.
-5. Build the graph-defined provider census from every models.dev candidate plus
+4. Build the graph-defined provider census from every models.dev candidate plus
    reviewed V1/V2 credential-name/model provenance and distinct host adapters.
    Produce the full assigned/excluded/eligible-unassigned table before contact,
    then acquire account receipts, run scrubbed adapters, authenticate provider

@@ -1,5 +1,5 @@
 import { callAssignments } from "../commands/call.ts";
-import { runFocusedCheck, type FocusedCheck, type FocusedCheckResult } from "../commands/check.ts";
+import { runGraphDerivedCheck, type FocusedCheck, type GraphDerivedCheckResult } from "../commands/check.ts";
 import { resolveCommand } from "../commands/resolve.ts";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
@@ -41,7 +41,7 @@ export interface BootstrapLoopResult {
   readonly candidateDigest: string;
   readonly contributionDigests: readonly string[];
   readonly delta: readonly ByteDelta[];
-  readonly check: FocusedCheckResult;
+  readonly check: GraphDerivedCheckResult;
   readonly claims: readonly string[];
   readonly nonclaims: readonly string[];
 }
@@ -227,7 +227,7 @@ export async function prepareBootstrapLoop(input: BootstrapLoopInput): Promise<B
  */
 export async function runBootstrapLoop(input: BootstrapLoopInput): Promise<BootstrapLoopResult> {
   const prepared = await prepareBootstrapLoop(input);
-  const check = await runFocusedCheck(input.repositoryRoot, prepared.candidateDigest, [prepared.focusedCheck], prepared.focusedCheck.id);
+  const check = await runGraphDerivedCheck(input.repositoryRoot, prepared.candidateDigest, prepared.focusedCheck.id);
   if (check.status !== "pass") {
     throw new UsfError("BOOTSTRAP_CHECK_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "The isolated focused check did not pass.", { reasonCode: check.reasonCode ?? "CHECK_FAILED" });
   }

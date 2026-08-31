@@ -3,13 +3,13 @@ import { resolve } from "node:path";
 import { dispatchCommand, parseCommand, type CommandHandlers } from "./commands/dispatcher.ts";
 import { admissionCheckHandler, applyHandler, integrateCommandHandler } from "./commands/apply.ts";
 import { bootstrapCarrierCommandHandler } from "./commands/bootstrap-carrier.ts";
+import { constructionAwarePublishCommandHandler, evidenceCommandHandler, proveCommandHandler } from "./commands/construction-authority.ts";
 import { callCommandHandler } from "./commands/call.ts";
 import { doctorCommandHandler } from "./commands/doctor.ts";
 import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
 import { metricsCommandHandler } from "./commands/metrics.ts";
 import { modelsCommandHandler } from "./commands/models.ts";
 import { probeCommandHandler } from "./commands/probe.ts";
-import { publishCommandHandler } from "./commands/publish.ts";
 import { queryCommand } from "./commands/query.ts";
 import { resolveCommandHandler } from "./commands/resolve.ts";
 import { routeCommandHandler } from "./commands/route.ts";
@@ -37,10 +37,12 @@ const bootstrapHandlers: CommandHandlers = {
   check: admissionCheckHandler,
   integrate: integrateCommandHandler,
   "bootstrap-carrier": bootstrapCarrierCommandHandler,
+  evidence: evidenceCommandHandler,
+  prove: proveCommandHandler,
   metrics: metricsCommandHandler,
   models: modelsCommandHandler,
   probe: probeCommandHandler,
-  publish: publishCommandHandler,
+  publish: constructionAwarePublishCommandHandler,
   route: routeCommandHandler,
   start: startCommandHandler,
   stop: stopCommandHandler,

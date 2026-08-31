@@ -375,9 +375,9 @@ test("semantic-first work eligibility is exact, fail-closed and non-serializing"
     { name: "missing admitted evidence", mutate: (quads) => quads.filter((quad) => quad.subject !== evidence), reason: "CONSTRUCTION_EVIDENCE_MISSING:" },
     { name: "failed proof", mutate: (quads) => replace(quads, proof, "outcome", "fail"), reason: "CONSTRUCTION_PROOF_RESULT_FAILED:" },
     { name: "ambiguous proof", mutate: (quads) => [...quads, ...quads.filter((quad) => quad.subject === proof).map((quad) => ({ ...quad, subject: `${proof}:other`, canonical: `${quad.canonical}|other` }))], reason: "CONSTRUCTION_PROOF_RESULT_AMBIGUOUS:" },
-    { name: "stale evidence basis", mutate: (quads) => replace(quads, evidence, "scopedDependencyDigest", digest("d")), reason: "CONSTRUCTION_EVIDENCE_STALE:" },
-    { name: "stale proof basis", mutate: (quads) => replace(quads, proof, "scopedDependencyDigest", digest("d")), reason: "CONSTRUCTION_PROOF_RESULT_STALE:" },
-    { name: "relevant semantic movement", mutate: (quads) => replace(quads, ordinaryEvidenceRequirement, "text", "Moved relevant construction evidence semantics."), reason: "CONSTRUCTION_EVIDENCE_STALE:" },
+    { name: "stale evidence basis", mutate: (quads) => replace(quads, evidence, "scopedDependencyDigest", digest("d")), reason: "CONSTRUCTION_EVIDENCE_MISSING:" },
+    { name: "stale proof basis", mutate: (quads) => replace(quads, proof, "scopedDependencyDigest", digest("d")), reason: "CONSTRUCTION_PROOF_RESULT_MISSING:" },
+    { name: "relevant semantic movement", mutate: (quads) => replace(quads, ordinaryEvidenceRequirement, "text", "Moved relevant construction evidence semantics."), reason: "CONSTRUCTION_EVIDENCE_MISSING:" },
   ];
   for (const defect of activeDefects) {
     const planted = packet({ ...active, quads: defect.mutate([...active.quads]) }, ordinaryWork);

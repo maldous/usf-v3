@@ -7,7 +7,7 @@ import type { RealisationBasis } from "../realisation/basis.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { exitCodes } from "../core/errors.ts";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
-import { loadSemanticGraph, objectsFor, resourceDigest, type LoadedSemanticGraph } from "../graph/index.ts";
+import { loadSemanticGraph, objectsFor, resourceDigest, validationRuntimeClosure, type LoadedSemanticGraph } from "../graph/index.ts";
 import { isOperation, type FileOperation } from "../providers/types.ts";
 
 export interface FocusedCheck { readonly id: string; readonly command: readonly string[]; }
@@ -465,9 +465,13 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
   const schemaDependencies = sortedDigestRefs(basis.inputs.schemaDigests, "CHECK_VALIDATION_SCHEMA_INVALID");
   const currentnessValues = objectsFor(graph, basis.authority.permission, "urn:usf:predicate:activationCurrentness");
   if (currentnessValues.length > 1 || currentnessValues.some((quad) => quad.objectKind !== "iri")) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
-  const repositoryReadFiles = currentnessValues.length === 0
-    ? []
-    : [graphRepositoryPath(exactGraphValue(graph, currentnessValues[0]!.object, "urn:usf:predicate:receiptPath", "literal", "CHECK_VALIDATION_AUTHORITY_INVALID"))];
+  let declaredReadFiles: string[];
+  try { declaredReadFiles = validationRuntimeClosure(graph, validationId).repositoryReadFiles.map(graphRepositoryPath); }
+  catch { return refuse("CHECK_VALIDATION_AUTHORITY_INVALID"); }
+  const repositoryReadFiles = [...new Set([
+    ...declaredReadFiles,
+    ...(currentnessValues.length === 0 ? [] : [graphRepositoryPath(exactGraphValue(graph, currentnessValues[0]!.object, "urn:usf:predicate:receiptPath", "literal", "CHECK_VALIDATION_AUTHORITY_INVALID"))]),
+  ])].sort();
   return Object.freeze({
     commandTokens: Object.freeze(commandTokens),
     resourceDigest: validationResourceDigest,

@@ -109,6 +109,23 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.equal(carrier.historyScan, "bounded");
   assert.deepEqual(carrier.exitCodes, [0, 1, 2, 3, 4, 5, 7]);
   assert.match(carrier.authorityEffect, /no replacement/u);
+
+  const evidenceHelp = helpCommandResult(["evidence", "construction", "--json"]);
+  const evidence = (evidenceHelp.output as { command: { availability: string; externalContact: string; historyScan: string; outputSchema: string; synopsis: string[] } }).command;
+  assert.equal(evidence.availability, "implemented");
+  assert.equal(evidence.externalContact, "none");
+  assert.equal(evidence.historyScan, "none");
+  assert.equal(evidence.outputSchema, "urn:usf:construction-evidence-candidate:1");
+  assert.match(evidence.synopsis[0]!, /--work IRI --profile VERSIONED_IRI/u);
+
+  const constructionPublishHelp = helpCommandResult(["publish", "construction-authority", "--json"]);
+  const constructionPublish = (constructionPublishHelp.output as { command: { availability: string; authorityEffect: string; externalContact: string; historyScan: string; outputSchema: string; options: Array<{ syntax: string }> } }).command;
+  assert.equal(constructionPublish.availability, "implemented");
+  assert.equal(constructionPublish.externalContact, "none");
+  assert.equal(constructionPublish.historyScan, "none");
+  assert.equal(constructionPublish.outputSchema, "urn:usf:construction-authority-publication-result:1");
+  assert.ok(constructionPublish.options.some((option) => option.syntax === "--bundle PATH|-"));
+  assert.match(constructionPublish.authorityEffect, /never rewrites permission resources/u);
 });
 
 test("apply, check and integrate refusals share the GOAL-defined exit taxonomy", () => {

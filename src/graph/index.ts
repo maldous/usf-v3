@@ -306,6 +306,52 @@ export function resourceExists(graph: SemanticGraph, resource: string): boolean 
   return graph.quads.some((quad) => quad.subject === resource);
 }
 
+export interface ValidationRuntimeClosure {
+  readonly id: string | null;
+  readonly resourceDigest: string | null;
+  readonly repositoryReadFiles: readonly string[];
+}
+
+/**
+ * Select the optional graph-authored supplemental file closure for one
+ * validation. The relation is intentionally incoming so extending a
+ * validation's current execution imports does not rewrite its admitted
+ * resource identity or the work packet that originally selected it.
+ */
+export function validationRuntimeClosure(graph: SemanticGraph, validationId: string): ValidationRuntimeClosure {
+  const forValidation = "urn:usf:predicate:forValidation";
+  const type = "urn:usf:predicate:type";
+  const version = "urn:usf:predicate:version";
+  const repositoryReadFile = "urn:usf:predicate:repositoryReadFile";
+  const closureType = "urn:usf:type:ValidationRuntimeClosure";
+  const candidates = [...new Set(graph.quads
+    .filter((quad) => quad.predicate === forValidation && quad.objectKind === "iri" && quad.object === validationId)
+    .map((quad) => quad.subject))].sort();
+  if (candidates.length === 0) return Object.freeze({ id: null, resourceDigest: null, repositoryReadFiles: Object.freeze([]) });
+  if (candidates.length !== 1) throw new Error(`VALIDATION_RUNTIME_CLOSURE_AMBIGUOUS:${validationId}`);
+  const id = candidates[0] as string;
+  const types = objectsFor(graph, id, type);
+  const versions = objectsFor(graph, id, version);
+  const validationBindings = objectsFor(graph, id, forValidation);
+  const fileBindings = objectsFor(graph, id, repositoryReadFile);
+  if (types.length !== 1 || types[0]?.objectKind !== "iri" || types[0].object !== closureType
+    || versions.length !== 1 || versions[0]?.objectKind !== "literal" || versions[0].object !== "1"
+    || validationBindings.length < 1 || validationBindings.length > 32
+    || validationBindings.some((quad) => quad.objectKind !== "iri")
+    || new Set(validationBindings.map((quad) => quad.object)).size !== validationBindings.length
+    || !validationBindings.some((quad) => quad.object === validationId)
+    || fileBindings.length < 1 || fileBindings.length > 64
+    || fileBindings.some((quad) => quad.objectKind !== "literal")
+    || new Set(fileBindings.map((quad) => quad.object)).size !== fileBindings.length) {
+    throw new Error(`VALIDATION_RUNTIME_CLOSURE_INVALID:${validationId}`);
+  }
+  return Object.freeze({
+    id,
+    resourceDigest: resourceDigest(graph, id),
+    repositoryReadFiles: Object.freeze(fileBindings.map((quad) => quad.object).sort()),
+  });
+}
+
 /** Deterministic outbound closure. Unauthored vocabulary IRIs are leaves. */
 export function transitiveResourceIris(graph: SemanticGraph, seeds: Iterable<string>, maxResources = 1_000): string[] {
   const pending = [...new Set(seeds)].sort();

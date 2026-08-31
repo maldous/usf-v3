@@ -12,6 +12,7 @@ import {
   type TransitionCurrentnessVerification,
   type VerifiedTransitionCandidateCurrentness,
 } from "../realisation/transition.ts";
+import { evaluateConstructionAuthorityGrant } from "../realisation/construction-authority.ts";
 
 const typePredicate = "urn:usf:predicate:type";
 const workType = "urn:usf:type:WorkPacket";
@@ -31,6 +32,7 @@ const completionProofObligationType = "urn:usf:type:CompletionProofObligation";
 const completionImplementationProofblocked = "urn:usf:implementation-state:proofblocked";
 const evidenceType = "urn:usf:type:Evidence";
 const proofResultType = "urn:usf:type:ProofResult";
+const constructionAuthorityPublicationPolicyType = "urn:usf:type:ConstructionAuthorityPublicationPolicy";
 const admittedIntegrationReceiptType = "urn:usf:type:AdmittedIntegrationReceipt";
 const bootstrapExceptionType = "urn:usf:type:BootstrapConstructionException";
 const bootstrapAtomicAdmissionSetType = "urn:usf:type:BootstrapAtomicAdmissionSet";
@@ -321,6 +323,32 @@ function typedSubjects(graph: SemanticGraph, type: string): string[] {
     .map((quad) => quad.subject))].sort();
 }
 
+function constructionPolicyForWork(graph: SemanticGraph, work: string): string | null {
+  const policies = typedSubjects(graph, constructionAuthorityPublicationPolicyType)
+    .filter((id) => objectsFor(graph, id, predicate("eligibleWork")).some((quad) => quad.objectKind === "iri" && quad.object === work));
+  if (policies.length > 1) refuse(`CONSTRUCTION_AUTHORITY_POLICY_AMBIGUOUS:${work}`);
+  return policies[0] ?? null;
+}
+
+/** Follow the selected policy without turning its other eligible works into sibling dependencies. */
+function constructionPolicyResources(graph: SemanticGraph, policy: string | null, selectedWork: string, maximum = 1_000): string[] {
+  if (policy === null) return [];
+  const visited = new Set<string>();
+  const stack = [policy];
+  while (stack.length > 0) {
+    const subject = stack.pop() as string;
+    if (visited.has(subject)) continue;
+    if (visited.size >= maximum) refuse(`CONSTRUCTION_AUTHORITY_POLICY_CLOSURE_LIMIT:${selectedWork}`);
+    visited.add(subject);
+    for (const quad of objectsFor(graph, subject)) {
+      if (quad.objectKind !== "iri") continue;
+      if (subject === policy && quad.predicate === predicate("eligibleWork") && quad.object !== selectedWork) continue;
+      if (graph.quads.some((candidate) => candidate.subject === quad.object)) stack.push(quad.object);
+    }
+  }
+  return [...visited].sort();
+}
+
 function hasType(graph: SemanticGraph, subject: string, type: string): boolean {
   return objectsFor(graph, subject, typePredicate).some((quad) => quad.objectKind === "iri" && quad.object === type);
 }
@@ -567,13 +595,22 @@ function evaluateProof(
   const leaves = evidenceLeaves(graph, authority.evidenceRequirement, reasons);
   const allEvidence = typedSubjects(graph, evidenceType);
   for (const requirement of leaves) {
-    const candidates = allEvidence.filter((id) => {
+    const matchingCandidates = allEvidence.filter((id) => {
       const requirements = objectsFor(graph, id, predicate("satisfiesEvidenceRequirement"));
       const works = objectsFor(graph, id, predicate("forWork"));
       return requirements.some((quad) => quad.objectKind === "iri" && quad.object === requirement)
         && (aggregate
           ? works.some((quad) => quad.objectKind === "iri" && canonicalBootstrapWorks.includes(quad.object as typeof canonicalBootstrapWorks[number]))
           : works.some((quad) => quad.objectKind === "iri" && quad.object === workId));
+    });
+    const candidates = aggregate ? matchingCandidates : matchingCandidates.filter((id) => {
+      const scoped = objectsFor(graph, id, predicate("scopedDependencyDigest"));
+      if (scoped.length !== 1 || scoped[0]?.objectKind !== "literal" || !/^sha256:[0-9a-f]{64}$/u.test(scoped[0].object)) {
+        reasons.push(`CONSTRUCTION_EVIDENCE_SCOPED_DIGEST_INVALID:${id}`);
+        dynamicResources.push(id);
+        return false;
+      }
+      return scoped[0].object === authorityBasisDigest;
     });
     if (candidates.length === 0) {
       reasons.push(`CONSTRUCTION_EVIDENCE_MISSING:${requirement}`);
@@ -592,13 +629,21 @@ function evaluateProof(
     const scopedDigest = digestValue(authorityValue(graph, evidence, "scopedDependencyDigest", "CONSTRUCTION_EVIDENCE_SCOPED_DIGEST", reasons), "CONSTRUCTION_EVIDENCE_SCOPED_DIGEST", evidence, reasons);
     const evidenceWorkId = optionalIriAuthorityValue(graph, evidence, "forWork", "CONSTRUCTION_EVIDENCE_WORK", reasons);
     const contentDigest = digestValue(authorityValue(graph, evidence, "contentDigest", "CONSTRUCTION_EVIDENCE_CONTENT_DIGEST", reasons), "CONSTRUCTION_EVIDENCE_CONTENT_DIGEST", evidence, reasons);
-    if (!aggregate && scopedDigest !== null && scopedDigest !== authorityBasisDigest) reasons.push(`CONSTRUCTION_EVIDENCE_STALE:${evidence}`);
     if (validationDigest !== null && basisDigest !== null && contentDigest !== null) evidenceRows.push({ id: evidence, requirement, contentDigest, basisDigest, workId: evidenceWorkId, scopedDependencyDigest: scopedDigest });
   }
 
-  const proofCandidates = typedSubjects(graph, proofResultType)
+  const matchingProofCandidates = typedSubjects(graph, proofResultType)
     .filter((id) => objectsFor(graph, id, predicate("forObligation")).some((quad) => quad.objectKind === "iri" && quad.object === authority.proofObligation)
       && (aggregate || objectsFor(graph, id, predicate("forWork")).some((quad) => quad.objectKind === "iri" && quad.object === workId)));
+  const proofCandidates = aggregate ? matchingProofCandidates : matchingProofCandidates.filter((id) => {
+    const scoped = objectsFor(graph, id, predicate("scopedDependencyDigest"));
+    if (scoped.length !== 1 || scoped[0]?.objectKind !== "literal" || !/^sha256:[0-9a-f]{64}$/u.test(scoped[0].object)) {
+      reasons.push(`CONSTRUCTION_PROOF_RESULT_SCOPED_DIGEST_INVALID:${id}`);
+      dynamicResources.push(id);
+      return false;
+    }
+    return scoped[0].object === authorityBasisDigest;
+  });
   if (proofCandidates.length === 0) reasons.push(`CONSTRUCTION_PROOF_RESULT_MISSING:${authority.proofObligation}`);
   else if (proofCandidates.length > 1) {
     reasons.push(`CONSTRUCTION_PROOF_RESULT_AMBIGUOUS:${authority.proofObligation}`);
@@ -614,7 +659,6 @@ function evaluateProof(
     const scopedDigest = aggregate ? null : digestValue(authorityValue(graph, proof, "scopedDependencyDigest", "CONSTRUCTION_PROOF_RESULT_SCOPED_DIGEST", reasons), "CONSTRUCTION_PROOF_RESULT_SCOPED_DIGEST", proof, reasons);
     const outcome = authorityValue(graph, proof, "outcome", "CONSTRUCTION_PROOF_RESULT_OUTCOME", reasons);
     if (outcome !== null && outcome !== "pass") reasons.push(`CONSTRUCTION_PROOF_RESULT_FAILED:${proof}`);
-    if (scopedDigest !== null && scopedDigest !== authorityBasisDigest) reasons.push(`CONSTRUCTION_PROOF_RESULT_STALE:${proof}`);
     const evidenceBasisDigests = [...new Set(evidenceRows.map((row) => row.basisDigest))];
     if (aggregate) {
       const admissionSets = iriValues(graph, canonicalBootstrapException, "admissionWorkSet", "CONSTRUCTION_PROOF_RESULT_ADMISSION_SET", reasons);
@@ -1089,11 +1133,16 @@ function packetFor(graph: SemanticGraph, id: string, decisionBoundary: DecisionB
   const requirements = requirementProjections(graph, requirementIds);
   const artifacts = artifactProjections(graph, requirements, writeSet);
   const postures = projectEnvironmentPosture(graph, contract);
-  const policyPaths = declaredPaths(graph, [contract, id], "policyPath");
-  const schemaPaths = declaredPaths(graph, [contract, id], "schemaPath");
-  const toolPaths = declaredPaths(graph, [contract, id], "toolPath");
+  const constructionPolicy = constructionPolicyForWork(graph, id);
+  const pathSubjects = constructionPolicy === null ? [contract, id] : [contract, id, constructionPolicy];
+  const policyPaths = declaredPaths(graph, pathSubjects, "policyPath");
+  const schemaPaths = declaredPaths(graph, pathSubjects, "schemaPath");
+  const toolPaths = declaredPaths(graph, pathSubjects, "toolPath");
   const resourceSeeds = [id, contract, ...requirementIds, ...acceptanceIds, ...validationIds, ...proofIds, ...postures.flatMap((posture) => posture.binding === undefined ? [posture.environment] : [posture.binding, posture.environment])];
-  const resources = transitiveResourceIris(graph, resourceSeeds);
+  const resources = [...new Set([
+    ...transitiveResourceIris(graph, resourceSeeds),
+    ...constructionPolicyResources(graph, constructionPolicy, id),
+  ])];
   // A profile digest binds its exact selection policy, but its other selected
   // contracts are sibling roots rather than dependencies of this packet.
   if (decisionBoundary.kind === "realisation-profile" && decisionBoundary.root !== null) {
@@ -1141,7 +1190,30 @@ function packetFor(graph: SemanticGraph, id: string, decisionBoundary: DecisionB
   ]);
   const authorityBasisDigest = canonicalDigest(staticDependencies);
   const proof = evaluateProof(graph, authority, authorityBasisDigest, id);
-  const activationReasons = [...new Set([...trace.reasons, ...proof.reasons, ...requiredPermissions.reasons, ...(currentnessReason === undefined ? [] : [currentnessReason])])].sort();
+  const grant = authority.permission !== null
+      && authority.evidenceRequirement !== null
+      && authority.proofObligation !== null
+      && authority.proofAlgorithm !== null
+      && authority.authority.permission?.maximumThrough !== null
+      && authority.authority.permission?.maximumThrough !== undefined
+      && decisionBoundary.kind === "realisation-profile"
+      && decisionBoundary.root !== null
+    ? evaluateConstructionAuthorityGrant(graph, {
+        workIri: id,
+        permissionIri: authority.permission,
+        profileIri: decisionBoundary.root,
+        manifestPath: (graph as SemanticGraph & { manifestPath?: string }).manifestPath ?? "graph/manifest.json",
+        evidenceRequirementIri: authority.evidenceRequirement,
+        proofObligationIri: authority.proofObligation,
+        proofAlgorithmIri: authority.proofAlgorithm,
+        authorityBasisDigest,
+        maximumThrough: authority.authority.permission.maximumThrough,
+      })
+    : { applicable: false, active: false, grantIri: null, evidenceIri: null, proofResultIri: null, reasonCodes: [], dynamicResources: [] };
+  if (grant.active && proof.reasons.length === 0 && authority.authority.permission !== null) {
+    authority.authority.permission = { ...authority.authority.permission, activationState: activeState };
+  }
+  const activationReasons = [...new Set([...trace.reasons, ...proof.reasons, ...grant.reasonCodes, ...requiredPermissions.reasons, ...(currentnessReason === undefined ? [] : [currentnessReason])])].sort();
   const activationEligible = activationReasons.length === 0;
   const permissionActive = authority.authority.permission?.activationState === activeState;
   const exception = evaluateException(graph, id, contract, authority);
@@ -1209,6 +1281,8 @@ function packetFor(graph: SemanticGraph, id: string, decisionBoundary: DecisionB
   const dependencies = uniqueDependencies([
     ...staticDependencies,
     ...proof.dynamicResources.map((key): Dependency => ({ key, digest: resourceDigest(graph, key), kind: "semantic-resource" })),
+    ...grant.dynamicResources.map((key): Dependency => ({ key, digest: resourceDigest(graph, key), kind: "semantic-resource" })),
+    ...(grant.receiptDependency === undefined ? [] : [grant.receiptDependency]),
     ...predecessorCompletions.flatMap((completion) => completion.basisDependencies),
     ...predecessorCompletions.flatMap((completion) => completion.dynamicResources).map((key): Dependency => ({ key, digest: resourceDigest(graph, key), kind: "semantic-resource" })),
   ]);
