@@ -3,16 +3,20 @@
 Updated 2026-09-01. The live continuation updates immediately below supersede
 older next-action and carrier statements where they differ. The durable pushed
 boundary is still `2b0c85b2d3da95cd542f29b1e34e36c3d29aae81`; no GitHub contact
-or push occurred in this continuation. The committed base for the current
-not-yet-committed remodel is
-`1e6bf3d19331128d41552ad69dad99fce9d142e5`, the two-member
-construction-authority carrier. Its parent
-`89c3ba9298ddb5fdfeae156abfbcf6f27c6b9085` is the profile-policy and typed
-host-runtime-closure carrier. No source implementation from the isolated
-operator draft has been materialised. The reviewed but not-yet-committed
-composable-input, validation-isolation and shared call-leaf remodel makes
-registered `usf status` report current profile semantic digest
-`sha256:f349a906363701b31e8424ccf0dd21207b62cb1a6b06db6fc228129b68293f7d`.
+or push occurred in this continuation. Local semantic carrier
+`a3a40e5` commits the reviewed composable-input, validation-isolation and shared
+call-leaf remodel. Registered copy-on-write publication then created
+`evidence/construction-authority/a5f565bbcc2b38088678c4ad8c745efd9a60450e91f7d5a9bdac305cca7d5927.json`
+with receipt digest
+`sha256:69a3a56dae0e80d0d092f75773ea9a19ec30d1eb9bb3a59ab51497738b6a5e84`.
+Its graph and receipt are not yet committed. No source implementation from the
+isolated operator draft has been materialised. Registered `usf work` now reads
+active construction authority through `integrate`, with profile semantic digest
+`sha256:241079c4eb4c690a865e3b15a37b995edd6351012101b76217f0c91941de9f1e`,
+realisation-basis digest
+`sha256:6914e5b6d81e97efe79f8209d9ee0363138b3a1b788a6a27cc4c9bacc2c4f39e`
+and scoped dependency digest
+`sha256:dba0bceec011a4e7b166c1cfa8f7e5e06729b02c6f20c357341795f325902471`.
 The focused graph/provider topology lane passes 13/13; the independent current
 compatibility lanes pass 15/15; and `git diff --check` passes. The newly declared
 profile-3 tests, schemas and source paths are intentionally still absent and
@@ -1739,8 +1743,8 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Extend and freshly prove the existing profile-bound operator predecessor,
-   then materialise one combined rollback unit containing bounded
+1. Commit the verified copy-on-write operator construction publication, then
+   materialise one combined rollback unit containing bounded
    `call`/`resolve --input PATH|-`, wire-basis reconstruction, successful
    complete-call-envelope composition, both closed result schemas, the
    reusable proof-gated future call-leaf decomposition, the isolated provider
