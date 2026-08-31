@@ -424,15 +424,31 @@ the same finite path set. The incoming edge deliberately leaves the admitted
 validation and work resource identities unchanged; it is not a blanket source
 tree mount or a reproof bypass.
 
-At this coherent implementation boundary, the composable registered pipeline
-verified `repository-path-scope` without mutation, the focused construction and
-bootstrap command suite passed 12/12, TypeScript plus the full authoritative
-suite passed 186/186, containment returned `status: pass`, and
-`git diff --check` passed. No canonical construction grant or receipt has yet
-been published. The pre-commit carrier verification correctly refused
-`BOOTSTRAP_CARRIER_RELEVANT_WORKTREE_DIRTY`; repeat all three immutable carrier
-verifications only after this packet is committed and the relevant tree is
-clean.
+The coherent command implementation is committed and pushed as `d735ca9`. At
+that boundary the focused construction and bootstrap command suite passed
+12/12, TypeScript plus the full authoritative suite passed 186/186,
+containment returned `status: pass`, and `git diff --check` passed. All three
+immutable historical carrier observations then reverified as `matching` from
+the clean commit: repository-path currentness was `current`; semantic-first
+and integration-toolchain currentness remained truthfully `reconstructable`.
+
+The registered Unix pipeline subsequently published one exact copy-on-write
+construction grant for `repository-path-scope`. Receipt
+`evidence/construction-authority/937bdbadf9fda27dc413bb1f5c09bdb923d84b95cb77844d8ba208e57a7c3f7c.json`
+has receipt digest
+`sha256:fa469217c45d92984f3ddfaf8b01b061be557b28f7fea9b07fd75578ec40393f`;
+readback projects active construction permission with no completion claim.
+`file-asset-index` remains correctly dependency-blocked because current
+completion for `repository-path-scope` is still absent.
+
+The next semantic gap is explicit rather than patched around: both predecessor
+implementations already exist, while the integrated-candidate path correctly
+refuses an empty delta. V3 must first define an exact no-change realisation
+disposition, isolated current-byte validation, completion evidence, completion
+proof and additive publication semantics. V2's `RESERVED_NO_ACTION` handling
+is a relevant adverse-learning guardrail: no action is a separate axis and
+must never be promoted to validation satisfaction or completion without exact
+current evidence and proof.
 
 The mathematical/structural review exposed several denominator and topology
 issues that must remain visible:
@@ -806,27 +822,30 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Commit and push the already-qualified construction-authority implementation
-   as one coherent checkpoint. On the resulting clean HEAD, repeat all three
-   `usf bootstrap-carrier verify` calls to confirm the immutable receipts remain
-   authenticated under unrelated graph movement. Do not create a fourth
-   version-1 carrier observation.
-2. Use the registered commands to form exact current evidence, proof and a
-   copy-on-write grant for `repository-path-scope`; truthfully close its
-   already-present realization only through graph-defined no-change semantics
-   if the exact source needs no delta. Then complete
+1. Preserve the pushed `d735ca9` command-implementation boundary and the exact
+   current `repository-path-scope` copy-on-write grant. Do not create a fourth
+   version-1 carrier observation or reinterpret any historical carrier as
+   completion.
+2. Model, qualify and implement a generic graph-defined no-change realisation
+   disposition through registered `usf` commands. It must bind an exact
+   versioned profile and current RealisationBasis, materialise only the finite
+   file scope into an isolated workspace, run the graph-selected check, admit
+   completion evidence, evaluate completion proof and publish additive
+   file-backed authority. A zero delta alone is never success.
+3. Use that path to truthfully close the already-present
+   `repository-path-scope` realisation, then complete
    `urn:usf:work:file-asset-index` through the profile-bound isolated V3 chain.
    Do not edit its already-present files merely to manufacture lineage; require
    a real accepted delta or truthfully close it as an exact no-change realization
    only after the graph explicitly defines that disposition and its evidence,
    proof and publication semantics.
-3. Model the construction-command implementation's own exact historical
+4. Model the construction-command implementation's own exact historical
    carrier only in a later copy-on-write versioned authority after its coherent
    implementation commit/tree and complete allowed-path diff exist. Do not
    mutate the immutable version-1 permission, guess, caller-supply or
    retroactively rewrite that identity; it is not a serial prerequisite for
    repository-path-scope or file-asset-index.
-4. Build the graph-defined provider census from every models.dev candidate plus
+5. Build the graph-defined provider census from every models.dev candidate plus
    reviewed V1/V2 credential-name/model provenance and distinct host adapters.
    Produce the full assigned/excluded/eligible-unassigned table before contact,
    then acquire account receipts, run scrubbed adapters, authenticate provider
