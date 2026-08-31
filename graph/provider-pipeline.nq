@@ -849,6 +849,8 @@
 <urn:usf:work:provider-account-tier-receipt> <urn:usf:predicate:implementsContract> <urn:usf:contract:provider-account-receipt-acquisition:1> <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-account-tier-receipt> <urn:usf:predicate:objective> "Implement the reusable no-contact account-tier receipt verifier and route-member-keyed ignored storage protocol." <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-account-tier-receipt> <urn:usf:predicate:externalContact> "false" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:provider-account-tier-receipt> <urn:usf:predicate:dependsOn> <urn:usf:work:operator-observability> <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:provider-account-tier-receipt> <urn:usf:predicate:dependsOn> <urn:usf:work:repository-path-scope> <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-account-tier-receipt> <urn:usf:predicate:readPath> "src/providers/economics.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-account-tier-receipt> <urn:usf:predicate:schemaPath> "schemas/provider-config.schema.json" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-account-tier-receipt> <urn:usf:predicate:toolPath> "src/continuous/lifecycle.ts" <urn:usf:graph:provider-pipeline> .
