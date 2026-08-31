@@ -19,7 +19,7 @@ test("dispatcher calls a typed handler without hidden lifecycle state", async ()
 });
 
 test("one static registry covers parsing and every self-describing help topic", () => {
-  const required = ["init", "doctor", "status", "query", "observe", "metrics", "work", "models", "probe", "route", "call", "review", "resolve", "apply", "check", "integrate", "bootstrap-carrier", "evidence", "prove", "drift", "publish", "start", "stop", "watch", "help"];
+  const required = ["init", "doctor", "status", "query", "observe", "metrics", "work", "models", "probe", "route", "call", "review", "resolve", "realise", "apply", "check", "integrate", "bootstrap-carrier", "evidence", "prove", "drift", "publish", "start", "stop", "watch", "help"];
   assert.deepEqual(commandRegistry.map((entry) => entry.name), required);
   for (const entry of commandRegistry) {
     assert.deepEqual(parseCommand([entry.name]), { command: entry.name, args: [] });
@@ -118,6 +118,19 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.equal(evidence.outputSchema, "urn:usf:construction-evidence-candidate:1");
   assert.match(evidence.synopsis[0]!, /--work IRI --profile VERSIONED_IRI/u);
 
+  const realiseHelp = helpCommandResult(["realise", "no-change", "--json"]);
+  const realise = (realiseHelp.output as { command: { availability: string; externalContact: string; historyScan: string; outputSchema: string; authorityEffect: string } }).command;
+  assert.equal(realise.availability, "implemented");
+  assert.equal(realise.externalContact, "none");
+  assert.equal(realise.historyScan, "none");
+  assert.equal(realise.outputSchema, "urn:usf:no-change-realisation-result:1");
+  assert.match(realise.authorityEffect, /no primary bytes or semantic authority change/u);
+
+  const completionEvidenceHelp = helpCommandResult(["evidence", "completion", "--json"]);
+  assert.equal((completionEvidenceHelp.output as { command: { outputSchema: string } }).command.outputSchema, "urn:usf:completion-evidence-candidate:1");
+  const completionProofHelp = helpCommandResult(["prove", "completion", "--json"]);
+  assert.equal((completionProofHelp.output as { command: { outputSchema: string } }).command.outputSchema, "urn:usf:completion-proof-bundle:1");
+
   const constructionPublishHelp = helpCommandResult(["publish", "construction-authority", "--json"]);
   const constructionPublish = (constructionPublishHelp.output as { command: { availability: string; authorityEffect: string; externalContact: string; historyScan: string; outputSchema: string; options: Array<{ syntax: string }> } }).command;
   assert.equal(constructionPublish.availability, "implemented");
@@ -126,6 +139,14 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.equal(constructionPublish.outputSchema, "urn:usf:construction-authority-publication-result:1");
   assert.ok(constructionPublish.options.some((option) => option.syntax === "--bundle PATH|-"));
   assert.match(constructionPublish.authorityEffect, /never rewrites permission resources/u);
+
+  const completionPublishHelp = helpCommandResult(["publish", "work-completion", "--json"]);
+  const completionPublish = (completionPublishHelp.output as { command: { availability: string; externalContact: string; historyScan: string; outputSchema: string; options: Array<{ syntax: string }> } }).command;
+  assert.equal(completionPublish.availability, "implemented");
+  assert.equal(completionPublish.externalContact, "none");
+  assert.equal(completionPublish.historyScan, "none");
+  assert.equal(completionPublish.outputSchema, "urn:usf:work-completion-publication-result:1");
+  assert.ok(completionPublish.options.some((option) => option.syntax === "--bundle PATH|-"));
 });
 
 test("apply, check and integrate refusals share the GOAL-defined exit taxonomy", () => {

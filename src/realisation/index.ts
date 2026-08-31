@@ -8,7 +8,7 @@ import { constants } from "node:fs";
 import { chmod, lstat, mkdir, open, readFile, readdir, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
-import { canonicalDigest } from "../core/canonical.ts";
+import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import { deriveCurrentRealisationBasis } from "../graph/work.ts";
 import { isOperation, type FileOperation as ResolvedFileOperation } from "../providers/types.ts";
 import {
@@ -77,6 +77,19 @@ export interface MaterialisedCandidate {
   readonly preimages: Readonly<Record<string, string | null>>;
 }
 
+export interface NoChangePolicyBinding {
+  readonly iri: string;
+  readonly resourceDigest: string;
+  readonly algorithmIri: string;
+  readonly algorithmResourceDigest: string;
+}
+
+export interface MaterialisedNoChangeCandidate extends MaterialisedCandidate {
+  readonly candidateDigest: string;
+  readonly workspacePath: string;
+  readonly policy: NoChangePolicyBinding;
+}
+
 export interface ByteDelta {
   readonly path: string;
   readonly before: string | null;
@@ -120,7 +133,7 @@ export interface AuthenticatedCandidateWorkspace {
   readonly workspaceIdentityDigest: string;
 }
 
-interface WorkspaceManifest {
+interface ChangeWorkspaceManifest {
   readonly schema: "urn:usf:workspace-manifest:1";
   readonly digest: string;
   readonly basis: RealisationBasis;
@@ -132,6 +145,41 @@ interface WorkspaceManifest {
   readonly scope: readonly string[];
   readonly writeSet: readonly string[];
   readonly preimages: Readonly<Record<string, string | null>>;
+}
+
+export interface NoChangeWorkspaceManifest {
+  readonly schema: "urn:usf:no-change-workspace-manifest:1";
+  readonly digest: string;
+  readonly basis: RealisationBasis;
+  readonly disposition: "no-change-candidate";
+  readonly policy: NoChangePolicyBinding;
+  readonly operations: readonly [];
+  readonly lineage: Readonly<{
+    readonly acceptedContributionDigests: readonly [];
+    readonly rejected: readonly [];
+  }>;
+  readonly scope: readonly string[];
+  readonly writeSet: readonly string[];
+  readonly preimages: Readonly<Record<string, string | null>>;
+}
+
+type WorkspaceManifest = ChangeWorkspaceManifest | NoChangeWorkspaceManifest;
+
+export interface AuthenticatedNoChangeWorkspace {
+  readonly schema: "urn:usf:authenticated-no-change-workspace:1";
+  readonly disposition: "verified-no-change";
+  readonly candidateDigest: string;
+  readonly workspace: string;
+  readonly constructionBasis: RealisationBasis;
+  readonly policy: NoChangePolicyBinding;
+  readonly workspaceIdentityDigest: string;
+  readonly lineageDigest: string;
+  readonly byteDeltaDigest: string;
+  readonly fileModeDigest: string;
+  readonly writeSet: readonly string[];
+  readonly writeSetDigest: string;
+  readonly scopedTree: readonly AuthenticatedTreeEntry[];
+  readonly candidateTreeDigest: string;
 }
 
 const manifestName = ".usf-workspace.json";
@@ -342,10 +390,15 @@ async function loadManifest(sourceRoot: string, workspace: string): Promise<Work
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate workspace manifest is invalid");
   }
-  assertExactKeys(value, ["schema", "digest", "basis", "operations", "lineage", "scope", "writeSet", "preimages"]);
+  const schema = (value as { schema?: unknown }).schema;
+  const noChange = schema === "urn:usf:no-change-workspace-manifest:1";
+  assertExactKeys(value, noChange
+    ? ["schema", "digest", "basis", "disposition", "policy", "operations", "lineage", "scope", "writeSet", "preimages"]
+    : ["schema", "digest", "basis", "operations", "lineage", "scope", "writeSet", "preimages"]);
   const manifest = value as WorkspaceManifest;
-  if (manifest.schema !== "urn:usf:workspace-manifest:1" || !digestPattern.test(manifest.digest)
-    || !Array.isArray(manifest.operations) || !manifest.lineage || typeof manifest.lineage !== "object" || Array.isArray(manifest.lineage)
+  if ((manifest.schema !== "urn:usf:workspace-manifest:1" && manifest.schema !== "urn:usf:no-change-workspace-manifest:1")
+    || !digestPattern.test(manifest.digest) || !Array.isArray(manifest.operations)
+    || !manifest.lineage || typeof manifest.lineage !== "object" || Array.isArray(manifest.lineage)
     || !Array.isArray(manifest.lineage.acceptedContributionDigests) || !Array.isArray(manifest.lineage.rejected)
     || !Array.isArray(manifest.scope) || !Array.isArray(manifest.writeSet)
     || !manifest.preimages || typeof manifest.preimages !== "object" || Array.isArray(manifest.preimages)) {
@@ -353,12 +406,35 @@ async function loadManifest(sourceRoot: string, workspace: string): Promise<Work
   }
   assertExactKeys(manifest.lineage, ["acceptedContributionDigests", "rejected"]);
   const basis = rehydrateBasis(manifest.basis);
+  const scope = candidateScope(basis);
+  if (manifest.schema === "urn:usf:no-change-workspace-manifest:1") {
+    const candidate = { ...manifest, basis };
+    if (candidate.disposition !== "no-change-candidate" || candidate.operations.length !== 0
+      || candidate.lineage.acceptedContributionDigests.length !== 0 || candidate.lineage.rejected.length !== 0
+      || !candidate.policy || typeof candidate.policy !== "object" || Array.isArray(candidate.policy)) {
+      throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "No-change workspace manifest is invalid");
+    }
+    assertExactKeys(candidate.policy, ["iri", "resourceDigest", "algorithmIri", "algorithmResourceDigest"]);
+    if (!/^urn:[^<>\s]+$/u.test(candidate.policy.iri) || !/^urn:[^<>\s]+$/u.test(candidate.policy.algorithmIri)
+      || !digestPattern.test(candidate.policy.resourceDigest) || !digestPattern.test(candidate.policy.algorithmResourceDigest)) {
+      throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "No-change workspace policy binding is invalid");
+    }
+    const writeSet = [...new Set(basis.scope.writeSet.map(checkScopePath))].sort();
+    const preimages = Object.fromEntries(Object.entries(basis.scope.preimages).sort(([left], [right]) => left.localeCompare(right)));
+    const { digest: suppliedDigest, ...draft } = candidate;
+    if (suppliedDigest !== canonicalDigest(draft, { rejectAbsolutePaths: true })
+      || !sameJson(candidate.scope.map(checkScopePath), scope)
+      || !sameJson(candidate.writeSet.map(checkScopePath), writeSet)
+      || !sameJson(candidate.preimages, preimages)) {
+      throw new RealisationError("CANDIDATE_BASIS_MISMATCH", "No-change workspace identity, scope, write set or pre-images do not match its basis");
+    }
+    return candidate;
+  }
   const candidate = { ...manifest, basis };
   const operations = normalizedResolvedOperations(candidate.operations);
   if (candidate.digest !== expectedCandidateDigest(candidate, operations)) {
     throw new RealisationError("CANDIDATE_BASIS_MISMATCH", "Workspace candidate identity does not match its basis, operations and lineage");
   }
-  const scope = candidateScope(basis);
   const writeSet = operations.map((operation) => operation.path).sort();
   const allowedWrites = basis.scope.writeSet.map(checkScopePath);
   if (writeSet.some((path) => !withinScope(path, allowedWrites))) {
@@ -496,9 +572,18 @@ async function currentBasis(root: string, value: unknown): Promise<RealisationBa
   }
 }
 
+function dependencyHasNoWorkspaceBytes(dependency: RealisationBasis["work"]["dependencies"][number]): boolean {
+  return dependency.kind === "file" && dependency.digest === digest(Buffer.from(`missing\u0000${dependency.key}`));
+}
+
 export function candidateScope(basis: RealisationBasis): string[] {
   const fileDependencies = basis.work.dependencies
     .filter((dependency) => dependency.kind !== "semantic-resource")
+    // A normalized transition receipt is deliberately represented by an
+    // explicit null preimage and a missing-path identity. It remains a basis
+    // dependency but contributes no workspace bytes.
+    .filter((dependency) => !dependencyHasNoWorkspaceBytes(dependency)
+      && !(Object.hasOwn(basis.scope.preimages, dependency.key) && basis.scope.preimages[dependency.key] === null))
     .map((dependency) => dependency.key);
   return [...new Set([...basis.scope.readSet, ...basis.scope.writeSet, ...fileDependencies].map(checkScopePath))].sort();
 }
@@ -603,11 +688,84 @@ export async function materialiseCandidate(root: string, candidate: CandidateSpe
   });
 }
 
+/** Materialise an exact current scope without inventing a resolver operation or contribution lineage. */
+export async function materialiseNoChangeCandidate(
+  root: string,
+  suppliedBasis: RealisationBasis,
+  suppliedPolicy: NoChangePolicyBinding,
+): Promise<MaterialisedNoChangeCandidate> {
+  const canonicalRoot = await realpath(root);
+  const basis = await currentBasis(canonicalRoot, suppliedBasis);
+  if (basis.authority.effectiveAuthority !== "active-permission" || basis.authority.permissionState !== "urn:usf:contract-state:active") {
+    throw new RealisationError("INVALID_REALISATION_BASIS", "No-change materialisation requires exact current active construction authority");
+  }
+  const policy = Object.freeze({ ...suppliedPolicy });
+  if (!/^urn:[^<>\s]+$/u.test(policy.iri) || !/^urn:[^<>\s]+$/u.test(policy.algorithmIri)
+    || !digestPattern.test(policy.resourceDigest) || !digestPattern.test(policy.algorithmResourceDigest)) {
+    throw new RealisationError("INVALID_REALISATION_BASIS", "No-change materialisation policy binding is invalid");
+  }
+  const scope = candidateScope(basis);
+  const writeSet = [...new Set(basis.scope.writeSet.map(checkScopePath))].sort();
+  const preimages = Object.fromEntries(Object.entries(basis.scope.preimages).sort(([left], [right]) => left.localeCompare(right)));
+  const draft = {
+    schema: "urn:usf:no-change-workspace-manifest:1" as const,
+    basis,
+    disposition: "no-change-candidate" as const,
+    policy,
+    operations: Object.freeze([]) as readonly [],
+    lineage: Object.freeze({ acceptedContributionDigests: Object.freeze([]) as readonly [], rejected: Object.freeze([]) as readonly [] }),
+    scope: Object.freeze(scope),
+    writeSet: Object.freeze(writeSet),
+    preimages: Object.freeze(preimages),
+  };
+  const candidateDigest = canonicalDigest(draft, { rejectAbsolutePaths: true });
+  return withCandidateLock(canonicalRoot, candidateDigest, async (lockedRoot) => {
+    await currentBasis(lockedRoot, basis);
+    const workspace = workspaceFor(lockedRoot, candidateDigest);
+    await assertPrivateUsfDirectory(lockedRoot, ".usf", true);
+    await assertPrivateUsfDirectory(lockedRoot, ".usf/workspaces", true);
+    try {
+      await lstat(workspace);
+      await assertPrivateWorkspaceRoot(lockedRoot, workspace);
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    await rm(workspace, { recursive: true, force: true });
+    await mkdir(workspace, { mode: 0o700 });
+    await assertPrivateWorkspaceRoot(lockedRoot, workspace);
+    try {
+      for (const path of scope) await copyRegularTree(lockedRoot, workspace, path);
+      const manifest: NoChangeWorkspaceManifest = Object.freeze({ ...draft, digest: candidateDigest });
+      await writeAtomically(resolve(workspace, manifestName), Buffer.from(canonicalJson(manifest, { rejectAbsolutePaths: true })));
+      const readback = await loadManifest(lockedRoot, workspace);
+      if (readback.schema !== manifest.schema || readback.digest !== candidateDigest) {
+        throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "No-change workspace readback did not match the intended manifest");
+      }
+      await currentBasis(lockedRoot, readback.basis);
+      await assertWorkspaceCandidateBytes(lockedRoot, workspace, readback);
+      return Object.freeze({
+        workspace,
+        workspacePath: relative(lockedRoot, workspace).split(sep).join("/"),
+        basis,
+        preimages,
+        candidateDigest,
+        policy,
+      });
+    } catch (error) {
+      await rm(workspace, { recursive: true, force: true });
+      throw error;
+    }
+  });
+}
+
 /** Apply already-resolved typed operations in the isolated tree and derive byte deltas. */
 export async function applyCandidateOperations(root: string, candidateDigest: string, operations: readonly FileOperation[]): Promise<readonly ByteDelta[]> {
   return withCandidateLock(root, candidateDigest, async (canonicalRoot) => {
     const workspace = workspaceFor(canonicalRoot, candidateDigest);
     const manifest = await loadManifest(canonicalRoot, workspace);
+    if (manifest.schema === "urn:usf:no-change-workspace-manifest:1") {
+      throw new RealisationError("INVALID_OPERATION", "A no-change workspace cannot accept file operations");
+    }
     const fullDigest = digestPattern.test(candidateDigest) ? candidateDigest : `sha256:${candidateDigest}`;
     if (manifest.digest !== fullDigest) throw new RealisationError("MISSING_WORKSPACE", "Workspace digest does not match its location");
     await currentBasis(canonicalRoot, manifest.basis);
@@ -702,6 +860,7 @@ async function assertWorkspaceCandidateBytes(sourceRoot: string, workspace: stri
   for (const [path, preimage] of Object.entries(manifest.basis.scope.preimages)) await addBasisPath(path, preimage);
   for (const dependency of manifest.basis.work.dependencies) {
     if (dependency.kind === "semantic-resource") continue;
+    if (dependencyHasNoWorkspaceBytes(dependency)) continue;
     await addBasisPath(dependency.key, dependency.digest);
   }
 
@@ -808,6 +967,9 @@ export async function authenticateCandidateWorkspace(root: string, candidateDige
     const workspace = workspaceFor(canonicalRoot, candidateDigest);
     const manifest = await loadManifest(canonicalRoot, workspace);
     if (manifest.digest !== candidateDigest) throw new RealisationError("MISSING_WORKSPACE", "Workspace digest does not match its location");
+    if (manifest.schema === "urn:usf:no-change-workspace-manifest:1") {
+      throw new RealisationError("INVALID_OPERATION", "No-change candidates require completion publication and cannot enter integration");
+    }
     const constructionBasis = await currentBasis(canonicalRoot, manifest.basis);
     for (const [path, expected] of Object.entries(manifest.preimages)) {
       const primary = await bytesAt(canonicalRoot, path);
@@ -867,6 +1029,43 @@ export async function authenticateCandidateWorkspace(root: string, candidateDige
       scopedTree,
       candidateTreeDigest,
       workspaceIdentityDigest,
+    });
+  });
+}
+
+/** Authenticate the positive no-change disposition without admitting it to the integration path. */
+export async function authenticateNoChangeWorkspace(root: string, candidateDigest: string): Promise<AuthenticatedNoChangeWorkspace> {
+  return withCandidateLock(root, candidateDigest, async (canonicalRoot) => {
+    const workspace = workspaceFor(canonicalRoot, candidateDigest);
+    const manifest = await loadManifest(canonicalRoot, workspace);
+    if (manifest.schema !== "urn:usf:no-change-workspace-manifest:1" || manifest.digest !== candidateDigest) {
+      throw new RealisationError("INVALID_WORKSPACE_MANIFEST", "Candidate is not an exact no-change workspace");
+    }
+    const constructionBasis = await currentBasis(canonicalRoot, manifest.basis);
+    await assertWorkspaceCandidateBytes(canonicalRoot, workspace, manifest);
+    const scopedTree = await scopedWorkspaceTree(workspace);
+    const candidateTreeDigest = canonicalDigest(scopedTree);
+    const writeSet = [...manifest.writeSet];
+    return freezeCandidate({
+      schema: "urn:usf:authenticated-no-change-workspace:1" as const,
+      disposition: "verified-no-change" as const,
+      candidateDigest,
+      workspace,
+      constructionBasis,
+      policy: { ...manifest.policy },
+      workspaceIdentityDigest: canonicalDigest({
+        candidateDigest,
+        originalConstructionBasisDigest: constructionBasis.basisDigest,
+        scope: manifest.scope,
+        candidateTreeDigest,
+      }, { rejectAbsolutePaths: true }),
+      lineageDigest: canonicalDigest(manifest.lineage, { rejectAbsolutePaths: true }),
+      byteDeltaDigest: canonicalDigest([], { rejectAbsolutePaths: true }),
+      fileModeDigest: canonicalDigest([], { rejectAbsolutePaths: true }),
+      writeSet,
+      writeSetDigest: canonicalDigest(writeSet, { rejectAbsolutePaths: true }),
+      scopedTree,
+      candidateTreeDigest,
     });
   });
 }

@@ -3,7 +3,7 @@
   "$id": "urn:usf:work-completion-publication-receipt:1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "status", "algorithmIri", "algorithmVersion", "algorithmResourceDigest", "publicationPolicyIri", "publicationPolicyDigest", "publicationIntentDigest", "targetGraphIri", "semanticSourcePath", "publicationReceiptPath", "profileIri", "profileVersion", "manifestPath", "manifestDigest", "baseSourceDigest", "resultingSourceDigest", "baseSemanticDigest", "resultingSemanticDigest", "memberCount", "members", "operations", "deltaDigest", "validationResultDigest", "nonClaims", "receiptDigest"],
+  "required": ["schema", "status", "algorithmIri", "algorithmVersion", "algorithmResourceDigest", "publicationPolicyIri", "publicationPolicyDigest", "publicationIntentDigest", "targetGraphIri", "semanticSourcePath", "publicationReceiptPath", "profileIri", "profileVersion", "manifestPath", "manifestDigest", "authorityDependencies", "authorityDependencyDigest", "baseSourceDigest", "resultingSourceDigest", "baseSemanticDigest", "resultingSemanticDigest", "memberCount", "members", "operations", "deltaDigest", "validationResultDigest", "nonClaims", "receiptDigest"],
   "properties": {
     "schema": { "const": "urn:usf:work-completion-publication-receipt:1" },
     "status": { "const": "verified" },
@@ -20,6 +20,21 @@
     "profileVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" },
     "manifestPath": { "$ref": "#/$defs/path" },
     "manifestDigest": { "$ref": "#/$defs/digest" },
+    "authorityDependencies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "path", "digest"],
+        "properties": {
+          "kind": { "enum": ["schema", "tool"] },
+          "path": { "$ref": "#/$defs/path" },
+          "digest": { "$ref": "#/$defs/digest" }
+        }
+      }
+    },
+    "authorityDependencyDigest": { "$ref": "#/$defs/digest" },
     "baseSourceDigest": { "$ref": "#/$defs/digest" },
     "resultingSourceDigest": { "$ref": "#/$defs/digest" },
     "baseSemanticDigest": { "$ref": "#/$defs/digest" },

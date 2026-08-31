@@ -319,7 +319,7 @@ async function toolDependencyRoots(): Promise<readonly string[]> {
   return roots;
 }
 
-interface AuthenticatedWorkspaceManifest {
+interface AuthenticatedChangeWorkspaceManifest {
   readonly schema: "urn:usf:workspace-manifest:1";
   readonly digest: string;
   readonly basis: RealisationBasis;
@@ -329,6 +329,21 @@ interface AuthenticatedWorkspaceManifest {
   readonly writeSet: readonly string[];
   readonly preimages: Readonly<Record<string, string | null>>;
 }
+
+interface AuthenticatedNoChangeWorkspaceManifest {
+  readonly schema: "urn:usf:no-change-workspace-manifest:1";
+  readonly digest: string;
+  readonly basis: RealisationBasis;
+  readonly disposition: "no-change-candidate";
+  readonly policy: Readonly<{ readonly iri: string; readonly resourceDigest: string; readonly algorithmIri: string; readonly algorithmResourceDigest: string }>;
+  readonly operations: readonly [];
+  readonly lineage: Readonly<{ readonly acceptedContributionDigests: readonly []; readonly rejected: readonly [] }>;
+  readonly scope: readonly string[];
+  readonly writeSet: readonly string[];
+  readonly preimages: Readonly<Record<string, string | null>>;
+}
+
+type AuthenticatedWorkspaceManifest = AuthenticatedChangeWorkspaceManifest | AuthenticatedNoChangeWorkspaceManifest;
 
 interface CandidateTreeEntry { readonly path: string; readonly digest: string; readonly mode: "100644" | "100755"; }
 
@@ -354,17 +369,31 @@ async function authenticatedWorkspaceManifest(workspace: string, candidateDigest
     if (error instanceof CheckRefusal) throw error;
     return refuse("INVALID_WORKSPACE_MANIFEST");
   }
-  if (!value || typeof value !== "object" || Array.isArray(value)
-    || !exactKeys(value, ["schema", "digest", "basis", "operations", "lineage", "scope", "writeSet", "preimages"])) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
     refuse("INVALID_WORKSPACE_MANIFEST");
   }
+  const noChange = (value as { schema?: unknown }).schema === "urn:usf:no-change-workspace-manifest:1";
+  if (!exactKeys(value, noChange
+    ? ["schema", "digest", "basis", "disposition", "policy", "operations", "lineage", "scope", "writeSet", "preimages"]
+    : ["schema", "digest", "basis", "operations", "lineage", "scope", "writeSet", "preimages"])) refuse("INVALID_WORKSPACE_MANIFEST");
   const manifest = value as AuthenticatedWorkspaceManifest;
-  if (manifest.schema !== "urn:usf:workspace-manifest:1" || manifest.digest !== candidateDigest
-    || manifest.basis.basisDigest !== basis.basisDigest || !Array.isArray(manifest.operations) || !manifest.operations.every(isOperation)
+  if ((manifest.schema !== "urn:usf:workspace-manifest:1" && manifest.schema !== "urn:usf:no-change-workspace-manifest:1")
+    || manifest.digest !== candidateDigest || manifest.basis.basisDigest !== basis.basisDigest
+    || !Array.isArray(manifest.operations)
     || !manifest.lineage || typeof manifest.lineage !== "object" || Array.isArray(manifest.lineage)
     || !exactKeys(manifest.lineage, ["acceptedContributionDigests", "rejected"])
     || !Array.isArray(manifest.scope) || !Array.isArray(manifest.writeSet)
     || !manifest.preimages || typeof manifest.preimages !== "object" || Array.isArray(manifest.preimages)) {
+    refuse("INVALID_WORKSPACE_MANIFEST");
+  }
+  if (manifest.schema === "urn:usf:workspace-manifest:1") {
+    if (manifest.operations.length === 0 || !manifest.operations.every(isOperation)) refuse("INVALID_WORKSPACE_MANIFEST");
+  } else if (manifest.disposition !== "no-change-candidate" || manifest.operations.length !== 0
+    || manifest.lineage.acceptedContributionDigests.length !== 0 || manifest.lineage.rejected.length !== 0
+    || !manifest.policy || typeof manifest.policy !== "object" || Array.isArray(manifest.policy)
+    || !exactKeys(manifest.policy, ["iri", "resourceDigest", "algorithmIri", "algorithmResourceDigest"])
+    || !/^urn:[^<>\s]+$/u.test(manifest.policy.iri) || !/^urn:[^<>\s]+$/u.test(manifest.policy.algorithmIri)
+    || !digestPattern.test(manifest.policy.resourceDigest) || !digestPattern.test(manifest.policy.algorithmResourceDigest)) {
     refuse("INVALID_WORKSPACE_MANIFEST");
   }
   return manifest;

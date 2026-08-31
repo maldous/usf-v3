@@ -3,7 +3,6 @@ import { resolve } from "node:path";
 import { dispatchCommand, parseCommand, type CommandHandlers } from "./commands/dispatcher.ts";
 import { admissionCheckHandler, applyHandler, integrateCommandHandler } from "./commands/apply.ts";
 import { bootstrapCarrierCommandHandler } from "./commands/bootstrap-carrier.ts";
-import { constructionAwarePublishCommandHandler, evidenceCommandHandler, proveCommandHandler } from "./commands/construction-authority.ts";
 import { callCommandHandler } from "./commands/call.ts";
 import { doctorCommandHandler } from "./commands/doctor.ts";
 import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
@@ -15,6 +14,12 @@ import { resolveCommandHandler } from "./commands/resolve.ts";
 import { routeCommandHandler } from "./commands/route.ts";
 import { broadStatusCommandHandler } from "./commands/status.ts";
 import { workCommand } from "./commands/work.ts";
+import {
+  completionAwareEvidenceCommandHandler,
+  completionAwareProveCommandHandler,
+  completionAwarePublishCommandHandler,
+  realiseCommandHandler,
+} from "./commands/work-completion.ts";
 import { errorOutput, exitCodes, UsfError } from "./core/errors.ts";
 import { resolveRepositoryRoot } from "./core/repository.ts";
 import { localGitChildEnvironment } from "./providers/local-git.ts";
@@ -33,16 +38,17 @@ const bootstrapHandlers: CommandHandlers = {
   work: workCommand,
   call: callCommandHandler,
   resolve: resolveCommandHandler,
+  realise: realiseCommandHandler,
   apply: applyHandler,
   check: admissionCheckHandler,
   integrate: integrateCommandHandler,
   "bootstrap-carrier": bootstrapCarrierCommandHandler,
-  evidence: evidenceCommandHandler,
-  prove: proveCommandHandler,
+  evidence: completionAwareEvidenceCommandHandler,
+  prove: completionAwareProveCommandHandler,
   metrics: metricsCommandHandler,
   models: modelsCommandHandler,
   probe: probeCommandHandler,
-  publish: constructionAwarePublishCommandHandler,
+  publish: completionAwarePublishCommandHandler,
   route: routeCommandHandler,
   start: startCommandHandler,
   stop: stopCommandHandler,

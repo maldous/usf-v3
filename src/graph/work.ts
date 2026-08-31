@@ -13,6 +13,7 @@ import {
   type VerifiedTransitionCandidateCurrentness,
 } from "../realisation/transition.ts";
 import { evaluateConstructionAuthorityGrant } from "../realisation/construction-authority.ts";
+import { evaluateNoChangeCompletionRecords, workCompletionConstants } from "../realisation/work-completion.ts";
 
 const typePredicate = "urn:usf:predicate:type";
 const workType = "urn:usf:type:WorkPacket";
@@ -705,7 +706,7 @@ interface CompletionEvaluation {
   readonly authorityDigest: string;
 }
 
-function evaluateCompletion(graph: SemanticGraph, packet: WorkPacket, basis: RealisationBasis): CompletionEvaluation {
+function evaluateLegacyCompletion(graph: SemanticGraph, packet: WorkPacket, basis: RealisationBasis): CompletionEvaluation {
   const reasons: string[] = [];
   const dynamicResources: string[] = [];
   const authority = packet.realisationAuthority;
@@ -835,6 +836,70 @@ function evaluateCompletion(graph: SemanticGraph, packet: WorkPacket, basis: Rea
     basisDependencies: basis.work.dependencies.map((dependency) => ({ ...dependency })),
     authorityDigest: canonicalDigest({ work: packet.id, basis: basis.basisDigest, scopedDependencyDigest: basis.work.scopedDependencyDigest, requirement, obligation, validations, algorithm, verifier, integrationReceipt, integrationDigest, evidence, proofResult, resources: resources.map((id) => ({ id, digest: resourceDigest(graph, id) })), reasons: reasonCodes }),
   };
+}
+
+function evaluateCompletion(graph: SemanticGraph, packet: WorkPacket, basis: RealisationBasis): CompletionEvaluation {
+  const policyImplemented = objectsFor(graph, workCompletionConstants.policyIri, predicate("implementationState"))
+    .some((entry) => entry.objectKind === "iri" && entry.object === workCompletionConstants.implementedState);
+  const workEligible = objectsFor(graph, workCompletionConstants.policyIri, predicate("eligibleWork"))
+    .some((entry) => entry.objectKind === "iri" && entry.object === packet.id);
+  if (!policyImplemented || !workEligible) return evaluateLegacyCompletion(graph, packet, basis);
+
+  try {
+    const projection = evaluateNoChangeCompletionRecords(graph, packet, basis);
+    const reasons = [...projection.reasonCodes];
+    if (packet.eligibility?.activation.eligible !== true
+      || packet.realisationAuthority?.permission?.activationState !== activeState) {
+      reasons.push(`COMPLETION_CONSTRUCTION_AUTHORITY_NOT_CURRENT:${packet.id}`);
+    }
+    if (packet.eligibility?.dependencyReady !== true) reasons.push(`COMPLETION_PREDECESSOR_NOT_COMPLETE:${packet.id}`);
+    const reasonCodes = [...new Set(reasons)].sort();
+    const resources = [...new Set([...projection.authorityResources, ...projection.dynamicResources])].sort();
+    const basisDependencies = uniqueDependencies([
+      ...basis.work.dependencies.map((dependency) => ({ ...dependency })),
+      ...projection.authoritySchemaPaths.map((path) => fileDependency(graph, path, "schema", false)),
+      ...projection.authorityToolPaths.map((path) => fileDependency(graph, path, "tool", false)),
+      ...(projection.receiptDependency === undefined ? [] : [projection.receiptDependency]),
+    ]);
+    return {
+      verified: reasonCodes.length === 0,
+      integrationReceipt: projection.realisationReceipt,
+      evidence: projection.evidence,
+      proofResult: projection.proofResult,
+      reasonCodes,
+      dynamicResources: resources,
+      basisDependencies,
+      authorityDigest: canonicalDigest({
+        work: packet.id,
+        basis: basis.basisDigest,
+        scopedDependencyDigest: basis.work.scopedDependencyDigest,
+        receipt: projection.realisationReceipt,
+        evidence: projection.evidence,
+        proofResult: projection.proofResult,
+        resources: resources.map((id) => ({ id, digest: resourceDigest(graph, id) })),
+        dependencies: basisDependencies,
+        reasons: reasonCodes,
+      }),
+    };
+  } catch {
+    const reasonCodes = [`WORK_COMPLETION_NO_CHANGE_AUTHORITY_INVALID:${packet.id}`];
+    return {
+      verified: false,
+      integrationReceipt: null,
+      evidence: null,
+      proofResult: null,
+      reasonCodes,
+      dynamicResources: [workCompletionConstants.policyIri],
+      basisDependencies: basis.work.dependencies.map((dependency) => ({ ...dependency })),
+      authorityDigest: canonicalDigest({
+        work: packet.id,
+        basis: basis.basisDigest,
+        scopedDependencyDigest: basis.work.scopedDependencyDigest,
+        policy: workCompletionConstants.policyIri,
+        reasons: reasonCodes,
+      }),
+    };
+  }
 }
 
 interface ExceptionEvaluation {

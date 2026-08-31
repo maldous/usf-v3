@@ -1,15 +1,15 @@
 # USF V3 handover
 
-Updated 2026-08-31. This is the durable continuation boundary after bounded
-semantic-recovery tooling, optional Hermes-Agent authority, the committed
-semantic-first gate, the committed local candidate-integration toolchain and
-the committed historical-carrier verification/adoption chain. All three finite
-historical carrier observations have now been authenticated, recorded in one
-coherent checkpoint and pushed. The next safe slice is the graph-defined,
-implemented copy-on-write ordinary construction-evidence/proof/permission
-path for `repository-path-scope`, followed by the graph-defined isolated
-realisation of `file-asset-index`. Provider contact remains downstream of that
-chain and the trusted live-provider sequence.
+Updated 2026-08-31. This is the durable continuation boundary after the
+semantic-first gate, local candidate integration, finite historical-carrier
+adoption and the generic copy-on-write no-change completion chain. The exact
+profile-bound `repository-path-scope` and `file-asset-index` packets are now
+`verified-complete`; the latter depends on the former through verified
+completion rather than a label or Git state. The next safe slice is the
+earliest trusted provider vertical slice. Full-universe provider qualification
+is explicitly not its prerequisite: discovery and qualification remain lazy,
+bounded and candidate-driven while the configured routes progress through the
+mandatory trusted provider sequence.
 Until the operator says otherwise, one operator owns repository mutation; do
 not delegate repository work or run concurrent writers.
 
@@ -64,6 +64,49 @@ not delegate repository work or run concurrent writers.
 
 The handover previously stopped at the provider slice and reported 156 tests.
 That was stale after the semantic-recovery commits. This version supersedes it.
+
+## Current no-change completion checkpoint
+
+The graph-defined `realise no-change`, `evidence completion`, `prove
+completion` and `publish work-completion` commands are implemented as separate
+Unix-composable stages. They preserve one exact versioned profile and
+RealisationBasis, use an owner-private Git-less workspace, require every
+graph-selected confined check receipt, and publish only additive file-backed
+no-change receipt, Evidence and ProofResult records. An empty delta alone never
+establishes completion, and no-change candidates cannot enter ordinary Git
+integration.
+
+The current tracked transition receipts are:
+
+- `repository-path-scope` construction:
+  `evidence/construction-authority/3cb92bd3eb3cbbc6239acd5e94fc5c2272e12769eb4c079ead9e168c735ce4e3.json`,
+  receipt digest
+  `sha256:87346d8f99d0f5ff48946ac224c710988e6a4591ddf88938c57ce230bf09e9fd`;
+- `repository-path-scope` completion:
+  `evidence/work-completion/7e9c886499ec840c0612a1919e14b015cc28a6ad3380e5e39aca09e7bcb7431b.json`,
+  receipt digest
+  `sha256:f49239af03595b78b7ad7fb71027e484daab4ff68b15adc2e2c25a7982461e6d`;
+- `file-asset-index` construction:
+  `evidence/construction-authority/d0068705f7ca2afd6369db03fb68a564a53bd6bdc1bde38a6978f6a3103fda7f.json`,
+  receipt digest
+  `sha256:a8045ae066ad285d8fdfebf6c6682f08797ff051d44af42bdd71b373f471ca29`;
+  and
+- `file-asset-index` completion:
+  `evidence/work-completion/4a7f7d20fdd277409ff18f0c9836978893caa5d837bdc871164159170a1038fb.json`,
+  receipt digest
+  `sha256:22819afa9af479ef6287e9bf914ef4863139363907d0efa89de4906d216396fa`.
+
+Exact `usf work` readback reports both packets at `verified-complete` against
+the current integration semantic digest
+`sha256:0a0ff2e6e4691bef7c80116c7021205acffc44bed8577760f08558ff27286f45`.
+During the final gate, three existing focused checks correctly exposed one
+missing graph-declared runtime dependency for the newly imported completion
+evaluator. Adding exactly `src/realisation/work-completion.ts` to that semantic
+runtime closure fixed the common defect without weakening containment or
+adding tests. The focused boundary then passed 10/10, the complete authoritative
+suite passed 187/187, containment passed and `git diff --check` passed. These
+facts establish only the local completion/checkpoint boundary; no provider,
+ANQR, staging, production, Hermes-Agent or terminal proof is claimed.
 
 ## Current graph authority
 
@@ -661,9 +704,11 @@ usf providers aliases
 
 The census is linear over indexed candidates, cursor-bounded and JSON/JSONL
 composable. It replaces the current single-capability, 1,000-item `usf models`
-limit and produces the complete assigned/excluded/eligible-unassigned table.
+limit and can produce the complete assigned/excluded/eligible-unassigned table.
 Qualification is lazy by candidate and never expands into a
-route-by-model-by-prompt test matrix.
+route-by-model-by-prompt test matrix. Gate 2 must not wait for every catalogue
+row: first dispose the exact configured candidates needed by the live vertical
+slice, then expand the same deterministic census incrementally.
 
 “Full provider/model population” means every currently configured route and
 every currently eligible route under the exact frozen inputs, with complete
@@ -840,35 +885,30 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Preserve the pushed `d735ca9` command-implementation boundary and the exact
-   current `repository-path-scope` copy-on-write grant. Do not create a fourth
-   version-1 carrier observation or reinterpret any historical carrier as
-   completion.
-2. Implement and qualify the now graph-defined generic no-change realisation
-   disposition through its four registered `usf` command stages. It must bind an exact
-   versioned profile and current RealisationBasis, materialise only the finite
-   file scope into an isolated workspace, run the graph-selected check, admit
-   completion evidence, evaluate completion proof and publish additive
-   file-backed authority. A zero delta alone is never success.
-3. Use that path to truthfully close the already-present
-   `repository-path-scope` realisation, then complete
-   `urn:usf:work:file-asset-index` through the profile-bound isolated V3 chain.
-   Do not edit its already-present files merely to manufacture lineage; require
-   a real accepted delta or truthfully close it as an exact no-change realization
-   only after the graph explicitly defines that disposition and its evidence,
-   proof and publication semantics.
-4. Model the construction-command implementation's own exact historical
-   carrier only in a later copy-on-write versioned authority after its coherent
-   implementation commit/tree and complete allowed-path diff exist. Do not
-   mutate the immutable version-1 permission, guess, caller-supply or
-   retroactively rewrite that identity; it is not a serial prerequisite for
-   repository-path-scope or file-asset-index.
-5. Build the graph-defined provider census from every models.dev candidate plus
-   reviewed V1/V2 credential-name/model provenance and distinct host adapters.
-   Produce the full assigned/excluded/eligible-unassigned table before contact,
-   then acquire account receipts, run scrubbed adapters, authenticate provider
-   answers and perform hidden-holdout qualification. Only afterward demonstrate
-   live multi-provider parallelism, semantic-token reduction or Hermes-Agent.
+1. Preserve the completed no-change chain and its four immutable transition
+   receipts. Do not create another version-1 carrier observation or reinterpret
+   any historical carrier, test result or Git state as provider authority.
+2. Use registered `usf` commands to project the exact currently configured
+   provider/model candidates and their local dispositions. Reuse the frozen
+   models.dev catalogue and reviewed V1/V2 credential-name provenance, but do
+   not block the first useful Gate 2 slice on exhaustive catalogue
+   qualification or a Cartesian test matrix.
+3. Graph-define and acquire one trusted exact-account zero-paid tier receipt,
+   then run its content-verified adapter in a scrubbed child with only the
+   selected credential and bounded public input. Refuse before contact if the
+   receipt, adapter integrity, credential mapping, privacy or zero-paid controls
+   are absent.
+4. Acquire authenticated provider-produced semantic answers through a
+   registered command and perform genuine hidden-holdout qualification for the
+   exact task/profile. Repeat for a second independent provider family when the
+   environment actually permits it; Claude must remain authoritatively
+   unavailable here unless exact current evidence changes.
+5. Only after those gates, run the minimal continuous live loop and demonstrate
+   real multi-provider parallelism and semantic-token reduction with accepted
+   lineage, exact token/cost/concurrency metrics and mechanically impossible
+   paid fallback. Hermes-Agent remains optional and downstream of ordinary
+   `usf start`/`usf stop`; it is not needed for the first USF-only vertical
+   proof.
 
 The secondary semantic-recovery sweep is an independent bounded lane, not a
 serial prerequisite for integration, `file-asset-index` or the provider census.
