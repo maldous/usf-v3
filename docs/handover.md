@@ -123,6 +123,44 @@ and the resulting semantic digest is
 Commit this semantic carrier, create and independently verify a fresh
 candidate, and only then integrate.
 
+## Live continuation update — bind leaf authority and imported bytes
+
+The module-presence carrier was committed as `3257bfe`, but independent review
+refused its first candidate `b2bd8f...`; no ordinary integration occurred.
+Although the implementation checked completion before a lazy import, it
+derived authority from the caller-selected repository while resolving the
+module relative to the CLI implementation. A different checkout could
+therefore supply a completed graph while this checkout supplied different leaf
+bytes. The focused test also substituted the authorizer and did not execute the
+production completion decision.
+
+The graph now closes both defects without putting a serial lock in the provider
+runtime. The decomposed production boundary owns the immutable host/receipt
+mapping and exact scope/completion decision. It must bind the selected root to
+its implementation root and take the existing primary-mutation lock in shared
+mode only across final completion derivation, exact executable dependency
+closure authentication and same-root import. Multiple readers remain
+concurrent, the lock is released before the leaf handler, and provider
+inference never takes it. This is the repository's cooperative single-writer
+boundary; arbitrary same-UID writes that bypass USF mutation authority are not
+supported concurrency. Leaf-owning validation separately proves imports have
+no external-contact side effects.
+
+Publish fresh operator construction authority for this semantic preimage,
+then generate one replacement candidate. Its existing compact contract test
+must execute the exported production authorizer and shared import boundary,
+cover cross-root and dependency drift plus present-but-unqualified refusal
+before loader use, and preserve exact forwarding/ordinary laziness. Do not
+expand the operator validation into the monolithic provider runtime and do not
+contact a provider.
+
+That construction authority is now published at
+`evidence/construction-authority/0bc9189b551f008faf5013758acd8a842a3bed3f6ab2b97504a29a5d039f2b6c.json`;
+its resulting semantic digest is
+`sha256:684f6ab7d4072265fbae81735a587cb6dae2c835a84b9bf9a5720e9c825aef55`.
+Commit this exact graph/handover/receipt carrier before generating the
+replacement candidate.
+
 ## Live continuation update — one-time provider registry closure
 
 The shared CLI correction is now graph-defined rather than tribal. Exact
