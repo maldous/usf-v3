@@ -3,14 +3,21 @@
 Updated 2026-09-01. The live continuation updates immediately below supersede
 older next-action and carrier statements where they differ. The durable pushed
 boundary is still `2b0c85b2d3da95cd542f29b1e34e36c3d29aae81`; no GitHub contact
-or push occurred in this continuation. Local `main` is
-`89c3ba9298ddb5fdfeae156abfbcf6f27c6b9085`, the committed profile-policy and
-typed host-runtime-closure carrier. It includes the truthful historical
-operator construction receipt; no source implementation from the isolated
-operator draft has been materialised. Registered `usf status` reports current
-profile semantic digest
-`sha256:8ecd8e56e85f0bb7d66b1ee9464dd905cfaba8e68c3761492bd67652798865e0`.
-Focused graph/provider validation passes 19/19 and `git diff --check` passes.
+or push occurred in this continuation. The committed base for the current
+not-yet-committed remodel is
+`1e6bf3d19331128d41552ad69dad99fce9d142e5`, the two-member
+construction-authority carrier. Its parent
+`89c3ba9298ddb5fdfeae156abfbcf6f27c6b9085` is the profile-policy and typed
+host-runtime-closure carrier. No source implementation from the isolated
+operator draft has been materialised. The reviewed but not-yet-committed
+composable-input, validation-isolation and shared call-leaf remodel makes
+registered `usf status` report current profile semantic digest
+`sha256:f349a906363701b31e8424ccf0dd21207b62cb1a6b06db6fc228129b68293f7d`.
+The focused graph/provider topology lane passes 13/13; the independent current
+compatibility lanes pass 15/15; and `git diff --check` passes. The newly declared
+profile-3 tests, schemas and source paths are intentionally still absent and
+proofblocked until construction authority is published; no completion claim is
+made for them.
 
 The follow-up makes the selected profile publication policy explicitly admit
 its newly declared `repository-path-scope` predecessor. Registered construction
@@ -423,6 +430,89 @@ failure. The current ignored bridge performed that exact reconstruction before
 calling the existing resolver and then used registered `usf apply`; it carries
 no authority beyond the subsequent graph-selected check. This defect and the
 still-missing `usf resolve --input -` form must be closed before unattended BAU.
+
+The resumed operator materialisation exposed the more general registered-input
+ceiling. The current operator `usf work` projection is 103,737 bytes; the
+isolated provider dispatcher, help and compact contract-test postimages are
+31,340, 61,536 and 27,606 bytes respectively, for a 224,219-byte assignment
+before JSON envelope overhead. Passing that legitimate assignment through the
+documented single-argument `usf call '<JSON>'` form fails in the invoking shell
+with `Argument list too long`. Linux reports a larger aggregate `ARG_MAX`, but
+one argument remains bounded near 128 KiB on this host, so aggregate capacity
+does not make the interface usable. This is a deterministic Unix composition
+defect on the critical path, not provider failure, test hardening or a reason to
+use another ignored bridge.
+
+`usf apply`, `route` and `probe semantic` already establish the appropriate
+repository convention: at most 4 MiB of fatal-UTF-8 JSON, either bounded stdin
+selected by `--input -` or an explicit ignored owner-private mode-0600 regular
+non-symlink `.usf/inputs/*.json` file authenticated by same-root, descriptor and
+stable-read checks. `call` and `resolve` must expose the same registered carrier,
+retain bounded inline JSON only for compatibility, reconstruct wire bases
+before strict call/resolution logic, and preserve their current no-contact and
+no-authority effects. `resolve --input` must accept a complete successful
+`urn:usf:call-result:1` envelope as well as the legacy contribution array, and
+must refuse partial or failed call envelopes without dropping failures. One
+compact command-contract table must cover file, stdin, legacy,
+oversize/unsafe-file and malformed/thawed-basis behavior; do not create a new
+matrix per provider or model.
+
+Full imported-manifest readback resolves the owner without a new profile root.
+Historical `urn:usf:work:realisation-basis-chain` owns `call`, `resolve` and help
+only under `urn:usf:profile:v3-semantic-first:1`; profile-3
+`provider-parallel-execution` currently owns `call` but is downstream and
+proofblocked; and `resolve` otherwise has no profile-3 owner. The existing
+`operator-observability` packet is already the profile-3 predecessor for shared
+CLI registry/help work and, through imported `graph/usf-bootstrap.nq`, already
+owns `help.ts`, `dispatcher.ts` and `cli.ts`; its provider-pipeline extension
+adds the two provider registry modules. Therefore the smallest correction is to
+extend that already-selected operator contract/work with generic composable
+`call`/`resolve` carriage and one reusable command-input module, remove generic
+`call.ts` ownership from the later parallel leaf, and put later parallel behavior
+behind a leaf module that depends on completed operator authority. Profile
+membership and version remain unchanged, so only the operator and its explicit
+dependants require fresh scoped authority. Do not reopen the historical
+bootstrap packet or treat profile-wide sibling content as a dependency.
+
+Independent review of this remodel also exposed one earlier validation-scope
+error before it could be carried forward. The profile-3 provider-leaf boundary
+case had been appended to the shared
+`tests/contract/operator-observability.test.ts`; its generic registry case also
+read `src/commands/providers.ts`. Consequently the authoritative profile-2
+reconstruction attempted to execute and read profile-3 code outside its
+historical two-file validation runtime closure and refused with `CHECK_FAILED`.
+Do not expand that historical closure or duplicate the case. The current
+profile-3 operator packet must move the existing provider-leaf case and its
+registration-source assertions intact into one profile-3-only graph-selected
+test, restore the shared historical file to its generic public operator
+boundary, and bind the moved test to its own no-contact operator validation.
+This is a semantic ownership correction, not test growth:
+the number of behavioral cases remains unchanged, and profile-2 and profile-3
+again authenticate only their own selected validation closures.
+
+The follow-up adversarial pass found and the same semantic slice now closes
+four related ownership/interface gaps. Composable input uses the new
+profile-3-only `tests/contract/operator-composable-input.test.ts`, not the
+historical `fake-call-resolve` file. File inputs are exact direct children whose
+lexical and canonical paths agree, with owner/mode/single-link/no-follow and
+stable pre/open/post descriptor identity plus an incremental max-plus-one read.
+The registered composable chain accepts only a schema-valid complete `ok` call
+envelope with no failures, exact metrics cardinality and one equal basis across
+the envelope and every contribution; a bare array remains manual non-batch
+compatibility and cannot evidence batch completeness. Versioned generic
+`call:2` and `resolve:2` command resources now bind exact bounded input modes,
+effects, refusals and closed tracked call/resolve result schemas.
+
+The operator also owns one reusable `graph-leaf-dispatch.ts` and the closed
+`call`, `call parallel`, `call compare` tree. Future parallel/compare leaves
+must receive explicit command-line profile and manifest scope; payload content
+grants no authority. Before import or contact the gate holds the shared primary
+mutation lock across same-root current-basis/work-completion readback, unique
+typed production-closure authentication, lazy import and handler-byte
+reauthentication, then releases it before inference. No-contact bootstrap call
+and manual resolve mint no authority; `apply` remains the exact current-basis
+write gate. This avoids binding ordinary local composition to broad graph
+runtime imports while leaving no stale-basis route to provider contact.
 
 The current profile-digest implementation also remains sibling-membership
 sensitive: adding a valid `selectsContract` edge changes the whole profile
@@ -1649,17 +1739,26 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Commit the compatible two-member construction publication locally, then
-   materialise the isolated operator dispatcher/help candidate only through
-   registered `usf call`, `resolve`, `apply` and graph-selected `check`. It must
-   select the unique typed production closure, authenticate all 17 host members
-   and exclude unrelated packet dependencies. Independently verify, integrate
-   and republish operator completion before dependent source work.
+1. Extend and freshly prove the existing profile-bound operator predecessor,
+   then materialise one combined rollback unit containing bounded
+   `call`/`resolve --input PATH|-`, wire-basis reconstruction, successful
+   complete-call-envelope composition, both closed result schemas, the
+   reusable proof-gated future call-leaf decomposition, the isolated provider
+   dispatcher/help postimages, and compact profile-3-only contract coverage.
+   Use exactly one registered `apply --input` self-repair because the commands
+   being repaired cannot carry their own candidate; do not create another
+   ignored transformation bridge. Its graph-selected checks must use injected
+   no-contact leaf authority/loader boundaries, exclude unrelated packet
+   dependencies and exercise the new input carrier; they must not bind the
+   shared operator to the dependent host runtime. Independently verify,
+   integrate and publish operator completion, then exercise the corrected registered
+   `call -> resolve -> apply` chain before dependent source work.
 2. Materialise the dependent `urn:usf:work:provider-census` absence-isolation
    and doctor-readiness correction without rewriting operator-owned registry
    paths. Its host leaf must use the explicit provider-state root and a
-   Bubblewrap `--unshare-net` projection, validate both closed result schemas,
-   exercise the registered production handler, and preserve
+   Bubblewrap `--unshare-net` projection, authenticate its exact 17-member
+   production runtime closure, validate both closed result schemas, exercise
+   the registered production handler, and preserve
    installed/authenticated/catalogued/entitled/qualified as distinct facts.
 3. After independent provider-census completion, run the registered no-network
    host census against the explicit owner-controlled provider root. Report the

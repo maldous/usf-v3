@@ -67,6 +67,70 @@
 <urn:usf:requirement:operator-provider-command-reservation> <urn:usf:predicate:reservedCommandPath> "providers status" <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:operator-provider-command-reservation> <urn:usf:predicate:closed> "true" <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:operator-provider-command-reservation> <urn:usf:predicate:leafImplementationMayRewriteOwnerPath> "false" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:text> "Remove the measured per-argument argv ceiling from the existing call and resolve commands through one reusable local input boundary. Each command accepts exactly one of --input .usf/inputs/FILE.json, --input -, or one bounded inline JSON compatibility argument. File input is one direct child of the selected repository's ignored .usf/inputs directory: its resolved lexical absolute path must equal realpath and remain inside the same selected root; the invoking uid owns it; it is mode 0600, regular, non-symlink and nlink 1; O_NOFOLLOW is mandatory; and pre-open lstat, opened-fd fstat and post-read fstat must have identical dev, ino, size, mtime and ctime. Read incrementally through at most maximumInputBytes plus one byte so oversize is observed without unbounded allocation. Stdin and inline input use the same non-empty four-MiB application ceiling, while inline compatibility remains subject to the host shell's smaller argv ceiling and is not the large-payload path. Decode with fatal UTF-8 and parse exactly one JSON value before command logic. Call reconstructs every assignment basis with parseRealisationBasis and requires exact same-basis before its immutable no-contact core; resolve reconstructs the envelope basis and every contribution basis, requires exact same-basis, and never weakens recursive basis immutability. The registered composable call-to-resolve chain accepts only a closed schema-valid urn:usf:call-result:1 envelope with status ok, failures empty, metrics requested equal to succeeded and contributions.length, metrics failed zero, and envelope basis exactly equal to every contribution basis. Partial, refused or internally inconsistent envelopes refuse without resolving a successful subset. A legacy bare contribution array remains manual non-batch compatibility only, carries no call-batch-completeness claim and cannot evidence the registered composable chain. No-contact bootstrap call, manual resolve and candidate formation mint no construction, completion, publication or write authority; apply remains the required boundary that rederives exact current basis before any write. Every future external-contact call leaf must rederive exact current basis beneath its authenticated graph gate before leaf import or provider contact. Argument-shape, containment or size, JSON or basis, incomplete-envelope and schema failures use the declared stable refusal codes. The input reader performs no provider, network, semantic, Git, authority or tracked write effect." <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:ownerWork> <urn:usf:work:operator-observability> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:inputHelperPath> "src/commands/command-input.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:callDispatcherPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:resolveHandlerPath> "src/commands/resolve.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:validationPath> "tests/contract/operator-composable-input.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:maximumInputBytes> "4194304" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:fileInputPattern> ".usf/inputs/*.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:fileInputAuthority> "direct-child+lexical-absolute-equals-realpath+same-selected-root+ignored+owner-uid+mode-0600+regular+nonsymlink+nlink-1+O_NOFOLLOW+pre-open-post-dev-ino-size-mtime-ctime-identical" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:boundedReadPolicy> "incremental-read-through-maximumInputBytes-plus-one" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:stdinInputSyntax> "--input -" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:inlineCompatibility> "one-nonempty-json-argument-within-four-MiB-application-bound-and-host-shell-argv-bound" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:decodePolicy> "fatal-utf8-then-one-json-value" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:wireBasisReconstruction> "parseRealisationBasis-for-every-wire-basis+assert-exact-same-basis-before-core" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:resolveCompatibilityInput> "legacy-bare-contribution-array-manual-nonbatch-only-not-composable-chain-evidence" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:resolveAcceptedInput> "closed-schema-valid-urn:usf:call-result:1+status-ok+failures-empty+requested-equals-succeeded-equals-contribution-count+failed-zero+envelope-and-contribution-bases-exactly-equal" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:resolveRefusedInput> "urn:usf:call-result:1-status-partial-or-refused" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:resolveRefusedInput> "incomplete-or-internally-inconsistent-call-result-envelope" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "CALL_ARGUMENTS_INVALID" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "CALL_INPUT_REFUSED" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "CALL_INPUT_INVALID" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "CALL_BASIS_INVALID" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "RESOLVE_ARGUMENTS_INVALID" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "RESOLVE_INPUT_REFUSED" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "RESOLVE_INPUT_INVALID" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "RESOLVE_BASIS_INVALID" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:reasonCode> "RESOLVE_CALL_RESULT_INCOMPLETE" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:authorityEffect> "Read-only local input normalization; no provider, network, semantic, Git, construction, completion or publication authority." <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:writeBoundary> "apply-rederives-exact-current-basis-before-write" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:externalCallBasisRule> "authenticated-gate-rederives-current-basis-before-leaf-import-or-contact" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:testEconomics> "Use one profile-3-only operator-composable-input contract table over file, stdin, inline, containment, bound, UTF-8, JSON, wire-basis and complete-call-envelope partitions; leave the historical fake-call-resolve test untouched and add no per-command test files, provider matrix, large fixture corpus or historical replay." <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:parallelLeafOwnerWork> <urn:usf:work:provider-parallel-execution> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-composable-command-input> <urn:usf:predicate:parallelLeafHandlerPath> "src/commands/provider-parallel.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:text> "The predecessor operator owns one closed call tree containing call, call parallel and call compare and one reusable src/commands/graph-leaf-dispatch.ts boundary. Generic no-contact call remains local. Parallel and compare must remain proofblocking lazy leaves owned only by provider-parallel-execution and must receive explicit --profile VERSIONED_IRI and --manifest PATH command-line scope alongside --input PATH|-; untrusted payload content never establishes authority scope, and module presence or importability never establishes authority. Before leaf import or provider contact, bind the selected repository root to the implementation root, acquire the shared primary-mutation lock, rederive the exact selected leaf work under that explicit versioned profile and manifest, require current verified completion and a newly rederived exact current basis, select exactly one graph-typed ProductionLeafRuntimeClosure bound to the leaf owner and entry module, authenticate every unique closure member as same-root declared bytes, import only the declared handler, reauthenticate its bytes, then release the lock before inference. Missing, ambiguous, stale, drifted, cross-root, incomplete, byte-mismatched or cache-moved authority refuses before import or contact. Later leaf work owns only its feature handler and cannot rewrite call.ts, graph-leaf-dispatch.ts, help.ts, dispatcher.ts or cli.ts." <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:ownerWork> <urn:usf:work:operator-observability> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:callRegistryPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:graphLeafDispatcherPath> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:reservedCommandPath> "call" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:reservedCommandPath> "call parallel" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:reservedCommandPath> "call compare" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:requiredLeafOption> "--profile VERSIONED_IRI" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:requiredLeafOption> "--manifest PATH" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:requiredLeafOption> "--input PATH|-" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:payloadAuthorityScope> "none" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:closed> "true" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:leafOwnerWork> <urn:usf:work:provider-parallel-execution> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:leafHandlerPath> "src/commands/provider-parallel.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:requiredLeafStage> "verified-complete" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:runtimeClosureType> <urn:usf:type:ProductionLeafRuntimeClosure> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:lockBoundary> "shared-through-current-basis+completion+closure-authentication+import+handler-byte-reauthentication;released-before-inference" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:modulePresenceAuthority> "false" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-call-command-reservation> <urn:usf:predicate:leafMayRewriteOwnerPath> "false" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:text> "Move the committed profile-3 provider-leaf registration-source assertions and lazy-dispatch, exact-scope, current-completion, dependency-drift, cross-root, missing-module and no-contact coverage intact from tests/contract/operator-observability.test.ts into tests/contract/operator-provider-leaf.test.ts. The generic historical operator test must retain its profile-2 command parsing, public help, dispatcher and observability boundary without reading src/commands/providers.ts, importing the provider leaf module or acquiring a provider-specific validation runtime closure. The profile-3-only validation owns the moved coverage exactly once, uses injected deterministic authority, lock and loader boundaries, performs no real leaf import, child launch, credential access, provider or network contact, and adds no provider/model matrix or duplicate compatibility suite." <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:ownerWork> <urn:usf:work:operator-observability> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:historicalTestPath> "tests/contract/operator-observability.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:profileThreeTestPath> "tests/contract/operator-provider-leaf.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:profileThreeValidation> <urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:migrationRule> "move-intact-once-no-duplicate-coverage" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:profileTwoRuntimeClosureExpansion> "false" <urn:usf:graph:provider-pipeline> .
+<urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:predicate:testEconomics> "One moved profile-3 provider-leaf boundary test contains the existing registration-source assertions and replaces the misplaced historical block; do not duplicate cases, add route matrices or expand the profile-2 generic validation closure." <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:provider-host-production-runtime-closure> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:provider-host-production-runtime-closure> <urn:usf:predicate:type> <urn:usf:type:ProductionLeafRuntimeClosure> <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:provider-host-production-runtime-closure> <urn:usf:predicate:text> "Authenticate exactly the provider-host handler, its four direct command-time dynamic imports and their static runtime imports before the selected leaf module is admitted; exclude the already-authorized outer registry, type-only imports, validation-only files, sibling receipt modules and transitive dynamic imports not executed by this handler path." <urn:usf:graph:provider-pipeline> .
@@ -91,12 +155,149 @@
 <urn:usf:requirement:provider-host-production-runtime-closure> <urn:usf:predicate:runtimePath> "src/realisation/work-completion.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:provider-host-production-runtime-closure> <urn:usf:predicate:runtimePath> "src/schema/index.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-provider-command-reservation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-composable-command-input> <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-call-command-reservation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:requires> <urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:graph:provider-pipeline> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/providers.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/provider-leaf-dispatch.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/command-input.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "src/commands/resolve.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "schemas/call-result.schema.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "schemas/resolve-result.schema.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/contract/operator-composable-input.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:permitsWrite> "tests/contract/operator-provider-leaf.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:operator-composable-input-tests> <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:call:2> <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:operator-observability:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:resolve:2> <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/providers.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/provider-leaf-dispatch.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/command-input.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "src/commands/resolve.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "schemas/call-result.schema.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "schemas/resolve-result.schema.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/contract/operator-composable-input.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "tests/contract/operator-provider-leaf.test.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:validation> <urn:usf:validation:operator-composable-input-tests> <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:validation> <urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:registeredCommand> <urn:usf:command:call:2> <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:registeredCommand> <urn:usf:command:resolve:2> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-composable-input-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-composable-input-tests> <urn:usf:predicate:command> "node --test --test-isolation=none tests/contract/operator-composable-input.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-composable-input-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-composable-input-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-composable-input-tests> <urn:usf:predicate:evidenceClass> "bounded-no-contact-command-input" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-composable-input-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-composable-input-tests> <urn:usf:predicate:admissionConfinementPolicy> "The confined candidate executes only the table-driven no-contact call, input normalization and deterministic resolve boundary with owner-private scratch and no child-process, network, credential, semantic-publication or Git permission." <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:version> "1" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:forValidation> <urn:usf:validation:operator-composable-input-tests> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:repositoryReadFile> "src/collaboration/resolve.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:repositoryReadFile> "src/providers/fake.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:repositoryReadFile> "tests/fixtures/proposal-packet.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation-runtime-closure:operator-composable-input:1> <urn:usf:predicate:authorityRule> "Supply exactly the non-owned static runtime imported by the focused no-contact call, wire-basis and resolve test. The check binds current bytes without adding those paths to operator write authority, provider contact or a historical dependency." <urn:usf:graph:provider-pipeline> .
+<urn:usf:call-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:provider-pipeline> .
+<urn:usf:call-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:provider-pipeline> .
+<urn:usf:call-result:1> <urn:usf:predicate:schemaPath> "schemas/call-result.schema.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:call-result:1> <urn:usf:predicate:closed> "true" <urn:usf:graph:provider-pipeline> .
+<urn:usf:call-result:1> <urn:usf:predicate:requiredFieldSet> "[schema,basis,status,contributions,failures,metrics]" <urn:usf:graph:provider-pipeline> .
+<urn:usf:call-result:1> <urn:usf:predicate:composableCompletenessRule> "status=ok;failures=[];metrics.requested=metrics.succeeded=contributions.length;metrics.failed=0;envelope-basis=every-contribution-basis" <urn:usf:graph:provider-pipeline> .
+<urn:usf:resolve-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:provider-pipeline> .
+<urn:usf:resolve-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:provider-pipeline> .
+<urn:usf:resolve-result:1> <urn:usf:predicate:schemaPath> "schemas/resolve-result.schema.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:resolve-result:1> <urn:usf:predicate:closed> "true" <urn:usf:graph:provider-pipeline> .
+<urn:usf:resolve-result:1> <urn:usf:predicate:requiredFieldSet> "[schema,basis,status,candidate,acceptedContributionDigests,rejected]" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:version> "2" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:availability> "registered" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:commandPath> "call" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:commandGroup> "compose" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:purpose> "Invoke one exact no-contact basis-bound assignment batch through bounded composable input; external provider leaves remain separately proofblocked." <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:synopsis> "usf call --input .usf/inputs/FILE.json|-" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:compatibilitySynopsis> "usf call '<bounded-inline-json>'" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:inputMode> "--input .usf/inputs/FILE.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:inputMode> "--input -" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:inputMode> "one-bounded-inline-json-compatibility-argument" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:maximumInputBytes> "4194304" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:handlerPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:outputSchema> <urn:usf:call-result:1> <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:errorSchema> <urn:usf:cli-error:1> <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:authorityEffect> "Returns a no-contact call observation only; it writes no repository, semantic, construction, completion, publication or provider authority." <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:refusalClass> "invalid-input" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:refusalClass> "containment-refusal" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:refusalClass> "currentness-failure" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:refusalClass> "domain-refusal" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call:2> <urn:usf:predicate:nonClaim> "No-contact call output is not external provider evidence, work completion, construction authority or permission to write." <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:version> "2" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:availability> "registered" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:commandPath> "resolve" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:commandGroup> "compose" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:purpose> "Resolve one complete call-result envelope or manual compatibility contribution array into a no-write candidate result." <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:synopsis> "usf resolve --input .usf/inputs/FILE.json|-" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:compatibilitySynopsis> "usf resolve '<bounded-inline-json>'" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:inputMode> "--input .usf/inputs/FILE.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:inputMode> "--input -" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:inputMode> "one-bounded-inline-json-compatibility-argument" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:maximumInputBytes> "4194304" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:handlerPath> "src/commands/resolve.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:outputSchema> <urn:usf:resolve-result:1> <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:errorSchema> <urn:usf:cli-error:1> <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:authorityEffect> "Returns a deterministic candidate or refusal only; it writes no repository, semantic, construction, completion or publication authority." <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:refusalClass> "invalid-input" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:refusalClass> "containment-refusal" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:refusalClass> "currentness-failure" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:refusalClass> "integration-conflict" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:resolve:2> <urn:usf:predicate:nonClaim> "A resolve result is not a repository write, validation, integration, completion or proof; a bare array does not prove call-batch completeness." <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:command> "node --test --test-isolation=none tests/contract/operator-provider-leaf.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:evidenceClass> "profile-3-provider-leaf-boundary-no-contact" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:applicability> "required" <urn:usf:graph:provider-pipeline> .
+<urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:predicate:admissionConfinementPolicy> "Execute only the moved static registration-source assertions and deterministic provider-leaf factory boundary with injected work, lock and loader dependencies; no real dynamic leaf import, child process, credential, provider, network, Git or semantic-publication permission." <urn:usf:graph:provider-pipeline> .
+<urn:usf:acceptance:operator-composable-command-input> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:provider-pipeline> .
+<urn:usf:acceptance:operator-composable-command-input> <urn:usf:predicate:text> "Call and resolve compose assignments, closed complete status-ok call-result envelopes and candidate results through equivalent bounded file, stdin and inline compatibility inputs. Unsafe path or identity, oversized, invalid UTF-8 or JSON, mutable or mixed basis, partial, refused, schema-invalid and internally inconsistent envelope inputs fail with stable reason codes before core execution or authority effect. A legacy bare array is manual non-batch compatibility and cannot be cited as the registered call-to-resolve chain; apply still rederives current basis before writes." <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:acceptance> <urn:usf:acceptance:operator-composable-command-input> <urn:usf:graph:provider-pipeline> .
+<urn:usf:acceptance:operator-call-command-reservation> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:provider-pipeline> .
+<urn:usf:acceptance:operator-call-command-reservation> <urn:usf:predicate:text> "The operator-owned closed call tree keeps generic call local and admits parallel or compare only through the reusable graph-leaf dispatcher after explicit versioned profile and manifest selection, verified-current leaf completion, current-basis rederivation and exact typed runtime-closure byte authentication under the primary lock, released before inference; payload content and module presence grant no authority." <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:acceptance> <urn:usf:acceptance:operator-call-command-reservation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:acceptance:operator-provider-leaf-validation-isolation> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:provider-pipeline> .
+<urn:usf:acceptance:operator-provider-leaf-validation-isolation> <urn:usf:predicate:text> "The exact committed provider-leaf registration-source assertions and boundary cases pass from tests/contract/operator-provider-leaf.test.ts under the profile-3 validation, no equivalent case remains in tests/contract/operator-observability.test.ts, and the profile-2 generic validation runs without reading providers.ts, importing provider-leaf-dispatch or adding a runtime-closure member." <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:operator-observability> <urn:usf:predicate:acceptance> <urn:usf:acceptance:operator-provider-leaf-validation-isolation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:evidence-requirement:operator-observability> <urn:usf:predicate:requires> <urn:usf:requirement:operator-composable-command-input> <urn:usf:graph:provider-pipeline> .
+<urn:usf:evidence-requirement:operator-observability> <urn:usf:predicate:requires> <urn:usf:requirement:operator-call-command-reservation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:proof:operator-observability:construction-authority> <urn:usf:predicate:proves> <urn:usf:requirement:operator-composable-command-input> <urn:usf:graph:provider-pipeline> .
+<urn:usf:proof:operator-observability:construction-authority> <urn:usf:predicate:proves> <urn:usf:requirement:operator-call-command-reservation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:requires> <urn:usf:requirement:operator-composable-command-input> <urn:usf:graph:provider-pipeline> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:requires> <urn:usf:requirement:operator-call-command-reservation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:validationObligation> <urn:usf:validation:operator-composable-input-tests> <urn:usf:graph:provider-pipeline> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:requires> <urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:evidence-requirement:operator-observability:completion> <urn:usf:predicate:validationObligation> <urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:graph:provider-pipeline> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:proves> <urn:usf:requirement:operator-composable-command-input> <urn:usf:graph:provider-pipeline> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:proves> <urn:usf:requirement:operator-call-command-reservation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:proof:operator-observability> <urn:usf:predicate:proves> <urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:scopeRequirement> <urn:usf:requirement:operator-composable-command-input> <urn:usf:graph:provider-pipeline> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:scopeRequirement> <urn:usf:requirement:operator-call-command-reservation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:operator-composable-input-tests> <urn:usf:graph:provider-pipeline> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:scopeRequirement> <urn:usf:requirement:operator-provider-leaf-validation-isolation> <urn:usf:graph:provider-pipeline> .
+<urn:usf:permission:operator-observability> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:operator-provider-leaf-boundary> <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:provider-pipeline-modelsdev-vercel-architecture> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:provider-pipeline-modelsdev-vercel-architecture> <urn:usf:predicate:text> "Use the complete frozen models.dev provider/model catalogue as metadata and candidate authority, retain its provider npm identity for Vercel AI SDK direct adapters, resolve direct adapters through one explicit AI SDK provider registry, and keep catalogue membership, SDK support, configured route, authenticated entitlement, availability and semantic qualification as separate facts. Vercel AI Gateway is not an eligible proof route." <urn:usf:graph:provider-pipeline> .
 <urn:usf:requirement:provider-pipeline-subscription-host-separation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:provider-pipeline> .
@@ -849,7 +1050,7 @@
 <urn:usf:contract:provider-parallel-execution:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-pipeline-provider-posture> <urn:usf:graph:provider-pipeline> .
 <urn:usf:contract:provider-parallel-execution:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-pipeline-metering-quota> <urn:usf:graph:provider-pipeline> .
 <urn:usf:contract:provider-parallel-execution:1> <urn:usf:predicate:requires> <urn:usf:requirement:provider-pipeline-transport-resilience> <urn:usf:graph:provider-pipeline> .
-<urn:usf:contract:provider-parallel-execution:1> <urn:usf:predicate:permitsWrite> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:contract:provider-parallel-execution:1> <urn:usf:predicate:permitsWrite> "src/commands/provider-parallel.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:contract:provider-parallel-execution:1> <urn:usf:predicate:permitsWrite> "src/continuous/scheduler.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:contract:provider-parallel-execution:1> <urn:usf:predicate:permitsWrite> "schemas/parallel-provider-run.schema.json" <urn:usf:graph:provider-pipeline> .
 <urn:usf:contract:provider-parallel-execution:1> <urn:usf:predicate:permitsWrite> "schemas/semantic-token-comparison.schema.json" <urn:usf:graph:provider-pipeline> .
@@ -868,7 +1069,9 @@
 <urn:usf:work:provider-parallel-execution> <urn:usf:predicate:externalContact> "false" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-parallel-execution> <urn:usf:predicate:dependsOn> <urn:usf:work:provider-semantic-qualification-v2> <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-parallel-execution> <urn:usf:predicate:dependsOn> <urn:usf:work:operator-observability> <urn:usf:graph:provider-pipeline> .
-<urn:usf:work:provider-parallel-execution> <urn:usf:predicate:writePath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:provider-parallel-execution> <urn:usf:predicate:readPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:provider-parallel-execution> <urn:usf:predicate:writePath> "src/commands/provider-parallel.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:work:provider-parallel-execution> <urn:usf:predicate:handlerPath> "src/commands/provider-parallel.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-parallel-execution> <urn:usf:predicate:writePath> "src/continuous/scheduler.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-parallel-execution> <urn:usf:predicate:readPath> "src/observability/metrics.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:work:provider-parallel-execution> <urn:usf:predicate:writePath> "schemas/parallel-provider-run.schema.json" <urn:usf:graph:provider-pipeline> .
@@ -893,8 +1096,13 @@
 <urn:usf:command:call-parallel:1> <urn:usf:predicate:commandPath> "call parallel" <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-parallel:1> <urn:usf:predicate:commandGroup> "compose" <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-parallel:1> <urn:usf:predicate:purpose> "Launch exact independently qualified routes before awaiting any result and report useful provider-event overlap." <urn:usf:graph:provider-pipeline> .
-<urn:usf:command:call-parallel:1> <urn:usf:predicate:synopsis> "usf call parallel --input .usf/inputs/FILE.json|-" <urn:usf:graph:provider-pipeline> .
-<urn:usf:command:call-parallel:1> <urn:usf:predicate:handlerPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-parallel:1> <urn:usf:predicate:synopsis> "usf call parallel --profile VERSIONED_IRI --manifest PATH --input .usf/inputs/FILE.json|-" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-parallel:1> <urn:usf:predicate:requiredOption> "--profile VERSIONED_IRI" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-parallel:1> <urn:usf:predicate:requiredOption> "--manifest PATH" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-parallel:1> <urn:usf:predicate:requiredOption> "--input .usf/inputs/FILE.json|-" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-parallel:1> <urn:usf:predicate:authorityScopeSource> "explicit-cli-profile-and-manifest-not-input-payload" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-parallel:1> <urn:usf:predicate:dispatcherPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-parallel:1> <urn:usf:predicate:handlerPath> "src/commands/provider-parallel.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-parallel:1> <urn:usf:predicate:outputSchema> <urn:usf:parallel-provider-run:1> <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-parallel:1> <urn:usf:predicate:errorSchema> <urn:usf:cli-error:1> <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-parallel:1> <urn:usf:predicate:externalContact> "explicit-multi-provider-inference" <urn:usf:graph:provider-pipeline> .
@@ -909,8 +1117,13 @@
 <urn:usf:command:call-compare:1> <urn:usf:predicate:commandPath> "call compare" <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-compare:1> <urn:usf:predicate:commandGroup> "compose" <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-compare:1> <urn:usf:predicate:purpose> "Compare equivalent full-context and semantic-projection workloads with actual provider token telemetry and unchanged acceptance." <urn:usf:graph:provider-pipeline> .
-<urn:usf:command:call-compare:1> <urn:usf:predicate:synopsis> "usf call compare --input .usf/inputs/FILE.json|-" <urn:usf:graph:provider-pipeline> .
-<urn:usf:command:call-compare:1> <urn:usf:predicate:handlerPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-compare:1> <urn:usf:predicate:synopsis> "usf call compare --profile VERSIONED_IRI --manifest PATH --input .usf/inputs/FILE.json|-" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-compare:1> <urn:usf:predicate:requiredOption> "--profile VERSIONED_IRI" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-compare:1> <urn:usf:predicate:requiredOption> "--manifest PATH" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-compare:1> <urn:usf:predicate:requiredOption> "--input .usf/inputs/FILE.json|-" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-compare:1> <urn:usf:predicate:authorityScopeSource> "explicit-cli-profile-and-manifest-not-input-payload" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-compare:1> <urn:usf:predicate:dispatcherPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:command:call-compare:1> <urn:usf:predicate:handlerPath> "src/commands/provider-parallel.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-compare:1> <urn:usf:predicate:outputSchema> <urn:usf:semantic-token-comparison:1> <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-compare:1> <urn:usf:predicate:errorSchema> <urn:usf:cli-error:1> <urn:usf:graph:provider-pipeline> .
 <urn:usf:command:call-compare:1> <urn:usf:predicate:externalContact> "explicit-equivalent-provider-inference" <urn:usf:graph:provider-pipeline> .
@@ -1745,6 +1958,11 @@
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/cli.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/doctor.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/help.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/command-input.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/call.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/resolve.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/provider-parallel.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/providers.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/provider-leaf-dispatch.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/commands/provider-hosts.ts" <urn:usf:graph:provider-pipeline> .
@@ -1752,6 +1970,10 @@
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "src/providers/subscription-hosts.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "tests/contract/provider-census-contained.test.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "tests/contract/provider-commands.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "tests/contract/operator-composable-input.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "tests/contract/operator-provider-leaf.test.ts" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "schemas/call-result.schema.json" <urn:usf:graph:provider-pipeline> .
+<urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "schemas/resolve-result.schema.json" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "tests/integration/provider-cli.test.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "tests/integration/provider-subscription-hosts.test.ts" <urn:usf:graph:provider-pipeline> .
 <urn:usf:carrier-intent:provider-pipeline-decomposition:1> <urn:usf:predicate:allowedPath> "docs/handover.md" <urn:usf:graph:provider-pipeline> .
