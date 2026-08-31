@@ -4,12 +4,12 @@ Updated 2026-09-01. The live continuation updates immediately below supersede
 older next-action and carrier statements where they differ. The durable pushed
 boundary is still `2b0c85b2d3da95cd542f29b1e34e36c3d29aae81`; no GitHub contact
 or push occurred in this continuation. Local `main` is
-`6076913667a2aeba9f34f2589fe13b67a8a5b0f2`, the committed semantic closure for
-the provider host production boundary. The worktree now carries one coherent
-graph-first follow-up plus its truthful historical operator construction
-receipt; no source implementation from the isolated operator draft has been
-materialised. Registered `usf status` reports current profile semantic digest
-`sha256:61a2081e8c39b64d656a273a30cfedd3b58b0631dc34d26ce452a1cea2db370e`.
+`89c3ba9298ddb5fdfeae156abfbcf6f27c6b9085`, the committed profile-policy and
+typed host-runtime-closure carrier. It includes the truthful historical
+operator construction receipt; no source implementation from the isolated
+operator draft has been materialised. Registered `usf status` reports current
+profile semantic digest
+`sha256:8ecd8e56e85f0bb7d66b1ee9464dd905cfaba8e68c3761492bd67652798865e0`.
 Focused graph/provider validation passes 19/19 and `git diff --check` passes.
 
 The follow-up makes the selected profile publication policy explicitly admit
@@ -84,6 +84,21 @@ because the outer CLI or a test imports them. This leaf-specific selection is
 the nonserializing correction: every invocation rederives work authority and
 reauthenticates only the executable closure that can affect that leaf before
 import or cache reuse.
+
+Against committed carrier `89c3ba9298ddb5fdfeae156abfbcf6f27c6b9085`,
+registered construction evidence and proof passed independently for
+`repository-path-scope` and `operator-observability`. One compatible two-member
+publication verified and then created tracked receipt
+`evidence/construction-authority/7fdd9b8e6e24b2edc46723878f92f8f13b17bdcefc1194b94fedc46a13376a25.json`
+with receipt digest
+`sha256:6f81faf40b406464c7c20b9622d9df6dbb96e65bb0362c21ea8ff4f6d2129543`.
+It moved semantic digest from `sha256:61a2081e...` to the current exact digest
+above. Registered ready-work read-back now returns exactly the two
+construction-ready packets: repository path basis `sha256:de9db106...` and
+operator basis `sha256:d38cf688...`. This grants construction through the
+declared ceiling only; it is not work completion or runtime authority. An
+independent read-only replay reauthenticated both bundles and the exact receipt,
+then confirmed those two and no other packets are construction-ready.
 
 ## Live continuation update — production host command exposed closure defects
 
@@ -1634,31 +1649,24 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Commit the coherent profile-policy and typed 17-member host-runtime-closure
-   carrier together with the now-historical operator construction publication
-   and its tracked receipt. Do not push this intermediate checkpoint.
-2. Through registered `usf evidence construction`, `usf prove construction`
-   and `usf publish construction-authority`, independently rederive current
-   authority for `repository-path-scope` and `operator-observability` under
-   exact profile `urn:usf:profile:v3-self-host:3` and manifest
-   `graph/manifests/self-host-provider-v3.json`.
-3. Materialise the isolated operator dispatcher/help candidate only through
+1. Commit the compatible two-member construction publication locally, then
+   materialise the isolated operator dispatcher/help candidate only through
    registered `usf call`, `resolve`, `apply` and graph-selected `check`. It must
    select the unique typed production closure, authenticate all 17 host members
    and exclude unrelated packet dependencies. Independently verify, integrate
    and republish operator completion before dependent source work.
-4. Materialise the dependent `urn:usf:work:provider-census` absence-isolation
+2. Materialise the dependent `urn:usf:work:provider-census` absence-isolation
    and doctor-readiness correction without rewriting operator-owned registry
    paths. Its host leaf must use the explicit provider-state root and a
    Bubblewrap `--unshare-net` projection, validate both closed result schemas,
    exercise the registered production handler, and preserve
    installed/authenticated/catalogued/entitled/qualified as distinct facts.
-5. After independent provider-census completion, run the registered no-network
+3. After independent provider-census completion, run the registered no-network
    host census against the explicit owner-controlled provider root. Report the
    complete bounded Codex and Claude host candidate surfaces plus frozen
    models.dev denominators and dispositions without inference. Installed host
    metadata and login state do not prove entitlement or semantic qualification.
-6. Through `urn:usf:work:provider-account-tier-receipt`, implement the exact
+4. Through `urn:usf:work:provider-account-tier-receipt`, implement the exact
    closed authorization/receipt schemas, field types, nullability, derivations,
    freshness and local verification plus the already registered
    `usf providers receipt acquire|verify` handler. Realise the explicit provider
@@ -1666,19 +1674,19 @@ exactly as emitted by the core and ANQR packets.
    Keep construction and validation fixture-only and no-contact. The current
    OpenRouter mapping is insufficient alone and must refuse unless separate
    current evidence closes every zero-paid field.
-7. Only after independent construction/completion proof, acquire one trusted
+5. Only after independent construction/completion proof, acquire one trusted
    exact-account zero-paid receipt under a separate immediate pre-contact
    AccountSourceAuthorization. Then implement and qualify the typed,
    content-verified scrubbed adapter child with only the selected credential and
    bounded public input. Refuse before contact if receipt, provider posture,
    adapter integrity, transport, credential mapping, privacy, metering or
    no-fallback controls are absent.
-8. Acquire authenticated provider-produced semantic answers through the
+6. Acquire authenticated provider-produced semantic answers through the
    registered command and perform genuine hidden-holdout qualification for the
    exact task/profile. Repeat for a second independent provider family when the
    environment actually permits it; Claude must remain authoritatively
    unavailable here unless exact current evidence changes.
-9. Only after those gates, run the minimal continuous live loop and demonstrate
+7. Only after those gates, run the minimal continuous live loop and demonstrate
    real multi-provider parallelism and semantic-token reduction with accepted
    lineage, exact token/cost/concurrency metrics and mechanically impossible
    paid fallback. Hermes-Agent remains optional and downstream of ordinary
