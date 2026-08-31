@@ -8,8 +8,16 @@ or push occurred in this continuation. Local integration carrier
 leaf registry on semantic carrier `f07164c`; the current local authority state
 descends from it and contains the exact copy-on-write operator construction,
 operator no-change completion and provider-census construction transitions
-recorded below. The coherent descendant remains local and is not a
-provider-census completion claim. The rejected
+recorded below. At read-back, local `main` is
+`7c200f875f33cf780290f186b66415ecaa293c99` (parent
+`4497338b80b1733716fca8b6e73444d569557921`), with intentional later drafts
+outside this packet; no goal edit is pending. This carrier integrates the
+provider-census candidate, and the exact file-based no-change construction and
+completion publications recorded in the current live update are retained with
+this semantic carrier. Registered `usf work --ready --stage construct` now returns
+an empty set because completed work is excluded and no successor packet yet
+holds current construction authority. This is not a BAU, host census, provider
+contact or live-proof claim. The rejected
 first integration remains recoverable at local branch
 `recovery/operator-leaf-tsc-failure`; it is not in `main` history. Later
 provider receipt, economics, probe and qualification drafts remain untouched
@@ -24,6 +32,73 @@ trusted provider vertical slice: discovery and qualification stay lazy,
 bounded and candidate-driven. Until the operator says otherwise, one operator
 owns repository mutation; delegated review is read-only and no concurrent
 writer is permitted.
+
+## Live continuation update — production host command exposed closure defects
+
+The first registered production invocation of `usf providers host census`
+refused safely with `PROVIDERS_HOST_DEPENDENCY_REFUSED` before catalogue read,
+credential projection, child creation, provider contact or network contact. The
+completed provider-census packet projected 62 repository-role rows over 60
+paths. Its only repeated paths were `package.json` as `file` plus `tool` and
+`schemas/provider-census-result.schema.json` as `file` plus `schema`, with one
+identical digest in each pair. The operator boundary incorrectly treated these
+legitimate semantic roles as conflicting identities and only syntax-checked
+the selected module digest; it did not authenticate the authorized closure
+bytes before import.
+
+The graph-first correction now defines the canonical repository identity as
+path, SHA-256 digest and sorted unique role set; same-path/same-digest rows
+merge roles, while conflicting digests, unknown roles, malformed paths,
+symlinks, non-regular files and byte drift refuse. Every canonical dependency
+is authenticated from the selected same repository under the short shared
+import lock. The loaded handler is bound to one canonical closure digest;
+movement within a live Node process requires restart instead of reusing stale
+ESM cache bytes. The selected module is reauthenticated after import and the
+lock is still released before handler execution, so this census-time check does
+not serialize provider inference. Git index cleanliness, GitHub, CAS and a
+database remain outside authority and the runtime critical path.
+
+Production audit also found that the host leaf eagerly imports
+`src/core/canonical.ts`, `src/core/errors.ts` and `src/schema/index.ts`, while
+the latter two were only validation-runtime dependencies. Its production scope
+also omitted dynamically imported `src/continuous/lifecycle.ts` and
+`src/graph/index.ts`; the operator dispatcher scope omitted its direct
+`src/core/errors.ts` import. Recursive comparison of the registered packet to
+the 17-module repository runtime closure additionally found `src/core/scope.ts`,
+`src/graph/nquads.ts`, `src/graph/query.ts`, `src/realisation/basis.ts` and
+`src/realisation/transition.ts`; all seven previously absent provider modules
+are now explicit versioned tool dependencies. This avoids inventing work-DAG
+edges to unselected tool-authoring packets while still placing their exact
+bytes in the provider packet's authenticated closure. Because
+`src/core/scope.ts` is owned by selected `repository-path-scope`, the graph's
+existing owner/consumer invariant correctly requires and now contains that one
+additional direct predecessor edge. It may be reproofed independently of the
+operator source repair before provider-census construction. Exact
+absence of `/usr/bin/codex` or `/usr/bin/claude` is evaluated before auth-file
+absence and is defined as a route-local `EXECUTABLE_NOT_FOUND` observation that
+preserves its frozen candidate denominator without suppressing the sibling
+host. A dangling or unsafe present identity, unsafe provider root, missing
+Bubblewrap containment tool or containment drift still refuses globally. The
+operator packet reserves static `usf doctor --provider-home ABSOLUTE_PATH` help
+while the dependent provider-census packet owns its implementation. That
+diagnosis reports bounded root, auth-file, Bubblewrap, Codex/Claude
+identity/version-check and no-network namespace prerequisites; it launches no
+provider, and only the exact Bubblewrap namespace self-check may spawn. It
+exposes neither selected paths nor secrets.
+
+The semantic carrier digest is
+`sha256:099aa2aa948675c7b19fa0d4d0c90d205be20a58d98b77048d3c983623f9b6e0`.
+Focused graph/provider command validation passed 19 tests and `git diff
+--check` passed. Operator and provider-census construction/completion receipts
+published before this semantic movement remain truthful historical
+observations but are not current authorization. The next safe boundary is to
+commit the semantic carrier, publish fresh operator construction authority,
+realise and independently verify its dispatcher candidate, republish operator
+completion, then realise the dependent provider-census absence-isolation and
+doctor-readiness candidate. Only after both completions are current may the
+registered no-network host census be retried. No provider, inference, GitHub or
+remote runner contact has occurred, and this is not a live-provider, ANQR,
+staging, production, BAU or terminal-proof claim.
 
 ## Live continuation update — provider leaf registry integrated
 
@@ -355,6 +430,92 @@ receipt acquisition, scrubbed adapter invocation, authenticated answers,
 genuine hidden-holdout qualification and the live qualified-pool parallel
 semantic-token proof.
 
+## Live continuation update — provider census integrated and completion published
+
+Fresh provider-census candidate
+`sha256:bd56f239b0d51fc510b121ac5cdd196eeb27bbd04f93b51277be7a6e48acd9f3`
+is bound to current basis
+`sha256:9595ebf8cda411cb7f922c33afea22e1e9538ba4327c0ddf91c2cc529f5cf1c6`
+and changes exactly six graph-authorized paths: the two host-census schemas,
+the host command, the subscription-host implementation, the existing provider
+command contract test and the focused subscription-host integration test. It
+does not touch either predecessor-owned provider registry path or any later
+account, adapter, answer, qualification or parallel-run draft.
+
+Both graph-selected validations pass from the immutable candidate. The
+subscription-host authorization receipt is
+`sha256:27e7f021095c79f471356fd637a0cdeaa8299a9cc84987922866b520dceeac1c`;
+the provider-census receipt is
+`sha256:d642687962ba68bca85bb82ba621f9b8359bac72bd87d0ee276fb7ca897889e1`.
+A disposable detached full-carrier TypeScript check and `git diff --check`
+both exit zero. Independent read-only verification accepted the six-path
+scope, exact currentness, mandatory explicit provider root, closed-schema
+projection, bounded result truncation, Codex initialize/initialized/model-list
+protocol, honest partial pagination, Claude help-derived aliases and
+Bubblewrap user/PID/network/filesystem/environment containment. That review
+did not execute host metadata children or contact a provider.
+
+Both independent read-only reviews accepted the candidate. Integration request
+`sha256:f9ede620c74eb11d0498a8614f40202afcd7fb0505594dbf9d646279aa4532b2`
+reauthenticated both required receipts, passed both postimage validations and
+created integration carrier `7c200f875f33cf780290f186b66415ecaa293c99`;
+integration observation digest is
+`sha256:082d5e973199a5dc0148e4988c3e83c9a4a6953d257553599e61f0d904b7fb26`.
+Primary-tree TypeScript exits zero. Before completion publication, registered
+`usf providers host census` refused with `PROVIDERS_HOST_PROOFBLOCKED` before
+catalogue read or host observation.
+
+Postintegration construction publication
+`evidence/construction-authority/ce6e1e540352d1ce66e899611ab5b8b880ee89eacfbba9db722a87f730647e62.json`
+has receipt digest
+`sha256:44985feb2b3b7fe00d86b832fdfbdc6842efcb831c2163b5d8630b7dce5cb547`.
+No-change candidate
+`sha256:e9a006dcd6a5586e1b275791ddb2838f04fae10d00c1417885927e7ace61d303`
+passed both exact validations with receipt digests
+`sha256:2d6e958a007f022afa38dd55b1c6af839fd0d82bf98148eada473c2207014849`
+and
+`sha256:e5801d0d3ec400337b5f3df47e083f8a717e49ae3b45cc6907d52472fcdc4257`.
+Work-completion publication
+`evidence/work-completion/c0ddedfc3a40e4d5a411277e7ec45fe3a5ad230f644e92ab99b884f79a5aa29f.json`
+has receipt digest
+`sha256:b445557ed35d97c8f077ff6b12e7931bf46063ad3f60e3e0424438490f0343c9`
+and resulting semantic digest
+`sha256:084c80e936173cdc14fd64ba149a8d201b224cfb1cc4b083f889a55d2bb9d1cb`.
+Registered work read-back now reports the provider-census permission active and
+its completion accepted. Independent receipt and graph reauthentication also
+accepted the exact one-member construction and completion publications, the
+no-change candidate and its two-validation receipt set. It independently
+confirmed that provider account-tier receipt is graph-defined but not yet
+construction-eligible.
+
+The first registered production invocation against explicit provider root
+`/home/user` then refused safely with
+`PROVIDERS_HOST_DEPENDENCY_REFUSED` before catalogue read, host child launch,
+credential projection or provider contact. The current work projection contains
+62 repository dependency entries over 60 paths. `package.json` appears once as
+`file` and once as `tool`; `schemas/provider-census-result.schema.json` appears
+once as `file` and once as `schema`; each repeated path has the same exact
+digest. The operator-owned leaf boundary currently treats every repeated path
+role as a conflicting duplicate instead of canonicalizing the one path/digest
+identity, so the complete real work packet cannot pass although the focused
+fixture used only one role per path. Do not bypass this gate or run host CLIs
+directly. Audit the remaining production path once, clarify same-path/same-
+digest role normalization and conflicting-digest refusal in semantic authority,
+then realise the smallest operator-owned correction and republish its affected
+completion chain before retrying this registered command. Installed executable,
+authentication metadata and model listing will remain census facts, not
+entitlement, inference availability, semantic qualification or live-provider
+proof.
+
+The following packet is still provider account-tier receipt acquisition, not
+adapter or inference work. Its current draft also exposes a real owner-ordering
+gate: the account schemas require `maxLength` and `uniqueItems`, while the
+current custom schema validator does not support those keywords, and the graph
+contains no sufficient content-verifying account-source parser for the two
+configured direct routes. Resolve those facts at their graph owners after
+provider-census completion; do not weaken the schemas or treat the explicitly
+insufficient OpenRouter mapping as a trusted account receipt.
+
 ## Verified carrier and gate
 
 - The optional Hermes authority baseline is
@@ -404,7 +565,13 @@ semantic-token proof.
 The handover previously stopped at the provider slice and reported 156 tests.
 That was stale after the semantic-recovery commits. This version supersedes it.
 
-## Current provider-profile checkpoint
+## Historical superseded provider-profile checkpoint (not current authority)
+
+This retained snapshot predates the current provider-leaf correction chain.
+Its reported semantic digest, receipt identities, completion status,
+denominators and test timing are historical observations only. They neither
+establish current profile-3 authority nor provider-census completion; the live
+continuation update above and registered CLI read-back control.
 
 The exact provider profile selects nine in-scope work packets and thirteen
 contracts. It deliberately does not reproject the one-time imported
