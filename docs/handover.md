@@ -2,12 +2,16 @@
 
 Updated 2026-08-31. The live continuation updates immediately below supersede
 older next-action and carrier statements where they differ. The durable pushed
-boundary is still `2b0c85b2d3da95cd542f29b1e34e36c3d29aae81`; later provider and registry
-work remains in the primary workspace. Under exact profile
+boundary is still `2b0c85b2d3da95cd542f29b1e34e36c3d29aae81`. Local commit
+`f18567a8b1dbe863ad18e63c5767190c9ccbe206` is the semantic-only carrier and
+local integration commit `a2d2d7ab2cdf33cc2687305036d959058f4e28f6`
+closes the predecessor-owned static provider help registry. Both remain local
+until provider census and its authoritative topology correction form one green
+push boundary. Later provider work remains in the primary workspace. Under exact profile
 `urn:usf:profile:v3-self-host:3`, the earlier operator and provider completion
-receipts are historical observations and are not current completion authority
-for the live packet. The provider census remains blocked behind the deliberately
-reopened predecessor-owned operator registry. Earlier `repository-path-scope`
+receipts are historical observations unless named by the current live update.
+Operator completion is now current and provider census has active construction
+authority. Earlier `repository-path-scope`
 and `file-asset-index` completion receipts likewise remain historical
 profile observations and are not claimed current in profile 3. Routine
 checkpoint documentation and unrelated tests are not functional work
@@ -30,27 +34,32 @@ receipt command resources reference this immutable reservation. Provider census
 no longer owns `src/commands/help.ts`; it continues to depend on current
 operator completion.
 
-The refreshed operator construction publication is
-`evidence/construction-authority/4fb034212ea2734dac12a279428dcf351fc1e4ac4ebb3b04f3a989118906c237.json`,
-receipt digest
-`sha256:0a4f60c47bc2553c84750320322b15b54be45615ed8f9f726e6ab6ae43cdf6af`.
-The isolated candidate
+The isolated operator candidate
 `sha256:bc19a02c6d064762fd4e73d26c9cd7f78cc9ce2adb331327ac91794a78cd9095`
 adds both `usf help providers host` and the graph-gated
 `usf help providers host census` leaf plus one existing-registry assertion. Its
-graph-selected operator check passed. Integration correctly refused with
-`INTEGRATION_DETACHED_BASIS_MISMATCH` because the candidate basis includes the
-current uncommitted semantic/provider carrier while detached integration starts
-from pushed `HEAD`. Finish the coherent reviewed semantic carrier checkpoint,
-commit and push it, then rederive the operator candidate against that exact
-carrier; do not weaken detached-basis authentication.
+graph-selected operator check passed. After local semantic commit `f18567a`,
+detached dry-run and integration passed without weakening basis authentication;
+the observed carrier is `a2d2d7a`. Current operator construction publication
+is `evidence/construction-authority/5a965b47a017dc005d96f38a1884beeab75103baad8f9cdc1a3134a095973798.json`
+and current completion publication is
+`evidence/work-completion/36b8282173f18afc9994b07350d97e969babd196e87cead5e0756c6298dfb02b.json`.
+Provider census is dependency-ready with active construction publication
+`evidence/construction-authority/0c405e20272103bb046e0a75d3d225501c98c90fa496f5c7f5df7dbf1cd3d0ac.json`,
+basis `sha256:476c649bd6743763ff9907f6bd00b104c140a62f528858afc339877f178a0859`.
+Materialise and validate that packet next, including both graph-selected
+validation obligations and the corrected topology assertion, before pushing
+the coherent chain.
 
-The account-receipt schema finding is corrected in the primary packet by
-removing unsupported `format: uri` while retaining bounded HTTPS patterns and
-the runtime's exact endpoint validation. The focused provider topology test is
-11/11 after replacing the false “every operational contract is a profile root”
-assertion with exact implementing-work reachability and reciprocal scoped
-dependency checks.
+The account-receipt schemas remove unsupported `format: uri` while retaining
+bounded HTTPS patterns and runtime exact endpoint validation. Their required
+`maxLength`/`uniqueItems` validator support remains deferred until a graph owner
+is active; it was removed from the primary runtime after it changed operator
+validation authority outside the active write set. The focused provider
+topology draft is 11/11 after replacing the false “every operational contract
+is a profile root” assertion with exact implementing-work reachability and
+reciprocal scoped dependency checks; it now belongs to the active
+provider-census packet and is not yet a completion claim.
 
 One additional deterministic CLI defect was observed while materialising the
 operator candidate: JSON parsing makes a wire `RealisationBasis` mutable, but
