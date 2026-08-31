@@ -64,6 +64,39 @@ not yet been committed. Commit only that semantic authority carrier, obtain the
 pending independent candidate verdict, then rerun dry-run and ordinary local
 integration; this refusal is not a candidate-validation failure.
 
+## Live continuation update — executable provider-leaf dispatch correction
+
+Independent verification subsequently refused operator candidate `825f...`:
+its confined check proved help metadata and source text but did not execute the
+graph-required lazy host dispatch, exact argument/root forwarding or absent-leaf
+proofblock. The later integration intent did correctly authenticate committed
+carrier `c59efe8` and reach `prepared-commit`; content-addressed construction
+basis predating that commit was not itself stale. No ordinary integration was
+performed, so `825f...` remains unintegrated.
+
+Candidate `f93bf002ab4ed7bd5a7e138cc120543680cfa7f18afe84d6bb469c59b0366343`
+was a diagnostic replacement only. Its graph-selected check refused because a
+direct test import of the monolithic provider command required the provider
+runtime closure that the confined operator validation intentionally excludes.
+It is not eligible for integration.
+
+The current graph-first correction assigns one small predecessor-owned
+`src/commands/provider-leaf-dispatch.ts` boundary to `operator-observability`.
+The production provider registry delegates host and receipt selection through
+that boundary. Its existing confined contract test must prove zero eager module
+loads, exact leaf argument and repository-root forwarding, and exact
+`PROVIDERS_HOST_PROOFBLOCKED` refusal for the authenticated absent module URL.
+Provider-census continues to own only its host leaf, provider-root containment,
+schemas and result projection; later feature packets cannot reopen either
+operator-owned registry path. Re-derive operator construction authority from
+this semantic model. That construction publication is now current at
+`evidence/construction-authority/5bc7aabaa8b58dc3f32d5bf38ee0ec3a32980d63921fbbc58eab871ddd15b9de.json`;
+the resulting semantic digest is
+`sha256:ee27b5a6651f9952d20136c9e4d2728acbf164e2c0cbbcbb3ea06a7168ac17d6`
+and operator construction is active. Commit this semantic carrier, materialise
+a fresh isolated candidate, obtain independent verification, then integrate
+and republish operator completion before resuming provider-census.
+
 ## Live continuation update — one-time provider registry closure
 
 The shared CLI correction is now graph-defined rather than tribal. Exact
