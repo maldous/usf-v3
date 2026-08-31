@@ -2307,6 +2307,28 @@
 <urn:usf:authority:core-completion:2> <urn:usf:predicate:integrationTransitionAlgorithm> <urn:usf:algorithm:work-integration-transition:3> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:2> <urn:usf:predicate:receiptBoundary> <urn:usf:receipt-boundary:core-completion:1> <urn:usf:graph:integration> .
 <urn:usf:authority:core-completion:2> <urn:usf:predicate:nonClaim> "This versioned authority does not reinterpret historical receipts, admit evidence or proof, complete work, contact providers, push, activate runtime, or claim staging, production or terminal proof." <urn:usf:graph:integration> .
+<urn:usf:validation:integration-validation-set-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-validation-set-focused> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/realisation/workspace.test.ts" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-validation-set-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-validation-set-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:integration> .
+<urn:usf:validation:integration-validation-set-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:integration> .
+<urn:usf:validation:integration-validation-set-focused> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:forValidation> <urn:usf:validation:integration-validation-set-focused> <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/commands/dispatcher.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/commands/help.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/providers/types.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:integration> .
+<urn:usf:validation-runtime-closure:integration-validation-set:1> <urn:usf:predicate:authorityRule> "Supply the complete recursively derived local TypeScript import closure required to load the one packet-specific workspace validation file when those files are absent from the isolated candidate tree. The check receipt binds the exact sorted paths and current byte digests; this closure does not expand the test command, work write set, provider authority, evidence, proof, completion or runtime authority." <urn:usf:graph:integration> .
 <urn:usf:work:integration-validation-set> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:integration> .
 <urn:usf:work:integration-validation-set> <urn:usf:predicate:contract> <urn:usf:contract:semantic-first-order:1> <urn:usf:graph:integration> .
 <urn:usf:work:integration-validation-set> <urn:usf:predicate:objective> "Implement the version 3 integration algorithm so every candidate and postimage consumes the complete graph-required nonempty validation set while preserving version 2 single-validation behavior and the narrow primary-mutation lock." <urn:usf:graph:integration> .
@@ -2329,5 +2351,5 @@
 <urn:usf:work:integration-validation-set> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:integration> .
 <urn:usf:work:integration-validation-set> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:integration> .
 <urn:usf:work:integration-validation-set> <urn:usf:predicate:acceptance> <urn:usf:acceptance:integration-complete-validation-sets> <urn:usf:graph:integration> .
-<urn:usf:work:integration-validation-set> <urn:usf:predicate:validation> <urn:usf:validation:realisation-basis-chain-focused> <urn:usf:graph:integration> .
+<urn:usf:work:integration-validation-set> <urn:usf:predicate:validation> <urn:usf:validation:integration-validation-set-focused> <urn:usf:graph:integration> .
 <urn:usf:work:integration-validation-set> <urn:usf:predicate:proof> <urn:usf:proof:realisation-basis-chain-focused> <urn:usf:graph:integration> .
