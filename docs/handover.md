@@ -1,22 +1,142 @@
 # USF V3 handover
 
-Updated 2026-08-31. This is the durable continuation boundary after the
-semantic-first gate, local candidate integration, finite historical-carrier
-adoption, provider-census construction and the profile-scoped copy-on-write
-authority/completion correction. Under exact profile
-`urn:usf:profile:v3-self-host:3`, `operator-observability` and
-`provider-census` are currently `verified-complete`, with census depending on
-the operator's verified completion. Earlier `repository-path-scope` and
-`file-asset-index` completion receipts remain valid historical profile
-observations; those packets are selected but currently blocked under profile 3
-and are not claimed complete in that profile. Routine checkpoint documentation,
-shared bottleneck notes and unrelated tests are not functional work
-dependencies. The next safe slice is the earliest trusted provider vertical
-slice. Full-universe provider qualification is explicitly not its prerequisite:
-discovery and qualification remain lazy, bounded and candidate-driven while
-configured routes progress through the mandatory trusted provider sequence.
-Until the operator says otherwise, one operator owns repository mutation; do
-not delegate repository work or run concurrent writers.
+Updated 2026-08-31. The live continuation updates immediately below supersede
+older next-action and carrier statements where they differ. The durable pushed
+boundary is still `2b0c85b2d3da95cd542f29b1e34e36c3d29aae81`; later provider and registry
+work remains in the primary workspace. Under exact profile
+`urn:usf:profile:v3-self-host:3`, the earlier operator and provider completion
+receipts are historical observations and are not current completion authority
+for the live packet. The provider census remains blocked behind the deliberately
+reopened predecessor-owned operator registry. Earlier `repository-path-scope`
+and `file-asset-index` completion receipts likewise remain historical
+profile observations and are not claimed current in profile 3. Routine
+checkpoint documentation and unrelated tests are not functional work
+dependencies. Full-universe provider qualification is not a prerequisite for
+the earliest trusted provider vertical slice: discovery and qualification stay
+lazy, bounded and candidate-driven. Until the operator says otherwise, one
+operator owns repository mutation; delegated review is read-only and no
+concurrent writer is permitted.
+
+## Live continuation update — one-time provider registry closure
+
+The shared CLI correction is now graph-defined rather than tribal. Exact
+requirement `urn:usf:requirement:operator-provider-command-reservation` binds
+`operator-observability` as owner, closes the static `providers` tree over
+`census`, `status`, `aliases`, the `host` group and `host census`, plus the
+`receipt` group and its `acquire`/`verify` leaves. It binds the exact CLI,
+dispatcher, help and provider-registry paths and states that later leaf
+implementations may not rewrite predecessor-owned paths. The host-census and
+receipt command resources reference this immutable reservation. Provider census
+no longer owns `src/commands/help.ts`; it continues to depend on current
+operator completion.
+
+The refreshed operator construction publication is
+`evidence/construction-authority/4fb034212ea2734dac12a279428dcf351fc1e4ac4ebb3b04f3a989118906c237.json`,
+receipt digest
+`sha256:0a4f60c47bc2553c84750320322b15b54be45615ed8f9f726e6ab6ae43cdf6af`.
+The isolated candidate
+`sha256:bc19a02c6d064762fd4e73d26c9cd7f78cc9ce2adb331327ac91794a78cd9095`
+adds both `usf help providers host` and the graph-gated
+`usf help providers host census` leaf plus one existing-registry assertion. Its
+graph-selected operator check passed. Integration correctly refused with
+`INTEGRATION_DETACHED_BASIS_MISMATCH` because the candidate basis includes the
+current uncommitted semantic/provider carrier while detached integration starts
+from pushed `HEAD`. Finish the coherent reviewed semantic carrier checkpoint,
+commit and push it, then rederive the operator candidate against that exact
+carrier; do not weaken detached-basis authentication.
+
+The account-receipt schema finding is corrected in the primary packet by
+removing unsupported `format: uri` while retaining bounded HTTPS patterns and
+the runtime's exact endpoint validation. The focused provider topology test is
+11/11 after replacing the false “every operational contract is a profile root”
+assertion with exact implementing-work reachability and reciprocal scoped
+dependency checks.
+
+One additional deterministic CLI defect was observed while materialising the
+operator candidate: JSON parsing makes a wire `RealisationBasis` mutable, but
+`usf resolve` passes it directly to the strict in-process resolver, which
+requires a recursively frozen canonical basis. The command therefore emits an
+opaque `INTERNAL_ERROR`/`BASIS_NOT_IMMUTABLE`. The correct registered repair is
+to reconstruct every wire basis with `parseRealisationBasis`, retain the strict
+core resolver, and return a stable input/currentness refusal on reconstruction
+failure. The current ignored bridge performed that exact reconstruction before
+calling the existing resolver and then used registered `usf apply`; it carries
+no authority beyond the subsequent graph-selected check. This defect and the
+still-missing `usf resolve --input -` form must be closed before unattended BAU.
+
+The current profile-digest implementation also remains sibling-membership
+sensitive: adding a valid `selectsContract` edge changes the whole profile
+resource digest and therefore every selected work basis. Sibling contract
+content is isolated, but profile membership movement is not. Do not add
+secondary operational contracts as redundant profile roots to work around
+this. They remain current through reciprocal implementing-work dependencies.
+A later versioned currentness migration must separate profile structure,
+per-work membership-edge and complete-set topology digests; this is recorded as
+a non-blocking defect and must not delay the provider proof.
+
+## Live continuation update — complete validation-set integration
+
+The graph-authorized integration runtime correction is committed and pushed as
+`2b0c85b2d3da95cd542f29b1e34e36c3d29aae81`. It changes only
+`src/realisation/transition.ts` and
+`tests/unit/realisation/workspace.test.ts`. Candidate receipts remain the
+scalar version-1 receipt executed under transition version 2; the integrated
+postimage runtime is version 3 and accepts the complete nonempty set of
+graph-required validations in canonical UTF-8 order. It binds per-candidate
+receipt-set digests/cardinality, refuses missing, extra and duplicate
+obligations/results, preserves exact per-work currentness, and does not scan
+ignored receipt directories.
+
+The final immutable candidate was
+`sha256:0c97ea1d5f182b148478faa264068cb2d51ec78a3df2911e4c2ce1dfce619cd9`.
+Its graph-selected check receipt was
+`sha256:ee70c09105d31dfd412b1f275f4758ba41440f83a8d945b784fb518cfef6dd00`.
+Dry-run request
+`sha256:35c91827c9c57f7c3c90fb4ca8197a44556159b1213e3e3a752e231c0760aa2a`
+prepared the exact carrier later integrated. The focused carrier suite passed
+6/6, TypeScript passed, an independent read-only review found no blocker, and
+an offline standalone local clone of the exact commit passed the clean full
+suite 193/193 plus containment. A Git linked-worktree is not a valid substitute
+for this clean-carrier qualification because `bootstrap-carrier` intentionally
+refuses a separate or file-backed Git directory.
+
+The primary workspace still contains the later provider packet and no part of
+that packet entered `2b0c85b`. Running the full gate over that deliberately
+dirty combined state passed 196/198 and assigned both failures to the provider
+packet:
+
+- provider-census currently rewrites `src/commands/help.ts`, which overlaps the
+  completed operator-observability currentness surface; and
+- the later account-receipt packet's
+  `schemas/account-source-authorization.schema.json` and
+  `schemas/account-tier-receipt.schema.json` use an unsupported JSON Schema
+  `format` for `endpointIdentity`; this is not a provider-census schema defect.
+
+Both findings are now corrected in the live primary packet; do not amend or
+patch the already-qualified integration carrier. The ordinary correction
+chain is now fixed as `usf status` / exact `usf work` readback, reason-code
+classification, graph-first closure correction when required, fresh immutable
+`resolve -> apply`, one `usf check` per graph-selected validation,
+`usf integrate --dry-run`, exact standalone-carrier verification, then
+`usf integrate`. The local `usf-v3-operator` skill records this sequence and
+the linked-worktree qualification refusal. It remains advisory and is not a
+repository or third-party runtime dependency.
+
+Three CLI gaps remain explicit rather than tribal: the `usf resolve` JSON
+boundary must reconstruct canonical immutable bases, large contributions need
+registered `usf resolve --input -`, and repeated BAU carrier qualification
+needs a graph-authorized `usf` carrier-verification command. Until those
+interfaces exist, the documented deterministic implementation bridges carry
+no authority beyond the exact graph checks they invoke.
+
+The next exact action is to rederive the provider-census packet against this
+version-3 integration runtime, correct the two provider findings at their
+graph/schema owners, materialise the reviewed subscription-host census draft as
+a fresh candidate, run every graph-selected validation receipt, and integrate
+one coherent provider checkpoint. Only then continue to trusted account-tier
+receipt acquisition, scrubbed adapter invocation, authenticated answers,
+genuine hidden-holdout qualification and the live qualified-pool parallel
+semantic-token proof.
 
 ## Verified carrier and gate
 

@@ -1595,12 +1595,14 @@ provider route
 local
 zero-price
 free-quota
+subscription-zero-marginal
 subscription
 paid
 unknown
 ```
 
-The V3 terminal proof accepts only `local`, `zero-price` and `free-quota`.
+The V3 terminal proof accepts `local`, `zero-price`, `free-quota` and
+`subscription-zero-marginal`.
 
 Default policy:
 
@@ -1611,9 +1613,18 @@ unknown price = ineligible
 router alias capable of paid fallback = ineligible
 ```
 
-Subscription routes may be supported separately but do not count toward the free-provider proof.
+`subscription-zero-marginal` is a host transport backed by an already-held
+subscription whose exact authenticated CLI or SDK control plane is distinct
+from its metered API. It counts only when the current host authentication mode
+and subscription entitlement are observed, all API-key and alternate-cloud
+credential paths are absent from the child, model fallback is disabled, the
+actual provider/model identity is retained, and the run records zero
+incremental paid cost. The recurring subscription itself is disclosed and is
+outside the run's incremental-cost ledger; this class never means that the
+subscription price is zero. A generic `subscription`, an API-key invocation,
+or an ambiguous host route remains ineligible.
 
-A route is zero-paid-cost eligible only when its frozen invocation evidence proves the exact cost basis. Acceptable bases are exact zero-price metadata, a documented free-quota entitlement with remaining allowance, or local inference. Promotional/one-time credit, unknown billing state and a router capable of paid fallback are not accepted unless the operator explicitly classifies that credit as a bounded zero-paid-cost source for a non-terminal experiment; such an experiment does not satisfy the terminal proof. When a provider reports usage cost, observed cost must be zero. When it does not, exact route and entitlement evidence must remain current and no paid credential/fallback may be configured.
+A route is zero-paid-cost eligible only when its frozen invocation evidence proves the exact cost basis. Acceptable bases are exact zero-price metadata, a documented free-quota entitlement with remaining allowance, local inference, or the exact `subscription-zero-marginal` host boundary above. Promotional/one-time credit, unknown billing state and a router capable of paid fallback are not accepted unless the operator explicitly classifies that credit as a bounded zero-paid-cost source for a non-terminal experiment; such an experiment does not satisfy the terminal proof. When a provider reports usage cost, observed cost must be zero. When it does not, exact route and entitlement evidence must remain current and no paid credential/fallback may be configured.
 
 ### 13.3 Independent provider family
 
@@ -1624,6 +1635,16 @@ The acceptance bundle records both provider-family diversity and underlying-mode
 ### 13.4 Dynamic population
 
 Do not hard-code two or three providers.
+
+The candidate population is the union of the complete frozen models.dev
+provider/model catalogue and current host-transport model discovery. The
+models.dev provider `npm` field identifies the Vercel AI SDK protocol adapter
+for direct routes; it is catalogue/translation metadata, not authority to use
+Vercel AI Gateway or a paid API. Subscription-host adapters remain distinct
+typed transports and converge with direct AI SDK routes only at the common
+answer, qualification, routing and observability contracts. Every discovered
+model or alias candidate receives an explicit disposition, and aliases never
+inflate the model denominator.
 
 For each active work capability set:
 
@@ -2508,6 +2529,9 @@ It requires all conditions below.
 
 - models.dev supplies catalogue input;
 - AI SDK or equivalent maintained adapters supply protocol translation;
+- current Codex and Claude subscription-host model surfaces are considered
+  alongside the models.dev denominator without converting either host route
+  into a paid API route;
 - no fixed roster;
 - all configured eligible routes are considered for active work;
 - at least two provider families contribute successfully live;
