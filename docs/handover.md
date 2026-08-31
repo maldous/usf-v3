@@ -45,8 +45,14 @@ is `evidence/construction-authority/5a965b47a017dc005d96f38a1884beeab75103baad8f
 and current completion publication is
 `evidence/work-completion/36b8282173f18afc9994b07350d97e969babd196e87cead5e0756c6298dfb02b.json`.
 Provider census is dependency-ready with active construction publication
-`evidence/construction-authority/0c405e20272103bb046e0a75d3d225501c98c90fa496f5c7f5df7dbf1cd3d0ac.json`,
-basis `sha256:476c649bd6743763ff9907f6bd00b104c140a62f528858afc339877f178a0859`.
+`evidence/construction-authority/f63db154f0fad11a9df2ecff8fc918199ab3be34b40e9c4e8a5f4dad1c4fd5f6.json`,
+basis `sha256:28ab3de814e0c57f07de7751d1c19f7d4ffcd882452bb46fd948745bf0cfea06`.
+The earlier `0c405e...` grant remains a valid historical receipt but became
+stale when its owned topology test was restored from the desired dirty
+postimage to the committed preimage. Future construction chains must first
+restore every owned path to the intended carrier preimage, then derive the
+grant, and only then express desired bytes in a contribution; never derive
+authority from an already-applied dirty postimage.
 Materialise and validate that packet next, including both graph-selected
 validation obligations and the corrected topology assertion, before pushing
 the coherent chain.
