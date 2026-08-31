@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:construction-proof-bundle:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "stage", "evidence", "proof", "bundleDigest"],
+  "properties": {
+    "schema": {"const": "urn:usf:construction-proof-bundle:1"},
+    "status": {"const": "candidate"},
+    "stage": {"const": "construction-proof"},
+    "evidence": {
+      "type": "object",
+      "required": ["schema", "workIri", "evidenceIri", "contentDigest", "scopedDependencyDigest"],
+      "properties": {
+        "schema": {"const": "urn:usf:construction-evidence-candidate:1"},
+        "workIri": {"$ref": "#/$defs/iri"},
+        "evidenceIri": {"$ref": "#/$defs/iri"},
+        "contentDigest": {"$ref": "#/$defs/digest"},
+        "scopedDependencyDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proofResultIri", "workIri", "obligationIri", "obligationDigest", "algorithmIri", "algorithmResourceDigest", "evidenceDigest", "realisationBasisDigest", "scopedDependencyDigest", "applicability", "outcome", "reasonCodes", "evaluationDigest", "contentDigest"],
+      "properties": {
+        "proofResultIri": {"$ref": "#/$defs/iri"},
+        "workIri": {"$ref": "#/$defs/iri"},
+        "obligationIri": {"$ref": "#/$defs/iri"},
+        "obligationDigest": {"$ref": "#/$defs/digest"},
+        "algorithmIri": {"const": "urn:usf:proof-algorithm:semantic-construction-authority:1"},
+        "algorithmResourceDigest": {"$ref": "#/$defs/digest"},
+        "evidenceDigest": {"$ref": "#/$defs/digest"},
+        "realisationBasisDigest": {"$ref": "#/$defs/digest"},
+        "scopedDependencyDigest": {"$ref": "#/$defs/digest"},
+        "applicability": {"enum": ["required", "not-required", "conditional", "reserved", "unresolved"]},
+        "outcome": {"enum": ["pass", "fail", "blocked", "unresolved"]},
+        "reasonCodes": {"type": "array", "maxItems": 64, "items": {"type": "string", "pattern": "^[A-Z0-9_:-]+$"}},
+        "evaluationDigest": {"$ref": "#/$defs/digest"},
+        "contentDigest": {"$ref": "#/$defs/digest"}
+      },
+      "oneOf": [
+        {"properties": {"outcome": {"const": "pass"}, "applicability": {"const": "required"}, "reasonCodes": {"type": "array", "maxItems": 0}}},
+        {"properties": {"outcome": {"enum": ["fail", "blocked", "unresolved"]}, "reasonCodes": {"type": "array", "minItems": 1}}}
+      ]
+    },
+    "bundleDigest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "iri": {"type": "string", "pattern": "^urn:[^<>\\s]+$"}
+  }
+}

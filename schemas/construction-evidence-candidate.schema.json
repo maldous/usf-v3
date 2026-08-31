@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:construction-evidence-candidate:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "stage", "algorithmIri", "algorithmVersion", "algorithmResourceDigest", "workIri", "contractIri", "profileIri", "profileVersion", "manifestPath", "manifestDigest", "observedSemanticDigest", "evidenceIri", "evidenceRequirementIri", "evidenceRequirementDigest", "realisationBasisDigest", "packetCoreDigest", "scopedDependencyDigest", "observation", "validation", "contentDigest"],
+  "properties": {
+    "schema": {"const": "urn:usf:construction-evidence-candidate:1"},
+    "status": {"const": "candidate"},
+    "stage": {"const": "construction-evidence"},
+    "algorithmIri": {"const": "urn:usf:algorithm:construction-evidence-normalization:1"},
+    "algorithmVersion": {"const": "1"},
+    "algorithmResourceDigest": {"$ref": "#/$defs/digest"},
+    "workIri": {"$ref": "#/$defs/iri"},
+    "contractIri": {"$ref": "#/$defs/iri"},
+    "profileIri": {"$ref": "#/$defs/iri"},
+    "profileVersion": {"$ref": "#/$defs/version"},
+    "manifestPath": {"$ref": "#/$defs/path"},
+    "manifestDigest": {"$ref": "#/$defs/digest"},
+    "observedSemanticDigest": {"$ref": "#/$defs/digest"},
+    "evidenceIri": {"$ref": "#/$defs/iri"},
+    "evidenceRequirementIri": {"$ref": "#/$defs/iri"},
+    "evidenceRequirementDigest": {"$ref": "#/$defs/digest"},
+    "realisationBasisDigest": {"$ref": "#/$defs/digest"},
+    "packetCoreDigest": {"$ref": "#/$defs/digest"},
+    "scopedDependencyDigest": {"$ref": "#/$defs/digest"},
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semanticTraceDigest", "decisionBoundaryDigest", "dependencySetDigest", "scopeDigest", "acceptanceDigest", "constraintDigest", "applicabilityDigest", "stopConditionDigest"],
+      "properties": {
+        "semanticTraceDigest": {"$ref": "#/$defs/digest"},
+        "decisionBoundaryDigest": {"$ref": "#/$defs/digest"},
+        "dependencySetDigest": {"$ref": "#/$defs/digest"},
+        "scopeDigest": {"$ref": "#/$defs/digest"},
+        "acceptanceDigest": {"$ref": "#/$defs/digest"},
+        "constraintDigest": {"$ref": "#/$defs/digest"},
+        "applicabilityDigest": {"$ref": "#/$defs/digest"},
+        "stopConditionDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applicability", "outcome", "resultDigest"],
+      "properties": {
+        "applicability": {"const": "required"},
+        "outcome": {"const": "pass"},
+        "resultDigest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "contentDigest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "iri": {"type": "string", "pattern": "^urn:[^<>\\s]+$"},
+    "path": {"type": "string", "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"},
+    "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}
+  }
+}

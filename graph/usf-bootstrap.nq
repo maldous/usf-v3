@@ -440,6 +440,7 @@
 <urn:usf:permission:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:repository-path-scope> <urn:usf:predicate:forContract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:repository-path-scope> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:repository-path-scope> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:repository-path-scope> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:repository-path-scope> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:repository-path-scope> <urn:usf:predicate:proofObligation> <urn:usf:proof:repository-path-scope:construction-authority> <urn:usf:graph:usf-bootstrap> .
@@ -467,6 +468,7 @@
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:forContract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:usf-bootstrap> .
+<urn:usf:permission:file-asset-index> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:file-asset-index> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:proofObligation> <urn:usf:proof:file-asset-index:construction-authority> <urn:usf:graph:usf-bootstrap> .

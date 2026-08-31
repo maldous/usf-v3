@@ -3,11 +3,12 @@
 Updated 2026-08-31. This is the durable continuation boundary after bounded
 semantic-recovery tooling, optional Hermes-Agent authority, the committed
 semantic-first gate, the committed local candidate-integration toolchain and
-the committed graph authority for historical-carrier verification/adoption.
-The registered carrier command is now the bounded local implementation
-boundary; the next safe slice is clean verification and adoption of the three
-finite carriers. Provider contact remains downstream of carrier admission, the
-file-asset-index chain and the trusted live-provider sequence.
+the committed historical-carrier verification/adoption chain. All three finite
+historical carrier observations have now been authenticated, recorded in one
+coherent checkpoint and pushed. The next safe slice is the graph-defined,
+copy-on-write ordinary construction-evidence/proof/permission path for
+`repository-path-scope`, followed by `file-asset-index`. Provider contact
+remains downstream of that chain and the trusted live-provider sequence.
 Until the operator says otherwise, one operator owns repository mutation; do
 not delegate repository work or run concurrent writers.
 
@@ -51,11 +52,14 @@ not delegate repository work or run concurrent writers.
   local observation-only tool boundary, not completion authority.
 - Historical-carrier authority was independently reviewed, amended, committed
   and pushed as `59d2699a6b0037e4bb7ddf543a61dae99093fa83`
-  (`feat: define historical carrier adoption authority`). The following
-  coherent implementation checkpoint changes only its exact allowed paths and
-  implements the graph-declared command surface. Re-derive its exact commit and
-  tree from local/remote history rather than attempting a self-referential hash
-  inside the commit that contains this handover.
+  (`feat: define historical carrier adoption authority`). The coherent command
+  implementation was independently verified, committed and pushed as
+  `fc404700b3762bde4cc466b5245abbcd5c91f9ab`
+  (`feat: implement historical carrier adoption`). The three immutable
+  observations were then committed and pushed together as
+  `85c2da48a16f6bbf6b7a002e11f9385fb71afc7e`
+  (`chore: record historical carrier observations`). At that boundary local
+  and remote `main` matched.
 
 The handover previously stopped at the provider slice and reported 156 tests.
 That was stale after the semantic-recovery commits. This version supersedes it.
@@ -297,10 +301,23 @@ semantic-first carrier also passes its three exact historical validations in
 the scrubbed no-network child and truthfully reports `reconstructable` scoped
 currentness. The integration-toolchain carrier passes its one exact historical
 validation and also reports `reconstructable`; all three finite verify paths
-therefore pass from the clean implementation checkpoint. Receipt identity is
-not copied here before adoption because its
-point-in-time clean-HEAD observation is an input; rederive it at the clean
-adoption boundary. No carrier receipt has yet been adopted.
+therefore pass from the clean implementation checkpoint. Each was then adopted
+and immediately reverified through the same registered command. The exact
+tracked receipts and canonical receipt digests are:
+
+- `evidence/historical-carriers/semantic-first-gate-v1.json` —
+  `sha256:7305f8fc55cf0015cdefbe7f7dd77fc4985deef0fc3ccb6bd8cfd69ead445ed1`;
+- `evidence/historical-carriers/repository-path-scope-v1.json` —
+  `sha256:2a6f7b8e38658e7446db2d8903b16724e071d5a15ca64c347dd81c5249df0461`;
+  and
+- `evidence/historical-carriers/integration-toolchain-repair-v1.json` —
+  `sha256:6e90a541b4fb9be2e3d429e6410598fc763f53c00b772de4a9c5275a16fcd18f`.
+
+Repeat verification authenticated each stored target as `matching`. The
+repository-path observation was `current` at adoption; the semantic-first and
+integration-toolchain observations were truthfully `reconstructable`. These
+are historical observations only and still do not establish ordinary
+construction authority or completion.
 
 Clean pre-push replay found two confinement defects that were repaired in the
 same implementation checkpoint rather than stacked as follow-up patches.
@@ -320,14 +337,84 @@ exactly those two current lineage modes. Any later command-implementation
 carrier must extend or version that explicit authority when its exact identity
 is modeled; it is not admitted through a generic string pattern.
 
+The implementation carrier itself is deliberately not added to the immutable
+version-1 publication permission. Adding a fourth path or adoption to that
+shared scoped-authority root would invalidate the three receipts that already
+bind its exact resource digest. Any later implementation-carrier observation
+must therefore use a new versioned copy-on-write permission and transition;
+the critical repository-path/file-index chain does not wait on that optional
+historical observation.
+
 For the complete working packet, TypeScript compilation passed, the focused
 CLI/carrier/schema selection passed 15/15, the full authoritative suite passed
 184/184, containment returned `status: pass`, and `git diff --check` passed.
-The current integration-manifest semantic digest is
+The integration-manifest semantic digest at that implementation checkpoint was
 `sha256:37c32b64d2aada135be320d0649d5edcbc1e03fafd728e21296727e12a228349`.
 These results qualify the exact implementation bytes at their coherent
 checkpoint; they establish command implementation only, not carrier adoption,
 evidence, proof or completion.
+
+## Ordinary construction-authority boundary
+
+This semantic packet defines the missing ordinary path before implementing it.
+The versioned publication policy now selects
+`urn:usf:work:repository-path-scope` and
+`urn:usf:work:file-asset-index`, its exact JSON schemas, and their shared
+copy-on-write activation-derivation rule. This incoming policy edge is
+intentional: it preserves the already-adopted repository-path work resource
+digest while the implementation will add the policy and schema files to the
+future static scoped basis before any new evidence is formed. The policy
+registers this Unix-decomposed interface:
+
+```sh
+./bin/usf evidence construction \
+  --work WORK_IRI \
+  --profile VERSIONED_PROFILE_IRI \
+  --manifest graph/manifests/integration.json
+
+./bin/usf prove construction \
+  --obligation OBLIGATION_IRI \
+  --evidence PATH_OR_STDIN \
+  --profile VERSIONED_PROFILE_IRI \
+  --manifest graph/manifests/integration.json
+
+./bin/usf publish construction-authority \
+  --bundle PATH_OR_STDIN \
+  --profile VERSIONED_PROFILE_IRI \
+  --manifest graph/manifests/integration.json \
+  --verify
+```
+
+`evidence construction` is a read-only normalization of the exact current
+profile-bound work projection. `prove construction` reauthenticates that
+candidate, rederives the current scoped basis and deterministically reports
+pass, fail, blocked or unresolved without source mutation. Only
+`publish construction-authority --apply` may append the exact admitted
+Evidence, passing ProofResult and ConstructionAuthorityGrant N-Quads to
+`graph/integration.nq` and no-replace-create one sanitized receipt under
+`evidence/construction-authority/`. Verification, staging and candidate output
+remain stdout or ignored repository-local state. No stage contacts a provider,
+GitHub or a remote, commits, pushes, completes work or activates runtime.
+
+The activation rule does not edit a proofblocked permission in place. It first
+derives the static scoped authority basis without dynamic Evidence,
+ProofResult or grant subjects, then selects the unique deterministic grant for
+that exact work, permission, profile, manifest and basis. Old grants for other
+relevant bases remain immutable historical records and are ignored; more than
+one current grant is an integrity failure. Consequently unrelated graph or Git
+movement cannot force reproof, while movement of any declared dependency does.
+This is the ordinary copy-on-write mechanism, not a claim that GitHub itself is
+copy-on-write.
+
+The command resources remain graph-declared `planned` and the implementation
+intent remains `proofblocked` until the next bounded realization checkpoint.
+That implementation is an explicitly recorded
+`direct-bootstrap/manual-toolchain-repair` boundary because the commands needed
+to process their own ordinary work do not yet exist. It may touch only the
+intent's exact paths, reuse existing local canonicalization/containment/atomic
+publication primitives, and add one compact test family. After implementation,
+rederive the work basis again; do not form repository-path evidence against the
+planned-command basis.
 
 The mathematical/structural review exposed several denominator and topology
 issues that must remain visible:
@@ -701,25 +788,34 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. From the clean implementation checkpoint, run `usf bootstrap-carrier
-   verify` and then
-   `adopt` for all three finite carriers. Authenticate each existing or newly
-   created `HistoricalCarrierObservation`, including a repeat matching-target
-   readback. Batch the three tracked receipts into one coherent publication
-   checkpoint rather than committing per graph action. Carrier adoption is not
-   current completion, Evidence E, proof or work readiness.
-2. Model the command implementation's own exact historical carrier only in a
-   later graph packet after its coherent implementation commit/tree and complete
-   allowed-path diff exist. Do not guess, caller-supply or retroactively rewrite
-   that identity.
-3. Re-model and realize the ordinary evidence/proof/permission path needed to
-   close `repository-path-scope`, then complete
+1. Independently review the copy-on-write construction-authority semantic
+   packet, run the full authoritative and containment checks, then commit and
+   push it as one coherent model checkpoint. On the resulting clean HEAD,
+   repeat all three `usf bootstrap-carrier verify` calls to confirm the
+   immutable receipts remain authenticated under unrelated graph movement.
+2. Implement only the graph-registered `evidence construction`,
+   `prove construction` and `publish construction-authority` surface plus the
+   copy-on-write grant projection. Keep candidates ignored/stdout, batch one
+   through thirty-two compatible bundles, keep full graph validation outside
+   the narrow mutation lock except final readback, and use one compact test
+   family. Update command resources from `planned` to `implemented` only in
+   that qualified realization checkpoint.
+3. Use those registered commands to form exact current evidence, proof and a
+   copy-on-write grant for `repository-path-scope`; truthfully close its
+   already-present realization only through graph-defined no-change semantics
+   if the exact source needs no delta. Then complete
    `urn:usf:work:file-asset-index` through the profile-bound isolated V3 chain.
    Do not edit its already-present files merely to manufacture lineage; require
    a real accepted delta or truthfully close it as an exact no-change realization
    only after the graph explicitly defines that disposition and its evidence,
    proof and publication semantics.
-4. Build the graph-defined provider census from every models.dev candidate plus
+4. Model the construction-command implementation's own exact historical
+   carrier only in a later copy-on-write versioned authority after its coherent
+   implementation commit/tree and complete allowed-path diff exist. Do not
+   mutate the immutable version-1 permission, guess, caller-supply or
+   retroactively rewrite that identity; it is not a serial prerequisite for
+   repository-path-scope or file-asset-index.
+5. Build the graph-defined provider census from every models.dev candidate plus
    reviewed V1/V2 credential-name/model provenance and distinct host adapters.
    Produce the full assigned/excluded/eligible-unassigned table before contact,
    then acquire account receipts, run scrubbed adapters, authenticate provider
