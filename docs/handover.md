@@ -3,11 +3,11 @@
 Updated 2026-09-01. The live continuation updates immediately below supersede
 older next-action and carrier statements where they differ. The durable pushed
 semantic boundary is now
-`4a7d2a74a15725944a8162152cbaa88d519e38ee` (tree
-`71d1a16f1d600b1bdc62cf5019b869709a5ac8b2`). Its predecessors `a3a40e5`
-and `6040fe9` commit the independently reviewed composable-input,
-validation-isolation and shared call-leaf remodel plus its first construction
-publication. Registered copy-on-write publication created
+`9e5195ab6d71c7b74a848ebcc4a1fb124d801e3a` (tree
+`efb23a825e685550e4f71ecb6a922750ef17c908`). Its predecessors `a3a40e5`,
+`6040fe9` and `4a7d2a7` commit the independently reviewed composable-input,
+validation-isolation, shared call-leaf and validation-host-tool remodels plus
+their construction publications. Registered copy-on-write publication created
 `evidence/construction-authority/a5f565bbcc2b38088678c4ad8c745efd9a60450e91f7d5a9bdac305cca7d5927.json`
 with receipt digest
 `sha256:69a3a56dae0e80d0d092f75773ea9a19ec30d1eb9bb3a59ab51497738b6a5e84`.
@@ -42,9 +42,136 @@ through `integrate`, basis
 `sha256:3f860b520fdff4220944043ce1fed9beb5aa7fdc2cf635d97afa264d56a5053b`
 and scoped dependency digest
 `sha256:4ebe0ad7b76d6786cfb5f0d45368550dd60350655ff7bf27db941b8f83f5776e`.
-This graph, handover and receipt packet is not yet committed; implementation
-must not begin until the exact carrier is committed, pushed and remotely read
-back.
+Commit `9e5195a` contains this exact graph, receipt and handover carrier. Ordinary
+fast-forward push and independent remote read-back both resolve
+`origin/main` to `9e5195ab6d71c7b74a848ebcc4a1fb124d801e3a`; implementation may now proceed
+from that recorded safe boundary.
+
+The authorized implementation is now complete only in the isolated checkout
+`/tmp/usf-operator-realisation-ZGj3V9/repository`; no candidate, primary source
+write, integration, commit or push has yet occurred. Its complete 13-path delta
+is inside the current `operator-observability` write set. The stable `bin/usf`
+launcher takes the shared primary-mutation flock before `src/cli.ts` loads for
+the four dynamic leaf prefixes. Provider and call dispatch use their separate
+graph-defined fresh Node entries, and parent plus child independently rederive
+current completion/basis, authenticate the operator-owned child entry and exact
+typed feature closure, and reauthenticate the imported entry. The child emits
+`prepared` only after its own shared lock is released; the parent validates and
+releases its inherited launcher lock before acknowledgement; handler input and
+inference follow acknowledgement. The child uses exact `process.execPath`, no
+shell, a fixed locale-only environment, bounded 64-KiB control and four-MiB
+result channels, a 30-second admission timeout, five-second termination grace,
+no fallback and deterministic process exit after its result.
+
+Independent focused verification reports TypeScript, shell syntax and
+`git diff --check` passing. The exact graph-selected composable-input,
+observability and provider-leaf lanes pass 4, 13 and 3 cases respectively. The
+ordinary outer provider-leaf run executes three cases with zero skips; its two
+genuine scrubbed children import the same canonical owner-private fixture URL
+around sanctioned byte movement and observe `before` then `after`, without
+inheriting credential, proxy or `NODE_OPTIONS` state. Under the confined Node
+permission boundary the outer case skips before any fixture write while the two
+injected no-child cases pass. Direct Node entry refuses
+`CALL_LEAF_LAUNCHER_LOCK_REQUIRED`; registered `bin/usf` reaches the expected
+semantic `CALL_LEAF_PROOFBLOCKED` boundary without provider contact. Final
+independent adversarial read-back now reports no production transport,
+authority, lock-order, cache-currentness, containment or protocol blocker. It
+also confirms that the compact provider-leaf lane retains the graph-required
+lazy, scope, completion, dependency-movement, cross-root, missing-entry and
+no-contact refusals without growing a provider/model test matrix. The accepted
+next boundary is therefore to materialise exactly one fresh current-basis
+candidate through the registered one-time `usf apply --input` self-repair,
+then run the three candidate-bound validations sequentially; never reuse
+rejected candidate `1d95f0...`.
+
+That one-time self-repair has now materialised fresh candidate
+`sha256:801eeb73e7e2364298f6516bcd62a6de9aae568e58df6acd4da03c7433d2ef21`
+against exact current basis
+`sha256:3f860b520fdff4220944043ce1fed9beb5aa7fdc2cf635d97afa264d56a5053b`.
+Its one deterministic local proposal contribution is
+`sha256:3529d5126c774de7e78e2cd4479be922003eb511a962ac81bf3f45ff37a8589e`
+and its 13 operations are exactly the independently accepted isolated paths.
+The old single-argument `usf call` first refused at the host argv ceiling and
+performed no write; the recorded bootstrap exception therefore built the same
+current deterministic call/resolve lineage in memory and passed the resolved
+envelope only to registered `usf apply --input -`. No primary path changed.
+The next live action is the three graph-derived candidate checks, strictly
+sequential because their receipt set intentionally has one mutation lock.
+
+The first graph-derived check then refused `CHECK_FAILED` before any passing
+receipt. A direct candidate-tree replay initially observed the expected absence
+of `src/providers/fake.ts`, but that was not the confined check view: the graph
+already supplies that non-owned runtime member. A matching Node-permission
+diagnostic in the complete isolated carrier found the actual refusal: Node
+denies `fs.symlink` unless the process receives unrestricted filesystem read and
+write permission, even when the requested symlink is inside the allowed private
+scratch. Bubblewrap and the exact check policy correctly do not grant that
+process-wide permission. The other three composable cases pass under the
+permission boundary; the existing observability confined replay passes 12 with
+its one declared outer-only skip, and the provider-leaf confined replay passes
+two with its one declared real-child skip. Candidate `801eeb...` is rejected
+and must not be integrated or reused. Before another semantic publication or
+candidate, audit all three graph-selected validation closures and confinement
+assumptions together; correct the semantic acceptance once rather than weakening
+the shared check sandbox or repairing observed symptoms one at a time.
+
+That set-wide audit found no missing transitive repository runtime member and
+no defect in the other two validation confinement boundaries. The graph now
+models the narrow correction before source work: the composable confined lane
+keeps parser, bounded regular-file, mode, invalid-UTF-8, call, basis and resolve
+coverage, explicitly skips only link creation, and may not widen the shared
+sandbox. The identical tracked ordinary exact-carrier lane must execute both
+symlink and hardlink refusal with zero link-authority skips before integration
+or completion publication. This semantic movement makes the current operator
+construction grant stale; rederive evidence, proof and copy-on-write publication
+before changing the isolated test or materialising another candidate.
+
+The first full authoritative replay after that graph-only correction reports
+200 of 202 cases passing. One refusal is the expected not-yet-realised semantic
+gap: `profile-scoped-authority.test.ts` reconstructs profile 2 and invokes the
+same confined composable validation, whose current tracked test still attempts
+link creation. It must turn green only after the freshly authorized link-only
+skip is realised; it is not a second closure defect. The other refusal is
+workspace contamination from the intentionally untouched downstream untracked
+account-receipt schema drafts: their `endpointIdentity.maxLength` keyword is not
+supported by the current closed schema validator. That downstream failure does
+not authorize editing those drafts and cannot be cited as a green authoritative
+run. Re-run the complete authoritative suite from the realised carrier with the
+downstream packet excluded or completed before integration publication.
+
+The corrected semantic carrier has now passed exact `usf query` read-back and
+the registered construction `evidence -> prove -> publish --verify -> --apply`
+chain. Copy-on-write publication created
+`evidence/construction-authority/aa7e409b9864f6b3fb278e02dc10da47515a13242c1bd541015539a51589ca43.json`
+with receipt digest
+`sha256:cc054a62e05889c7f38c351297dc5818036a18fa5ca44af3dc7c37d0eb9a8bd1`.
+It moved semantic digest
+`sha256:a2ac65bb7446294e43bae674d1c3083dfdcfce1bed60e0e281a98d5cd2e9058d`
+to
+`sha256:95ebeb0cff0bed87a5ab127745ef9c2397c1e9e99ca67191f9bae739409f60a6`,
+activating operator construction through `integrate` against basis
+`sha256:83c3d064118ad919f79afd12ffa085b534126fdade5a5593d2b38586dbd20bef`
+and scoped dependency digest
+`sha256:2d97982a11863a44062b040313066f6a9b2106618c0b83ff1ccea54e06fab837`.
+Those are the authenticated pre-publication grant inputs. Post-publication
+`usf work --ready --stage construct` independently rederives current basis
+`sha256:729c0a2b8e141f4b3d61ee3035521c1b400ef090aa97021112243af8f6952e47`
+and current scoped dependency digest
+`sha256:cab75b566840e4214c35af78da9dc13d4c81b6cc1159f29de286b9802619b9d4`
+while retaining active permission through `integrate`.
+The focused construction-authority, overlay-isolation, immutable-basis and
+semantic-first eligibility replay passes 11/11; containment and
+`git diff --check` pass. Independent verifier and adversarial read-back accept
+the 32-operation receipt and the link-only confined/ordinary split without a
+blocker. A newly derived post-publication bundle is a different prospective
+transition and correctly refuses partial-state publication; existing authority
+is reauthenticated by current `usf work`, not by misdescribing that fresh bundle
+as receipt re-verification. This is construction authority only;
+it is not candidate validation, integration, completion, provider execution or
+terminal proof. The next authorized source change is only the isolated tracked
+composable test's link-case partition, followed by a fresh candidate; rejected
+candidate `801eeb...` remains unusable.
+
 The focused graph/provider topology lane passes 13/13; the independent current
 compatibility lanes pass 15/15; `git diff --check` and the containment verifier
 pass. A detached exact-carrier bootstrap and full `pnpm run check` completed
