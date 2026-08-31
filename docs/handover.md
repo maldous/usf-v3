@@ -1,14 +1,59 @@
 # USF V3 handover
 
-## Current live boundary — operator complete; closure correction before push
+## Current live boundary — account-tier construction authorized
 
-Updated 2026-09-01 after full clean-carrier qualification. Local `main`
-consists of two unpublished commits beyond the last authenticated remote
-boundary `224796f2d0befa3e68dbe2eaeff49e5ea7df9a0c`: registered integration
-`349a36237cf3bf380ebcb371ef210b802d81c119` followed by the completion
-checkpoint containing this ledger. Read the checkpoint's self-identity from
-the current Git commit; do not substitute the pre-ledger qualified carrier
-named below. The integration fast-forwarded exact candidate
+Updated 2026-09-01 from pushed base
+`617ec3f59909595bfad7d3e2dd1ae9d48441fedd`. Registered no-contact
+`usf evidence construction` and `usf prove construction` passed for
+`urn:usf:work:provider-account-tier-receipt` under exact profile
+`urn:usf:profile:v3-self-host:3` and manifest
+`graph/manifests/self-host-provider-v3.json`. Evidence content digest is
+`sha256:f0e963e70ea2fb079e214f6b7ca735f23031714570f928f970b7806ed0663b27`;
+proof bundle digest is
+`sha256:061634f8bc3beda89ac013254a62d5fb811877cf7d4f5e8f43ee5f99260229f8`.
+
+Dry verification and copy-on-write application produced repository receipt
+`evidence/construction-authority/2060f837dfb42381cd5207bbb69e3b3b52f91ed343e0bbc730f8d5c0063d2719.json`,
+receipt digest
+`sha256:3abb2a175ebb776bb69f51dca036bdfabb24640069a7da62c39831cff37b2bac`,
+and moved the manifest semantic digest from
+`sha256:90e91c90aae0a84eecf65d3dc0f1650d8bea611fa6a73357937f05874f176fdf`
+to
+`sha256:67d2e8ae1ce11619250aa8d74c5412453162fec004cf1c1c0fdd1d0ce9a60cfe`.
+Registered `usf work --ready --stage construct` now reports the account-tier
+packet `construction-ready`, actionable and active through integrate, with no
+construction reason codes. Its exact basis is
+`sha256:53f9f4bf5676626b94646f9af767e7dc69a72be990315aeb24d123bf944c5251`;
+its write set is only the two account schemas, `provider-receipts.ts`,
+`economics.ts`, and the existing integration/economics test paths named by the
+graph. Two focused construction/profile authority tests pass, as do containment
+and diff checks.
+
+The graph publication, repository receipt and this section are the complete
+authority-checkpoint content. Their carrier state is determined by Git: if any
+is dirty or untracked, the checkpoint is pending and cannot authorize detached
+realization; once one clean commit contains all three, it is the required local
+authority carrier. At resume, authenticate current Git and remote state: if the
+clean checkpoint is not yet on `origin/main`, independently verify and push it;
+if local and remote already match, do not add another carrier-only commit. Then
+materialise exactly one candidate from the six-path authorized
+proposal through registered `usf call`/`resolve`/`apply`, run only the
+graph-selected account-tier validation, and integrate after its exact receipt.
+Preserve every downstream adapter, invocation, hidden-holdout and run-authority
+draft outside that candidate.
+
+This authority is no-contact construction permission only. It is not work
+completion, receipt acquisition, adapter safety, provider availability,
+authenticated answers, semantic qualification, parallel execution,
+semantic-token reduction, BAU, ANQR, staging, production or terminal proof.
+
+## Prior remotely authenticated operator completion boundary
+
+Recorded 2026-09-01 after full clean-carrier qualification. Completion commit
+`617ec3f59909595bfad7d3e2dd1ae9d48441fedd` and `refs/heads/main` were
+independently read back equal before account-tier construction began. Its
+parent `349a36237cf3bf380ebcb371ef210b802d81c119` is the registered
+integration of exact candidate
 `sha256:c889de72452b98dd3305a6f59b7007a20b6e123037f4c3a2b8f2dc69f675dd5c`.
 Integration request
 `sha256:9378e014cd089fe40e0046b9b3b5f2249babc5307e4584d266276edd371a4597`
@@ -79,12 +124,9 @@ synthetic five-file closure, `verified-complete` operator read-back with no
 reason codes, committed-path isolation and clean range diff. This ledger is the
 only tracked change after that qualified carrier.
 
-At resume, first authenticate current Git state. If local `HEAD` remains two
-commits ahead of `origin/main`, rerun containment, scoped work and diff
-read-backs, push exactly the integration and completion checkpoint, then require
-the remote ref to equal local `HEAD`. If they already match, do not create a
-documentation-only successor. Once they match, resume trusted provider
-account-tier acquisition through registered USF commands.
+That boundary's conditional push and exact remote read-back are satisfied by
+`617ec3f59909595bfad7d3e2dd1ae9d48441fedd`; the current live account-tier
+section above supersedes its next action.
 
 This proves local operator work completion only. It is not provider execution,
 multi-provider parallelism, semantic-token reduction, BAU, ANQR, staging,
