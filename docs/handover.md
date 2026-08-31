@@ -21,6 +21,49 @@ lazy, bounded and candidate-driven. Until the operator says otherwise, one
 operator owns repository mutation; delegated review is read-only and no
 concurrent writer is permitted.
 
+## Live continuation update — provider-census candidate refused
+
+Independent review refused candidate
+`sha256:57eff2eddc5bd657d6b73373ea051862a352f287c4f5c7f76f093309586c4428`;
+it has not been integrated and none of its passing focused receipts establishes
+provider-census completion. Three coupled defects must be corrected together
+before a replacement candidate is derived:
+
+- the graph declares `src/commands/providers.ts` predecessor-owned and forbids
+  leaf rewrites, but still includes that path in the provider-census write set;
+  the operator packet reserved help text without installing the corresponding
+  static host dispatcher;
+- the candidate launches Codex and Claude directly with scrubbed environment
+  variables but without a private network namespace or filesystem projection,
+  contradicting the no-contact work boundary; and
+- the selected checks cover pure census and injected parser fixtures but not
+  the registered handler, exact scope/completion refusal, bounded result
+  projection or either new closed output schema.
+
+The next safe correction is graph-first: move the shared provider dispatcher
+path exclusively to `operator-observability`, remove it from provider census,
+define an explicit owner-selected provider-state root and a Bubblewrap
+`--unshare-net` local-metadata boundary, and extend the existing focused host
+validation to exercise the production handler factory and validate both output
+schemas. Re-realise the affected predecessor first, then derive a fresh
+provider-census basis and candidate from clean preimages. Do not integrate or
+push `57eff...`, and do not reinterpret installed executables, login status or
+catalogue rows as entitlement, inference availability or qualification.
+
+The graph-first correction now rederives semantic digest
+`sha256:1fedd3bdc159f1ad972e3d14d5e17d4e5a3c341b0e76acf411251d70127c072c`.
+Current operator construction authority is
+`evidence/construction-authority/1f44e8c8f3089eb470b3d17004b48ae6d02aec614965206dedd8156f04aea17a.json`.
+Replacement operator candidate
+`sha256:825f012be5799b4f9f19cd302302436f676e9e7c7e88cfdbfdba3bf19af901e7`
+changes only static help, the predecessor-owned provider dispatcher and its
+existing registry contract test; its graph-selected check passed. Its first
+detached integration dry-run correctly refused with
+`INTEGRATION_DETACHED_BASIS_MISMATCH` because this semantic model and grant had
+not yet been committed. Commit only that semantic authority carrier, obtain the
+pending independent candidate verdict, then rerun dry-run and ordinary local
+integration; this refusal is not a candidate-validation failure.
+
 ## Live continuation update — one-time provider registry closure
 
 The shared CLI correction is now graph-defined rather than tribal. Exact
