@@ -450,6 +450,24 @@ is a relevant adverse-learning guardrail: no action is a separate axis and
 must never be promoted to validation satisfaction or completion without exact
 current evidence and proof.
 
+That gap now has a model-only, proofblocked definition in
+`graph/integration.nq`: `no-change-work-completion:1` selects only
+`repository-path-scope` and `file-asset-index`, binds four registered command
+stages, six closed repository schemas, seven implementation paths and four
+separate algorithms, and publishes only an explicit
+`AdmittedNoChangeRealisationReceipt` plus completion Evidence and ProofResult.
+The disposition requires an isolated exact-byte snapshot, empty operations,
+empty provider lineage and every contract-declared confined check receipt. It
+does not change the existing integration proof algorithm or reinterpret an
+empty delta. All 14 directly referenced command, algorithm and schema
+resources resolve through `usf query`; the policy cardinalities are 2 eligible
+works, 4 commands, 6 schemas, 7 tools and 4 algorithms. The full model-boundary
+authoritative suite passed 186/186, containment passed and the current
+repository-path construction grant remained active while file-asset-index
+remained dependency-blocked. The four commands still report planned semantic
+availability and confer no completion until implemented and independently
+qualified.
+
 The mathematical/structural review exposed several denominator and topology
 issues that must remain visible:
 
@@ -826,8 +844,8 @@ exactly as emitted by the core and ANQR packets.
    current `repository-path-scope` copy-on-write grant. Do not create a fourth
    version-1 carrier observation or reinterpret any historical carrier as
    completion.
-2. Model, qualify and implement a generic graph-defined no-change realisation
-   disposition through registered `usf` commands. It must bind an exact
+2. Implement and qualify the now graph-defined generic no-change realisation
+   disposition through its four registered `usf` command stages. It must bind an exact
    versioned profile and current RealisationBasis, materialise only the finite
    file scope into an isolated workspace, run the graph-selected check, admit
    completion evidence, evaluate completion proof and publish additive

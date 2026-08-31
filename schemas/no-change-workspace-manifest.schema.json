@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:no-change-workspace-manifest:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "digest", "basis", "disposition", "policy", "operations", "lineage", "scope", "writeSet", "preimages"],
+  "properties": {
+    "schema": { "const": "urn:usf:no-change-workspace-manifest:1" },
+    "digest": { "$ref": "#/$defs/digest" },
+    "basis": {
+      "type": "object",
+      "required": ["schema", "basisDigest"],
+      "properties": {
+        "schema": { "const": "urn:usf:realisation-basis:1" },
+        "basisDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "disposition": { "const": "no-change-candidate" },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["iri", "resourceDigest", "algorithmIri", "algorithmResourceDigest"],
+      "properties": {
+        "iri": { "$ref": "#/$defs/iri" },
+        "resourceDigest": { "$ref": "#/$defs/digest" },
+        "algorithmIri": { "$ref": "#/$defs/iri" },
+        "algorithmResourceDigest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "operations": { "type": "array", "maxItems": 0 },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acceptedContributionDigests", "rejected"],
+      "properties": {
+        "acceptedContributionDigests": { "type": "array", "maxItems": 0 },
+        "rejected": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "scope": { "$ref": "#/$defs/paths" },
+    "writeSet": { "$ref": "#/$defs/paths" },
+    "preimages": {
+      "type": "object",
+      "additionalProperties": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] }
+    }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "iri": { "type": "string", "pattern": "^urn:[^<>\\s]+$" },
+    "path": { "type": "string", "pattern": "^(?!\\.git(?:/|$))(?!\\.usf(?:/|$))(?!\\.env(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*/?$" },
+    "paths": { "type": "array", "items": { "$ref": "#/$defs/path" } }
+  }
+}

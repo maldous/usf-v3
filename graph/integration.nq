@@ -1207,3 +1207,196 @@
 <urn:usf:proof-result:construction:805588c9bff646b3871f8ef3dbb51543a051cd65367ae1aebf9fabda76543f0e> <urn:usf:predicate:realisationBasisDigest> "sha256:8aa43d2be13e53cb97fe8db48cdbad15f2db036c26c7b72b23d8dc0d9c000c7c" <urn:usf:graph:integration> .
 <urn:usf:proof-result:construction:805588c9bff646b3871f8ef3dbb51543a051cd65367ae1aebf9fabda76543f0e> <urn:usf:predicate:scopedDependencyDigest> "sha256:a7dc7cdf35f8358aa9cb9ea866f82e94f79c10390c40b8b247c1a5267d658901" <urn:usf:graph:integration> .
 <urn:usf:proof-result:construction:805588c9bff646b3871f8ef3dbb51543a051cd65367ae1aebf9fabda76543f0e> <urn:usf:predicate:type> <urn:usf:type:ProofResult> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapToolchainIntent> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:lineage> <urn:usf:lineage:intent:no-change-completion-cli:1> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:objective> "Implement the registered isolated no-change realisation, completion evidence, proof and copy-on-write publication chain so an already-correct current work scope can complete without a fabricated edit, contribution or Git integration." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "docs/handover.md" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "graph/integration.nq" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "src/cli.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "src/commands/check.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "src/commands/help.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "src/commands/work-completion.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "src/graph/work.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "src/realisation/index.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "src/realisation/work-completion.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "tests/contract/cli.test.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "tests/contract/query-work.test.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "tests/integration/work-completion.test.ts" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:validation> <urn:usf:validation:no-change-completion-cli-focused> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:currentImplementationQualificationValidation> <urn:usf:validation:integration-toolchain-authoritative> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:currentImplementationQualificationValidation> <urn:usf:validation:repository-containment-check> <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:testEconomics> "Extend the existing CLI table and add one compact end-to-end no-change chain covering exact success, changed scoped bytes, missing check, stale policy or basis, publication conflict, historical-record coexistence and idempotent readback. Do not create per-work, per-command or provider matrices." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:criticalPathRule> "Implement only the generic no-change completion path needed for repository-path-scope and file-asset-index. Reuse the existing isolated candidate, confined check, canonical digest, owner-private input, primary mutation lock, additive N-Quad and rollback-protected publication primitives. Add no Git integration, remote store, signature, Docker, hosted runner or external service." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:adoptionRule> "This is a direct-bootstrap/manual-toolchain-repair boundary because the registered no-change commands do not yet exist. Model the exact protocol before implementation; the implementation carrier is recorded only at a later coherent boundary and does not itself complete either eligible work item." <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:nonClaim> "The intent grants no work completion, provider contact, credential access, Git integration, commit, push, runtime, staging, production, ANQR or terminal-proof authority." <urn:usf:graph:integration> .
+<urn:usf:lineage:intent:no-change-completion-cli:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapManualLineageIntent> <urn:usf:graph:integration> .
+<urn:usf:lineage:intent:no-change-completion-cli:1> <urn:usf:predicate:lineageMode> "direct-bootstrap/manual-toolchain-repair" <urn:usf:graph:integration> .
+<urn:usf:lineage:intent:no-change-completion-cli:1> <urn:usf:predicate:carrierIdentityState> "derive-after-coherent-implementation-checkpoint" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:repository-path-scope> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:file-asset-index> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/integration.json" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/integration.nq" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:integration> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/work-completion/" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:realisationAlgorithm> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:copy-on-write-work-completion-publication:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:completionDerivationRule> <urn:usf:rule:copy-on-write-work-completion:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:realise-no-change:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-completion:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-completion:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-work-completion:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:workspaceSchema> <urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:realisationResultSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:toolPath> "src/cli.ts" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:toolPath> "src/commands/check.ts" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:toolPath> "src/commands/help.ts" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:toolPath> "src/commands/work-completion.ts" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:toolPath> "src/realisation/index.ts" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:toolPath> "src/realisation/work-completion.ts" <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:noChangeRule> "No-change is a positive exact-byte disposition, not the absence of operations. Materialise the complete finite basis scope into one Git-less owner-private workspace, authenticate every regular file, directory aggregate, mode and declared write preimage against the current RealisationBasis, require empty provider lineage and an empty operation set, and bind the resulting tree to the graph-selected confined validation receipt." <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:batchRule> "Accept one through thirty-two distinct passing bundles under one exact profile and manifest, ordered by unsigned UTF-8 work IRI. Refuse duplicate work, receipt, evidence or proof identity and refuse any cohort containing a semantic dependency edge between members; dependent work is published only after current predecessor completion readback." <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:identityRule> "Derive workspace, realisation receipt, evidence, proof and publication identities from the exact work, current RealisationBasis, scoped dependency, policy, algorithm, candidate tree and validation receipt digests using canonical JSON and SHA-256. No timestamp, caller label, Git object, provider contribution or global semantic digest participates." <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:publicationRule> "Publish only additive canonical N-Quads for one AdmittedNoChangeRealisationReceipt, typed Evidence and passing ProofResult per work plus one tracked sanitized publication receipt. Never replace or delete a contract, permission, integration record, historical completion record, sibling source or receipt. Exact existing state is idempotent; partial, stale, extra or conflicting state refuses." <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:currentnessRule> "Select completion only when receipt, evidence and proof all bind the exact current work, profile, manifest, RealisationBasis, scoped dependency, policy, candidate tree and check receipt set. Retain other scoped records as history and ignore them. Unrelated Git, sibling, product-overlay, provider or semantic movement cannot stale completion; movement of any bound scoped, policy, schema, tool, workspace or validation input does." <urn:usf:graph:integration> .
+<urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:predicate:nonClaim> "A zero delta, passing unit test, check observation, current source implementation or active construction grant alone is not completion. No-change completion is not Git integration, provider contribution, provider qualification, runtime activation, staging, production, ANQR or terminal proof." <urn:usf:graph:integration> .
+<urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPolicyType> <urn:usf:graph:integration> .
+<urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:type:AdmittedNoChangeRealisationReceipt> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:integration> .
+<urn:usf:type:AdmittedNoChangeRealisationReceipt> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeRealisationAlgorithm> <urn:usf:graph:integration> .
+<urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:predicate:objective> "Create and reauthenticate a Git-less isolated snapshot containing exactly the current basis-bound regular-file closure, with no operations and no provider contribution lineage." <urn:usf:graph:integration> .
+<urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceNormalizationAlgorithm> <urn:usf:graph:integration> .
+<urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:predicate:objective> "Normalize exact current no-change workspace authentication and every contract-declared passing confined check receipt into one completion evidence candidate." <urn:usf:graph:integration> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:ProofAlgorithm> <urn:usf:graph:integration> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:realisationRecordType> <urn:usf:type:AdmittedNoChangeRealisationReceipt> <urn:usf:graph:integration> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:realisationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:integration> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:acceptedRealisationState> "accepted-no-change" <urn:usf:graph:integration> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:realisationVerifier> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:integration> .
+<urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:predicate:objective> "Prove one exact work complete only when its current isolated snapshot has no operations or provider lineage, exactly matches its current scoped basis, and passes every graph-declared completion validation with authenticated check receipts." <urn:usf:graph:integration> .
+<urn:usf:algorithm:copy-on-write-work-completion-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:integration> .
+<urn:usf:algorithm:copy-on-write-work-completion-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:algorithm:copy-on-write-work-completion-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
+<urn:usf:algorithm:copy-on-write-work-completion-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:no-change-work-completion:1> <urn:usf:graph:integration> .
+<urn:usf:algorithm:copy-on-write-work-completion-publication:1> <urn:usf:predicate:objective> "Stage and validate the exact additive no-change receipt, evidence and proof postimage before one narrow locked source-and-receipt publication, then reload and read back affected work while preserving historical scoped records." <urn:usf:graph:integration> .
+<urn:usf:rule:copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:integration> .
+<urn:usf:rule:copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:rule:copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult. Historical records for other bases are ignored, duplicate current matches refuse, and completion is never inferred from an empty delta or an integration observation." <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:availability> "planned" <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:commandPath> "realise no-change" <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:purpose> "Materialise one exact current work scope as a Git-less no-change candidate with empty operations and empty provider lineage." <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:synopsis> "usf realise no-change --work IRI --profile VERSIONED_IRI --manifest graph/manifests/integration.json" <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:outputSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:integration> .
+<urn:usf:command:realise-no-change:1> <urn:usf:predicate:authorityEffect> "Writes only one owner-private ignored workspace. It creates no Evidence, ProofResult, completion, integration, Git, provider or runtime authority." <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:availability> "planned" <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:commandPath> "evidence completion" <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:purpose> "Reauthenticate one no-change workspace and its complete graph-selected check receipt set into a completion evidence candidate." <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:synopsis> "usf evidence completion --candidate DIGEST --work IRI --profile VERSIONED_IRI --manifest graph/manifests/integration.json [--output .usf/candidates/work-completion/FILE.json|-]" <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:outputSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:integration> .
+<urn:usf:command:evidence-completion:1> <urn:usf:predicate:authorityEffect> "Read-only normalization. Optional output is ignored owner-private candidate state and is not admitted Evidence or completion." <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:availability> "planned" <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:commandPath> "prove completion" <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:purpose> "Reauthenticate exact completion evidence and evaluate the graph-selected no-change completion obligation without source mutation." <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:synopsis> "usf prove completion --obligation IRI --evidence PATH|- --profile VERSIONED_IRI --manifest graph/manifests/integration.json [--output .usf/candidates/work-completion/FILE.json|-]" <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:outputSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:integration> .
+<urn:usf:command:prove-completion:1> <urn:usf:predicate:authorityEffect> "Read-only proof evaluation. A passing bundle remains a candidate conclusion until explicit publication." <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:availability> "planned" <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:commandPath> "publish work-completion" <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:purpose> "Verify or atomically publish one compatible bounded batch of no-change realisation receipts, completion Evidence and passing ProofResults." <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:synopsis> "usf publish work-completion --bundle PATH|- [--bundle PATH ...] --profile VERSIONED_IRI --manifest graph/manifests/integration.json --verify|--apply" <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:outputSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:integration> .
+<urn:usf:command:publish-work-completion:1> <urn:usf:predicate:authorityEffect> "Verify has no durable effect. Apply may append only exact no-change realisation, completion Evidence and ProofResult records plus one tracked receipt. It never edits work bytes, integrates Git, commits, pushes, contacts providers or activates runtime." <urn:usf:graph:integration> .
+<urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:predicate:repositoryPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:integration> .
+<urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:predicate:digestMembership> <urn:usf:digest-membership:no-change-workspace-manifest:1> <urn:usf:graph:integration> .
+<urn:usf:schema:no-change-realisation-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:no-change-realisation-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:no-change-realisation-result:1> <urn:usf:predicate:repositoryPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:integration> .
+<urn:usf:schema:completion-evidence-candidate:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:completion-evidence-candidate:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:completion-evidence-candidate:1> <urn:usf:predicate:repositoryPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:integration> .
+<urn:usf:schema:completion-evidence-candidate:1> <urn:usf:predicate:digestMembership> <urn:usf:digest-membership:completion-evidence-candidate:1> <urn:usf:graph:integration> .
+<urn:usf:schema:completion-proof-bundle:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:completion-proof-bundle:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:completion-proof-bundle:1> <urn:usf:predicate:repositoryPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:integration> .
+<urn:usf:schema:completion-proof-bundle:1> <urn:usf:predicate:digestMembership> <urn:usf:digest-membership:completion-proof-bundle:1> <urn:usf:graph:integration> .
+<urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:repositoryPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:integration> .
+<urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:digestMembership> <urn:usf:digest-membership:work-completion-publication-receipt:1> <urn:usf:graph:integration> .
+<urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:integration> .
+<urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
+<urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:repositoryPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:no-change-workspace-manifest:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:no-change-workspace-manifest:1> <urn:usf:predicate:digestField> "digest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:no-change-workspace-manifest:1> <urn:usf:predicate:excludedSelfField> "digest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:no-change-workspace-manifest:1> <urn:usf:predicate:canonicalizationRule> "Hash every closed manifest field except digest, including exact basis, policy, empty operation and lineage arrays, finite scope, declared write set and current preimages." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:completion-evidence-candidate:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:completion-evidence-candidate:1> <urn:usf:predicate:digestField> "contentDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:completion-evidence-candidate:1> <urn:usf:predicate:excludedSelfField> "contentDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:completion-evidence-candidate:1> <urn:usf:predicate:canonicalizationRule> "Hash every closed evidence candidate field except contentDigest; validation receipt references are sorted by obligation IRI and bind receipt paths and digests without nesting mutable local files." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:completion-proof-bundle:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:completion-proof-bundle:1> <urn:usf:predicate:digestField> "bundleDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:completion-proof-bundle:1> <urn:usf:predicate:excludedSelfField> "bundleDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:completion-proof-bundle:1> <urn:usf:predicate:canonicalizationRule> "Hash schema, pass status, completion-proof stage, no-change disposition, the complete authenticated evidence candidate and closed proof result, excluding only bundleDigest." <urn:usf:graph:integration> .
+<urn:usf:digest-membership:work-completion-publication-receipt:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalDigestMembership> <urn:usf:graph:integration> .
+<urn:usf:digest-membership:work-completion-publication-receipt:1> <urn:usf:predicate:digestField> "receiptDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:work-completion-publication-receipt:1> <urn:usf:predicate:excludedSelfField> "receiptDigest" <urn:usf:graph:integration> .
+<urn:usf:digest-membership:work-completion-publication-receipt:1> <urn:usf:predicate:canonicalizationRule> "Hash every closed receipt field except receiptDigest, including ordered members, exact additive N-Quad operations, base and resulting source and semantic digests, validation result and nonclaims." <urn:usf:graph:integration> .
+<urn:usf:validation:no-change-completion-cli-focused> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:integration> .
+<urn:usf:validation:no-change-completion-cli-focused> <urn:usf:predicate:command> "node --test --test-isolation=none tests/contract/cli.test.ts tests/contract/query-work.test.ts tests/integration/work-completion.test.ts" <urn:usf:graph:integration> .
+<urn:usf:validation:no-change-completion-cli-focused> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:integration> .
+<urn:usf:validation:no-change-completion-cli-focused> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:integration> .
+<urn:usf:validation:no-change-completion-cli-focused> <urn:usf:predicate:applicability> "required" <urn:usf:graph:integration> .

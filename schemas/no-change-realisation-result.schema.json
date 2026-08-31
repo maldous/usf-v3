@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:no-change-realisation-result:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "stage", "disposition", "workIri", "profileIri", "manifestPath", "realisationBasisDigest", "scopedDependencyDigest", "candidateDigest", "workspacePath", "policyIri", "policyDigest", "algorithmIri", "algorithmDigest", "validationObligations", "nonClaims"],
+  "properties": {
+    "schema": { "const": "urn:usf:no-change-realisation-result:1" },
+    "status": { "const": "ready-for-validation" },
+    "stage": { "const": "realisation" },
+    "disposition": { "const": "no-change-candidate" },
+    "workIri": { "$ref": "#/$defs/iri" },
+    "profileIri": { "$ref": "#/$defs/iri" },
+    "manifestPath": { "$ref": "#/$defs/path" },
+    "realisationBasisDigest": { "$ref": "#/$defs/digest" },
+    "scopedDependencyDigest": { "$ref": "#/$defs/digest" },
+    "candidateDigest": { "$ref": "#/$defs/digest" },
+    "workspacePath": { "type": "string", "pattern": "^\\.usf/workspaces/[0-9a-f]{64}$" },
+    "policyIri": { "$ref": "#/$defs/iri" },
+    "policyDigest": { "$ref": "#/$defs/digest" },
+    "algorithmIri": { "$ref": "#/$defs/iri" },
+    "algorithmDigest": { "$ref": "#/$defs/digest" },
+    "validationObligations": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/iri" } },
+    "nonClaims": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "iri": { "type": "string", "pattern": "^urn:[^<>\\s]+$" },
+    "path": { "type": "string", "pattern": "^(?!\\.git(?:/|$))(?!\\.usf(?:/|$))(?!\\.env(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$" }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:completion-evidence-candidate:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "stage", "disposition", "algorithmIri", "algorithmVersion", "algorithmResourceDigest", "workIri", "contractIri", "profileIri", "profileVersion", "manifestPath", "manifestDigest", "evidenceIri", "evidenceRequirementIri", "evidenceRequirementDigest", "realisationBasisDigest", "scopedDependencyDigest", "policyIri", "policyDigest", "realisationAlgorithmIri", "realisationAlgorithmDigest", "candidateDigest", "workspaceIdentityDigest", "candidateTreeDigest", "lineageDigest", "byteDeltaDigest", "fileModeDigest", "writeSetDigest", "validationResults", "validationResultDigest", "contentDigest"],
+  "properties": {
+    "schema": { "const": "urn:usf:completion-evidence-candidate:1" },
+    "status": { "const": "candidate" },
+    "stage": { "const": "completion-evidence" },
+    "disposition": { "const": "verified-no-change" },
+    "algorithmIri": { "$ref": "#/$defs/iri" },
+    "algorithmVersion": { "const": "1" },
+    "algorithmResourceDigest": { "$ref": "#/$defs/digest" },
+    "workIri": { "$ref": "#/$defs/iri" },
+    "contractIri": { "$ref": "#/$defs/iri" },
+    "profileIri": { "$ref": "#/$defs/iri" },
+    "profileVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" },
+    "manifestPath": { "$ref": "#/$defs/path" },
+    "manifestDigest": { "$ref": "#/$defs/digest" },
+    "evidenceIri": { "$ref": "#/$defs/iri" },
+    "evidenceRequirementIri": { "$ref": "#/$defs/iri" },
+    "evidenceRequirementDigest": { "$ref": "#/$defs/digest" },
+    "realisationBasisDigest": { "$ref": "#/$defs/digest" },
+    "scopedDependencyDigest": { "$ref": "#/$defs/digest" },
+    "policyIri": { "$ref": "#/$defs/iri" },
+    "policyDigest": { "$ref": "#/$defs/digest" },
+    "realisationAlgorithmIri": { "$ref": "#/$defs/iri" },
+    "realisationAlgorithmDigest": { "$ref": "#/$defs/digest" },
+    "candidateDigest": { "$ref": "#/$defs/digest" },
+    "workspaceIdentityDigest": { "$ref": "#/$defs/digest" },
+    "candidateTreeDigest": { "$ref": "#/$defs/digest" },
+    "lineageDigest": { "$ref": "#/$defs/digest" },
+    "byteDeltaDigest": { "$ref": "#/$defs/digest" },
+    "fileModeDigest": { "$ref": "#/$defs/digest" },
+    "writeSetDigest": { "$ref": "#/$defs/digest" },
+    "validationResults": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["obligationIri", "receiptPath", "receiptDigest", "validationResultSetDigest"],
+        "properties": {
+          "obligationIri": { "$ref": "#/$defs/iri" },
+          "receiptPath": { "type": "string", "pattern": "^\\.usf/receipts/check/[0-9a-f]{64}/[0-9a-f]{64}\\.json$" },
+          "receiptDigest": { "$ref": "#/$defs/digest" },
+          "validationResultSetDigest": { "$ref": "#/$defs/digest" }
+        }
+      }
+    },
+    "validationResultDigest": { "$ref": "#/$defs/digest" },
+    "contentDigest": { "$ref": "#/$defs/digest" }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "iri": { "type": "string", "pattern": "^urn:[^<>\\s]+$" },
+    "path": { "type": "string", "pattern": "^(?!\\.git(?:/|$))(?!\\.usf(?:/|$))(?!\\.env(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$" }
+  }
+}
