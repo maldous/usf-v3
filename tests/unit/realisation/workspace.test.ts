@@ -549,6 +549,20 @@ test("integration consumes each graph-required validation exactly once in canoni
     `<${iri}> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <${graph}> .`,
     `<${workId}> <urn:usf:predicate:validation> <${iri}> <${graph}> .`,
   ]);
+  const secondaryClosure = `${validations[1]!.iri}:runtime-closure:1`;
+  statements.push(
+    `<${secondaryClosure}> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <${graph}> .`,
+    `<${secondaryClosure}> <urn:usf:predicate:version> "1" <${graph}> .`,
+    `<${secondaryClosure}> <urn:usf:predicate:forValidation> <${validations[1]!.iri}> <${graph}> .`,
+    ...[
+      "schemas/call-result.schema.json",
+      "schemas/resolve-result.schema.json",
+      "src/commands/command-input.ts",
+      "src/commands/graph-leaf-dispatch.ts",
+      "src/commands/provider-leaf-dispatch.ts",
+    ].map((path) => `<${secondaryClosure}> <urn:usf:predicate:repositoryReadFile> ${JSON.stringify(path)} <${graph}> .`),
+    `<${secondaryClosure}> <urn:usf:predicate:authorityRule> "Supply only the exact non-candidate runtime files imported by this synthetic fake call and resolve validation." <${graph}> .`,
+  );
   await writeFile(semanticPath, `${semantic.replace(`${originalBinding}\n`, "").trimEnd()}\n${statements.join("\n")}\n`);
   initialiseGit(root);
   const basis = packet(root).realisationBasis;

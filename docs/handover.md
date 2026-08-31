@@ -1,13 +1,107 @@
 # USF V3 handover
 
+## Current live boundary — operator complete; closure correction before push
+
+Updated 2026-09-01 after full clean-carrier qualification. Local `main`
+consists of two unpublished commits beyond the last authenticated remote
+boundary `224796f2d0befa3e68dbe2eaeff49e5ea7df9a0c`: registered integration
+`349a36237cf3bf380ebcb371ef210b802d81c119` followed by the completion
+checkpoint containing this ledger. Read the checkpoint's self-identity from
+the current Git commit; do not substitute the pre-ledger qualified carrier
+named below. The integration fast-forwarded exact candidate
+`sha256:c889de72452b98dd3305a6f59b7007a20b6e123037f4c3a2b8f2dc69f675dd5c`.
+Integration request
+`sha256:9378e014cd089fe40e0046b9b3b5f2249babc5307e4584d266276edd371a4597`
+and observation
+`sha256:bd1fa4847601858803ef91fde1f16d192ae1d148ed1b076e148d169da5a27625`
+record `integration-success`, `new-advancement` and
+`not-required-fast-forward` for checked-candidate set
+`sha256:fbd142a9d2b7d541b00ab7f88960fdfaa6675e733d9a3185413f16e3400db4b8`.
+
+The completion checkpoint commits the post-integration graph authority,
+construction receipt
+`evidence/construction-authority/dc054cef7a67a7ed1588c2af800e07066d64ec7b69b97a0515c6a4823e4ef6d0.json`,
+completion receipt
+`evidence/work-completion/02151720dfa38edf70e552590dca500cf1f20d7eb043021edc7d16a4afbefb6b.json`
+and this ledger. The registered no-change candidate remains
+`sha256:aa3ac261ae6107eb159f5deff12b5f243a34703e08aa244694c44162e2e44fb9`
+on basis
+`sha256:dcbc1e0fa8d3ee02f0d2290c53ee274b766497f3b61b43b7db8c1e97e8e25a1d`;
+its three completion checks passed with receipts
+`sha256:00cdd4fb774e27fd939180166848b374ec7c7dfee19f7e3aa26850a382cb0ef3`,
+`sha256:e3afb1ead68dcab92b18b1ea8d5740c63a078a6a042dede2e1f37d7a5a37e165`
+and
+`sha256:24a8cecf5242b0bd1734f6e7fcfb82af719737cd137b81be270d6242013fbdc5`.
+Registered `usf work` still reports `operator-observability` as
+`verified-complete`, completion verified, with no reason codes and the same
+realisation basis after the correction below.
+
+A fresh standalone clone of the pre-correction checkpoint executed 204
+authoritative tests:
+200 passed and four failed. All four were the same cross-validation runtime
+closure defect: `realisation-basis-chain-focused` imports the integrated
+`call.ts` and `resolve.ts` postimages, but its shared inbound closure omitted
+six non-candidate runtime files. The smallest semantic correction removes only
+that validation from the two-file shared closure and gives it one dedicated
+eight-file closure: the existing construction/completion modules plus
+`command-input.ts`, both leaf dispatchers, both result schemas and the tracked
+bootstrap-admission receipt. An exact isolated confined replay of this corrected
+closure passes all 18 executed inner assertions with zero failures; ten
+outer-only cases remain explicitly skipped there, and the selected outer
+adversarial case passes. No source implementation was changed.
+
+Registered query read-back confirms the shared closure still contains exactly
+two files for its two sibling validations and the dedicated closure contains
+exactly eight files for only `realisation-basis-chain-focused`. The current
+dirty semantic projection has manifest digest
+`sha256:90e91c90aae0a84eecf65d3dc0f1650d8bea611fa6a73357937f05874f176fdf`;
+the operator scoped authority remains current.
+
+The first amended-carrier replay was invalid because the audit setup created
+the ignored `.usf/cache` directory as mode `0775`; the confinement boundary
+correctly refused that non-private dependency root. Restoring its required
+owner-private `0700` mode without changing tracked bytes left 203 of 204 tests
+passing. The remaining existing integration-order test replaces the production
+validation with two synthetic validation IRIs but had not declared an inbound
+runtime closure for its synthetic fake-call/resolve member. Independent static
+and confined replay identified exactly five supplemental paths: the two result
+schemas, `command-input.ts` and both leaf dispatchers. Adding that dedicated
+five-file closure only to the synthetic fixture makes the existing test pass;
+it adds no test case and does not broaden production graph authority.
+
+Fresh standalone clone `7b31cf8a296ab885f8a56a8fe985a5138a4682ac`
+(tree `c24b4d43e312e4e5242d7e413aec9e6a3f193533`) preserved both private
+dependency roots, rederived operator completion and passed the entire
+authoritative suite: 204 tests passed, zero failed, zero skipped, in
+27,956 milliseconds. Independent read-only verification confirms the shared
+two-file/two-validation closure, dedicated production eight-file closure,
+synthetic five-file closure, `verified-complete` operator read-back with no
+reason codes, committed-path isolation and clean range diff. This ledger is the
+only tracked change after that qualified carrier.
+
+At resume, first authenticate current Git state. If local `HEAD` remains two
+commits ahead of `origin/main`, rerun containment, scoped work and diff
+read-backs, push exactly the integration and completion checkpoint, then require
+the remote ref to equal local `HEAD`. If they already match, do not create a
+documentation-only successor. Once they match, resume trusted provider
+account-tier acquisition through registered USF commands.
+
+This proves local operator work completion only. It is not provider execution,
+multi-provider parallelism, semantic-token reduction, BAU, ANQR, staging,
+production or terminal proof. Downstream provider receipt, economics, probe and
+qualification drafts remain outside this packet and must remain untouched.
+
 Updated 2026-09-01. The live continuation updates immediately below supersede
 older next-action and carrier statements where they differ. The durable pushed
 semantic boundary is now
-`9e5195ab6d71c7b74a848ebcc4a1fb124d801e3a` (tree
-`efb23a825e685550e4f71ecb6a922750ef17c908`). Its predecessors `a3a40e5`,
-`6040fe9` and `4a7d2a7` commit the independently reviewed composable-input,
-validation-isolation, shared call-leaf and validation-host-tool remodels plus
-their construction publications. Registered copy-on-write publication created
+`224796f2d0befa3e68dbe2eaeff49e5ea7df9a0c` (tree
+`49ab51aaf8a9a18e1f90395723112d0c1cdcf134`). Its predecessors `a3a40e5`,
+`6040fe9`, `4a7d2a7` and `9e5195a` commit the independently reviewed
+composable-input, validation-isolation, shared call-leaf, validation-host-tool
+and confined link-boundary remodels plus their construction publications.
+Remote read-back resolves both `HEAD` and `refs/heads/main` to exact commit
+`224796f2d0befa3e68dbe2eaeff49e5ea7df9a0c`. The earlier registered
+copy-on-write publication created
 `evidence/construction-authority/a5f565bbcc2b38088678c4ad8c745efd9a60450e91f7d5a9bdac305cca7d5927.json`
 with receipt digest
 `sha256:69a3a56dae0e80d0d092f75773ea9a19ec30d1eb9bb3a59ab51497738b6a5e84`.
@@ -171,6 +265,101 @@ it is not candidate validation, integration, completion, provider execution or
 terminal proof. The next authorized source change is only the isolated tracked
 composable test's link-case partition, followed by a fresh candidate; rejected
 candidate `801eeb...` remains unusable.
+
+That isolated source correction is now complete without changing production
+code or adding a test family. The original parser/file/mode/UTF-8/call/basis/
+resolve case no longer performs link creation; one adjacent tracked case owns
+both symlink and hardlink refusal and skips before scratch creation only when
+Node's permission model lacks the unrestricted link authority. TypeScript
+passes. The ordinary exact carrier runs all five composable cases with zero
+skips, including both link refusals. A fresh current-basis candidate and its
+confined graph check remain required; these ordinary results alone do not admit
+integration or completion.
+
+A regenerated deterministic call/resolve envelope has materialised fresh
+candidate
+`sha256:c889de72452b98dd3305a6f59b7007a20b6e123037f4c3a2b8f2dc69f675dd5c`
+against exact current basis
+`sha256:729c0a2b8e141f4b3d61ee3035521c1b400ef090aa97021112243af8f6952e47`.
+Its real local contribution is
+`sha256:b05c319416cb9294a801c4f2fead33bdb0660cf21211fa6d00e27424e5e004de`;
+all 13 operations are the authorized isolated postimages and no primary tracked
+source changed. The first registered graph-derived check again refused before a
+passing receipt, so the remaining checks did not run at that point. The
+candidate bytes and construction basis remained immutable and current; the
+refusal wrote no terminal disposition or passing receipt. Exact reconstruction
+of the same confined launch exposed the new
+cause: candidate postimage `src/commands/call.ts` imports
+`src/schema/index.ts`, but that non-candidate repository file is absent from the
+graph's composable validation runtime closure. The earlier closure review read
+preimage imports and therefore missed a postimage dependency. Before retrying,
+audit the complete recursive runtime and file-read closure of all three actual
+candidate validation postimages and correct the graph once. Do not widen the
+sandbox, patch primary source or rematerialise identical candidate bytes merely
+because a late-bound validation-support dependency was incomplete.
+
+A non-authoritative reconstruction of the exact Bubblewrap/Node permission
+launch confirms the boundary precisely: with the current declared closure it
+fails on missing `src/schema/index.ts`; adding only that current primary file to
+the diagnostic view makes composable pass four with its one declared link skip,
+observability pass twelve with its one declared outer skip, and provider-leaf
+pass two with its one declared child-process skip. This is diagnostic evidence,
+not a check receipt or authority to patch one symptom. Await the exhaustive
+postimage closure audit, then remodel and republish before a fresh candidate.
+
+The exhaustive candidate-postimage audit covers 33 per-validation memberships,
+22 unique repository files and all executed relative imports plus bounded file
+reads. It finds no extraneous declared member and exactly one missing
+supplemental file: `src/schema/index.ts` for composable input. Candidate-owned
+call/resolve schemas remain candidate bytes, Ajv remains an authenticated tool
+dependency, and provider-leaf correctly has no supplemental closure because its
+seven required files are already in the candidate tree. The graph now adds only
+`src/schema/index.ts` and records the reusable postimage rule: execution view =
+candidate postimages + exact supplemental non-owned repository reads +
+authenticated tool roots. `ValidationRuntimeClosure` is deliberately linked
+inbound to a validation and is not part of the construction packet's static
+dependency set. The current construction grant therefore remains active by the
+copy-on-write no-reproof rule. `usf check` binds the current supplemental path
+set and exact bytes into each receipt, and `usf integrate` rederives that path
+set and reauthenticates the bytes; adding an outbound dependency would instead
+turn validation-support movement into an unnecessary construction bottleneck.
+No new construction evidence/proof, test family or generic closure checker is
+required.
+
+The same immutable candidate `c889de...` has now been retried through the three
+registered graph-selected checks, strictly sequentially. All three pass and
+persist content-bound ignored receipts: composable input
+`sha256:db046ef8b9efc7c88df811e80593cdecfa28dbfcd1fc348a9601fa8322bd0825`,
+operator observability
+`sha256:c40f566acc901c5e702ac74dde37f56cab0ebf71f4eebf80ae0fca1920f5c645`,
+and provider leaf
+`sha256:1c06e9667c18fe452e9f8cff9abb288975b30b92bac52249f38963259c97b596`.
+The composable receipt explicitly binds all six supplemental non-candidate
+files including `src/schema/index.ts`; provider leaf correctly binds an empty
+supplemental set. This proves candidate reuse after a late-bound closure repair,
+not integration, completion, provider execution or terminal proof. The next
+boundary is the durable graph/handover checkpoint, then registered integration
+of this exact candidate.
+
+The identical isolated carrier has now run the three ordinary tracked contract
+files together: 11 tests pass, zero fail and zero skip, including both link
+refusals and both genuine scrubbed provider-leaf children. Current primary-tree
+TypeScript passes. The focused provider/overlay/construction lane passes 20/20;
+containment and `git diff --check` pass. Registered
+`usf integrate --candidate c889de... --dry-run` independently reauthenticates
+all three receipts and the six-file composable supplemental closure, prepares
+carrier commit `349a36237cf3bf380ebcb371ef210b802d81c119` (tree
+`7f6289c667048d4ed8c19ac9e8568b614d928d51`) without moving primary, and passes
+all three postimage validations. Its request digest is
+`sha256:9378e014cd089fe40e0046b9b3b5f2249babc5307e4584d266276edd371a4597`,
+checked-candidate-set digest
+`sha256:fbd142a9d2b7d541b00ab7f88960fdfaa6675e733d9a3185413f16e3400db4b8`,
+postimage-validation-result-set digest
+`sha256:db87a81a84098799c9193dd0b1dbe852001ff99f19dc25038016c3d98f103e17`
+and independently derived postimage-basis digest
+`sha256:dd10363f14403faaa6e06c7166523cf7ed092b619b68e41cc487de1bd531cf75`.
+This is preparation only: primary source, completion authority, provider
+contact and remote state remain unchanged.
 
 The focused graph/provider topology lane passes 13/13; the independent current
 compatibility lanes pass 15/15; `git diff --check` and the containment verifier
