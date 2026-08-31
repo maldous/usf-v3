@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
-import { canonicalDigest } from "../../src/core/canonical.ts";
+import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
+import { normalizeModelsDevCatalogue } from "../../src/providers/catalogue.ts";
 import { createQualificationPolicy, createQualificationSuite } from "../../src/providers/qualification.ts";
 import { createRoutingSemanticBinding } from "../../src/providers/routing.ts";
 import { observeInstalledAdapter } from "../../src/commands/models.ts";
@@ -21,12 +22,38 @@ const trackedQualificationAuthority = Object.freeze({
   policy: createQualificationPolicy(trackedQualificationConfig.policy),
 });
 
-function invoke(args: readonly string[], input?: string, extraEnvironment: NodeJS.ProcessEnv = {}): Record<string, unknown> {
-  const result = spawnSync(usf, args, { cwd: repositoryRoot, encoding: "utf8", input, timeout: 5_000, env: { ...process.env, ...extraEnvironment, GIT_TERMINAL_PROMPT: "0" } });
+function invoke(args: readonly string[], input?: string, extraEnvironment: NodeJS.ProcessEnv = {}, cwd = repositoryRoot): Record<string, unknown> {
+  const result = spawnSync(usf, args, { cwd, encoding: "utf8", input, timeout: 5_000, env: { ...process.env, ...extraEnvironment, GIT_TERMINAL_PROMPT: "0" } });
   assert.equal(result.error, undefined, `command timed out: ${args.join(" ")}`);
   assert.equal(result.stderr, "", `command wrote stderr: ${result.stderr}`);
   assert.equal(result.status, 0, `command failed: ${result.stdout}`);
   return JSON.parse(String(result.stdout).trim()) as Record<string, unknown>;
+}
+
+function withProviderCliFixture(run: (fixtureRoot: string) => void): void {
+  const temporaryRoot = resolve(repositoryRoot, ".usf/tmp");
+  mkdirSync(temporaryRoot, { recursive: true, mode: 0o700 });
+  chmodSync(temporaryRoot, 0o700);
+  const fixtureRoot = mkdtempSync(resolve(temporaryRoot, "provider-cli-repository-"));
+  try {
+    for (const directory of ["config", "docs", "evidence", "graph", "recipes", "schemas", "src", "tests"]) {
+      cpSync(resolve(repositoryRoot, directory), resolve(fixtureRoot, directory), { recursive: true });
+    }
+    for (const path of ["GOAL.md", "package.json", "pnpm-lock.yaml"]) {
+      cpSync(resolve(repositoryRoot, path), resolve(fixtureRoot, path));
+    }
+    mkdirSync(resolve(fixtureRoot, ".usf/catalog"), { recursive: true, mode: 0o700 });
+    chmodSync(resolve(fixtureRoot, ".usf"), 0o700);
+    chmodSync(resolve(fixtureRoot, ".usf/catalog"), 0o700);
+    const raw = readFileSync(resolve(repositoryRoot, "tests/fixtures/providers/models-dev.json"));
+    const normalized = normalizeModelsDevCatalogue(raw);
+    writeFileSync(resolve(fixtureRoot, ".usf/catalog/models-dev.raw.json"), raw, { mode: 0o600 });
+    writeFileSync(resolve(fixtureRoot, ".usf/catalog/models-dev.normalized.json"), canonicalJson(normalized), { mode: 0o600 });
+    spawnSync("git", ["init", "-q"], { cwd: fixtureRoot, encoding: "utf8" });
+    run(fixtureRoot);
+  } finally {
+    rmSync(fixtureRoot, { recursive: true, force: true });
+  }
 }
 
 const route = {
@@ -55,6 +82,59 @@ test("adapter observation binds the exact installed version to its pnpm integrit
   assert.equal(first?.package, "@ai-sdk/groq");
   assert.equal(first?.version, "4.0.34");
   assert.match(first?.lockDigest ?? "", /^sha256:[0-9a-f]{64}$/u);
+});
+
+test("registered provider census exposes profile-bound routes and distinct host transports without contact", () => {
+  withProviderCliFixture((fixtureRoot) => {
+    const census = invoke([
+      "providers", "census", "--max-items", "12",
+      "--profile", "urn:usf:profile:v3-self-host:3",
+      "--manifest", "graph/manifests/self-host-provider-v3.json",
+    ], undefined, {}, fixtureRoot);
+    assert.equal(census.schema, "urn:usf:provider-census-result:1");
+    assert.equal(census.status, "ok");
+    assert.equal(census.operation, "census");
+    assert.equal(census.externalContact, false);
+    assert.equal(census.authorityEffect, "none");
+    assert.deepEqual(census.semanticScope, {
+      status: "selected",
+      profile: "urn:usf:profile:v3-self-host:3",
+      profileVersion: "3",
+      product: "urn:usf:product:v3",
+      foundation: "urn:usf:foundation:v3",
+      manifest: "graph/manifests/self-host-provider-v3.json",
+      semanticDigest: (census.semanticScope as Record<string, unknown>).semanticDigest,
+      work: "urn:usf:work:provider-census",
+      contract: "urn:usf:contract:provider-census:1",
+      scopedDependencyDigest: (census.semanticScope as Record<string, unknown>).scopedDependencyDigest,
+    });
+    assert.match(String((census.semanticScope as Record<string, unknown>).semanticDigest), /^sha256:[0-9a-f]{64}$/u);
+    assert.match(String((census.semanticScope as Record<string, unknown>).scopedDependencyDigest), /^sha256:[0-9a-f]{64}$/u);
+    const denominators = census.denominators as Record<string, number>;
+    assert.equal(denominators.configuredRoutes, 2);
+    assert.equal(denominators.reviewedLegacyProviderObservations, 7);
+    assert.equal(denominators.hostTransports, 3);
+    assert.equal(denominators.matchedItems, 12);
+    const items = census.items as Array<Record<string, unknown>>;
+    assert.deepEqual(items.filter((item) => item.kind === "configured-route").map((item) => item.id), ["cerebras-gpt-oss-120b", "groq-qwen3.6-27b"]);
+    assert.deepEqual(items.filter((item) => item.kind === "host-transport").map((item) => item.id), ["antigravity-cli", "claude-cli", "codex-cli"]);
+    assert.deepEqual(items.filter((item) => item.kind === "legacy-provider-observation").map((item) => item.id), [
+      "antigravity-cli:claude-opus-4.6",
+      "minimax-oauth:MiniMax-M3",
+      "nous:openai/gpt-5.6-sol",
+      "openai-api:gpt-5.5",
+      "openai-codex:gpt-5.5",
+      "openai-codex:gpt-5.6-sol",
+      "openrouter:anthropic/claude-sonnet-4.6",
+    ]);
+    assert.equal(items.every((item) => item.qualification === "UNQUALIFIED"), true);
+    assert.equal(items.filter((item) => item.kind === "host-transport").every((item) => item.actualModel === null), true);
+
+    const aliasesHelp = invoke(["help", "providers", "aliases", "--json"], undefined, {}, fixtureRoot);
+    const command = aliasesHelp.command as Record<string, unknown>;
+    assert.equal(command.availability, "implemented");
+    assert.equal(command.externalContact, "none");
+  });
 });
 
 test("registered provider CLI evaluates semantic inputs and routes fixture facts without contact", () => {
@@ -143,6 +223,28 @@ test("availability requires explicit zero-paid contact controls and help describ
   const command = help.command as Record<string, unknown>;
   assert.equal(command.availability, "implemented");
   assert.equal(command.externalContact, "none");
+
+  const receiptHelp = invoke(["help", "providers", "receipt", "--json"]).command as Record<string, unknown>;
+  assert.equal(receiptHelp.availability, "registered");
+  assert.equal(receiptHelp.externalContact, "possible");
+  const acquireHelp = invoke(["help", "providers", "receipt", "acquire", "--json"]).command as Record<string, unknown>;
+  assert.equal(acquireHelp.availability, "registered");
+  assert.equal(acquireHelp.externalContact, "explicit");
+  const verifyHelp = invoke(["help", "providers", "receipt", "verify", "--json"]).command as Record<string, unknown>;
+  assert.equal(verifyHelp.availability, "registered");
+  assert.equal(verifyHelp.externalContact, "none");
+
+  const registeredRefusal = spawnSync(usf, [
+    "providers", "receipt", "acquire",
+    "--route", "openrouter-candidate",
+    "--profile", "urn:usf:profile:v3-self-host:3",
+    "--manifest", "graph/manifests/self-host-provider-v3.json",
+  ], { cwd: repositoryRoot, encoding: "utf8", timeout: 5_000 });
+  assert.equal(registeredRefusal.error, undefined);
+  assert.equal(registeredRefusal.status, 1);
+  assert.equal(registeredRefusal.stdout, "");
+  const registeredError = JSON.parse(String(registeredRefusal.stderr).trim()) as Record<string, unknown>;
+  assert.equal(registeredError.reasonCode, "PROVIDERS_RECEIPT_PROOFBLOCKED");
 });
 
 test("availability rejects self-authored account evidence under a sanitized Git environment before contact", () => {

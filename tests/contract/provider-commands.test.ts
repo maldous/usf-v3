@@ -1,19 +1,27 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { chmod, mkdir, mkdtemp, readFile, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { doctorCommandHandler } from "../../src/commands/doctor.ts";
 import { modelsCommandHandler } from "../../src/commands/models.ts";
+import { providersCommandHandler } from "../../src/commands/providers.ts";
 import { routeCommandHandler } from "../../src/commands/route.ts";
 import { canonicalJson, sha256 } from "../../src/core/canonical.ts";
 import { UsfError } from "../../src/core/errors.ts";
+import { loadSemanticGraph } from "../../src/graph/index.ts";
+import { deriveWork } from "../../src/graph/work.ts";
 import { normalizeModelsDevCatalogue } from "../../src/providers/catalogue.ts";
+import { createJsonSchemaValidator } from "../../src/schema/index.ts";
 
 const rawFixture = await readFile(fileURLToPath(new URL("../fixtures/providers/models-dev.json", import.meta.url)));
-const workspaceTemporaryRoot = fileURLToPath(new URL("../../.usf/tmp/", import.meta.url));
+const legacyProviderFixture = await readFile(fileURLToPath(new URL("../../config/provider-legacy-observations.json", import.meta.url)));
+const providerCensusValidator = createJsonSchemaValidator(JSON.parse(
+  await readFile(fileURLToPath(new URL("../../schemas/provider-census-result.schema.json", import.meta.url)), "utf8"),
+));
+const workspaceTemporaryRoot = resolve(process.env.TMPDIR ?? fileURLToPath(new URL("../../.usf/tmp/", import.meta.url)));
 
 async function privateTemporaryDirectory(prefix: string): Promise<string> {
   await mkdir(workspaceTemporaryRoot, { recursive: true, mode: 0o700 });
@@ -178,7 +186,7 @@ const doctorProviderConfig = {
   routes: [{
     id: "alpha-primary",
     family: "alpha",
-    provider: "alpha",
+    provider: "alpha-direct",
     adapterPackage: "@ai-sdk/alpha",
     credentialName: "ALPHA_TOKEN",
     model: "alpha-zero",
@@ -206,7 +214,7 @@ const doctorPrivacy = {
   restrictedRoutes: ["local"],
 };
 
-async function doctorRepository(run: (repositoryRoot: string) => Promise<void>): Promise<void> {
+async function doctorRepository(run: (repositoryRoot: string) => Promise<void>, initializeGit = true): Promise<void> {
   const repositoryRoot = await privateTemporaryDirectory("usf-doctor-command-");
   try {
     await mkdir(join(repositoryRoot, ".usf/home"), { recursive: true, mode: 0o700 });
@@ -216,6 +224,7 @@ async function doctorRepository(run: (repositoryRoot: string) => Promise<void>):
     await chmod(join(repositoryRoot, ".usf/catalog"), 0o700);
     await mkdir(join(repositoryRoot, "config"));
     await writeFile(join(repositoryRoot, "config/providers.json"), JSON.stringify(doctorProviderConfig));
+    await writeFile(join(repositoryRoot, "config/provider-legacy-observations.json"), legacyProviderFixture);
     await writeFile(join(repositoryRoot, "config/policy.json"), JSON.stringify(doctorPolicy));
     await writeFile(join(repositoryRoot, "config/privacy.json"), JSON.stringify(doctorPrivacy));
     const frozen = normalizeModelsDevCatalogue(rawFixture, {
@@ -239,8 +248,10 @@ async function doctorRepository(run: (repositoryRoot: string) => Promise<void>):
       name: "@ai-sdk/alpha",
       version: "1.2.3",
     }));
-    execFileSync("git", ["init", "-q"], { cwd: repositoryRoot });
-    execFileSync("git", ["add", "--", "config/providers.json", "config/policy.json", "config/privacy.json"], { cwd: repositoryRoot });
+    if (initializeGit) {
+      execFileSync("git", ["init", "-q"], { cwd: repositoryRoot });
+      execFileSync("git", ["add", "--", "config/provider-legacy-observations.json", "config/providers.json", "config/policy.json", "config/privacy.json"], { cwd: repositoryRoot });
+    }
     await run(repositoryRoot);
   } finally {
     await rm(repositoryRoot, { recursive: true, force: true });
@@ -286,6 +297,125 @@ test("doctor deterministically reports exact local digests without contact or el
       assert.equal(JSON.stringify(output).includes(repositoryRoot), false);
     } finally {
       globalThis.fetch = originalFetch;
+    }
+  });
+});
+
+test("providers projects a bounded no-contact census, exact status and reviewed aliases", async () => {
+  await doctorRepository(async (repositoryRoot) => {
+    const externalRoot = await privateTemporaryDirectory("usf-providers-env-");
+    const originalFetch = globalThis.fetch;
+    let contacted = false;
+    globalThis.fetch = async () => {
+      contacted = true;
+      throw new Error("providers must not contact a provider or catalogue");
+    };
+    try {
+      const externalEnv = join(externalRoot, "provider.env");
+      await writeFile(externalEnv, "ALPHA_TOKEN=private-value\nOTHER_SECRET=ignored-value\n", { mode: 0o600 });
+      await chmod(externalEnv, 0o600);
+
+      const censusResult = await providersCommandHandler({
+        command: "providers",
+        args: ["census", "--env-file", externalEnv, "--max-items", "2"],
+        repositoryRoot,
+      });
+      const census = censusResult.output as Record<string, any>;
+      assert.equal(census.schema, "urn:usf:provider-census-result:1");
+      assert.equal(census.operation, "census");
+      assert.equal(census.externalContact, false);
+      assert.equal(census.authorityEffect, "none");
+      assert.equal(providerCensusValidator.validate(census).valid, true);
+      assert.equal(census.source.credentialSource, "explicit-file");
+      assert.equal(census.source.legacyCredentialSetDigest, JSON.parse(legacyProviderFixture.toString("utf8")).credentialNameProvenance.projectionDigest);
+      assert.match(census.source.legacyCredentialSetDigest, /^sha256:[0-9a-f]{64}$/u);
+      assert.match(census.source.hostTransportSetDigest, /^sha256:[0-9a-f]{64}$/u);
+      assert.match(census.source.legacyProviderObservationSetDigest, /^sha256:[0-9a-f]{64}$/u);
+      assert.equal(census.denominators.catalogueProviderRoutes, 2);
+      assert.equal(census.denominators.catalogueModelRoutes, 3);
+      assert.equal(census.denominators.configuredRoutes, 1);
+      assert.equal(census.denominators.reviewedLegacyCredentialNames, 24);
+      assert.equal(census.denominators.reviewedLegacyProviderObservations, 7);
+      assert.equal(census.denominators.hostTransports, 3);
+      assert.deepEqual(census.truncation, { maxItems: 2, matchedItems: 11, returnedItems: 2, truncated: true });
+      assert.deepEqual(census.items[0], {
+        kind: "configured-route",
+        id: "alpha-primary",
+        providerFamily: "alpha",
+        provider: "alpha-direct",
+        providerRoute: "alpha-direct",
+        requestedModel: "alpha-zero",
+        routeModel: "alpha-zero",
+        underlyingFamily: "alpha-family",
+        underlyingModel: "alpha-zero",
+        adapterPackage: "@ai-sdk/alpha",
+        adapterInstalledVersion: null,
+        adapterLockDigest: null,
+        credentialName: "ALPHA_TOKEN",
+        credentialPresent: true,
+        catalogueIdentity: "exact",
+        capabilities: { configured: ["reasoning"], catalogue: ["attachment", "reasoning", "structured-output", "tool-call"] },
+        economics: { declaredCost: "free-quota", declaredEntitlement: "free-quota", paidFallback: false, accountTierReceipt: "missing", status: "unverified" },
+        availability: "unknown",
+        qualification: "UNQUALIFIED",
+        allocation: "excluded",
+        exclusionReasons: ["ACCOUNT_RECEIPT_MISSING", "ADAPTER_UNAVAILABLE", "AUTHENTICATED_ANSWER_MISSING", "HIDDEN_HOLDOUT_MISSING", "UNQUALIFIED"],
+        sourceProvenance: ["models.dev", "v3-config"],
+      });
+      const serialized = JSON.stringify(census);
+      assert.doesNotMatch(serialized, /private-value|ignored-value/u);
+      assert.equal(serialized.includes(externalEnv), false);
+      assert.equal(serialized.includes(externalRoot), false);
+
+      const status = (await providersCommandHandler({
+        command: "providers",
+        args: ["status", "--route", "alpha-primary", "--env-file", externalEnv],
+        repositoryRoot,
+      })).output as Record<string, any>;
+      assert.equal(status.operation, "status");
+      assert.equal(status.truncation.matchedItems, 1);
+      assert.equal(status.items[0].id, "alpha-primary");
+
+      const aliases = (await providersCommandHandler({
+        command: "providers",
+        args: ["aliases", "--credential-name", "ZAI_API_KEY"],
+        repositoryRoot,
+      })).output as Record<string, any>;
+      assert.equal(aliases.operation, "aliases");
+      assert.equal(providerCensusValidator.validate(aliases).valid, true);
+      assert.deepEqual(aliases.items, [{
+        kind: "identity-alias",
+        id: "credential:ZAI_API_KEY",
+        aliasKind: "legacy-credential",
+        sourceIdentity: "ZAI_API_KEY",
+        targetIdentities: ["ZHIPU_API_KEY"],
+        mappingStatus: "unresolved",
+        scope: "provider-candidate",
+        sourceProvenance: ["models.dev", "reviewed-v2-environment-name"],
+        nonClaim: "credential-name-mapping-is-not-entitlement-or-secret-evidence",
+      }]);
+
+      const host = (await providersCommandHandler({
+        command: "providers",
+        args: ["status", "--transport", "claude-cli"],
+        repositoryRoot,
+      })).output as Record<string, any>;
+      assert.equal(host.items[0].transport, "claude-cli");
+      assert.equal(host.items[0].actualModel, null);
+      assert.equal(host.items[0].qualification, "UNQUALIFIED");
+
+      await assert.rejects(
+        async () => providersCommandHandler({ command: "providers", args: ["census", "--max-items", "1", "--max-items", "2"], repositoryRoot }),
+        (error: unknown) => error instanceof UsfError && error.code === "PROVIDERS_ARGUMENTS_INVALID",
+      );
+      await assert.rejects(
+        async () => providersCommandHandler({ command: "providers", args: ["aliases", "--env-file", externalEnv], repositoryRoot }),
+        (error: unknown) => error instanceof UsfError && error.code === "PROVIDERS_ARGUMENTS_INVALID",
+      );
+      assert.equal(contacted, false);
+    } finally {
+      globalThis.fetch = originalFetch;
+      await rm(externalRoot, { recursive: true, force: true });
     }
   });
 });
@@ -444,6 +574,237 @@ test("doctor isolates local Git children from hostile controls, secrets and PATH
       }
     }
   });
+});
+
+test("provider graph separates fixture capabilities from route-keyed operational state", async () => {
+  const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
+  const graph = loadSemanticGraph(repositoryRoot, "graph/manifests/self-host-provider-v3.json");
+  const quads = graph.quads;
+  const predicate = (localName: string) => `urn:usf:predicate:${localName}`;
+  const objects = (subject: string, localName: string) => quads
+    .filter((quad) => quad.subject === subject && quad.predicate === predicate(localName))
+    .map((quad) => quad.object);
+  const subjectsOfType = (type: string) => new Set(quads
+    .filter((quad) => quad.predicate === predicate("type") && quad.object === type)
+    .map((quad) => quad.subject));
+
+  const workPackets = subjectsOfType("urn:usf:type:WorkPacket");
+  const selected = deriveWork(graph, { profile: "urn:usf:profile:v3-self-host:3", maxItems: 100 });
+  assert.equal(selected.status, "ok", selected.reasonCode);
+  const selectedPackets = new Map((selected.items ?? []).map((packet) => [packet.id, packet]));
+  const allWorks = (selected.items ?? []).map((packet) => packet.id).sort();
+  assert.deepEqual(allWorks, [
+    "urn:usf:work:file-asset-index",
+    "urn:usf:work:operator-observability",
+    "urn:usf:work:provider-account-tier-receipt",
+    "urn:usf:work:provider-census",
+    "urn:usf:work:provider-hidden-holdout",
+    "urn:usf:work:provider-invocation-boundary",
+    "urn:usf:work:provider-parallel-execution",
+    "urn:usf:work:provider-semantic-qualification-v2",
+    "urn:usf:work:repository-path-scope",
+  ]);
+  const providerWorks = allWorks.filter((subject) => subject.startsWith("urn:usf:work:provider-"));
+  assert.deepEqual(providerWorks.sort(), [
+    "urn:usf:work:provider-account-tier-receipt",
+    "urn:usf:work:provider-census",
+    "urn:usf:work:provider-hidden-holdout",
+    "urn:usf:work:provider-invocation-boundary",
+    "urn:usf:work:provider-parallel-execution",
+    "urn:usf:work:provider-semantic-qualification-v2",
+  ]);
+
+  const currentnessPredicates = ["readPath", "writePath", "policyPath", "schemaPath", "toolPath"];
+  const ancestors = (work: string, seen = new Set<string>()): Set<string> => {
+    for (const dependency of objects(work, "dependsOn")) {
+      if (!seen.has(dependency)) {
+        seen.add(dependency);
+        ancestors(dependency, seen);
+      }
+    }
+    return seen;
+  };
+  for (const work of providerWorks) {
+    assert.deepEqual(objects(work, "externalContact"), ["false"]);
+    for (const validation of objects(work, "validation")) {
+      assert.deepEqual(objects(validation, "executionMode"), ["urn:usf:mode:deterministic-test-substitute"]);
+    }
+  }
+
+  const pathsOverlap = (left: string, right: string): boolean => left === right
+    || (left.endsWith("/") && right.startsWith(left))
+    || (right.endsWith("/") && left.startsWith(right));
+  for (const work of allWorks) {
+    const writes = objects(work, "writePath");
+    for (const ancestor of ancestors(work)) {
+      const ancestorCurrentness = new Set(currentnessPredicates.flatMap((localName) => objects(ancestor, localName)));
+      assert.deepEqual(
+        writes.filter((path) => [...ancestorCurrentness].some((ancestorPath) => pathsOverlap(path, ancestorPath))),
+        [],
+        `${work} rewrites currentness of ${ancestor}`,
+      );
+    }
+  }
+
+  for (let leftIndex = 0; leftIndex < allWorks.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < allWorks.length; rightIndex += 1) {
+      const left = allWorks[leftIndex]!;
+      const right = allWorks[rightIndex]!;
+      const leftWrites = objects(left, "writePath");
+      const rightWrites = objects(right, "writePath");
+      assert.deepEqual(
+        leftWrites.filter((path) => rightWrites.some((rightPath) => pathsOverlap(path, rightPath))),
+        [],
+        `${left} and ${right} own overlapping write paths in the exact profile-selected work set`,
+      );
+      const leftCurrentness = currentnessPredicates.flatMap((localName) => objects(left, localName));
+      const rightCurrentness = currentnessPredicates.flatMap((localName) => objects(right, localName));
+      const leftProducesForRight = leftWrites.filter((path) => rightCurrentness.some((rightPath) => pathsOverlap(path, rightPath)));
+      const rightProducesForLeft = rightWrites.filter((path) => leftCurrentness.some((leftPath) => pathsOverlap(path, leftPath)));
+      if (leftProducesForRight.length > 0) {
+        assert.equal(ancestors(right).has(left), true, `${right} consumes ${left} without a dependency edge`);
+      }
+      if (rightProducesForLeft.length > 0) {
+        assert.equal(ancestors(left).has(right), true, `${left} consumes ${right} without a dependency edge`);
+      }
+    }
+  }
+
+  for (const [work, forbiddenPaths] of [
+    ["urn:usf:work:provider-account-tier-receipt", ["config/providers.json"]],
+    ["urn:usf:work:provider-invocation-boundary", ["config/qualification.json", "package.json", "pnpm-lock.yaml"]],
+    ["urn:usf:work:provider-hidden-holdout", ["config/qualification.json"]],
+    ["urn:usf:work:provider-parallel-execution", ["config/providers.json", "package.json", "pnpm-lock.yaml"]],
+  ] as const) {
+    const operationalInputs = new Set([
+      ...objects(work, "writePath"),
+      ...objects(work, "toolPath"),
+      ...(work === "urn:usf:work:provider-hidden-holdout" ? [] : objects(work, "readPath")),
+    ]);
+    assert.deepEqual(forbiddenPaths.filter((path) => operationalInputs.has(path)), [], work);
+  }
+
+  const stages = [
+    "urn:usf:provider-stage:account-source-authorization:1",
+    "urn:usf:provider-stage:account-receipt:1",
+    "urn:usf:provider-stage:adapter-preflight:1",
+    "urn:usf:provider-stage:run-authorization:1",
+    "urn:usf:provider-stage:provider-answer:1",
+    "urn:usf:provider-stage:hidden-evaluation:1",
+    "urn:usf:provider-stage:route-qualification:1",
+  ];
+  assert.deepEqual(objects("urn:usf:provider-operation:qualification-sequence:1", "stage"), stages);
+  for (const stage of stages) {
+    assert.equal(objects(stage, "type").includes("urn:usf:type:RouteKeyedOperationalStage"), true);
+    assert.deepEqual(objects(stage, "repositoryTracking"), ["ignored"]);
+    assert.match(objects(stage, "recordPathPattern")[0] ?? "", /^\.usf\/provider-operations\//u);
+    assert.equal(objects(stage, "recordSchema").length, 1);
+  }
+  assert.deepEqual(objects("urn:usf:provider-stage:account-source-authorization:1", "contactClass"), [
+    "provider-owned-non-inference-account-source-only",
+  ]);
+  assert.deepEqual(objects("urn:usf:provider-stage:account-source-authorization:1", "preContactRecheck"), [
+    "required-immediately-before-provider-owned-account-source-contact",
+  ]);
+  assert.deepEqual(objects("urn:usf:provider-stage:run-authorization:1", "preContactRecheck"), [
+    "required-immediately-before-adapter-child-contact",
+  ]);
+  const selectedContracts = new Set(objects("urn:usf:profile:v3-self-host:3", "selectsContract"));
+  for (const contract of subjectsOfType("urn:usf:type:OperationalContract")) {
+    const implementingWork = objects(contract, "implementedByWork");
+    assert.deepEqual(objects(contract, "type").sort(), [
+      "urn:usf:type:OperationalContract",
+      "urn:usf:type:SemanticContract",
+    ]);
+    assert.equal(selectedContracts.has(contract), true, contract);
+    assert.equal(implementingWork.length > 0, true, contract);
+    for (const work of implementingWork) {
+      assert.equal(allWorks.includes(work), true, contract);
+      assert.equal(objects(work, "implementsContract").includes(contract), true, `${work} does not bind ${contract}`);
+      assert.equal(
+        selectedPackets.get(work)?.semanticDependencies.some((dependency) => dependency.kind === "semantic-resource" && dependency.key === contract),
+        true,
+        `${work} does not consume ${contract} in its scoped semantic basis`,
+      );
+    }
+    for (const outputSchema of objects(contract, "operationalOutputSchema")) {
+      const schemaPaths = objects(outputSchema, "schemaPath");
+      assert.equal(schemaPaths.length, 1, outputSchema);
+      assert.equal(
+        implementingWork.some((work) => objects(work, "writePath").some((path) => pathsOverlap(path, schemaPaths[0]!))),
+        true,
+        `${contract} has no implementing work owner for ${schemaPaths[0]}`,
+      );
+    }
+    assert.equal(workPackets.has(contract.replace("urn:usf:contract:", "urn:usf:work:")), false);
+    assert.deepEqual(objects(contract, "environmentApplicability"), [
+      "urn:usf:environment-applicability:provider-pipeline:localdev",
+    ]);
+    assert.equal(objects(contract, "realisationPermission").length, 1, contract);
+    assert.equal(objects(contract, "completionEvidenceRequirement").length, 1, contract);
+    assert.equal(objects(contract, "completionProofObligation").length, 1, contract);
+  }
+  assert.deepEqual(objects("urn:usf:provider-operation:account-source-protocol:1", "refuses").sort(), [
+    "caller-submitted-receipt",
+    "metrics-or-headers-without-paid-overage-hard-cap-evidence",
+    "self-authored-receipt-digest",
+  ]);
+  const receiptCommand = "urn:usf:command:providers-receipt:1";
+  assert.equal(objects(receiptCommand, "type").includes("urn:usf:type:RegisteredCliCommand"), true);
+  assert.deepEqual(objects(receiptCommand, "availability"), ["registered"]);
+  assert.deepEqual(objects(receiptCommand, "implementationState"), ["urn:usf:implementation-state:proofblocked"]);
+  assert.deepEqual(objects(receiptCommand, "handlerPath"), ["src/commands/provider-receipts.ts"]);
+  assert.deepEqual(objects(receiptCommand, "registryPath"), ["src/commands/providers.ts"]);
+  assert.deepEqual(objects(receiptCommand, "helpPath"), ["src/commands/help.ts"]);
+  assert.deepEqual(objects(receiptCommand, "refusalCode"), ["PROVIDERS_RECEIPT_PROOFBLOCKED"]);
+  assert.deepEqual(objects("urn:usf:contract:provider-account-tier-receipt:1", "registeredCommand"), [receiptCommand]);
+  assert.deepEqual(objects("urn:usf:contract:provider-account-receipt-acquisition:1", "registeredCommand"), [receiptCommand]);
+  for (const policy of [
+    "urn:usf:publication-policy:provider-pipeline-construction-authority:1",
+    "urn:usf:publication-policy:provider-pipeline-no-change-completion:1",
+  ]) {
+    assert.equal(objects(policy, "eligibleWork").includes("urn:usf:work:provider-account-tier-receipt"), true, policy);
+  }
+
+  const openRouterMapping = "urn:usf:provider-operation:account-source:openrouter-current-key:1";
+  assert.deepEqual(objects("urn:usf:provider-operation:account-source-protocol:1", "candidateMapping"), [openRouterMapping]);
+  assert.deepEqual(objects(openRouterMapping, "type"), ["urn:usf:type:ProviderAccountSourceMapping"]);
+  assert.deepEqual(objects(openRouterMapping, "endpointIdentity"), ["https://openrouter.ai/api/v1/key"]);
+  assert.deepEqual(objects(openRouterMapping, "method"), ["GET"]);
+  assert.deepEqual(objects(openRouterMapping, "credentialName"), ["OPENROUTER_API_KEY"]);
+  assert.equal(objects(openRouterMapping, "mapsField").length, 6);
+  assert.deepEqual(objects(openRouterMapping, "mappingDisposition"), ["insufficient-alone-for-zero-paid-account-receipt"]);
+  assert.equal(objects(openRouterMapping, "missingRequiredEvidence").length, 4);
+  assert.match(objects(openRouterMapping, "nonClaim")[0] ?? "", /does not configure an OpenRouter route/u);
+  for (const requirement of [
+    "urn:usf:requirement:provider-pipeline-provider-posture",
+    "urn:usf:requirement:provider-pipeline-port-isolation",
+    "urn:usf:requirement:provider-pipeline-metering-quota",
+    "urn:usf:requirement:provider-pipeline-transport-resilience",
+  ]) {
+    assert.deepEqual(objects(requirement, "type"), ["urn:usf:type:Requirement"]);
+  }
+  assert.equal(
+    objects("urn:usf:contract:provider-adapter-preflight:1", "requires")
+      .includes("urn:usf:requirement:provider-pipeline-port-isolation"),
+    true,
+  );
+  for (const schema of [
+    "urn:usf:account-source-authorization:1",
+    "urn:usf:account-tier-receipt:1",
+    "urn:usf:adapter-preflight-receipt:1",
+    "urn:usf:run-authorization:1",
+    "urn:usf:provider-answer-observation:1",
+    "urn:usf:hidden-evaluation-receipt:1",
+    "urn:usf:route-qualification-receipt:1",
+    "urn:usf:parallel-provider-run:1",
+    "urn:usf:semantic-token-comparison:1",
+  ]) {
+    assert.equal(objects(schema, "type").includes("urn:usf:type:SemanticRecordSchema"), true, schema);
+    assert.deepEqual(objects(schema, "closedRecord"), ["true"]);
+    assert.equal(objects(schema, "schemaPath").length, 1);
+    assert.equal(objects(schema, "contentDigestRule").length, 1);
+  }
 });
 
 test("route refuses in-repository symlinks for input and indexed qualification authority", async () => {

@@ -35,8 +35,11 @@ test("ordinary construction authority binds its registered policy, tools and cur
   assert.equal(packet.realisationAuthority.permission.activationState, "urn:usf:contract-state:active");
   assert.ok(packet.eligibility.authorityBasisDigest.startsWith("sha256:"));
   assert.ok(packet.semanticDependencies.some((entry: { kind: string; key: string }) => entry.kind === "semantic-resource" && entry.key === "urn:usf:publication-policy:construction-authority:1"));
-  for (const path of ["src/cli.ts", "src/commands/construction-authority.ts", "src/commands/help.ts", "src/graph/work.ts", "src/realisation/construction-authority.ts"]) {
+  for (const path of ["src/commands/construction-authority.ts", "src/graph/work.ts", "src/realisation/construction-authority.ts"]) {
     assert.ok(packet.semanticDependencies.some((entry: { kind: string; key: string }) => entry.kind === "tool" && entry.key === path), path);
+  }
+  for (const path of ["src/cli.ts", "src/commands/help.ts", "package.json", "pnpm-lock.yaml", "src/core/", "tests/unit/core/"]) {
+    assert.equal(packet.semanticDependencies.some((entry: { key: string }) => entry.key === path), false, path);
   }
   assert.deepEqual(packet.eligibility.activation.reasonCodes, []);
   assert.equal(packet.eligibility.construction.authority, "active-permission");

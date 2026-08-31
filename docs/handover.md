@@ -2,16 +2,19 @@
 
 Updated 2026-08-31. This is the durable continuation boundary after the
 semantic-first gate, local candidate integration, finite historical-carrier
-adoption and the profile-scoped copy-on-write authority/completion correction.
-The exact `repository-path-scope`, `file-asset-index` and
-`operator-observability` packets are now `verified-complete`; file-asset depends
-on repository-path through verified completion rather than a label or Git
-state. Routine checkpoint documentation, shared bottleneck notes and unrelated
-tests are not functional work dependencies. The next safe slice is the earliest
-trusted provider vertical slice. Full-universe provider qualification is
-explicitly not its prerequisite: discovery and qualification remain lazy,
-bounded and candidate-driven while configured routes progress through the
-mandatory trusted provider sequence.
+adoption, provider-census construction and the profile-scoped copy-on-write
+authority/completion correction. Under exact profile
+`urn:usf:profile:v3-self-host:3`, `operator-observability` and
+`provider-census` are currently `verified-complete`, with census depending on
+the operator's verified completion. Earlier `repository-path-scope` and
+`file-asset-index` completion receipts remain valid historical profile
+observations; those packets are selected but currently blocked under profile 3
+and are not claimed complete in that profile. Routine checkpoint documentation,
+shared bottleneck notes and unrelated tests are not functional work
+dependencies. The next safe slice is the earliest trusted provider vertical
+slice. Full-universe provider qualification is explicitly not its prerequisite:
+discovery and qualification remain lazy, bounded and candidate-driven while
+configured routes progress through the mandatory trusted provider sequence.
 Until the operator says otherwise, one operator owns repository mutation; do
 not delegate repository work or run concurrent writers.
 
@@ -64,7 +67,80 @@ not delegate repository work or run concurrent writers.
 The handover previously stopped at the provider slice and reported 156 tests.
 That was stale after the semantic-recovery commits. This version supersedes it.
 
-## Current profile-scoped authority and completion checkpoint
+## Current provider-profile checkpoint
+
+The exact provider profile selects nine in-scope work packets and thirteen
+contracts. It deliberately does not reproject the one-time imported
+semantic-first bootstrap or foreground-lifecycle construction scopes as
+concurrent writers; omission is neither a completion claim nor removal of the
+semantic-first policy or `usf start`/`usf stop` capability. This selection rule
+is proved only for `urn:usf:profile:v3-self-host:3`; older, Hermes and product
+profiles must apply the same discipline or refuse their own overlap before a
+Hermes lifecycle demonstration.
+
+The current registered `usf work` projection has nine packets, seven dependency
+edges, four roots and three sinks. It has no cycles, missing selected
+dependencies, unreachable selected packets, write/write collisions,
+undeclared producer-consumer currentness edges or successor writes into
+ancestor currentness. The authenticated-answer operation is jointly
+implemented by the invocation boundary, hidden evaluator and semantic
+qualification packets. The first two remain parallel; semantic qualification
+is their necessary join and owns the route-qualification output schema.
+Operational contracts are reciprocal scoped dependencies of every implementing
+packet, so their movement cannot remain silently current.
+
+Current profile-3 authority is additive and file-backed:
+
+- operator construction receipt
+  `evidence/construction-authority/d2171bfacc36d0c46a29b7fee393fb72765c98e6a6b3a3876eeaa1f279b6801c.json`,
+  receipt digest
+  `sha256:16c64fb95c5f5d5147dead1e46b4a54cd5cce726d1a3bdb53d1d760f1f926ced`;
+- operator completion receipt
+  `evidence/work-completion/3746ef423b1b8c7cb74fd81f38d9b60e279c00d6f7793c8b8f6c0194fd8a8959.json`,
+  receipt digest
+  `sha256:2821d02cfddc27e3cb371bd95bb265c14e29cfc28406e7591e5a452c93b59085`;
+- provider-census construction receipt
+  `evidence/construction-authority/d9d6aea24efcaeff17a426e66e3e01b225fe69cd7661cf7accab2b79c1cb19d5.json`,
+  receipt digest
+  `sha256:7063f9bd5efaae5cc8031ab8f51ca1523259d67ca7058e62bae4a3fae34c6282`;
+  and
+- provider-census completion receipt
+  `evidence/work-completion/8a8dda58f6e78e4f7cc497bb3331dd0ffab6bc3c3344885d08ed2e90982bab52.json`,
+  receipt digest
+  `sha256:6b3c830bc310388e576ce00a1f046f766ad9c7061cae6e91c4aa78a747238223`.
+
+The current provider-profile semantic digest is
+`sha256:de739639b0a3b8ba53f7b2f7002e74690e619816ef9079ca2370908292d25e87`.
+The current operator and census scoped dependency digests are respectively
+`sha256:032a33ad6f121570746d42ead24037c4fe4d44eebb399d708b92e5a3bed137a0`
+and
+`sha256:5d3d6fe02278b8c9a858086acf9f91be0476a7c3ca07292f491433accf182109`.
+Re-derive these values through the registered commands after any relevant
+movement; this narrative is not authority.
+
+The provider census is a no-contact denominator, not a live provider table. At
+this boundary it reports 211 catalogue provider routes, 7,488 catalogue model
+routes, 3,834 underlying models, 171 underlying families, 208 catalogue
+credential names, 24 reviewed legacy credential names, seven reviewed legacy
+provider observations, two configured direct routes and three host transports.
+Both configured routes remain `availability: unknown`, `UNQUALIFIED` and
+excluded. Claude and Codex host transports are observations only; neither is a
+qualified route. No credential value was read and no provider/account endpoint
+was contacted.
+
+The external-root authoritative run passed 192/192: test-runner duration
+23.14 seconds and full command duration 28.2 seconds. Containment and
+`git diff --check` passed. The pnpm hermetic correction is intentional: an
+isolated workspace must receive authenticated read-only aliases for both
+`node_modules` and its relative `.usf/cache` virtual store. Testing with an
+external `TMPDIR` prevents accidental success through ancestor module
+resolution. Only those authenticated dependency roots are projected read-only
+into freshly created empty local mountpoints; the correction adds no network,
+child-process or writable scope. These observations prove the local checkpoint only; no live
+provider, multi-provider overlap, semantic-token reduction, full recovery,
+Hermes-Agent execution, ANQR, staging, production or terminal proof is claimed.
+
+## Earlier profile-scoped authority and completion history
 
 The graph-defined `realise no-change`, `evidence completion`, `prove
 completion` and `publish work-completion` commands are implemented as separate
@@ -104,12 +180,13 @@ The current tracked transition receipts are:
   receipt digest
   `sha256:2dfff9fe38fd65036215d93bf7f46e457840d337af7e9ee8032077298c1032fc`.
 
-Exact `usf work` readback reports all three packets at `verified-complete`.
-The integration profile semantic digest is
+At that earlier checkpoint, exact `usf work` readback reported all three
+packets at `verified-complete` in their then-selected profiles. The integration
+profile semantic digest was
 `sha256:37d21d45ddbbd8226cecf6cc9cc26ddb613597e42750bbbc73fa2bae8c68260f`;
 the provider profile semantic digest is
 `sha256:c589342acd9c8c764f6920109dea285ca4b46d1ea92c8464518dc303e63af4ca`.
-Their current RealisationBasis digests are respectively
+Their RealisationBasis digests at that checkpoint were respectively
 `sha256:7ba2d9687995c4116aaf9789e0fc413d68ef1d9e27ef6d74b1a55fd03805063d`,
 `sha256:1d87bcde085c74383d0fbcae6058484793b133a069f6a89a2892bce9fac52140`
 and
@@ -583,6 +660,9 @@ that the next graph-authorized recovery packet must close:
 
 - file coverage is not relationship coverage: the current extractor parses
   semantic candidates only from active manifest-selected RDF;
+- the registered `usf graph inventory`/`coverage` result surface and its two
+  accepted tracked result artifacts do not exist; manifest-store,
+  recovery-tooling and graph-exchange work remains proofblocked;
 - the pinned V1 tree has 144 RDF files but only 54 active/derived
   manifest-selected RDF entries, leaving 90 fixture or otherwise unselected
   RDF files at file-level only;
@@ -593,6 +673,9 @@ that the next graph-authorized recovery packet must close:
   model does not yet represent;
 - the current source declaration is self-scoping and does not independently
   disposition the authorized operator and proof-cockpit sources;
+- the compiler's `RecoveryAuthorityContext` has no independently authenticated
+  typed resource in the current graph, so reviewed mappings, licences, layers,
+  adverse lessons, BAU ceilings and target connectivity cannot yet be accepted;
 - reviewed mappings are not yet proven to bind exact candidates to typed
   authenticated V3 targets or graph-typed rejection/defer reasons;
 - one pinned snapshot per repository does not expose removed/intermediate
@@ -679,7 +762,7 @@ explicit pre-contact unavailable/`UNQUALIFIED` candidate. The protected
 root-owned Factory tree remains unreadable, so complete Factory-source coverage
 is not claimed and no access prompt is required.
 
-The provider-census packet must deterministically union the fresh frozen
+The implemented provider-census packet deterministically unions the fresh frozen
 models.dev catalogue, current V3 configuration, this reviewed legacy
 denominator and host CLI capabilities. It deduplicates only exact normalized
 transport/provider/route/model identities, preserves every source and
@@ -705,7 +788,7 @@ and `PAID_OR_UNKNOWN_ECONOMICS`. Allocation is separate from the orthogonal
 observations `availability = available|unavailable|unknown` and
 `qualification = qualified|unqualified`.
 
-The intended deterministic CLI grouping is:
+The registered deterministic CLI grouping is:
 
 ```text
 usf models summary
@@ -728,6 +811,86 @@ every currently eligible route under the exact frozen inputs, with complete
 assigned, excluded and eligible-unassigned dispositions. It never means
 blindly invoking all catalogue entries or rebuilding a fixed list from V2
 environment files.
+
+## Provider/currentness correction and legacy invariant audit
+
+The first provider pass missed known V2 knowledge. The cause was methodological:
+it checked whether legacy topics and terms appeared in V3 prose/graph, rather
+than proving each legacy invariant through the composed manifest, exact graph
+edge, registered command behaviour and planted currentness movement. A focused
+test then parsed only `graph/provider-pipeline.nq`, so it could not see that the
+imported operator predecessor and provider census both claimed
+`src/cli.ts`/`src/commands/help.ts`. That is the same repair-loop pattern V3 is
+required to remove, not an acceptable implementation detail.
+
+The correction is structural:
+
+- provider census no longer owns the predecessor-owned shared CLI registry;
+  the one-time top-level `providers` reservation is one coherent operator
+  registry integration, while later provider leaves dispatch through the
+  already reserved provider module boundary;
+- the topology invariant now derives the exact profile-3 selected work set from
+  the complete imported provider manifest and rejects successor/currentness
+  overlap, independent write collisions and undeclared producer-consumer
+  edges. This is a profile-3 result, not a global disjointness claim for older,
+  Hermes or product profiles;
+- every operational contract is now an explicit scoped dependency of each
+  implementing packet, with reciprocal edges and an implementing owner for
+  every operational output. Authenticated answers are jointly implemented by
+  invocation, hidden evaluation and semantic qualification; invocation and
+  evaluation remain parallel and qualification is their true join;
+- reusable no-contact capability packets have disjoint tracked write sets;
+  route account, adapter, authorization, answer, evaluation, qualification,
+  parallel-run and token-comparison movement is immutable ignored operational
+  state and does not require a commit or sibling reproof;
+- account-source authorization is separate from inference authorization;
+  provider-produced answer provenance and producer/evaluator separation are
+  explicit; and
+- relevant V2 provider posture, typed port/adapter isolation,
+  entitlement-before-counting, idempotent/windowed usage and adjustment,
+  uncertain-request reconciliation, TLS/fixed-origin transport, bounded retry,
+  circuit/bulkhead and no-fallback rules are now explicit semantic requirements
+  of the exact capability contracts. They are requirements, not implementation
+  or live proof.
+
+OpenRouter `GET /api/v1/key` remains only a candidate account source. Its
+authenticated key metadata, limits and usage do not prove that paid use or
+automatic top-up is disabled, that a free model is eligible, that provider or
+model fallback is impossible, or that a receipt is fresh under a local policy.
+The provider-documented `is_free_tier` field is retained only as a paid-credit
+history indicator and cannot be promoted to entitlement. The graph therefore
+marks this mapping `insufficient-alone-for-zero-paid-account-receipt`; missing
+evidence must refuse rather than be supplied by agent inference.
+
+The secondary audit found these still-open obligations. They are recorded so
+absence cannot be mistaken for migration or readiness:
+
+- provider mode/lifecycle/readiness fields and transition enforcement are not
+  yet implemented in provider configuration;
+- the typed provider port, scrubbed adapter child, run-authorization schema,
+  provider-answer schema and transport/resilience enforcement do not yet exist;
+- exact account receipt field types, nullability, derivations and freshness are
+  not yet implemented, and the current OpenRouter candidate cannot fill every
+  required field;
+- genuine hidden grader material and producer separation are not yet realised;
+- aggregate required-family workload readiness and idempotent usage
+  reservation/reconciliation are graph-defined but not operational;
+- graph-bound provider command surfaces for adapter preflight, authenticated
+  answer acquisition, hidden evaluation, live parallel execution and live token
+  comparison are not implemented. Existing `probe semantic`, `route` and
+  `call` paths remain fixture/replay/fake-only and do not authorize live work;
+- no live account receipt, provider answer, route qualification, parallel run
+  or semantic-token comparison exists; tracked qualification fixtures are not
+  genuine hidden evidence; and
+- the complete V1/V2 recovery denominator remains open because
+  `config/semantic-recovery-inventory.json` and a reviewed
+  `config/semantic-recovery.json` do not exist. Full semantic migration is not
+  claimed.
+
+This checkpoint deliberately adds no per-provider/model test matrix. Existing
+registry and topology tests were extended to cover the distinct command-state,
+profile-selected ownership, operational-contract currentness and true
+producer-consumer dependency invariants.
 
 ## Provider safe sequence
 
@@ -754,7 +917,7 @@ not authenticate provider production of those facts.
 second Hermes platform, scheduler, workflow database, daemon, credential plane
 or authority source.
 
-The intended surface is:
+The graph-defined future surface is:
 
 ```text
 usf hermes
@@ -764,12 +927,15 @@ usf hermes stop [--config config/hermes.json] [--wait-ms N]
 usf hermes doctor [--config config/hermes.json]
 ```
 
-Bare `usf hermes` resolves one exact tracked default BAU intent and starts the
-same foreground composer. Ordinary `usf start`/`usf stop` remain complete with
-Hermes absent; ordinary `usf stop --instance hermes-bau` must be able to stop
-the configured Hermes instance.
+This surface is not registered in the current CLI: `usf help hermes` refuses
+with `HELP_TOPIC_UNKNOWN` and bare `usf hermes` refuses with `COMMAND_UNKNOWN`.
+When its graph-defined packet is eventually constructed, bare `usf hermes`
+must resolve one exact tracked default BAU intent and start the same foreground
+composer. Ordinary `usf start`/`usf stop` already remain usable with Hermes
+absent; the future Hermes instance must also be stoppable through ordinary
+`usf stop --instance hermes-bau`.
 
-The tracked configuration is only a closed policy envelope directly binding an
+The graph-defined future tracked configuration is only a closed policy envelope directly binding an
 exact USF core profile, ordinary ANQR product profile, optional ANQR management
 profile, ordinary provider and qualification inputs, `check` ceiling, budgets
 and containment policies. AI-tuned resolved instance configuration binds the
@@ -788,7 +954,7 @@ Failure, timeout or absence preserves the deterministic plan. Generated skills
 are isolated candidates; they cannot hot-activate or alter authority, tools,
 credentials or the profile against which a provider was qualified.
 
-The initial facade performs no credential lookup. Later live work must name one
+The future initial facade must perform no credential lookup. Later live work must name one
 exact repository-relative ignored owner-only credential file, never fall back
 to ambient variables, and may release only the selected route's allowlisted
 variable through the same future scrubbed-child boundary. Hermes receives no
@@ -843,11 +1009,11 @@ Hermes is not required to select ANQR. Ordinary `usf start` can use
 profile, and a later product selects its own overlay. A product may optionally
 add a different versioned Hermes intent/config while using the same facade.
 
-The next implementation may truthfully prove:
+The next implementation is intended to prove:
 
 - ordinary profile-bound start/status/stop still works without Hermes;
-- the registered Hermes config/help/doctor surfaces are closed and local;
-- Hermes bare/start/status/stop uses the same lifecycle instance and ordinary
+- the newly registered Hermes config/help/doctor surfaces are closed and local;
+- Hermes bare/start/status/stop then uses the same lifecycle instance and ordinary
   provider readiness/evaluation inputs;
 - all configured routes receive explicit local dispositions;
 - missing/stale/ambiguous config fails before contact; and
@@ -865,23 +1031,25 @@ lifecycle fixtures. Add one Hermes config/command refusal table and one real
 start/status/ordinary-stop boundary; do not create per-provider/model/prompt
 matrices. Live provider/Hermes execution remains non-default.
 
-Run from `/home/user/src/usf-v3`:
+Run from `/home/user/src/usf-v3`; the external temporary roots are intentional:
 
 ```sh
+mkdir -p /tmp/usf-authoritative /tmp/usf-corepack
 ./scripts/bootstrap.sh
-TMPDIR="$PWD/.usf/tmp" node --test \
+TMPDIR=/tmp/usf-authoritative node --test \
   tests/contract/cli.test.ts \
   tests/integration/bootstrap-carrier.test.ts \
-  tests/unit/schema/validator.test.ts
+  tests/unit/schema/validator.test.ts \
+  tests/contract/provider-census-contained.test.ts
 node --test tests/unit/providers/*.test.ts \
   tests/contract/provider-commands.test.ts \
   tests/integration/provider-cli.test.ts \
   tests/unit/graph/product-overlays.test.ts
 node --test tests/integration/profile-scoped-authority.test.ts
-TMPDIR="$PWD/.usf/tmp" \
-  COREPACK_HOME="$PWD/.usf/cache/corepack" \
+TMPDIR=/tmp/usf-authoritative \
+  COREPACK_HOME=/tmp/usf-corepack \
   corepack pnpm run check
-TMPDIR="$PWD/.usf/tmp" ./scripts/verify-contained.sh
+TMPDIR=/tmp/usf-authoritative ./scripts/verify-contained.sh
 git diff --check
 git status --short
 git log -5 --oneline --decorate
@@ -909,24 +1077,28 @@ exactly as emitted by the core and ANQR packets.
 
 ## Next exact actions
 
-1. Confirm the profile-authority checkpoint containing this handover is the
-   clean pushed `HEAD == origin/main` before new mutation. Its complete
-   authoritative and containment checks passed, and handover movement left
-   repository-path, file-asset and operator readback `verified-complete`. Do
-   not create another version-1 carrier observation or reinterpret any
-   historical carrier, test result or Git state as provider authority.
-2. Semantic-first define and then implement the bounded registered
-   `usf providers census`, `status` and `aliases` surfaces needed to project the
-   exact configured provider/model candidates and local dispositions. Reuse the
-   frozen models.dev catalogue and reviewed V1/V2 credential-name provenance;
-   do not use an ad hoc work command, block the first useful Gate 2 slice on
-   exhaustive catalogue qualification, or create a Cartesian test matrix.
-3. Graph-define and acquire one trusted exact-account zero-paid tier receipt,
-   then run its content-verified adapter in a scrubbed child with only the
-   selected credential and bounded public input. Refuse before contact if the
-   receipt, adapter integrity, credential mapping, privacy or zero-paid controls
-   are absent.
-4. Acquire authenticated provider-produced semantic answers through a
+1. Resume only from the clean pushed provider/currentness checkpoint and use
+   the explicit `urn:usf:profile:v3-self-host:3` plus
+   `graph/manifests/self-host-provider-v3.json`. Re-read registered `usf work`,
+   provider status and command help; do not create another historical carrier
+   observation or reinterpret census, Git, tests or this handover as live
+   provider authority.
+2. Through `urn:usf:work:provider-account-tier-receipt`, implement the exact
+   closed authorization/receipt schemas, field types, nullability, derivations,
+   freshness and local verification plus the already registered
+   `usf providers receipt acquire|verify` handler. Realise the explicit provider
+   posture and entitlement/metering requirements needed by this capability.
+   Keep construction and validation fixture-only and no-contact. The current
+   OpenRouter mapping is insufficient alone and must refuse unless separate
+   current evidence closes every zero-paid field.
+3. Only after independent construction/completion proof, acquire one trusted
+   exact-account zero-paid receipt under a separate immediate pre-contact
+   AccountSourceAuthorization. Then implement and qualify the typed,
+   content-verified scrubbed adapter child with only the selected credential and
+   bounded public input. Refuse before contact if receipt, provider posture,
+   adapter integrity, transport, credential mapping, privacy, metering or
+   no-fallback controls are absent.
+4. Acquire authenticated provider-produced semantic answers through the
    registered command and perform genuine hidden-holdout qualification for the
    exact task/profile. Repeat for a second independent provider family when the
    environment actually permits it; Claude must remain authoritatively

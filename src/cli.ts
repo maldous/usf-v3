@@ -9,6 +9,7 @@ import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./
 import { metricsCommandHandler } from "./commands/metrics.ts";
 import { modelsCommandHandler } from "./commands/models.ts";
 import { probeCommandHandler } from "./commands/probe.ts";
+import { providersCommandHandler } from "./commands/providers.ts";
 import { queryCommand } from "./commands/query.ts";
 import { resolveCommandHandler } from "./commands/resolve.ts";
 import { routeCommandHandler } from "./commands/route.ts";
@@ -47,6 +48,7 @@ const bootstrapHandlers: CommandHandlers = {
   prove: completionAwareProveCommandHandler,
   metrics: metricsCommandHandler,
   models: modelsCommandHandler,
+  providers: providersCommandHandler,
   probe: probeCommandHandler,
   publish: completionAwarePublishCommandHandler,
   route: routeCommandHandler,

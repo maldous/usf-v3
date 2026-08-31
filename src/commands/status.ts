@@ -87,7 +87,8 @@ async function providerObservation(repositoryRoot: string): Promise<Readonly<Rec
     actualProviderCount: null,
     actualModelCount: null,
     eligibility: "not-probed",
-    reasonCode: configuredRoutes === 0 ? "PROVIDER_ROUTES_EMPTY" : "PROVIDER_IDENTITY_CENSUS_NOT_IMPLEMENTED",
+    reasonCode: configuredRoutes === 0 ? "PROVIDER_ROUTES_EMPTY" : "PROVIDER_DETAIL_NOT_SELECTED",
+    detailCommand: "usf providers status",
     remoteContact: false,
   });
 }

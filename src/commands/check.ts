@@ -1,4 +1,4 @@
-import { constants, lstatSync, realpathSync, type Stats } from "node:fs";
+import { constants, lstatSync, readdirSync, realpathSync, type Stats } from "node:fs";
 import { chmod, link, lstat, mkdir, open, readdir, realpath, rm, unlink, writeFile } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
@@ -222,6 +222,11 @@ export function confinedNodeTestLaunch(
   const canonicalWorkspace = realpathSync(workspace);
   const authenticatedDependencyRoots = authenticatedConfiguredToolDependencyRoots(canonicalWorkspace, dependencyRoots);
   if (canonicalWorkspace !== workspace || !authenticatedOwnerDirectory(canonicalWorkspace, false) || authenticatedDependencyRoots === null) return null;
+  const localDependencyMounts = [resolve(canonicalWorkspace, "node_modules"), resolve(canonicalWorkspace, ".usf/cache")] as const;
+  const dependencyAliases = localDependencyMounts.every(authenticatedEmptyOwnerDirectory)
+    && localDependencyMounts.every((path, index) => path !== authenticatedDependencyRoots[index])
+    ? authenticatedDependencyRoots.map((path, index) => [path, localDependencyMounts[index]!] as const)
+    : [];
   for (const path of tests) {
     const target = resolve(canonicalWorkspace, path);
     const relation = relative(canonicalWorkspace, target);
@@ -264,6 +269,7 @@ export function confinedNodeTestLaunch(
       "--tmpfs", "/",
       ...["/usr", "/lib", "/lib64", canonicalWorkspace, ...authenticatedDependencyRoots]
         .flatMap((path) => ["--ro-bind", path, path]),
+      ...dependencyAliases.flatMap(([source, target]) => ["--ro-bind", source, target]),
       "--proc", "/proc", "--dev", "/dev",
       "--bind", resolve(scratch), resolve(scratch),
       "--chdir", canonicalWorkspace, "--clearenv",
@@ -282,6 +288,14 @@ function authenticatedOwnerDirectory(path: string, privateDirectory: boolean): b
       && (entry.mode & 0o7000) === 0 && (entry.mode & 0o700) === 0o700 && (entry.mode & 0o002) === 0
       && (!privateDirectory || (entry.mode & 0o777) === 0o700)
       && realpathSync(path) === path;
+  } catch {
+    return false;
+  }
+}
+
+function authenticatedEmptyOwnerDirectory(path: string): boolean {
+  try {
+    return authenticatedOwnerDirectory(path, true) && readdirSync(path).length === 0;
   } catch {
     return false;
   }
@@ -587,6 +601,8 @@ async function prepareCheckExecutionView(
     authorityDependencies.push({ path: repositoryPath, digest: sha256(bytes) });
   }
   authorityDependencies.sort((left, right) => left.path.localeCompare(right.path));
+  await mkdir(resolve(view, "node_modules"), { mode: 0o700 });
+  await mkdir(resolve(view, ".usf/cache"), { recursive: true, mode: 0o700 });
   const runtime = resolve(view, ".usf-check-runtime");
   await mkdir(runtime, { mode: 0o700 });
   return Object.freeze({ view: await realpath(view), runtime: await realpath(runtime), authorityDependencies: Object.freeze(authorityDependencies) });

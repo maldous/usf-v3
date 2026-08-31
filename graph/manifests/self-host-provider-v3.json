@@ -1,0 +1,14 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": ["graph/manifests/self-host.json", "graph/manifests/profile-authority.json"],
+  "sources": [
+    {
+      "path": "graph/provider-pipeline.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:provider-pipeline",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

@@ -88,8 +88,6 @@
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:contract> <urn:usf:contract:repository-path-scope:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:objective> "Add and test the shared canonical repository-path scope helper." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:repository-path-scope> <urn:usf:predicate:readPath> "src/core/" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:repository-path-scope> <urn:usf:predicate:readPath> "tests/unit/core/" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:writePath> "src/core/scope.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:writePath> "tests/unit/core/scope.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:usf-bootstrap> .
@@ -97,8 +95,6 @@
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:repository-path-scope> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:repository-path-scope> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:acceptance> <urn:usf:acceptance:repository-path-vectors> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:validation> <urn:usf:validation:repository-path-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:proof> <urn:usf:proof:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
@@ -186,8 +182,6 @@
 <urn:usf:work:file-asset-index> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:file-asset-index> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:file-asset-index> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:acceptance> <urn:usf:acceptance:file-asset-index> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:validation> <urn:usf:validation:file-asset-index-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:proof> <urn:usf:proof:file-asset-index> <urn:usf:graph:usf-bootstrap> .
@@ -281,7 +275,6 @@
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:objective> "Implement and test foreground start, instance-bound graceful stop, process identity and restart-safe lifecycle control around the disposable composer." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:dependsOn> <urn:usf:work:file-asset-index> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:foreground-lifecycle> <urn:usf:predicate:readPath> "src/continuous/scheduler.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:readPath> "tests/integration/continuous-restart.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:foreground-lifecycle> <urn:usf:predicate:writePath> "config/automation.json" <urn:usf:graph:usf-bootstrap> .
@@ -402,7 +395,6 @@
 <urn:usf:work:operator-observability> <urn:usf:predicate:objective> "Implement bounded operator help, broad status and factual operational metric aggregation while keeping local observations non-authoritative." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "config/providers.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/continuous/scheduler.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "docs/decisions/0004-operator-observability.md" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:operator-observability> <urn:usf:predicate:writePath> "package.json" <urn:usf:graph:usf-bootstrap> .

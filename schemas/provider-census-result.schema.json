@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:provider-census-result:1",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "operation",
+    "externalContact",
+    "authorityEffect",
+    "semanticScope",
+    "source",
+    "denominators",
+    "truncation",
+    "items",
+    "nonclaims"
+  ],
+  "properties": {
+    "schema": { "const": "urn:usf:provider-census-result:1" },
+    "status": { "const": "ok" },
+    "operation": { "enum": ["census", "status", "aliases"] },
+    "externalContact": { "const": false },
+    "authorityEffect": { "const": "none" },
+    "semanticScope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["status", "reasonCode", "selectionRequired"],
+          "properties": {
+            "status": { "const": "not-selected" },
+            "reasonCode": { "const": "PROVIDERS_PROFILE_NOT_SELECTED" },
+            "selectionRequired": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "enum": ["--profile", "--manifest"] }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["status", "profile", "profileVersion", "product", "foundation", "manifest", "semanticDigest", "work", "contract", "scopedDependencyDigest"],
+          "properties": {
+            "status": { "const": "selected" },
+            "profile": { "$ref": "#/$defs/token" },
+            "profileVersion": { "$ref": "#/$defs/token" },
+            "product": { "$ref": "#/$defs/token" },
+            "foundation": { "$ref": "#/$defs/token" },
+            "manifest": { "$ref": "#/$defs/token" },
+            "semanticDigest": { "$ref": "#/$defs/digest" },
+            "work": { "const": "urn:usf:work:provider-census" },
+            "contract": { "const": "urn:usf:contract:provider-census:1" },
+            "scopedDependencyDigest": { "$ref": "#/$defs/digest" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "source": {
+      "type": "object",
+      "required": ["catalogueRawDigest", "catalogueNormalizedDigest", "providerConfigDigest", "legacyCredentialSetDigest", "hostTransportSetDigest", "legacyProviderObservationSetDigest", "legacyObservationRawDigest", "legacyObservationNormalizedDigest", "credentialSource"],
+      "properties": {
+        "catalogueRawDigest": { "$ref": "#/$defs/digest" },
+        "catalogueNormalizedDigest": { "$ref": "#/$defs/digest" },
+        "providerConfigDigest": { "$ref": "#/$defs/digest" },
+        "legacyCredentialSetDigest": { "$ref": "#/$defs/digest" },
+        "hostTransportSetDigest": { "$ref": "#/$defs/digest" },
+        "legacyProviderObservationSetDigest": { "$ref": "#/$defs/digest" },
+        "legacyObservationRawDigest": { "$ref": "#/$defs/digest" },
+        "legacyObservationNormalizedDigest": { "$ref": "#/$defs/digest" },
+        "credentialSource": { "enum": ["not-selected", "explicit-file"] }
+      },
+      "additionalProperties": false
+    },
+    "denominators": {
+      "type": "object",
+      "required": [
+        "catalogueProviderRoutes",
+        "catalogueModelRoutes",
+        "catalogueUnderlyingModels",
+        "catalogueUnderlyingFamilies",
+        "catalogueCredentialNames",
+        "configuredRoutes",
+        "configuredProviderFamilies",
+        "configuredModels",
+        "candidateCredentialNames",
+        "credentialPresenceNames",
+        "reviewedLegacyCredentialNames",
+        "reviewedLegacyProviderObservations",
+        "installedAdapters",
+        "configuredInstalledAdapters",
+        "hostTransports",
+        "observedHostTransports",
+        "matchedItems"
+      ],
+      "properties": {
+        "catalogueProviderRoutes": { "$ref": "#/$defs/count" },
+        "catalogueModelRoutes": { "$ref": "#/$defs/count" },
+        "catalogueUnderlyingModels": { "$ref": "#/$defs/count" },
+        "catalogueUnderlyingFamilies": { "$ref": "#/$defs/count" },
+        "catalogueCredentialNames": { "$ref": "#/$defs/count" },
+        "configuredRoutes": { "$ref": "#/$defs/count" },
+        "configuredProviderFamilies": { "$ref": "#/$defs/count" },
+        "configuredModels": { "$ref": "#/$defs/count" },
+        "candidateCredentialNames": { "$ref": "#/$defs/count" },
+        "credentialPresenceNames": { "$ref": "#/$defs/count" },
+        "reviewedLegacyCredentialNames": { "$ref": "#/$defs/count" },
+        "reviewedLegacyProviderObservations": { "$ref": "#/$defs/count" },
+        "installedAdapters": { "$ref": "#/$defs/count" },
+        "configuredInstalledAdapters": { "$ref": "#/$defs/count" },
+        "hostTransports": { "$ref": "#/$defs/count" },
+        "observedHostTransports": { "$ref": "#/$defs/count" },
+        "matchedItems": { "$ref": "#/$defs/count" }
+      },
+      "additionalProperties": false
+    },
+    "truncation": {
+      "type": "object",
+      "required": ["maxItems", "matchedItems", "returnedItems", "truncated"],
+      "properties": {
+        "maxItems": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "matchedItems": { "$ref": "#/$defs/count" },
+        "returnedItems": { "$ref": "#/$defs/count" },
+        "truncated": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/configuredRoute" },
+          { "$ref": "#/$defs/hostTransport" },
+          { "$ref": "#/$defs/legacyProviderObservation" },
+          { "$ref": "#/$defs/identityAlias" }
+        ]
+      }
+    },
+    "nonclaims": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "count": { "type": "integer", "minimum": 0 },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "token": { "type": "string", "minLength": 1 },
+    "nullableToken": { "oneOf": [{ "$ref": "#/$defs/token" }, { "type": "null" }] },
+    "stringSet": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/token" },
+      "maxItems": 256
+    },
+    "configuredRoute": {
+      "type": "object",
+      "required": ["kind", "id", "providerFamily", "provider", "providerRoute", "requestedModel", "routeModel", "underlyingFamily", "underlyingModel", "adapterPackage", "adapterInstalledVersion", "adapterLockDigest", "credentialName", "credentialPresent", "catalogueIdentity", "capabilities", "economics", "availability", "qualification", "allocation", "exclusionReasons", "sourceProvenance"],
+      "properties": {
+        "kind": { "const": "configured-route" },
+        "id": { "$ref": "#/$defs/token" },
+        "providerFamily": { "$ref": "#/$defs/token" },
+        "provider": { "$ref": "#/$defs/token" },
+        "providerRoute": { "$ref": "#/$defs/token" },
+        "requestedModel": { "$ref": "#/$defs/token" },
+        "routeModel": { "$ref": "#/$defs/nullableToken" },
+        "underlyingFamily": { "$ref": "#/$defs/nullableToken" },
+        "underlyingModel": { "$ref": "#/$defs/nullableToken" },
+        "adapterPackage": { "$ref": "#/$defs/token" },
+        "adapterInstalledVersion": { "$ref": "#/$defs/nullableToken" },
+        "adapterLockDigest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] },
+        "credentialName": { "$ref": "#/$defs/token" },
+        "credentialPresent": { "type": "boolean" },
+        "catalogueIdentity": { "enum": ["exact", "unmatched", "ambiguous"] },
+        "capabilities": {
+          "type": "object",
+          "required": ["configured", "catalogue"],
+          "properties": {
+            "configured": { "$ref": "#/$defs/stringSet" },
+            "catalogue": { "$ref": "#/$defs/stringSet" }
+          },
+          "additionalProperties": false
+        },
+        "economics": {
+          "type": "object",
+          "required": ["declaredCost", "declaredEntitlement", "paidFallback", "accountTierReceipt", "status"],
+          "properties": {
+            "declaredCost": { "enum": ["local", "zero-price", "free-quota", "subscription", "paid", "unknown"] },
+            "declaredEntitlement": { "enum": ["local", "zero-price", "free-quota", "subscription", "promotional-credit", "paid", "unknown"] },
+            "paidFallback": { "type": "boolean" },
+            "accountTierReceipt": { "const": "missing" },
+            "status": { "const": "unverified" }
+          },
+          "additionalProperties": false
+        },
+        "availability": { "const": "unknown" },
+        "qualification": { "const": "UNQUALIFIED" },
+        "allocation": { "const": "excluded" },
+        "exclusionReasons": { "$ref": "#/$defs/stringSet" },
+        "sourceProvenance": { "$ref": "#/$defs/stringSet" }
+      },
+      "additionalProperties": false
+    },
+    "hostTransport": {
+      "type": "object",
+      "required": ["kind", "id", "transport", "executableObserved", "requestedModel", "actualModel", "credentialName", "availability", "qualification", "allocation", "exclusionReasons", "sourceProvenance"],
+      "properties": {
+        "kind": { "const": "host-transport" },
+        "id": { "$ref": "#/$defs/token" },
+        "transport": { "$ref": "#/$defs/token" },
+        "executableObserved": { "type": "boolean" },
+        "requestedModel": { "type": "null" },
+        "actualModel": { "type": "null" },
+        "credentialName": { "type": "null" },
+        "availability": { "enum": ["unknown", "unavailable"] },
+        "qualification": { "const": "UNQUALIFIED" },
+        "allocation": { "const": "excluded" },
+        "exclusionReasons": { "$ref": "#/$defs/stringSet" },
+        "sourceProvenance": { "$ref": "#/$defs/stringSet" }
+      },
+      "additionalProperties": false
+    },
+    "legacyProviderObservation": {
+      "type": "object",
+      "required": ["kind", "id", "provider", "observedModel", "transport", "credentialName", "credentialPresent", "historicalDisposition", "providerAliases", "modelAliases", "availability", "qualification", "allocation", "exclusionReasons", "sourceProvenance", "nonClaim"],
+      "properties": {
+        "kind": { "const": "legacy-provider-observation" },
+        "id": { "$ref": "#/$defs/token" },
+        "provider": { "$ref": "#/$defs/token" },
+        "observedModel": { "$ref": "#/$defs/token" },
+        "transport": { "$ref": "#/$defs/token" },
+        "credentialName": { "$ref": "#/$defs/nullableToken" },
+        "credentialPresent": { "oneOf": [{ "type": "boolean" }, { "type": "null" }] },
+        "historicalDisposition": { "enum": ["admitted", "unavailable", "deferred", "configured-default"] },
+        "providerAliases": { "$ref": "#/$defs/stringSet" },
+        "modelAliases": { "$ref": "#/$defs/stringSet" },
+        "availability": { "const": "unknown" },
+        "qualification": { "const": "UNQUALIFIED" },
+        "allocation": { "const": "excluded" },
+        "exclusionReasons": { "$ref": "#/$defs/stringSet" },
+        "sourceProvenance": { "$ref": "#/$defs/stringSet" },
+        "nonClaim": { "$ref": "#/$defs/token" }
+      },
+      "additionalProperties": false
+    },
+    "identityAlias": {
+      "type": "object",
+      "required": ["kind", "id", "aliasKind", "sourceIdentity", "targetIdentities", "mappingStatus", "scope", "sourceProvenance", "nonClaim"],
+      "properties": {
+        "kind": { "const": "identity-alias" },
+        "id": { "$ref": "#/$defs/token" },
+        "aliasKind": { "enum": ["configured-route", "legacy-credential", "host-transport", "legacy-provider-model"] },
+        "sourceIdentity": { "$ref": "#/$defs/token" },
+        "targetIdentities": { "$ref": "#/$defs/stringSet" },
+        "mappingStatus": { "enum": ["exact", "unresolved", "unmapped", "distinct", "reviewed-historical"] },
+        "scope": { "enum": ["provider-route", "provider-candidate", "non-ai-service", "transport", "historical-provider-model"] },
+        "sourceProvenance": { "$ref": "#/$defs/stringSet" },
+        "nonClaim": { "$ref": "#/$defs/token" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

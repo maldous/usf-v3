@@ -85,6 +85,14 @@ test("construction authority is composable, copy-on-write, scoped-current and id
     await writeFile(sourcePath, `${sourceWithGrant}<urn:usf:test:unrelated-currentness> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:integration> .\n`, "utf8");
     assert.equal(packet(isolated.root).realisationAuthority!.permission!.activationState, "urn:usf:contract-state:active", "unrelated graph movement cannot stale scoped authority");
 
+    for (const relativePath of ["src/cli.ts", "src/commands/help.ts", "package.json", "pnpm-lock.yaml"]) {
+      const path = resolve(isolated.root, relativePath);
+      const bytes = await readFile(path);
+      await writeFile(path, Buffer.concat([bytes, Buffer.from("\n")]));
+      assert.equal(packet(isolated.root).realisationAuthority!.permission!.activationState, "urn:usf:contract-state:active", `${relativePath} is not a construction dependency`);
+      await writeFile(path, bytes);
+    }
+
     const receipt = JSON.parse(await readFile(resolve(isolated.root, appliedOutput.publicationReceiptPath), "utf8")) as ConstructionAuthorityPublicationReceipt;
     const grantIri = receipt.members[0]!.grantIri;
     const duplicateIri = "urn:usf:test:duplicate-current-construction-grant";

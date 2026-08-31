@@ -1,5 +1,5 @@
 import { chmodSync, closeSync, constants as fsConstants, existsSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
-import { chmod, link, lstat, mkdir, open, readFile, realpath, rename, rm } from "node:fs/promises";
+import { chmod, link, lstat, mkdir, open, readFile, realpath, rename, rm, rmdir } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
@@ -1645,6 +1645,10 @@ async function integrationDependencyRoots(): Promise<readonly string[]> {
 export async function runIntegrationValidation(input: IntegrationVerifierInput): Promise<IntegrationVerifierObservation> {
   if (input.phase !== "postimage") throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
   const scratch = resolve(input.repositoryRoot, ".usf", "integration-validation");
+  const localNodeModules = resolve(input.repositoryRoot, "node_modules");
+  const localCache = resolve(input.repositoryRoot, ".usf", "cache");
+  let localNodeModulesCreated = false;
+  let localCacheCreated = false;
   assertPrivateWorktreeRootSync(input.repositoryRoot.slice(0, input.repositoryRoot.indexOf(`${sep}.usf${sep}integration-worktrees${sep}`)), input.repositoryRoot);
   if (privateUsfDirectoryExistsSync(input.repositoryRoot, ".usf/integration-validation")) {
     await rm(scratch, { recursive: true, force: true });
@@ -1652,6 +1656,17 @@ export async function runIntegrationValidation(input: IntegrationVerifierInput):
   assertPrivateUsfDirectorySync(input.repositoryRoot, ".usf", true);
   assertPrivateUsfDirectorySync(input.repositoryRoot, ".usf/integration-validation", true);
   try {
+    try {
+      await mkdir(localNodeModules, { mode: 0o700 });
+      localNodeModulesCreated = true;
+    } catch (error: unknown) {
+      throw new IntegrationError("INTEGRATION_VALIDATION_INVALID", `Workspace dependency mount is unavailable: ${(error as NodeJS.ErrnoException).code ?? "UNKNOWN"}`);
+    }
+    if (privateUsfDirectoryExistsSync(input.repositoryRoot, ".usf/cache")) {
+      throw new IntegrationError("INTEGRATION_VALIDATION_INVALID", "Workspace cache mount must be freshly prepared");
+    }
+    assertPrivateUsfDirectorySync(input.repositoryRoot, ".usf/cache", true);
+    localCacheCreated = true;
     const { confinedNodeTestLaunch } = await import("../commands/check.ts");
     const dependencyRoots = await integrationDependencyRoots();
     // Re-authenticate the repository-local optional cache immediately before
@@ -1752,6 +1767,8 @@ export async function runIntegrationValidation(input: IntegrationVerifierInput):
     if (privateUsfDirectoryExistsSync(input.repositoryRoot, ".usf/integration-validation")) {
       await rm(scratch, { recursive: true, force: true });
     }
+    if (localCacheCreated) await rmdir(localCache);
+    if (localNodeModulesCreated) await rmdir(localNodeModules);
   }
 }
 

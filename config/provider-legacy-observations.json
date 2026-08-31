@@ -1,0 +1,173 @@
+{
+  "$schema": "urn:usf:provider-legacy-observations:1",
+  "version": 1,
+  "sources": [
+    {
+      "id": "reviewed-v2-workforce-proof",
+      "repository": "https://github.com/maldous/usf-graph.git",
+      "revision": "2d7eb31f0d586b32008ba854dfca0fa8437054cf",
+      "tree": "c33a3ad08a656a4e88bc89d59160ffe3d326352c",
+      "path": "assurance/provider-workforce-closure/provider-workforce-authority-proof.mjs",
+      "contentDigest": "sha256:257d2d196df67927af2458aa46f5e49d0ec013843b1ccf96f249c7bac964fbdf"
+    },
+    {
+      "id": "reviewed-v2-operator-admission",
+      "repository": null,
+      "revision": null,
+      "tree": null,
+      "path": "provider_admissions.json",
+      "contentDigest": "sha256:b014e32f0299f2ae1e0ed131ad7251220fe8e692409672e392f44e6df96df8e8"
+    }
+  ],
+  "credentialNames": [
+    "ARCEE_TOKEN",
+    "CEREBRAS_API_KEY",
+    "CLOUDFLARE_API_KEY",
+    "COHERE_API_KEY",
+    "DEEPSEEK_API_KEY",
+    "FIREWORKS_API_KEY",
+    "GEMINI_API_KEY",
+    "GITHUB_PERSONAL_ACCESS_TOKEN",
+    "GROQ_API_KEY",
+    "HF_TOKEN",
+    "LINEAR_API_KEY",
+    "MISTRAL_API_KEY",
+    "NOUS_API_KEY",
+    "NVIDIA_API_KEY",
+    "OPENAI_API_KEY",
+    "OPENROUTER_API_KEY",
+    "SAMBANOVA_API_KEY",
+    "STARDOG_DATABASE",
+    "STARDOG_PASSWORD",
+    "STARDOG_SERVER",
+    "STARDOG_TOKEN",
+    "STARDOG_USERNAME",
+    "TOGETHER_API_KEY",
+    "ZAI_API_KEY"
+  ],
+  "credentialNameProvenance": {
+    "source": "reviewed-v2-untracked-environment-names-only",
+    "rawSourceDisposition": "secret-bearing-untracked-file-not-copied-or-digested",
+    "projectionDigest": "sha256:f5f9a2ecb1db65a5085a3d36eb04b3807801e8eb939ba705f748c4ec0661edf5"
+  },
+  "credentialAliasCandidates": [
+    {
+      "source": "ARCEE_TOKEN",
+      "targets": ["ARCEE_API_KEY"]
+    },
+    {
+      "source": "ZAI_API_KEY",
+      "targets": ["ZHIPU_API_KEY"]
+    }
+  ],
+  "nonAiServiceCredentialNames": [
+    "GITHUB_PERSONAL_ACCESS_TOKEN",
+    "LINEAR_API_KEY",
+    "STARDOG_DATABASE",
+    "STARDOG_PASSWORD",
+    "STARDOG_SERVER",
+    "STARDOG_TOKEN",
+    "STARDOG_USERNAME"
+  ],
+  "hostTransports": [
+    {
+      "id": "antigravity-cli",
+      "executableNames": ["antigravity"],
+      "apiCredentialCandidate": null
+    },
+    {
+      "id": "claude-cli",
+      "executableNames": ["claude"],
+      "apiCredentialCandidate": "ANTHROPIC_API_KEY"
+    },
+    {
+      "id": "codex-cli",
+      "executableNames": ["codex"],
+      "apiCredentialCandidate": "OPENAI_API_KEY"
+    }
+  ],
+  "providerModelObservations": [
+    {
+      "id": "antigravity-cli:claude-opus-4.6",
+      "provider": "antigravity-cli",
+      "model": "claude-opus-4.6",
+      "transport": "antigravity-cli",
+      "credentialName": null,
+      "historicalDisposition": "configured-default",
+      "providerAliases": ["antigravity-cli"],
+      "modelAliases": ["claude-opus-4.6"],
+      "source": "reviewed-v2-workforce-proof"
+    },
+    {
+      "id": "minimax-oauth:MiniMax-M3",
+      "provider": "minimax-oauth",
+      "model": "MiniMax-M3",
+      "transport": "oauth",
+      "credentialName": null,
+      "historicalDisposition": "admitted",
+      "providerAliases": [],
+      "modelAliases": [],
+      "source": "reviewed-v2-operator-admission"
+    },
+    {
+      "id": "nous:openai/gpt-5.6-sol",
+      "provider": "nous",
+      "model": "openai/gpt-5.6-sol",
+      "transport": "oauth",
+      "credentialName": "NOUS_API_KEY",
+      "historicalDisposition": "deferred",
+      "providerAliases": [],
+      "modelAliases": [],
+      "source": "reviewed-v2-operator-admission"
+    },
+    {
+      "id": "openai-api:gpt-5.5",
+      "provider": "openai-api",
+      "model": "gpt-5.5",
+      "transport": "api",
+      "credentialName": "OPENAI_API_KEY",
+      "historicalDisposition": "unavailable",
+      "providerAliases": [],
+      "modelAliases": [],
+      "source": "reviewed-v2-operator-admission"
+    },
+    {
+      "id": "openai-codex:gpt-5.5",
+      "provider": "openai-codex",
+      "model": "gpt-5.5",
+      "transport": "codex-cli",
+      "credentialName": null,
+      "historicalDisposition": "admitted",
+      "providerAliases": ["codex-cli"],
+      "modelAliases": ["gpt-5.5"],
+      "source": "reviewed-v2-operator-admission"
+    },
+    {
+      "id": "openai-codex:gpt-5.6-sol",
+      "provider": "openai-codex",
+      "model": "gpt-5.6-sol",
+      "transport": "codex-cli",
+      "credentialName": null,
+      "historicalDisposition": "admitted",
+      "providerAliases": ["codex-cli"],
+      "modelAliases": ["gpt-5.6-sol"],
+      "source": "reviewed-v2-operator-admission"
+    },
+    {
+      "id": "openrouter:anthropic/claude-sonnet-4.6",
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-4.6",
+      "transport": "api",
+      "credentialName": "OPENROUTER_API_KEY",
+      "historicalDisposition": "admitted",
+      "providerAliases": ["openrouter"],
+      "modelAliases": ["anthropic/claude-sonnet-4.6"],
+      "source": "reviewed-v2-operator-admission"
+    }
+  ],
+  "nonclaims": [
+    "historical-admission-is-not-current-v3-configuration-entitlement-availability-or-qualification",
+    "credential-names-and-alias-candidates-are-public-metadata-not-secret-or-account-evidence",
+    "host-transport-identity-is-distinct-from-api-provider-and-billing-identity"
+  ]
+}

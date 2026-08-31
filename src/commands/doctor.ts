@@ -1,7 +1,7 @@
 import { constants } from "node:fs";
 import { lstat, open, readFile, realpath } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { dirname, relative, resolve, sep } from "node:path";
+import { relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import { execFile } from "node:child_process";
 
@@ -9,12 +9,16 @@ import { canonicalDigest, sha256 } from "../core/canonical.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import {
   CredentialEnvError,
-  loadCredentialEnvFile,
   parseProviderConfig,
   ProviderConfigError,
   providerCredentialNames,
   type ProviderConfig,
 } from "../providers/config.ts";
+import {
+  CredentialInspectionError,
+  inspectCredentialPresence,
+  type CredentialPresenceObservation,
+} from "../providers/credentials.ts";
 import { localGitChildEnvironment } from "../providers/local-git.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { readLocalCatalogue } from "./models.ts";
@@ -146,36 +150,6 @@ async function gitTracked(
       "Git could not verify tracked local inputs.",
     );
   }
-}
-
-async function containingGitRepository(
-  path: string,
-  environmentRoot: string,
-): Promise<string | undefined> {
-  try {
-    const result = await runFile("git", ["-C", dirname(path), "rev-parse", "--show-toplevel"], {
-      encoding: "utf8",
-      timeout: 5_000,
-      maxBuffer: 16 * 1024,
-      env: localGitChildEnvironment(environmentRoot),
-    });
-    const root = result.stdout.trim();
-    return root.length === 0 ? undefined : resolve(root);
-  } catch (error) {
-    const code = (error as { code?: unknown }).code;
-    if (code === 128 || code === "128") return undefined;
-    doctorError(
-      "DOCTOR_GIT_UNAVAILABLE",
-      exitCodes.CURRENTNESS_FAILURE,
-      "Git could not inspect the explicit credential input.",
-    );
-  }
-}
-
-async function environmentFileTracked(repositoryRoot: string, path: string): Promise<boolean> {
-  const root = await containingGitRepository(path, repositoryRoot);
-  if (root === undefined || !contained(root, path)) return false;
-  return gitTracked(root, relative(root, path), repositoryRoot);
 }
 
 function sameFile(
@@ -390,7 +364,7 @@ async function credentialMetadata(
   repositoryRoot: string,
   selectedPath: string | undefined,
   config: ProviderConfig | undefined,
-): Promise<Readonly<Record<string, unknown>>> {
+): Promise<CredentialPresenceObservation> {
   const names = config === undefined ? [] : providerCredentialNames(config);
   if (selectedPath === undefined) {
     return Object.freeze({
@@ -406,22 +380,18 @@ async function credentialMetadata(
       "An explicit credential file requires a valid tracked provider allowlist.",
     );
   }
-  const absolute = resolve(repositoryRoot, selectedPath);
-  if (await environmentFileTracked(repositoryRoot, absolute)) {
-    doctorError(
-      "DOCTOR_ENV_FILE_TRACKED",
-      exitCodes.CONTAINMENT_REFUSAL,
-      "A tracked credential environment file was refused.",
-    );
-  }
   try {
-    const loaded = await loadCredentialEnvFile(absolute, names);
-    return Object.freeze({
-      source: "explicit-file",
-      credentials: loaded.metadata.credentials,
-      valuesExposed: false,
-    });
+    return await inspectCredentialPresence(repositoryRoot, selectedPath, names);
   } catch (error) {
+    if (error instanceof CredentialInspectionError) {
+      doctorError(
+        error.reasonCode === "CREDENTIAL_FILE_TRACKED" ? "DOCTOR_ENV_FILE_TRACKED" : "DOCTOR_GIT_UNAVAILABLE",
+        error.reasonCode === "CREDENTIAL_FILE_TRACKED" ? exitCodes.CONTAINMENT_REFUSAL : exitCodes.CURRENTNESS_FAILURE,
+        error.reasonCode === "CREDENTIAL_FILE_TRACKED"
+          ? "A tracked credential environment file was refused."
+          : "Git could not inspect the explicit credential input.",
+      );
+    }
     if (error instanceof CredentialEnvError) {
       doctorError(
         "DOCTOR_ENV_FILE_REFUSED",

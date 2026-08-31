@@ -97,6 +97,14 @@ test("no-change completion is checked, copy-on-write, scoped-current and idempot
     await writeFile(sourcePath, `${completedSource}<urn:usf:test:unrelated-completion-currentness> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:integration> .\n`, "utf8");
     assert.equal(packet(isolated.root).realisationStage?.stage, "verified-complete", "unrelated semantic movement cannot stale scoped completion");
 
+    for (const relativePath of ["src/cli.ts", "src/commands/help.ts", "package.json", "pnpm-lock.yaml"]) {
+      const path = resolve(isolated.root, relativePath);
+      const bytes = await readFile(path);
+      await writeFile(path, Buffer.concat([bytes, Buffer.from("\n")]));
+      assert.equal(packet(isolated.root).realisationStage?.stage, "verified-complete", `${relativePath} is not a completion dependency`);
+      await writeFile(path, bytes);
+    }
+
     const toolPath = resolve(isolated.root, "src/commands/work-completion.ts");
     const toolBytes = await readFile(toolPath);
     await writeFile(toolPath, Buffer.concat([toolBytes, Buffer.from("\n// scoped completion authority movement\n")]));
