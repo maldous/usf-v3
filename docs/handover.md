@@ -97,6 +97,32 @@ and operator construction is active. Commit this semantic carrier, materialise
 a fresh isolated candidate, obtain independent verification, then integrate
 and republish operator completion before resuming provider-census.
 
+## Live continuation update — module presence is not leaf authority
+
+Independent verification refused replacement candidate `57a638...` despite its
+passing confined check and dry-run integration. The candidate correctly proved
+lazy loading, forwarding and absent-module refusal, but its production default
+would import any matching file present in the primary workspace. An untracked
+future `src/commands/provider-receipts.ts` draft already exists, so module
+presence could execute unqualified bytes before their owning work completed.
+No ordinary integration was performed.
+
+The next correction remains graph-first and file-authoritative rather than
+GitHub-dependent. Before importing a host or receipt leaf, the operator-owned
+boundary must parse the exact explicit profile/manifest and require current
+`verified-complete` status for respectively `urn:usf:work:provider-census` or
+`urn:usf:work:provider-account-tier-receipt`. Because completion currentness is
+bound to the exact scoped file preimages, an untracked, modified, merely
+integrated, stale or incomplete leaf stays proofblocked without needing a push
+or remote check. The existing compact contract test must add one
+present-but-unqualified case and prove the feature loader remains unused.
+Current operator construction publication is
+`evidence/construction-authority/f52f8d5c0a161b221ab98e879d65401e430d9d02ebfa1ffda94d625a5941a413.json`
+and the resulting semantic digest is
+`sha256:dcfe054a1c33b16bcf783ced545be003c9e44721d3d3b28a7e5f46eddee8647d`.
+Commit this semantic carrier, create and independently verify a fresh
+candidate, and only then integrate.
+
 ## Live continuation update — one-time provider registry closure
 
 The shared CLI correction is now graph-defined rather than tribal. Exact
