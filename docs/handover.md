@@ -3,30 +3,48 @@
 Updated 2026-09-01. The live continuation updates immediately below supersede
 older next-action and carrier statements where they differ. The durable pushed
 semantic boundary is now
-`6040fe903860368521db6a6f99aea1997d11c08a` (tree
-`41e191e7c2d9305c6fbfcab234e21e332184cfbd`). Its predecessor `a3a40e5`
-commits the independently reviewed composable-input, validation-isolation and
-shared call-leaf remodel. Registered copy-on-write publication then created
+`4a7d2a74a15725944a8162152cbaa88d519e38ee` (tree
+`71d1a16f1d600b1bdc62cf5019b869709a5ac8b2`). Its predecessors `a3a40e5`
+and `6040fe9` commit the independently reviewed composable-input,
+validation-isolation and shared call-leaf remodel plus its first construction
+publication. Registered copy-on-write publication created
 `evidence/construction-authority/a5f565bbcc2b38088678c4ad8c745efd9a60450e91f7d5a9bdac305cca7d5927.json`
 with receipt digest
 `sha256:69a3a56dae0e80d0d092f75773ea9a19ec30d1eb9bb3a59ab51497738b6a5e84`.
-Commit `6040fe9` contains that graph and receipt and was pushed by ordinary
-fast-forward to `origin/main`; GitHub did not participate in construction,
-currentness, proof or runtime authority. No source implementation from the
-isolated operator draft has been integrated into the primary checkout.
-The later validation-host-tool correction has now been published locally by
-copy-on-write receipt
+The later validation-host-tool correction and its fresh construction authority
+are committed together at `4a7d2a7` and remote read-back confirms exact
+`origin/main`. Its copy-on-write receipt is
 `evidence/construction-authority/8223a32577746690da74dfbc74f79cb3145672814fb6b76ede16b8c35dacf1aa.json`,
 receipt digest
 `sha256:f6e4bb92ae6117a7b731b4f1809e2cf24b759fb4f12fcbbde014bbd46aabd5f5`;
-that graph/receipt/handover carrier is not yet committed or pushed. Registered
-`usf work` reads active construction authority through `integrate`, with
-current profile semantic digest
+GitHub did not participate in construction, currentness, proof or runtime
+authority. No source implementation from the isolated operator draft has been
+integrated into the primary checkout. At exact committed boundary `4a7d2a7`,
+registered `usf work` read active construction authority through `integrate`,
+with profile semantic digest
 `sha256:e96f666823135e3239faf6603c649f33a7f4653b8d35e2e2294485cb7b11d68f`,
 current ready-work realisation-basis digest
 `sha256:db4d471fc0a80f673d22e1756550a6d96903ff3f6078a91b0ca437c3250cf847`
-and current packet scoped dependency digest
+and packet scoped dependency digest
 `sha256:09601abe68c800b6a96d276dddef1745912ece747d84fb17fda910e7e55d549e`.
+The fresh-child semantic remodel recorded below supersedes that committed
+currentness locally. Registered construction evidence and proof passed and
+copy-on-write publication created
+`evidence/construction-authority/f7906ef478d268bba407c7d9817df7a828fe0103800c3ff0f0dbb64d0101f595.json`
+with receipt digest
+`sha256:422a9cdb100810ec083863d503c4ceb03345dfd75d762f5682e0bda2bdc13268`.
+The publication moved the profile semantic digest from
+`sha256:3f2fb95e13de9a406d5d4e5a404e11a430e908319164e45f1fa95e3998fba39c`
+to
+`sha256:f38328edc46d30d45fbe5f17c0a4fa3bc33cf29ec659b85a2c84f934f749af86`.
+Exact registered `usf work` read-back now reports active construction authority
+through `integrate`, basis
+`sha256:3f860b520fdff4220944043ce1fed9beb5aa7fdc2cf635d97afa264d56a5053b`
+and scoped dependency digest
+`sha256:4ebe0ad7b76d6786cfb5f0d45368550dd60350655ff7bf27db941b8f83f5776e`.
+This graph, handover and receipt packet is not yet committed; implementation
+must not begin until the exact carrier is committed, pushed and remotely read
+back.
 The focused graph/provider topology lane passes 13/13; the independent current
 compatibility lanes pass 15/15; `git diff --check` and the containment verifier
 pass. A detached exact-carrier bootstrap and full `pnpm run check` completed
@@ -89,11 +107,32 @@ materialised. The lazy dispatcher keyed cached handlers by `root + leaf`, even
 though `parallel` and `compare` share one module, and it did not retain one
 process-wide identity for already resident closure members. Node could therefore
 return a stale ESM namespace after authenticated bytes moved, including for a
-preloaded shared dependency such as `src/core/canonical.ts`. Correct the cache
-authority across every previously loaded closure member, or introduce an
-equivalent fresh-process boundary, and add one focused planted shared/preloaded
-movement case. Do not add a route/model matrix, and do not materialise or
-integrate a replacement candidate until this case refuses restart as required.
+preloaded shared dependency such as `src/core/canonical.ts`. A per-path registry
+was independently rejected because it cannot prove which bytes entered the ESM
+cache before the registry existed.
+
+The graph has now been remodelled to the Unix-ceiling solution: every production
+provider or graph call leaf uses one fresh single-invocation Node child. The
+parent holds the shared mutation lock before the child's first repository
+module load; the child rederives authority, authenticates and imports the exact
+closure, releases its own lock and emits `prepared`; the parent releases its
+lock and acknowledges; only then may input consumption or inference begin.
+The protocol uses exact `process.execPath`, no shell, a fixed scrubbed
+environment, a four-MiB result ceiling and no fallback. Confined tests use an
+injected handshake and one planted shared/preloaded movement case, not a real
+child or provider matrix. Parent and child repeat exact current admission; the
+private protocol is bounded to 64 KiB control and four MiB result bytes, with a
+30-second admission timeout, five-second termination grace and no fallback.
+Registered construction evidence observed semantic digest
+`sha256:3f2fb95e13de9a406d5d4e5a404e11a430e908319164e45f1fa95e3998fba39c`,
+realisation-basis digest
+`sha256:32e4583ddbf4a8138d43c3c41bb22b36562d9b1c0d562e555b2ffd1d4524afec`
+and scoped dependency digest
+`sha256:02b8dd264d628d96fdddf1f01db1fc14cdabd48417d457d40d9081f4c70f3077`.
+Its evidence and proof bundle passed; the fresh copy-on-write publication and
+current read-back are recorded at the top of this handover. Commit and remotely
+read back that exact semantic carrier before implementing this model. Do not
+reuse either candidate `1d95f0...` or the rejected process-cache draft.
 
 The current graph intentionally has no typed production runtime closure for
 the downstream `provider-parallel-execution` leaf and does not semantically
