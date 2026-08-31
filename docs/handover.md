@@ -2,26 +2,105 @@
 
 Updated 2026-09-01. The live continuation updates immediately below supersede
 older next-action and carrier statements where they differ. The durable pushed
-boundary is still `2b0c85b2d3da95cd542f29b1e34e36c3d29aae81`; no GitHub contact
-or push occurred in this continuation. Local semantic carrier
-`a3a40e5` commits the reviewed composable-input, validation-isolation and shared
-call-leaf remodel. Registered copy-on-write publication then created
+semantic boundary is now
+`6040fe903860368521db6a6f99aea1997d11c08a` (tree
+`41e191e7c2d9305c6fbfcab234e21e332184cfbd`). Its predecessor `a3a40e5`
+commits the independently reviewed composable-input, validation-isolation and
+shared call-leaf remodel. Registered copy-on-write publication then created
 `evidence/construction-authority/a5f565bbcc2b38088678c4ad8c745efd9a60450e91f7d5a9bdac305cca7d5927.json`
 with receipt digest
 `sha256:69a3a56dae0e80d0d092f75773ea9a19ec30d1eb9bb3a59ab51497738b6a5e84`.
-Its graph and receipt are not yet committed. No source implementation from the
-isolated operator draft has been materialised. Registered `usf work` now reads
-active construction authority through `integrate`, with profile semantic digest
-`sha256:241079c4eb4c690a865e3b15a37b995edd6351012101b76217f0c91941de9f1e`,
-realisation-basis digest
-`sha256:6914e5b6d81e97efe79f8209d9ee0363138b3a1b788a6a27cc4c9bacc2c4f39e`
-and scoped dependency digest
-`sha256:dba0bceec011a4e7b166c1cfa8f7e5e06729b02c6f20c357341795f325902471`.
+Commit `6040fe9` contains that graph and receipt and was pushed by ordinary
+fast-forward to `origin/main`; GitHub did not participate in construction,
+currentness, proof or runtime authority. No source implementation from the
+isolated operator draft has been integrated into the primary checkout.
+The later validation-host-tool correction has now been published locally by
+copy-on-write receipt
+`evidence/construction-authority/8223a32577746690da74dfbc74f79cb3145672814fb6b76ede16b8c35dacf1aa.json`,
+receipt digest
+`sha256:f6e4bb92ae6117a7b731b4f1809e2cf24b759fb4f12fcbbde014bbd46aabd5f5`;
+that graph/receipt/handover carrier is not yet committed or pushed. Registered
+`usf work` reads active construction authority through `integrate`, with
+current profile semantic digest
+`sha256:e96f666823135e3239faf6603c649f33a7f4653b8d35e2e2294485cb7b11d68f`,
+current ready-work realisation-basis digest
+`sha256:db4d471fc0a80f673d22e1756550a6d96903ff3f6078a91b0ca437c3250cf847`
+and current packet scoped dependency digest
+`sha256:09601abe68c800b6a96d276dddef1745912ece747d84fb17fda910e7e55d549e`.
 The focused graph/provider topology lane passes 13/13; the independent current
-compatibility lanes pass 15/15; and `git diff --check` passes. The newly declared
-profile-3 tests, schemas and source paths are intentionally still absent and
-proofblocked until construction authority is published; no completion claim is
-made for them.
+compatibility lanes pass 15/15; `git diff --check` and the containment verifier
+pass. A detached exact-carrier bootstrap and full `pnpm run check` completed
+196/197 tests. Its sole refusal is the pre-realisation profile-scoped authority
+test expecting the historical `operator-observability` validation to pass even
+though the new graph deliberately moves provider-leaf assertions into a
+profile-3-only validation file that is still absent. This is the exact open
+source acceptance item authorised by the packet, not a green authoritative
+suite and not evidence of completion. The newly declared profile-3 tests,
+schemas and source paths remain proofblocked until materialised and validated;
+no completion claim is made for them.
+
+### Active continuation ledger — isolated operator realization
+
+Work is currently isolated at
+`/tmp/usf-operator-realisation-ZGj3V9/repository` on exact carrier `6040fe9`;
+primary source remains unchanged. The draft now provides the graph-reserved
+bounded `call`/`resolve` file, stdin and inline input boundary, closed local
+call/resolve result schemas, immutable wire-basis reconstruction, complete-batch
+resolution, a shared byte-authenticated runtime-closure primitive, and the lazy
+`call parallel`/`call compare` gate. That gate derives the exact
+`provider-parallel-execution` completion and current basis under explicit
+profile/manifest scope while holding the shared primary-mutation lock,
+authenticates the graph-selected closure before import, reauthenticates the
+entry module after import, rejects moved cached closure identity, and releases
+the lock before handler execution. It does not make either future provider leaf
+available and reads no input payload before graph authority succeeds.
+
+Focused evidence at this draft boundary is: TypeScript passes; all five narrow
+schema-validator cases pass; and the exact three graph-selected validations
+pass 19/19 (four composable-input, thirteen profile-2 observability and two
+profile-3 provider-leaf cases). One existing fake-call regression was found
+because the new preflight inspected a proposal payload before the
+already-declared malformed route-concurrency refusal; the draft was reordered
+to refuse the route first and the focused replay now passes. Registered
+`work -> apply` materialised isolated candidate
+`sha256:1d95f0846072c27985d3f4a12d21584fff55a2695e9270d3c80fffb41e3f32fb`
+under `.usf/workspaces/` against exact basis
+`sha256:a4cac4fa618e1a189a93041af72e55f65e82f1c70f9a93c8717b72f98025dd74`.
+The first candidate-bound attempt deliberately ran the three obligations in
+parallel. The existing observability obligation passed with receipt digest
+`sha256:0787f2030ae70413efabf6deea0381249a9c917988c66a6007ba775ee0e802b4`;
+the two sibling attempts correctly refused `CANDIDATE_BUSY` because one
+candidate receipt set has a single mutation lock. On sequential replay the
+composable-input obligation refused `CHECK_VALIDATION_TOOL_UNSUPPORTED`. Exact
+`usf query` read-back showed that both newly modelled obligations omitted the
+mandatory `urn:usf:host-tool:bwrap:0.9.0` dependency carried by existing
+confined validations. Candidate `1d95f0...` is therefore rejected and must not
+be integrated or promoted by its direct test success or single passing receipt.
+The two missing graph edges were added to `graph/provider-pipeline.nq`, exact
+query read-back resolved both typed dependencies under semantic digest
+`sha256:1acb6282385f76da413c81aa4e9a223c9fafd7059d7b920b91dd0f4d02e4f75d`,
+and the fresh construction publication recorded above is active. Candidate
+`1d95f0...` remains invalid; materialise a fresh candidate rather than patching
+or reusing it.
+
+Final adversarial review of the isolated source then found a separate
+proof-blocking long-running-process defect before a fresh candidate was
+materialised. The lazy dispatcher keyed cached handlers by `root + leaf`, even
+though `parallel` and `compare` share one module, and it did not retain one
+process-wide identity for already resident closure members. Node could therefore
+return a stale ESM namespace after authenticated bytes moved, including for a
+preloaded shared dependency such as `src/core/canonical.ts`. Correct the cache
+authority across every previously loaded closure member, or introduce an
+equivalent fresh-process boundary, and add one focused planted shared/preloaded
+movement case. Do not add a route/model matrix, and do not materialise or
+integrate a replacement candidate until this case refuses restart as required.
+
+The current graph intentionally has no typed production runtime closure for
+the downstream `provider-parallel-execution` leaf and does not semantically
+name JavaScript handler exports. The operator gate therefore remains safely
+proofblocked. A later semantic remodel must define the exact runtime closure
+before that leaf can complete; do not bypass this by treating module presence
+or an implementation-derived export convention as graph authority.
 
 The follow-up makes the selected profile publication policy explicitly admit
 its newly declared `repository-path-scope` predecessor. Registered construction
