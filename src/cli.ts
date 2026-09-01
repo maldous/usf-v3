@@ -76,6 +76,10 @@ const bootstrapHandlers: CommandHandlers = {
     return hermesCommand(repositoryRoot, args);
   },
   transact: ({ args, repositoryRoot }) => transactCommand(repositoryRoot, args),
+  profile: async ({ args, repositoryRoot }) => {
+    const { profileCommand } = await import("./commands/profile.ts");
+    return profileCommand(repositoryRoot, args);
+  },
   graph: async ({ args, repositoryRoot }) => {
     if (args[0] === "integrity") return graphIntegrityCommand(repositoryRoot, args.slice(1));
     if (args[0] !== "execute") {

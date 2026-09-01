@@ -166,6 +166,51 @@
 <urn:usf:command:hermes-stop:1> <urn:usf:predicate:synopsis> "usf hermes stop [--wait-ms N]" <urn:usf:graph:v3-delivery> .
 <urn:usf:command:hermes-stop:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
 <urn:usf:command:hermes-stop:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:authorityEffect> "Reads one exported bundle and reports the point-in-time context a rebuild would run under. It realises nothing: product code is realised through the ordinary transaction path, and a bundle must not become a second way to write it." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:commandPath> "profile build" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:contactClass> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:outputSchema> "urn:usf:profile-build-plan:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:refusalClass> "PROFILE_BUNDLE_INCOMPLETE" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:synopsis> "usf profile build --bundle PATH" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-build:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:authorityEffect> "Writes one ignored content-addressed bundle carrying the foundation closure content, the profile sources, the external fact snapshot and the digests of the product outputs at this boundary. It mutates no semantic authority." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:commandPath> "profile export" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:contactClass> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:outputSchema> "urn:usf:profile-export-result:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:synopsis> "usf profile export --manifest PATH [--binding IRI] [--output PATH]" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-export:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:authorityEffect> "Reads one exported bundle and compares it against current authority. It writes nothing and mutates nothing." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:commandPath> "profile import" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:contactClass> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:outputSchema> "urn:usf:profile-import:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:refusalClass> "PROFILE_BUNDLE_UNRECOGNISED" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:synopsis> "usf profile import --bundle PATH" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-import:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:authorityEffect> "Reads current authority and writes at most one ignored realisation record. It mutates no semantic authority." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:commandPath> "profile status" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:contactClass> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:outputSchema> "urn:usf:profile-status:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:refusalClass> "PROFILE_BINDING_UNKNOWN" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:refusalClass> "PROFILE_FOUNDATION_REVISION_UNKNOWN" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:refusalClass> "PROFILE_SEED_UNRESOLVED" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:synopsis> "usf profile status|closure|record --manifest PATH [--binding IRI]" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:profile-status:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
 <urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:appliesToFacetKind> <urn:usf:facet-kind:uisemantics> <urn:usf:graph:v3-delivery> .
 <urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:canonicalName> "v1" <urn:usf:graph:v3-delivery> .
 <urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:disposition> "PROFILE_SUPPLIED" <urn:usf:graph:v3-delivery> .
@@ -10132,6 +10177,12 @@
 <urn:usf:facet-semantics:v1:1> <urn:usf:predicate:origin> "V1 graph/contracts/semantic-depth.trig" <urn:usf:graph:v3-delivery> .
 <urn:usf:facet-semantics:v1:1> <urn:usf:predicate:statusMeaning> "V1 facetStatus records whether the requirement is completely specified, not whether it is satisfied. It is captured as specification status and applicability, and is never read as satisfaction." <urn:usf:graph:v3-delivery> .
 <urn:usf:facet-semantics:v1:1> <urn:usf:predicate:type> <urn:usf:type:FacetSemanticsSet> <urn:usf:graph:v3-delivery> .
+<urn:usf:foundation-revision:v3:1> <urn:usf:predicate:authorityManifestPath> "graph/manifests/v3-delivery.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:foundation-revision:v3:1> <urn:usf:predicate:canonicalName> "v3.1" <urn:usf:graph:v3-delivery> .
+<urn:usf:foundation-revision:v3:1> <urn:usf:predicate:foundation> <urn:usf:foundation:v3> <urn:usf:graph:v3-delivery> .
+<urn:usf:foundation-revision:v3:1> <urn:usf:predicate:nonClaim> "A foundation revision names the reusable authority a profile was realised against. It does not pin the foundation's content: content identity is derived per resource, so a profile is only affected by movement in the resources it actually depends on." <urn:usf:graph:v3-delivery> .
+<urn:usf:foundation-revision:v3:1> <urn:usf:predicate:type> <urn:usf:type:FoundationRevision> <urn:usf:graph:v3-delivery> .
+<urn:usf:foundation-revision:v3:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:admissibilityRule> "A conformance test is admissible only when it imports the capability module at its graph-derived relative path, declares one subtest per outstanding applicable facet named exactly that facet canonicalName, and makes at least one assertion inside each such subtest against a value the module returned. A test that does not import the module, or that stubs it, evidences nothing and is refused before execution." <urn:usf:graph:v3-delivery> .
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:usf:graph:v3-delivery> .
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:antiSelfWarrant> "The rule records what an execution returned. It never records satisfaction, and the facet evaluator remains the only authority that turns an outcome into a verdict." <urn:usf:graph:v3-delivery> .

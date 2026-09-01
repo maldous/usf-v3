@@ -1,0 +1,28 @@
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:boundFoundationRevision> <urn:usf:foundation-revision:v3:1> <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:boundProfileRevision> <urn:anqr:profile-revision:1> <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:canonicalName> "1" <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-implementation-convention:v1:1> <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:coreDependencySeed> <urn:usf:core-surface-policy:v1:1> <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:coreDependencySeed> <urn:usf:implementation-conformance-rule:v1:1> <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:externalFactSource> "installed provider adapter versions" <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:externalFactSource> "models.dev catalogue projection" <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:foundationAuthorityManifest> "graph/manifests/v3-delivery.json" <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:nonClaim> "The binding names the foundation authority it resolves against by path rather than importing it. A product overlay that imported the foundation would absorb every Core contract and lose the isolation that keeps unrelated Core movement from staling it." <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:nonClaim> "The dependency closure is the transitive resource closure of these seeds, not the whole foundation. Movement in a foundation resource outside that closure leaves this profile current, and that is the property the binding exists to make true rather than to assert." <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:realisationRecordRoot> ".usf/profile" <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:type> <urn:usf:type:ProfileFoundationBinding> <urn:anqr:graph:profile> .
+<urn:anqr:profile-revision:1> <urn:usf:predicate:canonicalName> "1" <urn:anqr:graph:profile> .
+<urn:anqr:profile-revision:1> <urn:usf:predicate:nonClaim> "This revision declares that ANQR exists as a product profile bound to a USF foundation. It declares no ANQR capability, facet or requirement: ANQR has no recovered semantics yet, and inventing them here would be the conflation this separation exists to prevent." <urn:anqr:graph:profile> .
+<urn:anqr:profile-revision:1> <urn:usf:predicate:product> <urn:anqr:product:platform> <urn:anqr:graph:profile> .
+<urn:anqr:profile-revision:1> <urn:usf:predicate:productRepository> <urn:anqr:repository:main> <urn:anqr:graph:profile> .
+<urn:anqr:profile-revision:1> <urn:usf:predicate:type> <urn:usf:type:ProductProfileRevision> <urn:anqr:graph:profile> .
+<urn:anqr:profile-revision:1> <urn:usf:predicate:version> "1" <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:authorizedPathPrefix> "src/" <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:authorizedPathPrefix> "tests/" <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:canonicalName> "anqr" <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:nonClaim> "The graph names this repository and its layout. Where it sits on a given machine is local operator state, so a third party can clone USF and point the same declaration at their own checkout." <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:product> <urn:anqr:product:platform> <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:repositoryLocator> "anqr-main" <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:requiredRepositoryFile> "package.json" <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:requiredRepositoryFile> "tsconfig.json" <urn:anqr:graph:profile> .
+<urn:anqr:repository:main> <urn:usf:predicate:type> <urn:usf:type:ProductRepository> <urn:anqr:graph:profile> .
