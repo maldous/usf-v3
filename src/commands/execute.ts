@@ -1,10 +1,11 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
-import {
-  classifyCatalogue, type ModelClassification, type RoutingRequirement,
-} from "../providers/classification.ts";
+import { type RoutingRequirement } from "../providers/classification.ts";
+import { deriveRouteUniverse, type ExecutionCandidate } from "../providers/route-universe.ts";
+import { observeTransportCapability } from "../providers/transports.ts";
 import { CredentialEnvError, loadCredentialEnvFile } from "../providers/config.ts";
 import {
   parseExecutionEconomicAuthorizations, type EffectiveCostPolicy,
@@ -192,8 +193,17 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     return typeof value === "string" && value.length > 0;
   }).sort());
 
-  // Candidate universe: the whole catalogue, deterministically classified.
-  const { classifications, summary } = classifyCatalogue({
+  // One candidate universe, identical to the one graph execution routes over:
+  // the whole classified catalogue plus every admitted local agent transport.
+  const localAgentCapabilities = Object.freeze(await Promise.all(
+    (["antigravity-cli", "claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
+      repositoryRoot, homeDirectory: homedir(), observedAt,
+      suppliedCredentialNames, requiredCredentialName: null, adapterInstalled: false,
+    })),
+  ));
+  const universe = deriveRouteUniverse({
+    localAgentCapabilities,
+    transportSelectedModel: bindings.transportSelectedModel,
     snapshot: catalogue.snapshot,
     installedAdapterPackages: Object.freeze(installed),
     suppliedCredentialNames,
@@ -205,16 +215,15 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     providerEndpoints: bindings.endpoints,
   });
 
-  const selectable = classifications.filter((entry) =>
-    (entry.state === "ROUTABLE" || entry.state === "AVAILABLE")
-    && (parsed.providerFilter === null || entry.provider === parsed.providerFilter)
+  const summary = universe.catalogueSummary;
+  const selectable = universe.candidates.filter((entry) =>
+    (parsed.providerFilter === null || entry.provider === parsed.providerFilter || entry.transport === parsed.providerFilter)
     && (parsed.modelFilter === null || entry.model === parsed.modelFilter));
 
   // Prefer a route with a durable successful invocation, then stable identity.
   const ordered = Object.freeze([...selectable].sort((left, right) => {
     if (left.state !== right.state) return left.state === "AVAILABLE" ? -1 : 1;
-    const provider = left.provider.localeCompare(right.provider);
-    return provider !== 0 ? provider : left.model.localeCompare(right.model);
+    return left.candidateId.localeCompare(right.candidateId);
   }));
   const selectionRule = "AVAILABLE before ROUTABLE, then ascending provider and model identity";
 
@@ -228,12 +237,13 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     stateCounts: summary.stateCounts,
     reasonCounts: summary.reasonCounts,
     selectableCandidateCount: ordered.length,
+    localAgentDispositions: universe.localAgentDispositions,
     consideredCandidates: Object.freeze(ordered.slice(0, maximumAttempts)),
   });
 
   interface InvocationAttempt {
     readonly provider: string;
-    readonly model: string;
+    readonly model: string | null;
     readonly adapterPackage: string | null;
     readonly transport: string | null;
     readonly startedAt: string;
@@ -260,15 +270,38 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
 
   const { generateText } = await import("ai");
   const attempts: InvocationAttempt[] = [];
-  let selected: ModelClassification | undefined;
+  let selected: ExecutionCandidate | undefined;
   let generated: Awaited<ReturnType<typeof generateText>> | undefined;
+  let cliResult: Awaited<ReturnType<typeof import("../providers/cli-transports.ts").invokeClaudeCli>> | undefined;
   let startedAt = "";
   let latencyMs = 0;
   let completedAt = "";
 
   for (const candidate of ordered.slice(0, maximumAttempts)) {
-    const credential = candidate.credentialName === null ? undefined : environment.getCredential(candidate.credentialName);
     const attemptStartedAt = new Date().toISOString();
+    if (candidate.transport === "claude-cli" || candidate.transport === "codex-cli" || candidate.transport === "antigravity-cli") {
+      const attemptStarted = performance.now();
+      const { invokeAntigravityCli, invokeClaudeCli, invokeCodexCli } = await import("../providers/cli-transports.ts");
+      const produced = candidate.transport === "claude-cli"
+        ? await invokeClaudeCli(parsed.prompt, defaultTimeoutMs)
+        : candidate.transport === "codex-cli"
+          ? await invokeCodexCli(parsed.prompt, defaultTimeoutMs)
+          : await invokeAntigravityCli(parsed.prompt, candidate.model ?? "", defaultTimeoutMs);
+      const elapsed = Math.round(performance.now() - attemptStarted);
+      attempts.push(Object.freeze({
+        provider: candidate.provider, model: candidate.model, adapterPackage: candidate.adapterPackage,
+        transport: candidate.transport, startedAt: attemptStartedAt, latencyMs: elapsed,
+        outcome: produced.outcome, statusCode: null, reasonCode: produced.reasonCode, costIncurred: false,
+      }));
+      if (produced.outcome === "ok" && produced.text !== null) {
+        selected = candidate; startedAt = attemptStartedAt; latencyMs = elapsed;
+        completedAt = new Date().toISOString();
+        cliResult = produced;
+        break;
+      }
+      continue;
+    }
+    const credential = candidate.credentialName === null ? undefined : environment.getCredential(candidate.credentialName);
     if (credential === undefined || credential.length === 0 || candidate.adapterPackage === null) {
       attempts.push(Object.freeze({
         provider: candidate.provider, model: candidate.model, adapterPackage: candidate.adapterPackage,
@@ -279,7 +312,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     }
     const attemptStarted = performance.now();
     try {
-      const model = await languageModelFor(candidate.adapterPackage, candidate.model, credential, candidate.baseUrl);
+      const model = await languageModelFor(candidate.adapterPackage, candidate.model ?? "", credential, candidate.baseUrl);
       const produced = await generateText({
         model: model as Parameters<typeof generateText>[0]["model"],
         prompt: parsed.prompt,
@@ -313,7 +346,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     }
   }
 
-  if (selected === undefined || generated === undefined) {
+  if (selected === undefined || (generated === undefined && cliResult === undefined)) {
     return {
       output: Object.freeze({
         schema: "urn:usf:execution-evidence:1" as const,
@@ -343,7 +376,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
   const selectionDigest = canonicalDigest(selection);
 
   const quotaHeaderNames = ["x-ratelimit-limit-requests", "x-ratelimit-remaining-requests", "x-ratelimit-limit-tokens", "x-ratelimit-remaining-tokens", "x-ratelimit-reset-requests", "x-ratelimit-reset-tokens"];
-  const rawHeaders = generated.response?.headers ?? {};
+  const rawHeaders = generated?.response?.headers ?? {};
   const quota = Object.freeze(Object.fromEntries(
     quotaHeaderNames.filter((name) => typeof rawHeaders[name] === "string").map((name) => [name, rawHeaders[name]]),
   ));
@@ -352,18 +385,19 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     selectionDigest,
     transport: selected.transport,
     requestedModel: selected.model,
-    actualModel: generated.response?.modelId ?? null,
+    actualModel: cliResult !== undefined ? cliResult.actualModel : (generated?.response?.modelId ?? null),
     startedAt, completedAt, latencyMs,
-    finishReason: generated.finishReason,
+    finishReason: cliResult !== undefined ? cliResult.reasonCode : generated?.finishReason ?? null,
     usage: Object.freeze({
-      inputTokens: generated.usage?.inputTokens ?? null,
-      outputTokens: generated.usage?.outputTokens ?? null,
-      totalTokens: generated.usage?.totalTokens ?? null,
+      inputTokens: cliResult !== undefined ? cliResult.inputTokens : (generated?.usage?.inputTokens ?? null),
+      outputTokens: cliResult !== undefined ? cliResult.outputTokens : (generated?.usage?.outputTokens ?? null),
+      totalTokens: cliResult !== undefined ? cliResult.totalTokens : (generated?.usage?.totalTokens ?? null),
     }),
     providerReportedQuota: quota,
   });
   const invocationDigest = canonicalDigest(invocation);
-  const resultDigest = canonicalDigest(generated.text);
+  const resultText = cliResult !== undefined ? (cliResult.text ?? "") : (generated?.text ?? "");
+  const resultDigest = canonicalDigest(resultText);
 
   const evidence = Object.freeze({
     schema: "urn:usf:execution-evidence:1" as const,
@@ -373,7 +407,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     attempts: Object.freeze(attempts),
     selection, selectionDigest,
     invocation, invocationDigest,
-    result: Object.freeze({ text: generated.text, textDigest: resultDigest }),
+    result: Object.freeze({ text: resultText, textDigest: resultDigest }),
     chain: Object.freeze({
       request: requestDigest, selection: selectionDigest,
       invocation: invocationDigest, result: resultDigest,

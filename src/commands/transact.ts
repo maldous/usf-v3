@@ -246,7 +246,14 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
     await mkdir(staged, { recursive: true, mode: 0o700 });
     // Project from the resulting graph state, not the current one.
     const projectionGraph = Object.freeze({ quads: Object.freeze(resultingQuads) }) as never;
-    const projected = projectEconomics(projectionGraph);
+    let projected;
+    try {
+      projected = projectEconomics(projectionGraph);
+    } catch (error) {
+      throw new UsfError("TRANSACT_DERIVATION_FAILED", exitCodes.DOMAIN_FAILURE,
+        "A derived projection could not be computed from the resulting graph.",
+        { path: operation.path, reasonCode: error instanceof Error ? error.message : "UNKNOWN" });
+    }
     postimages.set(operation.path, `${JSON.stringify(projected, null, 2)}\n`);
     derivations.push(Object.freeze({ path: operation.path, sourceGraphDigest: projected.sourceGraphDigest }));
   }

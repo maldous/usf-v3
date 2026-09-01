@@ -56,6 +56,13 @@ export const localAgentTransportProfiles = Object.freeze({
     outputLimit: 100_000,
     quotaScope: "operator-subscription",
   }),
+  "antigravity-cli": Object.freeze({
+    provider: "antigravity-cli",
+    capabilityNames: Object.freeze(["reasoning", "tool-call", "structured-output"]),
+    contextLimit: 200_000,
+    outputLimit: 64_000,
+    quotaScope: "operator-subscription",
+  }),
 } as const);
 
 export type LocalAgentTransportId = keyof typeof localAgentTransportProfiles;
@@ -70,6 +77,8 @@ export interface RouteUniverseInput {
   readonly observedAvailableRouteIds: readonly string[];
   readonly credentialAliases?: ReadonlyMap<string, readonly string[]>;
   readonly providerEndpoints?: ReadonlyMap<string, string>;
+  /** Model a local agent transport should request, from graph authority. */
+  readonly transportSelectedModel?: ReadonlyMap<string, string>;
   /** Live capability observations for the local agent CLI transports. */
   readonly localAgentCapabilities: readonly AuthenticatedTransportCapability[];
 }
@@ -169,7 +178,7 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       candidateId: `${transport}:${profile.provider}`,
       transport,
       provider: profile.provider,
-      model: null,
+      model: input.transportSelectedModel?.get(transport) ?? null,
       adapterPackage: null,
       credentialName: null,
       baseUrl: null,

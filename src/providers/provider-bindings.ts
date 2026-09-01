@@ -14,6 +14,8 @@ export interface ProviderBindings {
   readonly endpoints: ReadonlyMap<string, string>;
   /** provider route -> additional credential names that also supply it. */
   readonly credentialAliases: ReadonlyMap<string, readonly string[]>;
+  /** transport IRI local name -> the model that transport should request. */
+  readonly transportSelectedModel: ReadonlyMap<string, string>;
   readonly declared: boolean;
 }
 
@@ -42,9 +44,18 @@ export function readProviderBindings(graph: SemanticGraph): ProviderBindings {
     if (provider === null || established === null) continue;
     credentialAliases.set(provider, Object.freeze([...(credentialAliases.get(provider) ?? []), established]));
   }
+  const transportSelectedModel = new Map<string, string>();
+  for (const quad of graph.quads) {
+    if (quad.predicate !== `${P}selectedModel`) continue;
+    const name = quad.subject.startsWith("urn:usf:execution-transport:")
+      ? quad.subject.slice("urn:usf:execution-transport:".length)
+      : null;
+    if (name !== null) transportSelectedModel.set(name, quad.object);
+  }
   return Object.freeze({
     endpoints,
     credentialAliases,
+    transportSelectedModel,
     declared: endpoints.size > 0 || credentialAliases.size > 0,
   });
 }

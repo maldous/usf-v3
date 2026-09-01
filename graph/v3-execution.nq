@@ -88,6 +88,15 @@
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:reinstatementCondition> "Only if a V3 product slice acquires a real service-infrastructure dependency. The port and mode vocabulary above is then the starting point." <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:scope> "product-platform" <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:type> <urn:usf:type:KnowledgeDisposition> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:authorizesProvider> "antigravity-cli" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:antigravity-cli> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:basis> "operator-declared-subscription" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:entitlement> "subscription-included" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:evidence> "The Antigravity CLI executes under the operator's existing authenticated Google Antigravity subscription. Marginal per-invocation cost is zero; the subscription enforces its own limits and refuses rather than billing this repository. It may not fall back to paid Anthropic or Google API access." <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:sourceDocumentation> "https://antigravity.google/cli" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:authorizesProvider> "claude-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:claude-cli> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:basis> "operator-declared-subscription" <urn:usf:graph:v3-execution> .
@@ -171,6 +180,32 @@
 <urn:usf:execution-digest-link:request> <urn:usf:predicate:definition> "Digest of the canonical work requirement." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-digest-link:result> <urn:usf:predicate:definition> "Digest of the returned model text." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-digest-link:selection> <urn:usf:predicate:definition> "Digest of the selected route bound to the request digest." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:authenticationRequirement> "local-agent-session" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Claude Opus 4.6 (Thinking)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Claude Sonnet 4.6 (Thinking)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "GPT-OSS 120B (Medium)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Gemini 3.1 Pro (High)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Gemini 3.1 Pro (Low)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Gemini 3.6 Flash (High)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Gemini 3.6 Flash (Low)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Gemini 3.6 Flash (Medium)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Gemini 3.7 Flash (High)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Gemini 3.7 Flash (Low)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:availableModel> "Gemini 3.7 Flash (Medium)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:executable> "agy" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:invocationInterface> "agy --print <prompt> --output-format stream-json --sandbox --mode plan --model <model>" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:modelIdentityObservable> "true" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:modelSetRecoveredFrom> "The CLI's own invalid-model-selection response enumerates the models it accepts; the list is observed, not assumed." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:nonClaim> "This transport permits no default model fallback. The routed identity comes from the provider-reported stream-JSON init envelope, never from configuration." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:recoveredFrom> "V2 usf-factory AntigravityCliAdapter; the interface is taken from the working adapter rather than inferred." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:requiresExplicitModelIdentity> "true" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:selectedModel> "Gemini 3.7 Flash (Low)" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:selectedModelReason> "The lowest-effort variant is selected by default because the transport charges no marginal cost and the effort tier is the only lever on subscription consumption. A work requirement may name another available model." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:sessionMaterial> ".gemini/antigravity-cli/antigravity-oauth-token" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:transportIdentity> "antigravity-cli" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:antigravity-cli> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:authenticationRequirement> "local-agent-session" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:executable> "claude" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .

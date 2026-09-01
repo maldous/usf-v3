@@ -14,7 +14,7 @@ const runFile = promisify(execFile);
  * agent CLI is already authenticated as the operator. Nothing here requires a
  * provider to publish a machine-readable account-tier endpoint.
  */
-export type ExecutionTransportId = "vercel-ai-sdk" | "claude-cli" | "codex-cli";
+export type ExecutionTransportId = "vercel-ai-sdk" | "claude-cli" | "codex-cli" | "antigravity-cli";
 
 export type TransportAuthenticationKind =
   | "owner-private-credential-file"
@@ -55,6 +55,14 @@ export const transportDescriptors: Readonly<Record<ExecutionTransportId, Transpo
     authenticationKind: "local-agent-session" as const,
     executable: "codex",
     sessionMaterial: ".codex/auth.json",
+  }),
+  "antigravity-cli": Object.freeze({
+    transport: "antigravity-cli" as const,
+    authenticationKind: "local-agent-session" as const,
+    executable: "agy",
+    // The CLI keeps its OAuth material under a directory named for the product,
+    // not for the binary. Only existence is ever checked.
+    sessionMaterial: ".gemini/antigravity-cli/antigravity-oauth-token",
   }),
 });
 

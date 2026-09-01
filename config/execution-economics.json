@@ -3,7 +3,7 @@
   "version": 1,
   "generated": true,
   "derivedFrom": "graph/v3-execution.nq via urn:usf:economic-policy:zero-paid:1",
-  "sourceGraphDigest": "sha256:cf00427b8670477a50283494877b2ee9f52d9e1884f838edaabb8b373c680703",
+  "sourceGraphDigest": "sha256:72fcaf8d6a510513f450d49bd0e1dd1ebc52dedc8029f968eff6f11e552d5951",
   "costPolicy": {
     "maximumPaidCost": 0,
     "paidFallback": "prohibited",
@@ -16,6 +16,15 @@
     ]
   },
   "authorizations": [
+    {
+      "transport": "antigravity-cli",
+      "provider": "antigravity-cli",
+      "entitlement": "subscription-included",
+      "basis": "operator-declared-subscription",
+      "maximumPaidCostUsd": 0,
+      "evidence": "The Antigravity CLI executes under the operator's existing authenticated Google Antigravity subscription. Marginal per-invocation cost is zero; the subscription enforces its own limits and refuses rather than billing this repository. It may not fall back to paid Anthropic or Google API access.",
+      "sourceDocumentation": "https://antigravity.google/cli"
+    },
     {
       "transport": "claude-cli",
       "provider": "claude-cli",

@@ -77,7 +77,8 @@ export function projectEconomics(graph: SemanticGraph): ProjectedEconomics {
     const transportName = transportIri === null ? null : transportIri.split(":").at(-1) ?? null;
     // A transport the runtime does not implement fails closed rather than
     // projecting an authorization nothing can honour.
-    const transport = transportName === "vercel-ai-sdk" || transportName === "claude-cli" || transportName === "codex-cli"
+    const transport = transportName === "vercel-ai-sdk" || transportName === "claude-cli"
+      || transportName === "codex-cli" || transportName === "antigravity-cli"
       ? transportName
       : null;
     if (transportName !== null && transport === null) {

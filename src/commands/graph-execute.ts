@@ -5,7 +5,7 @@ import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
 import { readDependencyGraph } from "../graph/work-dependency.ts";
-import { invokeClaudeCli, invokeCodexCli } from "../providers/cli-transports.ts";
+import { invokeAntigravityCli, invokeClaudeCli, invokeCodexCli } from "../providers/cli-transports.ts";
 import { CredentialEnvError, loadCredentialEnvFile } from "../providers/config.ts";
 import { parseExecutionEconomicAuthorizations, type EffectiveCostPolicy } from "../providers/execution-economics.ts";
 import { verifyEconomicsProjection } from "../providers/economics-projection.ts";
@@ -273,7 +273,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     return typeof value === "string" && value.length > 0;
   }).sort());
   const localAgentCapabilities = Object.freeze(await Promise.all(
-    (["claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
+    (["antigravity-cli", "claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
       repositoryRoot,
       homeDirectory: homedir(),
       observedAt,
@@ -304,7 +304,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       if (await observeInstalledAdapter(repositoryRoot, adapterPackage) !== undefined) currentAdapters.push(adapterPackage);
     }
     const currentCapabilities = await Promise.all(
-      (["claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
+      (["antigravity-cli", "claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
         repositoryRoot, homeDirectory: homedir(), observedAt,
         suppliedCredentialNames, requiredCredentialName: null, adapterInstalled: false,
       })),
@@ -347,6 +347,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       observedAvailableRouteIds: observedRoutes,
       credentialAliases: bindings.credentialAliases,
       providerEndpoints: bindings.endpoints,
+      transportSelectedModel: bindings.transportSelectedModel,
       localAgentCapabilities,
     });
     // Spread units across providers so one quota failure cannot collapse the batch.
@@ -376,10 +377,15 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       const attemptStartedAt = new Date().toISOString();
       const attemptStarted = performance.now();
       try {
-        if (candidate.transport === "claude-cli" || candidate.transport === "codex-cli") {
+        if (candidate.transport === "claude-cli" || candidate.transport === "codex-cli"
+          || candidate.transport === "antigravity-cli") {
           const produced = candidate.transport === "claude-cli"
             ? await invokeClaudeCli(unit.prompt, invocationTimeoutMs)
-            : await invokeCodexCli(unit.prompt, invocationTimeoutMs);
+            : candidate.transport === "codex-cli"
+              ? await invokeCodexCli(unit.prompt, invocationTimeoutMs)
+              // Antigravity requires an explicit model identity; the candidate
+              // carries none until its catalogue can be enumerated.
+              : await invokeAntigravityCli(unit.prompt, candidate.model ?? "", invocationTimeoutMs);
           const elapsed = Math.round(performance.now() - attemptStarted);
           attempts.push(Object.freeze({
             candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,

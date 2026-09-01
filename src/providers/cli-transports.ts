@@ -208,3 +208,119 @@ export async function invokeCodexCli(
     await rm(scratch, { recursive: true, force: true });
   }
 }
+
+/**
+ * Antigravity CLI: one bounded non-interactive turn.
+ *
+ * The interface is taken from V2's working adapter rather than guessed: the
+ * prompt is the argument to `--print`, because passing it on standard input
+ * makes the CLI read `--model` as the prompt and silently invoke its configured
+ * default. Stream JSON is required because the routed model identity comes from
+ * the provider-reported init envelope, never from configuration. An explicit
+ * model identity is mandatory; there is no default fallback.
+ */
+export async function invokeAntigravityCli(
+  prompt: string,
+  modelId: string,
+  timeoutMs: number,
+  executable = "agy",
+): Promise<CliInvocationResult> {
+  if (modelId.length === 0 || modelId === "default") {
+    return frozenRefusal("antigravity-cli", "TRANSPORT_MODEL_IDENTITY_REQUIRED",
+      "antigravity-cli requires an explicit model identity and permits no default fallback");
+  }
+  let stdout: string;
+  try {
+    const produced = await runFile(
+      executable,
+      ["--print", prompt, "--output-format", "stream-json", "--sandbox", "--mode", "plan", "--model", modelId],
+      { timeout: timeoutMs, maxBuffer: maximumOutputBytes, encoding: "utf8", windowsHide: true },
+    );
+    stdout = produced.stdout;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message.slice(0, 300) : "unknown";
+    const killed = (error as { killed?: boolean }).killed === true;
+    const stdoutText = typeof (error as { stdout?: unknown }).stdout === "string" ? (error as { stdout: string }).stdout : "";
+    if (/sign in|not signed in|please sign/iu.test(`${detail} ${stdoutText}`)) {
+      return frozenRefusal("antigravity-cli", "TRANSPORT_SESSION_UNAUTHENTICATED",
+        "the Antigravity CLI holds no signed-in session");
+    }
+    return frozenRefusal("antigravity-cli", killed ? "TRANSPORT_TIMEOUT" : "TRANSPORT_INVOCATION_FAILED", detail);
+  }
+
+  if (/sign in|not signed in|please sign/iu.test(stdout)) {
+    return frozenRefusal("antigravity-cli", "TRANSPORT_SESSION_UNAUTHENTICATED",
+      "the Antigravity CLI holds no signed-in session");
+  }
+
+  // Parse the stream-JSON envelope. The init event carries the routed identity;
+  // the terminal result event carries the answer, usage and conversation id.
+  let initModel: string | null = null;
+  let status: string | null = null;
+  let response: string | null = null;
+  let conversationId: string | null = null;
+  let inputTokens: number | null = null;
+  let outputTokens: number | null = null;
+  let totalTokens: number | null = null;
+  let resultError: string | null = null;
+  for (const line of stdout.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0) continue;
+    let event: Record<string, unknown>;
+    try { event = JSON.parse(trimmed) as Record<string, unknown>; } catch { continue; }
+    if (event.event === "init" && typeof event.init === "object" && event.init !== null) {
+      const reported = (event.init as { model?: unknown }).model;
+      if (typeof reported === "string" && reported.length > 0) {
+        // Two conflicting identities in one turn is a defect, not a choice.
+        if (initModel !== null && initModel !== reported) {
+          return frozenRefusal("antigravity-cli", "TRANSPORT_CONFLICTING_MODEL_IDENTITY", `first=${initModel} later=${reported}`);
+        }
+        initModel = reported;
+      }
+      continue;
+    }
+    if (event.event !== "result" || typeof event.result !== "object" || event.result === null) continue;
+    const result = event.result as Record<string, unknown>;
+    if (typeof result.status === "string") status = result.status;
+    if (typeof result.response === "string") response = result.response;
+    if (typeof result.conversation_id === "string" && result.conversation_id.length > 0) {
+      conversationId = result.conversation_id;
+    }
+    if (typeof result.error === "string" && result.error.length > 0) resultError = result.error;
+    if (typeof result.usage === "object" && result.usage !== null) {
+      const usage = result.usage as Record<string, unknown>;
+      inputTokens = integerOrNull(usage.input_tokens);
+      outputTokens = integerOrNull(usage.output_tokens);
+      totalTokens = integerOrNull(usage.total_tokens);
+    }
+  }
+
+  if (status !== "SUCCESS") {
+    const detail = resultError ?? `status=${status ?? "absent"}`;
+    // The CLI reports an unknown model by listing the models it does accept.
+    const code = /invalid model selection|not recognized as a known model/iu.test(detail)
+      ? "TRANSPORT_MODEL_NOT_ACCEPTED"
+      : /sign in|not signed in/iu.test(detail)
+        ? "TRANSPORT_SESSION_UNAUTHENTICATED"
+        : "TRANSPORT_TURN_FAILED";
+    return frozenRefusal("antigravity-cli", code, detail.slice(0, 300));
+  }
+  const text = (response ?? "").trim();
+  if (text.length === 0) return frozenRefusal("antigravity-cli", "TRANSPORT_OUTPUT_ABSENT", null);
+  return Object.freeze({
+    transport: "antigravity-cli" as const,
+    outcome: "ok" as const,
+    reasonCode: "INVOCATION_OK",
+    text,
+    // Provider-reported, never the configured default.
+    actualModel: initModel,
+    invocationIdentity: conversationId,
+    inputTokens,
+    outputTokens,
+    totalTokens: totalTokens ?? (inputTokens !== null && outputTokens !== null ? inputTokens + outputTokens : null),
+    transportReportedCostUsd: null,
+    latencyMsReported: null,
+    retryAfter: null,
+    refusalDetail: null,
+  });
+}
