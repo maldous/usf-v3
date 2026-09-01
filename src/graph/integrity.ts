@@ -54,7 +54,11 @@ const dependencyPredicates = Object.freeze([
   "urn:usf:predicate:derivedFrom",
 ]);
 
-/** Types that may only be asserted by a derivation, never authored by hand. */
+/**
+ * Fallback used only when no graph-declared scope is supplied. Graph authority
+ * is the source; this exists so the suite is still safe on a corpus that has
+ * not yet declared its scope.
+ */
 export const derivedOnlyTypes: readonly string[] = Object.freeze([
   "urn:usf:type:ExecutionResult",
   "urn:usf:type:CatalogueClassification",
@@ -95,12 +99,15 @@ export interface IntegrityOptions {
    * completed work and change their digests.
    */
   readonly stateReasonGraphs?: readonly string[];
+  /** Derived-only types, declared by graph authority rather than by code. */
+  readonly derivedOnlyTypes?: readonly string[];
 }
 
 export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions = {}): IntegrityReport {
   const exempt = new Set(options.conventionExemptGraphs ?? []);
   const stateReasonScope = new Set(options.stateReasonGraphs ?? []);
   const terminalKinds = new Set(terminalIdentifierKinds);
+  const derivedOnly = new Set(options.derivedOnlyTypes ?? derivedOnlyTypes);
   const violations: IntegrityViolation[] = [];
   const add = (code: IntegrityCode, subject: string, detail: string, graph: string): void => {
     violations.push(Object.freeze({ code, subject, detail, graph }));
@@ -192,7 +199,7 @@ export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions
   //    graphs; V3 keeps the prohibition on the type itself.
   for (const quad of quads) {
     if (quad.predicate !== typePredicate || quad.objectKind !== "iri") continue;
-    if (!derivedOnlyTypes.includes(quad.object)) continue;
+    if (!derivedOnly.has(quad.object)) continue;
     if (quad.graph.includes(":derived") || quad.graph.includes("-state") || quad.graph.endsWith(":results")) continue;
     add("derived-type-authored", quad.subject, `${quad.object} is derived-only and may not be authored in ${quad.graph}`, quad.graph);
   }

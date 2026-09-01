@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { checkIntegrity, type IntegrityOptions } from "../graph/integrity.ts";
 import { parseStrictNQuads, type Quad } from "../graph/nquads.ts";
+import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import type { CommandResult } from "./dispatcher.ts";
 
 /**
@@ -27,8 +28,19 @@ const stateReasonGraphs: readonly string[] = Object.freeze([
 const acceptedLegacyDebtCount = 24;
 
 /** The scopes the integrity gate applies, shared with the transaction validator. */
-export function integrityScopes(): Readonly<{ conventionExemptGraphs: readonly string[]; stateReasonGraphs: readonly string[] }> {
-  return Object.freeze({ conventionExemptGraphs, stateReasonGraphs });
+export function integrityScopes(quads: readonly Quad[] = []): Readonly<{
+  conventionExemptGraphs: readonly string[];
+  stateReasonGraphs: readonly string[];
+  derivedOnlyTypes: readonly string[] | undefined;
+  fromGraphAuthority: boolean;
+}> {
+  const declared = readRuntimeAuthority(quads);
+  return Object.freeze({
+    conventionExemptGraphs: declared.conventionExemptGraphs.length > 0 ? declared.conventionExemptGraphs : conventionExemptGraphs,
+    stateReasonGraphs: declared.stateReasonGraphs.length > 0 ? declared.stateReasonGraphs : stateReasonGraphs,
+    derivedOnlyTypes: declared.derivedOnlyTypes.length > 0 ? declared.derivedOnlyTypes : undefined,
+    fromGraphAuthority: declared.conventionExemptGraphs.length > 0,
+  });
 }
 
 export async function graphIntegrityCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
@@ -50,12 +62,22 @@ export async function graphIntegrityCommand(repositoryRoot: string, args: readon
     try { quads.push(...parseStrictNQuads(source, graph, 200_000)); }
     catch { unparsed.push(name); }
   }
-  const options: IntegrityOptions = Object.freeze({ conventionExemptGraphs, stateReasonGraphs });
+  // Scopes come from graph authority. The code constants are a fallback for a
+  // corpus that has not declared them.
+  const declared = readRuntimeAuthority(quads);
+  const exemptGraphs = declared.conventionExemptGraphs.length > 0 ? declared.conventionExemptGraphs : conventionExemptGraphs;
+  const reasonGraphs = declared.stateReasonGraphs.length > 0 ? declared.stateReasonGraphs : stateReasonGraphs;
+  const options: IntegrityOptions = Object.freeze({
+    conventionExemptGraphs: exemptGraphs,
+    stateReasonGraphs: reasonGraphs,
+    derivedOnlyTypes: declared.derivedOnlyTypes.length > 0 ? declared.derivedOnlyTypes : undefined,
+  });
   const report = checkIntegrity(quads, options);
   const ownedViolations = report.violations.filter(
-    (violation) => !conventionExemptGraphs.includes(violation.graph) && violation.graph.length > 0,
+    (violation) => !exemptGraphs.includes(violation.graph) && violation.graph.length > 0,
   );
   const legacyViolations = report.violations.length - ownedViolations.length;
+  const scopeFromGraphAuthority = declared.declared;
 
   const output = Object.freeze({
     ...report,
@@ -64,6 +86,7 @@ export async function graphIntegrityCommand(repositoryRoot: string, args: readon
     ownedGraphViolationCount: ownedViolations.length,
     legacyGraphViolationCount: legacyViolations,
     acceptedLegacyDebtCount,
+    scopeFromGraphAuthority,
     withinAcceptedDebt: legacyViolations <= acceptedLegacyDebtCount,
     // Conformance for the gate: V3-owned graphs must be clean, and legacy debt
     // must not grow beyond what is explicitly recorded.

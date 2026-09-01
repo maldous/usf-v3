@@ -6,6 +6,7 @@ import { loadSemanticGraph } from "../graph/index.ts";
 import { checkIntegrity } from "../graph/integrity.ts";
 import { parseStrictNQuads, type Quad } from "../graph/nquads.ts";
 import { projectEconomics } from "../providers/economics-projection.ts";
+import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import type { CommandResult } from "./dispatcher.ts";
 
 /**
@@ -21,8 +22,11 @@ import type { CommandResult } from "./dispatcher.ts";
 const maximumProposalBytes = 4 * 1024 * 1024;
 const maximumOperations = 64;
 
-/** Path prefixes a transaction may write. Anything else is unauthorized. */
-const authorizedPathPrefixes: readonly string[] = Object.freeze([
+/**
+ * Fallback path prefixes used only when the corpus has not yet declared its
+ * transaction authority. Graph authority is the source.
+ */
+const fallbackAuthorizedPathPrefixes: readonly string[] = Object.freeze([
   "graph/", "schemas/", "config/", "docs/",
 ]);
 
@@ -138,6 +142,13 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
   const proposalDigest = canonicalDigest(proposalBytes.toString("utf8"));
 
   // ---- 2. derive affected closure ------------------------------------------
+  // Read the authority that governs this transaction from the current corpus.
+  const currentGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
+  const runtimeAuthority = readRuntimeAuthority(currentGraph.quads);
+  const authorizedPathPrefixes = runtimeAuthority.authorizedPathPrefixes.length > 0
+    ? runtimeAuthority.authorizedPathPrefixes
+    : fallbackAuthorizedPathPrefixes;
+
   const derivedPaths = Object.freeze([...new Set(proposal.operations.map((operation) => operation.path))].sort());
   const undeclared = derivedPaths.filter((path) => !proposal.declaredAffectedPaths.includes(path));
   const overdeclared = proposal.declaredAffectedPaths.filter((path) => !derivedPaths.includes(path));
@@ -212,9 +223,11 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
         { path, reasonCode: error instanceof Error ? error.message : "NQUADS_INVALID" });
     }
   }
-  const { conventionExemptGraphs, stateReasonGraphs } = await import("./graph-integrity.ts")
-    .then((module) => module.integrityScopes());
-  const integrity = checkIntegrity(resultingQuads, { conventionExemptGraphs, stateReasonGraphs });
+  // Scopes are read from the resulting corpus, so a transaction that changes a
+  // scope is validated against the scope it establishes.
+  const { conventionExemptGraphs, stateReasonGraphs, derivedOnlyTypes } = await import("./graph-integrity.ts")
+    .then((module) => module.integrityScopes(resultingQuads));
+  const integrity = checkIntegrity(resultingQuads, { conventionExemptGraphs, stateReasonGraphs, derivedOnlyTypes });
   const ownedViolations = integrity.violations.filter(
     (violation) => violation.graph.length > 0 && !conventionExemptGraphs.includes(violation.graph),
   );
@@ -263,6 +276,8 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
       integrityInvariantCount: integrity.checkedCodes.length,
       ownedGraphViolationCount: ownedViolations.length,
       conforming: true,
+      pathAuthorityFromGraph: runtimeAuthority.authorizedPathPrefixes.length > 0,
+      authorizedPathPrefixes,
     }),
     applied: !dryRun,
   });

@@ -215,6 +215,23 @@
 <urn:usf:integrity-invariant:undeclared-type> <urn:usf:predicate:invariant> "Every asserted type is declared in the corpus, so a typo cannot create a phantom class." <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-invariant:undeclared-type> <urn:usf:predicate:legacyCounterpart> "undefinedterm" <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-invariant:undeclared-type> <urn:usf:predicate:type> <urn:usf:type:IntegrityInvariant> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:anqr-first-slice> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:foundation> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:hermes-management> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:integration> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:profile-authority> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:provider-pipeline> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:provider-qualification> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:semantic-first> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:semantic-recovery> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:usf-bootstrap> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:derivedOnlyType> <urn:usf:type:CatalogueClassification> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:derivedOnlyType> <urn:usf:type:ExecutionResult> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:derivedOnlyType> <urn:usf:type:ReadinessProjection> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:rule> "Structural invariants apply to every graph. Local-name style and the state-reason convention apply only where declared, so history is not rewritten to satisfy a convention declared later." <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:stateReasonGraph> <urn:usf:graph:v3-convention> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:stateReasonGraph> <urn:usf:graph:v3-execution> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:type> <urn:usf:type:IntegrityScope> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-suite:corpus:1> <urn:usf:predicate:checks> <urn:usf:integrity-invariant:dangling-reference> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-suite:corpus:1> <urn:usf:predicate:checks> <urn:usf:integrity-invariant:derived-type-authored> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-suite:corpus:1> <urn:usf:predicate:checks> <urn:usf:integrity-invariant:duplicate-quad> <urn:usf:graph:v3-convention> .
@@ -332,6 +349,7 @@
 <urn:usf:predicate:authorityStatus> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:authorizationFreshnessPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:authorizationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:authorizedPathPrefix> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:authorizesProvider> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:authorizesTransport> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:authorship> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -456,6 +474,7 @@
 <urn:usf:predicate:contract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:contractShape> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:controlPlaneIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:conventionExemptGraph> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:coreScopePolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:costRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:coverageMode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -500,6 +519,7 @@
 <urn:usf:predicate:dependencyProjectionRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:dependsOn> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:derivationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:derivedOnlyType> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:derivedSetDigestMembership> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:determinism> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:digestAlgorithm> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -1041,6 +1061,7 @@
 <urn:usf:predicate:state> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:stateGraph> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:stateManifestSchema> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:stateReasonGraph> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:stateRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:staticRegistrationCandidateStage> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:staticRegistryOwner> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -1134,6 +1155,12 @@
 <urn:usf:predicate:writePath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:writeSetDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:zeroPriceRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "config/" <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "docs/" <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "graph/" <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "schemas/" <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:rule> "A semantic transaction may write only paths under these prefixes. Source code is not semantic authority and is deliberately excluded: the runtime reads authority, it is not authority." <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:type> <urn:usf:type:TransactionAuthority> <urn:usf:graph:v3-convention> .
 <urn:usf:type:AcceptanceCriterion> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:AccountSourceAndCandidateRouteOperationalSequence> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:AccountSourceAuthorization> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
@@ -1158,6 +1185,7 @@
 <urn:usf:type:CanonicalKeyedMemberDigestProtocol> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CarrierAdoptionStateDerivationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CarrierPathObservation> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:CatalogueClassification> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CliCommandMode> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CliCommandTarget> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CliTargetRegistrationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
@@ -1205,6 +1233,7 @@
 <urn:usf:type:IntegrationOutcome> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:IntegrityDebt> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:IntegrityInvariant> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:IntegrityScope> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:IntegritySuite> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:LayoutConvention> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:ModelCatalogueProjection> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
@@ -1231,6 +1260,7 @@
 <urn:usf:type:ProviderEconomicDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:ProviderHostTransport> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:ProviderProducedAnswerReceipt> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:ReadinessProjection> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:RealisationPermission> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:RealisationProfile> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:ReceiptBackedHistoricalTransitionIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
@@ -1260,6 +1290,7 @@
 <urn:usf:type:TerminalIdentifierConvention> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:TestObligation> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:TrackedTransitionReceiptObservation> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:TransactionAuthority> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:TransitionState> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:TransitionVerificationAlgorithm> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:TransportCompatibilityRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
