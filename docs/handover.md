@@ -1,6 +1,159 @@
 # USF V3 handover
 
-## Current live boundary — primary-owned receipt semantics ready for durable carrier
+## Current live boundary — root authority restored; file-asset-index policy gap evidenced
+
+This section supersedes every older `Current`, `Live continuation` and `Next`
+heading retained below as chronological evidence; do not operationalize those
+older boundaries unless this section explicitly restates them.
+
+Prepared 2026-09-01 from clean pushed carrier
+`fe04a6b46f0154983f573594aabc7bc340a5c884` in an isolated standalone clone.
+Read current Git and remote state rather than treating that identifier as the
+new carrier. The predecessor packet's step 1 is now executed for both roots
+through the registered chain only: `usf work` -> `usf evidence construction` ->
+`usf prove construction` -> `usf publish construction-authority --verify|--apply`
+-> `usf realise no-change` -> `usf check` -> `usf evidence completion` ->
+`usf prove completion` -> `usf publish work-completion --verify|--apply`. No ad
+hoc work, realisation or publication command was used. No provider or inference
+endpoint was contacted and no credential content was read, copied or digested.
+
+Registered profile-bound read-back at exact profile `urn:usf:profile:v3-self-host:3`
+and manifest `graph/manifests/self-host-provider-v3.json` moved the semantic
+digest as follows, each step verified before it was applied:
+
+- base `sha256:c8fd0765b63b726cb6bca6f6308a716954dcb995a4e4ab6db30d66274a4ffe81`;
+- repository-path construction ->
+  `sha256:bdf552bf70399dd3737570abf84b6470d71f45036d8931f55dd2f92a22da03db`;
+- repository-path completion ->
+  `sha256:070fb2673c39d3e1731a2f58e8add9b4172f72670bfc2ba4b8f5d5ff51e53eec`;
+- operator construction ->
+  `sha256:c028385832eaddb273e93a4b90ec42ee3ef443938dc1489d5bc086ffec92055e`;
+- operator completion ->
+  `sha256:218d0b132188d3eca2121de5a0efa11f5e46db8e1daf63b46faa4e86725427dc`.
+
+`urn:usf:work:repository-path-scope` bound construction evidence
+`sha256:3712fce6bb0e51f092e738c7235bb6ae30a9b2e1fefb5dad9e5c65a3d7356887`,
+passing proof `sha256:68fe6def2a5f4e810e58da9f42e81c503606a663e3c081e9a149267f62d9abbe`
+and bundle `sha256:25cb3ce226aec61c89b40a6fcf50ba8e83ae3ac8dca4575a479b8937a1021384`.
+Its post-publication basis is
+`sha256:838ac4a89804906731f66b8280f1a36d6fab5606f1fa632c0082c1d2630fee54`
+with scoped dependency digest
+`sha256:bd276177b79584f5a0d82181762f97792bffd2d61cfe4a64ebfd67e7f6f94993`;
+the pre-publication basis `sha256:d8012809...` was not reused. Positive
+no-change candidate
+`sha256:698c065f58d77a74dc578f5c8a22af838ea61bbb7a51a6aeffc9ae8175ccce31`
+passed its sole graph-selected `urn:usf:validation:repository-path-tests` with
+exit code zero. Completion evidence is
+`sha256:6399ecba977ad178d475a81f44b972a7cc906461427ab952bc70bd8b0086fdbe`
+and passing completion proof is
+`sha256:c51a0aa434d79f8b7431f2d6c69ad7b54a612c4af1bbc48a33c3783c2dac6489`.
+
+`urn:usf:work:operator-observability` bound construction evidence
+`sha256:0234252a9ac172f3d33bcaa5449632d1826bef6b3d81224e87233fc964112eb3`
+and bundle
+`sha256:ebc49f825a43027be5883052d074275814269942c959f570de598dda0608520b`.
+Positive no-change candidate
+`sha256:80c6bcd71a7b14a7cf81bd9d311dd94894036278f9d1cc1a277662cc7eacf9aa`
+passed all three graph-selected validations sequentially with exit code zero:
+`operator-composable-input-tests`, `operator-observability-tests` and
+`operator-provider-leaf-boundary`. Completion evidence is
+`sha256:f4bb2cb0d963feac6c92d5a1baf8a9175ef714855355cf9e9559ab41e53057a7`
+and passing completion proof bundle is
+`sha256:afd5869564e3a7cf17ed7339ce4242da8b8dbdcb13e62d5d085120c0a905d12e`.
+
+The coherent carrier delta is the additive graph projection, this handover and
+four new tracked receipts:
+
+- `evidence/construction-authority/3bf626e073859543bc34ae712c7a6ad8a2e6549aec5f810e84a3470010617ca6.json`,
+  receipt digest
+  `sha256:435aca3b6ab0028f9a885420cfbaa86c9e0750a584d8eb6c59f5e1050ae42388`;
+- `evidence/work-completion/f1e54d418993fe2f9d5b8ea34963f7173c27861f670314104b944ca06cbfabf3.json`,
+  receipt digest
+  `sha256:1b1ee28ba65ceb67003f7c21fd759adcdc6b3de59823abdbb7c9ec1aa16257f3`;
+- `evidence/construction-authority/b53b359c38f0eb79fb7ce7c49603b09df07d91974a0ce5a0f45f2dd313fd74c7.json`,
+  receipt digest
+  `sha256:0857fced5233aaae7ea5d465cc87efc943d3a6ccf2a01638745b87145dc4767e`; and
+- `evidence/work-completion/67128ca0e5cef73b035f52820c0ea4627be07ec4cb5a1fc0f62149d9298f6722.json`.
+
+The changed graph file is
+`sha256:18e2b0991d509591266cf7958e15119414808ab2f2834e4866169f1d44478125`
+and adds 160 quads: four copy-on-write grant/evidence/proof-result/receipt
+member sets and no new work, contract, permission, policy or command.
+
+Registered read-back now reports `repository-path-scope` and
+`operator-observability` as `verified-complete`, completion verified, with no
+reason codes. Both `--ready --stage construct` and `--ready --stage integrate`
+return empty selected sets. Verified evidence at this boundary is the
+authoritative typecheck and full suite 209/209 pass, containment pass and
+`git diff --check` clean, executed from a clean standalone clone of the exact
+carrier.
+
+### Newly evidenced blocker — file-asset-index has no publication policy
+
+The predecessor packet's step 1 also stated that `file-asset-index` may proceed
+through its recorded no-change chain once repository-path is current. That is
+now disproven for this profile. `usf work` correctly reports the packet
+`dependencyReady: true` with `dependencyAuthority: verified-completion`, but
+registered `usf evidence construction --work urn:usf:work:file-asset-index`
+refuses with exit 4 and stable reason code `CONSTRUCTION_WORK_NOT_ELIGIBLE`.
+
+The refusal is exact and is not an initialization, currentness or retry
+condition. `deriveConstructionAuthority` in
+`src/realisation/construction-authority.ts` selects the single publication
+policy whose `eligibleWork` contains the packet and refuses when none exists.
+Within the exact import closure of `graph/manifests/self-host-provider-v3.json`
+- `graph/foundation.nq`, `graph/usf-bootstrap.nq`, `graph/semantic-first.nq`,
+`graph/profile-authority.nq` and `graph/provider-pipeline.nq` -
+`urn:usf:work:file-asset-index` is the only selected work with zero
+construction-authority policies and zero completion policies. The eight
+siblings each have exactly one of each, through
+`urn:usf:publication-policy:provider-pipeline-construction-authority:1` or `:2`
+and their matching `provider-pipeline-no-change-completion` policies.
+
+The policies that do enumerate `file-asset-index`,
+`urn:usf:publication-policy:construction-authority:1` and
+`urn:usf:publication-policy:no-change-work-completion:1`, are defined only in
+`graph/integration.nq`, which this manifest does not import. Importing that
+source is not the correction: it would also enumerate `repository-path-scope`
+and make its policy selection ambiguous
+(`CONSTRUCTION_AUTHORITY_POLICY_AMBIGUOUS`).
+
+The smallest reviewable correction is therefore a new sibling policy pair in
+`graph/provider-pipeline.nq` covering only `file-asset-index`, following the
+existing `:1`/`:2` partition. Adding the work to the existing `:1` policies
+would change their digests and stale the repository-path and operator grants
+and completions published in this packet, forcing an immediate full reproof;
+a new disjoint policy pair should not. That assumption must be verified by
+read-back after the amendment rather than assumed. Until this is corrected,
+`file-asset-index` is selected, dependency-ready and permanently
+non-actionable under this profile.
+
+The next safe order is:
+
+1. amend `graph/provider-pipeline.nq` with the disjoint `file-asset-index`
+   construction and no-change-completion publication policy pair as one
+   reviewable slice, read back that repository-path and operator remain
+   `verified-complete`, then run the registered chain for `file-asset-index`;
+2. use the registered account-tier work packet to realise and check one exact
+   isolated receipt-v2 activation/acquire/verify/reduce, sole-writer reducer,
+   read-only list, closed-schema and bounded-test candidate, without provider
+   contact or static help changes;
+3. bind the predecessor-owned complete static dispatch/help candidate to that
+   exact checked digest, validate and complete operator, then rederive
+   account-tier against the final operator predecessor, rematerialise the same
+   feature bytes, recheck, integrate and complete it; and
+4. only then derive an activation, acquire trusted account observations and
+   continue through content-verified adapters, authenticated provider answers,
+   genuine hidden holdout, live multi-provider parallelism and comparable
+   semantic-token measurement.
+
+This boundary proves restored local construction and no-change completion
+authority for two root packets only. It proves no receipt v2 runtime, list
+runtime, account observation, provider entitlement, model qualification, live
+parallel run, semantic-token reduction, ANQR realisation, staging, production,
+BAU or terminal proof.
+
+## Prior boundary — primary-owned receipt semantics
 
 This section supersedes every older `Current`, `Live continuation` and `Next`
 heading retained below as chronological evidence; do not operationalize those
