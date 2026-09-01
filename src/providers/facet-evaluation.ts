@@ -12,7 +12,7 @@ import type { SemanticGraph } from "../graph/index.ts";
  */
 const P = "urn:usf:predicate:";
 
-export type FacetState = "NOT_ASSESSED" | "SATISFIED" | "UNSATISFIED" | "BLOCKED" | "STALE";
+export type FacetState = "NOT_ASSESSED" | "SATISFIED" | "UNSATISFIED" | "BLOCKED" | "STALE" | "NOT_APPLICABLE";
 
 export interface FacetVerdict {
   readonly facet: string;
@@ -99,6 +99,55 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
     const kind = kindIri?.split(":").pop() ?? null;
     const contract = facetOwner.get(facet) ?? null;
     const capability = contract === null ? null : contractFor.get(contract) ?? null;
+
+    // Applicability is authored authority recovered from V1, not inferred here.
+    if (values(graph, facet, "facetApplicability")[0] === "NOT_APPLICABLE") {
+      return Object.freeze({
+        facet, facetKind: kind, capability, state: "NOT_APPLICABLE" as const, evidence: Object.freeze([]),
+        reason: values(graph, facet, "inapplicabilityBasis")[0]
+          ?? "Authored as inapplicable: the capability's semantic nature makes this requirement irrelevant.",
+      });
+    }
+    // The evidence class the statement actually admits decides what can satisfy
+    // it. An artefact cannot evidence a behavioural, state, audit or
+    // authorization requirement.
+    const declaredEvidence = values(graph, facet, "admissibleEvidenceClass")[0] ?? null;
+    if (declaredEvidence === "implementation-conformance") {
+      return Object.freeze({
+        facet, facetKind: kind, capability, state: "NOT_ASSESSED" as const, evidence: Object.freeze([]),
+        reason: "This requirement asserts product behaviour, state, audit or authorization. Only observed conformance of a running implementation can evidence it, and no ANQR implementation is running. Realized specification artefacts do not evidence product behaviour.",
+      });
+    }
+    if (declaredEvidence === "realized-artefact") {
+      const realized = [...evidence.realizedArtefacts.keys()].sort();
+      return realized.length === 0
+        ? Object.freeze({
+            facet, facetKind: kind, capability, state: "NOT_ASSESSED" as const, evidence: Object.freeze([]),
+            reason: "This requirement admits a realized artefact as evidence, but none is realized.",
+          })
+        : Object.freeze({
+            facet, facetKind: kind, capability, state: "SATISFIED" as const,
+            evidence: Object.freeze(realized.slice(0, 4).map((path) => `${path}@${evidence.realizedArtefacts.get(path)!.slice(0, 19)}`)),
+            reason: "A realized artefact evidences this content requirement.",
+          });
+    }
+    if (declaredEvidence === "validator-outcome") {
+      return evidence.validatorOutcomes.length === 0
+        ? Object.freeze({
+            facet, facetKind: kind, capability, state: "BLOCKED" as const, evidence: Object.freeze([]),
+            reason: "This requirement admits a validator outcome, which must be produced by running a check and cannot be authored.",
+          })
+        : Object.freeze({
+            facet, facetKind: kind, capability, state: "SATISFIED" as const,
+            evidence: evidence.validatorOutcomes, reason: "A named validator ran and returned a result.",
+          });
+    }
+    if (declaredEvidence === null) {
+      return Object.freeze({
+        facet, facetKind: kind, capability, state: "NOT_ASSESSED" as const, evidence: Object.freeze([]),
+        reason: "No admissible evidence class is declared for this facet, so no verdict can be derived.",
+      });
+    }
     const rule = kind === null ? undefined : facetEvidenceRequirement[kind];
     if (rule === undefined) {
       return Object.freeze({
@@ -161,13 +210,14 @@ export interface FacetSummary {
   readonly stateCounts: Readonly<Record<FacetState, number>>;
   readonly byKind: Readonly<Record<string, Readonly<Record<string, number>>>>;
   readonly capabilitiesFullySatisfied: number;
+  readonly capabilitiesWithRemainingWork: number;
   readonly verdictDigest: string;
   readonly nonClaims: readonly string[];
 }
 
 export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary {
   const stateCounts: Record<FacetState, number> = {
-    NOT_ASSESSED: 0, SATISFIED: 0, UNSATISFIED: 0, BLOCKED: 0, STALE: 0,
+    NOT_ASSESSED: 0, SATISFIED: 0, UNSATISFIED: 0, BLOCKED: 0, STALE: 0, NOT_APPLICABLE: 0,
   };
   const byKind: Record<string, Record<string, number>> = {};
   const byCapability = new Map<string, { total: number; satisfied: number }>();
@@ -177,6 +227,10 @@ export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary
     byKind[kind] = byKind[kind] ?? {};
     byKind[kind]![verdict.state] = (byKind[kind]![verdict.state] ?? 0) + 1;
     if (verdict.capability === null) continue;
+    // A capability is complete when every applicable requirement is satisfied.
+    // An inapplicable requirement is excluded from the denominator rather than
+    // counted as satisfied.
+    if (verdict.state === "NOT_APPLICABLE") continue;
     const entry = byCapability.get(verdict.capability) ?? { total: 0, satisfied: 0 };
     entry.total += 1;
     if (verdict.state === "SATISFIED") entry.satisfied += 1;
@@ -188,12 +242,14 @@ export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary
     facetCount: verdicts.length,
     stateCounts: Object.freeze(stateCounts),
     byKind: Object.freeze(byKind),
-    capabilitiesFullySatisfied: [...byCapability.values()].filter((entry) => entry.total === entry.satisfied).length,
+    capabilitiesFullySatisfied: [...byCapability.values()].filter((entry) => entry.total > 0 && entry.total === entry.satisfied).length,
+    capabilitiesWithRemainingWork: [...byCapability.values()].filter((entry) => entry.satisfied < entry.total).length,
     verdictDigest: canonicalDigest(verdicts),
     nonClaims: Object.freeze([
       "Every satisfied verdict names the evidence that produced it. No verdict is read from a stored satisfaction value.",
       "NOT_ASSESSED means no admissible evidence exists yet. It is not a claim that the facet is unsatisfied.",
       "BLOCKED means the required evidence class must be produced by running a check and cannot be authored.",
+      "NOT_APPLICABLE is authored authority recovered from V1, not an absence of evidence, and is excluded from the completion denominator rather than counted as satisfied.",
     ]),
   });
 }
