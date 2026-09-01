@@ -1,6 +1,163 @@
 # USF V3 handover
 
-## Current live boundary — eight packets complete; confinement repaired properly
+## Current live boundary — all nine provider packets verified-complete
+
+This section supersedes every older `Current`, `Live continuation`, `Prior
+boundary` and `Next` heading retained below as chronological evidence; do not
+operationalize those older boundaries unless this section explicitly restates
+them.
+
+Prepared 2026-09-01. Read current Git and remote state rather than trusting any
+identifier here. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded.
+
+**Nine of nine provider packets are `verified-complete`** at semantic digest
+`sha256:41d15ade4561b5a7f9dcb169b8f4bce56ca68600e85430ad9449d321ed191120`,
+remote-verified at `9c89f28915b0c1aaa5d93995cf1676e5d9216d76`, tree
+`789defcdd59a8bfa6d1348c9984523861fae85da`. Gate **237/237**, containment
+`pass`, reproduced from an empty-`.usf` standalone clone.
+
+### Read this first: the objective is blocked by an external input, not by USF
+
+Completing the ninth packet did not enable providers, and re-derived registered
+state says exactly why. `usf providers status` gives one configured route this
+verdict:
+
+```
+qualification:     UNQUALIFIED
+allocation:        excluded
+credentialPresent: false
+economics.accountTierReceipt: "missing"
+exclusionReasons: [ACCOUNT_RECEIPT_MISSING, AUTHENTICATED_ANSWER_MISSING,
+                   CREDENTIAL_MISSING, HIDDEN_HOLDOUT_MISSING, UNQUALIFIED]
+```
+
+Four independent gates, and **zero of twelve routes have
+`credentialPresent: true`**. No `.env` and no `.usf/home/.env` exists;
+`credentialPresenceNames` counts 5 public catalogue labels, not present secrets.
+
+`urn:usf:requirement:provider-pipeline-credential-containment` requires normal
+V3 live operation to read exactly one owner-private untracked repository-local
+`.env` or `.usf/home` projection containing only the allowlisted variable for the
+selected route. **No repository work can create that file**: it is operator
+input, deliberately untracked, and manufacturing one would be a fabricated
+credential. That is a genuinely external boundary, so the preferred outcome
+(a live provider invocation) is not reachable from tracked state alone and this
+boundary is the valid hard stop.
+
+### The remaining semantic rules, in order, with owners and scopes
+
+1. **`ACCOUNT_RECEIPT_MISSING`** — owning resource
+   `urn:usf:rule:provider-receipt-target-registration:1`.
+   `providerReceiptsCommandHandler` refuses `PROVIDERS_RECEIPT_PROOFBLOCKED`
+   unconditionally in `src/commands/provider-receipts.ts`, before any route or
+   config lookup. Lifting it needs `urn:usf:command:providers-receipt:2`
+   (`availability: "target"`, `implementationState: proofblocked`) to become
+   implemented. Required transition: the rule's bounded three-phase
+   `coherentTransitionRule`. Authorized scope: `featureOwner`
+   `provider-account-tier-receipt` and `staticRegistryOwner`
+   `operator-observability`, **both `verified-complete` yet both retaining
+   `active-permission` with `maximumThrough: integrate`**, so this is
+   implementation scale, not authority scale. The receipt v2 protocol
+   (source-state head-set, retry DAG, persisted bucketed projection,
+   `activate|acquire|verify|reduce`, bounded list) is fully specified and
+   entirely unbuilt.
+2. **`CREDENTIAL_MISSING`** — external operator input, as above. Not closable by
+   any work.
+3. **`AUTHENTICATED_ANSWER_MISSING`** — requires 1 and 2.
+4. **`HIDDEN_HOLDOUT_MISSING`** — requires 3.
+
+A separate, lower-level boundary was also newly exposed and is *not* on the
+contact path. `usf call parallel` now advances past its proofblock — because
+`urn:usf:requirement:operator-call-command-reservation` declares
+`requiredLeafStage: "verified-complete"` and that is now satisfied — and refuses
+`CALL_LEAF_DEPENDENCY_REFUSED` (exit 4) with "Exactly one graph-projected
+production leaf runtime closure is required." No `ProductionLeafRuntimeClosure`
+is declared for `src/commands/provider-parallel.ts`. Closing it would only change
+that refusal into the truthful `PROVIDER_PARALLEL_PROOFBLOCKED`; it advances
+nothing toward contact. It was deliberately **not** done, because
+`packet.requirements` is projected from the **contract's** `requires` edges
+(`src/graph/work.ts:1213`), so declaring the closure means editing
+`urn:usf:contract:provider-parallel-execution:1` and re-completing the packet —
+churn for a refusal-code change. Its members would be exactly three:
+`src/commands/provider-parallel.ts`, `src/core/canonical.ts`,
+`src/core/errors.ts` (`./dispatcher.ts` is type-only and erased).
+
+### What provider-parallel-execution actually implements
+
+Two closed record schemas matching their graph `requiredFieldSet` **exactly and
+in order**, verified mechanically, including
+`nestedRouteRunRequiredFieldSet` for `routeRuns` members, both compiling through
+the narrow schema-policy validator.
+
+The runtime is genuinely concurrent, not `Promise.all` around serial
+preparation:
+
+- `dispatchParallel` launches every admitted candidate in a synchronous loop and
+  retains promises without awaiting, so no settlement can interleave during a
+  wave. `launchedBeforeFirstSettlement` records how many launches actually
+  preceded the first settlement — the only honest evidence of dispatch
+  independence — and the record refuses when it exceeds `observedConcurrency`.
+- `usefulOverlapMilliseconds` is **recomputed by the parser** from the observed
+  `usefulStartedAt`/`usefulEndedAt` timestamps via a sweep that counts only
+  milliseconds where two or more **distinct families** hold an accepted interval.
+  A record asserting overlap the timestamps do not support refuses.
+- Measured, not configured: two families at 80 ms overlap positively and finish
+  in under 160 ms; awaiting each in turn yields **zero**; two concurrent routes
+  inside one family also yield **zero**, because one family is not two.
+- Failure isolation, per-provider and host caps, and an explicit disposition for
+  every excluded candidate are each asserted.
+- Baseline receipts are immutable: the candidate binds the baseline content
+  digest, derivation only reads the baseline (its digest is asserted unchanged
+  afterwards), self-comparison refuses, and any missing equivalence falls to
+  `NO_BENEFIT_CLAIM`. A hand-written record cannot promote itself to
+  `SEMANTIC_TOKEN_REDUCTION`.
+
+Both `call parallel` and `call compare` keep an operation-wide proofblocked
+refusal raised after argument and semantic-scope validation and **before** any
+route or configuration lookup. `src/commands/call.ts` and its help stay owned by
+the operator registry predecessor and were not touched.
+
+### Two traps worth carrying forward
+
+**A contribution's content may not start with `/`.** The canonical envelope
+rejects it as `ABSOLUTE_PATH_FORBIDDEN` at
+`payload.operations[n].content`, because `absolutePath` tests the string itself.
+A new TypeScript module opening with a `/**` docblock therefore cannot be
+contributed. Some tracked files do start that way — they predate this path — so
+the convention for anything landed through `usf call` is imports first, docblock
+after. The original bytes are recoverable from `.usf/inputs/*.json` if a local
+edit goes wrong, which is how this module was restored byte-identically.
+
+**`provider-cli.test.ts` needed the same child-process guard as
+`config.test.ts`.** All seven of its cases spawn the CLI, it had no guard, and
+the hermetic cage grants no child-process capability. Because the fixture import
+`tests/fixtures/proposal-packet.ts` is a top-level import, the guard alone was
+insufficient: module resolution precedes every test body, so the closure needed
+that file too. Caged the file now reports 7 skipped / 0 failed; the outer lane
+runs all 7.
+
+Modifying it correctly staled **three** completions (`provider-census`,
+`provider-invocation-boundary`, `provider-semantic-qualification-v2`) because
+that file is inside each scoped closure. All three were restored roots-before-
+consumers by fresh authority plus a no-change completion; no grant was repaired.
+When a closure changes after a candidate already holds a pass receipt, the
+recheck refuses `CHECK_RECEIPT_CONFLICT`: clear that candidate's ignored receipt
+directory and recheck both validations so every receipt binds the current
+closure.
+
+### Next safe order
+
+1. the receipt-v2 registration seam is the only remaining repository-side work on
+   the contact path, and it is implementation scale behind
+   `urn:usf:rule:provider-receipt-target-registration:1`;
+2. a live invocation additionally requires an operator-supplied owner-private
+   credential file, which no work may create;
+3. optionally declare the parallel leaf's `ProductionLeafRuntimeClosure` to turn
+   `CALL_LEAF_DEPENDENCY_REFUSED` into the truthful proofblock, accepting a
+   contract edit and one re-completion.
+
+## Prior boundary — eight packets complete; confinement repaired properly
 
 This section supersedes every older `Current`, `Live continuation`, `Prior
 boundary` and `Next` heading retained below as chronological evidence; do not
