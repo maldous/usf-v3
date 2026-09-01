@@ -67,6 +67,14 @@ export interface ConformanceEvidenceEntry {
   readonly passed: boolean;
   /** The recorded run no longer binds the current module or test bytes. */
   readonly stale: boolean;
+  /**
+   * A check that could not execute at all against current bytes -- the code
+   * does not compile, or the confinement was unavailable. Nothing was observed,
+   * so this never satisfies a requirement; it exists so the work that would
+   * make observation possible can be derived instead of the capability
+   * stalling in silence.
+   */
+  readonly blocked: boolean;
   readonly evidence: string;
   readonly detail: string | null;
 }

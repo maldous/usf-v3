@@ -215,8 +215,16 @@ export async function runCapabilityConformance(
     reportedFailCount: parsed.failCount,
     outcomes: Object.freeze(need.requirements.map((requirement) => {
       const name = requirement.canonicalName;
-      const passed = parsed.passed.has(name);
-      const failed = parsed.failed.has(name);
+      // Attribution is by containment, because a reporter name may carry
+      // decoration the model added. A canonical facet name is long and unique,
+      // so a name matching two requirements is refused rather than guessed.
+      const attributed = (names: ReadonlySet<string>): boolean => {
+        const hits = [...names].filter((entry) => entry.includes(name));
+        return hits.length > 0 && hits.every((entry) =>
+          need.requirements.filter((other) => entry.includes(other.canonicalName)).length === 1);
+      };
+      const failed = attributed(parsed.failed);
+      const passed = !failed && attributed(parsed.passed);
       return Object.freeze({
         facet: requirement.facet,
         facetName: name,
@@ -267,21 +275,30 @@ export async function loadConformanceEvidence(
     let record: ConformanceRun;
     try { record = JSON.parse(bytes) as ConformanceRun; } catch { continue; }
     if (record.schema !== "urn:usf:implementation-conformance-evidence:1") continue;
-    if (!record.executed || !record.confined || record.typecheck.clean !== true) continue;
     const stale = await digestOf(record.modulePath) !== record.modulePathDigest
       || await digestOf(record.conformancePath) !== record.conformancePathDigest;
+    // A run that could not execute is retained as a blocked observation. It
+    // satisfies nothing, but it is the difference between "this capability is
+    // waiting for work" and "this capability is silently stuck".
+    const blocked = !record.executed || !record.confined || record.typecheck.clean !== true;
+    if (blocked && (record.modulePathDigest.length === 0 || record.conformancePathDigest.length === 0)) continue;
     for (const outcome of record.outcomes ?? []) {
-      if (typeof outcome.facet !== "string" || !outcome.executed) continue;
+      if (typeof outcome.facet !== "string") continue;
+      if (!blocked && !outcome.executed) continue;
       const candidate: ConformanceEvidenceEntry = Object.freeze({
-        executed: true, passed: outcome.passed === true, stale,
+        executed: !blocked, passed: !blocked && outcome.passed === true, stale, blocked,
         evidence: `${record.conformancePath}@${record.conformancePathDigest.slice(0, 19)} subtest ${outcome.facetName}`,
-        detail: outcome.detail,
+        detail: blocked
+          ? `${record.refusal ?? "the behavioural check could not execute"}${record.typecheck.detail === null ? "" : `: ${record.typecheck.detail.slice(0, 900)}`}`
+          : outcome.detail,
       });
-      // A current outcome always displaces a stale one; otherwise the later
-      // file wins, and a failure is never silently replaced by an older pass.
+      // A current outcome always displaces a stale one, and an executed one
+      // always displaces a blocked one: an observation beats an absence.
       const held = entries.get(outcome.facet);
-      if (held === undefined || (held.stale && !stale)) entries.set(outcome.facet, candidate);
-      else if (!held.stale && !stale) entries.set(outcome.facet, candidate);
+      const better = held === undefined
+        || (held.stale && !stale)
+        || (!held.stale && !stale && (held.blocked || !blocked));
+      if (better) entries.set(outcome.facet, candidate);
     }
   }
   return entries;

@@ -433,7 +433,11 @@ function deriveRepairState(
     const failing: FailingRequirement[] = [];
     for (const requirement of need.requirements) {
       const entry = evidence.get(requirement.facet);
-      if (entry !== undefined && entry.executed && !entry.passed && !entry.stale) {
+      if (entry === undefined || entry.stale) continue;
+      // Both a check that ran and failed and a check that could not run at all
+      // are conditions repair exists to clear. Code that does not compile is
+      // not evidence of anything, and leaving it produces a silent stall.
+      if ((entry.executed && !entry.passed) || entry.blocked) {
         failing.push(Object.freeze({ facetName: requirement.canonicalName, detail: entry.detail }));
       }
     }

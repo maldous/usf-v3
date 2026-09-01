@@ -310,8 +310,14 @@ export interface InspectionContext {
 }
 
 function requirementBlock(need: CapabilityImplementationNeed): string {
-  return need.requirements.map((requirement, index) =>
-    `${index + 1}. [${requirement.canonicalName}] (${requirement.requirementClass}) ${requirement.statement}`).join("\n");
+  // The identifier is given on its own line and unadorned. A model shown
+  // `[name]` copies the brackets into the subtest name, which is the evidence
+  // key, so the requirement is then unattributable.
+  return need.requirements.map((requirement, index) => [
+    `${index + 1}. Requirement identifier: ${requirement.canonicalName}`,
+    `   Class: ${requirement.requirementClass}`,
+    `   Statement: ${requirement.statement}`,
+  ].join("\n")).join("\n");
 }
 
 /**
@@ -383,14 +389,14 @@ export function deriveConformancePrompt(
     `The module under test, exactly as it exists:`,
     moduleSource,
     ``,
-    `Each requirement below must be checked by exactly one top-level subtest whose name is the bracketed identifier, spelled exactly:`,
+    `Each requirement below must be checked by exactly one top-level subtest whose name is that requirement's identifier, spelled exactly and with nothing added -- no brackets, no numbering, no description:`,
     requirementBlock(need),
     ``,
     `Rules you must follow exactly:`,
     `- Return only the TypeScript source of this one test file. No commentary, no code fence, no file path.`,
     `- Import assert from "node:assert/strict" and test from "node:test".`,
     `- Import the module under test with exactly: import * as capability from "${importSpecifier}";`,
-    `- Declare one subtest per requirement as: test("<identifier>", () => { ... });`,
+    `- Declare one subtest per requirement as: test("<identifier>", () => { ... }); for example test("${need.requirements[0]?.canonicalName ?? "requirementidentifier"}", () => { ... });`,
     `- Every subtest must call at least one export of the module under test and assert on what it returned or threw. A subtest that asserts a constant, or that reimplements the behaviour instead of calling it, is worthless and will be rejected.`,
     `- Assert the behaviour the requirement states, including its negative case where it states one: a fail-closed requirement must be checked with an input that must be denied.`,
     `- Do not stub, mock, monkey-patch or re-declare the module under test.`,
@@ -477,8 +483,12 @@ export function validateConformanceOutput(
   }
   const covered: string[] = [];
   for (const requirement of need.requirements) {
-    // The subtest name is the evidence key, so it must be present verbatim.
-    if (new RegExp(`["'\`]${requirement.canonicalName}["'\`]`, "u").test(content)) covered.push(requirement.canonicalName);
+    // The subtest name is the evidence key. It must appear inside a quoted
+    // name; a model that decorates it stays attributable, one that renames it
+    // does not.
+    if (new RegExp(`["'\`][^"'\`]*${requirement.canonicalName}[^"'\`]*["'\`]`, "u").test(content)) {
+      covered.push(requirement.canonicalName);
+    }
   }
   if (covered.length === 0) {
     return refuse("no-facet-subtest", "the test declares no subtest named for any outstanding requirement");

@@ -192,19 +192,29 @@ test("an implementation-conformance facet is satisfied only by an executed behav
   assert.equal(evaluateFacets(graph, artefacts).find((verdict) => verdict.facet === behaviour)!.state, "NOT_ASSESSED");
 
   const passing = evaluateFacets(graph, evidenceWith(new Map([[behaviour, Object.freeze({
-    executed: true, passed: true, stale: false, evidence: "t.ts@sha256:bb subtest policygatebehaviour", detail: null,
+    executed: true, passed: true, stale: false, blocked: false, evidence: "t.ts@sha256:bb subtest policygatebehaviour", detail: null,
   })]])));
   assert.equal(passing.find((verdict) => verdict.facet === behaviour)!.state, "SATISFIED");
 
   const failing = evaluateFacets(graph, evidenceWith(new Map([[behaviour, Object.freeze({
-    executed: true, passed: false, stale: false, evidence: "t.ts@sha256:bb subtest policygatebehaviour", detail: null,
+    executed: true, passed: false, stale: false, blocked: false, evidence: "t.ts@sha256:bb subtest policygatebehaviour", detail: null,
   })]])));
   assert.equal(failing.find((verdict) => verdict.facet === behaviour)!.state, "UNSATISFIED");
 
   const stale = evaluateFacets(graph, evidenceWith(new Map([[behaviour, Object.freeze({
-    executed: true, passed: true, stale: true, evidence: "t.ts@sha256:cc subtest policygatebehaviour", detail: null,
+    executed: true, passed: true, stale: true, blocked: false, evidence: "t.ts@sha256:cc subtest policygatebehaviour", detail: null,
   })]])));
   assert.equal(stale.find((verdict) => verdict.facet === behaviour)!.state, "STALE");
+
+  // A check that could not execute observed nothing, so it satisfies nothing,
+  // and its reason names what stopped it.
+  const blocked = evaluateFacets(graph, evidenceWith(new Map([[behaviour, Object.freeze({
+    executed: false, passed: false, stale: false, blocked: true,
+    evidence: "t.ts@sha256:dd subtest policygatebehaviour", detail: "the implementation does not typecheck",
+  })]])));
+  const verdict = blocked.find((entry) => entry.facet === behaviour)!;
+  assert.equal(verdict.state, "NOT_ASSESSED");
+  assert.match(verdict.reason, /does not typecheck/u);
 });
 
 test("a failing behavioural check produces bounded alternating repair work, then stops", () => {
