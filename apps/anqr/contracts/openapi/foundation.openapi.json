@@ -1,0 +1,85 @@
+{
+  "components": {
+    "schemas": {
+      "DeliveryCapability": {
+        "additionalProperties": false,
+        "properties": {
+          "canonicalName": {
+            "type": "string"
+          },
+          "domain": {
+            "$ref": "#/components/schemas/DeliveryDomain"
+          },
+          "productRuntimeDependency": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "canonicalName",
+          "domain"
+        ],
+        "type": "object"
+      },
+      "DeliveryDomain": {
+        "enum": [
+          "authentication",
+          "computeruntime",
+          "configuration",
+          "dataplatform",
+          "developerplatform",
+          "entitlementsbilling",
+          "eventsworkflow",
+          "foundation",
+          "identityaccess",
+          "observabilityops",
+          "search",
+          "securitygovernance",
+          "storage",
+          "supportadmin"
+        ],
+        "type": "string"
+      },
+      "DeliveryFacet": {
+        "additionalProperties": false,
+        "properties": {
+          "canonicalName": {
+            "type": "string"
+          },
+          "facetKind": {
+            "$ref": "#/components/schemas/FacetKind"
+          }
+        },
+        "required": [
+          "canonicalName",
+          "facetKind"
+        ],
+        "type": "object"
+      },
+      "FacetKind": {
+        "enum": [
+          "auditmodel",
+          "contracts",
+          "errormodel",
+          "lifecycle",
+          "permissions",
+          "proof",
+          "readinessmodel",
+          "statemodel",
+          "uisemantics",
+          "validation"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "description": "Component schemas projected from delivery authority. No path is declared because delivery authority declares no HTTP operation; inventing one would assert an interface the graph does not state.",
+    "title": "ANQR delivery authority",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {}
+}

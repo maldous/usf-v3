@@ -1,0 +1,59 @@
+{
+  "$id": "urn:usf:schema:compiler-output:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The shape a compilation over delivery authority reports: which capabilities were read and which facet kinds were considered.",
+  "properties": {
+    "capabilityCount": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "conforming": {
+      "type": "boolean"
+    },
+    "facetKind": {
+      "items": {
+        "enum": [
+          "auditmodel",
+          "contracts",
+          "errormodel",
+          "lifecycle",
+          "permissions",
+          "proof",
+          "readinessmodel",
+          "statemodel",
+          "uisemantics",
+          "validation"
+        ],
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "violation": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "subject"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "capabilityCount",
+    "facetKind",
+    "conforming"
+  ],
+  "title": "Compiler output",
+  "type": "object"
+}

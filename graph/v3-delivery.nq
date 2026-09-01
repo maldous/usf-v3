@@ -420,15 +420,13 @@
 <urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:schema> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:blockedReason> "format-specific-projector-absent" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:canonicalName> "compileroutputschema" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:canonicalPath> "contracts/schemas/compiler-output.schema.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:compileroutputschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanismReason> "This artefact is a JSON Schema and must satisfy a supported schema dialect. A total projection of contract authority is not a JSON Schema, so projecting into this path would produce an artefact the repository schema gate correctly refuses. A JSON Schema projector is required and is not implemented." <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:requiredProjectionFormat> "JSON Schema in a supported dialect" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanismReason> "A deterministic local projector plus the real validator for the declared format. No external executable is involved, so the earlier EXTERNAL_TOOL classification was inaccurate and is corrected." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:canonicalName> "componentmodel" <urn:usf:graph:v3-delivery> .
@@ -460,8 +458,9 @@
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:proof> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:evidencepipeline> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared proof obligations." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:realizationMechanism> "SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:realizationMechanismReason> "Assessed as legacy operational ceremony whose invariant V3 already satisfies more simply. See urn:usf:delivery-mechanism-assessment:v1:1. This artefact is not realized and does not block capability satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:canonicalName> "formmodel" <urn:usf:graph:v3-delivery> .
@@ -477,19 +476,18 @@
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:validation> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:generatedtests> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared validator rules and facets. The rules are the input." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:realizationMechanism> "SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:realizationMechanismReason> "Assessed as legacy operational ceremony whose invariant V3 already satisfies more simply. See urn:usf:delivery-mechanism-assessment:v1:1. This artefact is not realized and does not block capability satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:blockedReason> "format-specific-projector-absent" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:canonicalName> "graphqlcontract" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:canonicalPath> "contracts/graphql/foundation.graphql" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:graphqlcontract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanismReason> "A total projection of contract authority is deterministic, but this artefact must be a valid GraphQL schema definition language. Emitting the projection as JSON into this path would produce a syntactically wrong artefact. A format-specific projector is required and is not implemented; the artefact is therefore not realized rather than realized wrongly." <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:requiredProjectionFormat> "GraphQL schema definition language" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanismReason> "A deterministic local projector plus the real validator for the declared format. No external executable is involved, so the earlier EXTERNAL_TOOL classification was inaccurate and is corrected." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:source> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:canonicalName> "implementationscaffold" <urn:usf:graph:v3-delivery> .
@@ -497,8 +495,9 @@
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:scaffold> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:implementationscaffold> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:realizationMechanismReason> "Expands a template over declared obligations. No semantic judgement is required." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:realizationMechanism> "SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:realizationMechanismReason> "Assessed as legacy operational ceremony whose invariant V3 already satisfies more simply. See urn:usf:delivery-mechanism-assessment:v1:1. This artefact is not realized and does not block capability satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:canonicalName> "localisationbundle" <urn:usf:graph:v3-delivery> .
@@ -526,15 +525,13 @@
 <urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:realizationMechanismReason> "Mobile render input derived from UI semantic models; semantic where those models are not yet authored." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:blockedReason> "format-specific-projector-absent" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:canonicalName> "openapicontract" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:canonicalPath> "contracts/openapi/foundation.openapi.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:openapicontract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanismReason> "A total projection of contract authority is deterministic, but this artefact must be a valid OpenAPI 3 document. Emitting the projection as JSON into this path would produce a syntactically wrong artefact. A format-specific projector is required and is not implemented; the artefact is therefore not realized rather than realized wrongly." <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:requiredProjectionFormat> "OpenAPI 3 document" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanismReason> "A deterministic local projector plus the real validator for the declared format. No external executable is involved, so the earlier EXTERNAL_TOOL classification was inaccurate and is corrected." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:canonicalName> "previewmodel" <urn:usf:graph:v3-delivery> .
@@ -550,8 +547,9 @@
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:proofanchorworkflow> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:proofanchorworkflow> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:realizationMechanismReason> "Continuous-integration configuration templated over declared proof steps." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:realizationMechanism> "SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:realizationMechanismReason> "Assessed as legacy operational ceremony whose invariant V3 already satisfies more simply. See urn:usf:delivery-mechanism-assessment:v1:1. This artefact is not realized and does not block capability satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:proof> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:canonicalName> "proofmanifest" <urn:usf:graph:v3-delivery> .
@@ -559,8 +557,9 @@
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:proof> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:proofmanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared proof obligations." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:realizationMechanism> "SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:realizationMechanismReason> "Assessed as legacy operational ceremony whose invariant V3 already satisfies more simply. See urn:usf:delivery-mechanism-assessment:v1:1. This artefact is not realized and does not block capability satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:provenancerecord> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:canonicalName> "provenancerecord" <urn:usf:graph:v3-delivery> .
@@ -604,19 +603,18 @@
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:release> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:releasesignature> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:realizationMechanismReason> "Manifests, checksums, SBOM, attestation and provenance are computed from the realized artefact set. A model cannot compute a checksum." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:realizationMechanism> "SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:realizationMechanismReason> "Assessed as legacy operational ceremony whose invariant V3 already satisfies more simply. See urn:usf:delivery-mechanism-assessment:v1:1. This artefact is not realized and does not block capability satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:schema> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:blockedReason> "format-specific-projector-absent" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:canonicalName> "rendererinputschema" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:canonicalPath> "ui/schemas/rendererinput.schema.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:rendererinputschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanismReason> "This artefact is a JSON Schema and must satisfy a supported schema dialect. A total projection of contract authority is not a JSON Schema, so projecting into this path would produce an artefact the repository schema gate correctly refuses. A JSON Schema projector is required and is not implemented." <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:requiredProjectionFormat> "JSON Schema in a supported dialect" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanismReason> "A deterministic local projector plus the real validator for the declared format. No external executable is involved, so the earlier EXTERNAL_TOOL classification was inaccurate and is corrected." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:canonicalName> "routemanifest" <urn:usf:graph:v3-delivery> .
@@ -636,15 +634,13 @@
 <urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:realizationMechanismReason> "Composed from the captured service, provider, port and mode graph. The infrastructure graph is the input." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:schema> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:blockedReason> "format-specific-projector-absent" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:canonicalName> "semanticcontractschema" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:canonicalPath> "contracts/schemas/semantic-contract.schema.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:semanticcontractschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanismReason> "This artefact is a JSON Schema and must satisfy a supported schema dialect. A total projection of contract authority is not a JSON Schema, so projecting into this path would produce an artefact the repository schema gate correctly refuses. A JSON Schema projector is required and is not implemented." <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:requiredProjectionFormat> "JSON Schema in a supported dialect" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanismReason> "A deterministic local projector plus the real validator for the declared format. No external executable is involved, so the earlier EXTERNAL_TOOL classification was inaccurate and is corrected." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:softwarebillofmaterials> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:canonicalName> "softwarebillofmaterials" <urn:usf:graph:v3-delivery> .
@@ -661,17 +657,19 @@
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:specvalidationworkflow> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:specvalidationworkflow> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:realizationMechanismReason> "Continuous-integration configuration templated over declared validation steps." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:realizationMechanism> "SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:realizationMechanismReason> "Assessed as legacy operational ceremony whose invariant V3 already satisfies more simply. See urn:usf:delivery-mechanism-assessment:v1:1. This artefact is not realized and does not block capability satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:report> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:blockedReason> "governance-layer-not-captured" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:canonicalName> "statementofapplicability" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:canonicalPath> "assurance/statement-of-applicability.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:assurance> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:statementofapplicability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanismReason> "A statement of applicability is a projection over declared framework controls and their applicability decisions." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanism> "BLOCKED_ON_AUTHORITY" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanismReason> "A statement of applicability asserts governance control coverage. The V1 governance layer, 93 framework controls and 93 applicability decisions, is inventoried but not captured, so a truthful statement cannot be derived. Producing one over facet kinds would fabricate a compliance artefact." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:report> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:canonicalName> "uidocumentationmodel" <urn:usf:graph:v3-delivery> .
@@ -695,8 +693,9 @@
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:validation> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:validatormanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared validator rules and facets. The rules are the input." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:realizationMechanism> "SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:realizationMechanismReason> "Assessed as legacy operational ceremony whose invariant V3 already satisfies more simply. See urn:usf:delivery-mechanism-assessment:v1:1. This artefact is not realized and does not block capability satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:canonicalName> "viewmodel" <urn:usf:graph:v3-delivery> .
@@ -722,7 +721,7 @@
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:workspacemanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:realizationMechanismReason> "Expands a template over declared obligations. No semantic judgement is required." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:realizationMechanismReason> "A deterministic local projector plus the real validator for the declared format. No external executable is involved, so the earlier EXTERNAL_TOOL classification was inaccurate and is corrected." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability-set:v1:1> <urn:usf:predicate:capabilityCount> "67" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability-set:v1:1> <urn:usf:predicate:declaresCapability> <urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:graph:v3-delivery> .
@@ -5375,6 +5374,26 @@
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:retainedInvariant> "A capability port is fulfilled by a named provider in a declared mode. A hermetic mock is a first-class fulfilment, not an absence, and a composed-real provider is what a deployed environment requires." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:serviceCount> "60" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:type> <urn:usf:type:DeliveryInfrastructureSet> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:release-signature> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:bottleneckTest> "A mechanism that introduces a global serialization point, a scarce key dependency, a single authority owner, a manual handoff or a publication queue requires justification by the invariant itself. Historical precedent is not justification." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:correctsEarlierFraming> "An earlier increment framed the release signature as EXTERNAL_KEY_REQUIRED. That was wrong: it assumed the legacy requirement was valid and that only the key was missing. Assessment shows V3 needs no signature at all, so no key is required and nothing is externally blocked by one." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:question> "Does any proposed signing, proof, attestation, release, validation or assurance mechanism protect a surviving invariant that V3 does not already satisfy more simply?" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:rule> "The recovered V1 graph is historical knowledge. V3 authority decides what remains normative. A faithfully captured requirement is not thereby a valid one." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessment> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:artefactCount> "37" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:correction2> "A second instance of the same defect: three JSON Schema artefacts were realized by the generic projector. The repository schema gate refused them with SCHEMA_DIALECT_UNSUPPORTED, which is the gate working. All three were withdrawn. The deterministic projector now realizes only manifest targets, whose format is the projection's own." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:correction> "Two artefacts were initially realized by the JSON contract projector into .graphql and .openapi.json paths, producing syntactically wrong artefacts. Adversarial review caught it; both were withdrawn and reclassified as requiring a format-specific projector. A deterministic projection is only correct when the target format is the projection's own." <urn:usf:graph:v3-delivery> .
@@ -6055,7 +6074,148 @@
 <urn:usf:facet-kind:validation> <urn:usf:predicate:canonicalName> "validation" <urn:usf:graph:v3-delivery> .
 <urn:usf:facet-kind:validation> <urn:usf:predicate:declaredFacetCount> "67" <urn:usf:graph:v3-delivery> .
 <urn:usf:facet-kind:validation> <urn:usf:predicate:type> <urn:usf:type:FacetKind> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:generatedtests> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:bottleneckRisk> "None, but it is a duplicate decision path." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:classification> "SUPERSEDED_V2_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:invariantProtected> "Realized artefacts parse in their declared format." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:legacyTrustBoundary> "V2 generated tests because validation ran in a separate system." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:reason> "A generated test that re-checks what realization already checked is a second implementation of one decision, which the corpus invariants forbid." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:v3Mechanism> "Realization validates inline through the repository schema gate, a real GraphQL parser and a real OpenAPI validator. Recording that outcome is the surviving need." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:generated-validation-test> <urn:usf:predicate:verdict> "INVARIANT_RETAINED_MECHANISM_SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:bottleneckRisk> "None: local, deterministic, parallel." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:invariantProtected> "An implementer or tool can consume the delivery contract in its declared GraphQL schema definition language." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:legacyTrustBoundary> "None; this is an interface deliverable rather than a handoff mechanism." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:reason> "A deterministic local projector plus the real validator for the format satisfies it. No external executable is involved, so the earlier EXTERNAL_TOOL classification is inaccurate and is corrected to a deterministic generator." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:v3Mechanism> "The graph states the contract in N-Quads, which no GraphQL schema definition language consumer reads. Nothing in V3 satisfies this." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:bottleneckRisk> "None, but it is redundant state that can disagree with authority." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:classification> "SUPERSEDED_V2_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:invariantProtected> "Implementers can discover what must be built." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:legacyTrustBoundary> "None; this is a projection." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:reason> "The obligations are already discoverable from a realized artefact. A second projection of the same authority into executable form duplicates it and would drift." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:v3Mechanism> "apps/anqr/authority/index.json already projects all 67 contracts and their 670 facets, and is already realized." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:implementation-obligations> <urn:usf:predicate:verdict> "INVARIANT_RETAINED_MECHANISM_SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:bottleneckRisk> "None: local, deterministic, parallel." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:invariantProtected> "An implementer or tool can consume the delivery contract in its declared JSON Schema." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:legacyTrustBoundary> "None; this is an interface deliverable rather than a handoff mechanism." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:reason> "A deterministic local projector plus the real validator for the format satisfies it. No external executable is involved, so the earlier EXTERNAL_TOOL classification is inaccurate and is corrected to a deterministic generator." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:v3Mechanism> "The graph states the contract in N-Quads, which no JSON Schema consumer reads. Nothing in V3 satisfies this." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-compiler-output> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:bottleneckRisk> "None: local, deterministic, parallel." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:invariantProtected> "An implementer or tool can consume the delivery contract in its declared JSON Schema." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:legacyTrustBoundary> "None; this is an interface deliverable rather than a handoff mechanism." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:reason> "A deterministic local projector plus the real validator for the format satisfies it. No external executable is involved, so the earlier EXTERNAL_TOOL classification is inaccurate and is corrected to a deterministic generator." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:v3Mechanism> "The graph states the contract in N-Quads, which no JSON Schema consumer reads. Nothing in V3 satisfies this." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-renderer-input> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:bottleneckRisk> "None: local, deterministic, parallel." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:invariantProtected> "An implementer or tool can consume the delivery contract in its declared JSON Schema." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:legacyTrustBoundary> "None; this is an interface deliverable rather than a handoff mechanism." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:reason> "A deterministic local projector plus the real validator for the format satisfies it. No external executable is involved, so the earlier EXTERNAL_TOOL classification is inaccurate and is corrected to a deterministic generator." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:v3Mechanism> "The graph states the contract in N-Quads, which no JSON Schema consumer reads. Nothing in V3 satisfies this." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:json-schema-semantic-contract> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:openapicontract> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:bottleneckRisk> "None: local, deterministic, parallel." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:invariantProtected> "An implementer or tool can consume the delivery contract in its declared OpenAPI document." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:legacyTrustBoundary> "None; this is an interface deliverable rather than a handoff mechanism." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:reason> "A deterministic local projector plus the real validator for the format satisfies it. No external executable is involved, so the earlier EXTERNAL_TOOL classification is inaccurate and is corrected to a deterministic generator." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:v3Mechanism> "The graph states the contract in N-Quads, which no OpenAPI document consumer reads. Nothing in V3 satisfies this." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:openapi-contract> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:bottleneckRisk> "High: an anchoring step is a publication queue by another name." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:classification> "SUPERSEDED_V2_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:invariantProtected> "Evidence remains attributable after crossing a boundary." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:legacyTrustBoundary> "V2 anchored evidence across subsystem and Git publication boundaries." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:reason> "Anchoring an anchor because legacy authority recorded that an anchor existed would manufacture ceremony. The boundary it spanned no longer exists." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:v3Mechanism> "A semantic transaction already emits durable content-addressed evidence inside one authority; there is no boundary left to anchor across." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-anchor-workflow> <urn:usf:predicate:verdict> "OBSOLETE" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:proofmanifest> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:bottleneckRisk> "Moderate: a proof stage between realization and acceptance introduces a second gate." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:classification> "SUPERSEDED_V2_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:invariantProtected> "The realized artefact validates against its declared contract." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:legacyTrustBoundary> "V2 needed a proof object because the validating subsystem was not the producing subsystem." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:reason> "A separate proof object adds no property beyond a recorded validation outcome bound to content. The missing primitive is evidence recording, not a proof artefact." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:v3Mechanism> "Realization validates each artefact with the real tooling for its declared format and can record that outcome as evidence bound to the artefact digest and authority snapshot." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-obligations> <urn:usf:predicate:verdict> "INVARIANT_RETAINED_MECHANISM_SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:bottleneckRisk> "Moderate." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:classification> "SUPERSEDED_V2_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:invariantProtected> "Checks are executed rather than assumed." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:legacyTrustBoundary> "V2 orchestrated execution across subsystems." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:reason> "An orchestration executable around a validator is warranted only when several genuinely dependent operations must be sequenced. Here one validator runs per artefact." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:v3Mechanism> "Realization executes the check inline and records the outcome; Hermes already runs realization continuously." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:proof-pipeline> <urn:usf:predicate:verdict> "INVARIANT_RETAINED_MECHANISM_SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:releasesignature> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:bottleneckRisk> "High: a scarce key dependency and a signing authority owner would serialize release behind key custody." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:classification> "SUPERSEDED_V2_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:invariantProtected> "Tamper evidence, authorship, authorization, immutable provenance and release identity." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:legacyTrustBoundary> "V2 signed because Graph, Factory, Operate and Cockpit were separate trust domains handing artefacts to each other across a publication boundary." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:reason> "Every invariant the signature protected is already satisfied. There is no second trust domain to sign across: Hermes operates under one authoritative semantic system. A signature here would authenticate a handoff that does not occur. The absence of a key is therefore not an external blocker." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:v3Mechanism> "Content digests give tamper evidence; tracked commits give authorship; transaction path authority gives authorization; the transaction's own content digest gives release identity; preimage and postimage digests give immutable provenance." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:release-signature> <urn:usf:predicate:verdict> "INVARIANT_RETAINED_MECHANISM_SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:bottleneckRisk> "Moderate." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:classification> "SUPERSEDED_V2_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:invariantProtected> "Realized artefacts are validated." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:legacyTrustBoundary> "V2 ran validation in continuous integration because realization and validation were separate systems." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:reason> "A workflow around a single validator adds a scheduling boundary without adding a check. The invariant is satisfied at the point of realization." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:v3Mechanism> "Realization validates inline with the repository's own gates, which are stricter than a generic validator." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:spec-validation-workflow> <urn:usf:predicate:verdict> "INVARIANT_RETAINED_MECHANISM_SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:bottleneckRisk> "None." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:invariantProtected> "Which governance controls apply to the delivered product, and why." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:legacyTrustBoundary> "None; this is a compliance deliverable rather than a handoff mechanism." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:reason> "A statement of applicability asserts control coverage. Producing one over facet kinds instead of the real control set would fabricate a compliance artefact. It is blocked on capturing the governance layer, not on a key or a tool." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:v3Mechanism> "Nothing in V3 currently states the control set. The governance layer of the V1 graph, 93 framework controls and 93 applicability decisions, is inventoried but not captured." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_NOT_YET_SATISFIED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:validatormanifest> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:bottleneckRisk> "None, but redundant." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:classification> "SUPERSEDED_V2_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:invariantProtected> "The set of required validators is known." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:legacyTrustBoundary> "None; this is a projection." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:reason> "A manifest restating the facets is derivable from them and adds no invariant." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:v3Mechanism> "The validation facets themselves enumerate the requirement, and the facet evaluator reads them directly." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:verdict> "INVARIANT_RETAINED_MECHANISM_SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:bottleneckRisk> "None." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:invariantProtected> "The implementation workspace is runnable." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:legacyTrustBoundary> "None." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:reason> "A workspace manifest is a genuine product artefact and is deterministically derivable." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:v3Mechanism> "Nothing in V3 provides a package manifest for the product workspace." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:composedreal> <urn:usf:predicate:canonicalName> "composedreal" <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:composedreal> <urn:usf:predicate:type> <urn:usf:type:ProviderMode> <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:hermeticmock> <urn:usf:predicate:canonicalName> "hermeticmock" <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:hermeticmock> <urn:usf:predicate:type> <urn:usf:type:ProviderMode> <urn:usf:graph:v3-delivery> .
+<urn:usf:validation-evidence-model:1> <urn:usf:predicate:antiSelfWarrant> "The evidence records that a validator ran and what it returned. It never records satisfaction. The facet evaluator derives satisfaction from this evidence, and a requirement can never be its own evidence." <urn:usf:graph:v3-delivery> .
+<urn:usf:validation-evidence-model:1> <urn:usf:predicate:bottleneck> "none: validation happens at the point of realization, in parallel, with no gate between producing and accepting" <urn:usf:graph:v3-delivery> .
+<urn:usf:validation-evidence-model:1> <urn:usf:predicate:evidenceShape> "artefact identity, content digest, validator identity, validation outcome, authority snapshot digest" <urn:usf:graph:v3-delivery> .
+<urn:usf:validation-evidence-model:1> <urn:usf:predicate:invariant> "A realized artefact has been validated against its declared format by a named validator, under a recorded authority snapshot." <urn:usf:graph:v3-delivery> .
+<urn:usf:validation-evidence-model:1> <urn:usf:predicate:replaces> "the superseded proof object, proof pipeline, proof anchor, validator manifest and generated validation test" <urn:usf:graph:v3-delivery> .
+<urn:usf:validation-evidence-model:1> <urn:usf:predicate:type> <urn:usf:type:ValidationEvidenceModel> <urn:usf:graph:v3-delivery> .

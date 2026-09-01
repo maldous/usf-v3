@@ -1,0 +1,9 @@
+{
+  "description": "Implementation workspace scaffolded from delivery authority.",
+  "name": "@anqr/workspace",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "type": "module"
+}

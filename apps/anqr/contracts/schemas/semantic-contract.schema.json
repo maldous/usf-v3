@@ -1,0 +1,31 @@
+{
+  "$id": "urn:usf:schema:semantic-contract:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The shape of one delivery contract: it names the capability whose completion it defines and enumerates the facets that must each be satisfied.",
+  "properties": {
+    "canonicalName": {
+      "pattern": "^[a-z0-9]+$",
+      "type": "string"
+    },
+    "declaresFacet": {
+      "items": {
+        "pattern": "^urn:usf:delivery-facet:[a-z0-9]+$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "definesCompletionFor": {
+      "pattern": "^urn:usf:delivery-capability:[a-z0-9]+$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "canonicalName",
+    "definesCompletionFor",
+    "declaresFacet"
+  ],
+  "title": "Semantic contract",
+  "type": "object"
+}

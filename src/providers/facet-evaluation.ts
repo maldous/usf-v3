@@ -48,9 +48,13 @@ export const facetEvidenceRequirement: Readonly<Record<string, Readonly<{
   readinessmodel: Object.freeze({ evidenceClass: "runtime-composition",
     requirement: "A runtime composition exists and the capability's services are declared." }),
   validation: Object.freeze({ evidenceClass: "validator-outcome",
-    requirement: "A validator outcome covering the capability exists." }),
-  proof: Object.freeze({ evidenceClass: "proof-outcome",
-    requirement: "A proof outcome covering the capability exists." }),
+    requirement: "A named validator ran over a realized artefact under a recorded authority snapshot and returned a result." }),
+  // The assessment established that the legacy proof invariant was exactly "the
+  // realized artefact validates against its declared contract". That is what a
+  // validator outcome records, so proof reads the same evidence class rather
+  // than requiring a separate proof object.
+  proof: Object.freeze({ evidenceClass: "validator-outcome",
+    requirement: "A named validator ran over a realized artefact and returned a result; the separate proof object is superseded." }),
 });
 
 export interface EvidenceIndex {

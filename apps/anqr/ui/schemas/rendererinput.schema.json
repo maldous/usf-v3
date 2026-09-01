@@ -1,0 +1,26 @@
+{
+  "$id": "urn:usf:schema:renderer-input:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The shape a renderer consumes: the capability being rendered and the domain it belongs to.",
+  "properties": {
+    "capability": {
+      "pattern": "^urn:usf:delivery-capability:[a-z0-9]+$",
+      "type": "string"
+    },
+    "domain": {
+      "pattern": "^urn:usf:delivery-domain:[a-z0-9]+$",
+      "type": "string"
+    },
+    "locale": {
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "capability",
+    "domain"
+  ],
+  "title": "Renderer input",
+  "type": "object"
+}

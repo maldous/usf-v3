@@ -1,9 +1,10 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { canonicalQuadLine } from "../graph/nquads.ts";
 import { validateArtefactOutput } from "../providers/artefact-validation.ts";
 import { evaluateFacets, summariseFacets, type EvidenceIndex } from "../providers/facet-evaluation.ts";
+import { deterministicGenerators, projectByFormat, validateGeneratedFormat } from "../providers/delivery-generators.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import {
@@ -102,6 +103,27 @@ export function generateDeterministically(
   work: ArtefactWork,
 ): Readonly<{ content: string; inputDigests: readonly string[] }> | null {
   const generator = work.generator?.split(":").pop() ?? null;
+  if (work.canonicalPath !== null) {
+    const generatorInput = Object.freeze({
+      graph, canonicalName: work.canonicalName, artefactKind: work.artefactKind,
+      canonicalPath: work.canonicalPath, realizedPaths: Object.freeze([] as readonly string[]),
+    });
+    // Format-specific projectors are selected by declared target format, since
+    // one generator class serves several formats.
+    const projected = projectByFormat(generatorInput);
+    if (projected !== null) {
+      return projected.blocker === null
+        ? Object.freeze({ content: projected.content, inputDigests: projected.inputDigests })
+        : null;
+    }
+    const registered = generator === null ? undefined : deterministicGenerators[generator];
+    if (registered !== undefined) {
+      const produced = registered(generatorInput);
+      return produced.blocker === null
+        ? Object.freeze({ content: produced.content, inputDigests: produced.inputDigests })
+        : null;
+    }
+  }
   if (generator === "contractprojection") {
     // A total projection of authority is only a correct artefact when the target
     // format is the projection's own. An OpenAPI document, a GraphQL schema and
@@ -260,7 +282,11 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     const bytes = await readFile(resolve(repositoryRoot, entry.canonicalPath), "utf8").catch(() => undefined);
     if (bytes !== undefined) satisfied.add(entry.artefact);
   }
-  const pending = work.filter((entry) => !satisfied.has(entry.artefact));
+  const notRealizable = Object.freeze(["SUPERSEDED", "BLOCKED_ON_AUTHORITY"]);
+  const pending = work.filter((entry) =>
+    !satisfied.has(entry.artefact) && !notRealizable.includes(entry.mechanism));
+  const superseded = work.filter((entry) => entry.mechanism === "SUPERSEDED");
+  const authorityBlocked = work.filter((entry) => entry.mechanism === "BLOCKED_ON_AUTHORITY");
   const deterministic = pending.filter((entry) => entry.mechanism === "DETERMINISTIC_GENERATOR");
   const semantic = pending.filter((entry) => entry.mechanism !== "DETERMINISTIC_GENERATOR");
   const hardEdges = graph.quads.filter((quad) => quad.predicate === `${P}dependsOn`
@@ -276,6 +302,11 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     deterministicCount: deterministic.length,
     semanticModelCount: semantic.length,
     alreadySatisfiedCount: satisfied.size,
+    supersededCount: superseded.length,
+    authorityBlockedCount: authorityBlocked.length,
+    authorityBlocked: Object.freeze(authorityBlocked.map((entry) => Object.freeze({
+      artefact: entry.artefact, reason: entry.mechanismReason,
+    }))),
     // Every pending unit is ready: no artefact is ordered by another.
     readyFrontier: pending.length,
     hardDependencyEdges: hardEdges,
@@ -291,10 +322,27 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     const bytes = await readFile(resolve(repositoryRoot, entry.canonicalPath), "utf8").catch(() => undefined);
     if (bytes !== undefined) realizedArtefacts.set(entry.canonicalPath, canonicalDigest(bytes));
   }
+  // Validator outcomes are read from durable evidence, never asserted here.
+  const evidenceDirectory = resolve(repositoryRoot, ".usf", "validation-evidence");
+  const evidenceNames = (await readdir(evidenceDirectory).catch(() => [] as string[]))
+    .filter((name) => name.endsWith(".json")).sort();
+  const validatorOutcomes: string[] = [];
+  for (const name of evidenceNames) {
+    const bytes = await readFile(resolve(evidenceDirectory, name), "utf8").catch(() => undefined);
+    if (bytes === undefined) continue;
+    try {
+      const record = JSON.parse(bytes) as { outcomes?: Array<{ artefact?: unknown; valid?: unknown; validator?: unknown }> };
+      for (const outcome of record.outcomes ?? []) {
+        // Only a passing outcome is admissible evidence of validation.
+        if (outcome.valid !== true || typeof outcome.artefact !== "string") continue;
+        validatorOutcomes.push(`${outcome.artefact}@${String(outcome.validator)}`);
+      }
+    } catch { continue; }
+  }
   const evidence: EvidenceIndex = Object.freeze({
     realizedArtefacts,
     runtimeComposed: [...realizedArtefacts.keys()].some((path) => path.endsWith("/runtime/compose.json")),
-    validatorOutcomes: Object.freeze([]),
+    validatorOutcomes: Object.freeze([...new Set(validatorOutcomes)].sort()),
     proofOutcomes: Object.freeze([]),
   });
   const facets = summariseFacets(evaluateFacets(graph, evidence));
@@ -309,6 +357,7 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
   // Realize the deterministic frontier. Every unit is independent, so results
   // are computed together and batched into one transaction.
   const realized: Array<Readonly<{ artefact: string; path: string; mechanism: string; cache: string; digest: string }>> = [];
+  const validationOutcomes: Array<Readonly<Record<string, unknown>>> = [];
   const postimages: Array<Readonly<{ path: string; content: string }>> = [];
   const policyDigest = canonicalDigest(graph.graphDigests ?? {});
   for (const entry of deterministic) {
@@ -340,6 +389,18 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
       // repetition wastes effort, even though it costs no model tokens.
       await storeSemanticResult(repositoryRoot, identity, content, null);
     }
+    // A deterministic artefact is validated by the real tooling for its declared
+    // format before acceptance, and the outcome is recorded as evidence the facet
+    // evaluator can read. The evidence records that a validator ran and what it
+    // returned; it never records satisfaction.
+    const formatCheck = await validateGeneratedFormat(content, entry.canonicalPath);
+    validationOutcomes.push(Object.freeze({
+      artefact: entry.artefact, path: entry.canonicalPath,
+      contentDigest: canonicalDigest(content),
+      validator: formatCheck.validator, valid: formatCheck.valid,
+      detail: formatCheck.detail, authoritySnapshot: policyDigest,
+    }));
+    if (!formatCheck.valid) continue;
     postimages.push(Object.freeze({ path: entry.canonicalPath, content }));
     realized.push(Object.freeze({
       artefact: entry.artefact, path: entry.canonicalPath, mechanism: entry.mechanism,
@@ -474,9 +535,27 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     await writeFile(resolve(repositoryRoot, proposalPath), `${JSON.stringify(proposal, null, 2)}\n`, { mode: 0o600 });
   }
 
+  if (validationOutcomes.length > 0) {
+    const directory = resolve(repositoryRoot, ".usf", "validation-evidence");
+    await mkdir(directory, { recursive: true, mode: 0o700 });
+    const record = Object.freeze({
+      schema: "urn:usf:validation-evidence:1" as const,
+      version: 1 as const,
+      outcomeCount: validationOutcomes.length,
+      outcomes: Object.freeze(validationOutcomes),
+      nonClaims: Object.freeze([
+        "Each outcome records that a named validator ran over an artefact digest under a recorded authority snapshot, and what it returned. It records no satisfaction.",
+        "Facet satisfaction is derived from these outcomes by the evaluator; a requirement is never its own evidence.",
+      ]),
+    });
+    await writeFile(resolve(directory, `${canonicalDigest(record).slice("sha256:".length)}.json`),
+      `${JSON.stringify(record, null, 1)}\n`, { mode: 0o600 });
+  }
+
   return {
     output: Object.freeze({
       ...plan,
+      validationOutcomes: Object.freeze(validationOutcomes),
       proposalPath,
       batchSize: postimages.length,
       realizedCount: realized.length,

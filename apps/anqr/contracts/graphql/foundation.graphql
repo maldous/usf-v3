@@ -1,0 +1,59 @@
+"""Delivery authority projected as a GraphQL schema. Types and enumerations
+come from the delivery graph; no operation is declared because authority
+declares none."""
+
+enum DeliveryDomain {
+  AUTHENTICATION
+  COMPUTERUNTIME
+  CONFIGURATION
+  DATAPLATFORM
+  DEVELOPERPLATFORM
+  ENTITLEMENTSBILLING
+  EVENTSWORKFLOW
+  FOUNDATION
+  IDENTITYACCESS
+  OBSERVABILITYOPS
+  SEARCH
+  SECURITYGOVERNANCE
+  STORAGE
+  SUPPORTADMIN
+}
+
+enum FacetKind {
+  AUDITMODEL
+  CONTRACTS
+  ERRORMODEL
+  LIFECYCLE
+  PERMISSIONS
+  PROOF
+  READINESSMODEL
+  STATEMODEL
+  UISEMANTICS
+  VALIDATION
+}
+
+"""One dimension of completion for a capability."""
+type DeliveryFacet {
+  canonicalName: String!
+  facetKind: FacetKind!
+}
+
+"""Defines what completion means for exactly one capability."""
+type DeliveryContract {
+  canonicalName: String!
+  definesCompletionFor: DeliveryCapability!
+  declaresFacet: [DeliveryFacet!]!
+}
+
+"""Something the delivered product must become."""
+type DeliveryCapability {
+  canonicalName: String!
+  domain: DeliveryDomain!
+  contract: DeliveryContract!
+  productRuntimeDependency: [DeliveryCapability!]!
+}
+
+type Query {
+  capability(canonicalName: String!): DeliveryCapability
+  capabilities(domain: DeliveryDomain): [DeliveryCapability!]!
+}
