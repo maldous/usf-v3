@@ -395,10 +395,13 @@
 <urn:usf:predicate:candidateValidationWallTimeMilliseconds> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:canonicalForm> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:canonicalLocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:canonicalName> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:canonicalization> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:canonicalizationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:capabilityAcceptance> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:capabilityCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:captureStatus> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:capturedSet> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:carrierAdoption> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:carrierBasisTestPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:carrierCommit> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -508,7 +511,13 @@
 <urn:usf:predicate:declaredIn> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:declaredPermissionState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:declaresArtefactClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:declaresCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:declaresDigestName> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:declaresDomain> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:declaresPort> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:declaresProvider> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:declaresProviderMode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:declaresService> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:decodePolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:defaultConcurrency> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:defaultStopCondition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -519,6 +528,7 @@
 <urn:usf:predicate:deltaDigestScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:denominatorSource> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:dependencyDerivationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:dependencyEdgeCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:dependencyMemberSchema> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:dependencyPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:dependencyPredicate> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -541,6 +551,7 @@
 <urn:usf:predicate:dispositionSchema> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:distinctFrom> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:diversification> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:domainCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:effectivePermissionState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:effectiveStateRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:eligibleCarrierAdoption> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -622,6 +633,7 @@
 <urn:usf:predicate:freshnessPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:frozenNormalizedPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:frozenRawPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:fulfilsPort> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:futureState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:generatedAtRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:generation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -638,6 +650,7 @@
 <urn:usf:predicate:graphProvenance> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:groupProjectionRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:handlerPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:hasProviderMode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:headSetAntichainRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:headSetDeferralCapacityRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:headSetDeferralRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -668,6 +681,7 @@
 <urn:usf:predicate:idempotence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:idempotenceRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:identityBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:identityPreservation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:identityRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:ignoredBootstrapCarrierReceiptRoot> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:ignoredCandidateRoot> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -682,6 +696,7 @@
 <urn:usf:predicate:implementedBy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:implementedByWork> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:implementsContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:inDomain> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:includedAddedPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:includedModifiedPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:includedPathCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -700,6 +715,7 @@
 <urn:usf:predicate:integrationRecordType> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:integrationTransitionAlgorithm> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:integrationTransitionVerifier> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:intentionallyStandalone> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:invalidReceiptState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:invariant> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:invariantProtected> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -856,6 +872,7 @@
 <urn:usf:predicate:persistence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:persistentPrimaryMutationLockPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:policyPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:portCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:portVocabulary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:ports> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:postClosureMemberStage> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -901,6 +918,7 @@
 <urn:usf:predicate:proofRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:proves> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:provider> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:providerCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:providerFamily> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:providerHomeRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:providerImplementations> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -932,6 +950,7 @@
 <urn:usf:predicate:realisationReceiptSchema> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:realisationRecordType> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:realisationResultSchema> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:realisationStatus> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:realisationVerifier> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:reason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:reasonCode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -1040,6 +1059,7 @@
 <urn:usf:predicate:satisfactionKey> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:satisfiedBySchema> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:satisfiesEvidenceRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:schedulability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:schema> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:schemaIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:schemaPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -1061,6 +1081,8 @@
 <urn:usf:predicate:sequenceIndex> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:sequencePredicate> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:servedByAdapter> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:servesCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:serviceCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:serviceTierRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:sessionMaterial> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:sharedRegistryRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -1087,10 +1109,12 @@
 <urn:usf:predicate:sourceSetReducer> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:sourceStateInputRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:sourceStateProtocol> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:specifiedByContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:specifiesElement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:stableDigestRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:stableLauncherPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:stage> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
+<urn:usf:predicate:standaloneRationale> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:state> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:stateGraph> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
 <urn:usf:predicate:stateManifestSchema> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-convention> .
@@ -1217,6 +1241,7 @@
 <urn:usf:type:CanonicalDigestMembership> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CanonicalJsonAlgorithm> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CanonicalKeyedMemberDigestProtocol> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:CapabilityPort> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CarrierAdoptionStateDerivationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CarrierPathObservation> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CatalogueClassification> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
@@ -1241,7 +1266,13 @@
 <urn:usf:type:CredentialNameAlias> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CredentialSourceIdentityProtocol> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:CurrentnessAggregationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:DeliveryCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:DeliveryCapabilitySet> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:DeliveryDomain> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:DeliveryInfrastructureSet> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:DeliveryProvider> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:DeliveryRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:DeliveryService> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:DeterministicOperationalProjectionRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:DirectBootstrapManualLineage> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:DirectBootstrapManualLineageIntent> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
@@ -1298,6 +1329,7 @@
 <urn:usf:type:ProviderEconomicDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:ProviderEndpoint> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:ProviderHostTransport> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
+<urn:usf:type:ProviderMode> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:ProviderProducedAnswerReceipt> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:ReadinessProjection> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .
 <urn:usf:type:RealisationPermission> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .

@@ -1,0 +1,16 @@
+{
+ "schema": "urn:usf:graph-manifest:2",
+ "version": 2,
+ "imports": [
+  "graph/manifests/v3-convention.json"
+ ],
+ "sources": [
+  {
+   "path": "graph/v3-delivery.nq",
+   "format": "application/n-quads",
+   "graph": "urn:usf:graph:v3-delivery",
+   "role": "contract",
+   "validationProfile": "bootstrap-nquads-v1"
+  }
+ ]
+}
