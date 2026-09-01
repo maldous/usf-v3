@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 export const RelationalStorageAndMigrationsAndRlsDecision = [
   'GRANTED',
   'DENIED',
@@ -62,7 +64,7 @@ export interface RelationalStorageAndMigrationsAndRlsAuditEvent {
 export interface RelationalStorageAndMigrationsAndRlsError {
   readonly kind: RelationalStorageAndMigrationsAndRlsErrorKind;
   readonly message: string;
-  readonly tenantId?: string | null;
+  readonly tenantId: string | null;
 }
 
 export interface RelationalStorageAndMigrationsAndRlsMigrationFile {
@@ -146,6 +148,30 @@ export function createAuditEvent(
   };
 }
 
+function safeExecuteAudit(
+  event: RelationalStorageAndMigrationsAndRlsAuditEvent,
+  auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
+  tenantId: string | null,
+): RelationalStorageAndMigrationsAndRlsError | null {
+  try {
+    const result = auditFn(event);
+    if (result !== null) {
+      return {
+        kind: result.kind ?? 'AUDIT_FAILURE',
+        message: result.message ?? 'Audit failure',
+        tenantId: result.tenantId ?? tenantId,
+      };
+    }
+    return null;
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit execution threw an error',
+      tenantId,
+    };
+  }
+}
+
 export function auditStateChangingAccess(
   state: RelationalStorageAndMigrationsAndRlsState,
   tenantId: string | null,
@@ -160,7 +186,7 @@ export function auditStateChangingAccess(
     tenantBoundaryPreserved: tenantId !== null,
     dataSubjectEvidencePreserved: true,
   });
-  const auditError = auditFn(event);
+  const auditError = safeExecuteAudit(event, auditFn, tenantId);
   if (auditError !== null) {
     return auditError;
   }
@@ -182,7 +208,7 @@ export function auditMigrationApplication(
     tenantBoundaryPreserved: tenantId !== null,
     dataSubjectEvidencePreserved: true,
   });
-  const auditError = auditFn(event);
+  const auditError = safeExecuteAudit(event, auditFn, tenantId);
   if (auditError !== null) {
     return auditError;
   }
@@ -206,7 +232,7 @@ export function auditMigrationRollback(
     tenantBoundaryPreserved: tenantId !== null,
     dataSubjectEvidencePreserved: true,
   });
-  const auditError = auditFn(event);
+  const auditError = safeExecuteAudit(event, auditFn, tenantId);
   if (auditError !== null) {
     return auditError;
   }
@@ -217,11 +243,12 @@ export function auditMigrationRollback(
 }
 
 export function validateConnectionPassword(password: string): RelationalStorageAndMigrationsAndRlsError | null {
-  const forbiddenChars = /['"\\\\\x00-\x1F]/;
+  const forbiddenChars = /['"`\\]|[\x00-\x1F\x7F]/;
   if (forbiddenChars.test(password)) {
     return {
       kind: 'INVALID_CONFIGURATION',
       message: 'Password contains forbidden characters: quote, backslash, or control characters',
+      tenantId: null,
     };
   }
   return null;
@@ -235,7 +262,7 @@ export function substituteManagedRolePassword(
   if (validationError !== null) {
     return validationError;
   }
-  return connectionString.replace('__MANAGED_APP_ROLE_PASSWORD__', managedRolePassword);
+  return connectionString.replaceAll('__MANAGED_APP_ROLE_PASSWORD__', managedRolePassword);
 }
 
 export function createRlsPredicate(
@@ -273,6 +300,14 @@ export function applyMigrationFile(
     };
   }
 
+  const passwordError = validateConnectionPassword(connectionConfig.password);
+  if (passwordError !== null) {
+    return {
+      ...passwordError,
+      tenantId: connectionConfig.tenantId,
+    };
+  }
+
   if (checksum !== migrationFile.checksum) {
     const event = createAuditEvent('MIGRATION_CHECKSUM_MISMATCH', connectionConfig.tenantId, migrationFile.fileName, checksum, {
       expectedChecksum: migrationFile.checksum,
@@ -280,7 +315,7 @@ export function applyMigrationFile(
       tenantBoundaryPreserved: connectionConfig.tenantId !== null,
       dataSubjectEvidencePreserved: true,
     });
-    const auditError = auditFn(event);
+    const auditError = safeExecuteAudit(event, auditFn, connectionConfig.tenantId);
     if (auditError !== null) {
       return auditError;
     }
@@ -304,7 +339,7 @@ export function applyMigrationFile(
         tenantBoundaryPreserved: connectionConfig.tenantId !== null,
         dataSubjectEvidencePreserved: true,
       });
-      const skippedAuditError = auditFn(skippedEvent);
+      const skippedAuditError = safeExecuteAudit(skippedEvent, auditFn, connectionConfig.tenantId);
       if (skippedAuditError !== null) {
         return skippedAuditError;
       }
@@ -320,7 +355,7 @@ export function applyMigrationFile(
         tenantBoundaryPreserved: connectionConfig.tenantId !== null,
         dataSubjectEvidencePreserved: true,
       });
-      const mismatchAuditError = auditFn(mismatchEvent);
+      const mismatchAuditError = safeExecuteAudit(mismatchEvent, auditFn, connectionConfig.tenantId);
       if (mismatchAuditError !== null) {
         return mismatchAuditError;
       }
@@ -379,9 +414,19 @@ export function runMigrationChain(
     };
   }
 
-  let currentState = state;
+  const passwordError = validateConnectionPassword(connectionConfig.password);
+  if (passwordError !== null) {
+    return {
+      ...passwordError,
+      tenantId: connectionConfig.tenantId,
+    };
+  }
 
-  const sortedFiles = [...migrationFiles].sort((a, b) => a.orderIndex - b.orderIndex);
+  const sortedFiles = [...migrationFiles].sort((a, b) =>
+    a.fileName < b.fileName ? -1 : a.fileName > b.fileName ? 1 : 0,
+  );
+
+  let currentState = state;
 
   for (const file of sortedFiles) {
     const result = applyMigrationFile(
@@ -393,24 +438,10 @@ export function runMigrationChain(
     );
 
     if ('kind' in result && 'message' in result) {
-      const errorResult = result as RelationalStorageAndMigrationsAndRlsError;
-      const rollbackResult = auditMigrationRollback(
-        currentState,
-        file.fileName,
-        `Migration failed: ${errorResult.message}`,
-        connectionConfig.tenantId,
-        auditFn,
-      );
-      if ('kind' in rollbackResult && 'message' in rollbackResult) {
-        return rollbackResult;
-      }
-      return {
-        ...(rollbackResult as RelationalStorageAndMigrationsAndRlsState),
-        lastError: errorResult,
-      };
+      return result;
     }
 
-    currentState = result as RelationalStorageAndMigrationsAndRlsState;
+    currentState = result;
   }
 
   return currentState;
@@ -444,7 +475,7 @@ export function checkReadiness(
     };
   }
 
-  if (!state.ledgerNonEmpty) {
+  if (!state.ledgerNonEmpty || state.appliedMigrations.length === 0) {
     return {
       readiness: 'NOT_READY',
       error: {
@@ -490,7 +521,7 @@ export function evaluateTenantIsolation(
   bypassRoleName: string,
   roleInheritanceActive: boolean,
 ): RelationalStorageAndMigrationsAndRlsDecision {
-  if (tenantContext.isBypassRole) {
+  if (tenantContext.isBypassRole && tenantContext.roleName === bypassRoleName) {
     return 'GRANTED';
   }
 
@@ -498,11 +529,18 @@ export function evaluateTenantIsolation(
     return 'GRANTED';
   }
 
-  if (pgHasRoleWithInheritance(tenantContext.roleName, bypassRoleName, state.roles, roleInheritanceActive)) {
+  const currentRole = state.roles.find((r) => r.name === tenantContext.roleName);
+  if (currentRole !== undefined) {
+    if (currentRole.kind === 'MIGRATION_ROLE' || currentRole.kind === 'SYSTEM_ADMIN_ROLE') {
+      return 'GRANTED';
+    }
+  }
+
+  if (roleInheritanceActive && pgHasRoleWithInheritance(tenantContext.roleName, bypassRoleName, state.roles, roleInheritanceActive)) {
     return 'GRANTED';
   }
 
-  if (tenantContext.tenantId === rowTenantId) {
+  if (tenantContext.tenantId !== '' && tenantContext.tenantId === rowTenantId) {
     return 'GRANTED';
   }
 
@@ -553,7 +591,7 @@ export function setTenantContext(
     dataSubjectEvidencePreserved: true,
   });
 
-  const auditError = auditFn(event);
+  const auditError = safeExecuteAudit(event, auditFn, tenantContext.tenantId);
   if (auditError !== null) {
     return auditError;
   }
@@ -600,7 +638,7 @@ export function guardRestore(
     isolationSignalPreserved: state.crossTenantIsolationProven,
   });
 
-  const auditError = auditFn(event);
+  const auditError = safeExecuteAudit(event, auditFn, null);
   if (auditError !== null) {
     return auditError;
   }
@@ -627,13 +665,7 @@ export function createMigrationFile(
 }
 
 export function computeChecksum(content: string): string {
-  let hash = 0;
-  for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0;
-  }
-  return 'sha256:' + Math.abs(hash).toString(16);
+  return 'sha256:' + createHash('sha256').update(content, 'utf8').digest('hex');
 }
 
 export function validateRoleConfiguration(
@@ -699,7 +731,7 @@ export function createRepositoryPort(
 ): RelationalStorageAndMigrationsAndRlsRepositoryPort {
   return {
     context,
-    operations: operations,
+    operations,
   };
 }
 
@@ -789,7 +821,7 @@ export function proveCrossTenantIsolation(
     dataSubjectEvidencePreserved: true,
   });
 
-  const auditError = auditFn(event);
+  const auditError = safeExecuteAudit(event, auditFn, foreignTenantId);
   if (auditError !== null) {
     return auditError;
   }
@@ -842,7 +874,7 @@ export function runLiveIsolationProof(
     dataSubjectEvidencePreserved: true,
   });
 
-  const auditError = auditFn(event);
+  const auditError = safeExecuteAudit(event, auditFn, foreignTenantContext.tenantId);
   if (auditError !== null) {
     return {
       state,
@@ -872,7 +904,9 @@ export function executeChecksumGates(
   },
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
-  const sortedFiles = [...migrationFiles].sort((a, b) => a.orderIndex - b.orderIndex);
+  const sortedFiles = [...migrationFiles].sort((a, b) =>
+    a.fileName < b.fileName ? -1 : a.fileName > b.fileName ? 1 : 0,
+  );
 
   for (const file of sortedFiles) {
     const existingMigration = state.appliedMigrations.find((m) => m.fileName === file.fileName);
@@ -886,7 +920,7 @@ export function executeChecksumGates(
           tenantBoundaryPreserved: connectionConfig.tenantId !== null,
           dataSubjectEvidencePreserved: true,
         });
-        const auditError = auditFn(mismatchEvent);
+        const auditError = safeExecuteAudit(mismatchEvent, auditFn, connectionConfig.tenantId);
         if (auditError !== null) {
           return auditError;
         }
@@ -909,7 +943,7 @@ export function verifyMigratedStateGate(
   readonly passed: boolean;
   readonly error: RelationalStorageAndMigrationsAndRlsError | null;
 } {
-  if (!state.ledgerNonEmpty) {
+  if (!state.ledgerNonEmpty || state.appliedMigrations.length === 0) {
     return {
       passed: false,
       error: {
@@ -944,6 +978,14 @@ export function performStateChangingMutation(
   mutationFn: (currentState: RelationalStorageAndMigrationsAndRlsState) => RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError,
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
+  if (!state.substrateAvailable || !state.connected) {
+    return {
+      kind: 'PROVIDER_UNAVAILABLE',
+      message: 'Substrate or connection unavailable for mutation',
+      tenantId,
+    };
+  }
+
   const auditedState = auditStateChangingAccess(state, tenantId, operationType, auditFn);
   if ('kind' in auditedState && 'message' in auditedState) {
     return auditedState;
@@ -1048,7 +1090,7 @@ export function blockPromotionOnUnavailability(
     };
   }
 
-  if (!state.ledgerNonEmpty) {
+  if (!state.ledgerNonEmpty || state.appliedMigrations.length === 0) {
     return {
       blocked: true,
       reason: 'Migration ledger empty',

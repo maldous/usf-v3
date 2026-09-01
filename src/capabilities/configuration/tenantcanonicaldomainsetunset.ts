@@ -101,7 +101,11 @@ export function auditCanonicalEvent(
     redirectPolicy,
     timestamp: new Date().toISOString(),
   };
-  return auditFn(event);
+  try {
+    return auditFn(event);
+  } catch {
+    return 'NOT_VERIFIED';
+  }
 }
 
 export function setCanonicalDomain(
@@ -272,10 +276,6 @@ export function deactivateDomainClearsCanonical(
     return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
   }
 
-  if (!existing.canonical) {
-    return { kind: 'NOT_FOUND', message: 'Domain is not canonical' };
-  }
-
   const auditError = auditCanonicalEvent(
     tenantId,
     domain,
@@ -369,9 +369,9 @@ export function proveCanonicalRuntime(
   );
 
   const deactivationState =
-    typeof unsetResult !== 'object' || 'kind' in unsetResult
-      ? unsetState
-      : unsetResult;
+    typeof setResult !== 'object' || 'kind' in setResult
+      ? state
+      : setResult;
 
   const deactivationResult = deactivateDomainClearsCanonical(
     deactivationState,

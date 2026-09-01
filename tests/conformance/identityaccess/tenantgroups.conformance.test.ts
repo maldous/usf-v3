@@ -13,14 +13,14 @@ test("tenantgroupsauditmodel", () => {
   };
 
   const createResult = capability.createGroup(state, context, 'test', '/', auditFn);
-  assert.deepEqual(createResult, auditError);
+  assert.deepEqual(createResult as capability.TenantGroupsError, auditError);
 
   const group: capability.TenantGroup = { id: '1', name: 'test', path: '/' };
   const updateResult = capability.updateGroup({ ...state, groups: [group] }, context, '1', 'new', '/', auditFn);
-  assert.deepEqual(updateResult, auditError);
+  assert.deepEqual(updateResult as capability.TenantGroupsError, auditError);
 
   const deleteResult = capability.deleteGroup({ ...state, groups: [group] }, context, '1', auditFn);
-  assert.deepEqual(deleteResult, auditError);
+  assert.deepEqual(deleteResult as capability.TenantGroupsError, auditError);
 
   const listResult = capability.listGroups(state, context);
   assert.ok(!('kind' in listResult));
@@ -37,14 +37,14 @@ test("tenantgroupscontracts", () => {
   assert.ok('groups' in listResult);
 
   const createResult = capability.createGroup(state, context, 'test', '/', () => null);
-  assert.ok('groups' in createResult);
+  assert.ok('groups' in (createResult as capability.TenantGroupsState));
 
   const group: capability.TenantGroup = { id: '1', name: 'test', path: '/' };
   const updateResult = capability.updateGroup({ ...state, groups: [group] }, context, '1', 'new', '/', () => null);
-  assert.ok('groups' in updateResult);
+  assert.ok('groups' in (updateResult as capability.TenantGroupsState));
 
   const deleteResult = capability.deleteGroup({ ...state, groups: [group] }, context, '1', () => null);
-  assert.ok('groups' in deleteResult);
+  assert.ok('groups' in (deleteResult as capability.TenantGroupsState));
 });
 
 test("tenantgroupserrormodel", () => {
@@ -55,10 +55,10 @@ test("tenantgroupserrormodel", () => {
   };
 
   const listResult = capability.listGroups(state, contextNoCred);
-  assert.equal(listResult.kind, 'NO_CREDENTIAL');
+  assert.equal((listResult as capability.TenantGroupsError).kind, 'NO_CREDENTIAL');
 
   const createResult = capability.createGroup(state, contextNoCred, 'test', '/', () => null);
-  assert.equal(createResult.kind, 'NO_CREDENTIAL');
+  assert.equal((createResult as capability.TenantGroupsError).kind, 'NO_CREDENTIAL');
 
   const validation = capability.validateGroupName('', []);
   assert.equal(validation, 'INVALID_NAME');
@@ -78,20 +78,20 @@ test("tenantgroupslifecycle", () => {
   };
 
   const listResult = capability.listGroups(state, context);
-  assert.deepEqual(listResult.groups, []);
+  assert.deepEqual((listResult as { readonly groups: readonly capability.TenantGroup[] }).groups, []);
 
   const createResult = capability.createGroup(state, context, 'test', '/', () => null);
-  assert.equal(createResult.groups.length, 1);
+  assert.equal((createResult as capability.TenantGroupsState).groups.length, 1);
 
   const group: capability.TenantGroup = { id: '1', name: 'test', path: '/' };
   const updateResult = capability.updateGroup({ ...state, groups: [group] }, context, '1', 'new', '/', () => null);
-  assert.equal(updateResult.groups[0].name, 'new');
+  assert.equal((updateResult as capability.TenantGroupsState).groups[0].name, 'new');
 
   const deleteResult = capability.deleteGroup({ ...state, groups: [group] }, context, '1', () => null);
-  assert.equal(deleteResult.groups.length, 0);
+  assert.equal((deleteResult as capability.TenantGroupsState).groups.length, 0);
 
   const notFoundResult = capability.updateGroup(state, context, '99', 'new', '/', () => null);
-  assert.equal(notFoundResult.kind, 'NOT_FOUND');
+  assert.equal((notFoundResult as capability.TenantGroupsError).kind, 'NOT_FOUND');
 });
 
 test("tenantgroupspermissions", () => {
@@ -102,17 +102,17 @@ test("tenantgroupspermissions", () => {
   };
 
   const listResult = capability.listGroups(state, contextNoPerm);
-  assert.equal(listResult.kind, 'NO_CREDENTIAL');
+  assert.equal((listResult as capability.TenantGroupsError).kind, 'NO_CREDENTIAL');
 
   const createResult = capability.createGroup(state, contextNoPerm, 'test', '/', () => null);
-  assert.equal(createResult.kind, 'NO_CREDENTIAL');
+  assert.equal((createResult as capability.TenantGroupsError).kind, 'NO_CREDENTIAL');
 
   const group: capability.TenantGroup = { id: '1', name: 'test', path: '/' };
   const updateResult = capability.updateGroup({ ...state, groups: [group] }, contextNoPerm, '1', 'new', '/', () => null);
-  assert.equal(updateResult.kind, 'NO_CREDENTIAL');
+  assert.equal((updateResult as capability.TenantGroupsError).kind, 'NO_CREDENTIAL');
 
   const deleteResult = capability.deleteGroup({ ...state, groups: [group] }, contextNoPerm, '1', () => null);
-  assert.equal(deleteResult.kind, 'NO_CREDENTIAL');
+  assert.equal((deleteResult as capability.TenantGroupsError).kind, 'NO_CREDENTIAL');
 });
 
 test("tenantgroupsproof", () => {
@@ -123,14 +123,14 @@ test("tenantgroupsproof", () => {
   };
 
   const createResult = capability.createGroup(state, context, 'test', '/', () => null);
-  assert.ok('groups' in createResult);
+  assert.ok('groups' in (createResult as capability.TenantGroupsState));
 
   const group: capability.TenantGroup = { id: '1', name: 'test', path: '/' };
   const updateResult = capability.updateGroup({ ...state, groups: [group] }, context, '1', 'new', '/', () => null);
-  assert.ok('groups' in updateResult);
+  assert.ok('groups' in (updateResult as capability.TenantGroupsState));
 
   const deleteResult = capability.deleteGroup({ ...state, groups: [group] }, context, '1', () => null);
-  assert.ok('groups' in deleteResult);
+  assert.ok('groups' in (deleteResult as capability.TenantGroupsState));
 
   assert.ok(capability.isValidGroupName('valid'));
   assert.ok(!capability.isValidGroupName('admin'));
@@ -153,7 +153,7 @@ test("tenantgroupsreadinessmodel", () => {
   assert.equal(capability.checkReadiness(stateReady, contextNoCred), 'DEGRADED');
 
   const listResult = capability.listGroups(stateReady, contextNoCred);
-  assert.equal(listResult.kind, 'NO_CREDENTIAL');
+  assert.equal((listResult as capability.TenantGroupsError).kind, 'NO_CREDENTIAL');
 });
 
 test("tenantgroupsstatemodel", () => {
@@ -179,9 +179,9 @@ test("tenantgroupsvalidation", () => {
   assert.ok(!capability.isValidGroupName('admin'));
 
   const groups: capability.TenantGroup[] = [{ id: '1', name: 'existing', path: '/' }];
-  assert.ok(!capability.checkNameConflict('existing', groups));
-  assert.ok(!capability.checkNameConflict('EXISTING', groups));
-  assert.ok(capability.checkNameConflict('new', groups));
+  assert.ok(capability.checkNameConflict('existing', groups));
+  assert.ok(capability.checkNameConflict('EXISTING', groups));
+  assert.ok(!capability.checkNameConflict('new', groups));
 
   assert.equal(capability.validateGroupName('existing', groups), 'CONFLICT');
   assert.equal(capability.validateGroupName('admin', groups), 'INVALID_NAME');

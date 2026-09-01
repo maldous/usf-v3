@@ -2,480 +2,660 @@ import { strict as assert } from "node:assert/strict";
 import { test } from "node:test";
 import * as capability from "../../../src/capabilities/dataplatform/datagovernancecataloglineageclassificationpiidsrgdpr.ts";
 
+type CatalogResult = capability.DataGovernanceCatalogState | capability.DataGovernanceCatalogError;
+
 function isError(value: unknown): value is capability.DataGovernanceCatalogError {
-  return typeof value === "object" && value !== null && "kind" in value;
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "kind" in value &&
+    typeof (value as { kind: unknown }).kind === "string"
+  );
+}
+
+function asState(result: CatalogResult): capability.DataGovernanceCatalogState {
+  if (isError(result)) {
+    assert.fail(`expected success but got ${result.kind}: ${result.message}`);
+  }
+  return result;
+}
+
+function asError(result: CatalogResult): capability.DataGovernanceCatalogError {
+  if (!isError(result)) {
+    assert.fail("expected an error result");
+  }
+  return result;
 }
 
 test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
-  const auditLog: capability.DataGovernanceAuditEvent[] = [];
+  const auditEvents: capability.DataGovernanceAuditEvent[] = [];
   const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
-    auditLog.push(event);
+    auditEvents.push(event);
     return null;
   };
 
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
-  const entry: capability.DataGovernanceCatalogEntry = {
-    id: "entry1",
-    datasetId: "dataset1",
+  const seed: capability.DataGovernanceCatalogEntry = {
+    id: "entry-audit",
+    datasetId: "dataset-audit",
     classification: "PII" as const,
-    lineage: ["source1"],
-    tenantId: "tenant1",
+    lineage: ["source-a", "source-b"],
+    tenantId: "tenant-audit",
   };
+  const withEntry = asState(capability.addCatalogEntry(capability.initialState, seed, auditFn));
 
-  const result = capability.addCatalogEntry(initial, entry, auditFn);
-  if (isError(result)) throw new Error("addCatalogEntry should succeed");
-  assert.strictEqual(auditLog.length, 1);
-  assert.strictEqual(auditLog[0].kind, "CLASSIFICATION_CHANGE");
-  assert.strictEqual(auditLog[0].tenantId, "tenant1");
-  assert.strictEqual(auditLog[0].resourceId, "entry1");
-
-  const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
-    id: "req1",
-    tenantId: "tenant1",
-    datasetId: "dataset1",
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-audit",
+    tenantId: "tenant-audit",
+    datasetId: "dataset-audit",
   };
-  const stateWithRequest = capability.createDataSubjectRequest(result, request);
-  if (isError(stateWithRequest)) throw new Error("createDataSubjectRequest should succeed");
+  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request));
 
-  const fulfilled = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
-    "evidence1",
-    "op1",
-    auditFn,
+  const fulfilled = asState(
+    capability.fulfillDataSubjectRequest(
+      withRequest,
+      "request-audit",
+      "tenant-audit",
+      "evidence-audit",
+      "operator-audit",
+      auditFn,
+    ),
   );
-  if (isError(fulfilled)) throw new Error("fulfillDataSubjectRequest should succeed");
-  assert.strictEqual(auditLog.length, 2);
-  assert.strictEqual(auditLog[1].kind, "REQUEST_FULFILLED");
-  assert.strictEqual(auditLog[1].tenantId, "tenant1");
-  assert.strictEqual(auditLog[1].resourceId, "req1");
-  const details = auditLog[1].details as { evidence: string; operatorId: string };
-  assert.strictEqual(details.evidence, "evidence1");
-  assert.strictEqual(details.operatorId, "op1");
 
-  const tenantAudit = capability.getAuditLogForTenant(fulfilled, "tenant1");
-  assert.strictEqual(tenantAudit.length, 2);
-  assert.strictEqual(tenantAudit[0].tenantId, "tenant1");
-  assert.strictEqual(tenantAudit[1].tenantId, "tenant1");
-
-  const fulfilledRequest = (fulfilled as capability.DataGovernanceCatalogState).requests.find(
-    (r) => r.id === "req1",
+  const reclassified = asState(
+    capability.updateCatalogEntryClassification(
+      fulfilled,
+      "entry-audit",
+      "sensitive",
+      "tenant-audit",
+      auditFn,
+    ),
   );
-  assert.strictEqual(fulfilledRequest?.evidence, "evidence1");
+
+  const tenantAudit = capability.getAuditLogForTenant(reclassified, "tenant-audit");
+  assert.strictEqual(tenantAudit.length, 3);
+  assert.deepStrictEqual(
+    tenantAudit.map((event) => event.kind),
+    ["CLASSIFICATION_CHANGE", "REQUEST_FULFILLED", "CLASSIFICATION_CHANGE"],
+  );
+  for (const event of tenantAudit) {
+    assert.strictEqual(event.tenantId, "tenant-audit");
+  }
+
+  const fulfillmentEvent = tenantAudit.find((event) => event.kind === "REQUEST_FULFILLED");
+  assert.ok(fulfillmentEvent !== undefined);
+  const fulfillmentDetails = fulfillmentEvent.details as { evidence: string; operatorId: string };
+  assert.strictEqual(fulfillmentDetails.evidence, "evidence-audit");
+  assert.strictEqual(fulfillmentDetails.operatorId, "operator-audit");
+
+  const durableRequest = capability.getRequestsForTenant(reclassified, "tenant-audit").find(
+    (item) => item.id === "request-audit",
+  );
+  assert.ok(durableRequest !== undefined);
+  assert.strictEqual(durableRequest.state, "fulfilled");
+  assert.strictEqual(durableRequest.evidence, "evidence-audit");
+  assert.strictEqual(durableRequest.operatorId, "operator-audit");
+
+  const spanEvents: capability.DataGovernanceAuditEvent[] = [];
+  const spanResult = capability.auditCatalogChange(
+    "tenant-audit",
+    "entry-audit",
+    "LINEAGE_UPDATE",
+    { route: "request.fulfillment", useCase: "pii-remediation", provider: "governance-adapter", span: "tenant-audit:request-audit" },
+    (event) => {
+      spanEvents.push(event);
+      return null;
+    },
+  );
+  assert.strictEqual(spanResult, null);
+  assert.strictEqual(spanEvents[0].tenantId, "tenant-audit");
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
-  const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
-
-  const entry: capability.DataGovernanceCatalogEntry = {
-    id: "entry1",
-    datasetId: "dataset1",
-    classification: "sensitive" as const,
-    lineage: ["source1"],
-    tenantId: "tenant1",
-  };
-  const stateWithEntry = capability.addCatalogEntry(initial, entry, auditFn);
-  if (isError(stateWithEntry)) throw new Error("addCatalogEntry should succeed");
-
-  const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
-    id: "req1",
-    tenantId: "tenant1",
-    datasetId: "dataset1",
-  };
-  const stateWithRequest = capability.createDataSubjectRequest(stateWithEntry, request);
-  if (isError(stateWithRequest)) throw new Error("createDataSubjectRequest should succeed");
-
-  const invalidFulfill = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
-    "",
-    "op1",
-    auditFn,
-  );
-  assert.ok(isError(invalidFulfill), "fulfill without evidence must fail");
-  assert.strictEqual((invalidFulfill as capability.DataGovernanceCatalogError).kind, "MISSING_EVIDENCE");
-
-  const validFulfill = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
-    "evidence1",
-    "op1",
-    auditFn,
-  );
-  if (isError(validFulfill)) throw new Error("fulfill with evidence must succeed");
-  const fulfilledRequest = (validFulfill as capability.DataGovernanceCatalogState).requests.find(
-    (r) => r.id === "req1",
-  );
-  assert.strictEqual(fulfilledRequest?.state, "fulfilled");
-  assert.strictEqual(fulfilledRequest?.evidence, "evidence1");
-  assert.strictEqual(fulfilledRequest?.operatorId, "op1");
-
-  const invalidClassification = capability.validateClassification("invalid", "tenant1");
-  assert.ok(isError(invalidClassification), "invalid classification must be rejected");
-  assert.strictEqual(
-    (invalidClassification as capability.DataGovernanceCatalogError).kind,
-    "INVALID_CLASSIFICATION",
-  );
-});
-
-test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
-  const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
-
-  const invalidClassification = capability.validateClassification("invalid", "tenant1");
-  assert.ok(isError(invalidClassification));
-  assert.strictEqual(
-    (invalidClassification as capability.DataGovernanceCatalogError).kind,
-    "INVALID_CLASSIFICATION",
-  );
-
-  const invalidState = capability.validateRequestState("invalid", "tenant1");
-  assert.ok(isError(invalidState));
-  assert.strictEqual(
-    (invalidState as capability.DataGovernanceCatalogError).kind,
-    "CONFIGURATION_MISSING",
-  );
-
-  const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
-    id: "req1",
-    tenantId: "tenant1",
-    datasetId: "dataset1",
-  };
-  const stateWithRequest = capability.createDataSubjectRequest(initial, request);
-  if (isError(stateWithRequest)) throw new Error("createDataSubjectRequest should succeed");
-  const invalidFulfill = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
-    "",
-    "op1",
-    auditFn,
-  );
-  assert.ok(isError(invalidFulfill));
-  assert.strictEqual(
-    (invalidFulfill as capability.DataGovernanceCatalogError).kind,
-    "MISSING_EVIDENCE",
-  );
-
-  const entry: capability.DataGovernanceCatalogEntry = {
-    id: "entry1",
-    datasetId: "dataset1",
-    classification: "PII" as const,
-    lineage: ["source1"],
-    tenantId: "tenant1",
-  };
-  const stateWithEntry = capability.addCatalogEntry(initial, entry, auditFn);
-  if (isError(stateWithEntry)) throw new Error("addCatalogEntry should succeed");
-  const duplicateEntry = capability.addCatalogEntry(stateWithEntry, entry, auditFn);
-  assert.ok(isError(duplicateEntry));
-  assert.strictEqual(
-    (duplicateEntry as capability.DataGovernanceCatalogError).kind,
-    "TENANT_BOUNDARY_VIOLATION",
-  );
-
-  const providerUnavailableFn = (_: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError => ({
-    kind: "PROVIDER_UNAVAILABLE",
-    message: "Audit provider unavailable",
-    tenantId: "tenant1",
-  });
-  const providerError = capability.addCatalogEntry(initial, entry, providerUnavailableFn);
-  assert.ok(isError(providerError));
-  assert.strictEqual((providerError as capability.DataGovernanceCatalogError).kind, "PROVIDER_UNAVAILABLE");
-});
-
-test("datagovernancecataloglineageclassificationpiidsrgdprlifecycle", () => {
-  const auditLog: capability.DataGovernanceAuditEvent[] = [];
+  const auditEvents: capability.DataGovernanceAuditEvent[] = [];
   const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
-    auditLog.push(event);
+    auditEvents.push(event);
     return null;
   };
 
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
   const entry: capability.DataGovernanceCatalogEntry = {
-    id: "entry1",
-    datasetId: "dataset1",
+    id: "entry-contracts",
+    datasetId: "dataset-contracts",
+    classification: "sensitive" as const,
+    lineage: ["source-contracts"],
+    tenantId: "tenant-contracts",
+  };
+  const withEntry = asState(capability.addCatalogEntry(capability.initialState, entry, auditFn));
+
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-contracts",
+    tenantId: "tenant-contracts",
+    datasetId: "dataset-contracts",
+  };
+  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request));
+
+  const deniedFulfill = asError(
+    capability.fulfillDataSubjectRequest(
+      withRequest,
+      "request-contracts",
+      "tenant-contracts",
+      "",
+      "operator-contracts",
+      auditFn,
+    ),
+  );
+  assert.strictEqual(deniedFulfill.kind, "MISSING_EVIDENCE");
+
+  const fulfilled = asState(
+    capability.fulfillDataSubjectRequest(
+      withRequest,
+      "request-contracts",
+      "tenant-contracts",
+      "evidence-contracts",
+      "operator-contracts",
+      auditFn,
+    ),
+  );
+  const fulfilledRequest = capability.getRequestsForTenant(fulfilled, "tenant-contracts").find(
+    (item) => item.id === "request-contracts",
+  );
+  assert.ok(fulfilledRequest !== undefined);
+  assert.strictEqual(fulfilledRequest.state, "fulfilled");
+  assert.strictEqual(fulfilledRequest.evidence, "evidence-contracts");
+
+  const invalidClass = asError(capability.validateClassification("invalid-classification", "tenant-contracts"));
+  assert.strictEqual(invalidClass.kind, "INVALID_CLASSIFICATION");
+
+  const invalidRoute = asError(capability.updateCatalogEntryClassification(
+    withEntry,
+    "entry-contracts",
+    "invalid",
+    "tenant-contracts",
+    auditFn,
+  ));
+  assert.strictEqual(invalidRoute.kind, "INVALID_CLASSIFICATION");
+
+  assert.ok(auditEvents.some((event) => event.kind === "CLASSIFICATION_CHANGE"));
+  assert.ok(auditEvents.some((event) => event.kind === "REQUEST_FULFILLED"));
+});
+
+test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
+  const blockedEvents: capability.DataGovernanceAuditEvent[] = [];
+  const blockedAuditFn = (
+    event: capability.DataGovernanceAuditEvent,
+  ): capability.DataGovernanceCatalogError => {
+    blockedEvents.push(event);
+    return {
+      kind: "DEGRADED_READINESS",
+      message: "governance adapter degraded",
+      tenantId: event.tenantId,
+    };
+  };
+
+  const badClassification = asError(capability.validateClassification("invalid", "tenant-error"));
+  assert.strictEqual(badClassification.kind, "INVALID_CLASSIFICATION");
+
+  const badRequestState = asError(capability.validateRequestState("invalid", "tenant-error"));
+  assert.strictEqual(badRequestState.kind, "CONFIGURATION_MISSING");
+
+  const baselineEntry: capability.DataGovernanceCatalogEntry = {
+    id: "entry-error",
+    datasetId: "dataset-error",
+    classification: "PII" as const,
+    lineage: ["source-error"],
+    tenantId: "tenant-error",
+  };
+
+  const addBlocked = asError(capability.addCatalogEntry(capability.initialState, baselineEntry, blockedAuditFn));
+  assert.strictEqual(addBlocked.kind, "DEGRADED_READINESS");
+
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-error",
+    tenantId: "tenant-error",
+    datasetId: "dataset-error",
+  };
+  const seeded = asState(capability.createDataSubjectRequest(capability.initialState, request));
+  const fulfillBlocked = asError(
+    capability.fulfillDataSubjectRequest(
+      seeded,
+      "request-error",
+      "tenant-error",
+      "evidence-error",
+      "operator-error",
+      blockedAuditFn,
+    ),
+  );
+  assert.strictEqual(fulfillBlocked.kind, "DEGRADED_READINESS");
+
+  const unchanged = capability.getRequestsForTenant(seeded, "tenant-error")[0];
+  assert.strictEqual(unchanged.state, "open");
+  assert.strictEqual(unchanged.evidence, null);
+
+  const presentState: capability.DataGovernanceCatalogState = asState(
+    capability.addCatalogEntry(capability.initialState, baselineEntry, () => null),
+  );
+  const boundaryViolation = asError(capability.updateCatalogEntryClassification(
+    presentState,
+    "entry-error",
+    "sensitive",
+    "tenant-other",
+    () => null,
+  ));
+  assert.strictEqual(boundaryViolation.kind, "TENANT_BOUNDARY_VIOLATION");
+});
+
+test("datagovernancecataloglineageclassificationpiidsrgdprlifecycle", () => {
+  const auditEvents: capability.DataGovernanceAuditEvent[] = [];
+  const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
+    auditEvents.push(event);
+    return null;
+  };
+
+  const entry: capability.DataGovernanceCatalogEntry = {
+    id: "entry-lifecycle",
+    datasetId: "dataset-lifecycle",
     classification: "none" as const,
-    lineage: ["source1"],
-    tenantId: "tenant1",
+    lineage: ["source-lifecycle", "lineage-lifecycle"],
+    tenantId: "tenant-lifecycle",
   };
-  const stateWithEntry = capability.addCatalogEntry(initial, entry, auditFn);
-  if (isError(stateWithEntry)) throw new Error("addCatalogEntry should succeed");
+  const created = asState(capability.addCatalogEntry(capability.initialState, entry, auditFn));
 
-  const updated = capability.updateCatalogEntryClassification(
-    stateWithEntry,
-    "entry1",
-    "PII",
-    "tenant1",
-    auditFn,
+  const reclassified = asState(
+    capability.updateCatalogEntryClassification(
+      created,
+      "entry-lifecycle",
+      "PII",
+      "tenant-lifecycle",
+      auditFn,
+    ),
   );
-  if (isError(updated)) throw new Error("updateCatalogEntryClassification should succeed");
-  const updatedEntry = (updated as capability.DataGovernanceCatalogState).catalog.find(
-    (e) => e.id === "entry1",
-  );
-  assert.strictEqual(updatedEntry?.classification, "PII");
+  const catalogEntry = capability.getCatalogEntriesForTenant(reclassified, "tenant-lifecycle")[0];
+  assert.ok(catalogEntry !== undefined);
+  assert.deepStrictEqual(catalogEntry.lineage, ["source-lifecycle", "lineage-lifecycle"]);
 
-  const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
-    id: "req1",
-    tenantId: "tenant1",
-    datasetId: "dataset1",
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-lifecycle",
+    tenantId: "tenant-lifecycle",
+    datasetId: "dataset-lifecycle",
   };
-  const stateWithRequest = capability.createDataSubjectRequest(updated, request);
-  if (isError(stateWithRequest)) throw new Error("createDataSubjectRequest should succeed");
-  const fulfilled = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
-    "evidence1",
-    "op1",
-    auditFn,
-  );
-  if (isError(fulfilled)) throw new Error("fulfillDataSubjectRequest should succeed");
-  const fulfilledRequest = (fulfilled as capability.DataGovernanceCatalogState).requests.find(
-    (r) => r.id === "req1",
-  );
-  assert.strictEqual(fulfilledRequest?.state, "fulfilled");
-  assert.strictEqual(fulfilledRequest?.evidence, "evidence1");
+  const withRequest = asState(capability.createDataSubjectRequest(reclassified, request));
 
-  const invalidFulfill = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
+  const missingEvidence = asError(capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-lifecycle",
+    "tenant-lifecycle",
     "",
-    "op1",
+    "operator-lifecycle",
     auditFn,
+  ));
+  assert.strictEqual(missingEvidence.kind, "MISSING_EVIDENCE");
+
+  const fulfilled = asState(capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-lifecycle",
+    "tenant-lifecycle",
+    "evidence-lifecycle",
+    "operator-lifecycle",
+    auditFn,
+  ));
+  const fulfilledRequest = capability.getRequestsForTenant(fulfilled, "tenant-lifecycle").find(
+    (item) => item.id === "request-lifecycle",
   );
-  assert.ok(isError(invalidFulfill));
+  assert.ok(fulfilledRequest !== undefined);
+  assert.strictEqual(fulfilledRequest.state, "fulfilled");
+  assert.strictEqual(fulfilledRequest.evidence, "evidence-lifecycle");
+
+  const secondFulfill = asError(capability.fulfillDataSubjectRequest(
+    fulfilled,
+    "request-lifecycle",
+    "tenant-lifecycle",
+    "late-evidence",
+    "operator-lifecycle",
+    auditFn,
+  ));
+  assert.strictEqual(secondFulfill.kind, "CONFIGURATION_MISSING");
+  assert.ok(auditEvents.some((event) => event.kind === "CLASSIFICATION_CHANGE"));
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprpermissions", () => {
-  const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
+  const auditEvents: capability.DataGovernanceAuditEvent[] = [];
+  const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
+    auditEvents.push(event);
+    return null;
+  };
 
-  const entryTenant1: capability.DataGovernanceCatalogEntry = {
-    id: "entry1",
-    datasetId: "dataset1",
+  const entry: capability.DataGovernanceCatalogEntry = {
+    id: "entry-permissions",
+    datasetId: "dataset-permissions",
     classification: "PII" as const,
-    lineage: ["source1"],
-    tenantId: "tenant1",
+    lineage: ["source-permissions"],
+    tenantId: "tenant-permissions",
   };
-  const stateWithEntry = capability.addCatalogEntry(initial, entryTenant1, auditFn);
-  if (isError(stateWithEntry)) throw new Error("addCatalogEntry should succeed");
+  const withEntry = asState(capability.addCatalogEntry(capability.initialState, entry, auditFn));
 
-  const entriesForTenant1 = capability.getCatalogEntriesForTenant(stateWithEntry, "tenant1");
-  assert.strictEqual(entriesForTenant1.length, 1);
-  assert.strictEqual(entriesForTenant1[0].id, "entry1");
+  const tenant1Entries = capability.getCatalogEntriesForTenant(withEntry, "tenant-permissions");
+  assert.strictEqual(tenant1Entries.length, 1);
+  assert.strictEqual(tenant1Entries[0].id, "entry-permissions");
+  const tenantKeys = Object.keys(tenant1Entries[0]).sort();
+  assert.deepStrictEqual(
+    tenantKeys,
+    ["classification", "datasetId", "id", "lineage", "tenantId"].sort(),
+  );
 
-  const entriesForTenant2 = capability.getCatalogEntriesForTenant(stateWithEntry, "tenant2");
-  assert.strictEqual(entriesForTenant2.length, 0);
+  const tenant2Entries = capability.getCatalogEntriesForTenant(withEntry, "tenant-other");
+  assert.strictEqual(tenant2Entries.length, 0);
 
-  const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
-    id: "req1",
-    tenantId: "tenant1",
-    datasetId: "dataset1",
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-permissions",
+    tenantId: "tenant-permissions",
+    datasetId: "dataset-permissions",
   };
-  const stateWithRequest = capability.createDataSubjectRequest(stateWithEntry, request);
-  if (isError(stateWithRequest)) throw new Error("createDataSubjectRequest should succeed");
+  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request));
 
-  const requestsForTenant1 = capability.getRequestsForTenant(stateWithRequest, "tenant1");
-  assert.strictEqual(requestsForTenant1.length, 1);
-  assert.strictEqual(requestsForTenant1[0].id, "req1");
+  const tenant1Requests = capability.getRequestsForTenant(withRequest, "tenant-permissions");
+  assert.strictEqual(tenant1Requests.length, 1);
+  assert.strictEqual(tenant1Requests[0].id, "request-permissions");
 
-  const requestsForTenant2 = capability.getRequestsForTenant(stateWithRequest, "tenant2");
-  assert.strictEqual(requestsForTenant2.length, 0);
+  const tenant2Requests = capability.getRequestsForTenant(withRequest, "tenant-other");
+  assert.strictEqual(tenant2Requests.length, 0);
 
-  const crossTenantUpdate = capability.updateCatalogEntryClassification(
-    stateWithEntry,
-    "entry1",
+  const crossTenantUpdate = asError(capability.updateCatalogEntryClassification(
+    withEntry,
+    "entry-permissions",
     "sensitive",
-    "tenant2",
+    "tenant-other",
     auditFn,
-  );
-  assert.ok(isError(crossTenantUpdate));
-  assert.strictEqual(
-    (crossTenantUpdate as capability.DataGovernanceCatalogError).kind,
-    "TENANT_BOUNDARY_VIOLATION",
-  );
+  ));
+  assert.strictEqual(crossTenantUpdate.kind, "TENANT_BOUNDARY_VIOLATION");
 
-  const crossTenantFulfill = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant2",
-    "evidence1",
-    "op1",
+  const crossTenantFulfill = asError(capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-permissions",
+    "tenant-other",
+    "evidence-permissions",
+    "operator-other",
     auditFn,
+  ));
+  assert.strictEqual(crossTenantFulfill.kind, "TENANT_BOUNDARY_VIOLATION");
+
+  const fulfilled = asState(capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-permissions",
+    "tenant-permissions",
+    "evidence-permissions",
+    "operator-permissions",
+    auditFn,
+  ));
+  const completed = capability.getRequestsForTenant(fulfilled, "tenant-permissions").find(
+    (item) => item.id === "request-permissions",
   );
-  assert.ok(isError(crossTenantFulfill));
-  assert.strictEqual(
-    (crossTenantFulfill as capability.DataGovernanceCatalogError).kind,
-    "TENANT_BOUNDARY_VIOLATION",
-  );
+  assert.ok(completed !== undefined);
+  assert.strictEqual(completed.operatorId, "operator-permissions");
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
-  const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
-
-  const validClassification = capability.validateClassification("PII", "tenant1");
-  assert.strictEqual(validClassification, "PII");
-
-  const invalidClassification = capability.validateClassification("invalid", "tenant1");
-  assert.ok(isError(invalidClassification));
-
-  const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
-    id: "req1",
-    tenantId: "tenant1",
-    datasetId: "dataset1",
-  };
-  const stateWithRequest = capability.createDataSubjectRequest(initial, request);
-  if (isError(stateWithRequest)) throw new Error("createDataSubjectRequest should succeed");
-
-  const invalidFulfill = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
-    "",
-    "op1",
-    auditFn,
-  );
-  assert.ok(isError(invalidFulfill));
-  assert.strictEqual((invalidFulfill as capability.DataGovernanceCatalogError).kind, "MISSING_EVIDENCE");
-
-  const validFulfill = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
-    "evidence1",
-    "op1",
-    auditFn,
-  );
-  if (isError(validFulfill)) throw new Error("fulfillDataSubjectRequest should succeed");
-  const fulfilledRequest = (validFulfill as capability.DataGovernanceCatalogState).requests.find(
-    (r) => r.id === "req1",
-  );
-  assert.strictEqual(fulfilledRequest?.evidence, "evidence1");
-});
-
-test("datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel", () => {
-  const auditFn = (_: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError => ({
-    kind: "PROVIDER_UNAVAILABLE",
-    message: "Audit provider unavailable",
-    tenantId: "tenant1",
-  });
-
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
-  const entry: capability.DataGovernanceCatalogEntry = {
-    id: "entry1",
-    datasetId: "dataset1",
-    classification: "PII" as const,
-    lineage: ["source1"],
-    tenantId: "tenant1",
-  };
-
-  const result = capability.addCatalogEntry(initial, entry, auditFn);
-  assert.ok(isError(result));
-  assert.strictEqual((result as capability.DataGovernanceCatalogError).kind, "PROVIDER_UNAVAILABLE");
-
-  const readOnlyResult = capability.getCatalogEntriesForTenant(initial, "tenant1");
-  assert.strictEqual(readOnlyResult.length, 0);
-});
-
-test("datagovernancecataloglineageclassificationpiidsrgdprstatemodel", () => {
-  const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
-
-  const entry: capability.DataGovernanceCatalogEntry = {
-    id: "entry1",
-    datasetId: "dataset1",
-    classification: "none" as const,
-    lineage: ["source1"],
-    tenantId: "tenant1",
-  };
-  const stateWithEntry = capability.addCatalogEntry(initial, entry, auditFn);
-  if (isError(stateWithEntry)) throw new Error("addCatalogEntry should succeed");
-  const catalogEntry = (stateWithEntry as capability.DataGovernanceCatalogState).catalog.find(
-    (e) => e.id === "entry1",
-  );
-  assert.strictEqual(catalogEntry?.classification, "none");
-
-  const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
-    id: "req1",
-    tenantId: "tenant1",
-    datasetId: "dataset1",
-  };
-  const stateWithRequest = capability.createDataSubjectRequest(stateWithEntry, request);
-  if (isError(stateWithRequest)) throw new Error("createDataSubjectRequest should succeed");
-  const createdRequest = (stateWithRequest as capability.DataGovernanceCatalogState).requests.find(
-    (r) => r.id === "req1",
-  );
-  assert.strictEqual(createdRequest?.state, "open");
-  assert.strictEqual(createdRequest?.evidence, null);
-  assert.strictEqual(createdRequest?.operatorId, null);
-
-  const fulfilled = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
-    "evidence1",
-    "op1",
-    auditFn,
-  );
-  if (isError(fulfilled)) throw new Error("fulfillDataSubjectRequest should succeed");
-  const fulfilledRequest = (fulfilled as capability.DataGovernanceCatalogState).requests.find(
-    (r) => r.id === "req1",
-  );
-  assert.strictEqual(fulfilledRequest?.state, "fulfilled");
-  assert.strictEqual(fulfilledRequest?.evidence, "evidence1");
-  assert.strictEqual(fulfilledRequest?.operatorId, "op1");
-});
-
-test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
-  const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
-  const initial: capability.DataGovernanceCatalogState = capability.initialState;
-
   const validClassifications: readonly capability.DataGovernanceCatalogClassification[] = [
     "none",
     "PII",
     "sensitive",
   ];
   for (const classification of validClassifications) {
-    const result = capability.validateClassification(classification, "tenant1");
+    const result = capability.validateClassification(classification, "tenant-proof");
     assert.strictEqual(result, classification);
   }
 
-  const invalidClassification = capability.validateClassification("invalid", "tenant1");
-  assert.ok(isError(invalidClassification));
-  assert.strictEqual((invalidClassification as capability.DataGovernanceCatalogError).kind, "INVALID_CLASSIFICATION");
+  const invalidClassification = asError(capability.validateClassification("not-a-valid-value", "tenant-proof"));
+  assert.strictEqual(invalidClassification.kind, "INVALID_CLASSIFICATION");
 
   const validStates: readonly capability.DataSubjectRequestState[] = ["open", "fulfilled"];
   for (const state of validStates) {
-    const result = capability.validateRequestState(state, "tenant1");
+    const result = capability.validateRequestState(state, "tenant-proof");
     assert.strictEqual(result, state);
   }
 
-  const invalidState = capability.validateRequestState("invalid", "tenant1");
-  assert.ok(isError(invalidState));
-  assert.strictEqual((invalidState as capability.DataGovernanceCatalogError).kind, "CONFIGURATION_MISSING");
+  const invalidState = asError(capability.validateRequestState("done", "tenant-proof"));
+  assert.strictEqual(invalidState.kind, "CONFIGURATION_MISSING");
 
-  const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
-    id: "req1",
-    tenantId: "tenant1",
-    datasetId: "dataset1",
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-proof",
+    tenantId: "tenant-proof",
+    datasetId: "dataset-proof",
   };
-  const stateWithRequest = capability.createDataSubjectRequest(initial, request);
-  if (isError(stateWithRequest)) throw new Error("createDataSubjectRequest should succeed");
+  const withRequest = asState(capability.createDataSubjectRequest(capability.initialState, request));
 
-  const invalidFulfill = capability.fulfillDataSubjectRequest(
-    stateWithRequest,
-    "req1",
-    "tenant1",
+  const missingEvidence = asError(capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-proof",
+    "tenant-proof",
     "",
-    "op1",
-    auditFn,
+    "operator-proof",
+    () => null,
+  ));
+  assert.strictEqual(missingEvidence.kind, "MISSING_EVIDENCE");
+
+  const withFulfillment = asState(capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-proof",
+    "tenant-proof",
+    "proof-evidence",
+    "operator-proof",
+    () => null,
+  ));
+  const proofRequest = capability.getRequestsForTenant(withFulfillment, "tenant-proof")[0];
+  assert.ok(proofRequest !== undefined);
+  assert.strictEqual(proofRequest.evidence, "proof-evidence");
+
+  const proofEvent = capability.auditCatalogChange(
+    "tenant-proof",
+    "request-proof",
+    "REQUEST_FULFILLED",
+    { kind: "proof", evidence: "proof-evidence" },
+    () => null,
   );
-  assert.ok(isError(invalidFulfill));
-  assert.strictEqual((invalidFulfill as capability.DataGovernanceCatalogError).kind, "MISSING_EVIDENCE");
+  assert.strictEqual(proofEvent, null);
+});
+
+test("datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel", () => {
+  const seedEntry: capability.DataGovernanceCatalogEntry = {
+    id: "entry-readiness",
+    datasetId: "dataset-readiness",
+    classification: "PII" as const,
+    lineage: ["source-readiness"],
+    tenantId: "tenant-readiness",
+  };
+  const readyState = asState(capability.addCatalogEntry(capability.initialState, seedEntry, () => null));
+
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-readiness",
+    tenantId: "tenant-readiness",
+    datasetId: "dataset-readiness",
+  };
+  const readyRequestState = asState(capability.createDataSubjectRequest(readyState, request));
+
+  const readinessEvents: capability.DataGovernanceAuditEvent[] = [];
+  const readinessAuditFn = (
+    event: capability.DataGovernanceAuditEvent,
+  ): capability.DataGovernanceCatalogError => {
+    readinessEvents.push(event);
+    return {
+      kind: "DEGRADED_READINESS",
+      message: "readiness blocked",
+      tenantId: event.tenantId,
+    };
+  };
+
+  const blockedAdd = asError(capability.addCatalogEntry(
+    readyState,
+    {
+      id: "entry-readiness-disabled",
+      datasetId: "dataset-readiness-disabled",
+      classification: "PII",
+      lineage: [],
+      tenantId: "tenant-readiness",
+    },
+    readinessAuditFn,
+  ));
+  assert.strictEqual(blockedAdd.kind, "DEGRADED_READINESS");
+
+  const blockedUpdate = asError(capability.updateCatalogEntryClassification(
+    readyState,
+    "entry-readiness",
+    "sensitive",
+    "tenant-readiness",
+    readinessAuditFn,
+  ));
+  assert.strictEqual(blockedUpdate.kind, "DEGRADED_READINESS");
+
+  const blockedFulfill = asError(capability.fulfillDataSubjectRequest(
+    readyRequestState,
+    "request-readiness",
+    "tenant-readiness",
+    "evidence-readiness",
+    "operator-readiness",
+    readinessAuditFn,
+  ));
+  assert.strictEqual(blockedFulfill.kind, "DEGRADED_READINESS");
+
+  const readOnlyCatalog = capability.getCatalogEntriesForTenant(readyState, "tenant-readiness");
+  assert.strictEqual(readOnlyCatalog.length, 1);
+
+  const readOnlyRequests = capability.getRequestsForTenant(readyRequestState, "tenant-readiness");
+  assert.strictEqual(readOnlyRequests.length, 1);
+
+  const probe = asError(
+    capability.auditCatalogChange(
+      "tenant-readiness",
+      "entry-readiness",
+      "TENANT_SCOPE_CHANGE",
+      { probe: "readiness" },
+      readinessAuditFn,
+    ),
+  );
+  assert.strictEqual(probe.kind, "DEGRADED_READINESS");
+  assert.ok(readinessEvents.some((event) => event.tenantId === "tenant-readiness"));
+});
+
+test("datagovernancecataloglineageclassificationpiidsrgdprstatemodel", () => {
+  const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
+    return null;
+  };
+
+  const entry: capability.DataGovernanceCatalogEntry = {
+    id: "entry-state",
+    datasetId: "dataset-state",
+    classification: "none" as const,
+    lineage: ["source-state"],
+    tenantId: "tenant-state",
+  };
+  const withEntry = asState(capability.addCatalogEntry(capability.initialState, entry, auditFn));
+
+  const catalogRecord = capability.getCatalogEntriesForTenant(withEntry, "tenant-state")[0];
+  assert.ok(catalogRecord !== undefined);
+  assert.strictEqual(catalogRecord.classification, "none");
+  assert.deepStrictEqual(catalogRecord.lineage, ["source-state"]);
+
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-state",
+    tenantId: "tenant-state",
+    datasetId: "dataset-state",
+  };
+  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request));
+  const createdRequest = capability.getRequestsForTenant(withRequest, "tenant-state")[0];
+  assert.ok(createdRequest !== undefined);
+  assert.strictEqual(createdRequest.state, "open");
+  assert.strictEqual(createdRequest.evidence, null);
+  assert.strictEqual(createdRequest.operatorId, null);
+
+  const fulfilled = asState(capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-state",
+    "tenant-state",
+    "state-evidence",
+    "operator-state",
+    auditFn,
+  ));
+  const fulfilledRequest = capability.getRequestsForTenant(fulfilled, "tenant-state")[0];
+  assert.ok(fulfilledRequest !== undefined);
+  assert.strictEqual(fulfilledRequest.state, "fulfilled");
+  assert.strictEqual(fulfilledRequest.evidence, "state-evidence");
+  assert.strictEqual(fulfilledRequest.operatorId, "operator-state");
+
+  const reclassified = asState(capability.updateCatalogEntryClassification(
+    fulfilled,
+    "entry-state",
+    "sensitive",
+    "tenant-state",
+    auditFn,
+  ));
+  const preserved = capability.getRequestsForTenant(reclassified, "tenant-state")[0];
+  assert.ok(preserved !== undefined);
+  assert.strictEqual(preserved.evidence, "state-evidence");
+  assert.strictEqual(capability.getCatalogEntriesForTenant(reclassified, "tenant-state")[0].classification, "sensitive");
+});
+
+test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
+  const validClassifications: readonly capability.DataGovernanceCatalogClassification[] = [
+    "none",
+    "PII",
+    "sensitive",
+  ];
+  for (const classification of validClassifications) {
+    const classificationResult = capability.validateClassification(classification, "tenant-validation");
+    assert.strictEqual(classificationResult, classification);
+  }
+  const invalidClassification = asError(capability.validateClassification("bad-value", "tenant-validation"));
+  assert.strictEqual(invalidClassification.kind, "INVALID_CLASSIFICATION");
+
+  const validStates: readonly capability.DataSubjectRequestState[] = ["open", "fulfilled"];
+  for (const state of validStates) {
+    const stateResult = capability.validateRequestState(state, "tenant-validation");
+    assert.strictEqual(stateResult, state);
+  }
+  const invalidState = asError(capability.validateRequestState("bad-state", "tenant-validation"));
+  assert.strictEqual(invalidState.kind, "CONFIGURATION_MISSING");
+
+  const request: Omit<
+    capability.DataSubjectRequest,
+    "state" | "evidence" | "operatorId"
+  > = {
+    id: "request-validation",
+    tenantId: "tenant-validation",
+    datasetId: "dataset-validation",
+  };
+  const withRequest = asState(capability.createDataSubjectRequest(capability.initialState, request));
+
+  const missingEvidence = asError(
+    capability.fulfillDataSubjectRequest(
+      withRequest,
+      "request-validation",
+      "tenant-validation",
+      "   ",
+      "operator-validation",
+      () => null,
+    ),
+  );
+  assert.strictEqual(missingEvidence.kind, "MISSING_EVIDENCE");
 });

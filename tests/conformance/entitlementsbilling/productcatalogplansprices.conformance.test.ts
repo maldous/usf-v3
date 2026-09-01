@@ -58,13 +58,16 @@ test("productcatalogplanspriceserrormodel", () => {
 
   const invalidRequest = { name: "", description: "Test" };
   const validationResult = capability.createProduct(state, "operator-1", invalidRequest, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
+  if (!("kind" in validationResult)) throw new Error("Expected error");
   assert.equal(validationResult.kind, "VALIDATION_ERROR");
 
   const permissionDeniedResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" }, () => null, []);
+  if (!("kind" in permissionDeniedResult)) throw new Error("Expected error");
   assert.equal(permissionDeniedResult.kind, "PERMISSION_DENIED");
 
   const readinessState: capability.ProductCatalogPlansPricesState = { ...state, readiness: "READ_ONLY" };
   const readinessResult = capability.createProduct(readinessState, "operator-1", { name: "Test", description: "Test" }, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
+  if (!("kind" in readinessResult)) throw new Error("Expected error");
   assert.equal(readinessResult.kind, "READINESS_FAILURE");
 
   const validRequest = { name: "Test Product", description: "Test Description" };
@@ -110,9 +113,11 @@ test("productcatalogplanspricespermissions", () => {
   const state = capability.initialState;
 
   const permissionDeniedResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" }, () => null, []);
+  if (!("kind" in permissionDeniedResult)) throw new Error("Expected error");
   assert.equal(permissionDeniedResult.kind, "PERMISSION_DENIED");
 
   const tenantReadDeniedResult = capability.getTenantCatalog(state, []);
+  if (!("kind" in tenantReadDeniedResult)) throw new Error("Expected error");
   assert.equal(tenantReadDeniedResult.kind, "PERMISSION_DENIED");
 
   const validCreateResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" }, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
@@ -148,6 +153,7 @@ test("productcatalogplanspricesreadinessmodel", () => {
   };
 
   const createResult = capability.createProduct(readOnlyState, "operator-1", { name: "Test", description: "Test" }, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
+  if (!("kind" in createResult)) throw new Error("Expected error");
   assert.equal(createResult.kind, "READINESS_FAILURE");
 
   const listResult = capability.listProducts(readOnlyState);
@@ -210,14 +216,17 @@ test("productcatalogplanspricesstatemodel", () => {
 test("productcatalogplanspricesvalidation", () => {
   const invalidProductRequest = { name: "", description: "Test" };
   const productValidation = capability.validateCreateProductRequest(invalidProductRequest);
+  if (!("kind" in productValidation)) throw new Error("Expected error");
   assert.equal(productValidation.kind, "VALIDATION_ERROR");
 
   const invalidPlanRequest = { productId: "", name: "Test", currency: "USD", billingPeriod: "MONTHLY" };
   const planValidation = capability.validateCreatePlanRequest(invalidPlanRequest);
+  if (!("kind" in planValidation)) throw new Error("Expected error");
   assert.equal(planValidation.kind, "VALIDATION_ERROR");
 
   const invalidPriceRequest = { planId: "", version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" };
   const priceValidation = capability.validateCreatePriceRequest(invalidPriceRequest);
+  if (!("kind" in priceValidation)) throw new Error("Expected error");
   assert.equal(priceValidation.kind, "VALIDATION_ERROR");
 
   const validProductRequest = { name: "Test Product", description: "Test Description" };

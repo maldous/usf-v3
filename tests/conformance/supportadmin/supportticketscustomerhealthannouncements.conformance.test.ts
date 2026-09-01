@@ -1,345 +1,569 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import assert from "node:assert/strict";
+import { test } from "node:test";
 import * as capability from "../../../src/capabilities/supportadmin/supportticketscustomerhealthannouncements.ts";
+
+const assertCapabilityState = (
+  value:
+    | capability.SupportTicketsCustomerHealthAnnouncementsState
+    | capability.SupportTicketsCustomerHealthAnnouncementsError
+): asserts value is capability.SupportTicketsCustomerHealthAnnouncementsState => {
+  assert.ok(!("kind" in value));
+};
+
+const assertCapabilityError = (
+  value:
+    | capability.SupportTicketsCustomerHealthAnnouncementsState
+    | capability.SupportTicketsCustomerHealthAnnouncementsError
+): asserts value is capability.SupportTicketsCustomerHealthAnnouncementsError => {
+  assert.ok("kind" in value);
+};
 
 test("supportticketscustomerhealthannouncementsauditmodel", () => {
   const auditEvents: capability.SupportTicketsCustomerHealthAnnouncementsAuditEvent[] = [];
-  const auditFn = (event: capability.SupportTicketsCustomerHealthAnnouncementsAuditEvent): capability.SupportTicketsCustomerHealthAnnouncementsError | null => {
+  const auditFn: capability.AuditPort = (event) => {
     auditEvents.push(event);
     return null;
   };
 
-  let state = capability.initialState;
-  const ticketResult = capability.createSupportTicket(state, {
-    subject: "Test Subject",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, auditFn);
-  assert.ok(!('kind' in ticketResult));
+  let state: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
+
+  const ticketResult = capability.createTicket(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Login issue",
+    "Customer cannot login",
+    auditFn,
+  );
+  assertCapabilityState(ticketResult);
   state = ticketResult;
-  assert.strictEqual(auditEvents.length, 1);
-  assert.strictEqual(auditEvents[0].kind, 'TICKET_MUTATION');
-  assert.strictEqual(auditEvents[0].entityType, 'TICKET');
-  assert.strictEqual(auditEvents[0].actor, 'user1');
 
-  const announcementResult = capability.createAnnouncement(state, {
-    subject: "Test Announcement",
-    message: "Test Message",
-    createdBy: "user1"
-  }, auditFn);
-  assert.ok(!('kind' in announcementResult));
+  const announcementResult = capability.createAnnouncement(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Maintenance",
+    "Login fix in progress",
+    auditFn,
+  );
+  assertCapabilityState(announcementResult);
   state = announcementResult;
-  assert.strictEqual(auditEvents.length, 2);
-  assert.strictEqual(auditEvents[1].kind, 'ANNOUNCEMENT_MUTATION');
-  assert.strictEqual(auditEvents[1].entityType, 'ANNOUNCEMENT');
 
-  const approvalResult = capability.requestSupportApproval(state, "user1", "org1", auditFn);
-  assert.ok(!('kind' in approvalResult));
-  state = approvalResult;
+  const pendingRequest = capability.requestSupportApproval(state, "tenant-a", "operator-a");
+  assertCapabilityState(pendingRequest);
+  state = pendingRequest;
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-a"), "PENDING_APPROVAL");
+
+  const deniedSessionResult = capability.createSupportSession(state, "tenant-a", "operator-a", auditFn);
+  assertCapabilityError(deniedSessionResult);
+  assert.strictEqual(deniedSessionResult.kind, "MISSING_APPROVAL");
+
+  const approvedRequest = capability.approveSupportRequest(state, "tenant-a", "operator-a", "approver-a");
+  assertCapabilityState(approvedRequest);
+  state = approvedRequest;
+
+  const supportSession = capability.createSupportSession(state, "tenant-a", "operator-a", auditFn);
+  assertCapabilityState(supportSession);
+  state = supportSession;
+
   assert.strictEqual(auditEvents.length, 3);
-  assert.strictEqual(auditEvents[2].kind, 'APPROVAL_WORKFLOW');
+  assert.deepStrictEqual(
+    auditEvents.map((event) => event.kind),
+    ["TICKET_MUTATION", "ANNOUNCEMENT_MUTATION", "SUPPORT_SESSION_CREATED"],
+  );
+  assert.strictEqual(auditEvents[0].tenantId, "tenant-a");
+  assert.strictEqual(auditEvents[0].actorId, "operator-a");
+  assert.strictEqual(auditEvents[0].resourceId.startsWith("ticket_"), true);
+  assert.strictEqual((auditEvents[0].metadata as { action: string }).action, "CREATE");
 
-  const approveResult = capability.approveSupportRequest(state, state.approvals[0].id, "approver1", auditFn);
-  assert.ok(!('kind' in approveResult));
-  state = approveResult;
-  assert.strictEqual(auditEvents.length, 4);
-  assert.strictEqual(auditEvents[3].kind, 'APPROVAL_WORKFLOW');
+  assert.strictEqual(auditEvents[1].tenantId, "tenant-a");
+  assert.strictEqual(auditEvents[1].actorId, "operator-a");
+  assert.strictEqual(auditEvents[1].resourceId.startsWith("ann_"), true);
+  assert.strictEqual((auditEvents[1].metadata as { action: string }).action, "CREATE");
 
-  const sessionResult = capability.createSupportSession(state, state.approvals[0].id, "user1", auditFn);
-  assert.ok(!('kind' in sessionResult));
-  assert.strictEqual(auditEvents.length, 5);
-  assert.strictEqual(auditEvents[4].kind, 'SESSION_CREATED');
+  assert.strictEqual(auditEvents[2].tenantId, "tenant-a");
+  assert.strictEqual(auditEvents[2].actorId, "operator-a");
+  assert.strictEqual((auditEvents[2].metadata as { approvedBy: string | null }).approvedBy, "approver-a");
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-a"), "GRANTED");
 });
 
 test("supportticketscustomerhealthannouncementscontracts", () => {
-  const state = capability.initialState;
-  const ticketResult = capability.createSupportTicket(state, {
-    subject: "Test Subject",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in ticketResult));
-  assert.strictEqual(ticketResult.tickets.length, 1);
+  const auditFn: capability.AuditPort = () => null;
+  let state: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
 
-  const listResult = capability.listSupportTickets(ticketResult, "org1", "user1");
-  assert.ok(!('kind' in listResult));
-  assert.strictEqual(listResult.length, 1);
-
-  const updateResult = capability.updateSupportTicket(ticketResult, ticketResult.tickets[0].id, { status: "CLOSED" }, "user1", () => null);
-  assert.ok(!('kind' in updateResult));
-  assert.strictEqual(updateResult.tickets[0].status, "CLOSED");
-
-  const healthResult = capability.computeCustomerHealth(ticketResult, "org1");
-  assert.ok(!('kind' in healthResult));
-  assert.strictEqual(healthResult.organisationId, "org1");
-
-  const announcementResult = capability.createAnnouncement(state, {
-    subject: "Test Announcement",
-    message: "Test Message",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in announcementResult));
-  assert.strictEqual(announcementResult.announcements.length, 1);
-
-  const listAnnouncementsResult = capability.listAnnouncements(announcementResult, "org1", "user1");
-  assert.ok(!('kind' in listAnnouncementsResult));
-
-  const approvalResult = capability.requestSupportApproval(state, "user1", "org1", () => null);
-  assert.ok(!('kind' in approvalResult));
-  assert.strictEqual(approvalResult.approvals.length, 1);
-
-  const approveResult = capability.approveSupportRequest(approvalResult, approvalResult.approvals[0].id, "approver1", () => null);
-  assert.ok(!('kind' in approveResult));
-  assert.strictEqual(approveResult.approvals[0].status, 'APPROVED');
-});
-
-test("supportticketscustomerhealthannouncementserrormodel", () => {
-  const state = capability.initialState;
-  const errorResult = capability.createSupportTicket(state, {
-    subject: "",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok('kind' in errorResult);
-  assert.strictEqual(errorResult.kind, 'INVALID_INPUT');
-
-  const sessionErrorResult = capability.createSupportSession(state, "non-existent", "user1", () => null);
-  assert.ok('kind' in sessionErrorResult);
-  assert.strictEqual(sessionErrorResult.kind, 'MISSING_APPROVAL');
-
-  const healthResult = capability.computeCustomerHealth(state, "org1");
-  assert.ok(!('kind' in healthResult));
-  assert.strictEqual(healthResult.ticketCount, 0);
-  assert.strictEqual(healthResult.usageCount, 0);
-});
-
-test("supportticketscustomerhealthannouncementslifecycle", () => {
-  let state = capability.initialState;
-  const ticketResult = capability.createSupportTicket(state, {
-    subject: "Test Subject",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in ticketResult));
+  const ticketResult = capability.createTicket(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Ticket contract",
+    "Initial problem",
+    auditFn,
+  );
+  assertCapabilityState(ticketResult);
   state = ticketResult;
 
-  const listResult = capability.listSupportTickets(state, "org1", "user1");
-  assert.ok(!('kind' in listResult));
-  assert.strictEqual(listResult.length, 1);
+  const tickets = capability.listTickets(state, "tenant-a");
+  assert.strictEqual(tickets.length, 1);
 
-  const updateResult = capability.updateSupportTicket(state, state.tickets[0].id, { status: "CLOSED" }, "user1", () => null);
-  assert.ok(!('kind' in updateResult));
-  state = updateResult;
+  const updatedTicket = capability.updateTicket(
+    state,
+    "tenant-a",
+    "operator-a",
+    state.tickets[0].id,
+    { status: "CLOSED" },
+    auditFn,
+  );
+  assertCapabilityState(updatedTicket);
+  state = updatedTicket;
+  assert.strictEqual(state.tickets[0].status, "CLOSED");
 
-  const healthResult = capability.computeCustomerHealth(state, "org1");
-  assert.ok(!('kind' in healthResult));
-  assert.strictEqual(healthResult.ticketCount, 1);
+  const health = capability.computeCustomerHealth(state, "tenant-a");
+  assert.strictEqual(health.tenantId, "tenant-a");
+  assert.strictEqual(health.ticketCount, 1);
+  assert.strictEqual(health.meteredUsage, 0);
 
-  const announcementResult = capability.createAnnouncement(state, {
-    subject: "Test Announcement",
-    message: "Test Message",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in announcementResult));
+  const announcementResult = capability.createAnnouncement(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Operator update",
+    "Work is ongoing",
+    auditFn,
+  );
+  assertCapabilityState(announcementResult);
   state = announcementResult;
+  const announcements = capability.listAnnouncements(state, "tenant-a");
+  assert.strictEqual(announcements.length, 1);
 
-  const listAnnouncementsResult = capability.listAnnouncements(state, "org1", "user1");
-  assert.ok(!('kind' in listAnnouncementsResult));
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-a"), "DENIED");
+  const approvalRequested = capability.requestSupportApproval(state, "tenant-a", "operator-a");
+  assertCapabilityState(approvalRequested);
+  state = approvalRequested;
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-a"), "PENDING_APPROVAL");
 
-  const approvalResult = capability.requestSupportApproval(state, "user1", "org1", () => null);
-  assert.ok(!('kind' in approvalResult));
-  state = approvalResult;
+  const approvalGranted = capability.approveSupportRequest(state, "tenant-a", "operator-a", "approver-a");
+  assertCapabilityState(approvalGranted);
+  state = approvalGranted;
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-a"), "GRANTED");
 
-  const approveResult = capability.approveSupportRequest(state, state.approvals[0].id, "approver1", () => null);
-  assert.ok(!('kind' in approveResult));
-  state = approveResult;
-
-  const sessionResult = capability.createSupportSession(state, state.approvals[0].id, "user1", () => null);
-  assert.ok(!('kind' in sessionResult));
+  const sessionResult = capability.createSupportSession(state, "tenant-a", "operator-a", auditFn);
+  assertCapabilityState(sessionResult);
   assert.strictEqual(sessionResult.sessions.length, 1);
 });
 
+test("supportticketscustomerhealthannouncementserrormodel", () => {
+  const notReadyTicket = capability.createTicket(capability.initialState, "tenant-a", "operator-a", "Sub", "Body", () => null);
+  assertCapabilityError(notReadyTicket);
+  assert.strictEqual(notReadyTicket.kind, "DATABASE_FAILURE");
+
+  const readyState: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
+  const missingTicket = capability.updateTicket(readyState, "tenant-a", "operator-a", "no-ticket", { status: "OPEN" }, () => null);
+  assertCapabilityError(missingTicket);
+  assert.strictEqual(missingTicket.kind, "USE_CASE_FAILURE");
+
+  const waitingApproval = capability.requestSupportApproval(readyState, "tenant-a", "requester-a");
+  assertCapabilityState(waitingApproval);
+  assert.strictEqual(capability.checkSupportAccess(waitingApproval, "tenant-a"), "PENDING_APPROVAL");
+  assert.strictEqual(waitingApproval.approvals[0].status, "PENDING");
+
+  const sessionBlocked = capability.createSupportSession(waitingApproval, "tenant-a", "operator-a", () => null);
+  assertCapabilityError(sessionBlocked);
+  assert.strictEqual(sessionBlocked.kind, "MISSING_APPROVAL");
+  assert.strictEqual(waitingApproval.sessions.length, 0);
+
+  const noDataHealth = capability.computeCustomerHealth(waitingApproval, "tenant-a");
+  assert.strictEqual(noDataHealth.ticketCount, 0);
+  assert.strictEqual(noDataHealth.meteredUsage, 0);
+
+  assert.strictEqual(capability.checkSupportAccess(capability.initialState, "tenant-b"), "DENIED");
+});
+
+test("supportticketscustomerhealthannouncementslifecycle", () => {
+  const auditFn: capability.AuditPort = () => null;
+  let state: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
+
+  const createdTicket = capability.createTicket(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Portal issue",
+    "Cannot open new ticket",
+    auditFn,
+  );
+  assertCapabilityState(createdTicket);
+  state = createdTicket;
+
+  const ticketSummary = capability.listTickets(state, "tenant-a");
+  assert.strictEqual(ticketSummary.length, 1);
+
+  const updatedTicket = capability.updateTicket(
+    state,
+    "tenant-a",
+    "operator-a",
+    state.tickets[0].id,
+    { subject: "Portal issue (updated)" },
+    auditFn,
+  );
+  assertCapabilityState(updatedTicket);
+  state = updatedTicket;
+
+  const health = capability.computeCustomerHealth(state, "tenant-a");
+  assert.strictEqual(health.ticketCount, 1);
+  assert.strictEqual(health.meteredUsage, 0);
+
+  const createdAnnouncement = capability.createAnnouncement(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Tenant note",
+    "Monitoring is on",
+    auditFn,
+  );
+  assertCapabilityState(createdAnnouncement);
+  state = createdAnnouncement;
+
+  const announcementSummary = capability.listAnnouncements(state, "tenant-a");
+  assert.strictEqual(announcementSummary.length, 1);
+  assert.strictEqual(announcementSummary[0].subject, "Tenant note");
+  assert.strictEqual(announcementSummary[0].creator, "operator-a");
+
+  const requestedApproval = capability.requestSupportApproval(state, "tenant-a", "operator-a");
+  assertCapabilityState(requestedApproval);
+  assert.strictEqual(capability.checkSupportAccess(requestedApproval, "tenant-a"), "PENDING_APPROVAL");
+
+  const blockedSession = capability.createSupportSession(requestedApproval, "tenant-a", "operator-a", () => null);
+  assertCapabilityError(blockedSession);
+  assert.strictEqual(blockedSession.kind, "MISSING_APPROVAL");
+
+  const approved = capability.approveSupportRequest(requestedApproval, "tenant-a", "operator-a", "approver-a");
+  assertCapabilityState(approved);
+  const supportSession = capability.createSupportSession(approved, "tenant-a", "operator-a", () => null);
+  assertCapabilityState(supportSession);
+  assert.strictEqual(supportSession.sessions.length, 1);
+  assert.strictEqual(supportSession.approvals[0].status, "APPROVED");
+});
+
 test("supportticketscustomerhealthannouncementspermissions", () => {
-  let state = capability.initialState;
-  const ticketResult = capability.createSupportTicket(state, {
-    subject: "Test Subject",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in ticketResult));
-  state = ticketResult;
+  const auditEvents: capability.SupportTicketsCustomerHealthAnnouncementsAuditEvent[] = [];
+  const auditFn: capability.AuditPort = (event) => {
+    auditEvents.push(event);
+    return null;
+  };
 
-  const listResult = capability.listSupportTickets(state, "org1", "user1");
-  assert.ok(!('kind' in listResult));
-  assert.strictEqual(listResult.length, 1);
+  let state: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
 
-  const otherOrgListResult = capability.listSupportTickets(state, "org2", "user1");
-  assert.ok(!('kind' in otherOrgListResult));
-  assert.strictEqual(otherOrgListResult.length, 0);
+  const tenantATicket = capability.createTicket(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Tenant A issue",
+    "Needs routing fix",
+    auditFn,
+  );
+  assertCapabilityState(tenantATicket);
+  state = tenantATicket;
 
-  const announcementResult = capability.createAnnouncement(state, {
-    subject: "Test Announcement",
-    message: "Test Message for org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in announcementResult));
-  state = announcementResult;
+  const tenantBTicket = capability.createTicket(
+    state,
+    "tenant-b",
+    "operator-b",
+    "Tenant B issue",
+    "Needs escalation",
+    auditFn,
+  );
+  assertCapabilityState(tenantBTicket);
+  state = tenantBTicket;
+  assert.strictEqual(auditEvents[0].actorId, "operator-a");
+  assert.strictEqual(auditEvents[1].actorId, "operator-b");
 
-  const listAnnouncementsResult = capability.listAnnouncements(state, "org1", "user1");
-  assert.ok(!('kind' in listAnnouncementsResult));
-  assert.strictEqual(listAnnouncementsResult.length, 1);
+  const tenantAAnnouncements = capability.createAnnouncement(state, "tenant-a", "operator-a", "A note", "Tenant A update", auditFn);
+  assertCapabilityState(tenantAAnnouncements);
+  state = tenantAAnnouncements;
+  const tenantBAnnouncements = capability.createAnnouncement(state, "tenant-b", "operator-b", "B note", "Tenant B update", auditFn);
+  assertCapabilityState(tenantBAnnouncements);
+  state = tenantBAnnouncements;
 
-  const otherOrgAnnouncementsResult = capability.listAnnouncements(state, "org2", "user1");
-  assert.ok(!('kind' in otherOrgAnnouncementsResult));
-  assert.strictEqual(otherOrgAnnouncementsResult.length, 0);
+  const tenantAListedTickets = capability.listTickets(state, "tenant-a");
+  const tenantBListedTickets = capability.listTickets(state, "tenant-b");
+  const otherTenantListedTickets = capability.listTickets(state, "tenant-c");
+  assert.strictEqual(tenantAListedTickets.length, 1);
+  assert.strictEqual(tenantBListedTickets.length, 1);
+  assert.strictEqual(otherTenantListedTickets.length, 0);
+  assert.strictEqual(tenantAListedTickets[0].organisation, "tenant-a");
+  assert.strictEqual(tenantBListedTickets[0].organisation, "tenant-b");
 
-  const approvalResult = capability.requestSupportApproval(state, "user1", "org1", () => null);
-  assert.ok(!('kind' in approvalResult));
-  state = approvalResult;
+  const tenantAListedAnnouncements = capability.listAnnouncements(state, "tenant-a");
+  const tenantBListedAnnouncements = capability.listAnnouncements(state, "tenant-b");
+  const otherTenantListedAnnouncements = capability.listAnnouncements(state, "tenant-c");
+  assert.strictEqual(tenantAListedAnnouncements.length, 1);
+  assert.strictEqual(tenantBListedAnnouncements.length, 1);
+  assert.strictEqual(otherTenantListedAnnouncements.length, 0);
 
-  const sessionErrorResult = capability.createSupportSession(state, state.approvals[0].id, "user1", () => null);
-  assert.ok('kind' in sessionErrorResult);
-  assert.strictEqual(sessionErrorResult.kind, 'MISSING_APPROVAL');
+  const tenantAHealth = capability.computeCustomerHealth(state, "tenant-a");
+  const tenantBHealth = capability.computeCustomerHealth(state, "tenant-b");
+  const otherTenantHealth = capability.computeCustomerHealth(state, "tenant-c");
+  assert.strictEqual(tenantAHealth.ticketCount, 1);
+  assert.strictEqual(tenantBHealth.ticketCount, 1);
+  assert.strictEqual(otherTenantHealth.ticketCount, 0);
+
+  const approvalForA = capability.requestSupportApproval(state, "tenant-a", "operator-a");
+  assertCapabilityState(approvalForA);
+  const deniedCrossTenantSession = capability.createSupportSession(approvalForA, "tenant-b", "operator-a", () => null);
+  assertCapabilityError(deniedCrossTenantSession);
+  assert.strictEqual(deniedCrossTenantSession.kind, "MISSING_APPROVAL");
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-b"), "DENIED");
 });
 
 test("supportticketscustomerhealthannouncementsproof", () => {
   const auditEvents: capability.SupportTicketsCustomerHealthAnnouncementsAuditEvent[] = [];
-  const auditFn = (event: capability.SupportTicketsCustomerHealthAnnouncementsAuditEvent): capability.SupportTicketsCustomerHealthAnnouncementsError | null => {
+  const auditFn: capability.AuditPort = (event) => {
     auditEvents.push(event);
     return null;
   };
 
-  let state = capability.initialState;
-  const approvalResult = capability.requestSupportApproval(state, "user1", "org1", auditFn);
-  assert.ok(!('kind' in approvalResult));
-  state = approvalResult;
-  assert.strictEqual(state.approvals.length, 1);
-  assert.strictEqual(state.approvals[0].status, 'PENDING');
+  let state: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
 
-  const approveResult = capability.approveSupportRequest(state, state.approvals[0].id, "approver1", auditFn);
-  assert.ok(!('kind' in approveResult));
-  state = approveResult;
-  assert.strictEqual(state.approvals[0].status, 'APPROVED');
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-a"), "DENIED");
 
-  const sessionResult = capability.createSupportSession(state, state.approvals[0].id, "user1", auditFn);
-  assert.ok(!('kind' in sessionResult));
-  assert.strictEqual(sessionResult.sessions.length, 1);
-  assert.strictEqual(auditEvents.filter(e => e.kind === 'SESSION_CREATED').length, 1);
+  state = capability.requestSupportApproval(state, "tenant-a", "operator-a");
+  assertCapabilityState(state);
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-a"), "PENDING_APPROVAL");
+
+  const pendingSession = capability.createSupportSession(state, "tenant-a", "operator-a", auditFn);
+  assertCapabilityError(pendingSession);
+  assert.strictEqual(pendingSession.kind, "MISSING_APPROVAL");
+
+  state = capability.approveSupportRequest(state, "tenant-a", "operator-a", "approver-a");
+  assertCapabilityState(state);
+  assert.strictEqual(state.approvals[0].status, "APPROVED");
+  assert.strictEqual(capability.checkSupportAccess(state, "tenant-a"), "GRANTED");
+
+  const liveSession = capability.createSupportSession(state, "tenant-a", "operator-a", auditFn);
+  assertCapabilityState(liveSession);
+  assert.strictEqual(liveSession.sessions.length, 1);
+  assert.strictEqual(auditEvents.length, 1);
+  assert.strictEqual(auditEvents[0].kind, "SUPPORT_SESSION_CREATED");
+  assert.strictEqual(auditEvents[0].tenantId, "tenant-a");
+  assert.strictEqual((auditEvents[0].metadata as { approvedBy: string | null }).approvedBy, "approver-a");
 });
 
 test("supportticketscustomerhealthannouncementsreadinessmodel", () => {
-  let state = capability.initialState;
-  assert.strictEqual(capability.checkReadiness(state), 'NOT_READY');
+  const auditEvents: capability.SupportTicketsCustomerHealthAnnouncementsAuditEvent[] = [];
+  const auditFn: capability.AuditPort = (event) => {
+    auditEvents.push(event);
+    return null;
+  };
 
-  state = capability.setReadiness(state, 'READY');
-  assert.strictEqual(capability.checkReadiness(state), 'READY');
+  assert.strictEqual(capability.initialState.readiness, "NOT_READY");
+  const readOnlyHealth = capability.computeCustomerHealth(capability.initialState, "tenant-a");
+  assert.strictEqual(readOnlyHealth.ticketCount, 0);
+  assert.strictEqual(readOnlyHealth.meteredUsage, 0);
 
-  const listResult = capability.listSupportTickets(state, "org1", "user1");
-  assert.ok(!('kind' in listResult));
+  const blockedReadinessTicket = capability.createTicket(capability.initialState, "tenant-a", "operator-a", "Blocked", "Write path", () => null);
+  assertCapabilityError(blockedReadinessTicket);
+  assert.strictEqual(blockedReadinessTicket.kind, "DATABASE_FAILURE");
 
-  state = capability.setReadiness(state, 'DEGRADED');
-  assert.strictEqual(capability.checkReadiness(state), 'DEGRADED');
+  const blockedReadinessAnnouncement = capability.createAnnouncement(
+    capability.initialState,
+    "tenant-a",
+    "operator-a",
+    "Blocked announcement",
+    "No writes in not ready",
+    () => null,
+  );
+  assertCapabilityError(blockedReadinessAnnouncement);
+  assert.strictEqual(blockedReadinessAnnouncement.kind, "DATABASE_FAILURE");
 
-  const mutationResult = capability.createSupportTicket(state, {
-    subject: "Test Subject",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in mutationResult));
+  let state: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
+  const readyTicket = capability.createTicket(state, "tenant-a", "operator-a", "Ready write", "Write path", auditFn);
+  assertCapabilityState(readyTicket);
+  state = readyTicket;
+  assert.strictEqual(auditEvents.length, 1);
+  assert.strictEqual(capability.listTickets(state, "tenant-a").length, 1);
+
+  state = {
+    ...state,
+    readiness: "DEGRADED",
+    usageSignals: [{ tenantId: "tenant-a", usage: 42 }],
+  };
+  const degradedHealth = capability.computeCustomerHealth(state, "tenant-a");
+  assert.strictEqual(degradedHealth.meteredUsage, 42);
+
+  const degradedTicket = capability.createTicket(state, "tenant-a", "operator-a", "Should not write", "Read-only", () => null);
+  assertCapabilityError(degradedTicket);
+  assert.strictEqual(degradedTicket.kind, "DATABASE_FAILURE");
+
+  const degradedAnnouncement = capability.createAnnouncement(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Should not write",
+    "Read-only",
+    () => null,
+  );
+  assertCapabilityError(degradedAnnouncement);
+  assert.strictEqual(degradedAnnouncement.kind, "DATABASE_FAILURE");
+
+  assert.strictEqual(auditEvents.length, 1);
 });
 
 test("supportticketscustomerhealthannouncementsstatemodel", () => {
-  let state = capability.initialState;
-  const ticketResult = capability.createSupportTicket(state, {
-    subject: "Test Subject",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in ticketResult));
-  state = ticketResult;
-  assert.strictEqual(state.tickets.length, 1);
-  assert.strictEqual(state.tickets[0].subject, "Test Subject");
-  assert.strictEqual(state.tickets[0].organisationId, "org1");
+  let state: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
 
-  const healthResult = capability.computeCustomerHealth(state, "org1");
-  assert.ok(!('kind' in healthResult));
-  assert.strictEqual(healthResult.ticketCount, 1);
+  const createdTicket = capability.createTicket(
+    state,
+    "tenant-a",
+    "operator-a",
+    "State ticket",
+    "Stateful fields",
+    () => null,
+  );
+  assertCapabilityState(createdTicket);
+  state = createdTicket;
 
-  const announcementResult = capability.createAnnouncement(state, {
-    subject: "Test Announcement",
-    message: "Test Message",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in announcementResult));
-  state = announcementResult;
-  assert.strictEqual(state.announcements.length, 1);
-  assert.strictEqual(state.announcements[0].subject, "Test Announcement");
+  const ticket = state.tickets[0];
+  assert.strictEqual(ticket.id.startsWith("ticket_"), true);
+  assert.strictEqual(ticket.subject, "State ticket");
+  assert.strictEqual(ticket.body, "Stateful fields");
+  assert.strictEqual(ticket.status, "OPEN");
+  assert.strictEqual(ticket.organisation, "tenant-a");
+  assert.strictEqual(ticket.actor, "operator-a");
+  assert.strictEqual(typeof ticket.createdAt, "string");
 
-  const approvalResult = capability.requestSupportApproval(state, "user1", "org1", () => null);
-  assert.ok(!('kind' in approvalResult));
-  state = approvalResult;
-  assert.strictEqual(state.approvals.length, 1);
+  state = {
+    ...state,
+    usageSignals: [{ tenantId: "tenant-a", usage: 33 }],
+  };
 
-  const approveResult = capability.approveSupportRequest(state, state.approvals[0].id, "approver1", () => null);
-  assert.ok(!('kind' in approveResult));
-  state = approveResult;
+  const computedHealth = capability.computeCustomerHealth(state, "tenant-a");
+  assert.strictEqual(computedHealth.ticketCount, 1);
+  assert.strictEqual(computedHealth.meteredUsage, 33);
 
-  const sessionResult = capability.createSupportSession(state, state.approvals[0].id, "user1", () => null);
-  assert.ok(!('kind' in sessionResult));
-  assert.strictEqual(state.sessions.length, 0);
-  state = sessionResult;
-  assert.strictEqual(state.sessions.length, 1);
+  const noUsageHealth = capability.computeCustomerHealth(
+    { ...state, usageSignals: [] },
+    "tenant-a",
+  );
+  assert.strictEqual(noUsageHealth.meteredUsage, 0);
+
+  const createdAnnouncement = capability.createAnnouncement(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Health note",
+    "Read-model check",
+    () => null,
+  );
+  assertCapabilityState(createdAnnouncement);
+  state = createdAnnouncement;
+
+  const announcement = state.announcements[0];
+  assert.strictEqual(announcement.id.startsWith("ann_"), true);
+  assert.strictEqual(announcement.subject, "Health note");
+  assert.strictEqual(announcement.message, "Read-model check");
+  assert.strictEqual(announcement.creator, "operator-a");
+  assert.strictEqual(typeof announcement.createdAt, "string");
+  assert.strictEqual(announcement.tenantId, "tenant-a");
+
+  const approvalRequested = capability.requestSupportApproval(state, "tenant-a", "operator-a");
+  assertCapabilityState(approvalRequested);
+  assert.strictEqual(approvalRequested.approvals[0].approverId, null);
+  assert.strictEqual(approvalRequested.approvals[0].status, "PENDING");
+  assert.strictEqual(approvalRequested.sessions.length, 0);
+
+  const approvalGranted = capability.approveSupportRequest(approvalRequested, "tenant-a", "operator-a", "approver-a");
+  assertCapabilityState(approvalGranted);
+
+  const session = capability.createSupportSession(approvalGranted, "tenant-a", "operator-a", () => null);
+  assertCapabilityState(session);
+  assert.strictEqual(session.sessions[0].tenantId, "tenant-a");
+  assert.strictEqual(session.sessions[0].operatorId, "operator-a");
 });
 
 test("supportticketscustomerhealthannouncementsvalidation", () => {
-  const state = capability.initialState;
-  const ticketResult = capability.createSupportTicket(state, {
-    subject: "Test Subject",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in ticketResult));
-  assert.ok(ticketResult.tickets[0].id.startsWith('ticket-'));
+  let state: capability.SupportTicketsCustomerHealthAnnouncementsState = {
+    ...capability.initialState,
+    readiness: "READY",
+  };
 
-  const healthResult = capability.computeCustomerHealth(ticketResult, "org1");
-  assert.ok(!('kind' in healthResult));
-  assert.strictEqual(healthResult.ticketCount, 1);
-  assert.strictEqual(healthResult.usageCount, 0);
+  const createdTicket = capability.createTicket(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Validation ticket",
+    "Must include subject and body",
+    () => null,
+  );
+  assertCapabilityState(createdTicket);
+  state = createdTicket;
+  assert.strictEqual(state.tickets[0].id.startsWith("ticket_"), true);
 
-  const announcementResult = capability.createAnnouncement(state, {
-    subject: "Test Announcement",
-    message: "Test Message",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok(!('kind' in announcementResult));
-  assert.ok(announcementResult.announcements[0].id.startsWith('announcement-'));
+  state = {
+    ...state,
+    usageSignals: [{ tenantId: "tenant-a", usage: 11 }],
+  };
+  const healthWithUsage = capability.computeCustomerHealth(state, "tenant-a");
+  assert.strictEqual(healthWithUsage.ticketCount, 1);
+  assert.strictEqual(healthWithUsage.meteredUsage, 11);
 
-  const listAnnouncementsResult = capability.listAnnouncements(announcementResult, "org1", "user1");
-  assert.ok(!('kind' in listAnnouncementsResult));
-  assert.strictEqual(listAnnouncementsResult[0].subject, "Test Announcement");
+  const createdAnnouncement = capability.createAnnouncement(
+    state,
+    "tenant-a",
+    "operator-a",
+    "Validation announcement",
+    "Must project subject message creator",
+    () => null,
+  );
+  assertCapabilityState(createdAnnouncement);
+  state = createdAnnouncement;
+  assert.strictEqual(state.announcements[0].id.startsWith("ann_"), true);
 
-  const approvalResult = capability.requestSupportApproval(state, "user1", "org1", () => null);
-  assert.ok(!('kind' in approvalResult));
-  const approveResult = capability.approveSupportRequest(approvalResult, approvalResult.approvals[0].id, "approver1", () => null);
-  assert.ok(!('kind' in approveResult));
-  const sessionResult = capability.createSupportSession(approveResult, approveResult.approvals[0].id, "user1", () => null);
-  assert.ok(!('kind' in sessionResult));
-  assert.strictEqual(sessionResult.sessions.length, 1);
+  const announcementSummary = capability.listAnnouncements(state, "tenant-a");
+  assert.strictEqual(announcementSummary[0].subject, "Validation announcement");
+  assert.strictEqual(announcementSummary[0].message, "Must project subject message creator");
+  assert.strictEqual(announcementSummary[0].creator, "operator-a");
+  assert.ok(!("tenantId" in announcementSummary[0]));
 
-  const invalidTicketResult = capability.createSupportTicket(state, {
-    subject: "",
-    body: "Test Body",
-    organisationId: "org1",
-    createdBy: "user1"
-  }, () => null);
-  assert.ok('kind' in invalidTicketResult);
-  assert.strictEqual(invalidTicketResult.kind, 'INVALID_INPUT');
+  const blockedByApproval = capability.createSupportSession(state, "tenant-a", "operator-a", () => null);
+  assertCapabilityError(blockedByApproval);
+  assert.strictEqual(blockedByApproval.kind, "MISSING_APPROVAL");
+
+  const approvalRequested = capability.requestSupportApproval(state, "tenant-a", "operator-a");
+  assertCapabilityState(approvalRequested);
+  const approvalGranted = capability.approveSupportRequest(approvalRequested, "tenant-a", "operator-a", "approver-a");
+  assertCapabilityState(approvalGranted);
+  const liveSession = capability.createSupportSession(approvalGranted, "tenant-a", "operator-a", () => null);
+  assertCapabilityState(liveSession);
+  assert.strictEqual(liveSession.sessions.length, 1);
+
+  const invalidTicket = capability.createTicket(state, "tenant-a", "operator-a", "", "Missing subject", () => null);
+  assertCapabilityError(invalidTicket);
+  assert.strictEqual(invalidTicket.kind, "VALIDATION_ERROR");
+
+  const invalidAnnouncement = capability.createAnnouncement(state, "tenant-a", "operator-a", "Missing message", "", () => null);
+  assertCapabilityError(invalidAnnouncement);
+  assert.strictEqual(invalidAnnouncement.kind, "VALIDATION_ERROR");
 });

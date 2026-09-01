@@ -1,288 +1,711 @@
-import { assert } from "node:assert/strict";
+import assert from "node:assert/strict";
 import { test } from "node:test";
 import * as capability from "../../../src/capabilities/dataplatform/tenantdataimportexport.ts";
 
+const defaultConfig: capability.TenantDataImportExportConfig = {
+  enableExport: true,
+  enableImport: true,
+  enforceTenantIsolation: true,
+  requireStrictAudit: true,
+};
+
+function makeArchive(
+  tenantId: string,
+  contentDigest: string,
+  unitCount: number,
+): capability.EncryptedArchive {
+  return {
+    tenantId,
+    contentDigest,
+    encryptedData: `cipher:${contentDigest}`,
+    isEncrypted: true,
+    isCompressed: true,
+    unitCount,
+  };
+}
+
+function makeBuilder(
+  archive: capability.EncryptedArchive,
+  options: {
+    available?: boolean;
+    error?: capability.TenantDataImportExportError;
+  } = {},
+): capability.ArchiveBuilderPort {
+  const available = options.available ?? true;
+  const error = options.error;
+  return {
+    isAvailable: () => available,
+    buildEncryptedArchive: () => {
+      if (error) {
+        return { ok: false, error };
+      }
+      return { ok: true, archive };
+    },
+  };
+}
+
+function makeApplier(
+  units: readonly capability.DataUnit[],
+  options: {
+    available?: boolean;
+    unpackError?: string;
+    applyErrors?: Readonly<Record<string, string>>;
+    onApply?: (unit: capability.DataUnit) => void;
+  } = {},
+): capability.PostgresApplierPort {
+  const available = options.available ?? true;
+  const applyErrors = options.applyErrors ?? {};
+  return {
+    isAvailable: () => available,
+    applyUnit: (_tenantId, unit) => {
+      options.onApply?.(unit);
+      const message = applyErrors[unit.id];
+      if (message !== undefined) {
+        return { ok: false, error: message };
+      }
+      return { ok: true };
+    },
+    decryptAndDecompressUnits: () => {
+      if (options.unpackError !== undefined) {
+        return { ok: false, error: options.unpackError };
+      }
+      return { ok: true, units };
+    },
+  };
+}
+
+function makeAuditCapture() {
+  const events: capability.TenantDataImportExportAuditEvent[] = [];
+  return {
+    events,
+    auditFn: (event: capability.TenantDataImportExportAuditEvent) => {
+      events.push(event);
+      return null;
+    },
+  };
+}
+
 test("tenantdataimportexportauditmodel", () => {
-  const tenantId = "tenant-123";
-  const archiveDigest = "abc123";
-  const unitCount = 5;
-  const span = { route: "export", useCase: "backup", provider: "aws" } as const;
-  let auditEvent: capability.TenantDataImportExportAuditEvent | null = null;
+  const tenantId = "tenant-audit";
+  const actor = "audit-operator";
+  const units: readonly capability.DataUnit[] = [
+    { id: "unit-audit-1", tenantId, payload: { secret: "redacted" } },
+  ];
+  const archive = makeArchive(tenantId, "audit-digest", units.length);
+  const audit = makeAuditCapture();
 
-  const auditFn: (event: capability.TenantDataImportExportAuditEvent) => capability.TenantDataImportExportError | null = (event) => {
-    auditEvent = event;
-    return null;
-  };
+  const exportResult = capability.exportTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
+    tenantId,
+    actor,
+    units,
+    makeBuilder(archive),
+    audit.auditFn,
+  );
 
-  const state: capability.TenantDataImportExportState = {
-    ...capability.initialState,
-    readiness: "READY",
-    archiveBuilderAvailable: true,
-    postgresApplierAvailable: true,
-  };
+  assert.strictEqual(exportResult.ok, true);
+  if (!exportResult.ok) return;
 
-  const result = capability.startExport(state, tenantId, archiveDigest, unitCount, span, auditFn);
-  assert(!(result instanceof Error));
-  assert(auditEvent !== null);
-  assert.strictEqual(auditEvent.tenantId, tenantId);
-  assert.strictEqual(auditEvent.kind, "EXPORT_STARTED");
-  assert.strictEqual(auditEvent.archiveDigest, archiveDigest);
-  assert.strictEqual(auditEvent.unitCount, unitCount);
-  assert.deepStrictEqual(auditEvent.span, span);
-  assert(auditEvent.timestamp !== undefined);
+  const exportEvent = audit.events[0];
+  assert.strictEqual(exportEvent.kind, "IMPORT_EXPORT_AUDIT");
+  assert.strictEqual(exportEvent.tenantId, tenantId);
+  assert.strictEqual(exportEvent.operation, "EXPORT");
+  assert.strictEqual(exportEvent.archiveDigest, null);
+  assert.strictEqual(exportEvent.span.route, "/api/v1/tenant/export");
+  assert.strictEqual(exportEvent.span.useCase, "TenantDataExport");
+  assert.strictEqual(exportEvent.span.provider, "PostgresToArchiveBuilder");
+  assert.strictEqual(exportEvent.span.tenantId, tenantId);
+
+  const importResult = capability.importTenantData(
+    exportResult.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    exportResult.archive,
+    makeApplier(
+      [{ id: "unit-foreign", tenantId: "tenant-other", payload: { secret: "forbidden" } }],
+    ),
+    audit.auditFn,
+  );
+
+  assert.strictEqual(importResult.ok, false);
+  if (importResult.ok) return;
+
+  const importEvent = audit.events[1];
+  assert.strictEqual(importEvent.kind, "IMPORT_EXPORT_AUDIT");
+  assert.strictEqual(importEvent.tenantId, tenantId);
+  assert.strictEqual(importEvent.operation, "IMPORT");
+  assert.strictEqual(importEvent.span.route, "/api/v1/tenant/import");
+  assert.strictEqual(importEvent.span.provider, "PostgresApplier");
+  assert.strictEqual(importEvent.archiveDigest, archive.contentDigest);
+
+  const failedProgress = importResult.progress;
+  assert.ok(failedProgress !== undefined);
+  assert.strictEqual(failedProgress.status, "FAILED");
+  assert.strictEqual(failedProgress.failedUnit, "unit-foreign");
+  assert.deepStrictEqual(failedProgress.completedUnits, []);
+  assert.strictEqual(("payload" in failedProgress), false);
+  assert.strictEqual(importResult.error.kind, "TENANT_ISOLATION_VIOLATION");
+  assert.strictEqual(importResult.error.tenantId, tenantId);
+  assert.strictEqual(exportResult.archive.isEncrypted, true);
+  assert.strictEqual(exportResult.archive.isCompressed, true);
 });
 
 test("tenantdataimportexportcontracts", () => {
-  const tenantId = "tenant-456";
-  const archiveDigest = "def456";
-  const unitCount = 3;
-  const span = { route: "import", useCase: "restore", provider: "gcp" } as const;
-  const auditFn = () => null;
+  const tenantId = "tenant-contracts";
+  const actor = "contract-operator";
+  const units: readonly capability.DataUnit[] = [
+    { id: "contract-unit-1", tenantId, payload: { value: 1 } },
+    { id: "contract-unit-2", tenantId, payload: { value: 2 } },
+  ];
+  const archive = makeArchive(tenantId, "contracts-digest", units.length);
 
-  const state: capability.TenantDataImportExportState = {
-    ...capability.initialState,
-    readiness: "READY",
-    archiveBuilderAvailable: true,
-    postgresApplierAvailable: true,
-  };
-
-  const startResult = capability.startImport(state, tenantId, archiveDigest, unitCount, span, auditFn);
-  assert(!(startResult instanceof Error));
-  assert(startResult.progressRecords.length === 1);
-  assert.strictEqual(startResult.progressRecords[0].tenantId, tenantId);
-  assert.strictEqual(startResult.progressRecords[0].archiveDigest, archiveDigest);
-  assert.deepStrictEqual(startResult.progressRecords[0].completedUnits, []);
-
-  const progressResult = capability.recordImportProgress(
-    startResult,
+  const exportResult = capability.exportTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
     tenantId,
-    archiveDigest,
-    "unit-1",
-    span,
-    auditFn,
+    actor,
+    units,
+    makeBuilder(archive),
+    () => null,
   );
-  assert(!(progressResult instanceof Error));
-  assert(progressResult.progressRecords[0].completedUnits.includes("unit-1"));
-  assert.strictEqual(progressResult.progressRecords[0].failedUnit, null);
 
-  const reRunResult = capability.recordImportProgress(
-    progressResult,
+  assert.strictEqual(exportResult.ok, true);
+  if (!exportResult.ok) return;
+
+  const firstCalls: string[] = [];
+  const firstImport = capability.importTenantData(
+    exportResult.state,
+    defaultConfig,
     tenantId,
-    archiveDigest,
-    "unit-1",
-    span,
-    auditFn,
+    actor,
+    exportResult.archive,
+    makeApplier(units, {
+      applyErrors: { "contract-unit-2": "temporary conflict" },
+      onApply: (unit) => {
+        firstCalls.push(unit.id);
+      },
+    }),
+    () => null,
   );
-  assert(!(reRunResult instanceof Error));
-  assert.strictEqual(reRunResult.progressRecords[0].completedUnits.length, 1);
+
+  assert.strictEqual(firstImport.ok, false);
+  if (firstImport.ok) return;
+  assert.deepStrictEqual(firstImport.progress?.completedUnits, ["contract-unit-1"]);
+  assert.strictEqual(firstImport.progress?.failedUnit, "contract-unit-2");
+
+  const resumeCalls: string[] = [];
+  const resumedImport = capability.importTenantData(
+    firstImport.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    exportResult.archive,
+    makeApplier(units, {
+      onApply: (unit) => {
+        resumeCalls.push(unit.id);
+      },
+    }),
+    () => null,
+  );
+
+  assert.strictEqual(resumedImport.ok, true);
+  if (!resumedImport.ok) return;
+  assert.deepStrictEqual(resumedImport.progress.completedUnits, ["contract-unit-1", "contract-unit-2"]);
+  assert.deepStrictEqual(resumeCalls, ["contract-unit-2"]);
+  assert.strictEqual(resumedImport.progress.failedUnit, null);
+
+  let replayCalled = false;
+  const replayImport = capability.importTenantData(
+    resumedImport.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    exportResult.archive,
+    makeApplier(units, {
+      onApply: () => {
+        replayCalled = true;
+      },
+    }),
+    () => null,
+  );
+
+  assert.strictEqual(replayImport.ok, true);
+  if (!replayImport.ok) return;
+  assert.strictEqual(replayCalled, false);
+  assert.deepStrictEqual(replayImport.progress.completedUnits, ["contract-unit-1", "contract-unit-2"]);
+  assert.deepStrictEqual(replayImport.progress.failedUnit, null);
+  assert.strictEqual(firstCalls.length, 2);
 });
 
 test("tenantdataimportexporterrormodel", () => {
-  const tenantId = "tenant-789";
-  const archiveDigest = "ghi789";
-  const unitCount = 2;
-  const failedUnit = "unit-2";
-  const span = { route: "export", useCase: "backup", provider: "azure" } as const;
-  const auditFn = () => null;
+  const tenantId = "tenant-error";
+  const actor = "error-operator";
+  const units: readonly capability.DataUnit[] = [{ id: "error-unit-1", tenantId, payload: {} }];
+  const archive = makeArchive(tenantId, "error-digest", 2);
 
-  const state: capability.TenantDataImportExportState = {
-    ...capability.initialState,
-    readiness: "READY",
-    archiveBuilderAvailable: true,
-    postgresApplierAvailable: true,
-  };
+  const disabledExport = capability.exportTenantData(
+    capability.initialTenantDataImportExportState,
+    { ...defaultConfig, enableExport: false },
+    tenantId,
+    actor,
+    units,
+    makeBuilder(archive),
+    () => null,
+  );
+  assert.strictEqual(disabledExport.ok, false);
+  if (disabledExport.ok) return;
+  assert.strictEqual(disabledExport.error.kind, "FAIL_CLOSED_CONFIGURATION_ERROR");
 
-  const result = capability.failExport(state, tenantId, archiveDigest, unitCount, failedUnit, span, auditFn);
-  assert(!(result instanceof Error));
-  assert.strictEqual(result.lastDecision, "ARCHIVE_INTEGRITY_FAILURE");
-  assert(result.lastError !== null);
-  assert.strictEqual(result.lastError.kind, "ARCHIVE_CORRUPT");
-  assert.strictEqual(result.lastError.message, `Export failed at unit ${failedUnit}`);
-  assert.strictEqual(result.lastError.tenantId, tenantId);
-  assert.strictEqual(result.lastError.isDataLossRisk, true);
+  const disabledImport = capability.importTenantData(
+    capability.initialTenantDataImportExportState,
+    { ...defaultConfig, enableImport: false },
+    tenantId,
+    actor,
+    archive,
+    makeApplier(units),
+    () => null,
+  );
+  assert.strictEqual(disabledImport.ok, false);
+  if (disabledImport.ok) return;
+  assert.strictEqual(disabledImport.error.kind, "FAIL_CLOSED_CONFIGURATION_ERROR");
+
+  const builderUnavailable = capability.exportTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
+    tenantId,
+    actor,
+    units,
+    makeBuilder(archive, { available: false }),
+    () => null,
+  );
+  assert.strictEqual(builderUnavailable.ok, false);
+  if (builderUnavailable.ok) return;
+  assert.strictEqual(builderUnavailable.error.kind, "ARCHIVE_BUILDER_UNAVAILABLE");
+  assert.strictEqual(builderUnavailable.state.readiness, "DEGRADED");
+
+  const applierUnavailable = capability.importTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
+    tenantId,
+    actor,
+    archive,
+    makeApplier(units, { available: false }),
+    () => null,
+  );
+  assert.strictEqual(applierUnavailable.ok, false);
+  if (applierUnavailable.ok) return;
+  assert.strictEqual(applierUnavailable.error.kind, "IMPORT_APPLIER_UNAVAILABLE");
+  assert.strictEqual(applierUnavailable.state.readiness, "DEGRADED");
+
+  const partialUnits: readonly capability.DataUnit[] = [
+    { id: "error-unit-a", tenantId, payload: {} },
+    { id: "error-unit-b", tenantId, payload: {} },
+  ];
+  const partialFail = capability.importTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
+    tenantId,
+    actor,
+    archive,
+    makeApplier(partialUnits, {
+      applyErrors: { "error-unit-b": "unit apply failed" },
+    }),
+    () => null,
+  );
+  assert.strictEqual(partialFail.ok, false);
+  if (partialFail.ok) return;
+  assert.strictEqual(partialFail.error.kind, "UNIT_PROCESSING_FAILED");
+  assert.strictEqual(partialFail.error.risk, "TENANT_DATA_LOSS");
+  assert.deepStrictEqual(partialFail.progress?.completedUnits, ["error-unit-a"]);
+  assert.strictEqual(partialFail.progress?.failedUnit, "error-unit-b");
 });
 
 test("tenantdataimportexportlifecycle", () => {
-  const tenantId = "tenant-101";
-  const archiveDigest = "jkl101";
-  const unitCount = 4;
-  const span = { route: "import", useCase: "migration", provider: "aws" } as const;
-  const auditFn = () => null;
+  const tenantId = "tenant-lifecycle";
+  const actor = "lifecycle-operator";
+  const units: readonly capability.DataUnit[] = [
+    { id: "life-unit-1", tenantId, payload: { idx: 1 } },
+    { id: "life-unit-2", tenantId, payload: { idx: 2 } },
+    { id: "life-unit-3", tenantId, payload: { idx: 3 } },
+  ];
+  const archive = makeArchive(tenantId, "lifecycle-digest", units.length);
 
-  const state: capability.TenantDataImportExportState = {
-    ...capability.initialState,
-    readiness: "READY",
-    archiveBuilderAvailable: true,
-    postgresApplierAvailable: true,
-  };
-
-  const startResult = capability.startImport(state, tenantId, archiveDigest, unitCount, span, auditFn);
-  assert(!(startResult instanceof Error));
-  assert(startResult.progressRecords.length === 1);
-
-  const progressResult = capability.recordImportProgress(
-    startResult,
+  const exportResult = capability.exportTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
     tenantId,
-    archiveDigest,
-    "unit-1",
-    span,
-    auditFn,
+    actor,
+    units,
+    makeBuilder(archive),
+    () => null,
   );
-  assert(!(progressResult instanceof Error));
-  assert(progressResult.progressRecords[0].completedUnits.includes("unit-1"));
 
-  const failureResult = capability.recordImportFailure(
-    progressResult,
+  assert.strictEqual(exportResult.ok, true);
+  if (!exportResult.ok) return;
+  assert.strictEqual(exportResult.archive.isEncrypted, true);
+  assert.strictEqual(exportResult.archive.isCompressed, true);
+
+  const interruptedCalls: string[] = [];
+  const interrupted = capability.importTenantData(
+    exportResult.state,
+    defaultConfig,
     tenantId,
-    archiveDigest,
-    "unit-2",
-    span,
-    auditFn,
+    actor,
+    exportResult.archive,
+    makeApplier(units, {
+      applyErrors: { "life-unit-3": "interruption" },
+      onApply: (unit) => {
+        interruptedCalls.push(unit.id);
+      },
+    }),
+    () => null,
   );
-  assert(!(failureResult instanceof Error));
-  assert.strictEqual(failureResult.progressRecords[0].failedUnit, "unit-2");
-  assert(failureResult.progressRecords[0].completedUnits.includes("unit-1"));
-  assert.strictEqual(failureResult.lastDecision, "ARCHIVE_INTEGRITY_FAILURE");
-  assert(failureResult.lastError !== null);
-  assert.strictEqual(failureResult.lastError.isDataLossRisk, true);
+
+  assert.strictEqual(interrupted.ok, false);
+  if (interrupted.ok) return;
+  assert.deepStrictEqual(interrupted.progress?.completedUnits, ["life-unit-1", "life-unit-2"]);
+  assert.strictEqual(interrupted.progress?.failedUnit, "life-unit-3");
+  assert.deepStrictEqual(interruptedCalls, ["life-unit-1", "life-unit-2", "life-unit-3"]);
+
+  const resumedCalls: string[] = [];
+  const resumed = capability.importTenantData(
+    interrupted.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    exportResult.archive,
+    makeApplier(units, {
+      onApply: (unit) => {
+        resumedCalls.push(unit.id);
+      },
+    }),
+    () => null,
+  );
+
+  assert.strictEqual(resumed.ok, true);
+  if (!resumed.ok) return;
+  assert.strictEqual(resumed.state.readiness, "READY");
+  assert.deepStrictEqual(resumed.progress.completedUnits, ["life-unit-1", "life-unit-2", "life-unit-3"]);
+  assert.deepStrictEqual(resumedCalls, ["life-unit-3"]);
 });
 
 test("tenantdataimportexportpermissions", () => {
-  const tenantId = "tenant-202";
-  const targetTenantId = "tenant-303";
-  const result = capability.checkTenantIsolation(
-    capability.initialState,
-    tenantId,
-    targetTenantId,
-  );
-  assert(result instanceof Object);
-  assert.strictEqual((result as capability.TenantDataImportExportError).kind, "TENANT_ISOLATION_VIOLATION");
-  assert.strictEqual((result as capability.TenantDataImportExportError).tenantId, tenantId);
-  assert.strictEqual((result as capability.TenantDataImportExportError).isDataLossRisk, true);
+  const tenantId = "tenant-permissions";
+  const actor = "permission-operator";
 
-  const sameTenantResult = capability.checkTenantIsolation(
-    capability.initialState,
+  const crossTenantExport = capability.exportTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
     tenantId,
-    tenantId,
+    actor,
+    [{ id: "cross-unit", tenantId: "tenant-other", payload: {} }],
+    makeBuilder(makeArchive(tenantId, "permission-export-digest", 1)),
+    () => null,
   );
-  assert.strictEqual(sameTenantResult, "IMPORT_EXPORT_GRANTED");
+  assert.strictEqual(crossTenantExport.ok, false);
+  if (crossTenantExport.ok) return;
+  assert.strictEqual(crossTenantExport.error.kind, "TENANT_ISOLATION_VIOLATION");
+
+  const archiveByOtherTenant = makeArchive("tenant-other", "permission-digest", 1);
+  const archiveTenantMismatch = capability.importTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
+    tenantId,
+    actor,
+    archiveByOtherTenant,
+    makeApplier([{ id: "tenant-unit-1", tenantId: "tenant-other", payload: {} }]),
+    () => null,
+  );
+  assert.strictEqual(archiveTenantMismatch.ok, false);
+  if (archiveTenantMismatch.ok) return;
+  assert.strictEqual(archiveTenantMismatch.error.kind, "TENANT_ISOLATION_VIOLATION");
+
+  const expectedTenantArchive = makeArchive(tenantId, "permission-digest", 1);
+  const crossTenantUnit = capability.importTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
+    tenantId,
+    actor,
+    expectedTenantArchive,
+    makeApplier([{ id: "cross-unit", tenantId: "tenant-other", payload: {} }]),
+    () => null,
+  );
+  assert.strictEqual(crossTenantUnit.ok, false);
+  if (crossTenantUnit.ok) return;
+  assert.strictEqual(crossTenantUnit.error.kind, "TENANT_ISOLATION_VIOLATION");
+  assert.strictEqual(crossTenantUnit.progress?.tenantId, tenantId);
+  assert.strictEqual(crossTenantUnit.progress?.archiveDigest, expectedTenantArchive.contentDigest);
 });
 
 test("tenantdataimportexportproof", () => {
-  const tenantId = "tenant-404";
-  const archiveDigest = "mno404";
-  const unitCount = 1;
-  const span = { route: "import", useCase: "test", provider: "local" } as const;
-  const auditFn = () => null;
-
-  const state: capability.TenantDataImportExportState = {
-    ...capability.initialState,
+  const readyState: capability.TenantDataImportExportState = {
+    ...capability.initialTenantDataImportExportState,
     readiness: "READY",
-    archiveBuilderAvailable: true,
-    postgresApplierAvailable: true,
   };
 
-  const startResult = capability.startImport(state, tenantId, archiveDigest, unitCount, span, auditFn);
-  assert(!(startResult instanceof Error));
-  const progressResult = capability.recordImportProgress(
-    startResult,
-    tenantId,
-    archiveDigest,
-    "unit-0",
-    span,
-    auditFn,
-  );
-  assert(!(progressResult instanceof Error));
-  assert(progressResult.progressRecords[0].completedUnits.includes("unit-0"));
+  const pending = capability.evaluatePromotionBlockers(readyState, "PENDING", true, true);
+  assert.strictEqual(pending.canPromote, false);
+  if (!pending.canPromote) {
+    assert.strictEqual(pending.error.kind, "PROMOTION_BLOCKED");
+  }
 
-  const reRunResult = capability.recordImportProgress(
-    progressResult,
-    tenantId,
-    archiveDigest,
-    "unit-0",
-    span,
-    auditFn,
+  const missingSignals = capability.evaluatePromotionBlockers(readyState, "VERIFIED", false, false);
+  assert.strictEqual(missingSignals.canPromote, false);
+  if (!missingSignals.canPromote) {
+    assert.strictEqual(missingSignals.error.kind, "PROMOTION_BLOCKED");
+  }
+
+  const failedProof = capability.evaluatePromotionBlockers(readyState, "FAILED", true, true);
+  assert.strictEqual(failedProof.canPromote, false);
+  if (!failedProof.canPromote) {
+    assert.strictEqual(failedProof.error.kind, "PROMOTION_BLOCKED");
+  }
+
+  const promoted = capability.evaluatePromotionBlockers(readyState, "VERIFIED", true, true);
+  assert.strictEqual(promoted.canPromote, true);
+
+  const blockedByReadiness = capability.evaluatePromotionBlockers(
+    { ...readyState, readiness: "NOT_READY" },
+    "VERIFIED",
+    true,
+    true,
   );
-  assert(!(reRunResult instanceof Error));
-  assert.strictEqual(reRunResult.progressRecords[0].completedUnits.length, 1);
+  assert.strictEqual(blockedByReadiness.canPromote, false);
+  if (!blockedByReadiness.canPromote) {
+    assert.strictEqual(blockedByReadiness.error.kind, "PROMOTION_BLOCKED");
+  }
 });
 
 test("tenantdataimportexportreadinessmodel", () => {
-  const state1 = capability.setProviderAvailability(
-    capability.initialState,
-    true,
-    true,
-  );
-  assert.strictEqual(state1.readiness, "READY");
-  assert.strictEqual(state1.archiveBuilderAvailable, true);
-  assert.strictEqual(state1.postgresApplierAvailable, true);
+  const archive = makeArchive("tenant-readiness", "readiness-digest", 1);
+  const alwaysReady = capability.checkReadiness(makeBuilder(archive, { available: true }), makeApplier([], { available: true }));
+  assert.strictEqual(alwaysReady, "READY");
 
-  const state2 = capability.setProviderAvailability(
-    capability.initialState,
-    true,
-    false,
+  const degradedByApplier = capability.checkReadiness(
+    makeBuilder(archive, { available: true }),
+    makeApplier([], { available: false }),
   );
-  assert.strictEqual(state2.readiness, "DEGRADED");
+  assert.strictEqual(degradedByApplier, "DEGRADED");
 
-  const state3 = capability.setProviderAvailability(
-    capability.initialState,
-    false,
-    true,
+  const degradedByBuilder = capability.checkReadiness(
+    makeBuilder(archive, { available: false }),
+    makeApplier([], { available: true }),
   );
-  assert.strictEqual(state3.readiness, "DEGRADED");
+  assert.strictEqual(degradedByBuilder, "DEGRADED");
 
-  const state4 = capability.setProviderAvailability(
-    capability.initialState,
+  const notReady = capability.checkReadiness(
+    makeBuilder(archive, { available: false }),
+    makeApplier([], { available: false }),
+  );
+  assert.strictEqual(notReady, "NOT_READY");
+
+  const disabledExport = capability.exportTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
+    "tenant-readiness",
+    "readiness-operator",
+    [],
+    makeBuilder(makeArchive("tenant-readiness", "readiness-disabled", 0), { available: false }),
+    () => null,
+  );
+  assert.strictEqual(disabledExport.ok, false);
+  if (!disabledExport.ok) return;
+  assert.strictEqual(disabledExport.error.kind, "ARCHIVE_BUILDER_UNAVAILABLE");
+  assert.strictEqual(disabledExport.state.readiness, "DEGRADED");
+
+  const blockedPromotion = capability.evaluatePromotionBlockers(
+    { ...capability.initialTenantDataImportExportState, readiness: notReady },
+    "PENDING",
     false,
     false,
   );
-  assert.strictEqual(state4.readiness, "DEGRADED");
+  assert.strictEqual(blockedPromotion.canPromote, false);
+  if (!blockedPromotion.canPromote) {
+    assert.strictEqual(blockedPromotion.error.kind, "PROMOTION_BLOCKED");
+  }
 });
 
 test("tenantdataimportexportstatemodel", () => {
-  const tenantId = "tenant-505";
-  const archiveDigest = "pqr505";
-  const unitCount = 2;
-  const span = { route: "import", useCase: "sync", provider: "aws" } as const;
-  const auditFn = () => null;
+  const tenantId = "tenant-state";
+  const actor = "state-operator";
+  const unitA: capability.DataUnit = { id: "state-a", tenantId, payload: { part: "a" } };
+  const unitB: capability.DataUnit = { id: "state-b", tenantId, payload: { part: "b" } };
+  const unitC: capability.DataUnit = { id: "state-c", tenantId, payload: { part: "c" } };
 
-  const state: capability.TenantDataImportExportState = {
-    ...capability.initialState,
-    readiness: "READY",
-    archiveBuilderAvailable: true,
-    postgresApplierAvailable: true,
-  };
+  const archiveA = makeArchive(tenantId, "state-digest-a", 1);
+  const archiveB = makeArchive(tenantId, "state-digest-b", 1);
+  const archiveC = makeArchive(tenantId, "state-digest-c", 1);
 
-  const startResult = capability.startImport(state, tenantId, archiveDigest, unitCount, span, auditFn);
-  assert(!(startResult instanceof Error));
-  const progressRecord = startResult.progressRecords[0];
-  assert.strictEqual(progressRecord.tenantId, tenantId);
-  assert.strictEqual(progressRecord.archiveDigest, archiveDigest);
-  assert.deepStrictEqual(progressRecord.completedUnits, []);
-  assert.strictEqual(progressRecord.failedUnit, null);
-
-  const progressResult = capability.recordImportProgress(
-    startResult,
+  const first = capability.importTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
     tenantId,
-    archiveDigest,
-    "unit-1",
-    span,
-    auditFn,
+    actor,
+    archiveA,
+    makeApplier([unitA]),
+    () => null,
   );
-  assert(!(progressResult instanceof Error));
-  assert(progressResult.progressRecords[0].completedUnits.includes("unit-1"));
-  assert.strictEqual(progressResult.progressRecords[0].failedUnit, null);
+  assert.strictEqual(first.ok, true);
+  if (!first.ok) return;
+
+  const second = capability.importTenantData(
+    first.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    archiveB,
+    makeApplier([unitB]),
+    () => null,
+  );
+  assert.strictEqual(second.ok, true);
+  if (!second.ok) return;
+  assert.strictEqual(second.state.progressRecords.length, 2);
+
+  const recordA = second.state.progressRecords.find((record) => record.archiveDigest === archiveA.contentDigest);
+  const recordB = second.state.progressRecords.find((record) => record.archiveDigest === archiveB.contentDigest);
+  assert.ok(recordA !== undefined);
+  assert.ok(recordB !== undefined);
+  assert.strictEqual(recordA.tenantId, tenantId);
+  assert.strictEqual(recordB.tenantId, tenantId);
+  assert.deepStrictEqual(recordA.completedUnits, ["state-a"]);
+  assert.deepStrictEqual(recordB.completedUnits, ["state-b"]);
+  assert.strictEqual(recordA.failedUnit, null);
+  assert.strictEqual(recordB.failedUnit, null);
+  assert.strictEqual(("payload" in recordA), false);
+  assert.strictEqual(("encryptedData" in recordA), false);
+
+  const failed = capability.importTenantData(
+    second.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    archiveC,
+    makeApplier([unitC], { applyErrors: { "state-c": "temporary failure" } }),
+    () => null,
+  );
+  assert.strictEqual(failed.ok, false);
+  if (failed.ok) return;
+  assert.strictEqual(failed.progress?.failedUnit, "state-c");
+
+  let replayCalled = false;
+  const replay = capability.importTenantData(
+    failed.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    archiveA,
+    makeApplier([unitA], {
+      onApply: () => {
+        replayCalled = true;
+      },
+    }),
+    () => null,
+  );
+  assert.strictEqual(replay.ok, true);
+  assert.strictEqual(replayCalled, false);
+  assert.strictEqual(replay.state.progressRecords.length, 3);
 });
 
 test("tenantdataimportexportvalidation", () => {
-  const archiveDigest = "valid-digest";
-  const expectedDigest = "valid-digest";
-  const validResult = capability.validateArchiveIntegrity(archiveDigest, expectedDigest);
-  assert(!(validResult instanceof Error));
-  assert.strictEqual((validResult as { valid: boolean }).valid, true);
+  const tenantId = "tenant-validation";
+  const actor = "validation-operator";
+  const validArchive = makeArchive(tenantId, "validation-digest", 2);
+  const invalidArchive: unknown = 123;
 
-  const invalidResult = capability.validateArchiveIntegrity("invalid-digest", expectedDigest);
-  assert(invalidResult instanceof Object);
-  assert.strictEqual((invalidResult as capability.TenantDataImportExportError).kind, "DIGEST_MISMATCH");
-  assert.strictEqual((invalidResult as capability.TenantDataImportExportError).isDataLossRisk, true);
+  const validCheck = capability.validateArchiveIntegrity(validArchive, tenantId);
+  assert.strictEqual(validCheck.ok, true);
+  if (validCheck.ok) {
+    assert.strictEqual(validCheck.validatedArchive.contentDigest, validArchive.contentDigest);
+  }
+
+  const invalidCheck = capability.validateArchiveIntegrity(invalidArchive, tenantId);
+  assert.strictEqual(invalidCheck.ok, false);
+  if (!invalidCheck.ok) {
+    assert.strictEqual(invalidCheck.error.kind, "INVALID_ARCHIVE");
+  }
+
+  const malformedDigestArchive = {
+    tenantId,
+    contentDigest: "   ",
+    encryptedData: "ciphertext",
+    isEncrypted: true,
+    isCompressed: true,
+    unitCount: 1,
+  };
+  const digestMismatch = capability.validateArchiveIntegrity(malformedDigestArchive, tenantId);
+  assert.strictEqual(digestMismatch.ok, false);
+  if (!digestMismatch.ok) {
+    assert.strictEqual(digestMismatch.error.kind, "DIGEST_MISMATCH");
+  }
+
+  const closedImport = capability.importTenantData(
+    capability.initialTenantDataImportExportState,
+    { ...defaultConfig, enableImport: false },
+    tenantId,
+    actor,
+    validArchive,
+    makeApplier([{ id: "x", tenantId, payload: {} }]),
+    () => null,
+  );
+  assert.strictEqual(closedImport.ok, false);
+  if (!closedImport.ok) return;
+  assert.strictEqual(closedImport.error.kind, "FAIL_CLOSED_CONFIGURATION_ERROR");
+
+  const units: readonly capability.DataUnit[] = [
+    { id: "validation-unit-1", tenantId, payload: { idx: 1 } },
+    { id: "validation-unit-2", tenantId, payload: { idx: 2 } },
+  ];
+
+  const firstPass = capability.importTenantData(
+    capability.initialTenantDataImportExportState,
+    defaultConfig,
+    tenantId,
+    actor,
+    validArchive,
+    makeApplier(units, { applyErrors: { "validation-unit-2": "transient" } }),
+    () => null,
+  );
+  assert.strictEqual(firstPass.ok, false);
+  if (firstPass.ok) return;
+  assert.deepStrictEqual(firstPass.progress?.completedUnits, ["validation-unit-1"]);
+  assert.strictEqual(firstPass.progress?.failedUnit, "validation-unit-2");
+  assert.strictEqual(firstPass.error.kind, "UNIT_PROCESSING_FAILED");
+
+  const secondCalls: string[] = [];
+  const secondPass = capability.importTenantData(
+    firstPass.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    validArchive,
+    makeApplier(units, {
+      onApply: (unit) => {
+        secondCalls.push(unit.id);
+      },
+    }),
+    () => null,
+  );
+  assert.strictEqual(secondPass.ok, true);
+  if (!secondPass.ok) return;
+  assert.deepStrictEqual(secondCalls, ["validation-unit-2"]);
+  assert.deepStrictEqual(secondPass.progress.completedUnits, ["validation-unit-1", "validation-unit-2"]);
+
+  let thirdCalled = false;
+  const thirdPass = capability.importTenantData(
+    secondPass.state,
+    defaultConfig,
+    tenantId,
+    actor,
+    validArchive,
+    makeApplier(units, {
+      onApply: () => {
+        thirdCalled = true;
+      },
+    }),
+    () => null,
+  );
+  assert.strictEqual(thirdPass.ok, true);
+  assert.strictEqual(thirdCalled, false);
 });

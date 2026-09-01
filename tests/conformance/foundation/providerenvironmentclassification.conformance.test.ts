@@ -34,8 +34,8 @@ test("providerenvironmentclassificationauditmodel", () => {
 
   const matrixResult = capability.getClassificationMatrix(state);
   assert.deepStrictEqual(matrixResult.error, null);
-  assert.deepStrictEqual(matrixResult.matrix.p1, { mode: "production-live", environment: "live" });
-  assert.deepStrictEqual(matrixResult.matrix.p2, { mode: "hermetic-mock", environment: "test" });
+  assert.deepStrictEqual(matrixResult.matrix["p1"], { mode: "production-live", environment: "live" });
+  assert.deepStrictEqual(matrixResult.matrix["p2"], { mode: "hermetic-mock", environment: "test" });
 });
 
 test("providerenvironmentclassificationcontracts", () => {
@@ -47,15 +47,18 @@ test("providerenvironmentclassificationcontracts", () => {
     lastError: null,
   };
 
-  const matrix = capability.getEnvironmentClassificationMatrix(state);
-  assert.deepStrictEqual(matrix.p1, { mode: "production-live", environment: "live" });
-  assert.deepStrictEqual(matrix.p2, { mode: "production-shaped", environment: "external" });
+  const matrixResult = capability.getEnvironmentClassificationMatrix(state);
+  assert.deepStrictEqual(matrixResult.error, null);
+  assert.deepStrictEqual(matrixResult.matrix["p1"], { mode: "production-live", environment: "live" });
+  assert.deepStrictEqual(matrixResult.matrix["p2"], { mode: "production-shaped", environment: "external" });
 
   const emptyState: capability.ProviderClassificationState = {
     classifications: [],
     lastError: null,
   };
-  assert.throws(() => capability.getEnvironmentClassificationMatrix(emptyState));
+  const emptyMatrixResult = capability.getEnvironmentClassificationMatrix(emptyState);
+  assert.notStrictEqual(emptyMatrixResult.error, null);
+  assert.strictEqual(emptyMatrixResult.error?.kind, "CONFIG_MISSING");
 });
 
 test("providerenvironmentclassificationerrormodel", () => {
