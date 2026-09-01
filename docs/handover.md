@@ -172,11 +172,43 @@ The receipt-target seam remains as derived last session: no authority blocker,
 both owners `verified-complete` yet retaining `active-permission`/`integrate`, and
 the receipt v2 protocol entirely unbuilt.
 
+### provider-parallel-execution, scoped for a clean start
+
+Dependency-ready and not started. Scoped here so the next session does not
+re-derive it:
+
+- Two **closed record schemas** must be authored to match their graph
+  `requiredFieldSet` exactly and in order — verify mechanically, as the
+  invocation-boundary drafts taught:
+  `urn:usf:parallel-provider-run:1` (`schemas/parallel-provider-run.schema.json`)
+  also carries a `nestedRouteRunRequiredFieldSet` for its `routeRuns` members, and
+  `urn:usf:semantic-token-comparison:1`
+  (`schemas/semantic-token-comparison.schema.json`).
+- `src/commands/provider-parallel.ts` is new; `src/continuous/scheduler.ts` and
+  `tests/scale/continuous-scale.test.ts` already exist and are in the write set.
+- Its `contentDigestRule` defines useful overlap as the positive intersection of
+  accepted useful-work intervals from **at least two distinct independently
+  qualified provider families**, and the comparison record requires the candidate
+  to bind an immutable baseline digest it cannot rewrite, with missing usage,
+  cache or equivalence evidence yielding `NO_BENEFIT_CLAIM`.
+- It has **two** required validations:
+  `urn:usf:validation:provider-parallel-execution` over
+  `tests/scale/continuous-scale.test.ts` and
+  `tests/integration/provider-cli.test.ts`, and
+  `urn:usf:validation:provider-semantic-token-reduction` over
+  `tests/scale/continuous-scale.test.ts` and
+  `tests/unit/observability/metrics.test.ts`. Audit both against candidate scope
+  before materialising, and note that `provider-cli.test.ts` is the file with the
+  `FORCE_COLOR` sensitivity recorded above.
+- Its permission `maximumThrough` is `runtime`, and it owns `call parallel` and
+  `call compare`. It remains **no-contact and fixture-validated**: completing it
+  still does not qualify a route or acquire a receipt.
+
 ### Next safe order
 
 1. `provider-parallel-execution`: dependency-ready, repository-contained and
-   reversible. It needs three new files implemented, and it is where a live
-   multi-provider run first becomes reachable;
+   reversible, scoped immediately above. It is where a live multi-provider run
+   first becomes reachable;
 2. the receipt-v2 registration seam, which is implementation-scale, not
    authority-scale;
 3. reuse `urn:usf:work:validation-scratch-confinement` only for genuine
