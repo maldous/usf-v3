@@ -1,6 +1,291 @@
 # USF V3 handover
 
-## Current live boundary — seven packets complete; the invocation boundary is real
+## Current live boundary — graph-owned authority can now evolve legitimately
+
+This section supersedes every older `Current`, `Live continuation`, `Prior
+boundary` and `Next` heading retained below as chronological evidence; do not
+operationalize those older boundaries unless this section explicitly restates
+them.
+
+Prepared 2026-09-01. Read current Git and remote state rather than trusting any
+identifier here. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded.
+
+This was an authority and graph-maintenance boundary, not a provider
+implementation one. Seven packets remain `verified-complete` with **byte-identical
+basis digests**, and two graph-owned authority resources were added through the
+registered chain. Current provider semantic digest
+`sha256:19e2c18ba13ec2b70c5e32be9a60f96e7deb9fba2098a4d92b2ec02b377a9308`;
+hermes `sha256:1d0b40c1a4ba8b84b699747cded322dc4c76f02ca3c2cce3d3b0eea652cdb3c5`.
+
+### Read this first: the previous boundary's blast-radius claim was wrong
+
+The prior handover recorded that closing these gaps would "stale all seven
+current completions and both current grants" and that this was the reason not to
+proceed. **That was an invalid inference, and it has now been disproven by
+measurement.** No decomposition was needed; the authority model was already
+correctly scoped.
+
+The error was reading `foundationDigest` as a property of `graph/foundation.nq`.
+It is not. `resourceDigest` (`src/graph/index.ts:299`) digests **only the quads
+whose subject is that exact IRI**, so `foundationDigest` is the digest of
+`<urn:usf:foundation:v3>`'s own quads. Adding a new subject to a graph source
+does not touch it.
+
+The rest of the chain is scoped the same way:
+
+- `candidateScope = readSet ∪ writeSet ∪ fileDependencies`
+  (`src/realisation/index.ts:588`).
+- `selectedClosure = {profile} ∪ transitiveResourceIris([product, foundation,
+  contract, work])` (`src/graph/work.ts:1450`) — a transitive **resource**
+  closure from four roots, not a file set. Its own comment says traversing every
+  `selectsContract` edge "would incorrectly turn sibling contract content into a
+  dependency of this work."
+- `productToCoreDigest` binds only `{foundation, foundationVersion}` — identity
+  and version, no content — which is exactly the declared
+  `boundaryIdentityPolicy: "opposite-identity-and-version-without-opposite-content"`
+  of `urn:usf:policy:directional-currentness:1`.
+- `compositeDigest` contains `foundation` and `foundationVersion` but **not**
+  `foundationDigest`.
+
+Measured, twice, in a disposable clone before touching the primary: appending an
+inbound-linked resource left every work's `basisDigest`, `compositeDigest`,
+`foundationDigest` and `scopedDependencyDigest` **byte-identical** and all seven
+completions `verified-complete`. Only the observational whole-store
+`semanticDigest` moved. Confirmed again after the real integrations: the seven
+provider basis digests are still `838ac4a89804`, `11fb39151629`, `c14c4d38499f`,
+`967713151629`, `043e6d7e11b5`, `1060e91e7776`, `16fe82c31af6`.
+
+Never infer a digest's blast radius from the file a resource lives in. Measure it
+by appending to a disposable clone and diffing the projection.
+
+### The authority-evolution mechanism, which already existed
+
+No new primitive was needed. The mechanism is
+`urn:usf:work:realisation-basis-chain`:
+
+- Its permission `urn:usf:permission:semantic-first-order` is **permanently
+  active** (`activationCurrentness:
+  urn:usf:currentness:semantic-first-bootstrap-transition:1`) because
+  `urn:usf:exception:semantic-first-bootstrap:1` is already
+  `exception-state:closed`. So it reports `construction: eligible=true,
+  authority="active-permission", maximumThrough="integrate", reasonCodes=[]`
+  and needs **no** construction-authority grant and **no** publication policy.
+  This is why `publicationPolicyCoverage` shows it with zero policies and
+  `CONSTRUCTION_WORK_NOT_ELIGIBLE` while `usf work` still shows it actionable:
+  the two are consistent, because policy admission is only needed for
+  *grant-based* authority.
+- It legitimately owns `graph/foundation.nq` and `graph/usf-bootstrap.nq` as
+  `writePath`s, plus `src/commands/help.ts` and `tests/contract/cli.test.ts`.
+- It is selected only under profile `urn:usf:profile:v3-self-host-hermes:1` with
+  manifest `graph/manifests/self-host-hermes.json`, and
+  `graph/usf-bootstrap.nq` is a transitive source of the provider manifest, so
+  resources added there are visible to the provider profile.
+- Its own completion stays proofblocked
+  (`COMPLETION_POSTIMAGE_VERIFIER_PROOFBLOCKED`), which is correct and honest:
+  this is a permanently-constructable maintenance seam, not a work that
+  completes.
+
+So graph evolution is the **ordinary registered chain** under that work:
+`usf call → usf resolve → usf apply → usf check → usf integrate`. Used twice
+this session, both times a pure append with a passing confined check.
+
+The one caveat that is load-bearing: `realisation-basis-chain`'s `readSet` has 44
+entries including `src/providers/routing.ts` and
+`tests/unit/providers/routing.test.ts`. The preserved qualification-v2 drafts
+therefore sit **inside** its basis scope, so they must be moved aside before its
+chain runs, or unreviewed bytes are folded into an authority change. They were
+moved aside for both contributions and restored afterwards with unchanged
+digests.
+
+### Only genuinely dependent authority was invalidated
+
+This is the invariant the session had to preserve, and it holds exactly:
+
+| Profile | Effect of appending to `graph/usf-bootstrap.nq` |
+|---|---|
+| `v3-self-host:3` (provider) | **identical** — every stage, completion and digest unchanged |
+| `v3-self-host-hermes:1` | only `realisation-basis-chain`, `semantic-first-lifecycle-admission` and `hermes-management-facade` moved their `basisDigest`/`scopedDependencyDigest` — the three works whose `readSet` actually contains that file. None of them is complete. `compositeDigest` unchanged even for them. Stages and completion flags identical. |
+
+Stale-completion behaviour was not weakened anywhere. The mutating work correctly
+moved its own scoped digest.
+
+### Gap B — closed: the four projections are semantically registered
+
+`usf status` had **no** graph command resource at all; the four projections
+existed only in TypeScript and help text. Registered in
+`graph/usf-bootstrap.nq` (51 quads, pure append):
+
+- `urn:usf:command:status:1` — `RegisteredCliCommand`, `implemented`,
+  `commandPath "status"`, `handlerPath "src/commands/status.ts"`.
+- `urn:usf:status-projection:{closure-satisfiability, publication-policy-coverage,
+  policy-blast-radius, carrier}:1` — typed
+  `urn:usf:type:OperationalStatusProjection`, each carrying `projectionKey`,
+  `statusVocabulary`, `derivationRule` and its nonclaims, transcribed from the
+  implemented behaviour rather than invented.
+
+The projections link **inbound** via `forCommand`, deliberately mirroring
+`ValidationRuntimeClosure`/`forValidation`, so registering a fifth projection
+later never rewrites the command's resource identity or any basis containing it.
+
+Both are discoverable and versioned through the registered interface with
+machine-readable JSON: `usf query --iri urn:usf:command:status:1` returns the
+resource with digest `sha256:911be8a244af4313...`, and each projection carries
+its own resource digest. The declared invariant is satisfied.
+
+Recorded honestly: `resultSchemaIdentifier "urn:usf:status-result:1"` is a
+literal, and a nonclaim states that no closed `SemanticRecordSchema` or
+`schemaPath` exists for it. Registering that record would need
+`schemas/status-result.schema.json`, which is not in any work's write set. No
+help text was changed — the invariant concerned semantic authority, and
+`usf help status` was already truthful about the command, merely silent about the
+projection sections.
+
+### Gap A — half closed, and the residual half is proven unreachable
+
+`urn:usf:validation-runtime-closure:provider-qualification-v2:1` is now declared
+in `graph/usf-bootstrap.nq` (15 quads, pure append) with **11**
+`repositoryReadFile` members, derived mechanically from the eight-file command's
+recursive value-import closure plus its runtime file reads:
+
+```
+schemas/model-catalogue.schema.json      schemas/probe-result.schema.json
+src/providers/fake.ts                    src/providers/local-git.ts
+tests/fixtures/proposal-packet.ts        tests/fixtures/providers/models-dev.json
+tests/unit/providers/catalogue.test.ts   tests/unit/providers/config.test.ts
+tests/unit/providers/fake.test.ts        tests/unit/providers/probe.test.ts
+tests/unit/providers/qualification-assets.test.ts
+```
+
+That **did** fix confinement provability: the refusal moved from
+`CHECK_CONFINEMENT_UNAVAILABLE` to `CHECK_FAILED`, i.e. the launcher now
+constructs and the tests actually execute. Measured per-file under the real
+permission cage, 7 of the 8 files pass completely — 57 tests:
+
+| file | caged result |
+|---|---|
+| catalogue | pass 4 |
+| **config** | **pass 2, fail 3 — `ERR_ACCESS_DENIED`** |
+| economics | pass 15 |
+| fake | pass 4 |
+| probe | pass 7 |
+| qualification-assets | pass 2 |
+| qualification | pass 6 |
+| routing | pass 19 |
+
+`tests/unit/providers/config.test.ts:15,40-41` computes
+`runtimeRoot = join(repositoryRoot, ".usf", "tmp")` and calls `mkdir`/`mkdtemp`
+there. The hermetic cage grants `--allow-fs-write` only to its own
+`.usf-check-tmp` scratch, so those three cases cannot run. **A
+`ValidationRuntimeClosure` supplies read-only files and can never grant write
+access**, so this is a second, distinct defect and confinement was not weakened
+to hide it.
+
+It is also **pre-existing and systemic, not specific to v2**: both
+`urn:usf:validation:provider-qualification-tests` (selected by the v1
+`provider-semantic-qualification`) and
+`urn:usf:validation:provider-qualification-v2` declare
+`urn:usf:environment:hermetic` with bwrap **and** both name `config.test.ts`. So
+that file has never been runnable under either declared confinement.
+
+The construction grant published for `provider-semantic-qualification-v2` during
+the attempt was **rolled back** again, for the same reason as last session: it
+authorizes work whose completion validation still cannot pass.
+
+### The precise missing primitive
+
+Three repairs remain, and all three are blocked by exactly one thing:
+
+1. narrow `urn:usf:validation:provider-qualification-v2`'s command — needs
+   `graph/provider-pipeline.nq`;
+2. make `config.test.ts` write under the cage-writable `TMPDIR` instead of
+   `<root>/.usf/tmp` — needs `tests/unit/providers/config.test.ts`;
+3. register a closed record for `urn:usf:status-result:1` — needs
+   `schemas/status-result.schema.json`.
+
+**None of those three paths is any work's `writePath`.** Neither is
+`graph/provider-pipeline.nq`, `graph/integration.nq` or
+`graph/profile-authority.nq`.
+
+So the smallest missing primitive is: **one narrowly scoped graph-maintenance
+WorkPacket that owns the currently-unowned graph sources and orphaned
+implementation paths.** Critically, that primitive is now *constructible* — a
+`WorkPacket` resource declared into `graph/usf-bootstrap.nq` through
+`realisation-basis-chain` is a legitimate authorized graph edit, and this session
+proved that exact chain works end to end. Under `urn:usf:contract:semantic-first-order:1`
+it would inherit the already-active permission and need no new publication
+policy. What it still needs authored: its contract binding, evidence
+requirements, proof obligations, a validation whose command is satisfiable under
+its declared confinement, and a non-empty `readSet` covering that command's
+files.
+
+Note the general lesson the v2 defect teaches: **a work with an empty `readSet`
+whose validation command names files it does not own is structurally
+unsatisfiable.** `realisation-basis-chain` is the counter-example that works —
+44 readSet entries covering all five of its validation's test files.
+
+### Gap C — derived: no authority blocker remains, only implementation
+
+`urn:usf:rule:provider-receipt-target-registration:1` needs **no new authority
+mechanism**. Both named owners hold current construction authority right now:
+
+| role | work | state |
+|---|---|---|
+| `featureOwner` | `provider-account-tier-receipt` | `verified-complete`, `active-permission`, `maximumThrough: integrate` |
+| `staticRegistryOwner` | `operator-observability` | `verified-complete`, `active-permission`, `maximumThrough: integrate` |
+
+A `verified-complete` work retaining `active-permission` is the point: completed
+works can legitimately construct again, so the three-phase seam is performable
+without reopening anything by convention. `operator-observability` owns
+`src/commands/providers.ts`, `src/commands/help.ts`,
+`src/commands/provider-leaf-dispatch.ts` and `src/commands/status.ts`.
+
+What the seam actually costs is implementation, not authority: the entire receipt
+v2 protocol (source-state head-set, retry DAG, persisted bucketed projection,
+`activate|acquire|verify|reduce` modes and bounded list) is specified in the
+graph and entirely unbuilt. Correct the earlier framing: this is a large
+implementation packet behind a well-specified seam, not an authority gap.
+
+### Verified evidence at this boundary
+
+Two integration commits, each a pure append with a passing confined
+`urn:usf:validation:realisation-basis-chain-focused` check:
+`graph/usf-bootstrap.nq` +15 then +51, zero deletions. Full gate **223/223** and
+containment `pass` after each. A standalone empty-`.usf` clone at
+`4e1aa55a22ad9c661f2ffaf7b4c6fc0bc9fa31e3`, tree
+`54ce2defd3d0b3987259b9064737f88f6187f497`, passes **223/223** with containment
+`pass`, a clean tracked tree, and reproduces semantic digest
+`sha256:19e2c18b...` from tracked graph, source and evidence alone.
+
+The gate stayed at 223 because both contributions were semantic authority only —
+no new test coverage, so no count movement is expected here.
+
+Three preserved uncommitted drafts remain, digests unchanged across being moved
+aside and restored:
+
+| Path | SHA-256 |
+|---|---|
+| `schemas/route-qualification-receipt.schema.json` | `95d5e6be…4dd3fc04` |
+| `src/providers/routing.ts` | `fb4fbeff…840551f84` |
+| `tests/unit/providers/routing.test.ts` | `b03d8dde…19b108d9f` |
+
+`README.md` still carries its unrelated pre-existing documentation draft, outside
+every write set and never committed.
+
+### Next safe order
+
+1. author the graph-maintenance WorkPacket described above into
+   `graph/usf-bootstrap.nq` through `realisation-basis-chain`. It is the single
+   primitive that unblocks all three residual repairs;
+2. through it, narrow the v2 validation command or fix `config.test.ts`'s
+   write root, then take `provider-semantic-qualification-v2` through the
+   canonical chain with the preserved drafts — restoring all three owned paths to
+   exact carrier preimage first;
+3. then `provider-parallel-execution`;
+4. the receipt-v2 seam is implementation-scale and needs no authority work;
+   schedule it deliberately as the specified three-phase change.
+
+## Prior boundary — seven packets complete; the invocation boundary is real
 
 This section supersedes every older `Current`, `Live continuation`, `Prior
 boundary` and `Next` heading retained below as chronological evidence; do not
