@@ -109,6 +109,7 @@ export function classifyService(
     classifications: newClassifications,
     lastAuditEvent: event,
     lastError: null,
+    readiness: 'NOT_READY',
   };
 }
 
@@ -189,10 +190,27 @@ export function checkReadiness(
  */
 export function generateProof(
   state: EnvironmentServiceClassificationState,
+  auditFn: (
+    event: EnvironmentServiceClassificationAuditEvent,
+  ) => EnvironmentServiceClassificationError | null,
 ): {
   readonly proof: readonly ServiceClassification[];
   readonly error: EnvironmentServiceClassificationError | null;
 } {
+  const auditError = auditFn({
+    kind: 'PROOF_GENERATED',
+    service: '<PROOF>',
+    previousClassification: null,
+    newClassification: 'SHARED',
+    timestamp: new Date().toISOString(),
+  });
+  if (auditError !== null) {
+    return {
+      proof: [],
+      error: auditError,
+    };
+  }
+
   const validationError = validateClassifications(state);
   if (validationError !== null) {
     return {
@@ -218,12 +236,15 @@ export function generateProof(
  */
 export function pendingProof(
   state: EnvironmentServiceClassificationState,
+  auditFn: (
+    event: EnvironmentServiceClassificationAuditEvent,
+  ) => EnvironmentServiceClassificationError | null,
 ): {
   readonly proof: readonly ServiceClassification[];
   readonly pending: boolean;
   readonly error: EnvironmentServiceClassificationError | null;
 } {
-  const { proof, error } = generateProof(state);
+  const { proof, error } = generateProof(state, auditFn);
   const { readiness } = checkReadiness(state);
   return {
     proof,

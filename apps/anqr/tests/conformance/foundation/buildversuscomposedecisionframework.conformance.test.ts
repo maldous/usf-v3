@@ -9,7 +9,7 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
   };
   const record1 = capability.createDecisionRecord(
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     1,
   );
@@ -19,7 +19,7 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
 
   const record2 = capability.createDecisionRecord(
     "cap1",
-    "COMPOSE",
+    "COMPOSE" as const,
     { ...justification, rationale: "Revised decision" },
     2,
   );
@@ -52,7 +52,7 @@ test("buildversuscomposedecisionframeworkerrormodel", () => {
   const action = {
     type: "REVISE" as const,
     capabilityId: "cap1",
-    newDecision: "BUILD",
+    newDecision: "BUILD" as const,
     newJustification: {
       criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
       rationale: "test",
@@ -72,7 +72,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Initial decision",
   };
-  const record1 = capability.createDecisionRecord("cap1", "BUILD", justification, 1);
+  const record1 = capability.createDecisionRecord("cap1", "BUILD" as const, justification, 1);
   let proof = capability.authorDecision(null, record1);
   assert.ok(!("kind" in proof), "Initial author should succeed");
   if ("kind" in proof) throw new Error("Unexpected error");
@@ -80,7 +80,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
   const revisedProof = capability.reviseDecision(
     proof,
     "cap1",
-    "COMPOSE",
+    "COMPOSE" as const,
     { ...justification, rationale: "Revised rationale" },
   );
   assert.ok(!("kind" in revisedProof), "Revise should succeed");
@@ -89,7 +89,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
 
   const supersededRecord = capability.createDecisionRecord(
     "cap1",
-    "ADAPTER",
+    "ADAPTER" as const,
     { ...justification, rationale: "Superseded rationale" },
     2,
   );
@@ -117,7 +117,7 @@ test("buildversuscomposedecisionframeworkpermissions", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Test decision",
   };
-  const record = capability.createDecisionRecord("cap1", "BUILD", justification, 1);
+  const record = capability.createDecisionRecord("cap1", "BUILD" as const, justification, 1);
   const proof = capability.authorDecision(null, record);
   assert.ok(!("kind" in proof), "Authoring should succeed without tenant-scoped permissions");
   if ("kind" in proof) throw new Error("Unexpected error");
@@ -141,8 +141,8 @@ test("buildversuscomposedecisionframeworkproof", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Test decision",
   };
-  const record1 = capability.createDecisionRecord("cap1", "BUILD", justification, 1);
-  const record2 = capability.createDecisionRecord("cap2", "COMPOSE", justification, 1);
+  const record1 = capability.createDecisionRecord("cap1", "BUILD" as const, justification, 1);
+  const record2 = capability.createDecisionRecord("cap2", "COMPOSE" as const, justification, 1);
   const proof1 = capability.authorDecision(null, record1);
   assert.ok(!("kind" in proof1), "First author should succeed");
   if ("kind" in proof1) throw new Error("Unexpected error");
@@ -202,13 +202,13 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Valid decision",
   };
-  const validRecord = capability.createDecisionRecord("cap1", "BUILD", validJustification, 1);
+  const validRecord = capability.createDecisionRecord("cap1", "BUILD" as const, validJustification, 1);
   const validatedRecord = capability.validateDecision(validRecord);
   assert.ok(!("kind" in validatedRecord), "Valid decision should pass validation");
   if ("kind" in validatedRecord) throw new Error("Unexpected error");
 
   const invalidJustification = {
-    criteria: { COST: "low", CONTROL: "high", READINESS: "" },
+    criteria: { COST: "low", CONTROL: "high" } as const,
     rationale: "Missing READINESS",
   };
   const invalidRecord = { ...validRecord, justification: invalidJustification };

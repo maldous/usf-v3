@@ -2,7 +2,7 @@ export const BrandingAndThemingThemeSelection = ['system', 'light', 'dark'] as c
 export type BrandingAndThemingThemeSelection = typeof BrandingAndThemingThemeSelection[number];
 
 export const BrandingAndThemingAuditAction = ['value-changed', 'value-cleared'] as const;
-export type BrandingAndThemingAuditAction = typeof BrandingAndTheAuditAction[number];
+export type BrandingAndThemingAuditAction = typeof BrandingAndThemingAuditAction[number];
 
 export const BrandingAndThemingErrorKind = [
   'VALIDATION_ERROR',
@@ -110,7 +110,7 @@ export function readTheme(
     }
     return { kind: 'SUCCESS', theme };
   } catch {
-    return { kind: 'FALLBACK', theme: state.defaultTheme };
+    return { kind: 'FALLBACK', theme: { ...state.defaultTheme } };
   }
 }
 
@@ -131,6 +131,14 @@ export function createBrandingDefinition(
   const validation = validateBrandingDefinition(definition);
   if (validation.kind !== 'SUCCESS') {
     return { kind: 'ERROR', error: validation };
+  }
+
+  const currentDef = state.brandingDefinitions.get(tenantId);
+  if (currentDef !== undefined) {
+    return {
+      kind: 'ERROR',
+      error: { kind: 'FORBIDDEN', message: 'Branding definition already exists for tenant' },
+    };
   }
 
   const auditError = audit({
@@ -187,10 +195,10 @@ export function patchBrandingDefinition(
     }
     nextDefinition = { ...currentDef, applicationName: value };
   } else {
-    if (!BrandingAndThemingThemeSelection.includes(value as BrandingAndThemingThemeSelection)) {
+    if (typeof value !== 'string' || !BrandingAndThemingThemeSelection.includes(value as BrandingAndThemingThemeSelection)) {
       return {
         kind: 'ERROR',
-        error: { kind: 'VALIDATION_ERROR', message: 'Invalid themeSelection' },
+        error: { kind: 'VALIDATION_ERROR', message: 'themeSelection must be one of system, light, dark' },
       };
     }
     nextDefinition = { ...currentDef, themeSelection: value as BrandingAndThemingThemeSelection };
@@ -261,6 +269,8 @@ export function deleteBrandingDefinition(
   return { kind: 'SUCCESS', newState };
 }
 
+type BrandingValidationSuccess = { readonly kind: 'SUCCESS'; readonly definition: BrandingDefinition };
+
 function validateBrandingDefinition(
   definition: unknown,
 ): BrandingValidationSuccess | BrandingAndThemingError {
@@ -274,8 +284,8 @@ function validateBrandingDefinition(
     return { kind: 'VALIDATION_ERROR', message: 'applicationName must be a string' };
   }
 
-  if (!BrandingAndThemingThemeSelection.includes(def.themeSelection as BrandingAndThemingThemeSelection)) {
-    return { kind: 'VALIDATION_ERROR', message: 'Invalid themeSelection' };
+  if (typeof def.themeSelection !== 'string' || !BrandingAndThemingThemeSelection.includes(def.themeSelection as BrandingAndThemingThemeSelection)) {
+    return { kind: 'VALIDATION_ERROR', message: 'themeSelection must be one of system, light, dark' };
   }
 
   const validDef: BrandingDefinition = {
@@ -285,5 +295,3 @@ function validateBrandingDefinition(
 
   return { kind: 'SUCCESS', definition: validDef };
 }
-
-type BrandingValidationSuccess = { readonly kind: 'SUCCESS'; readonly definition: BrandingDefinition };

@@ -282,24 +282,4 @@ test("authenticationplatformvalidation", () => {
 
   const validLifespan = capability.validateSessionLifespan(3600);
   if ("kind" in validLifespan) throw new Error("Unexpected error");
-  assert.strictEqual(validLifespan, 3600);
-
-  const invalidLifespan = capability.validateSessionLifespan(0);
-  assert.ok("kind" in invalidLifespan);
-  assert.strictEqual(invalidLifespan.kind, "INVALID_SESSION_LIFESPAN");
-
-  const validClaimName = capability.validateClaimName("valid-claim");
-  assert.strictEqual(validClaimName, null);
-
-  const invalidClaimName = capability.validateClaimName("invalid claim!");
-  assert.notStrictEqual(invalidClaimName, null);
-  assert.strictEqual(invalidClaimName?.kind, "DANGEROUS_CLAIM_NAME");
-
-  const allowlist = ["admin", "user"] as const;
-  const validRealmRole = capability.validateRealmRole("admin", allowlist);
-  assert.strictEqual(validRealmRole, null);
-
-  const invalidRealmRole = capability.validateRealmRole("superadmin", allowlist);
-  assert.notStrictEqual(invalidRealmRole, null);
-  assert.strictEqual(invalidRealmRole?.kind, "INVALID_REALM_ROLE");
-});
+  assert

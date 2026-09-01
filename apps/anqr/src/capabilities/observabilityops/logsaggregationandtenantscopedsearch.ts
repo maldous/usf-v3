@@ -44,8 +44,8 @@ export interface ReadinessState {
 export interface LogSearchRequest {
   readonly tenantId: string;
   readonly requestId: string;
-  readonly timeStart: string; // ISO string
-  readonly timeEnd: string;   // ISO string
+  readonly timeStart: string;
+  readonly timeEnd: string;
   readonly filters: readonly Record<string, string>[];
   readonly isAdmin: boolean;
 }
@@ -70,10 +70,11 @@ export interface LogSearchFailure {
 
 export type LogSearchResult = LogSearchSuccess | LogSearchFailure;
 
-/**
- * Validates a search request before any provider interaction.
- * Returns null when the request is valid, otherwise a LogSearchError.
- */
+export interface LogStoreAdapter {
+  readonly search: (request: LogSearchRequest) => LogSearchSuccess | LogSearchError;
+  readonly readiness: () => ReadinessState;
+}
+
 export function validateSearchRequest(request: LogSearchRequest): LogSearchError | null {
   if (!request.tenantId) {
     return { kind: 'MISSING_TENANT', message: 'Tenant identifier is required' };
@@ -89,13 +90,16 @@ export function validateSearchRequest(request: LogSearchRequest): LogSearchError
   if (!Array.isArray(request.filters)) {
     return { kind: 'VALIDATION_ERROR', message: 'Filters must be an array' };
   }
+  for (const filter of request.filters) {
+    for (const [key, value] of Object.entries(filter)) {
+      if (typeof key !== 'string' || typeof value !== 'string') {
+        return { kind: 'VALIDATION_ERROR', message: 'Filter keys and values must be strings' };
+      }
+    }
+  }
   return null;
 }
 
-/**
- * Emits an audit event before the search operation.
- * Returns null on success, otherwise a LogSearchError.
- */
 export function auditBeforeSearch(
   event: LogSearchAuditEvent,
   auditFn: (e: LogSearchAuditEvent) => LogSearchError | null,
@@ -103,14 +107,38 @@ export function auditBeforeSearch(
   return auditFn(event);
 }
 
-/**
- * Executes a tenant‑scoped log search using a provider function.
- * The provider function must be pure and return either a success or an error.
- * The function enforces validation, permission, and audit ordering.
- */
+export function computeReadiness(
+  ingestionAvailable: boolean,
+  queryAvailable: boolean,
+  traceCorrelationAvailable: boolean,
+  dashboardAvailable: boolean,
+  collectorAvailable: boolean,
+  metricsAvailable: boolean,
+  errorCaptureAvailable: boolean,
+): ReadinessState {
+  const subStates: ReadinessSubState[] = [];
+  if (ingestionAvailable) subStates.push('INGESTION');
+  if (queryAvailable) subStates.push('QUERY');
+  if (traceCorrelationAvailable) subStates.push('TRACE_CORRELATION');
+  if (dashboardAvailable) subStates.push('DASHBOARD');
+  if (collectorAvailable) subStates.push('COLLECTOR');
+  if (metricsAvailable) subStates.push('METRICS');
+  if (errorCaptureAvailable) subStates.push('ERROR_CAPTURE');
+
+  const degraded = !(
+    ingestionAvailable &&
+    queryAvailable &&
+    traceCorrelationAvailable &&
+    collectorAvailable &&
+    errorCaptureAvailable
+  );
+
+  return { subStates, degraded };
+}
+
 export function searchLogs(
   request: LogSearchRequest,
-  providerFn: (req: LogSearchRequest) => LogSearchSuccess | LogSearchError,
+  adapter: LogStoreAdapter,
   auditFn: (e: LogSearchAuditEvent) => LogSearchError | null,
 ): LogSearchResult {
   const validationError = validateSearchRequest(request);
@@ -129,7 +157,7 @@ export function searchLogs(
     return { kind: 'UNAVAILABLE', error: auditError };
   }
 
-  const providerResult = providerFn(request);
+  const providerResult = adapter.search(request);
   if ('kind' in providerResult && providerResult.kind === 'SUCCESS') {
     return providerResult;
   }
@@ -138,16 +166,20 @@ export function searchLogs(
   return { kind: 'DEGRADED', error: providerError };
 }
 
-/**
- * Constructs a readiness state from discrete subsystem flags.
- * Degraded is true when any critical subsystem is unavailable.
- */
-export function computeReadiness(
-  ingestionAvailable: boolean,
-  queryAvailable: boolean,
-  traceCorrelationAvailable: boolean,
-  dashboardAvailable: boolean,
-  collectorAvailable: boolean,
-  metricsAvailable: boolean,
-  errorCaptureAvailable: boolean,
-):
+export function queryReadiness(
+  adapter: LogStoreAdapter,
+  auditFn: (e: LogSearchAuditEvent) => LogSearchError | null,
+): ReadinessState | LogSearchError {
+  const readiness = adapter.readiness();
+  const auditEvent: LogSearchAuditEvent = {
+    kind: 'AUDIT_READINESS_QUERY',
+    tenantId: '',
+    requestId: '',
+    timestamp: new Date().toISOString(),
+  };
+  const auditError = auditFn(auditEvent);
+  if (auditError !== null) {
+    return auditError;
+  }
+  return readiness;
+}

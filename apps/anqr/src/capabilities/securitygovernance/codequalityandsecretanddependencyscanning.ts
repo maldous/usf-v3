@@ -8,7 +8,6 @@ export const CodeQualityAndSecretAndDependencyScanningErrorKind = [
   'STATIC_ANALYSIS_ERROR',
   'SBOM_MISSING',
   'SBOM_STALE',
-  'SBOM_STALE',
   'SBOM_POLICY_VIOLATION',
   'CODE_SCANNING_MISSING',
   'CODE_SCANNING_INVALID_CONFIG',
@@ -321,7 +320,7 @@ export function runCodeQualityAndSecretAndDependencyScanningGate(
       sbomPolicy: validatedPolicy,
       codeScanningConfig: validatedConfig,
       securityRoute: validatedRoute,
-      lastVerdict: 'FAIL',
+      lastVerdict: staticAnalysisVerdict,
       lastError: { kind: 'STATIC_ANALYSIS_ERROR', message: 'Static analysis findings detected' },
       readiness: 'NOT_READY',
     };
@@ -371,7 +370,7 @@ export function runCodeQualityAndSecretAndDependencyScanningGate(
     };
   }
 
-  const finalState = {
+  const finalState: CodeQualityAndSecretAndDependencyScanningState = {
     ...state,
     staticAnalysisRules: validatedRules,
     sbomDocument: validatedSBOM,

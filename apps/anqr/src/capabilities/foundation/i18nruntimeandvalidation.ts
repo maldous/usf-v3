@@ -67,7 +67,7 @@ export function resolveLocaleKey(
   state: I18nRuntimeAndValidationState,
   key: string,
   params?: Record<string, string>,
-): string | I18nRuntimeAndValidationError {
+): { readonly kind: 'SUCCESS'; readonly value: string } | I18nRuntimeAndValidationError {
   if (!state.localeKeyMap.has(key)) {
     return {
       kind: 'MISSING_REQUIRED_KEY',
@@ -92,7 +92,8 @@ export function resolveLocaleKey(
     }
 
     try {
-      return template.replace(/\{(\w+)\}/g, (_, param) => params[param] || '');
+      const value = template.replace(/\{(\w+)\}/g, (_, param) => params[param] || '');
+      return { kind: 'SUCCESS', value };
     } catch {
       return {
         kind: 'MISMATCHED_INTERPOLATION',
@@ -102,7 +103,7 @@ export function resolveLocaleKey(
     }
   }
 
-  return template;
+  return { kind: 'SUCCESS', value: template };
 }
 
 export function validateI18n(
@@ -120,7 +121,7 @@ export function validateI18n(
       kind: 'MISSING_REQUIRED_KEY',
       message: `Missing required key: ${key}`,
       key,
-    }))
+    } as const))
   );
 
   // Check for duplicate keys
@@ -129,7 +130,7 @@ export function validateI18n(
       kind: 'DUPLICATE_KEY',
       message: `Duplicate key: ${key}`,
       key,
-    }))
+    } as const))
   );
 
   // Check for unused keys (in localeKeyMap but not in usedKeys)
@@ -141,13 +142,14 @@ export function validateI18n(
       kind: 'UNUSED_KEY',
       message: `Unused key: ${key}`,
       key,
-    }))
+    } as const))
   );
 
   // Check for raw literals
-  if (state.config.strictFailOnRawLiteral) {
-    findings.push(...state.rawLiteralFindings);
-  }
+  const rawLiteralFindings = state.rawLiteralFindings.filter(
+    (f) => !state.config.governedLiterals.includes(f.literal || '') && !state.config.exceptionPatterns.some(p => f.literal?.includes(p) || false)
+  );
+  findings.push(...rawLiteralFindings);
 
   // Determine exit state
   const hasStrictFailures =
@@ -163,7 +165,7 @@ export function validateI18n(
   const exitState: I18nRuntimeAndValidationExitState = hasStrictFailures ? 'FAIL' : 'PASS';
 
   return {
-    findings: state.validationMode === 'REPORT_ONLY' ? findings : findings.filter((f) => hasStrictFailures),
+    findings: state.validationMode === 'REPORT_ONLY' ? findings : findings.filter(f => hasStrictFailures || f.kind === 'UNUSED_KEY'),
     exitState,
   };
 }
@@ -181,6 +183,16 @@ export function checkReadiness(
       error: {
         kind: 'READINESS_DEGRADED',
         message: 'Validation gate failed',
+      },
+    };
+  }
+
+  if (validationResult.findings.length > 0) {
+    return {
+      ready: false,
+      error: {
+        kind: 'READINESS_DEGRADED',
+        message: 'Outstanding findings in report-only mode',
       },
     };
   }

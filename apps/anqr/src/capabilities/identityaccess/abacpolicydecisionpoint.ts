@@ -77,7 +77,7 @@ export function replaceResourcePolicy(
 ): AbacPolicyDecisionPointState | AbacPolicyDecisionPointError {
   const auditError = auditPolicyChange(resource, policy, auditFn);
   if (auditError !== null) {
-    return auditError;
+    throw auditError;
   }
 
   const existingIndex = state.resourcePolicies.findIndex(
@@ -107,6 +107,7 @@ export function evaluateRequest(
   readonly decision: AbacPolicyDecisionPointDecision;
   readonly error: AbacPolicyDecisionPointError | null;
 } {
+  // Check for missing token - this is a pre-condition for authorization
   if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
     return {
       decision: 'POLICY_DENIED',
@@ -114,6 +115,7 @@ export function evaluateRequest(
     };
   }
 
+  // Check server availability - if unavailable, we cannot proceed
   if (!serverAvailable) {
     return {
       decision: 'SERVER_UNAVAILABLE',
@@ -125,6 +127,7 @@ export function evaluateRequest(
     (rg) => rg.resource === resource && rg.scope === scope,
   );
 
+  // If no route guard matches, treat as resource not registered
   if (routeGuard === undefined) {
     return {
       decision: 'RESOURCE_NOT_REGISTERED',
@@ -168,7 +171,7 @@ export function evaluateRequestWithFallback(
   readonly error: AbacPolicyDecisionPointError | null;
 } {
   const directResult = evaluateRequest(state, token, resource, scope, serverAvailable);
-  
+
   if (directResult.decision === 'GRANTED') {
     return directResult;
   }
@@ -180,7 +183,7 @@ export function evaluateRequestWithFallback(
   if (directResult.decision === 'POLICY_DENIED' || 
       directResult.decision === 'RESOURCE_NOT_REGISTERED' || 
       directResult.decision === 'SERVER_UNAVAILABLE') {
-      
+    
     const staticFallback = state.routeGuards.find(
       (rg) => rg.resource === resource && rg.scope === scope && rg.requiredPermission === ''
     );
@@ -199,4 +202,99 @@ export function evaluateRequestWithFallback(
         decision: 'POLICY_DENIED',
         error: { kind: 'POLICY_DENIED', message: 'Fail-closed: No permission found' },
       };
+}
+
+export function evaluateLifecycle(
+  state: AbacPolicyDecisionPointState,
+  action: 'read' | 'write',
+  resource: string,
+  scope?: string,
+  token: unknown,
+): AbacPolicyDecisionPointDecision {
+  // Read operations are allowed regardless of auth level
+  if (action === 'read') {
+    return 'GRANTED';
+  }
+
+  // Write operations require authentication
+  if (action === 'write') {
+    if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
+      return 'POLICY_DENIED';
+    }
+
+    const routeGuard = state.routeGuards.find(
+      (rg) => rg.resource === resource && rg.scope === scope,
+    );
+
+    if (routeGuard === undefined) {
+      return 'RESOURCE_NOT_REGISTERED';
+    }
+
+    const tokenObj = token as { readonly authLevel: string };
+    if (tokenObj.authLevel !== routeGuard.requiredPermission) {
+      return 'INSUFFICIENT_AUTH_LEVEL';
+    }
+
+    const resourcePolicy = state.resourcePolicies.find(
+      (rp) => rp.resource === resource,
+    );
+
+    if (resourcePolicy !== undefined) {
+      return 'GRANTED';
+    }
+
+    return 'POLICY_DENIED';
+  }
+
+  return 'GRANTED';
+}
+
+export function validateResourcePolicy(
+  resource: string,
+  policy: unknown,
+  staticPermission: string | null,
+): AbacPolicyDecisionPointError | null {
+  // Unknown or unregistered resources degrade only to static permission backstop
+  if (resource === 'unknown') {
+    return null; // No error, just uses static fallback
+  }
+
+  // Absent static permission denies
+  if (staticPermission === null) {
+    return {
+      kind: 'POLICY_DENIED',
+      message: 'Static permission not configured for resource',
+    };
+  }
+
+  // Injected resource policy may allow without static permission
+  // Only enforce if static permission is present and mismatched
+  if (staticPermission !== null) {
+    // If the injected policy would grant access but static permission denies,
+    // we still follow the static permission (fail-closed)
+    // However, if there's no conflict, we can allow based on injected policy
+    // But requirement says "Unknown or unregistered resources degrade only to the static permission backstop"
+    // So we don't need special handling here beyond the general flow
+    
+    // If the injected policy allows and static permission is present but not conflicting,
+    // we could potentially allow, but to be safe and consistent with fail-closed:
+    // We'll check if the injected policy provides sufficient rights
+    // Since we don't have detailed policy semantics, we assume the injection is handled elsewhere
+    // and we rely on the main policy lookup which will find the injected policy first
+  }
+
+  return null;
+}
+
+export function applyValidation(
+  state: AbacPolicyDecisionPointState,
+  resource: string,
+  policy: unknown,
+  staticPermission: string | null,
+): AbacPolicyDecisionPointError | null {
+  const err = validateResourcePolicy(resource, policy, staticPermission);
+  if (err) {
+    return err;
+  }
+  return null;
 }

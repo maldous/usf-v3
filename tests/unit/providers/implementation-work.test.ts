@@ -262,3 +262,27 @@ test("a repair prompt names the observed failures and nothing else changes", () 
   const conformance = deriveConformancePrompt(need!, "export const a = 1;", "../m.ts", failing);
   assert.match(conformance, /the requirement does not state/u);
 });
+
+test("a rewrite prompt shows the whole artefact, not a truncated one", async () => {
+  const { inspectRepositoryFile, maximumRewriteBytes } =
+    await import("../../../src/providers/implementation-work.ts");
+  const { mkdtemp, writeFile, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { resolve } = await import("node:path");
+  const root = await mkdtemp(resolve(tmpdir(), "usf-rewrite-"));
+  try {
+    // A module larger than the bounded inspection read used for context.
+    const source = `export const a = 1;\n${"// filler\n".repeat(3_000)}export const z = 2;\n`;
+    await writeFile(resolve(root, "big.ts"), source, { mode: 0o600 });
+    const inspected = await inspectRepositoryFile(root, "big.ts");
+    const whole = await inspectRepositoryFile(root, "big.ts", maximumRewriteBytes);
+    assert.ok(source.length > 12_000);
+    assert.match(inspected!, /truncated for inspection/u);
+    // Asking for the complete updated content of a file shown in part is not a
+    // task any model can perform.
+    assert.equal(whole, source);
+    assert.doesNotMatch(whole!, /truncated for inspection/u);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

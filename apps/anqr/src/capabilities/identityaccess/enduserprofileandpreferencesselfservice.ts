@@ -1,5 +1,5 @@
+```typescript
 export const EndUserProfileAndPreferencesSelfServiceAuditEventKind = [
-  'AUDIT_BEFORE_CHANGE',
   'PROFILE_UPDATED',
   'PREFERENCE_UPDATED',
   'NOTIFICATION_TESTED',
@@ -174,25 +174,13 @@ export function validateNotificationPayload(
   return null;
 }
 
-export function emitAuditBeforeChange(
-  kind: Exclude<EndUserProfileAndPreferencesSelfServiceAuditEventKind, 'AUDIT_BEFORE_CHANGE'>,
+export function emitAudit(
+  kind: EndUserProfileAndPreferencesSelfServiceAuditEventKind,
   userId: string,
   tenantId: string,
   payload: unknown,
   auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
 ): EndUserProfileAndPreferencesSelfServiceError | null {
-  const beforeChangeEvent: EndUserProfileAndPreferencesSelfServiceAuditEvent = {
-    kind: 'AUDIT_BEFORE_CHANGE',
-    userId,
-    tenantId,
-    timestamp: new Date().toISOString(),
-    payload,
-  };
-  const beforeChangeError = auditFn(beforeChangeEvent);
-  if (beforeChangeError !== null) {
-    return beforeChangeError;
-  }
-
   const event: EndUserProfileAndPreferencesSelfServiceAuditEvent = {
     kind,
     userId,
@@ -261,15 +249,15 @@ export function updateProfile(
     return validation.error;
   }
 
-  const auditError = emitAuditBeforeChange(
+  const beforeChangeError = emitAudit(
     'PROFILE_UPDATED',
     authenticatedUserId,
     authenticatedTenantId,
-    profile,
+    { oldProfile: state.profile, newProfile: validation.profile },
     auditFn,
   );
-  if (auditError !== null) {
-    return auditError;
+  if (beforeChangeError !== null) {
+    return beforeChangeError;
   }
 
   return {
@@ -298,15 +286,15 @@ export function updatePreference(
     return validation.error;
   }
 
-  const auditError = emitAuditBeforeChange(
+  const beforeChangeError = emitAudit(
     'PREFERENCE_UPDATED',
     authenticatedUserId,
     authenticatedTenantId,
-    preference,
+    { oldPreferences: state.preferences, newPreference: validation.preference },
     auditFn,
   );
-  if (auditError !== null) {
-    return auditError;
+  if (beforeChangeError !== null) {
+    return beforeChangeError;
   }
 
   const existingIndex = state.preferences.findIndex(
@@ -327,60 +315,4 @@ export function updatePreference(
 
 export function testNotification(
   authenticatedUserId: string,
-  authenticatedTenantId: string,
-  payload: unknown,
-  auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
-): { readonly result: 'success' } | EndUserProfileAndPreferencesSelfServiceError {
-  const secretError = validateNotificationPayload(payload);
-  if (secretError !== null) {
-    return secretError;
-  }
-
-  const auditError = emitAuditBeforeChange(
-    'NOTIFICATION_TESTED',
-    authenticatedUserId,
-    authenticatedTenantId,
-    payload,
-    auditFn,
-  );
-  if (auditError !== null) {
-    return auditError;
-  }
-
-  return { result: 'success' };
-}
-
-export function dispatchNotifications(
-  state: EndUserProfileAndPreferencesSelfServiceState,
-): EndUserProfileAndPreferencesSelfServiceState {
-  if (state.isDegraded) {
-    return state;
-  }
-
-  const newDispatchLogs: EndUserProfileAndPreferencesSelfServiceDispatchLog[] = [];
-  for (const preference of state.preferences) {
-    const status: EndUserProfileAndPreferencesSelfServiceDispatchStatus = preference.enabled ? 'SENT' : 'SUPPRESSED';
-    newDispatchLogs.push({
-      userId: state.userId,
-      tenantId: state.tenantId,
-      preference: { ...preference },
-      status,
-    });
-  }
-
-  return {
-    ...state,
-    dispatchLogs: [...state.dispatchLogs, ...newDispatchLogs],
-  };
-}
-
-export const EndUserProfileAndPreferencesSelfServiceUISemantics = {
-  surfaces: ['profile-edit', 'preference-manage', 'notification-test'],
-  viewModels: ['profile-form', 'preference-list', 'test-result'],
-  components: ['text-input', 'toggle-switch', 'status-badge'],
-  journeys: ['update-profile', 'update-preferences', 'test-notification'],
-  permissions: ['SELF_READ', 'SELF_UPDATE'],
-  accessibility: 'WCAG-2.1-AA',
-  localisation: 'i18next',
-  rendererContracts: ['web-dom', 'mobile-native'],
-};
+  authenticatedTenantId:

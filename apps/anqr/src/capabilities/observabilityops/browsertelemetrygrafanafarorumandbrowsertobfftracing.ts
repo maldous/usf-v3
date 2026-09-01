@@ -6,10 +6,12 @@ export const BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind = [
   'CONFIG_INVALID',
   'RECEIVER_UNAVAILABLE',
   'COLLECTOR_UNAVAILABLE',
+  'BACKEND_TO_END_FAILURE',
   'BACKEND_UNAVAILABLE',
   'TRACE_CONTEXT_MISSING',
   'TRACE_CONTEXT_INVALID',
   'SHAPE_VALIDATION_FAILED',
+  'INGESTION_DENIED',
 ] as const;
 export type BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind = typeof BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind[number];
 
@@ -64,6 +66,7 @@ export type BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = Readonly
   readonly lastError: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null;
   readonly lastAuditEvents: readonly AuditEvent[];
   readonly lastProcessedPayload: BrowserTelemetryPayload | null;
+  readonly errorCount: number;
 }>;
 
 export const initialState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
@@ -71,6 +74,7 @@ export const initialState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingS
   lastError: null,
   lastAuditEvents: [],
   lastProcessedPayload: null,
+  errorCount: 0,
 };
 
 export function validateConfig(
@@ -172,9 +176,10 @@ export function validateBrowserTelemetryPayload(
   const typedPayload = payload as Record<string, unknown>;
   const traceContextResult = validateTraceContext(typedPayload.traceContext);
   if ('kind' in traceContextResult && 'message' in traceContextResult) {
-    return traceContextResult;
+    return traceContextResult as BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
   }
 
+  const traceContext = traceContextResult as TraceContext;
   if (
     typeof typedPayload.name !== 'string' ||
     typedPayload.name.length === 0 ||
@@ -199,7 +204,7 @@ export function validateBrowserTelemetryPayload(
   }
 
   return {
-    traceContext: traceContextResult,
+    traceContext,
     name: typedPayload.name,
     kind: typedPayload.kind,
     startTimeUnixNano: typedPayload.startTimeUnixNano,
@@ -226,22 +231,34 @@ export function recordAuditEvent(
 
 export function computeReadiness(
   state: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState,
+  configAvailable: boolean,
 ): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingReadiness {
-  if (state.lastError !== null) {
-    return 'DEGRADED';
-  }
-  if (state.lastProcessedPayload !== null) {
-    return 'READY';
-  }
+  if (!configAvailable) return 'NOT_READY';
+  if (state.lastError !== null) return 'DEGRADED';
+  if (state.lastProcessedPayload !== null) return 'READY';
   return 'NOT_READY';
 }
 
 export function processBrowserTelemetry(
   state: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState,
-  config: BrowserTelemetryConfig,
+  config: BrowserTelemetryConfig | null,
   payload: unknown,
   requestId: string,
 ): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState {
+  if (config === null) {
+    const error: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError = { 
+      kind: 'CONFIG_MISSING', 
+      message: 'Ingestion failed closed: No configuration available' 
+    };
+    return {
+      ...state,
+      readiness: 'DEGRADED',
+      lastError: error,
+      errorCount: state.errorCount + 1,
+      lastProcessedPayload: null,
+    };
+  }
+
   const validatedPayload = validateBrowserTelemetryPayload(payload, config);
   if ('kind' in validatedPayload && 'message' in validatedPayload) {
     const error = validatedPayload as BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
@@ -249,6 +266,7 @@ export function processBrowserTelemetry(
       ...state,
       readiness: 'DEGRADED',
       lastError: error,
+      errorCount: state.errorCount + 1,
       lastProcessedPayload: null,
     };
   }
@@ -262,16 +280,16 @@ export function processBrowserTelemetry(
     { payloadName: validated.name },
   );
 
-  return {
+  const newState = {
     ...state,
-    readiness: computeReadiness({
-      ...state,
-      lastError: null,
-      lastProcessedPayload: validated,
-    }),
     lastError: null,
     lastAuditEvents: [...state.lastAuditEvents, auditEvent],
     lastProcessedPayload: validated,
+  };
+
+  return {
+    ...newState,
+    readiness: computeReadiness(newState, true),
   };
 }
 
@@ -289,6 +307,7 @@ export function updateConfig(
       ...state,
       readiness: 'DEGRADED',
       lastError: error,
+      errorCount: state.errorCount + 1,
     };
   }
 
@@ -303,6 +322,7 @@ export function updateConfig(
   return {
     ...state,
     lastAuditEvents: [...state.lastAuditEvents, auditEvent],
+    lastError: null,
   };
 }
 

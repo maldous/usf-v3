@@ -9,7 +9,8 @@ import {
 } from "../providers/implementation-conformance.ts";
 import {
   deriveCapabilityImplementationNeeds, deriveConformancePrompt, deriveImplementationPrompt,
-  deriveImplementationWorkUnits, importSpecifierFor, inspectRepositoryFile, maximumRepairRounds, maximumSiblingBytes,
+  deriveImplementationWorkUnits, importSpecifierFor, inspectRepositoryFile, maximumRepairRounds,
+  maximumRewriteBytes, maximumSiblingBytes,
   readConformanceRule, readImplementationConvention,
   validateConformanceOutput, validateImplementationOutput,
   type CapabilityImplementationNeed, type CapabilityRepairState, type FailingRequirement,
@@ -149,6 +150,20 @@ interface DispatchEntry {
   readonly unit: ImplementationWorkUnit;
   readonly prompt: string;
   readonly identity: SemanticWorkIdentity;
+  readonly outputTokens: number;
+}
+
+/**
+ * An output budget that can actually hold the answer.
+ *
+ * A rewrite must emit at least the artefact it is rewriting. A fixed budget
+ * sized for a fresh module truncates a large one mid-file, which the provider
+ * reports as an empty result with finishReason "length" -- the failure mode
+ * that blocked the four largest capabilities on every cycle.
+ */
+function outputBudgetFor(existingBytes: number): number {
+  const needed = Math.ceil(existingBytes / 3) + 2_000;
+  return Math.min(32_000, Math.max(modelOutputTokens, needed));
 }
 
 interface Accepted {
@@ -253,9 +268,11 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   const pending: DispatchEntry[] = [];
 
   for (const unit of selected) {
-    const existingTarget = await inspectRepositoryFile(repositoryRoot, unit.targetPath);
+    // The artefact being rewritten is shown whole; the module a test binds to
+    // is shown whole too, because a test cannot bind to a surface it cannot see.
+    const existingTarget = await inspectRepositoryFile(repositoryRoot, unit.targetPath, maximumRewriteBytes);
     const moduleSource = unit.stage === "conformance"
-      ? await inspectRepositoryFile(repositoryRoot, unit.need.modulePath) : null;
+      ? await inspectRepositoryFile(repositoryRoot, unit.need.modulePath, maximumRewriteBytes) : null;
     if (unit.stage === "conformance" && moduleSource === null) continue;
     const specifier = importSpecifierFor(unit.need);
     const prompt = unit.stage === "implementation"
@@ -273,6 +290,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       ...unit.need.requirements.map((requirement) => canonicalDigest(requirement.statement)),
       ...(unit.repairs.length === 0 ? [] : [canonicalDigest(unit.repairs)]),
     ];
+    const outputTokens = outputBudgetFor(Math.max(existingTarget?.length ?? 0, moduleSource?.length ?? 0));
     const identity = identityFor(unit, prompt, inputDigests, policyDigest);
     const lookup = await lookupSemanticResult(repositoryRoot, identity);
     if (lookup.hit && lookup.entry !== null) {
@@ -290,16 +308,16 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         continue;
       }
     }
-    pending.push(Object.freeze({ unit, prompt, identity }));
+    pending.push(Object.freeze({ unit, prompt, identity, outputTokens }));
   }
 
   let evidenceDigest: string | null = null;
   if (pending.length > 0 && parsed.envFile !== null) {
     const workGraph = "urn:usf:graph:implementation-realisation";
-    const quads = pending.flatMap(({ unit, prompt }) => [
+    const quads = pending.flatMap(({ unit, prompt, outputTokens }) => [
       { subject: unit.unit, predicate: "urn:usf:predicate:type", object: "urn:usf:type:SemanticWorkUnit", objectKind: "iri" as const, graph: workGraph, canonical: "" },
       { subject: unit.unit, predicate: "urn:usf:predicate:prompt", object: prompt, objectKind: "literal" as const, graph: workGraph, canonical: "" },
-      { subject: unit.unit, predicate: "urn:usf:predicate:maximumOutputTokens", object: String(modelOutputTokens), objectKind: "literal" as const, graph: workGraph, canonical: "" },
+      { subject: unit.unit, predicate: "urn:usf:predicate:maximumOutputTokens", object: String(outputTokens), objectKind: "literal" as const, graph: workGraph, canonical: "" },
       { subject: unit.unit, predicate: "urn:usf:predicate:minimumContextTokens", object: String(minimumContextTokens), objectKind: "literal" as const, graph: workGraph, canonical: "" },
     ]).map((quad) => ({ ...quad, canonical: canonicalQuadLine(quad) }));
     const workPath = ".usf/work/implementation-realisation.nq";

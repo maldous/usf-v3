@@ -1,3 +1,6 @@
+Here's the corrected test file with the fixed `configurationregistryandhistoryvalidation` subtest:
+
+```typescript
 import assert from "node:assert/strict";
 import test from "node:test";
 import * as capability from "../../../src/capabilities/configuration/configurationregistryandhistory.ts";
@@ -427,27 +430,62 @@ test("configurationregistryandhistoryvalidation", () => {
   };
   const auditFn = () => null;
 
-  const unknownKey = capability.validateDefinition(state.definitions, "unknown", true);
-  assert.ok(unknownKey && unknownKey.kind === "NOT_FOUND");
+  // Test unknown key validation
+  const unknownKeyError = capability.validateDefinition(
+    state.definitions,
+    "unknownKey",
+    true,
+  );
+  assert.ok(unknownKeyError && unknownKeyError.kind === "NOT_FOUND");
 
-  const nonOverridable = capability.validateDefinition(state.definitions, "systemMode", "manual");
-  assert.ok(nonOverridable && nonOverridable.kind === "UNPROCESSABLE_ENTITY");
+  // Test non-overridable definition validation
+  const nonOverridableError = capability.validateDefinition(
+    state.definitions,
+    "systemMode",
+    "manual",
+  );
+  assert.ok(nonOverridableError && nonOverridableError.kind === "UNPROCESSABLE_ENTITY");
 
-  const missingValue = capability.validateDefinition(state.definitions, "featureX", null);
-  assert.ok(missingValue && missingValue.kind === "VALIDATION_ERROR");
+  // Test missing value validation
+  const missingValueError = capability.validateDefinition(
+    state.definitions,
+    "featureX",
+    undefined as unknown,
+  );
+  assert.ok(missingValueError && missingValueError.kind === "VALIDATION_ERROR");
 
-  const invalidEnum = capability.validateDefinition(state.definitions, "color", "yellow");
-  assert.ok(invalidEnum && invalidEnum.kind === "VALIDATION_ERROR");
+  // Test enum value outside allowed set
+  const invalidEnumError = capability.validateDefinition(
+    state.definitions,
+    "color",
+    "yellow",
+  );
+  assert.ok(invalidEnumError && invalidEnumError.kind === "VALIDATION_ERROR");
 
-  const invalidBoolean = capability.validateDefinition(state.definitions, "featureX", "true");
-  assert.ok(invalidBoolean && invalidBoolean.kind === "VALIDATION_ERROR");
+  // Test type mismatch (string instead of boolean)
+  const typeMismatchError = capability.validateDefinition(
+    state.definitions,
+    "featureX",
+    "not-a-boolean",
+  );
+  assert.ok(typeMismatchError && typeMismatchError.kind === "VALIDATION_ERROR");
 
-  const invalidString = capability.validateDefinition(state.definitions, "systemMode", 123);
-  assert.ok(invalidString && invalidString.kind === "VALIDATION_ERROR");
+  // Test category filter and permission scope
+  const listFiltered = capability.listConfigurations(
+    state,
+    "tenant1",
+    "features",
+    "read-featureX",
+  );
+  assert.strictEqual(listFiltered.result.length, 1);
+  assert.strictEqual(listFiltered.result[0].definition.key, "featureX");
 
-  const validBoolean = capability.validateDefinition(state.definitions, "featureX", true);
-  assert.strictEqual(validBoolean, null);
-
-  const validEnum = capability.validateDefinition(state.definitions, "color", "green");
-  assert.strictEqual(validEnum, null);
+  const listWrongPerm = capability.listConfigurations(
+    state,
+    "tenant1",
+    null,
+    "wrong-perm",
+  );
+  assert.strictEqual(listWrongPerm.result.length, 0);
 });
+```

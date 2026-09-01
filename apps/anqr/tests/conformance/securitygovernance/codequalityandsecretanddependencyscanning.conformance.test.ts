@@ -30,9 +30,9 @@ test("codequalityandsecretanddependencyscanningcontracts", () => {
   assert.deepEqual(validatedSBOM, sbom);
 
   const policy: capability.SBOMPolicy = {
-    allowedLicenses: ["MIT"] as const,
-    forbiddenLicenses: ["GPL"] as const,
-    securityRequirements: ["req1"] as const
+    allowedLicenses: ["MIT"],
+    forbiddenLicenses: ["GPL"],
+    securityRequirements: ["req1"]
   };
   const validatedPolicy = capability.validateSBOMPolicy(policy);
   assert.ok(!('kind' in validatedPolicy));
@@ -113,9 +113,9 @@ test("codequalityandsecretanddependencyscanninglifecycle", () => {
   const rules: capability.StaticAnalysisRule[] = [{ id: "rule1", severity: "HIGH" } as const];
   const sbom: capability.SBOMDocument = { baseline: "baseline", lockHash: "hash", timestamp: "2023-01-01" };
   const policy: capability.SBOMPolicy = {
-    allowedLicenses: ["MIT"] as const,
-    forbiddenLicenses: ["GPL"] as const,
-    securityRequirements: ["req1"] as const
+    allowedLicenses: ["MIT"],
+    forbiddenLicenses: ["GPL"],
+    securityRequirements: ["req1"]
   };
   const config: capability.CodeScanningConfig = {
     binaryPath: "/bin",
@@ -184,9 +184,9 @@ test("codequalityandsecretanddependencyscanningproof", () => {
   const rules: capability.StaticAnalysisRule[] = [{ id: "rule1", severity: "HIGH" } as const];
   const sbom: capability.SBOMDocument = { baseline: "baseline", lockHash: "hash", timestamp: "2023-01-01" };
   const policy: capability.SBOMPolicy = {
-    allowedLicenses: ["MIT"] as const,
-    forbiddenLicenses: [] as const,
-    securityRequirements: [] as const
+    allowedLicenses: ["MIT"],
+    forbiddenLicenses: [],
+    securityRequirements: []
   };
   const config: capability.CodeScanningConfig = {
     binaryPath: "/bin",
@@ -209,6 +209,7 @@ test("codequalityandsecretanddependencyscanningproof", () => {
   );
   assert.deepEqual(state.lastVerdict, 'PASS');
   assert.deepEqual(state.readiness, 'READY');
+  assert.deepEqual(state.securityConsoleReady, false);
 });
 
 test("codequalityandsecretanddependencyscanningreadinessmodel", () => {
@@ -225,14 +226,16 @@ test("codequalityandsecretanddependencyscanningreadinessmodel", () => {
       authoritative: false
     },
     securityRoute: { path: "/security", registered: true },
-    lastError: null
+    lastError: null,
+    securityConsoleReady: false
   };
   const computedReadiness = capability.computeReadiness(readyState);
   assert.deepEqual(computedReadiness, 'READY');
 
   const notReadyState: capability.CodeQualityAndSecretAndDependencyScanningState = {
     ...readyState,
-    lastVerdict: 'FAIL'
+    lastVerdict: 'FAIL',
+    securityConsoleReady: false
   };
   const computedNotReady = capability.computeReadiness(notReadyState);
   assert.deepEqual(computedNotReady, 'NOT_READY');
@@ -245,9 +248,9 @@ test("codequalityandsecretanddependencyscanningstatemodel", () => {
     staticAnalysisRules: [{ id: "rule1", severity: "HIGH" } as const],
     sbomDocument: { baseline: "baseline", lockHash: "hash", timestamp: "2023-01-01" },
     sbomPolicy: {
-      allowedLicenses: ["MIT"] as const,
-      forbiddenLicenses: ["GPL"] as const,
-      securityRequirements: ["req1"] as const
+      allowedLicenses: ["MIT"],
+      forbiddenLicenses: ["GPL"],
+      securityRequirements: ["req1"]
     },
     codeScanningConfig: {
       binaryPath: "/bin",
@@ -256,7 +259,8 @@ test("codequalityandsecretanddependencyscanningstatemodel", () => {
       authoritative: true
     },
     securityRoute: { path: "/security", registered: true },
-    lastError: null
+    lastError: null,
+    securityConsoleReady: false
   };
   assert.deepEqual(state.staticAnalysisRules[0].severity, 'HIGH');
   assert.deepEqual(state.sbomDocument?.baseline, 'baseline');

@@ -302,6 +302,16 @@ export function deriveImplementationWorkUnits(
 
 const maximumInspectedBytes = 12_000;
 const maximumSiblingBytes = 5_000;
+/**
+ * A file being rewritten is shown whole.
+ *
+ * Asking for "the complete updated content" of a 26 KB module while showing its
+ * first 12 KB is not a task any model can perform, and three capabilities
+ * blocked on exactly that every cycle. Context is not the scarce resource here;
+ * a coherent request is.
+ */
+const maximumRewriteBytes = 64_000;
+export { maximumRewriteBytes };
 
 /** Read the current content of a path, bounded, for existing-code inspection. */
 export async function inspectRepositoryFile(

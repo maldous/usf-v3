@@ -142,6 +142,8 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingpermissions", () => {
   };
   const validation = capability.validateBrowserTelemetryPayload(invalidPayload, config);
   assert.ok("kind" in validation);
+  const typedValidation = validation as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
+  assert.strictEqual(typedValidation.kind, "SHAPE_VALIDATION_FAILED");
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingproof", () => {
