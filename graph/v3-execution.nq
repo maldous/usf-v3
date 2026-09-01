@@ -261,6 +261,15 @@
 <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:quotaScope> "provider-api-key" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:transportIdentity> "vercel-ai-sdk" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:cadence> "continuous" <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:coordinator> "hermes" <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:escalationRule> "Hermes resolves provider refusals, quota exhaustion, rate limits and context incompatibility autonomously; these are routing facts. It escalates only what it cannot legitimately decide: a missing human credential, an account action, an economic authorization change, an ambiguous product requirement, a destructive external action, or an unresolved semantic contradiction." <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:executionPool> "Every semantically qualified provider, model and transport except the reserved Claude family." <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:nonClaim> "This resource states how the system is operated. It asserts nothing about delivery progress." <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:statusSurface> ".usf/hermes/bau-status.json" <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:supervisor> "claude" <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:supervisorRole> "Observes Hermes, reviews evidence, identifies semantic and architectural defects, and issues corrective direction. It is never a worker in the execution pool, so the supervisor can never be selected to perform the work it supervises." <urn:usf:graph:v3-execution> .
+<urn:usf:operating-model:bau:1> <urn:usf:predicate:type> <urn:usf:type:OperatingModel> <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:autonomy> "Hermes selects no provider or model itself; routing derives them from catalogue classification, transport capability and economic policy in force at dispatch time." <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:cycleStep> "1=inspect current V3 authority" <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:cycleStep> "2=discover pending semantic work" <urn:usf:graph:v3-execution> .
@@ -340,12 +349,16 @@
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:coverage> "Every dimension by which the family can be reached: its own transport, its catalogue provider route, and its model identity served through any other provider such as a marketplace." <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:nonClaim> "This policy asserts that Claude may not be selected for execution. It asserts nothing about whether Claude is authenticated or capable." <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:policyDisposition> "OPERATOR_RESERVED" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:policyDuration> "standing" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:policyReason> "Claude is reserved as the supervising engineering agent and is outside the execution pool. Reserving it prevents a recursive relationship in which the supervisor is also selected as a worker, and keeps its usage available for supervision." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:policyScope> "ongoing-business-as-usual" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:policyStandingReason> "This is the standing operating model, not a temporary window. Claude is permanently the supervising engineering agent and permanently outside the execution pool. Hermes drives delivery continuously using every other qualified provider." <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedModelPrefix> "anthropic/" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedModelPrefix> "claude " <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedModelPrefix> "claude-" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedProvider> "anthropic" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedTransport> <urn:usf:execution-transport:claude-cli> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reviewCondition> "The reservation is lifted only by removing this policy resource through an ordinary semantic transaction, which is an explicit operator decision rather than a lapse." <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:revocation> "Removing this policy resource restores routability. No code change is required." <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:separationOfFacts> "Authentication availability and execution authorization are separate facts. The Claude CLI holds a valid local session and remains unroutable; routing evidence must state OPERATOR_RESERVED rather than a missing credential." <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:type> <urn:usf:type:ProviderExecutionPolicy> <urn:usf:graph:v3-execution> .
