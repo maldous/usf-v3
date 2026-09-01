@@ -16,7 +16,7 @@ export const BuildVersusComposeErrorKind = [
 ] as const;
 export type BuildVersusComposeErrorKind = typeof BuildVersusComposeErrorKind[number];
 
-export const BuildVersusComposeAuditEventKind = ['DECISION_CREATED', 'DECISION_REVISED', 'DECISION_SUPERSEDED'] as const;
+export const BuildVersusComposeAuditEventKind = ['DECISION_CREATED', 'DECISION_REVISED', 'DECISION_SUPERSEDED', 'DECISION_ROLLED_BACK'] as const;
 export type BuildVersusComposeAuditEventKind = typeof BuildVersusComposeAuditEventKind[number];
 
 export const BuildVersusComposeReadiness = ['READY', 'NOT_READY'] as const;
@@ -367,20 +367,27 @@ export function rollbackDecision(
   authority: string,
   auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null
 ): BuildVersusComposeState | BuildVersusComposeError {
-  const supersededRecord = state.decisionRecords.find(r => r.capabilityId === capabilityId && r.supersededBy !== null);
-  if (!supersededRecord) {
+  const activeRecord = state.decisionRecords.find(r => r.capabilityId === capabilityId && r.supersededBy === null);
+  if (!activeRecord) {
+    return createError('CONFIGURATION_LOSS', `No active decision found for capability ${capabilityId}`);
+  }
+  const supersededRecords = state.decisionRecords.filter(r => r.capabilityId === capabilityId && r.supersededBy !== null);
+  if (supersededRecords.length === 0) {
     return createError('CONFIGURATION_LOSS', `No superseded decision found for capability ${capabilityId}`);
   }
-  const activeRecord = state.decisionRecords.find(r => r.id === supersededRecord.supersededBy && r.supersededBy === null);
-  if (!activeRecord) {
-    return createError('CONFIGURATION_LOSS', `Active decision for superseded decision ${capabilityId} not found`);
+  const previousRecord = supersededRecords.reduce((prev, current) =>
+    current.version > prev.version ? current : prev
+  );
+  const targetRecord = state.decisionRecords.find(r => r.id === previousRecord.supersededBy);
+  if (!targetRecord) {
+    return createError('CONFIGURATION_LOSS', `Previous decision for capability ${capabilityId} not found`);
   }
   if (!validateAuthority(authority, state.authorityOrder)) {
     return createError('AUTHORITY_VIOLATION', `Authority ${authority} not authorized`);
   }
 
   const timestamp = new Date().toISOString();
-  const event = auditDecisionChange('DECISION_REVISED', activeRecord.id, capabilityId, activeRecord.version, authority, timestamp);
+  const event = auditDecisionChange('DECISION_ROLLED_BACK', targetRecord.id, capabilityId, targetRecord.version, authority, timestamp);
 
   const auditError = auditFn(event);
   if (auditError !== null) {
@@ -389,7 +396,9 @@ export function rollbackDecision(
 
   const newState: BuildVersusComposeState = {
     ...state,
-    decisionRecords: state.decisionRecords.map(r => r.id === supersededRecord.id ? { ...activeRecord, supersededBy: null } : r),
+    decisionRecords: state.decisionRecords.map(r =>
+      r.id === activeRecord.id ? { ...activeRecord, supersededBy: targetRecord.id } : r
+    ),
     lastError: null,
     auditTrail: [...state.auditTrail, event],
   };

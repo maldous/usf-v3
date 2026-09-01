@@ -13,8 +13,8 @@ test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "PII",
-    lineage: ["source1"],
+    classification: "PII" as const,
+    lineage: ["source1"] as const,
     tenantId: "tenant1",
   };
 
@@ -61,8 +61,8 @@ test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "sensitive",
-    lineage: ["source1"],
+    classification: "sensitive" as const,
+    lineage: ["source1"] as const,
     tenantId: "tenant1",
   };
   const stateWithEntry = capability.addCatalogEntry(initial, entry, auditFn);
@@ -156,8 +156,8 @@ test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "PII",
-    lineage: ["source1"],
+    classification: "PII" as const,
+    lineage: ["source1"] as const,
     tenantId: "tenant1",
   };
   const stateWithEntry = capability.addCatalogEntry(initial, entry, auditFn);
@@ -181,8 +181,8 @@ test("datagovernancecataloglineageclassificationpiidsrgdprlifecycle", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "none",
-    lineage: ["source1"],
+    classification: "none" as const,
+    lineage: ["source1"] as const,
     tenantId: "tenant1",
   };
   const stateWithEntry = capability.addCatalogEntry(initial, entry, auditFn);
@@ -191,7 +191,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprlifecycle", () => {
   const updated = capability.updateCatalogEntryClassification(
     stateWithEntry,
     "entry1",
-    "PII",
+    "PII" as const,
     "tenant1",
     auditFn,
   );
@@ -241,8 +241,8 @@ test("datagovernancecataloglineageclassificationpiidsrgdprpermissions", () => {
   const entryTenant1: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "PII",
-    lineage: ["source1"],
+    classification: "PII" as const,
+    lineage: ["source1"] as const,
     tenantId: "tenant1",
   };
   const stateWithEntry = capability.addCatalogEntry(initial, entryTenant1, auditFn);
@@ -251,7 +251,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprpermissions", () => {
   const updateWrongTenant = capability.updateCatalogEntryClassification(
     stateWithEntry,
     "entry1",
-    "sensitive",
+    "sensitive" as const,
     "tenant2",
     auditFn,
   );
@@ -292,7 +292,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
   const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
   const initial: capability.DataGovernanceCatalogState = capability.initialState;
 
-  const validClassification = capability.validateClassification("PII");
+  const validClassification = capability.validateClassification("PII" as const);
   assert.strictEqual(validClassification, "PII");
 
   const invalidClassification = capability.validateClassification("invalid");
@@ -343,8 +343,8 @@ test("datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel", () =>
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "PII",
-    lineage: ["source1"],
+    classification: "PII" as const,
+    lineage: ["source1"] as const,
     tenantId: "tenant1",
   };
 
@@ -363,8 +363,8 @@ test("datagovernancecataloglineageclassificationpiidsrgdprstatemodel", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "none",
-    lineage: ["source1"],
+    classification: "none" as const,
+    lineage: ["source1"] as const,
     tenantId: "tenant1",
   };
   const stateWithEntry = capability.addCatalogEntry(initial, entry, auditFn);
@@ -400,7 +400,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
   const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
   const initial: capability.DataGovernanceCatalogState = capability.initialState;
 
-  const validClassification = capability.validateClassification("sensitive");
+  const validClassification = capability.validateClassification("sensitive" as const);
   assert.strictEqual(validClassification, "sensitive");
 
   const invalidClassification = capability.validateClassification("invalid");
@@ -410,7 +410,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
     "INVALID_CLASSIFICATION",
   );
 
-  const validState = capability.validateRequestState("open");
+  const validState = capability.validateRequestState("open" as const);
   assert.strictEqual(validState, "open");
 
   const invalidState = capability.validateRequestState("invalid");

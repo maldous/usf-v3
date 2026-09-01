@@ -195,31 +195,39 @@ test("codequalityandsecretanddependencyscanningreadinessmodel", () => {
 });
 
 test("codequalityandsecretanddependencyscanningstatemodel", () => {
-  const state: capability.CodeQualityAndSecretAndDependencyScanningState = {
-    staticAnalysisFindings: [
-      { severity: 'HIGH', message: 'test', location: 'test.ts' } as const,
-    ],
-    sbomBaseline: { version: '1.0.0', lockHash: 'abc', createdAt: '2023-01-01' },
-    sbomPolicyAudit: { passed: true, details: ['detail'] },
-    codeScanningConfig: { enabled: true, binaryPath: '/bin' },
-    codeScanningResults: ['result'],
-    securityRoute: {
-      resource: 'test',
-      scope: 'global',
-      requiredPermission: 'admin',
-      registeredAt: '2023-01-01T00:00:00Z',
-    },
-    consoleReadiness: { servicesProbed: ['service1'], allReady: true },
-    lastDecision: 'PASSED',
-    lastError: null,
-  };
-  assert.deepEqual(state.staticAnalysisFindings[0].severity, 'HIGH');
-  assert.deepEqual(state.sbomBaseline?.version, '1.0.0');
-  assert.deepEqual(state.sbomPolicyAudit?.passed, true);
-  assert.deepEqual(state.codeScanningConfig?.enabled, true);
-  assert.deepEqual(state.codeScanningResults[0], 'result');
-  assert.deepEqual(state.securityRoute?.resource, 'test');
-  assert.deepEqual(state.consoleReadiness?.allReady, true);
+  const findings: capability.StaticAnalysisFinding[] = [
+    { severity: 'HIGH', message: 'test', location: 'test.ts' } as const,
+  ];
+  const stateWithFindings = capability.addStaticAnalysisFindings(capability.initialState, findings);
+  assert.equal(stateWithFindings.staticAnalysisFindings.length, 1);
+  assert.equal(stateWithFindings.staticAnalysisFindings[0].severity, 'HIGH');
+
+  const stateWithSBOM = capability.setSBOMBaseline(capability.initialState, '1.0.0', 'abc');
+  assert.equal(stateWithSBOM.sbomBaseline?.version, '1.0.0');
+  assert.equal(stateWithSBOM.sbomBaseline?.lockHash, 'abc');
+
+  const stateWithPolicy = capability.setSBOMPolicyAudit(capability.initialState, true, ['detail']);
+  assert.equal(stateWithPolicy.sbomPolicyAudit?.passed, true);
+  assert.deepEqual(stateWithPolicy.sbomPolicyAudit?.details, ['detail']);
+
+  const config: capability.CodeScanningConfig = { enabled: true, binaryPath: '/bin' };
+  const stateWithConfig = capability.setCodeScanningConfig(capability.initialState, config);
+  assert.equal(stateWithConfig.codeScanningConfig?.enabled, true);
+  assert.equal(stateWithConfig.codeScanningConfig?.binaryPath, '/bin');
+
+  const stateWithResults = capability.addCodeScanningResults(capability.initialState, ['result']);
+  assert.equal(stateWithResults.codeScanningResults.length, 1);
+  assert.equal(stateWithResults.codeScanningResults[0], 'result');
+
+  const stateWithRoute = capability.registerSecurityRoute(capability.initialState, 'test', 'global', 'admin');
+  assert.equal(stateWithRoute.securityRoute?.resource, 'test');
+  assert.equal(stateWithRoute.securityRoute?.scope, 'global');
+  assert.equal(stateWithRoute.securityRoute?.requiredPermission, 'admin');
+
+  const consoleReadiness: capability.ConsoleReadiness = { servicesProbed: ['service1'], allReady: true };
+  const stateWithReadiness = capability.setConsoleReadiness(capability.initialState, consoleReadiness);
+  assert.equal(stateWithReadiness.consoleReadiness?.allReady, true);
+  assert.deepEqual(stateWithReadiness.consoleReadiness?.servicesProbed, ['service1']);
 });
 
 test("codequalityandsecretanddependencyscanningvalidation", () => {

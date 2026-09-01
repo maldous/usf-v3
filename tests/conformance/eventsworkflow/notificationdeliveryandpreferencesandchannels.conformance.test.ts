@@ -1,4 +1,4 @@
-import * as assert from "node:assert/strict";
+import assert from "node:assert/strict";
 import { test } from "node:test";
 import * as capability from "../../../src/capabilities/eventsworkflow/notificationdeliveryandpreferencesandchannels.ts";
 
@@ -13,8 +13,8 @@ test("notificationdeliveryandpreferencesandchannelsauditmodel", () => {
   const tenantId = "tenant1";
   const user = "user1";
   const organisation = "org1";
-  const channel = "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel;
-  const category = "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory;
+  const channel = "EMAIL" as const;
+  const category = "WORKFLOW" as const;
 
   const afterSet = capability.setPreference(
     initial,
@@ -87,8 +87,8 @@ test("notificationdeliveryandpreferencesandchannelscontracts", () => {
     "tenant1",
     "user1",
     "tenant1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     true,
     auditFn,
   );
@@ -97,13 +97,13 @@ test("notificationdeliveryandpreferencesandchannelscontracts", () => {
 
   const ready = capability.setTransportReadiness(
     stateWithPref,
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "EMAIL" as const,
     "AVAILABLE",
   );
   const readyPrefs = capability.getPreferences(ready, "tenant1", "user1");
   assert.strictEqual(readyPrefs.length, 1);
 
-  const testResult = capability.testNotification(ready, "tenant1", "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel, auditFn);
+  const testResult = capability.testNotification(ready, "tenant1", "EMAIL" as const, auditFn);
   assert(!("kind" in testResult));
 });
 
@@ -113,7 +113,7 @@ test("notificationdeliveryandpreferencesandchannelserrormodel", () => {
   const invalidTenantResult = capability.testNotification(
     state,
     "",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "EMAIL" as const,
     auditFn,
   );
   assert("kind" in invalidTenantResult);
@@ -130,7 +130,7 @@ test("notificationdeliveryandpreferencesandchannelserrormodel", () => {
 
   const degradedState = capability.setTransportReadiness(
     state,
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "EMAIL" as const,
     "DEGRADED",
   );
   const disabled = capability.setPreference(
@@ -138,8 +138,8 @@ test("notificationdeliveryandpreferencesandchannelserrormodel", () => {
     "tenant1",
     "user1",
     "tenant1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     true,
     auditFn,
   );
@@ -150,8 +150,8 @@ test("notificationdeliveryandpreferencesandchannelserrormodel", () => {
     disabledState,
     "tenant1",
     "user1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     auditFn,
   );
   assert(!("kind" in dispatchResult));
@@ -168,8 +168,8 @@ test("notificationdeliveryandpreferencesandchannelslifecycle", () => {
   const tenantId = "tenant1";
   const user = "user1";
   const organisation = "tenant1";
-  const channel = "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel;
-  const category = "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory;
+  const channel = "EMAIL" as const;
+  const category = "WORKFLOW" as const;
 
   const withPreference = capability.setPreference(
     initial,
@@ -236,8 +236,8 @@ test("notificationdeliveryandpreferencesandchannelslifecycle", () => {
     suppressedState,
     tenantId,
     user,
-    "WEBHOOK" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "ALERT" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "WEBHOOK" as const,
+    "ALERT" as const,
     auditFn,
   );
   assert(!("kind" in unknownResult));
@@ -258,8 +258,8 @@ test("notificationdeliveryandpreferencesandchannelspermissions", () => {
     tenantIdA,
     userIdA,
     tenantIdA,
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     true,
     auditFn,
   );
@@ -269,8 +269,8 @@ test("notificationdeliveryandpreferencesandchannelspermissions", () => {
     tenantIdB,
     userIdB,
     tenantIdB,
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     true,
     auditFn,
   );
@@ -287,7 +287,7 @@ test("notificationdeliveryandpreferencesandchannelspermissions", () => {
   const crossUser = capability.getPreferences(populated, tenantIdB, userIdA);
   assert.strictEqual(crossUser.length, 0);
 
-  const empty = capability.setTransportReadiness(populated, "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel, "AVAILABLE");
+  const empty = capability.setTransportReadiness(populated, "EMAIL" as const, "AVAILABLE");
   const readiness = capability.getReadiness(empty);
   assert.strictEqual(readiness.length, 1);
 });
@@ -299,18 +299,18 @@ test("notificationdeliveryandpreferencesandchannelsproof", () => {
 
   const withReadiness = capability.setTransportReadiness(
     state,
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "EMAIL" as const,
     "AVAILABLE",
   );
   assert.strictEqual(withReadiness.transportReadiness.length, 1);
 
-  const noTenant = capability.testNotification(state, "", "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel, auditFn);
+  const noTenant = capability.testNotification(state, "", "EMAIL" as const, auditFn);
   assert("kind" in noTenant);
 
   const ok = capability.testNotification(
     withReadiness,
     "tenant1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "EMAIL" as const,
     auditFn,
   );
   assert(!("kind" in ok));
@@ -319,19 +319,19 @@ test("notificationdeliveryandpreferencesandchannelsproof", () => {
 test("notificationdeliveryandpreferencesandchannelsreadinessmodel", () => {
   const initial = capability.initialState;
 
-  const ready = capability.setTransportReadiness(initial, "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel, "AVAILABLE");
+  const ready = capability.setTransportReadiness(initial, "EMAIL" as const, "AVAILABLE");
   const readyReadiness = capability.getReadiness(ready);
   assert.strictEqual(readyReadiness.length, 1);
   assert.strictEqual(readyReadiness[0].channel, "EMAIL");
   assert.strictEqual(readyReadiness[0].readiness, "AVAILABLE");
 
-  const degraded = capability.setTransportReadiness(ready, "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel, "DEGRADED");
+  const degraded = capability.setTransportReadiness(ready, "EMAIL" as const, "DEGRADED");
   const degradedReadiness = capability.getReadiness(degraded);
   assert.strictEqual(degradedReadiness[0].readiness, "DEGRADED");
 
   const unavailable = capability.setTransportReadiness(
     degraded,
-    "WEBHOOK" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "WEBHOOK" as const,
     "UNAVAILABLE",
   );
   const allReadiness = capability.getReadiness(unavailable);
@@ -339,7 +339,7 @@ test("notificationdeliveryandpreferencesandchannelsreadinessmodel", () => {
 
   const readyState = capability.setTransportReadiness(
     ready,
-    "WEBHOOK" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "WEBHOOK" as const,
     "AVAILABLE",
   );
   const withPreference = capability.setPreference(
@@ -347,8 +347,8 @@ test("notificationdeliveryandpreferencesandchannelsreadinessmodel", () => {
     "tenant1",
     "user1",
     "tenant1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     true,
     auditFn,
   );
@@ -359,8 +359,8 @@ test("notificationdeliveryandpreferencesandchannelsreadinessmodel", () => {
     degraded,
     "tenant1",
     "user1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     auditFn,
   );
   assert(!("kind" in sendResult));
@@ -372,8 +372,8 @@ test("notificationdeliveryandpreferencesandchannelsreadinessmodel", () => {
     degraded,
     "tenant1",
     "user1",
-    "WEBHOOK" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "SYSTEM" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "WEBHOOK" as const,
+    "SYSTEM" as const,
     auditFn,
   );
   assert(!("kind" in sendOnDegraded));
@@ -395,8 +395,8 @@ test("notificationdeliveryandpreferencesandchannelsstatemodel", () => {
     "tenant1",
     "user1",
     "tenant1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     true,
     auditFn,
   );
@@ -412,7 +412,7 @@ test("notificationdeliveryandpreferencesandchannelsstatemodel", () => {
 
   const withReadiness = capability.setTransportReadiness(
     statePref,
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "EMAIL" as const,
     "AVAILABLE",
   );
   assert.strictEqual(withReadiness.transportReadiness.length, 1);
@@ -423,8 +423,8 @@ test("notificationdeliveryandpreferencesandchannelsstatemodel", () => {
     withReadiness,
     "tenant1",
     "user1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     auditFn,
   );
   assert(!("kind" in dispatched));
@@ -441,8 +441,8 @@ test("notificationdeliveryandpreferencesandchannelsstatemodel", () => {
 
 test("notificationdeliveryandpreferencesandchannelsuisemantics", () => {
   const state = capability.initialState;
-  const channel = "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel;
-  const category = "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory;
+  const channel = "EMAIL" as const;
+  const category = "WORKFLOW" as const;
   assert(
     capability.NotificationDeliveryAndPreferencesAndChannelsChannel.includes(
       channel,
@@ -528,8 +528,8 @@ test("notificationdeliveryandpreferencesandchannelsvalidation", () => {
     "tenant1",
     "user1",
     "tenant1",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     false,
     auditFn,
   );
@@ -537,15 +537,15 @@ test("notificationdeliveryandpreferencesandchannelsvalidation", () => {
   const disabledState = disabled as capability.NotificationDeliveryAndPreferencesAndChannelsState;
   const ready = capability.setTransportReadiness(
     disabledState,
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
+    "EMAIL" as const,
     "AVAILABLE",
   );
   const missingRecipient = capability.dispatchNotification(
     ready,
     "tenant1",
     "ghostUser",
-    "EMAIL" as capability.NotificationDeliveryAndPreferencesAndChannelsChannel,
-    "WORKFLOW" as capability.NotificationDeliveryAndPreferencesAndChannelsCategory,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     auditFn,
   );
   assert(!("kind" in missingRecipient));

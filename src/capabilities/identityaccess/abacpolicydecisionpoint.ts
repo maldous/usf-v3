@@ -18,7 +18,7 @@ export const AbacPolicyDecisionPointErrorKind = [
 ] as const;
 export type AbacPolicyDecisionPointErrorKind = typeof AbacPolicyDecisionPointErrorKind[number];
 
-export const AbacPolicyDecisionPointReadiness = ['READY', 'NOT_READY'] as const;
+export const AbacPolicyDecisionPointReadiness = ['READY', 'DEGRADED', 'NOT_READY'] as const;
 export type AbacPolicyDecisionPointReadiness = typeof AbacPolicyDecisionPointReadiness[number];
 
 export interface AbacPolicyDecisionPointAuditEvent {
@@ -100,6 +100,7 @@ export function replaceResourcePolicy(
     resourcePolicies: newResourcePolicies,
     lastDecision: null,
     lastError: null,
+    readiness: 'READY',
   };
 }
 
@@ -195,8 +196,12 @@ export function evaluateRequestWithFallback(
     };
   }
 
-  if (directResult.decision === 'SERVER_UNAVAILABLE') {
-    return directResult;
+  if (directResult.decision === 'SERVER_UNAVAILABLE' || directResult.decision === 'RESOURCE_NOT_REGISTERED') {
+    return {
+      ...directResult,
+      decision: directResult.decision,
+      error: directResult.error,
+    };
   }
 
   return {
@@ -294,6 +299,9 @@ export function computeReadiness(
 ): AbacPolicyDecisionPointReadiness {
   if (state.readiness === 'READY') {
     return 'READY';
+  }
+  if (state.lastDecision === 'SERVER_UNAVAILABLE' || state.lastDecision === 'RESOURCE_NOT_REGISTERED') {
+    return 'DEGRADED';
   }
   return 'NOT_READY';
 }

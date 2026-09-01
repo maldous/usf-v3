@@ -24,7 +24,7 @@ test("i18nruntimeandvalidationcontracts", () => {
   };
   const resolved = capability.resolveLocaleKey(state, "key1", { param: "test" });
   assert.equal(resolved.kind, "SUCCESS");
-  assert.equal(resolved.value, "value test");
+  assert.equal((resolved as { readonly kind: 'SUCCESS'; readonly value: string }).value, "value test");
   const missingKeyResult = capability.resolveLocaleKey(state, "missingKey");
   assert.equal(missingKeyResult.kind, "MISSING_REQUIRED_KEY");
 });
@@ -88,26 +88,31 @@ test("i18nruntimeandvalidationreadinessmodel", () => {
 
 test("i18nruntimeandvalidationstatemodel", () => {
   const state: capability.I18nRuntimeAndValidationState = {
+    ...capability.initialState,
     localeKeyMap: new Map([["key1", "value"]]),
-    duplicateKeys: [],
     usedKeys: ["key1"],
-    interpolationParams: new Map(),
-    rawLiteralFindings: [],
+    duplicateKeys: ["dupKey"],
+    rawLiteralFindings: [{ kind: "UNGOVERNED_RAW_LITERAL", message: "test", literal: "raw" }],
     config: {
       strictFailOnRawLiteral: true,
-      governedLiterals: [],
-      excludedKeys: [],
-      exceptionPatterns: [],
+      governedLiterals: ["allowed"],
+      excludedKeys: ["excluded"],
+      exceptionPatterns: ["pattern"],
     },
-    validationMode: "STRICT",
+    validationMode: "REPORT_ONLY",
     exitState: "PASS",
   };
-  assert.equal(state.localeKeyMap.get("key1"), "value");
+  const result = capability.validateI18n(state);
+  assert.equal(result.exitState, "PASS");
+  assert.ok(state.localeKeyMap.has("key1"));
   assert.deepEqual(state.usedKeys, ["key1"]);
-  assert.deepEqual(state.duplicateKeys, []);
-  assert.deepEqual(state.rawLiteralFindings, []);
-  assert.equal(state.validationMode, "STRICT");
-  assert.equal(state.exitState, "PASS");
+  assert.deepEqual(state.duplicateKeys, ["dupKey"]);
+  assert.deepEqual(state.rawLiteralFindings, [{ kind: "UNGOVERNED_RAW_LITERAL", message: "test", literal: "raw" }]);
+  assert.equal(state.config.strictFailOnRawLiteral, true);
+  assert.deepEqual(state.config.governedLiterals, ["allowed"]);
+  assert.deepEqual(state.config.excludedKeys, ["excluded"]);
+  assert.deepEqual(state.config.exceptionPatterns, ["pattern"]);
+  assert.equal(state.validationMode, "REPORT_ONLY");
 });
 
 test("i18nruntimeandvalidationvalidation", () => {

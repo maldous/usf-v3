@@ -1351,7 +1351,10 @@
 <urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "docs/" <urn:usf:graph:v3-convention> .
 <urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "graph/" <urn:usf:graph:v3-convention> .
 <urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "schemas/" <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "src/capabilities/" <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefix> "tests/conformance/" <urn:usf:graph:v3-convention> .
 <urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefixReason> "Product artefacts realized from delivery authority land under the declared realisation root of their owning repository." <urn:usf:graph:v3-convention> .
+<urn:usf:transaction-authority:v3:1> <urn:usf:predicate:authorizedPathPrefixReason> "Realised platform capability implementations and their conformance tests are USF's own source, so they are written under exactly two narrow prefixes. The prefixes are deliberately not src/ or tests/: a realisation proposal must never be able to reach the command, provider or core machinery that evaluates it." <urn:usf:graph:v3-convention> .
 <urn:usf:transaction-authority:v3:1> <urn:usf:predicate:rule> "A semantic transaction may write only paths under these prefixes. Source code is not semantic authority and is deliberately excluded: the runtime reads authority, it is not authority." <urn:usf:graph:v3-convention> .
 <urn:usf:transaction-authority:v3:1> <urn:usf:predicate:type> <urn:usf:type:TransactionAuthority> <urn:usf:graph:v3-convention> .
 <urn:usf:type:AcceptanceCriterion> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-convention> .

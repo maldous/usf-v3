@@ -52,6 +52,13 @@ test("apidocsdeveloperportalsdksratelimitsauditmodel", () => {
   assert.equal(auditLog[2].tenantId, tenantId);
   assert.ok(!("secret" in auditLog[2].safeMetadata));
   assert.ok(!("hash" in auditLog[2].safeMetadata));
+
+  const getPortalResult = capability.getDeveloperPortalSummary(
+    updateResult.value,
+    ["TENANT_DEVELOPER_READ"] as const
+  );
+  assert.ok(getPortalResult.ok);
+  assert.equal(auditLog.length, 3);
 });
 
 test("apidocsdeveloperportalsdksratelimitserrormodel", () => {
@@ -240,50 +247,47 @@ test("apidocsdeveloperportalsdksratelimitsreadinessmodel", () => {
 });
 
 test("apidocsdeveloperportalsdksratelimitsstatemodel", () => {
-  const apiKey: capability.ApiKey = {
-    id: "key-1",
-    prefix: "tenant-1",
-    hash: "hash123",
-    state: "ACTIVE",
-    scopes: ["read", "write"] as const,
-    createdAt: "2023-01-01T00:00:00Z",
-    revokedAt: null,
-  };
-  const rateLimitPolicy: capability.RateLimitPolicy = { windowMs: 60000, maxRequests: 100 };
-  const rateLimitState: capability.RateLimitState = {
-    policy: rateLimitPolicy,
-    currentWindowCount: 50,
-    exceeded: "NOT_EXCEEDED",
-  };
-  const portal: capability.DeveloperPortalSummary = {
-    tenantId: "tenant-1",
-    openApiContract: { openapi: "3.0.0" },
-    graphQlContract: { schema: "type Query { hello: String }" },
-    sdkMaterials: ["sdk.zip"] as const,
-    rateLimitVisibility: true,
-    keys: [],
-  };
-  const state: capability.State = {
-    apiKeys: [apiKey],
-    developerPortal: portal,
-    rateLimits: new Map([["tenant-1", rateLimitState]]),
-    auditLog: [],
-    readiness: "READY",
-    openApiContract: { openapi: "3.0.0" },
-    graphQlContract: { schema: "type Query { hello: String }" },
-    routeMetadata: [],
-  };
+  const state = capability.initialState;
+  const tenantId = "tenant-1" as const;
+  const scopes = ["read", "write"] as const;
+  const entitlements = ["TENANT_API_KEY_WRITE", "API_ACCESS"] as const;
+  const auditFn: capability.AuditFn = () => null;
 
-  assert.equal(state.apiKeys[0].state, "ACTIVE");
-  assert.equal(state.apiKeys[0].prefix, "tenant-1");
-  assert.deepEqual(state.apiKeys[0].scopes, ["read", "write"]);
-  assert.ok(!("secret" in state.apiKeys[0]));
-  assert.ok(state.developerPortal !== null);
-  assert.equal(state.developerPortal.tenantId, "tenant-1");
-  assert.ok(state.rateLimits.has("tenant-1"));
-  assert.equal(state.rateLimits.get("tenant-1")?.policy.maxRequests, 100);
-  assert.equal(state.rateLimits.get("tenant-1")?.currentWindowCount, 50);
-  assert.equal(state.rateLimits.get("tenant-1")?.exceeded, "NOT_EXCEEDED");
+  const createResult = capability.createApiKey(state, tenantId, "actor-1", scopes, auditFn, entitlements);
+  assert.ok(createResult.ok);
+  const createdState = createResult.value.state;
+  assert.equal(createdState.apiKeys.length, 1);
+  const apiKey = createdState.apiKeys[0];
+  assert.equal(apiKey.state, "ACTIVE");
+  assert.equal(apiKey.prefix, tenantId + "_1");
+  assert.deepEqual(apiKey.scopes, scopes);
+  assert.ok(!("secret" in apiKey));
+  assert.ok(apiKey.hash.length > 0);
+
+  const policy: capability.RateLimitPolicy = { windowMs: 60000, maxRequests: 100 };
+  const evalResult = capability.evaluateRateLimit(createdState, tenantId, policy);
+  assert.ok(evalResult.ok);
+  assert.equal(evalResult.value.policy.maxRequests, 100);
+  assert.equal(evalResult.value.currentWindowCount, 0);
+  assert.equal(evalResult.value.exceeded, "NOT_EXCEEDED");
+
+  const openApiContract = { openapi: "3.0.0" } as const;
+  const graphQlContract = { schema: "type Query { hello: String }" } as const;
+  const sdkMaterials = ["sdk.zip"] as const;
+  const buildResult = capability.buildDeveloperPortal(
+    createdState,
+    tenantId,
+    openApiContract,
+    graphQlContract,
+    sdkMaterials,
+    ["TENANT_DEVELOPER_READ"] as const,
+    openApiContract
+  );
+  assert.ok(buildResult.ok);
+  assert.ok(buildResult.value.summary.rateLimitVisibility);
+  assert.deepEqual(buildResult.value.summary.openApiContract, openApiContract);
+  assert.deepEqual(buildResult.value.summary.graphQlContract, graphQlContract);
+  assert.deepEqual(buildResult.value.summary.sdkMaterials, sdkMaterials);
 });
 
 test("apidocsdeveloperportalsdksratelimitsuisemantics", () => {

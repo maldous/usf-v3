@@ -169,8 +169,14 @@ export function deriveCapabilityImplementationNeeds(
     .map(([capability, requirements]) => {
       const name = capabilityName.get(capability) ?? localName(capability);
       const domain = localName(domainOf.get(capability) ?? "urn:usf:delivery-domain:foundation");
-      const substitute = (pattern: string): string =>
-        `${convention.realisationRoot}/${pattern.replace("{domain}", domain).replace("{capability}", name)}`;
+      // A realisation root of "." means the owning repository realises this
+      // itself, so the declared pattern is already repository-relative and
+      // nothing is prefixed to it.
+      const substitute = (pattern: string): string => {
+        const resolved = pattern.replace("{domain}", domain).replace("{capability}", name);
+        const root = convention.realisationRoot;
+        return root === "." || root.length === 0 ? resolved : `${root}/${resolved}`;
+      };
       const sorted = Object.freeze([...requirements].sort((left, right) => left.facet.localeCompare(right.facet)));
       return Object.freeze({
         capability,

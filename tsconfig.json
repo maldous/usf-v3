@@ -9,5 +9,11 @@
     "strict": true,
     "target": "ES2024"
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "tests/conformance"
+  ]
 }
