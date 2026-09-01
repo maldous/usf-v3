@@ -204,9 +204,10 @@ export function approveSupportAccess(
     return { kind: 'INVALID_TARGET', message: 'Workflow not in waiting state' };
   }
 
+  const sessionId = `session-${workflowId}`;
   const auditError = emitSupportSessionCreatedAudit(
     workflowId,
-    `session-${workflowId}`,
+    sessionId,
     workflow.targetTenantFqdn,
     workflow.accessReason,
     auditFn,
@@ -216,7 +217,7 @@ export function approveSupportAccess(
   }
 
   const newSession: SupportModeBreakGlassAccessSession = {
-    id: `session-${workflowId}`,
+    id: sessionId,
     targetTenantId,
     effectiveOrganisationId,
     accessReason: workflow.accessReason,
@@ -226,8 +227,9 @@ export function approveSupportAccess(
     supportMode: true,
   };
 
-  const updatedWorkflows = state.workflows.map((w) =>
-    w.id === workflowId ? { ...w, status: 'COMPLETED' } : w,
+  const updatedWorkflows: readonly SupportModeBreakGlassAccessWorkflow[] = state.workflows.map(
+    (w): SupportModeBreakGlassAccessWorkflow =>
+      w.id === workflowId ? { ...w, status: 'COMPLETED' } : w,
   );
 
   return {
@@ -256,9 +258,10 @@ export function enterSupportModeDirectly(
     return mapDecisionToError(validation);
   }
 
+  const sessionId = `session-direct-${Date.now()}`;
   const auditError = emitSupportSessionCreatedAudit(
     'direct',
-    `session-direct-${Date.now()}`,
+    sessionId,
     targetTenantFqdn,
     accessReason,
     auditFn,
@@ -268,7 +271,7 @@ export function enterSupportModeDirectly(
   }
 
   const newSession: SupportModeBreakGlassAccessSession = {
-    id: `session-direct-${Date.now()}`,
+    id: sessionId,
     targetTenantId,
     effectiveOrganisationId,
     accessReason,
@@ -283,6 +286,39 @@ export function enterSupportModeDirectly(
     sessions: [...state.sessions, newSession],
     lastError: null,
   };
+}
+
+export function proveWorkflowAndSessionStateMachine(
+  state: SupportModeBreakGlassAccessState,
+  workflowId: string,
+  targetTenantFqdn: string,
+  accessReason: string,
+  requestedBy: string,
+  targetTenantId: string,
+  roles: readonly string[],
+): SupportModeBreakGlassAccessState | SupportModeBreakGlassAccessError {
+  const step1 = requestSupportAccess(
+    state,
+    workflowId,
+    targetTenantFqdn,
+    accessReason,
+    requestedBy,
+    () => null,
+  );
+  if ('kind' in step1 && typeof step1.kind === 'string' && step1.kind !== null) {
+    return step1;
+  }
+  const requestState = step1 as SupportModeBreakGlassAccessState;
+  const step2 = approveSupportAccess(
+    requestState,
+    workflowId,
+    targetTenantId,
+    requestedBy,
+    accessReason,
+    roles,
+    () => null,
+  );
+  return step2;
 }
 
 function mapDecisionToError(decision: SupportModeBreakGlassAccessDecision): SupportModeBreakGlassAccessError {

@@ -300,12 +300,7 @@ test("brandingandthemingstatemodel", () => {
 });
 
 test("brandingandthemingvalidation", () => {
-  const state: capability.BrandingAndThemingState = {
-    ...capability.initialState,
-    brandingDefinitions: new Map([
-      ['tenant1', { applicationName: 'ValidationApp', themeSelection: 'light' as const }]
-    ]),
-  };
+  const state: capability.BrandingAndThemingState = capability.initialState;
 
   // Theme reads tolerate missing tenant
   const themeResult = capability.readTheme('nonexistent', state);

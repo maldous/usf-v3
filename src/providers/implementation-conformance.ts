@@ -287,6 +287,25 @@ export function repositoryRelative(repositoryRoot: string, path: string): string
 export const conformanceEvidenceDirectory = ".usf/conformance-evidence";
 
 /**
+ * Facets whose subtest exists in the current test file but never calls the
+ * module. Derived from the file rather than the record so the rule reaches
+ * evidence written before it.
+ */
+async function inadmissibleFacetsOf(
+  repositoryRoot: string,
+  record: ConformanceRun,
+): Promise<ReadonlySet<string>> {
+  const outcomes = record.outcomes ?? [];
+  if (outcomes.length === 0) return new Set();
+  const bytes = await readFile(resolve(repositoryRoot, record.conformancePath), "utf8").catch(() => undefined);
+  if (bytes === undefined) return new Set();
+  const subtests = classifySubtests(bytes, outcomes.map((outcome) => outcome.facetName));
+  return new Set(outcomes
+    .filter((outcome) => subtests.named.has(outcome.facetName) && !subtests.invoking.has(outcome.facetName))
+    .map((outcome) => outcome.facet));
+}
+
+/**
  * Compile one proposed module body without landing it.
  *
  * A capability module imports only Node builtins, so compiling the candidate in
@@ -342,6 +361,12 @@ export async function loadConformanceEvidence(
     // A module-only observation binds no test. It stops describing the current
     // repository the moment either the module changes or a test appears.
     const currentTest = await digestOf(record.conformancePath);
+    // Admissibility is evaluated against the test as it stands now, not against
+    // whatever the rule was when the record was written. A record produced
+    // before this rule existed carries no admissible flag, and re-deriving it
+    // here applies the rule to every landed test immediately rather than
+    // waiting for bytes to change and trigger a re-check that may never come.
+    const currentInadmissible = await inadmissibleFacetsOf(repositoryRoot, record);
     const moduleOnly = record.conformancePathDigest.length === 0;
     const stale = await digestOf(record.modulePath) !== record.modulePathDigest
       || (moduleOnly ? currentTest !== null : currentTest !== record.conformancePathDigest);
@@ -356,14 +381,15 @@ export async function loadConformanceEvidence(
     for (const outcome of record.outcomes ?? []) {
       if (typeof outcome.facet !== "string") continue;
       // A subtest that observes no behaviour is work outstanding, not silence.
-      const inadmissible = outcome.admissible === false;
+      const inadmissible = outcome.admissible === false || currentInadmissible.has(outcome.facet);
       if (!blocked && !inadmissible && !outcome.executed) continue;
       const candidate: ConformanceEvidenceEntry = Object.freeze({
         executed: !blocked && !inadmissible,
         passed: !blocked && !inadmissible && outcome.passed === true,
         stale, blocked: blocked || inadmissible,
         evidence: `${record.conformancePath}@${record.conformancePathDigest.slice(0, 19)} subtest ${outcome.facetName}`,
-        detail: inadmissible ? outcome.detail
+        detail: inadmissible
+          ? outcome.detail ?? `the subtest for this requirement in ${record.conformancePath} asserts exported shape without invoking the module, so it observes no behaviour`
           : blocked
           ? `${record.refusal ?? "the behavioural check could not execute"}${record.typecheck.detail === null ? "" : `: ${record.typecheck.detail.slice(0, 900)}`}`
           : outcome.detail,

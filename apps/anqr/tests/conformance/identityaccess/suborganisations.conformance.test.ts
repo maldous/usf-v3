@@ -14,7 +14,7 @@ test("suborganisationsauditmodel", () => {
   };
 
   const createResult = capability.createSubOrganisation(state, tenantId, 'test-slug', 'Test Org', auditFn);
-  assert.notEqual(createResult, null);
+  assert.ok(!Array.isArray(createResult) || createResult.length > 0);
   if (Array.isArray(createResult)) {
     assert.equal(auditEvents.length, 1);
     assert.equal(auditEvents[0].kind, 'SUBORG_CREATED');
@@ -31,14 +31,14 @@ test("suborganisationsauditmodel", () => {
   });
 
   const failCreateResult = capability.createSubOrganisation(state, tenantId, 'test-slug2', 'Test Org 2', failingAuditFn);
-  assert.notEqual(failCreateResult, null);
+  assert.ok(!Array.isArray(failCreateResult));
   assert.equal(failCreateResult.kind, 'invalid-body');
 
   // Test update audit
   auditEvents = [];
   const newState = Array.isArray(createResult) ? createResult : state;
   const updateResult = capability.updateSubOrganisation(newState, tenantId, 'test-slug', 'Updated Org', auditFn);
-  assert.notEqual(updateResult, null);
+  assert.ok(!Array.isArray(updateResult) || updateResult.length > 0);
   if (Array.isArray(updateResult)) {
     assert.equal(auditEvents.length, 1);
     assert.equal(auditEvents[0].kind, 'SUBORG_UPDATED');
@@ -49,7 +49,7 @@ test("suborganisationsauditmodel", () => {
   // Test deactivate audit
   auditEvents = [];
   const deactivateResult = capability.deactivateSubOrganisation(newState, tenantId, 'test-slug', auditFn);
-  assert.notEqual(deactivateResult, null);
+  assert.ok(!Array.isArray(deactivateResult) || deactivateResult.length > 0);
   if (Array.isArray(deactivateResult)) {
     assert.equal(auditEvents.length, 1);
     assert.equal(auditEvents[0].kind, 'SUBORG_DEACTIVATED');

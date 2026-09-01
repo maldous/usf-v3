@@ -35,7 +35,7 @@ test("rbacrolesandpermissionsauditmodel", () => {
   );
   assert.equal(result.outcome, "SUCCESS");
   if (result.outcome === "SUCCESS") {
-    assert.deepEqual(result.state.members[0].role, "MANAGER");
+    assert.equal(result.state.members[0].role, "MANAGER");
   } else {
     assert.fail("Expected success outcome");
   }
@@ -53,7 +53,7 @@ test("rbacrolesandpermissionsauditmodel", () => {
     auditErrorFn,
   );
   assert.equal(errorResult.outcome, "UNPROCESSABLE_ENTITY");
-  if (errorResult.outcome !== "SUCCESS") {
+  if (errorResult.outcome === "UNPROCESSABLE_ENTITY") {
     assert.deepEqual(errorResult.error, { kind: "AUDIT_FAILURE", message: "Audit failed" });
   } else {
     assert.fail("Expected error outcome");
@@ -217,7 +217,7 @@ test("rbacrolesandpermissionsreadinessmodel", () => {
   assert.equal(degradedState.readiness, "DEGRADED");
   const result = capability.updateMemberRole(degradedState, "user1", "org1", "MEMBER", () => null);
   assert.equal(result.outcome, "UNPROCESSABLE_ENTITY");
-  if (result.outcome !== "SUCCESS") {
+  if (result.outcome === "UNPROCESSABLE_ENTITY") {
     assert.deepEqual(result.error, { kind: "DEGRADED_MODE", message: "Mutation disabled in degraded mode" });
   } else {
     assert.fail("Expected error outcome");
