@@ -28,10 +28,10 @@ test("providerconfigurationplaneauditmodel", () => {
   };
 
   const createResult = capability.createProviderConfig(capability.initialState, config, auditMetadata, auditFn);
-  if ("kind" in createResult) {
-    assert.fail("createProviderConfig returned an error: " + createResult.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (createResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("createProviderConfig returned an error: " + (createResult as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state1 = createResult;
+  const state1 = createResult as capability.ProviderConfigurationPlaneState;
   assert.strictEqual(state1.lastError, null);
   assert.strictEqual(state1.providerConfigs.length, 1);
   assert.deepStrictEqual(state1.providerConfigs[0]?.auditMetadata, auditMetadata);
@@ -39,12 +39,11 @@ test("providerconfigurationplaneauditmodel", () => {
   if (capturedEvent === null) {
     assert.fail("auditFn was not called on create");
   }
-  const createEvent = capturedEvent;
-  assert.strictEqual(createEvent.kind, "AUDIT_BEFORE_MUTATION");
-  assert.strictEqual(createEvent.providerKey, "test-provider");
-  assert.strictEqual(createEvent.previousState, null);
-  assert.strictEqual(createEvent.newState, "PROPOSED");
-  assert.deepStrictEqual(createEvent.metadata, auditMetadata);
+  assert.strictEqual(capturedEvent.kind, "AUDIT_BEFORE_MUTATION");
+  assert.strictEqual(capturedEvent.providerKey, "test-provider");
+  assert.strictEqual(capturedEvent.previousState, null);
+  assert.strictEqual(capturedEvent.newState, "PROPOSED");
+  assert.deepStrictEqual(capturedEvent.metadata, auditMetadata);
 
   capturedEvent = null;
   const transitionResult = capability.transitionProviderLifecycle(
@@ -55,10 +54,10 @@ test("providerconfigurationplaneauditmodel", () => {
     auditFn,
     true,
   );
-  if ("kind" in transitionResult) {
-    assert.fail("transitionProviderLifecycle returned an error: " + transitionResult.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("transitionProviderLifecycle returned an error: " + (transitionResult as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state2 = transitionResult;
+  const state2 = transitionResult as capability.ProviderConfigurationPlaneState;
   assert.strictEqual(state2.lastError, null);
   assert.strictEqual(state2.providerConfigs[0]?.lifecycleState, "DEGRADED");
   assert.deepStrictEqual(state2.providerConfigs[0]?.auditMetadata, auditMetadata);
@@ -66,12 +65,11 @@ test("providerconfigurationplaneauditmodel", () => {
   if (capturedEvent === null) {
     assert.fail("auditFn was not called on transition");
   }
-  const transitionEvent = capturedEvent;
-  assert.strictEqual(transitionEvent.kind, "AUDIT_BEFORE_MUTATION");
-  assert.strictEqual(transitionEvent.providerKey, "test-provider");
-  assert.strictEqual(transitionEvent.previousState, "PROPOSED");
-  assert.strictEqual(transitionEvent.newState, "DEGRADED");
-  assert.deepStrictEqual(transitionEvent.metadata, auditMetadata);
+  assert.strictEqual(capturedEvent.kind, "AUDIT_BEFORE_MUTATION");
+  assert.strictEqual(capturedEvent.providerKey, "test-provider");
+  assert.strictEqual(capturedEvent.previousState, "PROPOSED");
+  assert.strictEqual(capturedEvent.newState, "DEGRADED");
+  assert.deepStrictEqual(capturedEvent.metadata, auditMetadata);
 
   const readiness = capability.getProviderReadiness(state2, "test-provider");
   assert.strictEqual(readiness, "DEGRADED");
@@ -114,10 +112,10 @@ test("providerconfigurationplanecontracts", () => {
   };
   const auditFn = (_: capability.ProviderConfigurationPlaneAuditEvent): capability.ProviderConfigurationPlaneError | null => null;
   const deleteResult = capability.deleteProviderConfig(state, "test-provider", auditMetadata, auditFn);
-  if ("kind" in deleteResult) {
-    assert.fail("deleteProviderConfig returned an error: " + deleteResult.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (deleteResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("deleteProviderConfig returned an error: " + (deleteResult as capability.ProviderConfigurationPlaneError).kind);
   }
-  const stateAfterDelete = deleteResult;
+  const stateAfterDelete = deleteResult as capability.ProviderConfigurationPlaneState;
   assert.strictEqual(stateAfterDelete.providerConfigs.length, 0);
   assert.strictEqual(capability.getProviderConfig(stateAfterDelete, "test-provider"), null);
 
@@ -131,9 +129,9 @@ test("providerconfigurationplanecontracts", () => {
     auditMetadata,
     auditFn,
   );
-  assert.ok("kind" in missingDeleteResult);
-  if ("kind" in missingDeleteResult) {
-    assert.strictEqual(missingDeleteResult.kind, "INVALID_CONFIGURATION");
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.some((kind) => (missingDeleteResult as capability.ProviderConfigurationPlaneError).kind === kind));
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (missingDeleteResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.strictEqual((missingDeleteResult as capability.ProviderConfigurationPlaneError).kind, "INVALID_CONFIGURATION");
   }
 });
 
@@ -162,9 +160,9 @@ test("providerconfigurationplaneerrormodel", () => {
     auditMetadata,
     auditFn,
   );
-  assert.ok("kind" in createResult);
-  if ("kind" in createResult) {
-    assert.strictEqual(createResult.kind, "INVALID_CONFIGURATION");
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.some((kind) => (createResult as capability.ProviderConfigurationPlaneError).kind === kind));
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (createResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.strictEqual((createResult as capability.ProviderConfigurationPlaneError).kind, "INVALID_CONFIGURATION");
   }
 
   const stateWithConfig: capability.ProviderConfigurationPlaneState = {
@@ -193,9 +191,9 @@ test("providerconfigurationplaneerrormodel", () => {
     auditFn,
     false,
   );
-  assert.ok("kind" in transitionResult);
-  if ("kind" in transitionResult) {
-    assert.strictEqual(transitionResult.kind, "HEALTH_PROBE_FAILED");
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult as capability.ProviderConfigurationPlaneError).kind === kind));
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.strictEqual((transitionResult as capability.ProviderConfigurationPlaneError).kind, "HEALTH_PROBE_FAILED");
   }
 
   const degradedReadiness = capability.getProviderReadiness(
@@ -243,10 +241,10 @@ test("providerconfigurationplanelifecycle", () => {
   };
 
   const createResult = capability.createProviderConfig(capability.initialState, config, auditMetadata, auditFn);
-  if ("kind" in createResult) {
-    assert.fail("createProviderConfig returned an error: " + createResult.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (createResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("createProviderConfig returned an error: " + (createResult as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state1 = createResult;
+  const state1 = createResult as capability.ProviderConfigurationPlaneState;
   assert.strictEqual(state1.providerConfigs[0]?.lifecycleState, "PROPOSED");
 
   const transitionResult1 = capability.transitionProviderLifecycle(
@@ -257,10 +255,10 @@ test("providerconfigurationplanelifecycle", () => {
     auditFn,
     true,
   );
-  if ("kind" in transitionResult1) {
-    assert.fail("transitionProviderLifecycle to CONFIGURED returned an error: " + transitionResult1.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult1 as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("transitionProviderLifecycle to CONFIGURED returned an error: " + (transitionResult1 as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state2 = transitionResult1;
+  const state2 = transitionResult1 as capability.ProviderConfigurationPlaneState;
   assert.strictEqual(state2.providerConfigs[0]?.lifecycleState, "CONFIGURED");
 
   const transitionResult2 = capability.transitionProviderLifecycle(
@@ -271,10 +269,10 @@ test("providerconfigurationplanelifecycle", () => {
     auditFn,
     true,
   );
-  if ("kind" in transitionResult2) {
-    assert.fail("transitionProviderLifecycle to READY returned an error: " + transitionResult2.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult2 as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("transitionProviderLifecycle to READY returned an error: " + (transitionResult2 as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state3 = transitionResult2;
+  const state3 = transitionResult2 as capability.ProviderConfigurationPlaneState;
   assert.strictEqual(state3.providerConfigs[0]?.lifecycleState, "READY");
 
   const illegalTransitionResult = capability.transitionProviderLifecycle(
@@ -285,9 +283,9 @@ test("providerconfigurationplanelifecycle", () => {
     auditFn,
     true,
   );
-  assert.ok("kind" in illegalTransitionResult);
-  if ("kind" in illegalTransitionResult) {
-    assert.strictEqual(illegalTransitionResult.kind, "ILLEGAL_LIFECYCLE_TRANSITION");
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.some((kind) => (illegalTransitionResult as capability.ProviderConfigurationPlaneError).kind === kind));
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (illegalTransitionResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.strictEqual((illegalTransitionResult as capability.ProviderConfigurationPlaneError).kind, "ILLEGAL_LIFECYCLE_TRANSITION");
   }
 
   for (const state of capability.ProviderConfigurationPlaneLifecycleState) {
@@ -321,9 +319,9 @@ test("providerconfigurationplanepermissions", () => {
     auditMetadata,
     auditFn,
   );
-  assert.ok("kind" in createResult);
-  if ("kind" in createResult) {
-    assert.strictEqual(createResult.kind, "MISSING_CREDENTIAL_REFERENCE");
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.some((kind) => (createResult as capability.ProviderConfigurationPlaneError).kind === kind));
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (createResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.strictEqual((createResult as capability.ProviderConfigurationPlaneError).kind, "MISSING_CREDENTIAL_REFERENCE");
   }
 
   const configWithoutCredential: Omit<capability.ProviderConfigurationPlaneProviderConfig, "lifecycleState" | "auditMetadata"> = {
@@ -344,10 +342,10 @@ test("providerconfigurationplanepermissions", () => {
     auditMetadata,
     auditFn,
   );
-  if ("kind" in validCreateResult) {
-    assert.fail("createProviderConfig returned an error: " + validCreateResult.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (validCreateResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("createProviderConfig returned an error: " + (validCreateResult as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state = validCreateResult;
+  const state = validCreateResult as capability.ProviderConfigurationPlaneState;
   const fetched = capability.getProviderConfig(state, "test-provider");
   assert.ok(fetched !== null);
   assert.strictEqual(fetched.credentialRef, "secret-ref");
@@ -379,9 +377,9 @@ test("providerconfigurationplanepermissions", () => {
     auditMetadata,
     failingAuditFn,
   );
-  assert.ok("kind" in auditFailureResult);
-  if ("kind" in auditFailureResult) {
-    assert.strictEqual(auditFailureResult.kind, "AUDIT_FAILURE");
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.some((kind) => (auditFailureResult as capability.ProviderConfigurationPlaneError).kind === kind));
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (auditFailureResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.strictEqual((auditFailureResult as capability.ProviderConfigurationPlaneError).kind, "AUDIT_FAILURE");
   }
   assert.strictEqual(auditCalled, true);
 });
@@ -407,10 +405,10 @@ test("providerconfigurationplaneproof", () => {
   };
 
   const createResult = capability.createProviderConfig(capability.initialState, config, auditMetadata, auditFn);
-  if ("kind" in createResult) {
-    assert.fail("createProviderConfig returned an error: " + createResult.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (createResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("createProviderConfig returned an error: " + (createResult as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state1 = createResult;
+  const state1 = createResult as capability.ProviderConfigurationPlaneState;
   assert.strictEqual(state1.providerConfigs.length, 1);
 
   const transitionResult = capability.transitionProviderLifecycle(
@@ -421,10 +419,10 @@ test("providerconfigurationplaneproof", () => {
     auditFn,
     true,
   );
-  if ("kind" in transitionResult) {
-    assert.fail("transitionProviderLifecycle returned an error: " + transitionResult.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("transitionProviderLifecycle returned an error: " + (transitionResult as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state2 = transitionResult;
+  const state2 = transitionResult as capability.ProviderConfigurationPlaneState;
   assert.strictEqual(state2.providerConfigs[0]?.lifecycleState, "READY");
 
   const readiness = capability.getProviderReadiness(state2, "test-provider");
@@ -452,10 +450,10 @@ test("providerconfigurationplanereadinessmodel", () => {
   };
 
   const createResult = capability.createProviderConfig(capability.initialState, config, auditMetadata, auditFn);
-  if ("kind" in createResult) {
-    assert.fail("createProviderConfig returned an error: " + createResult.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (createResult as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("createProviderConfig returned an error: " + (createResult as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state1 = createResult;
+  const state1 = createResult as capability.ProviderConfigurationPlaneState;
 
   const transitionResult1 = capability.transitionProviderLifecycle(
     state1,
@@ -465,10 +463,10 @@ test("providerconfigurationplanereadinessmodel", () => {
     auditFn,
     true,
   );
-  if ("kind" in transitionResult1) {
-    assert.fail("transitionProviderLifecycle to CONFIGURED returned an error: " + transitionResult1.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult1 as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("transitionProviderLifecycle to CONFIGURED returned an error: " + (transitionResult1 as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state2 = transitionResult1;
+  const state2 = transitionResult1 as capability.ProviderConfigurationPlaneState;
 
   const transitionResult2 = capability.transitionProviderLifecycle(
     state2,
@@ -478,10 +476,10 @@ test("providerconfigurationplanereadinessmodel", () => {
     auditFn,
     true,
   );
-  if ("kind" in transitionResult2) {
-    assert.fail("transitionProviderLifecycle to READY returned an error: " + transitionResult2.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult2 as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("transitionProviderLifecycle to READY returned an error: " + (transitionResult2 as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state3 = transitionResult2;
+  const state3 = transitionResult2 as capability.ProviderConfigurationPlaneState;
   const readiness1 = capability.getProviderReadiness(state3, "test-provider");
   assert.strictEqual(readiness1, "READY");
 
@@ -493,10 +491,10 @@ test("providerconfigurationplanereadinessmodel", () => {
     auditFn,
     true,
   );
-  if ("kind" in transitionResult3) {
-    assert.fail("transitionProviderLifecycle to DEGRADED returned an error: " + transitionResult3.kind);
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (transitionResult3 as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.fail("transitionProviderLifecycle to DEGRADED returned an error: " + (transitionResult3 as capability.ProviderConfigurationPlaneError).kind);
   }
-  const state4 = transitionResult3;
+  const state4 = transitionResult3 as capability.ProviderConfigurationPlaneState;
   const readiness2 = capability.getProviderReadiness(state4, "test-provider");
   assert.strictEqual(readiness2, "DEGRADED");
 
@@ -664,13 +662,19 @@ test("providerconfigurationplanevalidation", () => {
   const validationResult4 = capability.validateProviderConfig(validConfig);
   assert.strictEqual(validationResult4, null);
 
-  const illegalTransition = capability.validateLifecycleTransition("READY", "PROPOSED");
+  const illegalTransition = capability.validateLifecycleTransition(
+    "READY" as capability.ProviderConfigurationPlaneLifecycleState,
+    "PROPOSED" as capability.ProviderConfigurationPlaneLifecycleState
+  );
   assert.ok(illegalTransition !== null);
   if (illegalTransition !== null) {
     assert.strictEqual(illegalTransition.kind, "ILLEGAL_LIFECYCLE_TRANSITION");
   }
 
-  const legalTransition = capability.validateLifecycleTransition("PROPOSED", "CONFIGURED");
+  const legalTransition = capability.validateLifecycleTransition(
+    "PROPOSED" as capability.ProviderConfigurationPlaneLifecycleState,
+    "CONFIGURED" as capability.ProviderConfigurationPlaneLifecycleState
+  );
   assert.strictEqual(legalTransition, null);
 
   const healthProbeBlocked = capability.transitionProviderLifecycle(
@@ -682,7 +686,7 @@ test("providerconfigurationplanevalidation", () => {
           environment: "test-env",
           instanceLabel: "test-instance",
           classification: "test-class",
-          lifecycleState: "CONFIGURED",
+          lifecycleState: "CONFIGURED" as capability.ProviderConfigurationPlaneLifecycleState,
           endpoint: null,
           config: {},
           credentialRef: null,
@@ -693,13 +697,13 @@ test("providerconfigurationplanevalidation", () => {
       lastError: null,
     },
     "test-provider",
-    "READY",
+    "READY" as capability.ProviderConfigurationPlaneLifecycleState,
     auditMetadata,
     auditFn,
     false,
   );
-  assert.ok("kind" in healthProbeBlocked);
-  if ("kind" in healthProbeBlocked) {
-    assert.strictEqual(healthProbeBlocked.kind, "HEALTH_PROBE_FAILED");
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.some((kind) => (healthProbeBlocked as capability.ProviderConfigurationPlaneError).kind === kind));
+  if (capability.ProviderConfigurationPlaneErrorKind.some((kind) => (healthProbeBlocked as capability.ProviderConfigurationPlaneError).kind === kind)) {
+    assert.strictEqual((healthProbeBlocked as capability.ProviderConfigurationPlaneError).kind, "HEALTH_PROBE_FAILED");
   }
 });

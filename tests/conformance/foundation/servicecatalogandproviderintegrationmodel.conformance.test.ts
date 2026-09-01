@@ -1,5 +1,5 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { test } from "node:test";
+import assert from "node:assert/strict";
 import * as capability from "../../../src/capabilities/foundation/servicecatalogandproviderintegrationmodel.ts";
 
 test("servicecatalogandproviderintegrationmodelauditmodel", () => {
@@ -30,23 +30,23 @@ test("servicecatalogandproviderintegrationmodelauditmodel", () => {
 test("servicecatalogandproviderintegrationmodelcontracts", () => {
   const model: capability.ServiceCatalogModel = {
     ...capability.initialModel,
-    resources: new Map([
+    resources: new Map<string, capability.ServiceCatalogEntry>([
       [
         'svc-1',
         {
           id: 'svc-1',
           name: 'TestService',
           category: 'compute',
-          visibility: 'tenant_scoped_safe',
-          integrationDecision: 'build',
-          entitlementKey: 'ent-1',
-          readiness: 'READY',
+          visibility: 'tenant_scoped_safe' as const,
+          integrationDecision: 'build' as const,
+          entitlementKey: 'ent-1' as const,
+          readiness: 'READY' as const,
           providerDetails: {},
           consoleAccessFlag: true,
-        } as capability.ServiceCatalogEntry,
+        },
       ],
     ]),
-    readiness: 'READY',
+    readiness: 'READY' as const,
   };
 
   const catalog = capability.getCatalog(model);
@@ -77,22 +77,22 @@ test("servicecatalogandproviderintegrationmodellifecycle", () => {
   const service: Omit<capability.ServiceCatalogEntry, 'id'> = {
     name: 'LifecycleService',
     category: 'storage',
-    visibility: 'global_only',
-    integrationDecision: 'compose',
-    entitlementKey: 'ent-lifecycle',
-    readiness: 'READY',
+    visibility: 'global_only' as const,
+    integrationDecision: 'compose' as const,
+    entitlementKey: 'ent-lifecycle' as const,
+    readiness: 'READY' as const,
     providerDetails: {},
     consoleAccessFlag: false,
   };
 
   const auditFn = (_event: capability.AuditEvent): capability.TypedError | null => null;
   const result = capability.registerService(initialState, service, auditFn);
-  assert.ok(!result);
+  assert.ok(result && typeof result !== 'string');
   const modelResult = result as capability.ServiceCatalogModel;
   assert.strictEqual(modelResult.lastDecision, 'GRANTED');
   assert.strictEqual(modelResult.resources.size, 1);
 
-  const entry = modelResult.resources.get(modelResult.resources.keys().next().value);
+  const entry = modelResult.resources.get(modelResult.resources.keys().next().value as string);
   assert.strictEqual(entry?.name, 'LifecycleService');
   assert.strictEqual(entry?.integrationDecision, 'compose');
 
@@ -105,10 +105,10 @@ test("servicecatalogandproviderintegrationmodelpermissions", () => {
     id: 'perm-1',
     name: 'PermService',
     category: 'network',
-    visibility: 'tenant_scoped_safe',
-    integrationDecision: 'adapter',
-    entitlementKey: 'ent-perm',
-    readiness: 'READY',
+    visibility: 'tenant_scoped_safe' as const,
+    integrationDecision: 'adapter' as const,
+    entitlementKey: 'ent-perm' as const,
+    readiness: 'READY' as const,
     providerDetails: {},
     consoleAccessFlag: true,
   };
@@ -120,7 +120,7 @@ test("servicecatalogandproviderintegrationmodelpermissions", () => {
   const hasPermission = capability.validatePermission('perm-1', 'admin', tenantToken);
   assert.strictEqual(hasPermission, true);
 
-  const invalidToken = { authLevel: 'user', tenantId: 'tenant-789' };
+  const invalidToken = { authLevel: 'user', tenantId: 'tenant-789' } as capability.TenantToken;
   const noPermission = capability.validatePermission('perm-1', 'admin', invalidToken);
   assert.strictEqual(noPermission, false);
 
@@ -131,23 +131,23 @@ test("servicecatalogandproviderintegrationmodelpermissions", () => {
 test("servicecatalogandproviderintegrationmodelproof", () => {
   const modelWithService: capability.ServiceCatalogModel = {
     ...capability.initialModel,
-    resources: new Map([
+    resources: new Map<string, capability.ServiceCatalogEntry>([
       [
         'proof-1',
         {
           id: 'proof-1',
           name: 'ProofService',
           category: 'analytics',
-          visibility: 'global_only',
-          integrationDecision: 'build',
-          entitlementKey: 'ent-proof',
-          readiness: 'READY',
+          visibility: 'global_only' as const,
+          integrationDecision: 'build' as const,
+          entitlementKey: 'ent-proof' as const,
+          readiness: 'READY' as const,
           providerDetails: {},
           consoleAccessFlag: true,
-        } as capability.ServiceCatalogEntry,
+        },
       ],
     ]),
-    readiness: 'READY',
+    readiness: 'READY' as const,
   };
 
   assert.strictEqual(capability.provePlatformServices(modelWithService), true);
@@ -163,46 +163,46 @@ test("servicecatalogandproviderintegrationmodelproof", () => {
 test("servicecatalogandproviderintegrationmodelreadinessmodel", () => {
   const readyModel: capability.ServiceCatalogModel = {
     ...capability.initialModel,
-    resources: new Map([
+    resources: new Map<string, capability.ServiceCatalogEntry>([
       [
         'ready-1',
         {
           id: 'ready-1',
           name: 'ReadyService',
           category: 'compute',
-          visibility: 'tenant_scoped_safe',
-          integrationDecision: 'build',
-          entitlementKey: 'ent-ready',
-          readiness: 'READY',
+          visibility: 'tenant_scoped_safe' as const,
+          integrationDecision: 'build' as const,
+          entitlementKey: 'ent-ready' as const,
+          readiness: 'READY' as const,
           providerDetails: {},
           consoleAccessFlag: false,
-        } as capability.ServiceCatalogEntry,
+        },
       ],
     ]),
-    readiness: 'READY',
+    readiness: 'READY' as const,
   };
   assert.strictEqual(capability.determineReadiness(readyModel), 'READY');
   assert.strictEqual(capability.getReadiness(readyModel), 'READY');
 
   const notReadyModel: capability.ServiceCatalogModel = {
     ...capability.initialModel,
-    resources: new Map([
+    resources: new Map<string, capability.ServiceCatalogEntry>([
       [
         'not-ready-1',
         {
           id: 'not-ready-1',
           name: 'NotReadyService',
           category: 'compute',
-          visibility: 'tenant_scoped_safe',
-          integrationDecision: 'build',
-          entitlementKey: 'ent-not-ready',
-          readiness: 'NOT_READY',
+          visibility: 'tenant_scoped_safe' as const,
+          integrationDecision: 'build' as const,
+          entitlementKey: 'ent-not-ready' as const,
+          readiness: 'NOT_READY' as const,
           providerDetails: {},
           consoleAccessFlag: false,
-        } as capability.ServiceCatalogEntry,
+        },
       ],
     ]),
-    readiness: 'NOT_READY',
+    readiness: 'NOT_READY' as const,
   };
   assert.strictEqual(capability.determineReadiness(notReadyModel), 'NOT_READY');
 });
@@ -212,10 +212,10 @@ test("servicecatalogandproviderintegrationmodelstatemodel", () => {
     id: 'state-1',
     name: 'StateService',
     category: 'database',
-    visibility: 'not_exposed',
-    integrationDecision: 'defer',
-    entitlementKey: 'ent-state',
-    readiness: 'NOT_READY',
+    visibility: 'not_exposed' as const,
+    integrationDecision: 'defer' as const,
+    entitlementKey: 'ent-state' as const,
+    readiness: 'NOT_READY' as const,
     providerDetails: { config: 'value' },
     consoleAccessFlag: false,
   };
@@ -235,10 +235,10 @@ test("servicecatalogandproviderintegrationmodelvalidation", () => {
   const validService: Omit<capability.ServiceCatalogEntry, 'id'> = {
     name: 'ValidService',
     category: 'storage',
-    visibility: 'global_only',
-    integrationDecision: 'reject',
-    entitlementKey: 'ent-valid',
-    readiness: 'READY',
+    visibility: 'global_only' as const,
+    integrationDecision: 'reject' as const,
+    entitlementKey: 'ent-valid' as const,
+    readiness: 'READY' as const,
     providerDetails: {},
     consoleAccessFlag: true,
   };
@@ -250,9 +250,9 @@ test("servicecatalogandproviderintegrationmodelvalidation", () => {
     category: '',
     visibility: 'invalid' as capability.Visibility,
     integrationDecision: 'invalid' as capability.IntegrationDecision,
-    entitlementKey: '' as capability.EntitlementKey,
+    entitlementKey: '',
     readiness: 'invalid' as capability.Readiness,
-    providerDetails: {} as Record<string, unknown>,
+    providerDetails: {},
     consoleAccessFlag: false,
   };
   const invalidResult = capability.validateCatalogEntry(invalidService);

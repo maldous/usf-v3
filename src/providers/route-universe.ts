@@ -79,7 +79,7 @@ export interface RouteUniverseInput {
   readonly credentialAliases?: ReadonlyMap<string, readonly string[]>;
   readonly providerEndpoints?: ReadonlyMap<string, string>;
   /** Model a local agent transport should request, from graph authority. */
-  readonly transportSelectedModel?: ReadonlyMap<string, string>;
+  readonly transportSelectedModel?: ReadonlyMap<string, readonly string[]>;
   readonly executionPolicy?: ProviderExecutionPolicy;
   /** Live capability observations for the local agent CLI transports. */
   readonly localAgentCapabilities: readonly AuthenticatedTransportCapability[];
@@ -156,10 +156,16 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
     // Reservation is decided before usability, so a reserved transport that is
     // authenticated reports the policy, not a credential state.
     if (input.executionPolicy !== undefined) {
-      const decision = permitsExecution(input.executionPolicy, {
-        transport, provider: profile.provider,
-        model: input.transportSelectedModel?.get(transport) ?? null,
-      });
+      // Reservation is decided per declared model as well as per transport, so
+      // a reserved model family cannot enter the pool through a transport that
+      // is otherwise permitted.
+      const policy = input.executionPolicy;
+      const declared = input.transportSelectedModel?.get(transport) ?? [];
+      const decide = (model: string | null) =>
+        permitsExecution(policy, { transport, provider: profile.provider, model });
+      const decision = declared.length === 0
+        ? decide(null)
+        : declared.map((model) => decide(model)).find((entry) => !entry.permitted) ?? decide(null);
       if (!decision.permitted) {
         dispositions.push(Object.freeze({
           transport, admitted: false,
@@ -201,11 +207,17 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       continue;
     }
     dispositions.push(Object.freeze({ transport, admitted: true, reason: "ADMITTED" }));
-    candidates.push(Object.freeze({
-      candidateId: `${transport}:${profile.provider}`,
+    // One candidate per declared model. Each carries its own quota, so an
+    // exhausted model defers itself and leaves the rest of the subscription
+    // reachable instead of taking the whole transport down with it.
+    const declaredModels = input.transportSelectedModel?.get(transport) ?? [];
+    const modelsForTransport: readonly (string | null)[] =
+      declaredModels.length === 0 ? Object.freeze([null]) : declaredModels;
+    for (const selected of modelsForTransport) candidates.push(Object.freeze({
+      candidateId: selected === null ? `${transport}:${profile.provider}` : `${transport}:${profile.provider}:${selected}`,
       transport,
       provider: profile.provider,
-      model: input.transportSelectedModel?.get(transport) ?? null,
+      model: selected,
       adapterPackage: null,
       credentialName: null,
       baseUrl: null,

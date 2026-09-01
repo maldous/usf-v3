@@ -307,7 +307,7 @@ export function processTelemetryIngress(
 } {
   if (!state.config || !state.config.enabled) {
     const err: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError = {
-      kind: 'CONFIG_MISSING',
+      kind: 'INGESTION_DENIED',
       message: 'Telemetry is not configured or enabled',
     };
     return {

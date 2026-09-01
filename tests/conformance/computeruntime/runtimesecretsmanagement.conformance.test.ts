@@ -24,7 +24,7 @@ test("runtimesecretsmanagementauditmodel", () => {
   assert.strictEqual(passResult, null);
   const state = capability.initialSecretState;
   const putResult = capability.putSecret(state, 'org-1', 's', 'postgres', 'val', true, passAuditFn);
-  if (putResult instanceof Error || 'kind' in putResult) {
+  if ('kind' in putResult) {
     assert.fail('putSecret should succeed with valid audit');
   } else {
     assert.strictEqual(putResult.secrets.length, 1);
@@ -44,18 +44,26 @@ test("runtimesecretsmanagementcontracts", () => {
   assert.deepStrictEqual(capability.Provider, ['postgres', 'openbao'] as const);
   const state = capability.initialSecretState;
   const putResult = capability.putSecret(state, 'org-1', 's', 'postgres', 'val', true, () => null);
-  if (!(putResult instanceof Error) && !('kind' in putResult)) {
+  if ('kind' in putResult) {
+    assert.fail('putSecret should succeed');
+  } else {
     assert.ok(Array.isArray(putResult.secrets));
     const listResult = capability.listSecrets(putResult, 'org-1', true);
-    if (!(listResult instanceof Error) && !('kind' in listResult)) {
+    if ('kind' in listResult) {
+      assert.fail('listSecrets should succeed');
+    } else {
       assert.ok(Array.isArray(listResult));
     }
     const metaResult = capability.getMetadata(putResult, 'org-1', 'ref-1', true);
-    if (!(metaResult instanceof Error) && !('kind' in metaResult)) {
+    if ('kind' in metaResult) {
+      assert.fail('getMetadata should succeed');
+    } else {
       assert.ok(metaResult.ref);
     }
     const resolveResult = capability.resolveSecret(putResult, 'org-1', 'ref-1');
-    if (resolveResult !== null && !(resolveResult instanceof Error) && !('kind' in resolveResult)) {
+    if (resolveResult !== null && 'kind' in resolveResult) {
+      assert.fail('resolveSecret should succeed');
+    } else {
       assert.strictEqual(resolveResult, 'val');
     }
     const readiness = capability.getReadinessPayload(putResult);
@@ -91,27 +99,27 @@ test("runtimesecretsmanagementerrormodel", () => {
 test("runtimesecretsmanagementlifecycle", () => {
   const state = capability.initialSecretState;
   const putResult = capability.putSecret(state, 'org-1', 's', 'postgres', 'val', true, () => null);
-  if (putResult instanceof Error || 'kind' in putResult) {
+  if ('kind' in putResult) {
     assert.fail('putSecret should succeed');
   } else {
     assert.strictEqual(putResult.secrets[0].ref, 'ref-1');
     assert.strictEqual(putResult.secrets[0].version, 1);
     assert.strictEqual(putResult.secrets[0].encryptedValue, 'dmFs');
     const rotated = capability.rotateSecret(putResult, 'org-1', 'ref-1', 'new', true, () => null);
-    if (rotated instanceof Error || 'kind' in rotated) {
+    if ('kind' in rotated) {
       assert.fail('rotateSecret should succeed');
     } else {
       assert.strictEqual(rotated.secrets[0].ref, 'ref-1');
       assert.strictEqual(rotated.secrets[0].version, 2);
       assert.strictEqual(rotated.secrets[0].encryptedValue, 'bmV3');
       const revoked = capability.revokeSecret(rotated, 'org-1', 'ref-1', true, () => null);
-      if (revoked instanceof Error || 'kind' in revoked) {
+      if ('kind' in revoked) {
         assert.fail('revokeSecret should succeed');
       } else {
         assert.strictEqual(revoked.secrets[0].revoked, true);
         assert.strictEqual(capability.resolveSecret(revoked, 'org-1', 'ref-1'), null);
         const deleted = capability.deleteSecret(revoked, 'org-1', 'ref-1', true, () => null);
-        if (deleted instanceof Error || 'kind' in deleted) {
+        if ('kind' in deleted) {
           assert.fail('deleteSecret should succeed');
         } else {
           assert.strictEqual(deleted.secrets[0].deleted, deleted.secrets[0].updated);
@@ -120,13 +128,13 @@ test("runtimesecretsmanagementlifecycle", () => {
     }
   }
   const listResult = capability.listSecrets(putResult, 'org-1', true);
-  if (listResult instanceof Error || 'kind' in listResult) {
+  if ('kind' in listResult) {
     assert.fail('listSecrets should succeed');
   } else {
     assert.strictEqual(listResult[0].encryptedValue, 'dmFs');
   }
   const metaResult = capability.getMetadata(putResult, 'org-1', 'ref-1', true);
-  if (metaResult instanceof Error || 'kind' in metaResult) {
+  if ('kind' in metaResult) {
     assert.fail('getMetadata should succeed');
   } else {
     assert.strictEqual(metaResult.encryptedValue, 'dmFs');
@@ -151,7 +159,9 @@ test("runtimesecretsmanagementpermissions", () => {
     message: 'Missing required permission',
   });
   const crossOrgState = capability.putSecret(state, 'org-1', 's', 'postgres', 'val', true, () => null);
-  if (!(crossOrgState instanceof Error) && !('kind' in crossOrgState)) {
+  if ('kind' in crossOrgState) {
+    assert.fail('putSecret should succeed');
+  } else {
     const crossOrgResolve = capability.resolveSecret(crossOrgState, 'org-2', 'ref-1');
     assert.strictEqual(crossOrgResolve, null);
     const crossOrgMeta = capability.getMetadata(crossOrgState, 'org-2', 'ref-1', true);
@@ -160,4 +170,101 @@ test("runtimesecretsmanagementpermissions", () => {
       message: 'Secret not found or deleted',
     });
     const crossOrgList = capability.listSecrets(crossOrgState, 'org-2', true);
-    if (!(crossOrgList instanceof Error
+    if ('kind' in crossOrgList) {
+      assert.fail('listSecrets should succeed');
+    } else {
+      assert.strictEqual(crossOrgList.length, 0);
+    }
+  }
+});
+
+test("runtimesecretsmanagementproof", () => {
+  const state = capability.initialSecretState;
+  const putResult = capability.putSecret(state, 'org-1', 's', 'postgres', 'val', true, () => null);
+  if ('kind' in putResult) {
+    assert.fail('putSecret should succeed');
+  } else {
+    assert.strictEqual(putResult.secrets[0].encryptedValue, 'dmFs');
+    const resolveResult = capability.resolveSecret(putResult, 'org-1', 'ref-1');
+    assert.strictEqual(resolveResult, 'val');
+  }
+  const readiness = capability.getReadinessPayload(state);
+  assert.deepStrictEqual(readiness, { readiness: 'BUILTIN_READY_OPENBAO_READY' });
+  const degradedState: capability.SecretManagementState = {
+    ...state,
+    openBaoReadiness: 'DEGRADED',
+  };
+  const degradedReadiness = capability.getReadinessPayload(degradedState);
+  assert.deepStrictEqual(degradedReadiness, { readiness: 'BUILTIN_READY_OPENBAO_DEGRADED' });
+});
+
+test("runtimesecretsmanagementreadinessmodel", () => {
+  const state = capability.initialSecretState;
+  const readiness = capability.getReadinessPayload(state);
+  assert.deepStrictEqual(readiness, { readiness: 'BUILTIN_READY_OPENBAO_READY' });
+  const degradedState: capability.SecretManagementState = {
+    ...state,
+    openBaoReadiness: 'UNREACHABLE',
+  };
+  const degradedReadiness = capability.getReadinessPayload(degradedState);
+  assert.deepStrictEqual(degradedReadiness, { readiness: 'BUILTIN_READY_OPENBAO_UNREACHABLE' });
+  const notReadyState: capability.SecretManagementState = {
+    ...state,
+    builtInReady: false,
+  };
+  const notReadyReadiness = capability.getReadinessPayload(notReadyState);
+  assert.deepStrictEqual(notReadyReadiness, { readiness: 'BUILTIN_NOT_READY_OPENBAO_READY' });
+});
+
+test("runtimesecretsmanagementstatemodel", () => {
+  const state = capability.initialSecretState;
+  const putResult = capability.putSecret(state, 'org-1', 's', 'postgres', 'val', true, () => null);
+  if ('kind' in putResult) {
+    assert.fail('putSecret should succeed');
+  } else {
+    const secret = putResult.secrets[0];
+    assert.strictEqual(secret.ref, 'ref-1');
+    assert.strictEqual(secret.organisationId, 'org-1');
+    assert.strictEqual(secret.name, 's');
+    assert.strictEqual(secret.provider, 'postgres');
+    assert.strictEqual(secret.version, 1);
+    assert.strictEqual(secret.revoked, false);
+    assert.strictEqual(secret.backendPath, 'postgres/org-1/s');
+    assert.strictEqual(secret.encryptedValue, 'dmFs');
+    assert.ok(secret.created);
+    assert.ok(secret.updated);
+    assert.strictEqual(secret.deleted, null);
+  }
+});
+
+test("runtimesecretsmanagementvalidation", () => {
+  const state = capability.initialSecretState;
+  const putResult = capability.putSecret(state, 'org-1', 's', 'postgres', 'val', true, () => null);
+  if ('kind' in putResult) {
+    assert.fail('putSecret should succeed');
+  } else {
+    const listResult = capability.listSecrets(putResult, 'org-1', true);
+    if ('kind' in listResult) {
+      assert.fail('listSecrets should succeed');
+    } else {
+      assert.strictEqual(listResult[0].encryptedValue, 'dmFs');
+    }
+    const metaResult = capability.getMetadata(putResult, 'org-1', 'ref-1', true);
+    if ('kind' in metaResult) {
+      assert.fail('getMetadata should succeed');
+    } else {
+      assert.strictEqual(metaResult.encryptedValue, 'dmFs');
+    }
+    const resolveResult = capability.resolveSecret(putResult, 'org-1', 'ref-1');
+    assert.strictEqual(resolveResult, 'val');
+    const rotated = capability.rotateSecret(putResult, 'org-1', 'ref-1', 'new', true, () => null);
+    if ('kind' in rotated) {
+      assert.fail('rotateSecret should succeed');
+    } else {
+      assert.strictEqual(rotated.secrets[0].ref, 'ref-1');
+      assert.strictEqual(rotated.secrets[0].version, 2);
+    }
+    const readiness = capability.getReadinessPayload(putResult);
+    assert.deepStrictEqual(readiness, { readiness: 'BUILTIN_READY_OPENBAO_READY' });
+  }
+});

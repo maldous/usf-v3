@@ -225,6 +225,14 @@ function getNextVersion(records: readonly DecisionRecord[], capabilityId: string
   return versions.length > 0 ? Math.max(...versions) + 1 : 1;
 }
 
+function createAuditFn(
+  state: BuildVersusComposeState
+): (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null {
+  return (event: BuildVersusComposeAuditEvent): BuildVersusComposeError | null => {
+    return null;
+  };
+}
+
 export function createDecision(
   state: BuildVersusComposeState,
   capabilityId: string,
@@ -233,7 +241,7 @@ export function createDecision(
   authority: string,
   auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
   timestamp: string
-): BuildVersusComposeState | BuildVersusComposeError {
+): { readonly kind: 'SUCCESS'; readonly state: BuildVersusComposeState } | BuildVersusComposeError {
   if (state.decisionRecords.some(r => r.capabilityId === capabilityId && r.supersededBy === null)) {
     return createError('CONTRADICTION_DETECTED', `Capability ${capabilityId} already has active decision`);
   }
@@ -261,7 +269,7 @@ export function createDecision(
     auditTrail: [...state.auditTrail, event],
   };
 
-  return runProof(newState);
+  return { kind: 'SUCCESS', state: runProof(newState) };
 }
 
 export function reviseDecision(
@@ -272,7 +280,7 @@ export function reviseDecision(
   authority: string,
   auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
   timestamp: string
-): BuildVersusComposeState | BuildVersusComposeError {
+): { readonly kind: 'SUCCESS'; readonly state: BuildVersusComposeState } | BuildVersusComposeError {
   const activeRecord = state.decisionRecords.find(r => r.capabilityId === capabilityId && r.supersededBy === null);
   if (!activeRecord) {
     return createError('CONFIGURATION_LOSS', `No active decision found for capability ${capabilityId}`);
@@ -312,7 +320,7 @@ export function reviseDecision(
     auditTrail: [...state.auditTrail, event],
   };
 
-  return runProof(newState);
+  return { kind: 'SUCCESS', state: runProof(newState) };
 }
 
 export function supersedeDecision(
@@ -321,7 +329,7 @@ export function supersedeDecision(
   authority: string,
   auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
   timestamp: string
-): BuildVersusComposeState | BuildVersusComposeError {
+): { readonly kind: 'SUCCESS'; readonly state: BuildVersusComposeState } | BuildVersusComposeError {
   const activeRecord = state.decisionRecords.find(r => r.capabilityId === capabilityId && r.supersededBy === null);
   if (!activeRecord) {
     return createError('CONFIGURATION_LOSS', `No active decision found for capability ${capabilityId}`);
@@ -358,7 +366,7 @@ export function supersedeDecision(
     auditTrail: [...state.auditTrail, event],
   };
 
-  return runProof(newState);
+  return { kind: 'SUCCESS', state: runProof(newState) };
 }
 
 export function rollbackDecision(
@@ -367,7 +375,7 @@ export function rollbackDecision(
   authority: string,
   auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
   timestamp: string
-): BuildVersusComposeState | BuildVersusComposeError {
+): { readonly kind: 'SUCCESS'; readonly state: BuildVersusComposeState } | BuildVersusComposeError {
   const activeRecord = state.decisionRecords.find(r => r.capabilityId === capabilityId && r.supersededBy === null);
   if (!activeRecord) {
     return createError('CONFIGURATION_LOSS', `No active decision found for capability ${capabilityId}`);
@@ -403,7 +411,7 @@ export function rollbackDecision(
     auditTrail: [...state.auditTrail, event],
   };
 
-  return runProof(newState);
+  return { kind: 'SUCCESS', state: runProof(newState) };
 }
 
 export function initializeFramework(
@@ -412,7 +420,7 @@ export function initializeFramework(
   authorityOrder: readonly string[],
   auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
   timestamp: string
-): BuildVersusComposeState | BuildVersusComposeError {
+): { readonly kind: 'SUCCESS'; readonly state: BuildVersusComposeState } | BuildVersusComposeError {
   const event = auditDecisionChange('DECISION_CREATED', 'framework-init', 'framework', 1, 'platform', timestamp);
 
   const auditError = auditFn(event);
@@ -428,7 +436,7 @@ export function initializeFramework(
     auditTrail: [...state.auditTrail, event],
   };
 
-  return runProof(newState);
+  return { kind: 'SUCCESS', state: runProof(newState) };
 }
 
 export function validateFramework(

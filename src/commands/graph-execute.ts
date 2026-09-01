@@ -413,7 +413,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           const produced = candidate.transport === "claude-cli"
             ? await invokeClaudeCli(unit.prompt, invocationTimeoutMs)
             : candidate.transport === "codex-cli"
-              ? await invokeCodexCli(unit.prompt, invocationTimeoutMs)
+              ? await invokeCodexCli(unit.prompt, invocationTimeoutMs, candidate.model)
               // Antigravity requires an explicit model identity; the candidate
               // carries none until its catalogue can be enumerated.
               : await invokeAntigravityCli(unit.prompt, candidate.model ?? "", invocationTimeoutMs);

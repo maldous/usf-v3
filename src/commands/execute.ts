@@ -288,7 +288,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
       const produced = candidate.transport === "claude-cli"
         ? await invokeClaudeCli(parsed.prompt, defaultTimeoutMs)
         : candidate.transport === "codex-cli"
-          ? await invokeCodexCli(parsed.prompt, defaultTimeoutMs)
+          ? await invokeCodexCli(parsed.prompt, defaultTimeoutMs, candidate.model)
           : await invokeAntigravityCli(parsed.prompt, candidate.model ?? "", defaultTimeoutMs);
       const elapsed = Math.round(performance.now() - attemptStarted);
       attempts.push(Object.freeze({

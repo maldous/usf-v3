@@ -250,6 +250,8 @@
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:modelIdentityObservable> "false" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:nonClaim> "This transport does not expose its resolved underlying model identity; results record that fact rather than inventing one." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:selectedModel> "gpt-5.3-codex-spark" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:selectedModelReason> "The transport's default model is a separate quota from the named ones, and this account's default is exhausted while gpt-5.3-codex-spark answers. Invoking without naming a model spent every attempt against the exhausted default and recorded a usage-limit refusal for the whole transport, which read as the subscription being unavailable when only one of its models was. A work requirement may name another available model." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:sessionMaterial> ".codex/auth.json" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:transportIdentity> "codex-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .

@@ -1,4 +1,3 @@
-```typescript
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as capability from '../../../src/capabilities/developerplatform/ratelimitingapi.ts';
@@ -26,13 +25,14 @@ test('ratelimitingapiauditmodel', () => {
   };
 
   const result = capability.updatePolicy(state, tenantId, policyKey, policy, auditFn, permissionFn, operatorId);
-  
-  assert.ok(auditEvents.length > 0);
+
+  assert.ok(!('kind' in result));
   assert.strictEqual(auditEvents.length, 1);
   const auditEvent = auditEvents[0];
   assert.strictEqual(auditEvent.kind, 'AUDIT_BEFORE_CHANGE');
   assert.strictEqual(auditEvent.tenantId, tenantId);
   assert.strictEqual(auditEvent.policyKey, policyKey);
+  assert.deepStrictEqual(auditEvent.policy, policy);
 });
 
 test('ratelimitingapicontracts', () => {
@@ -45,7 +45,7 @@ test('ratelimitingapicontracts', () => {
     state, tenantId, policyKey, 'ent1', 10, 60, 'DENY', operatorId,
     () => null, permissionFn
   );
-  
+
   assert.ok(!('kind' in updatedState));
   const readResult = capability.readPolicy(updatedState, tenantId, policyKey, permissionFn, operatorId, true);
   assert.ok(!('kind' in readResult));
@@ -74,7 +74,7 @@ test('ratelimitingapierrormodel', () => {
     lastDecision: null,
     lastError: null,
   };
-  const token = { entitlement: 'ent1' };
+  const token = { entitlement: 'ent1' as const };
 
   const evalResult1 = capability.evaluateRateLimit(state, 'tenant1', 'policy1', token, cacheAdapter, relationalAdapter);
   assert.strictEqual(evalResult1.decision, 'ALLOWED');
@@ -114,7 +114,7 @@ test('ratelimitingapilifecycle', () => {
     lastDecision: null,
     lastError: null,
   };
-  const token = { entitlement: 'ent1' };
+  const token = { entitlement: 'ent1' as const };
 
   const noPolicyResult = capability.evaluateRateLimit(
     { ...state, policies: [] },
@@ -132,7 +132,7 @@ test('ratelimitingapilifecycle', () => {
   assert.strictEqual(evalResult3.decision, 'DENIED_LIMIT_EXCEEDED');
 });
 
-test('ratelimitingapermissions', () => {
+test('ratelimitingapipermissions', () => {
   const state = capability.initialState;
   const permissionFn = (required: capability.RateLimitPermission, _operatorId: string): boolean => {
     return required === 'PLATFORM_RATE_LIMIT_READ' || required === 'PLATFORM_RATE_LIMIT_WRITE';
@@ -186,7 +186,7 @@ test('ratelimitingapiproof', () => {
     lastDecision: null,
     lastError: null,
   };
-  const token = { entitlement: 'ent1' };
+  const token = { entitlement: 'ent1' as const };
 
   const evalResult = capability.evaluateRateLimit(state, 'tenant1', 'policy1', token, cacheAdapter, relationalAdapter);
   assert.strictEqual(evalResult.decision, 'ALLOWED');
@@ -215,4 +215,93 @@ test('ratelimitingapistatemodel', () => {
   const policy: capability.RateLimitPolicy = {
     tenantId: 'tenant1',
     policyKey: 'policy1',
-    entit
+    entitlementKey: 'ent1',
+    limit: 10,
+    windowSeconds: 60,
+    action: 'DENY',
+    updatedAt: new Date().toISOString(),
+    updatedBy: 'operator1',
+  };
+  assert.strictEqual(policy.tenantId, 'tenant1');
+  assert.strictEqual(policy.policyKey, 'policy1');
+  assert.strictEqual(policy.entitlementKey, 'ent1');
+  assert.strictEqual(policy.limit, 10);
+  assert.strictEqual(policy.windowSeconds, 60);
+  assert.strictEqual(policy.action, 'DENY');
+  assert.ok(policy.updatedAt.length > 0);
+  assert.strictEqual(policy.updatedBy, 'operator1');
+
+  const counter: capability.RateLimitCounter = {
+    tenantId: 'tenant1',
+    policyKey: 'policy1',
+    windowStart: 1000,
+    usedCount: 5,
+    limit: 10,
+    exceeded: false,
+  };
+  assert.strictEqual(counter.tenantId, 'tenant1');
+  assert.strictEqual(counter.policyKey, 'policy1');
+  assert.strictEqual(counter.windowStart, 1000);
+  assert.strictEqual(counter.usedCount, 5);
+  assert.strictEqual(counter.limit, 10);
+  assert.strictEqual(counter.exceeded, false);
+
+  const exceededCounter: capability.RateLimitCounter = {
+    tenantId: 'tenant1',
+    policyKey: 'policy1',
+    windowStart: 1000,
+    usedCount: 11,
+    limit: 10,
+    exceeded: true,
+  };
+  assert.strictEqual(exceededCounter.exceeded, true);
+});
+
+test('ratelimitingapivalidation', () => {
+  const state = capability.initialState;
+  const permissionFn = (_required: capability.RateLimitPermission, _operatorId: string): boolean => true;
+  const operatorId = 'operator1';
+  const tenantId = 'tenant1';
+  const policyKey = 'policy1';
+
+  const invalidTenantResult = capability.readPolicy(state, 'invalid@tenant', policyKey, permissionFn, operatorId, true);
+  assert.ok('kind' in invalidTenantResult);
+  assert.strictEqual(invalidTenantResult.kind, 'TENANT_INVALID');
+
+  const invalidPolicy: capability.RateLimitPolicy = {
+    tenantId,
+    policyKey,
+    entitlementKey: '',
+    limit: 0,
+    windowSeconds: 0,
+    action: 'DENY',
+    updatedAt: new Date().toISOString(),
+    updatedBy: operatorId,
+  };
+  const policyValidationError = capability.validatePolicy(invalidPolicy);
+  assert.ok(policyValidationError !== null);
+  assert.strictEqual(policyValidationError.kind, 'INVALID_POLICY');
+
+  const counters = new Map<string, capability.RateLimitCounter>();
+  const cacheAdapter = capability.createMockCacheAdapter(counters, true);
+  const relationalAdapter = capability.createMockRelationalAdapter(counters, true);
+  const stateWithPolicy: capability.RateLimitState = {
+    ...capability.initialState,
+    policies: [{
+      tenantId: 'tenant1',
+      policyKey: 'policy1',
+      entitlementKey: 'ent1',
+      limit: 1,
+      windowSeconds: 60,
+      action: 'DENY',
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'operator1',
+    }],
+    counters: [],
+    lastDecision: null,
+    lastError: null,
+  };
+  const noEntitlementResult = capability.evaluateRateLimit(stateWithPolicy, 'tenant1', 'policy1', null, cacheAdapter, relationalAdapter);
+  assert.strictEqual(noEntitlementResult.decision, 'DENIED_ENTITLEMENT_MISSING');
+  assert.strictEqual(noEntitlementResult.error?.kind, 'ENTITLEMENT_DENIED');
+});

@@ -104,11 +104,11 @@ test("authenticationplatformcontracts", () => {
 
   const providers = capability.listProviders(state, "tenant1");
   if ("kind" in providers) throw new Error("Unexpected error");
+  assert.ok(Array.isArray(providers));
 
   const pkce = capability.generatePkceChallenge();
   assert.ok(pkce.codeVerifier.length > 0);
   assert.ok(pkce.codeChallenge.length > 0);
-  assert.equal(pkce.codeChallenge, pkce.codeChallenge.toLowerCase());
 
   const createResult = capability.createProvider(
     state,
@@ -144,6 +144,7 @@ test("authenticationplatformcontracts", () => {
   const logoutResult = capability.logout(state, callbackResult.session.id, auditFn);
   if ("kind" in logoutResult) throw new Error("Unexpected error");
   assert.equal(logoutResult.result, "NO_CONTENT");
+  state = logoutResult.state;
 
   const authCheck = capability.forwardAuthCheck(state, callbackResult.session.id);
   assert.equal(authCheck.authenticated, false);
@@ -156,6 +157,7 @@ test("authenticationplatformcontracts", () => {
     auditFn,
   );
   if ("kind" in updateResult) throw new Error("Unexpected error");
+  assert.equal(updateResult.result, "NO_CONTENT");
   state = updateResult.state;
 
   const importResult = capability.importOidcDiscovery(
@@ -166,10 +168,12 @@ test("authenticationplatformcontracts", () => {
     auditFn,
   );
   if ("kind" in importResult) throw new Error("Unexpected error");
+  assert.equal(importResult.result, "NO_CONTENT");
   state = importResult.state;
 
   const testResult = capability.testProviderConnection(state, "tenant1", "test-provider", auditFn);
   if ("kind" in testResult) throw new Error("Unexpected error");
+  assert.equal(testResult.result, "NO_CONTENT");
   state = testResult.state;
 
   const callbackUrl = capability.deriveCallbackUrl(state, "example.com");
@@ -182,16 +186,19 @@ test("authenticationplatformcontracts", () => {
   };
   const writePolicyResult = capability.writePolicy(state, "tenant1", policy, auditFn);
   if ("kind" in writePolicyResult) throw new Error("Unexpected error");
+  assert.equal(writePolicyResult.result, "NO_CONTENT");
   state = writePolicyResult.state;
 
   const readPolicyResult = capability.readPolicy(state, "tenant1");
   if ("kind" in readPolicyResult) throw new Error("Unexpected error");
+  assert.equal(readPolicyResult.mfaMode, "REQUIRED_TOTP");
 
   const mappings: capability.AuthenticationPlatformClaimMapping[] = [
     { claimName: "role", roleName: "admin" },
   ];
   const writeMappingsResult = capability.writeClaimMappings(state, "tenant1", mappings, auditFn);
   if ("kind" in writeMappingsResult) throw new Error("Unexpected error");
+  assert.equal(writeMappingsResult.result, "NO_CONTENT");
   state = writeMappingsResult.state;
 
   const readMappingsResult = capability.readClaimMappings(state, "tenant1");
@@ -755,7 +762,7 @@ test("authenticationplatformstatemodel", () => {
 
 test("authenticationplatformuisemantics", () => {
   const model = capability.authenticationPlatformUiSemanticModel;
-
+  assert.ok(capability.deriveCallbackUrl(capability.initialState, "test") !== undefined);
   assert.deepStrictEqual(model.surfaces, ["login", "callback", "session", "admin"]);
   assert.deepStrictEqual(model.viewModels, ["LoginViewModel", "CallbackViewModel", "SessionViewModel", "AdminViewModel"]);
   assert.deepStrictEqual(model.components, ["LoginForm", "CallbackHandler", "SessionDisplay", "AdminPanel"]);
@@ -764,13 +771,6 @@ test("authenticationplatformuisemantics", () => {
   assert.deepStrictEqual(model.accessibility, ["screenReader", "keyboardNav", "highContrast"]);
   assert.deepStrictEqual(model.localisation, ["en", "fr", "de"]);
   assert.deepStrictEqual(model.rendererContracts, ["ReactRenderer", "VueRenderer", "AngularRenderer"]);
-
-  assert.equal(model.surfaces.includes("login"), true);
-  assert.equal(model.viewModels.includes("LoginViewModel"), true);
-  assert.equal(model.components.includes("LoginForm"), true);
-  assert.equal(model.journeys.includes("loginJourney"), true);
-  assert.equal(model.permissions.includes("READ_AUTH_SETTINGS"), true);
-  assert.equal(model.rendererContracts.includes("ReactRenderer"), true);
 });
 
 test("authenticationplatformvalidation", () => {

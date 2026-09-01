@@ -90,6 +90,33 @@ export type BrandingValidationResult =
   | BrandingValidationSuccess
   | BrandingAndThemingError;
 
+export interface ConfigurationStorePort {
+  readonly listBrandingDefinitions: (
+    tenantId: string,
+    token: unknown,
+    state: BrandingAndThemingState,
+  ) => BrandingDefinition[] | BrandingAndThemingError;
+  readonly patchBrandingDefinition: (
+    tenantId: string,
+    partialDefinition: Partial<BrandingDefinition>,
+    token: unknown,
+    state: BrandingAndThemingState,
+    audit: (event: AuditEvent) => BrandingAndThemingError | null,
+  ) => BrandingMutationResult;
+  readonly deleteBrandingDefinition: (
+    tenantId: string,
+    token: unknown,
+    state: BrandingAndThemingState,
+    audit: (event: AuditEvent) => BrandingAndThemingError | null,
+  ) => BrandingMutationResult;
+}
+
+export const configurationStoreAdapter: ConfigurationStorePort = {
+  listBrandingDefinitions,
+  patchBrandingDefinition,
+  deleteBrandingDefinition,
+};
+
 export function checkBrandingPermission(
   tenantId: string,
   token: unknown,

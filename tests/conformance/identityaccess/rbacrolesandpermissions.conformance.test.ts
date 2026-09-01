@@ -3,7 +3,6 @@ import test from "node:test";
 import * as capability from "../../../src/capabilities/identityaccess/rbacrolesandpermissions.ts";
 
 test("rbacrolesandpermissionsauditmodel", () => {
-  const state = capability.initialState;
   const member: capability.RbacRolesAndPermissionsMember = {
     userId: "user1",
     organisationId: "org1",
@@ -11,7 +10,7 @@ test("rbacrolesandpermissionsauditmodel", () => {
     status: "ACTIVE",
   };
   const stateWithMember: capability.RbacRolesAndPermissionsState = {
-    ...state,
+    ...capability.initialState,
     members: [member],
   };
 
@@ -34,22 +33,7 @@ test("rbacrolesandpermissionsauditmodel", () => {
     auditFn,
   );
   assert.equal(result.outcome, "SUCCESS");
-  assert.ok(result.outcome === "SUCCESS");
   assert.equal(result.state.members[0].role, "MANAGER");
-});
-
-test("rbacrolesandpermissionsauditmodel_failure_aborts_update", () => {
-  const state = capability.initialState;
-  const member: capability.RbacRolesAndPermissionsMember = {
-    userId: "user1",
-    organisationId: "org1",
-    role: "MEMBER",
-    status: "ACTIVE",
-  };
-  const stateWithMember: capability.RbacRolesAndPermissionsState = {
-    ...state,
-    members: [member],
-  };
 
   const failingAuditFn = (_: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => {
     return { kind: "AUDIT_FAILURE", message: "Audit failed" };
@@ -62,10 +46,8 @@ test("rbacrolesandpermissionsauditmodel_failure_aborts_update", () => {
     failingAuditFn,
   );
   assert.equal(failResult.outcome, "UNPROCESSABLE_ENTITY");
-  assert.ok(failResult.outcome === "UNPROCESSABLE_ENTITY");
-  assert.ok(failResult.error.kind === "AUDIT_FAILURE");
-  // State must remain unchanged when audit fails
-  assert.deepEqual(stateWithMember, capability.RbacRolesAndPermissionsState.withMember: RbacRolesAndPermissionsState);
+  assert.equal(failResult.error.kind, "AUDIT_FAILURE");
+  assert.equal(stateWithMember.members[0].role, "MEMBER");
 });
 
 test("rbacrolesandpermissionscontracts", () => {
@@ -78,8 +60,8 @@ test("rbacrolesandpermissionscontracts", () => {
     ),
   );
   const invalidRole = ["TENANT_ADMIN", "MANAGER", "MEMBER", "VIEWER", "INVALID"] as const;
-  assert.false(
-    capability.validateContractDrift(domainVocabulary, invalidRole),
+  assert.ok(
+    !capability.validateContractDrift(domainVocabulary, invalidRole),
   );
 });
 
@@ -160,7 +142,6 @@ test("rbacrolesandpermissionslifecycle", () => {
   const auditFn = () => null;
   const result = capability.updateMemberRole(stateWithMember, "user1", "org1", "MANAGER", auditFn);
   assert.equal(result.outcome, "SUCCESS");
-  assert.ok(result.outcome === "SUCCESS");
   const permissionsAfter = capability.getMemberPermissions(result.state, "user1", "org1");
   assert.deepEqual(permissionsAfter, ["tenant.members.read", "tenant.groups.read", "tenant.suborgs.read"] as const);
 });
@@ -180,7 +161,7 @@ test("rbacrolesandpermissionspermissions", () => {
 
   assert.ok(capability.checkPermission(stateWithMember, "user1", "org1", "tenant.admin.access"));
   assert.ok(!capability.checkPermission(stateWithMember, "user1", "org1", "platform.admin.access"));
-  assert.ok(capability.checkPermission(stateWithMember, "user1", "org2", "tenant.members.write"));
+  assert.ok(!capability.checkPermission(stateWithMember, "user1", "org2", "tenant.members.write"));
 });
 
 test("rbacrolesandpermissionsproof", () => {
@@ -219,7 +200,6 @@ test("rbacrolesandpermissionsreadinessmodel", () => {
   assert.equal(degradedState.readiness, "DEGRADED");
   const result = capability.updateMemberRole(degradedState, "user1", "org1", "MEMBER", () => null);
   assert.equal(result.outcome, "UNPROCESSABLE_ENTITY");
-  assert.ok(result.outcome === "UNPROCESSABLE_ENTITY");
   assert.deepEqual(result.error, { kind: "DEGRADED_MODE", message: "Mutation disabled in degraded mode" });
 });
 

@@ -25,6 +25,7 @@ test("entitlementengineauditmodel", () => {
     {},
     failingAudit,
   );
+  assert.ok(!("entitlements" in grantResult));
   if (!("entitlements" in grantResult)) {
     assert.strictEqual(grantResult.kind, "AUDIT_FAILURE");
   }
@@ -39,6 +40,7 @@ test("entitlementengineauditmodel", () => {
     {},
     failingAudit,
   );
+  assert.ok(!("entitlements" in revokeResult));
   if (!("entitlements" in revokeResult)) {
     assert.strictEqual(revokeResult.kind, "AUDIT_FAILURE");
   }
@@ -63,12 +65,10 @@ test("entitlementengineauditmodel", () => {
   );
   assert.ok("entitlements" in newStateResult, "grantEntitlement must return a state on success");
   assert.notStrictEqual(capturedEvent, null);
-  if (capturedEvent !== null) {
-    assert.strictEqual(capturedEvent.kind, "ENTITLEMENT_GRANTED");
-    assert.strictEqual(capturedEvent.newState, "GRANTED");
-    assert.strictEqual(capturedEvent.tenantId, "tenant1");
-    assert.strictEqual(capturedEvent.entitlementKey, "FEATURE_A");
-  }
+  assert.strictEqual(capturedEvent?.kind, "ENTITLEMENT_GRANTED");
+  assert.strictEqual(capturedEvent?.newState, "GRANTED");
+  assert.strictEqual(capturedEvent?.tenantId, "tenant1");
+  assert.strictEqual(capturedEvent?.entitlementKey, "FEATURE_A");
 
   const revokedResult = capability.revokeEntitlement(
     newStateResult,
@@ -81,10 +81,8 @@ test("entitlementengineauditmodel", () => {
   );
   assert.ok("entitlements" in revokedResult, "revokeEntitlement must return a state on success");
   assert.notStrictEqual(capturedEvent, null);
-  if (capturedEvent !== null) {
-    assert.strictEqual(capturedEvent.kind, "ENTITLEMENT_REVOKED");
-    assert.strictEqual(capturedEvent.newState, "REVOKED");
-  }
+  assert.strictEqual(capturedEvent?.kind, "ENTITLEMENT_REVOKED");
+  assert.strictEqual(capturedEvent?.newState, "REVOKED");
 
   const readDecision = capability.evaluateEntitlement(state, "tenant1", "FEATURE_A");
   assert.strictEqual(readDecision, "DENIED");
@@ -174,18 +172,14 @@ test("entitlementengineerrormodel", () => {
 
   const invalidTenantError = capability.validateTenantId("");
   assert.ok(invalidTenantError !== null);
-  if (invalidTenantError !== null) {
-    assert.strictEqual(invalidTenantError.kind, "INVALID_TENANT");
-  }
+  assert.strictEqual(invalidTenantError?.kind, "INVALID_TENANT");
 
   const invalidKeyError = capability.validateEntitlementKey(
     "UNKNOWN",
     state.catalogKeys,
   );
   assert.ok(invalidKeyError !== null);
-  if (invalidKeyError !== null) {
-    assert.strictEqual(invalidKeyError.kind, "INVALID_KEY");
-  }
+  assert.strictEqual(invalidKeyError?.kind, "INVALID_KEY");
 
   const forbiddenAssert = capability.assertAccess(
     state,
@@ -194,9 +188,7 @@ test("entitlementengineerrormodel", () => {
     noPermissions,
   );
   assert.ok(forbiddenAssert !== null);
-  if (forbiddenAssert !== null) {
-    assert.strictEqual(forbiddenAssert.kind, "FORBIDDEN");
-  }
+  assert.strictEqual(forbiddenAssert?.kind, "FORBIDDEN");
 
   const forbiddenEval = capability.evaluateAccess(
     state,
@@ -297,10 +289,10 @@ test("entitlementenginelifecycle", () => {
     const view = grantedViewResult.result;
     const aEntry = view.find((v) => v.entitlementKey === "A");
     assert.ok(aEntry);
-    if (aEntry) assert.strictEqual(aEntry.state, "GRANTED");
+    assert.strictEqual(aEntry?.state, "GRANTED");
     const bEntry = view.find((v) => v.entitlementKey === "B");
     assert.ok(bEntry);
-    if (bEntry) assert.strictEqual(bEntry.state, "NOT_GRANTED");
+    assert.strictEqual(bEntry?.state, "NOT_GRANTED");
   }
 
   const revokeResult = capability.operatorWriteEntitlement(
@@ -327,7 +319,7 @@ test("entitlementenginelifecycle", () => {
     const view = revokedViewResult.result;
     const aEntry = view.find((v) => v.entitlementKey === "A");
     assert.ok(aEntry);
-    if (aEntry) assert.strictEqual(aEntry.state, "REVOKED");
+    assert.strictEqual(aEntry?.state, "REVOKED");
   }
 
   const revokedAccessDecision = capability.evaluateEntitlement(revokeResult, "t1", "A");
@@ -406,9 +398,7 @@ test("entitlementenginepermissions", () => {
 
   const assertBeforePerm = capability.assertAccess(state, "t1", "X", []);
   assert.ok(assertBeforePerm !== null);
-  if (assertBeforePerm !== null) {
-    assert.strictEqual(assertBeforePerm.kind, "FORBIDDEN");
-  }
+  assert.strictEqual(assertBeforePerm?.kind, "FORBIDDEN");
 
   const platformOnly: readonly capability.EntitlementEnginePermission[] = [
     "PLATFORM_ENTITLEMENTS_READ",
@@ -441,7 +431,7 @@ test("entitlementenginepermissions", () => {
     const view = crossView.result;
     const xEntry = view.find((v) => v.entitlementKey === "X");
     assert.ok(xEntry);
-    if (xEntry) assert.strictEqual(xEntry.state, "NOT_GRANTED");
+    assert.strictEqual(xEntry?.state, "NOT_GRANTED");
   }
 
   const operatorCrossView = capability.operatorReadEntitlements(
@@ -454,7 +444,7 @@ test("entitlementenginepermissions", () => {
     const view = operatorCrossView.result;
     const xEntry = view.find((v) => v.entitlementKey === "X");
     assert.ok(xEntry);
-    if (xEntry) assert.strictEqual(xEntry.state, "NOT_GRANTED");
+    assert.strictEqual(xEntry?.state, "NOT_GRANTED");
   }
 });
 
@@ -614,7 +604,7 @@ test("entitlementenginereadinessmodel", () => {
     const view = viewAfter.result;
     const entry = view.find((v) => v.entitlementKey === "READ");
     assert.ok(entry);
-    if (entry) assert.strictEqual(entry.state, "GRANTED");
+    assert.strictEqual(entry?.state, "GRANTED");
   }
 
   const repeatedView = capability.tenantSelfReadEntitlements(
@@ -687,24 +677,18 @@ test("entitlementenginevalidation", () => {
 
   const emptyTenantError = capability.validateTenantId("");
   assert.ok(emptyTenantError !== null);
-  if (emptyTenantError !== null) {
-    assert.strictEqual(emptyTenantError.kind, "INVALID_TENANT");
-  }
+  assert.strictEqual(emptyTenantError?.kind, "INVALID_TENANT");
 
   const emptyKeyError = capability.validateEntitlementKey("", state.catalogKeys);
   assert.ok(emptyKeyError !== null);
-  if (emptyKeyError !== null) {
-    assert.strictEqual(emptyKeyError.kind, "INVALID_KEY");
-  }
+  assert.strictEqual(emptyKeyError?.kind, "INVALID_KEY");
 
   const unknownKeyError = capability.validateEntitlementKey(
     "UNKNOWN",
     state.catalogKeys,
   );
   assert.ok(unknownKeyError !== null);
-  if (unknownKeyError !== null) {
-    assert.strictEqual(unknownKeyError.kind, "INVALID_KEY");
-  }
+  assert.strictEqual(unknownKeyError?.kind, "INVALID_KEY");
 
   const originalLength = state.entitlements.length;
   const invalidGrant = capability.grantEntitlement(
@@ -781,6 +765,6 @@ test("entitlementenginevalidation", () => {
     const view = crossView.result;
     const entry = view.find((v) => v.entitlementKey === "ALLOWED");
     assert.ok(entry);
-    if (entry) assert.strictEqual(entry.state, "NOT_GRANTED");
+    assert.strictEqual(entry?.state, "NOT_GRANTED");
   }
 });

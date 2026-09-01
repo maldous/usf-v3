@@ -16,7 +16,7 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
   const connectionConfig = {
     roleName: 'app_role',
     password: 'valid_password',
-    tenantId: 'tenant_1',
+    tenantId: 'tenant_1' as const,
   };
 
   const result = capability.applyMigrationFile(
@@ -37,6 +37,8 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
   assert.deepStrictEqual(state.auditLog[0].details, {
     orderIndex: 0,
     decisionReferenceComment: 'Initial schema',
+    tenantBoundaryPreserved: true,
+    dataSubjectEvidencePreserved: true,
   });
 
   const stateChangingResult = capability.auditStateChangingAccess(
@@ -67,7 +69,11 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
     ...state,
     migrationLineage: ['001_init.sql:sha256:1e3d2c8e:Initial schema'],
   };
-  const restoreResult = capability.guardRestore(restoreState, targetState, auditFn);
+  const restoreResult = capability.guardRestore(
+    restoreState,
+    targetState,
+    auditFn
+  );
   assert.ok(!('kind' in restoreResult && 'message' in restoreResult));
   const restoreStateResult = restoreResult as capability.RelationalStorageAndMigrationsAndRlsState;
   assert.strictEqual(restoreStateResult.auditLog.length, 3);
@@ -77,6 +83,8 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
     targetLineage: '001_init.sql:sha256:1e3d2c8e:Initial schema',
     tenantBoundaryPreserved: true,
     dataSubjectEvidencePreserved: true,
+    auditSignalPreserved: true,
+    isolationSignalPreserved: false,
   });
 });
 
@@ -97,7 +105,7 @@ test("relationalstorageandmigrationsandrlscontracts", () => {
   const rlsPredicate = capability.createRlsPredicate('tenant_id', 'app.current_tenant', 'bypass_role');
   assert.strictEqual(
     rlsPredicate,
-    '(tenant_id = current_setting(\'app.current_tenant\') OR current_user = \'bypass_role\' OR pg_has_role(current_user, \'bypass_role\', \'MEMBER\'))'
+    '(tenant_id = current_setting(\'app.current_tenant\') OR current_user = \'bypass_role\' OR (pg_has_role(current_user, \'bypass_role\', \'MEMBER\') AND current_setting(\'role_inheritance.active\', true) = \'on\'))'
   );
 
   const tableSql = capability.createTableWithRls('test_table', 'tenant_id', rlsPredicate);
@@ -106,7 +114,7 @@ test("relationalstorageandmigrationsandrlscontracts", () => {
   assert.ok(tableSql.includes('ALTER TABLE test_table FORCE ROW LEVEL SECURITY'));
   assert.ok(tableSql.includes('CREATE POLICY tenant_isolation_policy ON test_table USING (' + rlsPredicate + ')'));
 
-  const port = capability.createRepositoryPort('test_context', ['read', 'write']);
+  const port = capability.createRepositoryPort('test_context', ['read', 'write'] as const);
   assert.strictEqual(port.context, 'test_context');
   assert.deepStrictEqual(port.operations, ['read', 'write']);
 });
@@ -125,7 +133,7 @@ test("relationalstorageandmigrationsandrlserrormodel", () => {
   const connectionConfig = {
     roleName: 'app_role',
     password: 'valid_password',
-    tenantId: 'tenant_1',
+    tenantId: 'tenant_1' as const,
   };
 
   const wrongChecksum = 'wrong_checksum';
@@ -192,7 +200,7 @@ test("relationalstorageandmigrationsandrlslifecycle", () => {
   const connectionConfig = {
     roleName: 'app_role',
     password: 'valid_password',
-    tenantId: 'tenant_1',
+    tenantId: 'tenant_1' as const,
   };
 
   const stateAfterFirst = capability.applyMigrationFile(
@@ -295,10 +303,10 @@ test("relationalstorageandmigrationsandrlspermissions", () => {
     substrateAvailable: true,
     connected: true,
   };
-  const port = capability.createRepositoryPort('test_context', ['read', 'write']);
+  const port = capability.createRepositoryPort('test_context', ['read', 'write'] as const);
   const connectionConfig = {
     roleName: 'app_role',
-    tenantId: 'tenant_1',
+    tenantId: 'tenant_1' as const,
   };
   const decision = capability.mediateRepositoryAccess(state, port, connectionConfig);
   assert.strictEqual(decision, 'GRANTED');
@@ -315,10 +323,10 @@ test("relationalstorageandmigrationsandrlspermissions", () => {
     roleName: 'app_role',
     isBypassRole: false,
   };
-  const isolationDecision = capability.evaluateTenantIsolation(state, tenantContext, 'tenant_1', 'bypass_role');
+  const isolationDecision = capability.evaluateTenantIsolation(state, tenantContext, 'tenant_1', 'bypass_role', true);
   assert.strictEqual(isolationDecision, 'GRANTED');
 
-  const crossTenantDecision = capability.evaluateTenantIsolation(state, tenantContext, 'tenant_2', 'bypass_role');
+  const crossTenantDecision = capability.evaluateTenantIsolation(state, tenantContext, 'tenant_2', 'bypass_role', true);
   assert.strictEqual(crossTenantDecision, 'DENIED');
 
   const bypassContext: capability.RelationalStorageAndMigrationsAndRlsTenantContext = {
@@ -326,7 +334,7 @@ test("relationalstorageandmigrationsandrlspermissions", () => {
     roleName: 'bypass_role',
     isBypassRole: true,
   };
-  const bypassDecision = capability.evaluateTenantIsolation(state, bypassContext, 'tenant_2', 'bypass_role');
+  const bypassDecision = capability.evaluateTenantIsolation(state, bypassContext, 'tenant_2', 'bypass_role', true);
   assert.strictEqual(bypassDecision, 'GRANTED');
 });
 
@@ -344,7 +352,7 @@ test("relationalstorageandmigrationsandrlsproof", () => {
   const connectionConfig = {
     roleName: 'app_role',
     password: 'valid_password',
-    tenantId: 'tenant_1',
+    tenantId: 'tenant_1' as const,
   };
 
   const stateAfterMigration = capability.applyMigrationFile(
@@ -389,6 +397,7 @@ test("relationalstorageandmigrationsandrlsproof", () => {
   const liveProof = capability.runLiveIsolationProof(
     state,
     foreignTenantContext,
+    0,
     auditFn
   );
   assert.strictEqual(liveProof.proofPassed, true);
@@ -426,6 +435,7 @@ test("relationalstorageandmigrationsandrlsreadinessmodel", () => {
   const readyState: capability.RelationalStorageAndMigrationsAndRlsState = {
     ...migratedState,
     crossTenantIsolationProven: true,
+    auditLog: [capability.createAuditEvent('MIGRATION_APPLIED', 'tenant_1', '001_init.sql', 'sha256:abc', {})],
   };
   const readyReadiness = capability.checkReadiness(readyState);
   assert.strictEqual(readyReadiness.readiness, 'READY');

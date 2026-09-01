@@ -10,6 +10,7 @@ export const DataGovernanceCatalogErrorKind = [
   'PROVIDER_UNAVAILABLE',
   'TENANT_BOUNDARY_VIOLATION',
   'CONFIGURATION_MISSING',
+  'DEGRADED_READINESS',
 ] as const;
 export type DataGovernanceCatalogErrorKind = typeof DataGovernanceCatalogErrorKind[number];
 
@@ -68,28 +69,30 @@ export const initialState: DataGovernanceCatalogState = {
 
 export function validateClassification(
   classification: string,
+  tenantId: string,
 ): DataGovernanceCatalogClassification | DataGovernanceCatalogError {
-  if (DataGovernanceCatalogClassification.includes(classification as DataGovernanceCatalogClassification)) {
-    return classification as DataGovernanceCatalogClassification;
+  if (!DataGovernanceCatalogClassification.includes(classification as DataGovernanceCatalogClassification)) {
+    return {
+      kind: 'INVALID_CLASSIFICATION',
+      message: `Invalid classification: ${classification}`,
+      tenantId,
+    };
   }
-  return {
-    kind: 'INVALID_CLASSIFICATION',
-    message: `Invalid classification: ${classification}`,
-    tenantId: '',
-  };
+  return classification as DataGovernanceCatalogClassification;
 }
 
 export function validateRequestState(
   state: string,
+  tenantId: string,
 ): DataSubjectRequestState | DataGovernanceCatalogError {
-  if (DataSubjectRequestState.includes(state as DataSubjectRequestState)) {
-    return state as DataSubjectRequestState;
+  if (!DataSubjectRequestState.includes(state as DataSubjectRequestState)) {
+    return {
+      kind: 'CONFIGURATION_MISSING',
+      message: `Invalid request state: ${state}`,
+      tenantId,
+    };
   }
-  return {
-    kind: 'CONFIGURATION_MISSING',
-    message: `Invalid request state: ${state}`,
-    tenantId: '',
-  };
+  return state as DataSubjectRequestState;
 }
 
 export function auditCatalogChange(
@@ -114,7 +117,7 @@ export function addCatalogEntry(
   entry: DataGovernanceCatalogEntry,
   auditFn: (event: DataGovernanceAuditEvent) => DataGovernanceCatalogError | null,
 ): DataGovernanceCatalogState | DataGovernanceCatalogError {
-  const classificationResult = validateClassification(entry.classification);
+  const classificationResult = validateClassification(entry.classification, entry.tenantId);
   if (typeof classificationResult !== 'string') {
     return classificationResult;
   }
@@ -130,11 +133,11 @@ export function addCatalogEntry(
     return auditError;
   }
 
-  const existingEntryIndex = state.catalog.findIndex((e) => e.id === entry.id);
+  const existingEntryIndex = state.catalog.findIndex((e) => e.id === entry.id && e.tenantId === entry.tenantId);
   if (existingEntryIndex >= 0) {
     return {
       kind: 'TENANT_BOUNDARY_VIOLATION',
-      message: `Catalog entry with id ${entry.id} already exists`,
+      message: `Catalog entry with id ${entry.id} already exists for tenant ${entry.tenantId}`,
       tenantId: entry.tenantId,
     };
   }
@@ -142,6 +145,13 @@ export function addCatalogEntry(
   return {
     ...state,
     catalog: [...state.catalog, entry],
+    auditLog: [...state.auditLog, {
+      kind: 'CLASSIFICATION_CHANGE',
+      tenantId: entry.tenantId,
+      resourceId: entry.id,
+      timestamp: new Date().toISOString(),
+      details: { classification: entry.classification, lineage: entry.lineage },
+    }],
     lastError: null,
   };
 }
@@ -149,11 +159,11 @@ export function addCatalogEntry(
 export function updateCatalogEntryClassification(
   state: DataGovernanceCatalogState,
   entryId: string,
-  newClassification: DataGovernanceCatalogClassification,
+  newClassification: string,
   tenantId: string,
   auditFn: (event: DataGovernanceAuditEvent) => DataGovernanceCatalogError | null,
 ): DataGovernanceCatalogState | DataGovernanceCatalogError {
-  const classificationResult = validateClassification(newClassification);
+  const classificationResult = validateClassification(newClassification, tenantId);
   if (typeof classificationResult !== 'string') {
     return classificationResult;
   }
@@ -181,12 +191,19 @@ export function updateCatalogEntryClassification(
   const updatedCatalog = [...state.catalog];
   updatedCatalog[entryIndex] = {
     ...updatedCatalog[entryIndex],
-    classification: newClassification,
+    classification: classificationResult,
   };
 
   return {
     ...state,
     catalog: updatedCatalog,
+    auditLog: [...state.auditLog, {
+      kind: 'CLASSIFICATION_CHANGE',
+      tenantId,
+      resourceId: entryId,
+      timestamp: new Date().toISOString(),
+      details: { oldClassification: state.catalog[entryIndex].classification, newClassification },
+    }],
     lastError: null,
   };
 }
@@ -216,6 +233,13 @@ export function createDataSubjectRequest(
   return {
     ...state,
     requests: [...state.requests, newRequest],
+    auditLog: [...state.auditLog, {
+      kind: 'REQUEST_FULFILLED',
+      tenantId: request.tenantId,
+      resourceId: request.id,
+      timestamp: new Date().toISOString(),
+      details: { state: 'open' },
+    }],
     lastError: null,
   };
 }
@@ -278,6 +302,13 @@ export function fulfillDataSubjectRequest(
   return {
     ...state,
     requests: updatedRequests,
+    auditLog: [...state.auditLog, {
+      kind: 'REQUEST_FULFILLED',
+      tenantId,
+      resourceId: requestId,
+      timestamp: new Date().toISOString(),
+      details: { evidence, operatorId },
+    }],
     lastError: null,
   };
 }

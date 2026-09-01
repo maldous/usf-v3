@@ -14,8 +14,15 @@ export interface ProviderBindings {
   readonly endpoints: ReadonlyMap<string, string>;
   /** provider route -> additional credential names that also supply it. */
   readonly credentialAliases: ReadonlyMap<string, readonly string[]>;
-  /** transport IRI local name -> the model that transport should request. */
-  readonly transportSelectedModel: ReadonlyMap<string, string>;
+  /**
+   * Transport IRI local name -> every model that transport may request.
+   *
+   * A host-agent transport commonly serves several models under one
+   * subscription, each with its own quota. Carrying only one made the whole
+   * transport unavailable the moment that single model was exhausted, even
+   * though the subscription still answered on another.
+   */
+  readonly transportSelectedModel: ReadonlyMap<string, readonly string[]>;
   readonly declared: boolean;
 }
 
@@ -44,13 +51,15 @@ export function readProviderBindings(graph: SemanticGraph): ProviderBindings {
     if (provider === null || established === null) continue;
     credentialAliases.set(provider, Object.freeze([...(credentialAliases.get(provider) ?? []), established]));
   }
-  const transportSelectedModel = new Map<string, string>();
+  const transportSelectedModel = new Map<string, readonly string[]>();
   for (const quad of graph.quads) {
     if (quad.predicate !== `${P}selectedModel`) continue;
     const name = quad.subject.startsWith("urn:usf:execution-transport:")
       ? quad.subject.slice("urn:usf:execution-transport:".length)
       : null;
-    if (name !== null) transportSelectedModel.set(name, quad.object);
+    if (name === null) continue;
+    transportSelectedModel.set(name,
+      Object.freeze([...new Set([...(transportSelectedModel.get(name) ?? []), quad.object])].sort()));
   }
   return Object.freeze({
     endpoints,

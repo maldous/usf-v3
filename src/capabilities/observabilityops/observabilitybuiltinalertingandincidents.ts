@@ -249,6 +249,15 @@ export function validateAlertRuleInput(
       timestamp: new Date().toISOString(),
     };
   }
+  if (
+    !ObservabilityBuiltInAlertingAndIncidentsObservabilityVocabulary.has(rule.metricName)
+  ) {
+    return {
+      kind: 'INVALID_RULE_MUTATION',
+      message: `Metric signal name '${rule.metricName}' is not in the controlled observability vocabulary`,
+      timestamp: new Date().toISOString(),
+    };
+  }
   if (rule.tenantId === '' || rule.id === '') {
     return {
       kind: 'INVALID_RULE_MUTATION',
@@ -334,6 +343,18 @@ export function addMetricSignal(
   signal: ObservabilityBuiltInAlertingAndIncidentsMetricSignal,
 ): ObservabilityBuiltInAlertingAndIncidentsState {
   if (!ObservabilityBuiltInAlertingAndIncidentsControlledNamePattern.test(signal.name)) {
+    return {
+      ...state,
+      lastError: {
+        kind: 'CONFIGURATION_DRIFT',
+        message: `Metric signal name '${signal.name}' is not in the controlled observability vocabulary`,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+  if (
+    !ObservabilityBuiltInAlertingAndIncidentsObservabilityVocabulary.has(signal.name)
+  ) {
     return {
       ...state,
       lastError: {
@@ -546,9 +567,7 @@ export function applyEvaluation(
       next,
       a.state === 'FIRED'
         ? 'observability.alert.fired'
-        : a.state === 'NO_DATA'
-          ? 'observability.alert.evaluated'
-          : 'observability.alert.evaluated',
+        : 'observability.alert.evaluated',
       {
         'rule.id': a.ruleId,
         'alert.state': a.state,
@@ -809,9 +828,9 @@ export function updateReadiness(
   const emittedSignal: ObservabilityBuiltInAlertingAndIncidentsObservableSignal =
     posture.state === 'READY'
       ? 'observability.readiness.ready'
-      : posture.state === 'UNREADY'
-        ? 'observability.readiness.unready'
-        : 'observability.readiness.degraded';
+      : posture.state.startsWith('DEGRADED')
+        ? 'observability.readiness.degraded'
+        : 'observability.readiness.unready';
   next = emitObservabilitySignal(
     next,
     emittedSignal,

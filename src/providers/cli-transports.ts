@@ -125,6 +125,12 @@ function frozenRefusal(
 export async function invokeCodexCli(
   prompt: string,
   timeoutMs: number,
+  /**
+   * Named from graph authority. The transport's default model carries its own
+   * quota, so invoking without naming one can exhaust against a model the
+   * operator never chose while another still answers.
+   */
+  model: string | null = null,
   executable = "codex",
 ): Promise<CliInvocationResult> {
   const scratch = await mkdtemp(join(tmpdir(), "usf-codex-"));
@@ -136,7 +142,11 @@ export async function invokeCodexCli(
     const { stdout, timedOut } = await new Promise<{ stdout: string; timedOut: boolean }>((settle) => {
       const child = spawn(
         executable,
-        ["exec", "--json", "-s", "read-only", "--skip-git-repo-check", "-o", lastMessagePath, prompt],
+        [
+          "exec", "--json", "-s", "read-only", "--skip-git-repo-check",
+          ...(model === null || model.length === 0 ? [] : ["-m", model]),
+          "-o", lastMessagePath, prompt,
+        ],
         { stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
       );
       let collected = "";

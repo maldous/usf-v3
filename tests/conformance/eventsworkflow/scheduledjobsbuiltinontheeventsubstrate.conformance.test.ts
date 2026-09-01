@@ -20,16 +20,22 @@ test("scheduledjobsbuiltinontheeventsubstrateauditmodel", () => {
   };
   const state = capability.initialState;
   const createResult = capability.createScheduledJob(state, job, auditFn);
-  assert.ok('jobs' in createResult);
-  assert.equal(auditCalls.length, 1);
-  assert.equal(auditCalls[0].kind, 'AUDIT_BEFORE_CHANGE');
-  assert.equal(auditCalls[0].resource, 'scheduled_job.create');
+  if ('jobs' in createResult) {
+    assert.equal(auditCalls.length, 1);
+    assert.equal(auditCalls[0].kind, 'AUDIT_BEFORE_CHANGE');
+    assert.equal(auditCalls[0].resource, 'scheduled_job.create');
+  } else {
+    assert.fail('createScheduledJob should return state');
+  }
 
   auditCalls.length = 0;
-  const runResult = capability.runNowScheduledJob(state, 'j1', auditFn, new Date());
-  assert.equal(runResult.kind, 'ERROR');
-  assert.equal(auditCalls.length, 1);
-  assert.equal(auditCalls[0].resource, 'scheduled_job.run');
+  const runResult = capability.runNowScheduledJob({ jobs: [job] }, 'j1', auditFn, new Date());
+  if ('error' in runResult) {
+    assert.equal(auditCalls.length, 1);
+    assert.equal(auditCalls[0].resource, 'scheduled_job.run');
+  } else {
+    assert.fail('runNowScheduledJob should return error for missing job');
+  }
 });
 
 test("scheduledjobsbuiltinontheeventsubstratecontracts", () => {
@@ -49,8 +55,11 @@ test("scheduledjobsbuiltinontheeventsubstratecontracts", () => {
     lastRunAt: null,
   };
   const createResult = capability.createScheduledJob(state, job, () => null);
-  assert.ok('jobs' in createResult);
-  assert.equal(createResult.jobs.length, 1);
+  if ('jobs' in createResult) {
+    assert.equal(createResult.jobs.length, 1);
+  } else {
+    assert.fail('createScheduledJob should return state');
+  }
 
   const patchResult = capability.patchScheduledJob(
     { jobs: [job] },
@@ -58,8 +67,11 @@ test("scheduledjobsbuiltinontheeventsubstratecontracts", () => {
     { enabled: false },
     () => null
   );
-  assert.ok('jobs' in patchResult);
-  assert.equal(patchResult.jobs[0].enabled, false);
+  if ('jobs' in patchResult) {
+    assert.equal(patchResult.jobs[0].enabled, false);
+  } else {
+    assert.fail('patchScheduledJob should return state');
+  }
 
   const runResult = capability.runNowScheduledJob(
     { jobs: [job] },
@@ -78,7 +90,11 @@ test("scheduledjobsbuiltinontheeventsubstrateerrormodel", () => {
   assert.equal(listResult.error.kind, 'MISSING_ORGANISATION_ID');
 
   const patchResult = capability.patchScheduledJob(state, 'nonexistent', {}, () => null);
-  assert.equal(patchResult.kind, 'INVALID_JOB_ID');
+  if ('kind' in patchResult) {
+    assert.equal(patchResult.kind, 'INVALID_JOB_ID');
+  } else {
+    assert.fail('patchScheduledJob should return error');
+  }
 
   const runResult = capability.runNowScheduledJob(state, 'nonexistent', () => null, new Date());
   assert.equal(runResult.kind, 'ERROR');
@@ -118,8 +134,11 @@ test("scheduledjobsbuiltinontheeventsubstratelifecycle", () => {
   assert.equal(runResult.event.eventType, 'report.run');
 
   const patchedResult = capability.patchScheduledJob(state, 'j1', { enabled: false }, () => null);
-  assert.ok('jobs' in patchedResult);
-  assert.equal(patchedResult.jobs[0].enabled, false);
+  if ('jobs' in patchedResult) {
+    assert.equal(patchedResult.jobs[0].enabled, false);
+  } else {
+    assert.fail('patchScheduledJob should return state');
+  }
 });
 
 test("scheduledjobsbuiltinontheeventsubstratepermissions", () => {
@@ -157,7 +176,11 @@ test("scheduledjobsbuiltinontheeventsubstratevalidation", () => {
   assert.equal(listResult.error.kind, 'MISSING_ORGANISATION_ID');
 
   const patchResult = capability.patchScheduledJob(state, 'nonexistent', {}, () => null);
-  assert.equal(patchResult.kind, 'INVALID_JOB_ID');
+  if ('kind' in patchResult) {
+    assert.equal(patchResult.kind, 'INVALID_JOB_ID');
+  } else {
+    assert.fail('patchScheduledJob should return error');
+  }
 
   const runResult = capability.runNowScheduledJob(state, 'nonexistent', () => null, new Date());
   assert.equal(runResult.kind, 'ERROR');
