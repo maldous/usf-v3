@@ -462,6 +462,23 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         // A 200 that carries no text is a vacuous answer, not a result. It must
         // fall through to the next candidate: treating it as success would let
         // one silent model consume a work unit that another can complete.
+        // A generation cut off at the output ceiling is not a partial result to
+        // salvage: it ends mid-token, and the compiler reports an unterminated
+        // literal a hundred lines from the real problem. Refusing it here sends
+        // the unit to a route that can finish, rather than to a repair loop
+        // chasing a defect the model never made.
+        if (produced.finishReason === "length" && produced.text.trim().length > 0) {
+          attempts.push(Object.freeze({
+            candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
+            model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
+            outcome: "refused" as const, reasonCode: "PROVIDER_TRUNCATED_RESULT",
+            statusCode: 200, retryAfter: null, costIncurred: false,
+          }));
+          observedRouteOutcomes.push(Object.freeze({
+            candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode: "PROVIDER_TRUNCATED_RESULT",
+          }));
+          continue;
+        }
         if (produced.text.trim().length === 0) {
           attempts.push(Object.freeze({
             candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,

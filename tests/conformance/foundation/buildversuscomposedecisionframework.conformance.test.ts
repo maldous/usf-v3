@@ -12,7 +12,7 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
   const state1 = capability.createDecision(
     state0,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     "architect",
     auditFn,
@@ -27,7 +27,7 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
   const state2 = capability.reviseDecision(
     state1,
     "cap1",
-    "COMPOSE",
+    "COMPOSE" as const,
     { ...justification, rationale: "Revised decision" },
     "architect",
     auditFn,
@@ -50,7 +50,7 @@ test("buildversuscomposedecisionframeworkerrormodel", () => {
   const error1 = capability.createDecision(
     state0,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     { criteria: { COST: "", CONTROL: "high", READINESS: "immediate" }, rationale: "Invalid" } as capability.DecisionJustification,
     "architect",
     auditFn,
@@ -59,13 +59,13 @@ test("buildversuscomposedecisionframeworkerrormodel", () => {
   assert.ok("kind" in error1, "Invalid justification should return error");
   assert.strictEqual(error1.kind, "JUSTIFICATION_MISSING", "Error kind should be JUSTIFICATION_MISSING");
 
-  const state1 = capability.createDecision(state0, "cap1", "BUILD", justification, "architect", auditFn, "2023-01-01T00:00:00Z");
+  const state1 = capability.createDecision(state0, "cap1", "BUILD" as const, justification, "architect", auditFn, "2023-01-01T00:00:00Z");
   assert.ok(!("kind" in state1), "Valid decision should succeed");
   if ("kind" in state1) throw new Error("Unexpected error");
   const error2 = capability.createDecision(
     state1,
     "cap1",
-    "COMPOSE",
+    "COMPOSE" as const,
     justification,
     "architect",
     auditFn,
@@ -96,7 +96,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
   const state2 = capability.createDecision(
     state1,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     "architect",
     auditFn,
@@ -111,7 +111,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
   const state3 = capability.reviseDecision(
     state2,
     "cap1",
-    "COMPOSE",
+    "COMPOSE" as const,
     { ...justification, rationale: "Revised rationale" },
     "architect",
     auditFn,
@@ -163,7 +163,7 @@ test("buildversuscomposedecisionframeworkpermissions", () => {
   const state2 = capability.createDecision(
     state1,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     "architect",
     auditFn,
@@ -175,7 +175,7 @@ test("buildversuscomposedecisionframeworkpermissions", () => {
   const error = capability.createDecision(
     state2,
     "cap2",
-    "COMPOSE",
+    "COMPOSE" as const,
     justification,
     "invalid-authority",
     auditFn,
@@ -199,7 +199,7 @@ test("buildversuscomposedecisionframeworkproof", () => {
   const state2 = capability.createDecision(
     state1,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     "architect",
     auditFn,
@@ -211,7 +211,7 @@ test("buildversuscomposedecisionframeworkproof", () => {
   const state3 = capability.createDecision(
     state2,
     "cap2",
-    "COMPOSE",
+    "COMPOSE" as const,
     justification,
     "architect",
     auditFn,
@@ -241,7 +241,7 @@ test("buildversuscomposedecisionframeworkreadinessmodel", () => {
   const state2 = capability.createDecision(
     state1,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     "architect",
     auditFn,
@@ -257,7 +257,7 @@ test("buildversuscomposedecisionframeworkreadinessmodel", () => {
   const state4 = capability.createDecision(
     state3,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     "architect",
     auditFn,
@@ -282,7 +282,7 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
   const state2 = capability.createDecision(
     state1,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     "architect",
     auditFn,
@@ -299,7 +299,7 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
   const state4 = capability.createDecision(
     state3,
     "cap1",
-    "BUILD",
+    "BUILD" as const,
     justification,
     "architect",
     auditFn,
@@ -318,7 +318,7 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
   const error = capability.createDecision(
     state1,
     "cap2",
-    "COMPOSE",
+    "COMPOSE" as const,
     invalidJustification,
     "architect",
     auditFn,

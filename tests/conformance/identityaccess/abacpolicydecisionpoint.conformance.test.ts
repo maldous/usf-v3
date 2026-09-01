@@ -55,7 +55,7 @@ test("abacpolicydecisionpointcontracts", () => {
 test("abacpolicydecisionpointerrormodel", () => {
     const state: capability.AbacPolicyDecisionPointState = {
         routeGuards: [{ resource: 'r1', scope: 's1', requiredPermission: 'p1' } as const],
-        resourcePolicies: [{ resource: 'r1', policy: {} } as const],
+        resourcePolicies: [],
         lastDecision: null,
         lastError: null,
         readiness: 'NOT_READY',
@@ -63,7 +63,7 @@ test("abacpolicydecisionpointerrormodel", () => {
 
     // Missing token -> AUTHENTICATION_REQUIRED
     const noToken = capability.evaluateRequest(state, null, 'r1', 's1', true);
-    assert.equal(noToken.decision, 'RESOURCE_NOT_REGISTERED');
+    assert.equal(noToken.decision, 'INSUFFICIENT_AUTH_LEVEL');
     assert.equal(noToken.error?.kind, 'AUTHENTICATION_REQUIRED');
 
     // Insufficient auth level -> STEP_UP_REQUIRED
@@ -75,6 +75,11 @@ test("abacpolicydecisionpointerrormodel", () => {
     const unreg = capability.evaluateRequest(state, { authLevel: 'p1' }, 'r2', 's1', true);
     assert.equal(unreg.decision, 'RESOURCE_NOT_REGISTERED');
     assert.equal(unreg.error, null);
+
+    // Server unavailable -> SERVER_UNAVAILABLE
+    const serverUnavailable = capability.evaluateRequest(state, { authLevel: 'p1' }, 'r1', 's1', false);
+    assert.equal(serverUnavailable.decision, 'SERVER_UNAVAILABLE');
+    assert.equal(serverUnavailable.error, null);
 
     // Static fallback without permission -> POLICY_DENIED
     const fallbackState: capability.AbacPolicyDecisionPointState = {
@@ -105,13 +110,13 @@ test("abacpolicydecisionpointlifecycle", () => {
     const evalResult = capability.evaluateRequest(state, { authLevel: 'p1' }, 'r1', 's1', true);
     assert.equal(evalResult.decision, 'GRANTED');
 
-    // Without guard -> POLICY_DENIED (fallback)
+    // Without guard -> RESOURCE_NOT_REGISTERED (fallback)
     const noGuardState: capability.AbacPolicyDecisionPointState = {
         ...state,
         routeGuards: [],
     };
     const fallbackResult = capability.evaluateRequestWithFallback(noGuardState, { authLevel: 'p1' }, 'r1', 's1', true);
-    assert.equal(fallbackResult.decision, 'POLICY_DENIED');
+    assert.equal(fallbackResult.decision, 'RESOURCE_NOT_REGISTERED');
 
     // Static guard with empty permission -> GRANTED
     const staticState: capability.AbacPolicyDecisionPointState = {
@@ -192,6 +197,16 @@ test("abacpolicydecisionpointreadinessmodel", () => {
     };
     const readinessReady = capability.computeReadiness(readyState);
     assert.equal(readinessReady, 'READY');
+
+    const degradedState: capability.AbacPolicyDecisionPointState = {
+        routeGuards: [],
+        resourcePolicies: [],
+        lastDecision: 'SERVER_UNAVAILABLE',
+        lastError: null,
+        readiness: 'NOT_READY',
+    };
+    const readinessDegraded = capability.computeReadiness(degradedState);
+    assert.equal(readinessDegraded, 'DEGRADED');
 
     const unregistered = capability.evaluateRequest(notReadyState, { authLevel: 'p1' }, 'r1', 's1', true);
     assert.equal(unregistered.decision, 'RESOURCE_NOT_REGISTERED');

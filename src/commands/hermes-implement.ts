@@ -162,7 +162,10 @@ interface DispatchEntry {
  * that blocked the four largest capabilities on every cycle.
  */
 function outputBudgetFor(existingBytes: number): number {
-  const needed = Math.ceil(existingBytes / 3) + 2_000;
+  // A rewrite usually grows: it is correcting something the original did not
+  // do. Budgeting for the original's size exactly is how a repair ends up
+  // truncated a few lines from the end.
+  const needed = Math.ceil(existingBytes / 2.5) + 3_000;
   return Math.min(32_000, Math.max(modelOutputTokens, needed));
 }
 

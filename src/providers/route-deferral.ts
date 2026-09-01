@@ -49,6 +49,9 @@ export function deferralDurationMs(reasonCode: string, consecutiveFailures: numb
     case "PROVIDER_TIMEOUT": return Math.min(2 * hour, 15 * minute * 2 ** Math.min(consecutiveFailures - 1, 3));
     // One empty answer can be the prompt; a second is the route.
     case "PROVIDER_EMPTY_RESULT": return consecutiveFailures < 2 ? 0 : 30 * minute;
+    // Truncation is about this route's ceiling, not this prompt, so a repeat is
+    // likely; one tolerance then step aside.
+    case "PROVIDER_TRUNCATED_RESULT": return consecutiveFailures < 2 ? 0 : 20 * minute;
     case "CREDENTIAL_ABSENT": return 24 * hour;
     default: return Math.min(hour, 2 ** Math.min(consecutiveFailures, 6) * minute);
   }

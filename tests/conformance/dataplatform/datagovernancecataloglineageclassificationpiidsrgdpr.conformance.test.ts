@@ -56,6 +56,13 @@ test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
 
   const tenantAudit = capability.getAuditLogForTenant(fulfilled, "tenant1");
   assert.strictEqual(tenantAudit.length, 2);
+  assert.strictEqual(tenantAudit[0].tenantId, "tenant1");
+  assert.strictEqual(tenantAudit[1].tenantId, "tenant1");
+
+  const fulfilledRequest = (fulfilled as capability.DataGovernanceCatalogState).requests.find(
+    (r) => r.id === "req1",
+  );
+  assert.strictEqual(fulfilledRequest?.evidence, "evidence1");
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
@@ -383,7 +390,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprstatemodel", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "none",
+    classification: "none" as const,
     lineage: ["source1"],
     tenantId: "tenant1",
   };
@@ -429,7 +436,11 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
   const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
   const initial: capability.DataGovernanceCatalogState = capability.initialState;
 
-  const validClassifications = ["none", "PII", "sensitive"] as const;
+  const validClassifications: readonly capability.DataGovernanceCatalogClassification[] = [
+    "none",
+    "PII",
+    "sensitive",
+  ];
   for (const classification of validClassifications) {
     const result = capability.validateClassification(classification);
     assert.strictEqual(result, classification);
@@ -439,7 +450,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
   assert.ok(isError(invalidClassification));
   assert.strictEqual((invalidClassification as capability.DataGovernanceCatalogError).kind, "INVALID_CLASSIFICATION");
 
-  const validStates = ["open", "fulfilled"] as const;
+  const validStates: readonly capability.DataSubjectRequestState[] = ["open", "fulfilled"];
   for (const state of validStates) {
     const result = capability.validateRequestState(state);
     assert.strictEqual(result, state);

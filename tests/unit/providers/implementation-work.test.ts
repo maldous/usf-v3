@@ -318,3 +318,17 @@ test("admission requires each covered facet to invoke the module", () => {
   // Only the subtest that exercises the module counts as covered.
   assert.deepEqual(checked.coveredFacets, ["policygatebehaviour"]);
 });
+
+test("a fenced block is taken wherever it sits in the output", () => {
+  const body = 'export const decide = (): string => "granted";';
+  // Fence wrapping the whole output.
+  assert.equal(validateImplementationOutput("```ts\n" + body + "\n```").content, body);
+  // Fence followed by a closing sentence: requiring the fence to wrap the whole
+  // output shipped the fence into the file, where the compiler reported it as a
+  // module declaration on line 1 and the generation was discarded.
+  assert.equal(
+    validateImplementationOutput("```typescript\n" + body + "\n```\n\nThis implements the requirement.").content,
+    body);
+  // Prose before the fence too.
+  assert.equal(validateImplementationOutput("Here is the module:\n\n```ts\n" + body + "\n```").content, body);
+});

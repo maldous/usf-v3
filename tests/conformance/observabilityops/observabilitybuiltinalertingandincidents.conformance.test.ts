@@ -57,6 +57,12 @@ test("observabilitybuiltinalertingandincidentsreadinessmodel", () => {
   assert.strictEqual(stateWithRule.readinessPosture.alertEvaluation, true);
   assert.strictEqual(stateWithRule.readinessPosture.notificationDispatch, true);
   assert.strictEqual(stateWithRule.readinessPosture.sideEffectsDisabled, false);
+
+  const emittedSignals = stateWithRule.emittedSignals;
+  assert.strictEqual(emittedSignals.length, 3);
+  assert.strictEqual(emittedSignals[0].signal, "observability.signal.ingested");
+  assert.strictEqual(emittedSignals[1].signal, "observability.alert.evaluated");
+  assert.strictEqual(emittedSignals[2].signal, "observability.readiness.ready");
 });
 
 test("observabilitybuiltinalertingandincidentsstatemodel", () => {
@@ -110,7 +116,7 @@ test("observabilitybuiltinalertingandincidentsstatemodel", () => {
   assert.strictEqual(appliedState.notifications[0].tenantId, "t1");
 
   const migratedState = capability.migrateState(
-    { ...appliedState, schemaVersion: 0 },
+    { ...appliedState, schemaVersion: 0, emittedSignals: [], providerErrors: [] },
     0,
     1
   ) as capability.ObservabilityBuiltInAlertingAndIncidentsState;

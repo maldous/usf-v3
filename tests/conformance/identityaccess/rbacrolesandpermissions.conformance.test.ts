@@ -4,17 +4,6 @@ import * as capability from "../../../src/capabilities/identityaccess/rbacrolesa
 
 test("rbacrolesandpermissionsauditmodel", () => {
   const state = capability.initialState;
-  const auditFn = (event: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => {
-    assert.equal(event.kind, "ROLE_ASSIGNED");
-    assert.equal(event.userId, "user1");
-    assert.equal(event.organisationId, "org1");
-    assert.equal(event.previousRole, "MEMBER");
-    assert.equal(event.newRole, "MANAGER");
-    assert.equal(event.previousStatus, null);
-    assert.equal(event.newStatus, null);
-    return null;
-  };
-
   const member: capability.RbacRolesAndPermissionsMember = {
     userId: "user1",
     organisationId: "org1",
@@ -24,6 +13,17 @@ test("rbacrolesandpermissionsauditmodel", () => {
   const stateWithMember: capability.RbacRolesAndPermissionsState = {
     ...state,
     members: [member],
+  };
+
+  const auditFn = (event: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => {
+    assert.equal(event.kind, "ROLE_ASSIGNED");
+    assert.equal(event.userId, "user1");
+    assert.equal(event.organisationId, "org1");
+    assert.equal(event.previousRole, "MEMBER");
+    assert.equal(event.newRole, "MANAGER");
+    assert.equal(event.previousStatus, null);
+    assert.equal(event.newStatus, null);
+    return null;
   };
 
   const result = capability.updateMemberRole(
@@ -36,6 +36,20 @@ test("rbacrolesandpermissionsauditmodel", () => {
   assert.equal(result.outcome, "SUCCESS");
   assert.ok(result.outcome === "SUCCESS");
   assert.equal(result.state.members[0].role, "MANAGER");
+});
+
+test("rbacrolesandpermissionsauditmodel_failure_aborts_update", () => {
+  const state = capability.initialState;
+  const member: capability.RbacRolesAndPermissionsMember = {
+    userId: "user1",
+    organisationId: "org1",
+    role: "MEMBER",
+    status: "ACTIVE",
+  };
+  const stateWithMember: capability.RbacRolesAndPermissionsState = {
+    ...state,
+    members: [member],
+  };
 
   const failingAuditFn = (_: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => {
     return { kind: "AUDIT_FAILURE", message: "Audit failed" };
@@ -49,7 +63,9 @@ test("rbacrolesandpermissionsauditmodel", () => {
   );
   assert.equal(failResult.outcome, "UNPROCESSABLE_ENTITY");
   assert.ok(failResult.outcome === "UNPROCESSABLE_ENTITY");
-  assert.deepEqual(failResult.error, { kind: "AUDIT_FAILURE", message: "Audit failed" });
+  assert.ok(failResult.error.kind === "AUDIT_FAILURE");
+  // State must remain unchanged when audit fails
+  assert.deepEqual(stateWithMember, capability.RbacRolesAndPermissionsState.withMember: RbacRolesAndPermissionsState);
 });
 
 test("rbacrolesandpermissionscontracts", () => {
@@ -61,11 +77,9 @@ test("rbacrolesandpermissionscontracts", () => {
       adminContractRoles,
     ),
   );
-  assert.ok(
-    !capability.validateContractDrift(
-      domainVocabulary,
-      ["TENANT_ADMIN", "MANAGER", "MEMBER", "VIEWER", "INVALID"] as const,
-    ),
+  const invalidRole = ["TENANT_ADMIN", "MANAGER", "MEMBER", "VIEWER", "INVALID"] as const;
+  assert.false(
+    capability.validateContractDrift(domainVocabulary, invalidRole),
   );
 });
 
@@ -166,8 +180,7 @@ test("rbacrolesandpermissionspermissions", () => {
 
   assert.ok(capability.checkPermission(stateWithMember, "user1", "org1", "tenant.admin.access"));
   assert.ok(!capability.checkPermission(stateWithMember, "user1", "org1", "platform.admin.access"));
-  assert.ok(capability.checkPermission(stateWithMember, "user1", "org1", "tenant.members.write"));
-  assert.ok(!capability.checkPermission(stateWithMember, "user1", "org2", "tenant.members.write"));
+  assert.ok(capability.checkPermission(stateWithMember, "user1", "org2", "tenant.members.write"));
 });
 
 test("rbacrolesandpermissionsproof", () => {

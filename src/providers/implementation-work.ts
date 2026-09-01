@@ -516,9 +516,18 @@ export interface ImplementationOutputCheck {
 function stripReasoning(text: string): string {
   return text.replace(/<think>[\s\S]*?<\/think>/giu, "").replace(/^[\s\S]*?<\/think>/iu, "");
 }
+/**
+ * Take the fenced block wherever it sits.
+ *
+ * Requiring the fence to wrap the entire output means a model that adds one
+ * closing sentence ships its fence into the file, where the compiler reports it
+ * as a module declaration on line 1 and the whole generation is discarded.
+ */
 function stripCodeFence(text: string): string {
-  const fenced = /^\s*```(?:[a-z0-9]+)?\s*\n([\s\S]*?)\n?\s*```\s*$/u.exec(text);
-  return fenced === null ? text : fenced[1]!;
+  const whole = /^\s*```(?:[a-z0-9]+)?\s*\n([\s\S]*?)\n?\s*```\s*$/u.exec(text);
+  if (whole !== null) return whole[1]!;
+  const embedded = /```(?:[a-z0-9]+)?\s*\n([\s\S]*?)\n\s*```/u.exec(text);
+  return embedded === null ? text : embedded[1]!;
 }
 
 const forbiddenImport = /(?:^|\n)\s*(?:import[\s\S]{0,200}?from\s*|import\s*)["']([^"']+)["']/gu;

@@ -78,6 +78,7 @@ export interface RelationalStorageAndMigrationsAndRlsAppliedMigration {
   readonly checksum: string;
   readonly appliedAt: string;
   readonly orderIndex: number;
+  readonly decisionReferenceComment: string;
 }
 
 export interface RelationalStorageAndMigrationsAndRlsRole {
@@ -171,17 +172,15 @@ export function auditStateChangingAccess(
 
 export function auditMigrationApplication(
   state: RelationalStorageAndMigrationsAndRlsState,
-  migrationFile: string,
-  checksum: string,
+  migrationFile: RelationalStorageAndMigrationsAndRlsMigrationFile,
   tenantId: string | null,
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
-  const decisionReferenceComment = state.migrationLineage.length > 0
-    ? state.migrationLineage[state.migrationLineage.length - 1].split(':')[2] || null
-    : null;
-  const event = createAuditEvent('MIGRATION_APPLIED', tenantId, migrationFile, checksum, {
+  const event = createAuditEvent('MIGRATION_APPLIED', tenantId, migrationFile.fileName, migrationFile.checksum, {
     orderIndex: state.appliedMigrations.length,
-    decisionReferenceComment,
+    decisionReferenceComment: migrationFile.decisionReferenceComment,
+    tenantBoundaryPreserved: tenantId !== null,
+    dataSubjectEvidencePreserved: true,
   });
   const auditError = auditFn(event);
   if (auditError !== null) {
@@ -190,7 +189,7 @@ export function auditMigrationApplication(
   return {
     ...state,
     auditLog: [...state.auditLog, event],
-    migrationLineage: [...state.migrationLineage, `${migrationFile}:${checksum}:${decisionReferenceComment}`],
+    migrationLineage: [...state.migrationLineage, `${migrationFile.fileName}:${migrationFile.checksum}:${migrationFile.decisionReferenceComment}`],
   };
 }
 
@@ -246,7 +245,7 @@ export function createRlsPredicate(
   currentTenantSetting: string,
   bypassRoleName: string,
 ): string {
-  return `(${tenantColumn} = current_setting('${currentTenantSetting}') OR current_user = '${bypassRoleName}' OR pg_has_role(current_user, '${bypassRoleName}', 'MEMBER'))`;
+  return `((${tenantColumn} = current_setting('${currentTenantSetting}')) OR current_user = '${bypassRoleName}' OR (pg_has_role(current_user, '${bypassRoleName}', 'MEMBER') AND current_setting('role_inheritance.active', true) = 'on'))`;
 }
 
 export function createTableWithRls(
@@ -303,7 +302,7 @@ export function applyMigrationFile(
       const skippedEvent = createAuditEvent('MIGRATION_SKIPPED', connectionConfig.tenantId, migrationFile.fileName, checksum, {
         reason: 'Already applied with matching checksum',
         orderIndex: existingMigration.orderIndex,
-        decisionReferenceComment: migrationFile.decisionReferenceComment,
+        decisionReferenceComment: existingMigration.decisionReferenceComment,
         tenantBoundaryPreserved: connectionConfig.tenantId !== null,
         dataSubjectEvidencePreserved: true,
       });
@@ -340,12 +339,12 @@ export function applyMigrationFile(
     checksum: checksum,
     appliedAt: new Date().toISOString(),
     orderIndex: state.appliedMigrations.length,
+    decisionReferenceComment: migrationFile.decisionReferenceComment,
   };
 
   const auditState = auditMigrationApplication(
     state,
-    migrationFile.fileName,
-    checksum,
+    migrationFile,
     connectionConfig.tenantId,
     auditFn,
   );
@@ -469,6 +468,17 @@ export function checkReadiness(
     };
   }
 
+  if (state.auditLog.length === 0) {
+    return {
+      readiness: 'NOT_READY',
+      error: {
+        kind: 'READINESS_UNAVAILABLE',
+        message: 'Audit signal missing',
+        tenantId: null,
+      },
+    };
+  }
+
   return {
     readiness: 'READY',
     error: null,
@@ -480,6 +490,7 @@ export function evaluateTenantIsolation(
   tenantContext: RelationalStorageAndMigrationsAndRlsTenantContext,
   rowTenantId: string,
   bypassRoleName: string,
+  roleInheritanceActive: boolean,
 ): RelationalStorageAndMigrationsAndRlsDecision {
   if (tenantContext.isBypassRole) {
     return 'GRANTED';
@@ -489,7 +500,7 @@ export function evaluateTenantIsolation(
     return 'GRANTED';
   }
 
-  if (pgHasRole(tenantContext.roleName, bypassRoleName, state.roles)) {
+  if (pgHasRoleWithInheritance(tenantContext.roleName, bypassRoleName, state.roles, roleInheritanceActive)) {
     return 'GRANTED';
   }
 
@@ -500,11 +511,15 @@ export function evaluateTenantIsolation(
   return 'DENIED';
 }
 
-function pgHasRole(
+function pgHasRoleWithInheritance(
   roleName: string,
   bypassRoleName: string,
   roles: readonly RelationalStorageAndMigrationsAndRlsRole[],
+  roleInheritanceActive: boolean,
 ): boolean {
+  if (!roleInheritanceActive) {
+    return false;
+  }
   const role = roles.find((r) => r.name === roleName);
   if (role === undefined) {
     return false;
@@ -583,6 +598,8 @@ export function guardRestore(
     targetLineage: targetMigrationLineage.join(','),
     tenantBoundaryPreserved: true,
     dataSubjectEvidencePreserved: true,
+    auditSignalPreserved: state.auditLog.length > 0,
+    isolationSignalPreserved: state.crossTenantIsolationProven,
   });
 
   const auditError = auditFn(event);
@@ -789,6 +806,7 @@ export function proveCrossTenantIsolation(
 export function runLiveIsolationProof(
   state: RelationalStorageAndMigrationsAndRlsState,
   foreignTenantContext: RelationalStorageAndMigrationsAndRlsTenantContext,
+  unfilteredCount: number,
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): {
   readonly state: RelationalStorageAndMigrationsAndRlsState;
@@ -807,8 +825,21 @@ export function runLiveIsolationProof(
     };
   }
 
+  if (unfilteredCount !== 0) {
+    return {
+      state,
+      proofPassed: false,
+      error: {
+        kind: 'RLS_BYPASS_INVALID',
+        message: 'Cross-tenant isolation proof failed: unfiltered count must be zero',
+        tenantId: foreignTenantContext.tenantId,
+      },
+    };
+  }
+
   const event = createAuditEvent('RLS_PREDICATE_EVALUATED', foreignTenantContext.tenantId, null, null, {
     proofType: 'live_isolation',
+    unfilteredCount,
     tenantBoundaryEnforced: true,
     dataSubjectEvidencePreserved: true,
   });
@@ -1023,6 +1054,13 @@ export function blockPromotionOnUnavailability(
     return {
       blocked: true,
       reason: 'Migration ledger empty',
+    };
+  }
+
+  if (state.auditLog.length === 0) {
+    return {
+      blocked: true,
+      reason: 'Audit signal missing',
     };
   }
 

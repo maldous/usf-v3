@@ -18,6 +18,8 @@ export const BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind = [
   'SHAPE_VALIDATION_FAILED',
   'INGESTION_DENIED',
   'ALERT_THRESHOLD_EXCEEDED',
+  'SEMANTIC_DRIFT',
+  'CONFIGURATION_LOSS',
 ] as const;
 export type BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind =
   typeof BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind[number];
@@ -219,12 +221,13 @@ export function auditTelemetryChange(
   requestId: string,
   traceId: string,
   description: string,
+  kind: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEventKind,
   auditFn: (
     event: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent,
   ) => BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null,
 ): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null {
   const event: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent = {
-    kind: 'CONFIG_CHANGE',
+    kind,
     requestId,
     traceId,
     changeDescription: description,
@@ -246,6 +249,37 @@ export function updateTelemetryConfig(
     requestId,
     traceId,
     'Update Telemetry Configuration',
+    'CONFIG_CHANGE',
+    auditFn,
+  );
+  if (auditError !== null) {
+    return auditError;
+  }
+
+  return {
+    ...state,
+    config: newConfig,
+    readiness: 'READY',
+    errorCount: 0,
+    lastError: null,
+    alertActive: false,
+  };
+}
+
+export function updateTelemetryContract(
+  state: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState,
+  newConfig: TelemetryConfiguration,
+  requestId: string,
+  traceId: string,
+  auditFn: (
+    event: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent,
+  ) => BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null,
+): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState | BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError {
+  const auditError = auditTelemetryChange(
+    requestId,
+    traceId,
+    'Update Telemetry Collection Contract',
+    'CONTRACT_CHANGE',
     auditFn,
   );
   if (auditError !== null) {
@@ -389,6 +423,94 @@ export function recordTypedError(
   };
 
   return { newState, alertRaised: true, alertError };
+}
+
+export function detectSemanticDrift(
+  currentVocabulary: readonly string[],
+  currentSpanNames: readonly string[],
+  expectedVocabulary: readonly string[],
+  expectedSpanNames: readonly string[],
+): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null {
+  for (const v of currentVocabulary) {
+    if (!(expectedVocabulary as readonly string[]).includes(v)) {
+      return {
+        kind: 'SEMANTIC_DRIFT',
+        message: `Attribute name '${v}' is not in the controlled observability vocabulary`,
+      };
+    }
+  }
+  for (const s of currentSpanNames) {
+    if (!(expectedSpanNames as readonly string[]).includes(s)) {
+      return {
+        kind: 'SEMANTIC_DRIFT',
+        message: `Span name '${s}' is not in the controlled span vocabulary`,
+      };
+    }
+  }
+  return null;
+}
+
+export function detectConfigurationLoss(
+  state: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState,
+): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null {
+  if (state.config === null) {
+    return {
+      kind: 'CONFIGURATION_LOSS',
+      message: 'Telemetry configuration has been lost (no config present in state)',
+    };
+  }
+  if (!state.config.enabled) {
+    return {
+      kind: 'CONFIGURATION_LOSS',
+      message: 'Telemetry configuration is present but disabled',
+    };
+  }
+  if (state.config.receiverEndpoint.length === 0) {
+    return {
+      kind: 'CONFIGURATION_LOSS',
+      message: 'Receiver endpoint is empty',
+    };
+  }
+  if (state.config.collectorEndpoint.length === 0) {
+    return {
+      kind: 'CONFIGURATION_LOSS',
+      message: 'Collector endpoint is empty',
+    };
+  }
+  if (state.config.backendEndpoint.length === 0) {
+    return {
+      kind: 'CONFIGURATION_LOSS',
+      message: 'Backend endpoint is empty',
+    };
+  }
+  return null;
+}
+
+export function handleProviderFailure(
+  state: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState,
+  failureKind: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind,
+  message: string,
+  traceId?: string,
+  spanId?: string,
+): {
+  readonly newState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState;
+  readonly error: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
+  readonly alertRaised: boolean;
+  readonly alertError: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null;
+} {
+  const error: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError = {
+    kind: failureKind,
+    message,
+    ...(traceId !== undefined ? { traceId } : {}),
+    ...(spanId !== undefined ? { spanId } : {}),
+  };
+  const alertResult = recordTypedError(state, error);
+  return {
+    newState: alertResult.newState,
+    error,
+    alertRaised: alertResult.alertRaised,
+    alertError: alertResult.alertError,
+  };
 }
 
 export function ingestTelemetryWithAlert(
