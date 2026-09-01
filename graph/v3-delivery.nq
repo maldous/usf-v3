@@ -9176,8 +9176,8 @@
 <urn:usf:delivery-provider:workflowenginetemporalcomposedtest> <urn:usf:predicate:type> <urn:usf:type:DeliveryProvider> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:foundation> <urn:usf:predicate:canonicalName> "foundation" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:foundation> <urn:usf:predicate:pathDerivation> "canonicalPath = realisationRoot + / + artefact canonicalPath" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-repository:foundation> <urn:usf:predicate:realisationRoot> "apps/anqr" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-repository:foundation> <urn:usf:predicate:realisationRootReason> "V1 artefact paths are relative to the foundation repository. This repository realizes that product under apps/anqr, so a canonical artefact path is the realisation root joined with the artefact path the graph states. A model never proposes a path." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-repository:foundation> <urn:usf:predicate:realisationRoot> "apps/platform" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-repository:foundation> <urn:usf:predicate:realisationRootReason> "The V1-recovered artefact set is USF's own platform delivery output, recovered from V1 graph/contracts/generation.trig. Its realisation root was named for a product it has nothing to do with, which is the conflation this repository exists to keep out of its own foundation. A model never proposes a path." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:foundation> <urn:usf:predicate:type> <urn:usf:type:DeliveryRepository> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:usf-platform> <urn:usf:predicate:canonicalName> "usf-platform" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:usf-platform> <urn:usf:predicate:pathDerivation> "canonicalPath = the governing pathPattern taken relative to the USF repository root. This repository realises its own platform capabilities, so the pattern is already repository-relative and no realisation root is prefixed." <urn:usf:graph:v3-delivery> .

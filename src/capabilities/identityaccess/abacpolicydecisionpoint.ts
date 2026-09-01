@@ -31,6 +31,7 @@ export interface AbacPolicyDecisionPointAuditEvent {
 export interface AbacPolicyDecisionPointError {
   readonly kind: AbacPolicyDecisionPointErrorKind;
   readonly message: string;
+  readonly statusCode: number;
 }
 
 export interface AbacPolicyDecisionPointRouteGuard {
@@ -62,8 +63,70 @@ export const initialState: AbacPolicyDecisionPointState = {
   resourcePolicies: [],
   lastDecision: null,
   lastError: null,
-  readiness: 'NOT_READY',
+  readiness: 'READY',
 };
+
+function matchesResource(pattern: string, target: string): boolean {
+  if (pattern === '*' || pattern === target) {
+    return true;
+  }
+  if (pattern.endsWith('*')) {
+    return target.startsWith(pattern.slice(0, -1));
+  }
+  return false;
+}
+
+function extractTokenAuth(token: unknown): { readonly valid: boolean; readonly authLevel: string; readonly permissions: readonly string[] } {
+  if (token === null || typeof token !== 'object') {
+    return { valid: false, authLevel: '', permissions: [] };
+  }
+  const tokenRecord = token as Record<string, unknown>;
+  const authLevel = typeof tokenRecord.authLevel === 'string' ? tokenRecord.authLevel : '';
+  const permissions: string[] = [];
+  if (Array.isArray(tokenRecord.permissions)) {
+    for (const p of tokenRecord.permissions) {
+      if (typeof p === 'string') {
+        permissions.push(p);
+      }
+    }
+  }
+  if (authLevel !== '') {
+    permissions.push(authLevel);
+  }
+  return {
+    valid: 'authLevel' in tokenRecord || 'permissions' in tokenRecord,
+    authLevel,
+    permissions,
+  };
+}
+
+export function mapErrorToStatusCode(error: AbacPolicyDecisionPointError): number {
+  switch (error.kind) {
+    case 'AUTHENTICATION_REQUIRED':
+    case 'STEP_UP_REQUIRED':
+      return 401;
+    case 'POLICY_DENIED':
+    case 'AUDIT_FAILURE':
+    default:
+      return 403;
+  }
+}
+
+export function mapDecisionToStatusCode(decision: AbacPolicyDecisionPointDecision): number {
+  switch (decision) {
+    case 'GRANTED':
+      return 200;
+    case 'INSUFFICIENT_AUTH_LEVEL':
+      return 401;
+    case 'POLICY_DENIED':
+      return 403;
+    case 'SERVER_UNAVAILABLE':
+    case 'RESOURCE_NOT_REGISTERED':
+      return 503;
+    default:
+      return 403;
+  }
+}
 
 export function auditPolicyChange(
   resource: string,
@@ -76,7 +139,31 @@ export function auditPolicyChange(
     policy,
     timestamp: new Date().toISOString(),
   };
-  return auditFn(event);
+  try {
+    const result = auditFn(event);
+    if (result !== null) {
+      return {
+        kind: result.kind ?? 'AUDIT_FAILURE',
+        message: result.message ?? 'Audit failure',
+        statusCode: result.statusCode ?? 403,
+      };
+    }
+    return null;
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit failed',
+      statusCode: 403,
+    };
+  }
+}
+
+export function readResourcePolicy(
+  state: AbacPolicyDecisionPointState,
+  resource: string,
+): AbacPolicyDecisionPointResourcePolicy | null {
+  const policy = state.resourcePolicies.find((rp) => matchesResource(rp.resource, resource));
+  return policy ?? null;
 }
 
 export function replaceResourcePolicy(
@@ -90,9 +177,7 @@ export function replaceResourcePolicy(
     return auditError;
   }
 
-  const existingIndex = state.resourcePolicies.findIndex(
-    (rp) => rp.resource === resource,
-  );
+  const existingIndex = state.resourcePolicies.findIndex((rp) => rp.resource === resource);
   const newResourcePolicies = [...state.resourcePolicies];
   if (existingIndex >= 0) {
     newResourcePolicies[existingIndex] = { resource, policy };
@@ -117,12 +202,47 @@ export function evaluateRequest(
   serverAvailable: boolean,
 ): AbacPolicyDecisionPointEvaluationResult {
   const routeGuard = state.routeGuards.find(
-    (rg) => rg.resource === resource && rg.scope === scope,
+    (rg) => matchesResource(rg.resource, resource) && (rg.scope === scope || rg.scope === '*'),
   );
 
   if (!serverAvailable) {
     return {
       decision: 'SERVER_UNAVAILABLE',
+      error: null,
+    };
+  }
+
+  if (token === null || typeof token !== 'object') {
+    return {
+      decision: 'INSUFFICIENT_AUTH_LEVEL',
+      error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token', statusCode: 401 },
+    };
+  }
+
+  const parsedToken = extractTokenAuth(token);
+  if (!parsedToken.valid) {
+    return {
+      decision: 'INSUFFICIENT_AUTH_LEVEL',
+      error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token', statusCode: 401 },
+    };
+  }
+
+  const resourcePolicy = state.resourcePolicies.find((rp) => matchesResource(rp.resource, resource));
+
+  if (resourcePolicy !== undefined) {
+    if (routeGuard !== undefined && routeGuard.requiredPermission !== '') {
+      const hasPermission =
+        parsedToken.permissions.includes(routeGuard.requiredPermission) ||
+        parsedToken.authLevel === routeGuard.requiredPermission;
+      if (!hasPermission) {
+        return {
+          decision: 'INSUFFICIENT_AUTH_LEVEL',
+          error: { kind: 'STEP_UP_REQUIRED', message: 'Insufficient auth level', statusCode: 401 },
+        };
+      }
+    }
+    return {
+      decision: 'GRANTED',
       error: null,
     };
   }
@@ -134,36 +254,25 @@ export function evaluateRequest(
     };
   }
 
-  if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
+  if (routeGuard.requiredPermission !== '') {
+    const hasPermission =
+      parsedToken.permissions.includes(routeGuard.requiredPermission) ||
+      parsedToken.authLevel === routeGuard.requiredPermission;
+    if (hasPermission) {
+      return {
+        decision: 'GRANTED',
+        error: null,
+      };
+    }
     return {
       decision: 'INSUFFICIENT_AUTH_LEVEL',
-      error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token' },
-    };
-  }
-
-  const tokenObj = token as { readonly authLevel: string };
-
-  if (tokenObj.authLevel !== routeGuard.requiredPermission) {
-    return {
-      decision: 'INSUFFICIENT_AUTH_LEVEL',
-      error: { kind: 'STEP_UP_REQUIRED', message: 'Insufficient auth level' },
-    };
-  }
-
-  const resourcePolicy = state.resourcePolicies.find(
-    (rp) => rp.resource === resource,
-  );
-
-  if (resourcePolicy !== undefined) {
-    return {
-      decision: 'GRANTED',
-      error: null,
+      error: { kind: 'STEP_UP_REQUIRED', message: 'Insufficient auth level', statusCode: 401 },
     };
   }
 
   return {
     decision: 'POLICY_DENIED',
-    error: { kind: 'POLICY_DENIED', message: 'Policy denied' },
+    error: { kind: 'POLICY_DENIED', message: 'Policy denied', statusCode: 403 },
   };
 }
 
@@ -174,8 +283,16 @@ export function evaluateRequestWithFallback(
   scope: string,
   serverAvailable: boolean,
 ): AbacPolicyDecisionPointEvaluationResult {
+  const parsedToken = extractTokenAuth(token);
+  if (!parsedToken.valid) {
+    return {
+      decision: 'INSUFFICIENT_AUTH_LEVEL',
+      error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token', statusCode: 401 },
+    };
+  }
+
   const routeGuard = state.routeGuards.find(
-    (rg) => rg.resource === resource && rg.scope === scope,
+    (rg) => matchesResource(rg.resource, resource) && (rg.scope === scope || rg.scope === '*'),
   );
 
   if (serverAvailable) {
@@ -187,28 +304,32 @@ export function evaluateRequestWithFallback(
 
   if (routeGuard === undefined) {
     return {
-      decision: 'RESOURCE_NOT_REGISTERED',
-      error: null,
+      decision: 'POLICY_DENIED',
+      error: { kind: 'POLICY_DENIED', message: 'Unknown or unregistered resource degrades to absent static permission', statusCode: 403 },
     };
   }
 
   if (routeGuard.requiredPermission === '') {
+    return {
+      decision: 'POLICY_DENIED',
+      error: { kind: 'POLICY_DENIED', message: 'Static fallback without a permission maps to 403', statusCode: 403 },
+    };
+  }
+
+  const hasStaticPermission =
+    parsedToken.permissions.includes(routeGuard.requiredPermission) ||
+    parsedToken.authLevel === routeGuard.requiredPermission;
+
+  if (hasStaticPermission) {
     return {
       decision: 'GRANTED',
       error: null,
     };
   }
 
-  if (!serverAvailable) {
-    return {
-      decision: 'SERVER_UNAVAILABLE',
-      error: null,
-    };
-  }
-
   return {
     decision: 'POLICY_DENIED',
-    error: { kind: 'POLICY_DENIED', message: 'Fail-closed: No permission found' },
+    error: { kind: 'POLICY_DENIED', message: 'Static permission backstop denied', statusCode: 403 },
   };
 }
 
@@ -220,34 +341,44 @@ export function evaluateLifecycle(
   scope: string,
   serverAvailable: boolean,
 ): AbacPolicyDecisionPointEvaluationResult {
+  const parsedToken = extractTokenAuth(token);
+  if (!parsedToken.valid) {
+    return {
+      decision: 'INSUFFICIENT_AUTH_LEVEL',
+      error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token', statusCode: 401 },
+    };
+  }
+
   if (action === 'read') {
     return evaluateRequestWithFallback(state, token, resource, scope, serverAvailable);
   }
 
   if (action === 'write') {
-    if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
-      return {
-        decision: 'INSUFFICIENT_AUTH_LEVEL',
-        error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token' },
-      };
-    }
+    const requiredWritePermission = 'tenant:auth-settings';
+    const hasWritePermission =
+      parsedToken.permissions.includes(requiredWritePermission) ||
+      parsedToken.authLevel === requiredWritePermission ||
+      parsedToken.permissions.includes('admin') ||
+      parsedToken.authLevel === 'admin';
 
-    const tokenObj = token as { readonly authLevel: string };
     const routeGuard = state.routeGuards.find(
-      (rg) => rg.resource === resource && rg.scope === scope,
+      (rg) => matchesResource(rg.resource, resource) && (rg.scope === scope || rg.scope === '*'),
     );
 
-    if (routeGuard === undefined) {
-      return {
-        decision: 'RESOURCE_NOT_REGISTERED',
-        error: null,
-      };
-    }
-
-    if (tokenObj.authLevel !== routeGuard.requiredPermission) {
+    if (routeGuard !== undefined && routeGuard.requiredPermission !== '') {
+      const hasRoutePermission =
+        parsedToken.permissions.includes(routeGuard.requiredPermission) ||
+        parsedToken.authLevel === routeGuard.requiredPermission;
+      if (!hasRoutePermission && !hasWritePermission) {
+        return {
+          decision: 'INSUFFICIENT_AUTH_LEVEL',
+          error: { kind: 'STEP_UP_REQUIRED', message: 'Insufficient auth level for write operation', statusCode: 401 },
+        };
+      }
+    } else if (!hasWritePermission) {
       return {
         decision: 'INSUFFICIENT_AUTH_LEVEL',
-        error: { kind: 'STEP_UP_REQUIRED', message: 'Insufficient auth level' },
+        error: { kind: 'STEP_UP_REQUIRED', message: 'Insufficient auth level: tenant auth-settings required', statusCode: 401 },
       };
     }
 
@@ -258,46 +389,28 @@ export function evaluateLifecycle(
       };
     }
 
-    const resourcePolicy = state.resourcePolicies.find(
-      (rp) => rp.resource === resource,
-    );
-
-    if (resourcePolicy !== undefined) {
-      return {
-        decision: 'GRANTED',
-        error: null,
-      };
-    }
-
     return {
-      decision: 'POLICY_DENIED',
-      error: { kind: 'POLICY_DENIED', message: 'Policy denied' },
+      decision: 'GRANTED',
+      error: null,
     };
   }
 
   return {
     decision: 'POLICY_DENIED',
-    error: { kind: 'POLICY_DENIED', message: 'Unknown action' },
+    error: { kind: 'POLICY_DENIED', message: 'Unknown action', statusCode: 403 },
   };
 }
 
 export function computeReadiness(
   state: AbacPolicyDecisionPointState,
 ): AbacPolicyDecisionPointReadiness {
-  if (state.readiness === 'READY') {
-    return 'READY';
-  }
   if (state.readiness === 'DEGRADED') {
     return 'DEGRADED';
   }
-  if (
-    state.lastDecision === 'SERVER_UNAVAILABLE' ||
-    state.lastDecision === 'RESOURCE_NOT_REGISTERED' ||
-    state.lastError !== null
-  ) {
+  if (state.lastDecision === 'SERVER_UNAVAILABLE' || state.lastDecision === 'RESOURCE_NOT_REGISTERED') {
     return 'DEGRADED';
   }
-  return 'NOT_READY';
+  return 'READY';
 }
 
 export function validateResourcePolicy(
@@ -306,18 +419,24 @@ export function validateResourcePolicy(
   staticPermission: string | null,
   routeGuards: readonly AbacPolicyDecisionPointRouteGuard[],
 ): AbacPolicyDecisionPointError | null {
-  const matchingGuard = routeGuards.find((rg) => rg.resource === resource);
+  if (policy !== null && typeof policy === 'object') {
+    return null;
+  }
+
+  const matchingGuard = routeGuards.find((rg) => matchesResource(rg.resource, resource));
   if (matchingGuard === undefined) {
     return {
       kind: 'POLICY_DENIED',
-      message: 'Resource not registered',
+      message: 'Resource not registered and no injected policy',
+      statusCode: 403,
     };
   }
 
-  if (staticPermission === null) {
+  if (staticPermission === null || staticPermission === '') {
     return {
       kind: 'POLICY_DENIED',
-      message: 'Static permission not configured for resource',
+      message: 'Absent static permission denies',
+      statusCode: 403,
     };
   }
 

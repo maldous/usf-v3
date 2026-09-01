@@ -73,6 +73,10 @@ export type ThemeReadResult =
   | { readonly kind: 'SUCCESS'; readonly theme: EffectiveTheme }
   | { readonly kind: 'FALLBACK'; readonly theme: EffectiveTheme };
 
+export type BrandingListResult =
+  | { readonly kind: 'SUCCESS'; readonly definitions: readonly BrandingDefinition[] }
+  | { readonly kind: 'ERROR'; readonly error: BrandingAndThemingError };
+
 export type BrandingMutationResult =
   | { readonly kind: 'SUCCESS'; readonly newState: BrandingAndThemingState }
   | { readonly kind: 'ERROR'; readonly error: BrandingAndThemingError };
@@ -99,7 +103,7 @@ export interface ConfigurationStorePort {
     tenantId: string,
     token: unknown,
     state: BrandingAndThemingState,
-  ) => BrandingDefinition[] | BrandingAndThemingError;
+  ) => BrandingListResult;
   readonly patchBrandingDefinition: (
     tenantId: string,
     partialDefinition: Partial<BrandingDefinition>,
@@ -116,7 +120,7 @@ export interface ConfigurationStorePort {
 }
 
 export const configurationStoreAdapter: ConfigurationStorePort = {
-  getEffectiveTheme: readTheme,
+  getEffectiveTheme,
   listBrandingDefinitions,
   patchBrandingDefinition,
   deleteBrandingDefinition,
@@ -229,7 +233,7 @@ export function resolveEffectiveTheme(
   };
 }
 
-export function readTheme(
+export function getEffectiveTheme(
   host: string,
   state: BrandingAndThemingState,
 ): ThemeReadResult {
@@ -245,18 +249,23 @@ export function readTheme(
   }
 }
 
+export const readTheme = getEffectiveTheme;
+
 export function listBrandingDefinitions(
   tenantId: string,
   token: unknown,
   state: BrandingAndThemingState,
-): BrandingDefinition[] | BrandingAndThemingError {
+): BrandingListResult {
   const permissionCheck = checkBrandingPermission(tenantId, token);
   if (permissionCheck.kind === 'DENIED') {
-    return permissionCheck.error;
+    return { kind: 'ERROR', error: permissionCheck.error };
   }
 
   const definition = state.brandingDefinitions.get(tenantId);
-  return definition ? [definition] : [];
+  return {
+    kind: 'SUCCESS',
+    definitions: definition ? [definition] : [],
+  };
 }
 
 export function createBrandingDefinition(

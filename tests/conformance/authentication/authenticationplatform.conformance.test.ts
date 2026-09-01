@@ -9,7 +9,15 @@ test("authenticationplatformauditmodel", () => {
     return null;
   };
 
-  let state = capability.initialState;
+  let state = capability.setTenantCredential(
+    capability.setFixtureMode(capability.initialState, true),
+    {
+      tenantId: "tenant1",
+      present: true,
+      canRead: true,
+      canWrite: true,
+    },
+  );
 
   const sessionResult = capability.createSession(
     state,
@@ -18,7 +26,6 @@ test("authenticationplatformauditmodel", () => {
     null,
     ["role1"],
     "User One",
-    ["tenant:tenant1:role1"],
     new Date(Date.now() + 3600000).toISOString(),
     auditFn,
   );
@@ -41,8 +48,8 @@ test("authenticationplatformauditmodel", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"] as const,
-    "***REDACTED***",
+    ["openid"],
+    "super-secret",
     auditFn,
   );
   if ("kind" in createResult) throw new Error("Unexpected error");
@@ -69,8 +76,8 @@ test("authenticationplatformauditmodel", () => {
     "test-provider-2",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"] as const,
-    "***REDACTED***",
+    ["openid"],
+    "super-secret",
     failingAuditFn,
   );
   assert.ok("kind" in failResult);
@@ -81,7 +88,15 @@ test("authenticationplatformauditmodel", () => {
 
 test("authenticationplatformcontracts", () => {
   const auditFn = () => null;
-  let state = capability.initialState;
+  let state = capability.setTenantCredential(
+    capability.setFixtureMode(capability.initialState, true),
+    {
+      tenantId: "tenant1",
+      present: true,
+      canRead: true,
+      canWrite: true,
+    },
+  );
 
   const sessionResult = capability.createSession(
     state,
@@ -90,7 +105,6 @@ test("authenticationplatformcontracts", () => {
     null,
     ["role1"],
     "User One",
-    ["tenant:tenant1:role1"],
     new Date(Date.now() + 3600000).toISOString(),
     auditFn,
   );
@@ -102,10 +116,6 @@ test("authenticationplatformcontracts", () => {
   if ("kind" in lookupResult) throw new Error("Unexpected error");
   assert.equal(lookupResult.userId, "user1");
 
-  const providers = capability.listProviders(state, "tenant1");
-  if ("kind" in providers) throw new Error("Unexpected error");
-  assert.ok(Array.isArray(providers));
-
   const pkce = capability.generatePkceChallenge();
   assert.ok(pkce.codeVerifier.length > 0);
   assert.ok(pkce.codeChallenge.length > 0);
@@ -116,24 +126,29 @@ test("authenticationplatformcontracts", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"] as const,
-    "***REDACTED***",
+    ["openid"],
+    "raw-secret",
     auditFn,
   );
   if ("kind" in createResult) throw new Error("Unexpected error");
   assert.equal(createResult.result, "NO_CONTENT");
   state = createResult.state;
 
+  const providers = capability.listProviders(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
+  if ("kind" in providers) throw new Error("Unexpected error");
+  assert.ok(Array.isArray(providers));
+  assert.equal(providers[0]?.maskedSecret, "REDACTED");
+
   const initiateResult = capability.initiateLogin(state, "/dashboard", "test-provider", auditFn);
   if ("kind" in initiateResult) throw new Error("Unexpected error");
-  assert.equal(initiateResult.preAuth.providerAlias, "test-provider");
+  assert.ok(initiateResult.stateParam.length > 0);
   state = initiateResult.state;
 
   const callbackResult = capability.handleCallback(
     state,
     "auth-code-123",
-    initiateResult.preAuth.state,
-    initiateResult.preAuth.nonce,
+    initiateResult.stateParam,
+    initiateResult.nonce,
     null,
     auditFn,
   );
@@ -189,11 +204,11 @@ test("authenticationplatformcontracts", () => {
   assert.equal(writePolicyResult.result, "NO_CONTENT");
   state = writePolicyResult.state;
 
-  const readPolicyResult = capability.readPolicy(state, "tenant1");
+  const readPolicyResult = capability.readPolicy(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
   if ("kind" in readPolicyResult) throw new Error("Unexpected error");
   assert.equal(readPolicyResult.mfaMode, "REQUIRED_TOTP");
 
-  const mappings: capability.AuthenticationPlatformClaimMapping[] = [
+  const mappings: readonly capability.AuthenticationPlatformClaimMapping[] = [
     { claimName: "role", roleName: "admin" },
   ];
   const writeMappingsResult = capability.writeClaimMappings(state, "tenant1", mappings, auditFn);
@@ -201,7 +216,7 @@ test("authenticationplatformcontracts", () => {
   assert.equal(writeMappingsResult.result, "NO_CONTENT");
   state = writeMappingsResult.state;
 
-  const readMappingsResult = capability.readClaimMappings(state, "tenant1");
+  const readMappingsResult = capability.readClaimMappings(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
   if ("kind" in readMappingsResult) throw new Error("Unexpected error");
   assert.equal(readMappingsResult.length, 1);
 
@@ -230,7 +245,7 @@ test("authenticationplatformerrormodel", () => {
   const unavailableLookup = capability.lookupSession(unavailableState, "any");
   assert.ok("kind" in unavailableLookup);
   if (!("kind" in unavailableLookup)) throw new Error("Expected error");
-  assert.equal(unavailableLookup.kind, "SESSION_LOOKUP_FAILURE");
+  assert.equal(unavailableLookup.kind, "UNAUTHENTICATED");
 
   const invalidReturnTo = capability.validateReturnTo("http://evil.com");
   assert.notStrictEqual(invalidReturnTo, null);
@@ -252,7 +267,7 @@ test("authenticationplatformerrormodel", () => {
   if (invalidDoc === null) throw new Error("Expected error");
   assert.equal(invalidDoc.kind, "INVALID_DOCUMENT");
 
-  const invalidMfaMode = capability.validateMfaMode("INVALID" as capability.AuthenticationPlatformMfaMode);
+  const invalidMfaMode = capability.validateMfaMode("INVALID");
   assert.notStrictEqual(invalidMfaMode, null);
   if (invalidMfaMode === null) throw new Error("Expected error");
   assert.equal(invalidMfaMode.kind, "INVALID_MFA_MODE");
@@ -313,7 +328,15 @@ test("authenticationplatformerrormodel", () => {
 
 test("authenticationplatformlifecycle", () => {
   const auditFn = () => null;
-  let state = capability.initialState;
+  let state = capability.setTenantCredential(
+    capability.setFixtureMode(capability.initialState, true),
+    {
+      tenantId: "tenant1",
+      present: true,
+      canRead: true,
+      canWrite: true,
+    },
+  );
 
   const pkce = capability.generatePkceChallenge();
   assert.ok(pkce.codeVerifier.length > 0);
@@ -326,7 +349,6 @@ test("authenticationplatformlifecycle", () => {
     null,
     ["role1"],
     "User One",
-    ["tenant:tenant1:role1"],
     new Date(Date.now() + 3600000).toISOString(),
     auditFn,
   );
@@ -350,7 +372,7 @@ test("authenticationplatformlifecycle", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"] as const,
+    ["openid"],
     "***REDACTED***",
     auditFn,
   );
@@ -359,14 +381,14 @@ test("authenticationplatformlifecycle", () => {
 
   const initiateResult = capability.initiateLogin(state, "/dashboard", "test-provider", auditFn);
   if ("kind" in initiateResult) throw new Error("Unexpected error");
-  assert.equal(initiateResult.preAuth.providerAlias, "test-provider");
+  assert.ok(initiateResult.stateParam.length > 0);
   state = initiateResult.state;
 
   const callbackResult = capability.handleCallback(
     state,
     "auth-code",
-    initiateResult.preAuth.state,
-    initiateResult.preAuth.nonce,
+    initiateResult.stateParam,
+    initiateResult.nonce,
     null,
     auditFn,
   );
@@ -428,18 +450,18 @@ test("authenticationplatformlifecycle", () => {
   if ("kind" in writePolicyResult) throw new Error("Unexpected error");
   state = writePolicyResult.state;
 
-  const readPolicyResult = capability.readPolicy(state, "tenant1");
+  const readPolicyResult = capability.readPolicy(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
   if ("kind" in readPolicyResult) throw new Error("Unexpected error");
   assert.equal(readPolicyResult.mfaMode, "REQUIRED_TOTP");
 
-  const mappings: capability.AuthenticationPlatformClaimMapping[] = [
+  const mappings: readonly capability.AuthenticationPlatformClaimMapping[] = [
     { claimName: "role", roleName: "admin" },
   ];
   const writeMappingsResult = capability.writeClaimMappings(state, "tenant1", mappings, auditFn);
   if ("kind" in writeMappingsResult) throw new Error("Unexpected error");
   state = writeMappingsResult.state;
 
-  const readMappingsResult = capability.readClaimMappings(state, "tenant1");
+  const readMappingsResult = capability.readClaimMappings(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
   if ("kind" in readMappingsResult) throw new Error("Unexpected error");
   assert.equal(readMappingsResult.length, 1);
 });
@@ -456,54 +478,61 @@ test("authenticationplatformpermissions", () => {
   if ("kind" in nullTenantContext) throw new Error("Unexpected error");
   assert.equal(nullTenantContext.tenantId, "");
 
+  const allowlist = new Map<string, readonly string[]>([["tenant1", ["admin-role"]]]);
+  const permissions = capability.resolvePermissionBundle(["admin-role"], [], allowlist, "tenant1");
+  assert.deepStrictEqual(permissions, ["READ_AUTH_SETTINGS", "WRITE_AUTH_SETTINGS"]);
+
+  const systemAdminPermissions = capability.resolvePermissionBundle([], ["system-admin"], allowlist, null);
+  assert.deepStrictEqual(systemAdminPermissions, ["READ_AUTH_SETTINGS", "WRITE_AUTH_SETTINGS"]);
+
   const policy: capability.AuthenticationPlatformPolicy = {
     mfaMode: "REQUIRED_TOTP",
     lockoutThreshold: 5,
     sessionLifespanSeconds: 3600,
   };
+
+  const forbiddenWrite = capability.writePolicy(state, "tenant1", policy, () => null);
+  assert.ok("kind" in forbiddenWrite);
+  if (!("kind" in forbiddenWrite)) throw new Error("Expected error");
+  assert.equal(forbiddenWrite.kind, "FORBIDDEN");
+
+  const forbiddenRead = capability.readPolicy(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
+  assert.ok("kind" in forbiddenRead);
+  if (!("kind" in forbiddenRead)) throw new Error("Expected error");
+  assert.equal(forbiddenRead.kind, "FORBIDDEN");
+
+  state = capability.setTenantCredential(state, {
+    tenantId: "tenant1",
+    present: true,
+    canRead: true,
+    canWrite: true,
+  });
+
+  const forbiddenScopeList = capability.listProviders(state, "tenant1", "READ_AUTH_SETTINGS", "user");
+  assert.ok("kind" in forbiddenScopeList);
+  if (!("kind" in forbiddenScopeList)) throw new Error("Expected error");
+  assert.equal(forbiddenScopeList.kind, "FORBIDDEN");
+
   const writeResult = capability.writePolicy(state, "tenant1", policy, () => null);
   if ("kind" in writeResult) throw new Error("Unexpected error");
   state = writeResult.state;
 
-  const readResult = capability.readPolicy(state, "tenant1");
+  const readResult = capability.readPolicy(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
   if ("kind" in readResult) throw new Error("Unexpected error");
   assert.equal(readResult.mfaMode, "REQUIRED_TOTP");
-
-  const createResult = capability.createProvider(
-    state,
-    "tenant1",
-    "test-provider",
-    "https://issuer.example.com",
-    "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"] as const,
-    "***REDACTED***",
-    () => null,
-  );
-  if ("kind" in createResult) throw new Error("Unexpected error");
-  state = createResult.state;
-
-  const listResult = capability.listProviders(state, "tenant1");
-  if ("kind" in listResult) throw new Error("Unexpected error");
-  assert.equal(listResult.length, 1);
-
-  const mappings: capability.AuthenticationPlatformClaimMapping[] = [
-    { claimName: "role", roleName: "admin" },
-  ];
-  const writeMappingsResult = capability.writeClaimMappings(state, "tenant1", mappings, () => null);
-  if ("kind" in writeMappingsResult) throw new Error("Unexpected error");
-  state = writeMappingsResult.state;
-
-  const readMappingsResult = capability.readClaimMappings(state, "tenant1");
-  if ("kind" in readMappingsResult) throw new Error("Unexpected error");
-  assert.equal(readMappingsResult.length, 1);
-
-  const callbackUrl = capability.deriveCallbackUrl(state, "example.com");
-  assert.equal(callbackUrl, "https://auth.anqr.dev");
 });
 
 test("authenticationplatformproof", () => {
   const auditFn = () => null;
-  let state = capability.initialState;
+  let state = capability.setTenantCredential(
+    capability.setFixtureMode(capability.initialState, true),
+    {
+      tenantId: "tenant1",
+      present: true,
+      canRead: true,
+      canWrite: true,
+    },
+  );
 
   const sessionResult = capability.createSession(
     state,
@@ -512,7 +541,6 @@ test("authenticationplatformproof", () => {
     null,
     ["role1"],
     "User One",
-    ["tenant:tenant1:role1"],
     new Date(Date.now() + 3600000).toISOString(),
     auditFn,
   );
@@ -547,8 +575,8 @@ test("authenticationplatformproof", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"] as const,
-    "***REDACTED***",
+    ["openid"],
+    "secret123",
     auditFn,
   );
   if ("kind" in createResult) throw new Error("Unexpected error");
@@ -557,12 +585,13 @@ test("authenticationplatformproof", () => {
   const getResult = capability.getProvider(state, "test-provider");
   if ("kind" in getResult) throw new Error("Unexpected error");
   assert.equal(getResult.issuer, "https://issuer.example.com");
+  assert.equal(getResult.maskedSecret, "REDACTED");
 
   const updateResult = capability.updateProvider(
     state,
     "tenant1",
     "test-provider",
-    { maskedSecret: "***NEW_REDACTED***" },
+    { maskedSecret: "secret456" },
     auditFn,
   );
   if ("kind" in updateResult) throw new Error("Unexpected error");
@@ -570,7 +599,7 @@ test("authenticationplatformproof", () => {
 
   const updatedProvider = capability.getProvider(state, "test-provider");
   if ("kind" in updatedProvider) throw new Error("Unexpected error");
-  assert.equal(updatedProvider.maskedSecret, "***NEW_REDACTED***");
+  assert.equal(updatedProvider.maskedSecret, "REDACTED");
 
   const importResult = capability.importOidcDiscovery(
     state,
@@ -584,6 +613,7 @@ test("authenticationplatformproof", () => {
 
   const testResult = capability.testProviderConnection(state, "tenant1", "test-provider", auditFn);
   if ("kind" in testResult) throw new Error("Unexpected error");
+  assert.equal(testResult.result, "NO_CONTENT");
   state = testResult.state;
 
   const policy: capability.AuthenticationPlatformPolicy = {
@@ -595,7 +625,7 @@ test("authenticationplatformproof", () => {
   if ("kind" in writePolicyResult) throw new Error("Unexpected error");
   state = writePolicyResult.state;
 
-  const readPolicyResult = capability.readPolicy(state, "tenant1");
+  const readPolicyResult = capability.readPolicy(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
   if ("kind" in readPolicyResult) throw new Error("Unexpected error");
   assert.equal(readPolicyResult.mfaMode, "REQUIRED_TOTP");
   assert.equal(readPolicyResult.lockoutThreshold, 5);
@@ -610,14 +640,14 @@ test("authenticationplatformproof", () => {
   if ("kind" in restorePolicyResult) throw new Error("Unexpected error");
   state = restorePolicyResult.state;
 
-  const mappings: capability.AuthenticationPlatformClaimMapping[] = [
+  const mappings: readonly capability.AuthenticationPlatformClaimMapping[] = [
     { claimName: "role", roleName: "admin" },
   ];
   const writeMappingsResult = capability.writeClaimMappings(state, "tenant1", mappings, auditFn);
   if ("kind" in writeMappingsResult) throw new Error("Unexpected error");
   state = writeMappingsResult.state;
 
-  const readMappingsResult = capability.readClaimMappings(state, "tenant1");
+  const readMappingsResult = capability.readClaimMappings(state, "tenant1", "READ_AUTH_SETTINGS", "admin");
   if ("kind" in readMappingsResult) throw new Error("Unexpected error");
   assert.equal(readMappingsResult.length, 1);
   assert.equal(readMappingsResult[0]?.claimName, "role");
@@ -680,7 +710,15 @@ test("authenticationplatformreadinessmodel", () => {
 
 test("authenticationplatformstatemodel", () => {
   const auditFn = () => null;
-  let state = capability.initialState;
+  let state = capability.setTenantCredential(
+    capability.setFixtureMode(capability.initialState, true),
+    {
+      tenantId: "tenant1",
+      present: true,
+      canRead: true,
+      canWrite: true,
+    },
+  );
 
   const sessionResult = capability.createSession(
     state,
@@ -689,7 +727,6 @@ test("authenticationplatformstatemodel", () => {
     null,
     ["role1"],
     "User One",
-    ["tenant:tenant1:role1"],
     new Date(Date.now() + 3600000).toISOString(),
     auditFn,
   );
@@ -698,7 +735,7 @@ test("authenticationplatformstatemodel", () => {
   assert.equal(session.state, "AUTHENTICATED");
   assert.equal(session.userId, "user1");
   assert.deepStrictEqual(session.roles, ["role1"]);
-  assert.deepStrictEqual(session.permissionBundle, ["tenant:tenant1:role1"]);
+  assert.deepStrictEqual(session.permissionBundle, []);
   assert.equal(session.displayName, "User One");
   assert.equal(session.tenantId, "tenant1");
   assert.equal(session.organisationId, null);
@@ -712,7 +749,7 @@ test("authenticationplatformstatemodel", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"] as const,
+    ["openid"],
     "***REDACTED***",
     auditFn,
   );
@@ -723,7 +760,7 @@ test("authenticationplatformstatemodel", () => {
   assert.ok(provider !== undefined);
   assert.equal(provider.alias, "test-provider");
   assert.equal(provider.enabled, true);
-  assert.equal(provider.maskedSecret, "***REDACTED***");
+  assert.equal(provider.maskedSecret, "REDACTED");
   assert.deepStrictEqual(provider.scopes, ["openid"]);
   assert.deepStrictEqual(provider.discoveryValidation, {
     issuerValid: true,
@@ -785,7 +822,7 @@ test("authenticationplatformvalidation", () => {
   const validMfaMode = capability.validateMfaMode("REQUIRED_TOTP");
   assert.equal(validMfaMode, null);
 
-  const invalidMfaMode = capability.validateMfaMode("INVALID" as capability.AuthenticationPlatformMfaMode);
+  const invalidMfaMode = capability.validateMfaMode("INVALID");
   assert.notStrictEqual(invalidMfaMode, null);
   if (invalidMfaMode === null) throw new Error("Expected error");
   assert.equal(invalidMfaMode.kind, "INVALID_MFA_MODE");
