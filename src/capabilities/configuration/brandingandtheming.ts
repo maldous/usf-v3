@@ -91,6 +91,10 @@ export type BrandingValidationResult =
   | BrandingAndThemingError;
 
 export interface ConfigurationStorePort {
+  readonly getEffectiveTheme: (
+    host: string,
+    state: BrandingAndThemingState,
+  ) => ThemeReadResult;
   readonly listBrandingDefinitions: (
     tenantId: string,
     token: unknown,
@@ -112,6 +116,7 @@ export interface ConfigurationStorePort {
 }
 
 export const configurationStoreAdapter: ConfigurationStorePort = {
+  getEffectiveTheme: readTheme,
   listBrandingDefinitions,
   patchBrandingDefinition,
   deleteBrandingDefinition,

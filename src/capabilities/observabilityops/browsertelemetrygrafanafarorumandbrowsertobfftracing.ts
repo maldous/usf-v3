@@ -20,6 +20,7 @@ export const BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind = [
   'ALERT_THRESHOLD_EXCEEDED',
   'SEMANTIC_DRIFT',
   'CONFIGURATION_LOSS',
+  'PIPELINE_FAILURE',
 ] as const;
 export type BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind =
   typeof BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind[number];
@@ -337,7 +338,7 @@ export function processTelemetryIngress(
 
   if (!pipelineHealthy) {
     const err: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError = {
-      kind: 'BACKEND_TO_END_FAILURE',
+      kind: 'PIPELINE_FAILURE',
       message: 'Telemetry pipeline is unhealthy',
     };
     return {

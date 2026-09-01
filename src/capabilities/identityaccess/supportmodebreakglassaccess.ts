@@ -89,7 +89,7 @@ export function validateRequest(
   targetTenantFqdn: string,
   accessReason: string,
 ): SupportModeBreakGlassAccessDecision {
-  if (!actor.roles.includes('system-admin')) {
+  if (!actor.roles.includes('platform-admin') || !actor.roles.includes('system-admin')) {
     return 'FORBIDDEN';
   }
   if (actor.effectiveOrganisationId === null) {
@@ -152,7 +152,7 @@ export function requestSupportAccess(
   auditFn: (event: SupportModeBreakGlassAccessAuditEvent) => SupportModeBreakGlassAccessError | null,
 ): SupportModeBreakGlassAccessState | SupportModeBreakGlassAccessError {
   const validation = validateRequest(
-    { roles: ['system-admin'], effectiveOrganisationId: requestedBy },
+    { roles: ['platform-admin', 'system-admin'], effectiveOrganisationId: requestedBy },
     targetTenantFqdn,
     accessReason,
   );
@@ -250,7 +250,7 @@ export function enterSupportModeDirectly(
   auditFn: (event: SupportModeBreakGlassAccessAuditEvent) => SupportModeBreakGlassAccessError | null,
 ): SupportModeBreakGlassAccessState | SupportModeBreakGlassAccessError {
   const validation = validateRequest(
-    { roles: ['system-admin'], effectiveOrganisationId },
+    { roles: ['platform-admin', 'system-admin'], effectiveOrganisationId },
     targetTenantFqdn,
     accessReason,
   );

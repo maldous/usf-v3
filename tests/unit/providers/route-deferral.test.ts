@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  applyRouteOutcomes, deferralDurationMs, deferredCandidateIds,
+  applyRouteOutcomes, deferralDurationMs, deferredCandidateIds, routeProductivity,
+  unproductiveAttemptCeiling,
 } from "../../../src/providers/route-deferral.ts";
 
 const now = 1_700_000_000_000;
@@ -29,7 +30,10 @@ test("deferral is per exact route, and a success clears it", () => {
   ], now);
   // One route of a family is deferred; its sibling is untouched.
   assert.deepEqual([...deferredCandidateIds(first, now)], ["vercel-ai-sdk:groq:a"]);
-  assert.equal(first["vercel-ai-sdk:groq:b"], undefined);
+  // The successful sibling is recorded but never deferred: its history is what
+  // orders it next time.
+  assert.equal(first["vercel-ai-sdk:groq:b"]?.deferUntilMs, 0);
+  assert.equal(first["vercel-ai-sdk:groq:b"]?.successes, 1);
 
   const cleared = applyRouteOutcomes(first, [
     { candidateId: "vercel-ai-sdk:groq:a", outcome: "ok", reasonCode: "INVOCATION_OK" },
@@ -47,7 +51,44 @@ test("consecutive failures of the same class escalate, and expiry drops the reco
   ], now);
   assert.equal(two.r!.consecutiveFailures, 2);
   assert.deepEqual([...deferredCandidateIds(two, now)], ["r"]);
-  // The deferral expires on its own; nothing has to clear it.
+  // The deferral expires on its own; nothing has to clear it. The record
+  // survives because attempt history outlives any one deferral.
   assert.equal(deferredCandidateIds(two, now + 31 * minute).size, 0);
-  assert.equal(applyRouteOutcomes(two, [], now + 31 * minute).r, undefined);
+  const expired = applyRouteOutcomes(two, [], now + 31 * minute);
+  assert.equal(expired.r?.deferUntilMs, 0);
+  assert.equal(expired.r?.attempts, 2);
+});
+
+test("a route that never succeeds is stood down for a day, whatever the refusal class", () => {
+  // Class-based backoff never catches this: each refusal looks transient, and
+  // only the accumulated record shows the route produces nothing at all.
+  let records = {};
+  for (let attempt = 0; attempt < unproductiveAttemptCeiling; attempt += 1) {
+    records = applyRouteOutcomes(records, [
+      { candidateId: "dud", outcome: "refused", reasonCode: "PROVIDER_TIMEOUT", latencyMs: 150_000 },
+    ], now);
+  }
+  const record = (records as Record<string, { deferUntilMs: number; reasonCode: string; attempts?: number }>).dud!;
+  assert.equal(record.attempts, unproductiveAttemptCeiling);
+  assert.match(record.reasonCode, /^ROUTE_UNPRODUCTIVE:/u);
+  assert.ok(record.deferUntilMs - now >= 24 * 60 * minute, "stood down for at least a day");
+});
+
+test("productivity is derived from history and orders equal-priced routes", () => {
+  let records = {};
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    records = applyRouteOutcomes(records, [
+      { candidateId: "good", outcome: "ok", reasonCode: "INVOCATION_OK", latencyMs: 1_000 },
+      { candidateId: "slow", outcome: "ok", reasonCode: "INVOCATION_OK", latencyMs: 90_000 },
+    ], now);
+  }
+  records = applyRouteOutcomes(records, [
+    { candidateId: "good", outcome: "refused", reasonCode: "PROVIDER_RATE_LIMITED", latencyMs: 10 },
+  ], now);
+  const productivity = routeProductivity(records);
+  assert.equal(productivity.get("good")?.successes, 4);
+  assert.equal(productivity.get("good")?.attempts, 5);
+  assert.equal(productivity.get("slow")?.successRate, 1);
+  // Both succeed, but one is ninety times more expensive to find out.
+  assert.ok(productivity.get("slow")!.meanLatencyMs > productivity.get("good")!.meanLatencyMs);
 });

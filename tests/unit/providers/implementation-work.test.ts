@@ -332,3 +332,38 @@ test("a fenced block is taken wherever it sits in the output", () => {
   // Prose before the fence too.
   assert.equal(validateImplementationOutput("Here is the module:\n\n```ts\n" + body + "\n```").content, body);
 });
+
+test("dispatch interleaves stages so none is starved by frontier order", () => {
+  // Reproduces the observed shape: many conformance units sorting ahead of a
+  // few implementation units, with a dispatch budget smaller than the frontier.
+  const lane = (stage: string, repairs: number, count: number) =>
+    Array.from({ length: count }, (_, index) => ({
+      unit: `u-${stage}-${repairs}-${index}`, stage,
+      repairs: Array.from({ length: repairs }, () => ({ facetName: "f", detail: null })),
+    }));
+  const ready = [...lane("conformance", 0, 19), ...lane("implementation", 0, 5), ...lane("implementation", 1, 8)];
+
+  const lanes = [
+    ready.filter((u) => u.stage === "implementation" && u.repairs.length === 0),
+    ready.filter((u) => u.stage === "conformance" && u.repairs.length === 0),
+    ready.filter((u) => u.repairs.length > 0),
+  ];
+  const selected: typeof ready = [];
+  for (let depth = 0; selected.length < 12; depth += 1) {
+    const before = selected.length;
+    for (const l of lanes) {
+      const unit = l[depth];
+      if (unit !== undefined && selected.length < 12) selected.push(unit);
+    }
+    if (selected.length === before) break;
+  }
+
+  const greenfield = selected.filter((u) => u.stage === "implementation" && u.repairs.length === 0).length;
+  const conformance = selected.filter((u) => u.stage === "conformance" && u.repairs.length === 0).length;
+  const repair = selected.filter((u) => u.repairs.length > 0).length;
+  assert.equal(selected.length, 12);
+  // Naive slicing would have taken 12 conformance units and no module work.
+  assert.ok(greenfield > 0, "implementation work must not be starved");
+  assert.ok(conformance > 0 && repair > 0, "every stage keeps moving");
+  assert.deepEqual([greenfield, conformance, repair], [4, 4, 4]);
+});

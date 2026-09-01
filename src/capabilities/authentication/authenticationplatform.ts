@@ -328,6 +328,32 @@ export function resolveTenantContext(
   };
 }
 
+export function resolvePermissionBundle(
+  tenantRoles: readonly string[],
+  realmRoles: readonly string[],
+  tenantRoleAllowlist: Map<string, readonly string[]>,
+  tenantId: string | null,
+): readonly string[] {
+  const permissions: string[] = [];
+
+  if (tenantId !== null) {
+    const allowlist = tenantRoleAllowlist.get(tenantId) ?? [];
+    for (const role of tenantRoles) {
+      if (allowlist.includes(role)) {
+        permissions.push('READ_AUTH_SETTINGS', 'WRITE_AUTH_SETTINGS');
+      }
+    }
+  }
+
+  for (const role of realmRoles) {
+    if (role === 'system-admin') {
+      permissions.push('READ_AUTH_SETTINGS', 'WRITE_AUTH_SETTINGS');
+    }
+  }
+
+  return permissions;
+}
+
 export function createSession(
   state: AuthenticationPlatformState,
   userId: string,
@@ -335,10 +361,21 @@ export function createSession(
   organisationId: string | null,
   roles: readonly string[],
   displayName: string,
-  permissionBundle: readonly string[],
   expiry: string,
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly session: AuthenticationPlatformSession; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
+  const tenantContext = resolveTenantContext(state, tenantId);
+  if ('kind' in tenantContext) {
+    return tenantContext;
+  }
+
+  const permissionBundle = resolvePermissionBundle(
+    tenantContext.tenantRoles,
+    tenantContext.realmRoles,
+    state.tenantRoleAllowlist,
+    tenantId,
+  );
+
   const sessionId = crypto.randomUUID();
   const session: AuthenticationPlatformSession = {
     id: sessionId,
@@ -390,7 +427,7 @@ export function destroySession(
 ): { readonly result: AuthenticationPlatformSuccess; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
   const session = state.sessions.get(sessionId);
   if (session === undefined) {
-    return { kind: 'NOT_FOUND', message: 'Session not found' };
+    return { kind: 'UNAUTHENTICATED', message: 'Session not found' };
   }
 
   const auditError = auditFn({
@@ -429,7 +466,7 @@ export function lookupSession(
   sessionId: string,
 ): AuthenticationPlatformSession | AuthenticationPlatformError {
   if (!state.sessionStoreAvailable && !state.fixtureMode) {
-    return { kind: 'SESSION_LOOKUP_FAILURE', message: 'Session store unavailable' };
+    return { kind: 'UNAUTHENTICATED', message: 'Session store unavailable' };
   }
   const session = state.sessions.get(sessionId);
   if (session === undefined) {
@@ -443,7 +480,7 @@ export function initiateLogin(
   returnTo: string,
   providerAlias: string,
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
-): { readonly preAuth: AuthenticationPlatformPreAuth; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
+): { readonly stateParam: string; readonly codeChallenge: string; readonly nonce: string; readonly returnTo: string; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
   const returnToError = validateReturnTo(returnTo);
   if (returnToError !== null) {
     return returnToError;
@@ -454,7 +491,7 @@ export function initiateLogin(
     return { kind: 'NOT_FOUND', message: 'Provider not found' };
   }
 
-  const { codeVerifier } = generatePkceChallenge();
+  const { codeVerifier, codeChallenge } = generatePkceChallenge();
   const stateParam = crypto.randomBytes(16).toString('base64url');
   const nonce = crypto.randomBytes(16).toString('base64url');
 
@@ -495,7 +532,7 @@ export function initiateLogin(
     }],
   };
 
-  return { preAuth, state: newState };
+  return { stateParam, codeChallenge, nonce, returnTo, state: newState };
 }
 
 export function handleCallback(
@@ -507,7 +544,7 @@ export function handleCallback(
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly session: AuthenticationPlatformSession; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
   if (providerError !== null) {
-    return { kind: 'PROVIDER_ERROR_CALLBACK', message: `Provider error: ${providerError}` };
+    return { kind: 'PROVIDER_ERROR_CALLBACK', message: 'Generic sign-in error' };
   }
 
   if (typeof code !== 'string' || code.trim() === '') {
@@ -533,7 +570,6 @@ export function handleCallback(
   const organisationId: string | null = null;
   const roles: string[] = [];
   const displayName = 'Test User';
-  const permissionBundle: string[] = [];
 
   const result = createSession(
     state,
@@ -542,7 +578,6 @@ export function handleCallback(
     organisationId,
     roles,
     displayName,
-    permissionBundle,
     new Date(Date.now() + 3600000).toISOString(),
     auditFn,
   );
@@ -565,13 +600,22 @@ export function logout(
 export function listProviders(
   state: AuthenticationPlatformState,
   tenantId: string,
+  permission: AuthenticationPlatformPermission,
+  scope: string,
 ): readonly AuthenticationPlatformProvider[] | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canRead) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
-  return Array.from(state.providers.values());
+  if (permission !== 'READ_AUTH_SETTINGS' || scope !== 'admin') {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
+  }
+
+  return Array.from(state.providers.values()).map(provider => ({
+    ...provider,
+    maskedSecret: 'REDACTED',
+  }));
 }
 
 export function createProvider(
@@ -584,9 +628,9 @@ export function createProvider(
   maskedSecret: string,
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly result: AuthenticationPlatformSuccess; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canWrite) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   const aliasError = validateProviderAlias(alias, Array.from(state.providers.keys()));
@@ -616,7 +660,7 @@ export function createProvider(
     issuer,
     jwksUri,
     scopes,
-    maskedSecret,
+    maskedSecret: 'REDACTED',
     discoveryValidation,
   };
 
@@ -646,9 +690,9 @@ export function updateProvider(
   updates: Partial<Omit<AuthenticationPlatformProvider, 'alias' | 'discoveryValidation'>>,
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly result: AuthenticationPlatformSuccess; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canWrite) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   const provider = state.providers.get(alias);
@@ -695,6 +739,7 @@ export function updateProvider(
   const newProvider: AuthenticationPlatformProvider = {
     ...provider,
     ...updates,
+    maskedSecret: updates.maskedSecret !== undefined ? 'REDACTED' : provider.maskedSecret,
   };
 
   const newProviders = new Map(state.providers);
@@ -722,9 +767,9 @@ export function deleteProvider(
   alias: string,
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly result: AuthenticationPlatformSuccess; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canWrite) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   const provider = state.providers.get(alias);
@@ -762,9 +807,9 @@ export function testProviderConnection(
   alias: string,
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly result: AuthenticationPlatformSuccess; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canRead) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   const provider = state.providers.get(alias);
@@ -795,10 +840,16 @@ export function testProviderConnection(
 export function readPolicy(
   state: AuthenticationPlatformState,
   tenantId: string,
+  permission: AuthenticationPlatformPermission,
+  scope: string,
 ): AuthenticationPlatformPolicy | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canRead) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
+  }
+
+  if (permission !== 'READ_AUTH_SETTINGS' || scope !== 'admin') {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   const policy = state.policies.get(tenantId);
@@ -815,9 +866,9 @@ export function writePolicy(
   policy: AuthenticationPlatformPolicy,
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly result: AuthenticationPlatformSuccess; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canWrite) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   const mfaError = validateMfaMode(policy.mfaMode);
@@ -862,10 +913,16 @@ export function writePolicy(
 export function readClaimMappings(
   state: AuthenticationPlatformState,
   tenantId: string,
+  permission: AuthenticationPlatformPermission,
+  scope: string,
 ): readonly AuthenticationPlatformClaimMapping[] | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canRead) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
+  }
+
+  if (permission !== 'READ_AUTH_SETTINGS' || scope !== 'admin') {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   return state.claimMappings.get(tenantId) ?? [];
@@ -877,9 +934,9 @@ export function writeClaimMappings(
   mappings: readonly AuthenticationPlatformClaimMapping[],
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly result: AuthenticationPlatformSuccess; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canWrite) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   for (const mapping of mappings) {
@@ -1003,9 +1060,9 @@ export function importOidcDiscovery(
   discoveryDocument: { readonly issuer: string; readonly jwks_uri: string },
   auditFn: (event: AuthenticationPlatformAuditEvent) => AuthenticationPlatformError | null,
 ): { readonly result: AuthenticationPlatformSuccess; readonly state: AuthenticationPlatformState } | AuthenticationPlatformError {
-  const tenantContext = resolveTenantContext(state, tenantId);
-  if ('kind' in tenantContext) {
-    return tenantContext;
+  const tenantCredential = state.tenantCredentials.get(tenantId);
+  if (tenantCredential === undefined || !tenantCredential.present || !tenantCredential.canWrite) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
   }
 
   const urlError = validateOidcUrls(discoveryDocument.issuer, discoveryDocument.jwks_uri);
@@ -1101,5 +1158,5 @@ export function getProvider(
   if (provider === undefined) {
     return { kind: 'NOT_FOUND', message: 'Provider not found' };
   }
-  return provider;
+  return { ...provider, maskedSecret: 'REDACTED' };
 }

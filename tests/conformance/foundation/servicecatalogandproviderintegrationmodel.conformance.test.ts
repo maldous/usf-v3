@@ -37,16 +37,16 @@ test("servicecatalogandproviderintegrationmodelcontracts", () => {
           id: 'svc-1',
           name: 'TestService',
           category: 'compute',
-          visibility: 'tenant_scoped_safe' as const,
-          integrationDecision: 'build' as const,
-          entitlementKey: 'ent-1' as const,
-          readiness: 'READY' as const,
+          visibility: 'tenant_scoped_safe',
+          integrationDecision: 'build',
+          entitlementKey: 'ent-1',
+          readiness: 'READY',
           providerDetails: {},
           consoleAccessFlag: true,
         },
       ],
     ]),
-    readiness: 'READY' as const,
+    readiness: 'READY',
   };
 
   const catalog = capability.getCatalog(model);
@@ -77,10 +77,10 @@ test("servicecatalogandproviderintegrationmodellifecycle", () => {
   const service: Omit<capability.ServiceCatalogEntry, 'id'> = {
     name: 'LifecycleService',
     category: 'storage',
-    visibility: 'global_only' as const,
-    integrationDecision: 'compose' as const,
-    entitlementKey: 'ent-lifecycle' as const,
-    readiness: 'READY' as const,
+    visibility: 'global_only',
+    integrationDecision: 'compose',
+    entitlementKey: 'ent-lifecycle',
+    readiness: 'READY',
     providerDetails: {},
     consoleAccessFlag: false,
   };
@@ -105,10 +105,10 @@ test("servicecatalogandproviderintegrationmodelpermissions", () => {
     id: 'perm-1',
     name: 'PermService',
     category: 'network',
-    visibility: 'tenant_scoped_safe' as const,
-    integrationDecision: 'adapter' as const,
-    entitlementKey: 'ent-perm' as const,
-    readiness: 'READY' as const,
+    visibility: 'tenant_scoped_safe',
+    integrationDecision: 'adapter',
+    entitlementKey: 'ent-perm',
+    readiness: 'READY',
     providerDetails: {},
     consoleAccessFlag: true,
   };
@@ -138,16 +138,16 @@ test("servicecatalogandproviderintegrationmodelproof", () => {
           id: 'proof-1',
           name: 'ProofService',
           category: 'analytics',
-          visibility: 'global_only' as const,
-          integrationDecision: 'build' as const,
-          entitlementKey: 'ent-proof' as const,
-          readiness: 'READY' as const,
+          visibility: 'global_only',
+          integrationDecision: 'build',
+          entitlementKey: 'ent-proof',
+          readiness: 'READY',
           providerDetails: {},
           consoleAccessFlag: true,
         },
       ],
     ]),
-    readiness: 'READY' as const,
+    readiness: 'READY',
   };
 
   assert.strictEqual(capability.provePlatformServices(modelWithService), true);
@@ -170,16 +170,16 @@ test("servicecatalogandproviderintegrationmodelreadinessmodel", () => {
           id: 'ready-1',
           name: 'ReadyService',
           category: 'compute',
-          visibility: 'tenant_scoped_safe' as const,
-          integrationDecision: 'build' as const,
-          entitlementKey: 'ent-ready' as const,
-          readiness: 'READY' as const,
+          visibility: 'tenant_scoped_safe',
+          integrationDecision: 'build',
+          entitlementKey: 'ent-ready',
+          readiness: 'READY',
           providerDetails: {},
           consoleAccessFlag: false,
         },
       ],
     ]),
-    readiness: 'READY' as const,
+    readiness: 'READY',
   };
   assert.strictEqual(capability.determineReadiness(readyModel), 'READY');
   assert.strictEqual(capability.getReadiness(readyModel), 'READY');
@@ -193,52 +193,55 @@ test("servicecatalogandproviderintegrationmodelreadinessmodel", () => {
           id: 'not-ready-1',
           name: 'NotReadyService',
           category: 'compute',
-          visibility: 'tenant_scoped_safe' as const,
-          integrationDecision: 'build' as const,
-          entitlementKey: 'ent-not-ready' as const,
-          readiness: 'NOT_READY' as const,
+          visibility: 'tenant_scoped_safe',
+          integrationDecision: 'build',
+          entitlementKey: 'ent-not-ready',
+          readiness: 'NOT_READY',
           providerDetails: {},
           consoleAccessFlag: false,
         },
       ],
     ]),
-    readiness: 'NOT_READY' as const,
+    readiness: 'NOT_READY',
   };
   assert.strictEqual(capability.determineReadiness(notReadyModel), 'NOT_READY');
 });
 
 test("servicecatalogandproviderintegrationmodelstatemodel", () => {
-  const entry: capability.ServiceCatalogEntry = {
-    id: 'state-1',
+  const service: Omit<capability.ServiceCatalogEntry, 'id'> = {
     name: 'StateService',
     category: 'database',
-    visibility: 'not_exposed' as const,
-    integrationDecision: 'defer' as const,
-    entitlementKey: 'ent-state' as const,
-    readiness: 'NOT_READY' as const,
+    visibility: 'not_exposed',
+    integrationDecision: 'defer',
+    entitlementKey: 'ent-state',
+    readiness: 'NOT_READY',
     providerDetails: { config: 'value' },
     consoleAccessFlag: false,
   };
-
-  assert.strictEqual(entry.id, 'state-1');
-  assert.strictEqual(entry.name, 'StateService');
-  assert.strictEqual(entry.category, 'database');
-  assert.strictEqual(entry.visibility, 'not_exposed');
-  assert.strictEqual(entry.integrationDecision, 'defer');
-  assert.strictEqual(entry.entitlementKey, 'ent-state');
-  assert.strictEqual(entry.readiness, 'NOT_READY');
-  assert.deepStrictEqual(entry.providerDetails, { config: 'value' });
-  assert.strictEqual(entry.consoleAccessFlag, false);
+  const auditFn = (_event: capability.AuditEvent): capability.TypedError | null => null;
+  const result = capability.registerService(capability.initialModel, service, auditFn);
+  assert.ok(result && typeof result !== 'string');
+  const modelResult = result as capability.ServiceCatalogModel;
+  const entry = modelResult.resources.get(modelResult.resources.keys().next().value as string);
+  assert.strictEqual(entry?.id, entry?.id);
+  assert.strictEqual(entry?.name, 'StateService');
+  assert.strictEqual(entry?.category, 'database');
+  assert.strictEqual(entry?.visibility, 'not_exposed');
+  assert.strictEqual(entry?.integrationDecision, 'defer');
+  assert.strictEqual(entry?.entitlementKey, 'ent-state');
+  assert.strictEqual(entry?.readiness, 'NOT_READY');
+  assert.deepStrictEqual(entry?.providerDetails, { config: 'value' });
+  assert.strictEqual(entry?.consoleAccessFlag, false);
 });
 
 test("servicecatalogandproviderintegrationmodelvalidation", () => {
   const validService: Omit<capability.ServiceCatalogEntry, 'id'> = {
     name: 'ValidService',
     category: 'storage',
-    visibility: 'global_only' as const,
-    integrationDecision: 'reject' as const,
-    entitlementKey: 'ent-valid' as const,
-    readiness: 'READY' as const,
+    visibility: 'global_only',
+    integrationDecision: 'reject',
+    entitlementKey: 'ent-valid',
+    readiness: 'READY',
     providerDetails: {},
     consoleAccessFlag: true,
   };

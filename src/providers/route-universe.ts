@@ -247,15 +247,52 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
  * independent work does not pile onto one quota. A failure on one provider then
  * cannot collapse unrelated work that had an alternative.
  */
+export interface RouteOrderingObservation {
+  readonly attempts: number;
+  readonly successes: number;
+  readonly successRate: number;
+  readonly meanLatencyMs: number;
+}
+
+/**
+ * Rank within a provider by what a route has actually produced.
+ *
+ * A route with no history sits above one measured as unproductive and below one
+ * measured as productive: unknown is worth trying, repeatedly-useless is not.
+ * Measured, this matters -- a route observed at 16 successes from 16 attempts
+ * was reached only 16 times because ordering was alphabetical, while one at 9%
+ * across 289 attempts sat ahead of it purely by provider name.
+ */
+function routeRank(
+  candidate: ExecutionCandidate,
+  observed: ReadonlyMap<string, RouteOrderingObservation> | undefined,
+): readonly [number, number] {
+  const record = observed?.get(candidate.candidateId);
+  if (record === undefined || record.attempts === 0) return [0.5, 0];
+  return [record.successRate, record.meanLatencyMs];
+}
+
 export function diversifyCandidates(
   candidates: readonly ExecutionCandidate[],
   offset: number,
+  observed?: ReadonlyMap<string, RouteOrderingObservation>,
 ): readonly ExecutionCandidate[] {
   const byProvider = new Map<string, ExecutionCandidate[]>();
   for (const candidate of candidates) {
     const bucket = byProvider.get(candidate.provider) ?? [];
     bucket.push(candidate);
     byProvider.set(candidate.provider, bucket);
+  }
+  // Provider round-robin is preserved so no single provider is hammered; only
+  // the order within each provider changes.
+  for (const bucket of byProvider.values()) {
+    bucket.sort((left, right) => {
+      const [leftRate, leftMs] = routeRank(left, observed);
+      const [rightRate, rightMs] = routeRank(right, observed);
+      if (leftRate !== rightRate) return rightRate - leftRate;
+      if (leftMs !== rightMs) return leftMs - rightMs;
+      return left.candidateId.localeCompare(right.candidateId);
+    });
   }
   const providers = [...byProvider.keys()].sort();
   if (providers.length === 0) return Object.freeze([]);

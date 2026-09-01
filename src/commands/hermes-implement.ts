@@ -275,7 +275,29 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   const outcomes: Array<Readonly<Record<string, unknown>>> = [];
   let cacheHits = 0;
   let dispatched = 0;
-  const selected = ready.slice(0, parsed.dispatchLimit);
+  // Interleave the stages rather than taking the frontier in name order.
+  //
+  // Slicing an ordered frontier starves whichever stage sorts late. Observed:
+  // 19 conformance units ahead of 5 implementation units meant a cycle spent
+  // its whole budget on tests while ten capabilities still had no module at
+  // all, and the module count sat still for cycles while results kept being
+  // accepted. Round-robin keeps every stage moving: a capability with nothing
+  // gets a module, a landed module gets the test that turns it into evidence,
+  // and a failing one gets its repair.
+  const lanes: readonly (readonly ImplementationWorkUnit[])[] = [
+    ready.filter((unit) => unit.stage === "implementation" && unit.repairs.length === 0),
+    ready.filter((unit) => unit.stage === "conformance" && unit.repairs.length === 0),
+    ready.filter((unit) => unit.repairs.length > 0),
+  ];
+  const selected: ImplementationWorkUnit[] = [];
+  for (let depth = 0; selected.length < parsed.dispatchLimit; depth += 1) {
+    const before = selected.length;
+    for (const lane of lanes) {
+      const unit = lane[depth];
+      if (unit !== undefined && selected.length < parsed.dispatchLimit) selected.push(unit);
+    }
+    if (selected.length === before) break;
+  }
   const pending: DispatchEntry[] = [];
 
   for (const unit of selected) {

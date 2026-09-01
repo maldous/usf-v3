@@ -226,3 +226,29 @@ test("a model that cannot emit text is not a candidate for text work", () => {
   // An audio route is excluded; an undeclared modality is not a disqualification.
   assert.deepEqual(models, ["text-model", "undeclared-model"]);
 });
+
+test("candidate order prefers what a route has produced, keeping provider spread", () => {
+  const candidate = (provider: string, model: string) => ({
+    candidateId: `vercel-ai-sdk:${provider}:${model}`, transport: "vercel-ai-sdk" as const,
+    provider, model, adapterPackage: "@ai-sdk/x", credentialName: "K", baseUrl: null,
+    costClass: "zero-price", economicBasis: null, capabilityNames: [] as readonly string[],
+    contextLimit: 100_000, outputLimit: 8_000, state: "ROUTABLE" as const,
+  });
+  const pool = [candidate("groq", "a-useless"), candidate("groq", "z-perfect"), candidate("mistral", "m")];
+  const observed = new Map([
+    // Measured: a perfect route sat behind a 9% one purely on name order.
+    ["vercel-ai-sdk:groq:a-useless", { attempts: 289, successes: 27, successRate: 27 / 289, meanLatencyMs: 327 }],
+    ["vercel-ai-sdk:groq:z-perfect", { attempts: 16, successes: 16, successRate: 1, meanLatencyMs: 27_000 }],
+  ]);
+
+  const ordered = diversifyCandidates(pool, 0, observed).map((entry) => entry.candidateId);
+  // Within groq the productive route now leads despite sorting last by name.
+  assert.ok(ordered.indexOf("vercel-ai-sdk:groq:z-perfect") < ordered.indexOf("vercel-ai-sdk:groq:a-useless"));
+  // Provider round-robin still holds: mistral is not pushed behind both groqs.
+  assert.equal(ordered[1], "vercel-ai-sdk:mistral:m");
+
+  // With no history at all the order is stable and name-based, so a fresh pool
+  // is not implicitly ranked by anything.
+  const fresh = diversifyCandidates(pool, 0, new Map()).map((entry) => entry.candidateId);
+  assert.equal(fresh[0], "vercel-ai-sdk:groq:a-useless");
+});

@@ -23,7 +23,7 @@ import { readProviderBindings, type ProviderBindings } from "../providers/provid
 import { readProviderExecutionPolicy, type ProviderExecutionPolicy } from "../providers/provider-policy.ts";
 import { readTrackedJson } from "./probe.ts";
 import {
-  applyRouteOutcomes, deferredCandidateIds, readRouteDeferrals, writeRouteDeferrals,
+  applyRouteOutcomes, deferredCandidateIds, readRouteDeferrals, routeProductivity, writeRouteDeferrals,
   type ObservedRouteOutcome,
 } from "../providers/route-deferral.ts";
 
@@ -348,6 +348,8 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   // availability picture.
   const deferralRecords = await readRouteDeferrals(repositoryRoot);
   const deferred = deferredCandidateIds(deferralRecords, Date.now());
+  // What each route has actually produced, used to order the pool.
+  const productivity = routeProductivity(deferralRecords);
   const observedRouteOutcomes: ObservedRouteOutcome[] = [];
 
   // 3. Dispatch independent work units under bounded parallelism.
@@ -378,7 +380,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     // Spread units across providers so one quota failure cannot collapse the
     // batch. Currently deferred routes drop to the back rather than out: if
     // every eligible route is deferred, trying one is better than refusing.
-    const spread = diversifyCandidates(universe.candidates, ordinal);
+    const spread = diversifyCandidates(universe.candidates, ordinal, productivity);
     const ordered = Object.freeze([
       ...spread.filter((candidate) => !deferred.has(candidate.candidateId)),
       ...spread.filter((candidate) => deferred.has(candidate.candidateId)),
@@ -427,7 +429,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           observedRouteOutcomes.push(Object.freeze({
             candidateId: candidate.candidateId,
             outcome: produced.outcome === "ok" && produced.text !== null && produced.text.trim().length > 0 ? "ok" : "refused",
-            reasonCode: produced.reasonCode,
+            reasonCode: produced.reasonCode, latencyMs: elapsed,
           }));
           if (produced.outcome === "ok" && produced.text !== null && produced.text.trim().length > 0) {
             return Object.freeze({
@@ -497,7 +499,9 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
           outcome: "ok" as const, reasonCode: "INVOCATION_OK", statusCode: 200, retryAfter: null, costIncurred: false,
         }));
-        observedRouteOutcomes.push(Object.freeze({ candidateId: candidate.candidateId, outcome: "ok" as const, reasonCode: "INVOCATION_OK" }));
+        observedRouteOutcomes.push(Object.freeze({
+          candidateId: candidate.candidateId, outcome: "ok" as const, reasonCode: "INVOCATION_OK", latencyMs: elapsed,
+        }));
         return Object.freeze({
           unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
           status: "ok" as const, selected: candidate,
@@ -536,7 +540,9 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           outcome: "refused" as const, reasonCode, statusCode: status, retryAfter: null, costIncurred: false,
           providerDetail: detail.length === 0 ? null : detail,
         }));
-        observedRouteOutcomes.push(Object.freeze({ candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode }));
+        observedRouteOutcomes.push(Object.freeze({
+          candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode, latencyMs: elapsed,
+        }));
       }
     }
     return Object.freeze({

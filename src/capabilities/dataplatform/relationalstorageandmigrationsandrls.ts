@@ -217,14 +217,12 @@ export function auditMigrationRollback(
 }
 
 export function validateConnectionPassword(password: string): RelationalStorageAndMigrationsAndRlsError | null {
-  const forbiddenChars = ['\'', '"', '\\', '\0', '\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u0007', '\u0008', '\t', '\n', '\v', '\f', '\r'];
-  for (const char of password) {
-    if (forbiddenChars.includes(char)) {
-      return {
-        kind: 'INVALID_CONFIGURATION',
-        message: 'Password contains forbidden characters: quote, backslash, or control characters',
-      };
-    }
+  const forbiddenChars = /['"\\\\\x00-\x1F]/;
+  if (forbiddenChars.test(password)) {
+    return {
+      kind: 'INVALID_CONFIGURATION',
+      message: 'Password contains forbidden characters: quote, backslash, or control characters',
+    };
   }
   return null;
 }
@@ -245,7 +243,7 @@ export function createRlsPredicate(
   currentTenantSetting: string,
   bypassRoleName: string,
 ): string {
-  return `((${tenantColumn} = current_setting('${currentTenantSetting}')) OR current_user = '${bypassRoleName}' OR (pg_has_role(current_user, '${bypassRoleName}', 'MEMBER') AND current_setting('role_inheritance.active', true) = 'on'))`;
+  return `((${tenantColumn} = current_setting('${currentTenantSetting}')) OR (current_user = '${bypassRoleName}') OR (pg_has_role(current_user, '${bypassRoleName}', 'MEMBER') AND current_setting('role_inheritance.active', true) = 'on'))`;
 }
 
 export function createTableWithRls(

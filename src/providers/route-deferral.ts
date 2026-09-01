@@ -20,7 +20,21 @@ export interface RouteDeferral {
   readonly consecutiveFailures: number;
   readonly observedAtMs: number;
   readonly deferUntilMs: number;
+  /** Cumulative observations, used to order routes by what they actually do. */
+  readonly attempts?: number;
+  readonly successes?: number;
+  readonly meanLatencyMs?: number;
 }
+
+/**
+ * Attempts a route may spend proving it produces nothing.
+ *
+ * Measured: nineteen routes consumed 451 attempts without a single success,
+ * one of them 40 timeouts at over two minutes each. Class-based backoff never
+ * catches this, because each individual refusal looks transient; only the
+ * accumulated record shows the route is not productive at all.
+ */
+export const unproductiveAttemptCeiling = 12;
 
 export interface RouteDeferralIndex {
   readonly schema: "urn:usf:route-deferral:1";
@@ -90,6 +104,33 @@ export interface ObservedRouteOutcome {
   readonly candidateId: string;
   readonly outcome: "ok" | "refused";
   readonly reasonCode: string;
+  readonly latencyMs?: number;
+}
+
+/** How productive a route has been, for ordering rather than admission. */
+export interface RouteProductivity {
+  readonly candidateId: string;
+  readonly attempts: number;
+  readonly successes: number;
+  readonly successRate: number;
+  readonly meanLatencyMs: number;
+}
+
+export function routeProductivity(
+  records: Readonly<Record<string, RouteDeferral>>,
+): ReadonlyMap<string, RouteProductivity> {
+  const productivity = new Map<string, RouteProductivity>();
+  for (const [candidateId, record] of Object.entries(records)) {
+    const attempts = record.attempts ?? 0;
+    if (attempts === 0) continue;
+    const successes = record.successes ?? 0;
+    productivity.set(candidateId, Object.freeze({
+      candidateId, attempts, successes,
+      successRate: successes / attempts,
+      meanLatencyMs: record.meanLatencyMs ?? 0,
+    }));
+  }
+  return productivity;
 }
 
 /**
@@ -103,24 +144,52 @@ export function applyRouteOutcomes(
 ): Readonly<Record<string, RouteDeferral>> {
   const next: Record<string, RouteDeferral> = {};
   for (const [candidateId, record] of Object.entries(records)) {
-    if (record.deferUntilMs > nowMs) next[candidateId] = record;
+    // An expired deferral is dropped, but the route's history is not: it is
+    // what orders the pool next time.
+    next[candidateId] = record.deferUntilMs > nowMs ? record
+      : Object.freeze({ ...record, reasonCode: "EXPIRED", consecutiveFailures: 0, deferUntilMs: 0 });
   }
+  // Cumulative history survives a cleared deferral: a route that succeeds is no
+  // longer deferred, but what it has done is still how it earns its place in
+  // the order.
+  const history = (candidateId: string): Readonly<{ attempts: number; successes: number; meanLatencyMs: number }> => {
+    const held = records[candidateId];
+    return { attempts: held?.attempts ?? 0, successes: held?.successes ?? 0, meanLatencyMs: held?.meanLatencyMs ?? 0 };
+  };
+  const observed = (candidateId: string, ok: boolean, latencyMs: number) => {
+    const prior = history(candidateId);
+    const attempts = prior.attempts + 1;
+    return {
+      attempts,
+      successes: prior.successes + (ok ? 1 : 0),
+      meanLatencyMs: Math.round((prior.meanLatencyMs * prior.attempts + latencyMs) / attempts),
+    };
+  };
   for (const outcome of outcomes) {
-    if (outcome.outcome === "ok") { delete next[outcome.candidateId]; continue; }
-    const held = records[outcome.candidateId];
-    const consecutive = held !== undefined && held.reasonCode.split(":", 1)[0] === outcome.reasonCode.split(":", 1)[0]
-      ? held.consecutiveFailures + 1 : 1;
-    const duration = deferralDurationMs(outcome.reasonCode, consecutive);
-    if (duration === 0) {
+    if (outcome.outcome === "ok") {
+      const counted = observed(outcome.candidateId, true, outcome.latencyMs ?? 0);
       next[outcome.candidateId] = Object.freeze({
-        candidateId: outcome.candidateId, reasonCode: outcome.reasonCode,
-        consecutiveFailures: consecutive, observedAtMs: nowMs, deferUntilMs: 0,
+        candidateId: outcome.candidateId, reasonCode: "INVOCATION_OK",
+        consecutiveFailures: 0, observedAtMs: nowMs, deferUntilMs: 0, ...counted,
       });
       continue;
     }
+    const held = records[outcome.candidateId];
+    const consecutive = held !== undefined && held.reasonCode.split(":", 1)[0] === outcome.reasonCode.split(":", 1)[0]
+      ? held.consecutiveFailures + 1 : 1;
+    const counted = observed(outcome.candidateId, false, outcome.latencyMs ?? 0);
+    // A route that has spent its ceiling without ever succeeding is not having
+    // a bad minute. Stand it down for a day whatever the refusal class says.
+    const unproductive = counted.attempts >= unproductiveAttemptCeiling && counted.successes === 0;
+    const duration = unproductive
+      ? Math.max(24 * hour, deferralDurationMs(outcome.reasonCode, consecutive))
+      : deferralDurationMs(outcome.reasonCode, consecutive);
     next[outcome.candidateId] = Object.freeze({
-      candidateId: outcome.candidateId, reasonCode: outcome.reasonCode,
-      consecutiveFailures: consecutive, observedAtMs: nowMs, deferUntilMs: nowMs + duration,
+      candidateId: outcome.candidateId,
+      reasonCode: unproductive ? `ROUTE_UNPRODUCTIVE:${outcome.reasonCode}` : outcome.reasonCode,
+      consecutiveFailures: consecutive, observedAtMs: nowMs,
+      deferUntilMs: duration === 0 ? 0 : nowMs + duration,
+      ...counted,
     });
   }
   const bounded = Object.entries(next)

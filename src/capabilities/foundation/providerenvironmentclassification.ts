@@ -198,12 +198,15 @@ export function setProviderClassification(
 export function checkReadiness(
   state: ProviderClassificationState,
 ): { readonly readiness: ClassificationReadiness; readonly error: ClassificationError | null } {
-  const { error } = getClassificationMatrix(state);
+  const { matrix, error } = getClassificationMatrix(state);
   if (error !== null) {
     if (error.kind === 'CONFIG_MISSING' || error.kind === 'CONFIG_INVALID' || error.kind === 'VALIDATION_FAILED') {
       return { readiness: 'DEGRADED', error };
     }
     return { readiness: 'NOT_READY', error };
+  }
+  if (Object.keys(matrix).length === 0) {
+    return { readiness: 'NOT_READY', error: { kind: 'CONFIG_MISSING', message: 'No provider classifications configured.' } };
   }
   return { readiness: 'READY', error: null };
 }
@@ -216,15 +219,13 @@ export interface ClassificationProof {
 export function generateProof(
   state: ProviderClassificationState,
 ): ClassificationProof {
+  const { error } = getClassificationMatrix(state);
+  if (error !== null) {
+    return { status: 'INVALID', details: error.message };
+  }
   if (state.classifications.length === 0) {
     return { status: 'PENDING', details: 'No classifications present.' };
   }
-
-  const validationError = validateClassificationMatrix(state.classifications);
-  if (validationError !== null) {
-    return { status: 'INVALID', details: validationError.message };
-  }
-
   return { status: 'VALID' };
 }
 
@@ -232,135 +233,8 @@ export function degradedError(message: string): ClassificationError {
   return { kind: 'DEGRADED', message };
 }
 
-/**
- * Provides the authoritative environment‑classification matrix that other capabilities read.
- * Configuration lives in the provider/config plane; missing or invalid configuration fails closed.
- */
 export function getEnvironmentClassificationMatrix(
   state: ProviderClassificationState,
-): Record<string, { readonly mode: ProviderMode; readonly environment: Environment }> {
-  if (state.classifications.length === 0) {
-    return {};
-  }
-
-  const validationError = validateClassificationMatrix(state.classifications);
-  if (validationError !== null) {
-    throw new Error(`Validation failed: ${JSON.stringify(validationError)}`);
-  }
-
-  const matrix: Record<string, { readonly mode: ProviderMode; readonly environment: Environment }> = {};
-  for (const c of state.classifications) {
-    matrix[c.provider] = { mode: c.mode, environment: c.environment };
-  }
-  return matrix;
-}
-
-/**
- * Validates that a single classification entry conforms to the allowed mode/environment pairs
- * and the cross‑dimension safety rules (mode ↔ environment independence).
- */
-export function validateSingleClassification(
-  provider: string,
-  mode: ProviderMode,
-  environment: Environment,
-): ClassificationError | null {
-  if (!ProviderMode.includes(mode)) {
-    return {
-      kind: 'CONFIG_INVALID',
-      message: `Invalid mode '${mode}' for provider '${provider}'.`,
-    };
-  }
-  if (!Environment.includes(environment)) {
-    return {
-      kind: 'CONFIG_INVALID',
-      message: `Invalid environment '${environment}' for provider '${provider}'.`,
-    };
-  }
-
-  // Cross‑dimension safety: hermetic‑mock cannot be paired with live environments
-  if (mode === 'hermetic-mock' && environment === 'live') {
-    return {
-      kind: 'VALIDATION_FAILED',
-      message: `hermetic-mock cannot be used with live environment for provider '${provider}'.`,
-    };
-  }
-
-  // production‑shaped cannot be paired with live environments
-  if (mode === 'production-shaped' && environment === 'live') {
-    return {
-      kind: 'VALIDATION_FAILED',
-      message: `production-shaped cannot be used with live environment for provider '${provider}'.`,
-    };
-  }
-
-  // production‑live must always be paired with live environments
-  if (mode === 'production-live' && environment !== 'live') {
-    return {
-      kind: 'VALIDATION_FAILED',
-      message: `production-live must be used with live environment for provider '${provider}'.`,
-    };
-  }
-
-  return null;
-}
-
-/**
- * Ensures the whole matrix respects cross‑dimension invariants.
- * Returns a classification error if any rule is violated.
- */
-export function validateClassificationMatrixStrict(
-  matrix: readonly ProviderClassification[],
-): ClassificationError | null {
-  const seen = new Set<string>();
-  for (const entry of matrix) {
-    if (seen.has(entry.provider)) {
-      return {
-        kind: 'VALIDATION_FAILED',
-        message: `Duplicate classification for provider '${entry.provider}'.`,
-      };
-    }
-    seen.add(entry.provider);
-
-    const entryError = validateClassificationEntry(entry);
-    if (entryError !== null) {
-      return entryError;
-    }
-  }
-  return null;
-}
-
-/**
- * Applies a mutation to the classification state while preserving immutability.
- * Mutations are performed only after all preconditions pass.
- */
-export function updateClassificationState(
-  state: ProviderClassificationState,
-  provider: string,
-  mode: ProviderMode,
-  environment: Environment,
-  auditFn: (event: ClassificationAuditEvent) => ClassificationError | null,
-): ProviderClassificationState {
-  const auditError = auditClassificationChange(provider, mode, environment, auditFn);
-  if (auditError !== null) {
-    throw new Error(`Audit failed: ${JSON.stringify(auditError)}`);
-  }
-
-  const newEntry: ProviderClassification = { provider, mode, environment };
-  const entryError = validateClassificationEntry(newEntry);
-  if (entryError !== null) {
-    throw new Error(`Validation failed: ${JSON.stringify(entryError)}`);
-  }
-
-  const filtered = state.classifications.filter((c) => c.provider !== provider);
-  const newClassifications = [...filtered, newEntry];
-
-  const matrixError = validateClassificationMatrix(newClassifications);
-  if (matrixError !== null) {
-    throw new Error(`Matrix validation failed: ${JSON.stringify(matrixError)}`);
-  }
-
-  return {
-    classifications: newClassifications,
-    lastError: null,
-  };
+): { readonly matrix: Record<string, { readonly mode: ProviderMode; readonly environment: Environment }>; readonly error: ClassificationError | null } {
+  return getClassificationMatrix(state);
 }
