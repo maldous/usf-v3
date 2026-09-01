@@ -1,0 +1,867 @@
+{
+ "schema": "urn:usf:provider-parity-ledger:1",
+ "version": 1,
+ "producedAt": "2026-09-02",
+ "purpose": "Proof that every provider capability V2 possessed has an explicit V3 realization or evidence-backed retirement. Answers: did V3 retain provider capability X from V2?",
+ "v2Source": "V2 usf-factory config/providers.yaml (47 providers, 1 excluded: codebuff)",
+ "v3Architecture": {
+  "catalogue": "models.dev projection, 212 providers / 7472 models",
+  "transports": [
+   "vercel-ai-sdk",
+   "claude-cli",
+   "codex-cli"
+  ],
+  "installedAdapters": [
+   "@ai-sdk/cerebras",
+   "@ai-sdk/cohere",
+   "@ai-sdk/groq",
+   "@ai-sdk/mistral",
+   "@ai-sdk/openai",
+   "@ai-sdk/openai-compatible",
+   "@ai-sdk/togetherai",
+   "@openrouter/ai-sdk-provider"
+  ],
+  "credentialMechanism": "one owner-private mode-0600 file; ambient environment is never authority"
+ },
+ "recoveredFromV2": {
+  "credentialAliases": [
+   "arcee",
+   "azure",
+   "cloudflare-workers-ai",
+   "github-copilot",
+   "modal",
+   "ovhcloud",
+   "zai"
+  ],
+  "providerEndpoints": [
+   "arcee",
+   "baseten",
+   "cloudflare-workers-ai",
+   "deepseek",
+   "fireworks-ai",
+   "github-copilot",
+   "huggingface",
+   "nebius",
+   "nvidia",
+   "scaleway",
+   "siliconflow",
+   "zai"
+  ],
+  "note": "models.dev carries no endpoint for OpenAI-compatible providers and renamed two established credential variables. Both facts are recovered from V2 and declared in graph authority."
+ },
+ "statusCounts": {
+  "SUPPORTED_BUT_EXTERNAL_ACCOUNT_ACTION_REQUIRED": 3,
+  "AVAILABLE": 5,
+  "SUPPORTED_BUT_NOT_AUTHENTICATED": 19,
+  "OBSOLETE": 3,
+  "SUPPORTED_BUT_ECONOMICALLY_INELIGIBLE": 6,
+  "AVAILABLE_VIA_NEW_TRANSPORT": 1,
+  "NO_LONGER_EXISTS": 10
+ },
+ "providers": [
+  {
+   "v2Identity": "codex-cli",
+   "v3CanonicalIdentity": "codex-cli",
+   "modelsDevIdentity": null,
+   "v3Transport": "codex-cli",
+   "credentialMechanism": "local agent session",
+   "safeCredentialNames": [],
+   "economicPolicy": "subscription-included",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_EXTERNAL_ACCOUNT_ACTION_REQUIRED",
+   "disposition": "RETAINED_AS_V3_LOCAL_AGENT_TRANSPORT",
+   "evidence": "SUPPORTED_BUT_EXTERNAL_ACCOUNT_ACTION_REQUIRED: TRANSPORT_USAGE_LIMIT_EXCEEDED, resets 2026-09-07"
+  },
+  {
+   "v2Identity": "claude-cli",
+   "v3CanonicalIdentity": "claude-cli",
+   "modelsDevIdentity": null,
+   "v3Transport": "claude-cli",
+   "credentialMechanism": "local agent session",
+   "safeCredentialNames": [],
+   "economicPolicy": "subscription-included",
+   "v2Enabled": true,
+   "currentStatus": "AVAILABLE",
+   "disposition": "RETAINED_AS_V3_LOCAL_AGENT_TRANSPORT",
+   "evidence": "AVAILABLE: executed, real model identity and session id"
+  },
+  {
+   "v2Identity": "antigravity-cli",
+   "v3CanonicalIdentity": "antigravity-cli",
+   "modelsDevIdentity": null,
+   "v3Transport": "antigravity-cli",
+   "credentialMechanism": "local agent session",
+   "safeCredentialNames": [],
+   "economicPolicy": "n/a",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "NOT_YET_REALIZED: the agy CLI is not installed on this host; the operator offered a system-wide install",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "gemini-cli",
+   "v3CanonicalIdentity": "gemini-cli",
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "local agent session",
+   "safeCredentialNames": [],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "OBSOLETE",
+   "disposition": "V2 marked it a proposed stub and disabled; no CLI present",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "github-copilot-cli",
+   "v3CanonicalIdentity": "github-copilot-cli",
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "local agent session",
+   "safeCredentialNames": [],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "OBSOLETE",
+   "disposition": "V2 marked it a proposed stub and disabled; no CLI present",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "openai-api",
+   "v3CanonicalIdentity": "openai",
+   "modelsDevIdentity": "openai",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "OPENAI_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 47,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_ECONOMICALLY_INELIGIBLE",
+   "disposition": "Credential present and adapter @ai-sdk/openai installed. Every catalogue model for this provider is priced or unknown-price, so the zero-paid policy refuses it before contact.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "openrouter",
+   "v3CanonicalIdentity": "openrouter",
+   "modelsDevIdentity": "openrouter",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "OPENROUTER_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 354,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "AVAILABLE",
+   "disposition": "Realized through the V3 Vercel AI SDK transport.",
+   "evidence": "AVAILABLE: executed cohere/north-mini-code:free, 42 tokens"
+  },
+  {
+   "v2Identity": "groq",
+   "v3CanonicalIdentity": "groq",
+   "modelsDevIdentity": "groq",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "GROQ_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 15,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "AVAILABLE",
+   "disposition": "Realized through the V3 Vercel AI SDK transport.",
+   "evidence": "AVAILABLE: executed qwen/qwen3.6-27b, 136 tokens"
+  },
+  {
+   "v2Identity": "mistral",
+   "v3CanonicalIdentity": "mistral",
+   "modelsDevIdentity": "mistral",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "MISTRAL_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 34,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "AVAILABLE",
+   "disposition": "Realized through the V3 Vercel AI SDK transport.",
+   "evidence": "AVAILABLE: executed labs-devstral-small-2512, 22 tokens"
+  },
+  {
+   "v2Identity": "gemini",
+   "v3CanonicalIdentity": "google",
+   "modelsDevIdentity": "google",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "GEMINI_API_KEY",
+    "GOOGLE_API_KEY",
+    "GOOGLE_GENERATIVE_AI_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 39,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route google exists with adapter @ai-sdk/google. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "sambanova",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "SAMBANOVA_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_EXTERNAL_ACCOUNT_ACTION_REQUIRED",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived. Credential is present.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "github-models",
+   "v3CanonicalIdentity": "github-copilot",
+   "modelsDevIdentity": "github-copilot",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "GITHUB_MODELS_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "credentialAliasDeclared": true,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 33,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_ECONOMICALLY_INELIGIBLE",
+   "disposition": "Credential present and adapter @ai-sdk/openai-compatible installed. Every catalogue model for this provider is priced or unknown-price, so the zero-paid policy refuses it before contact.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "huggingface",
+   "v3CanonicalIdentity": "huggingface",
+   "modelsDevIdentity": "huggingface",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "HF_TOKEN"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 72,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route huggingface exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "fireworks",
+   "v3CanonicalIdentity": "fireworks-ai",
+   "modelsDevIdentity": "fireworks-ai",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "FIREWORKS_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 18,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_ECONOMICALLY_INELIGIBLE",
+   "disposition": "Credential present and adapter @ai-sdk/openai-compatible installed. Every catalogue model for this provider is priced or unknown-price, so the zero-paid policy refuses it before contact.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "together",
+   "v3CanonicalIdentity": "togetherai",
+   "modelsDevIdentity": "togetherai",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "TOGETHER_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 38,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_ECONOMICALLY_INELIGIBLE",
+   "disposition": "Credential present and adapter @ai-sdk/togetherai installed. Every catalogue model for this provider is priced or unknown-price, so the zero-paid policy refuses it before contact.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "deepseek",
+   "v3CanonicalIdentity": "deepseek",
+   "modelsDevIdentity": "deepseek",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "DEEPSEEK_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 3,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_ECONOMICALLY_INELIGIBLE",
+   "disposition": "Credential present and adapter @ai-sdk/openai-compatible installed. Every catalogue model for this provider is priced or unknown-price, so the zero-paid policy refuses it before contact.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "cerebras",
+   "v3CanonicalIdentity": "cerebras",
+   "modelsDevIdentity": "cerebras",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "CEREBRAS_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 2,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_EXTERNAL_ACCOUNT_ACTION_REQUIRED",
+   "disposition": "Realized through the V3 Vercel AI SDK transport.",
+   "evidence": "SUPPORTED_BUT_EXTERNAL_ACCOUNT_ACTION_REQUIRED: HTTP 402 payment_required, free trial exhausted"
+  },
+  {
+   "v2Identity": "arcee",
+   "v3CanonicalIdentity": "arcee",
+   "modelsDevIdentity": "arcee",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "ARCEE_API_KEY",
+    "ARCEE_TOKEN"
+   ],
+   "credentialAliasDeclared": true,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 7,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route arcee exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "ollama",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "none (local)",
+   "safeCredentialNames": [],
+   "economicPolicy": "local",
+   "v2Enabled": false,
+   "currentStatus": "OBSOLETE",
+   "disposition": "V2 inventoried Ollama and operator-excluded it as operationally impractical; the binary is present but no adapter is wired and no models.dev route exists",
+   "evidence": "ollama present on PATH; V2 default_enabled false"
+  },
+  {
+   "v2Identity": "xai-grok",
+   "v3CanonicalIdentity": "xai",
+   "modelsDevIdentity": "xai",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "XAI_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 12,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route xai exists with adapter @ai-sdk/xai. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "anthropic-api",
+   "v3CanonicalIdentity": "anthropic",
+   "modelsDevIdentity": "anthropic",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "ANTHROPIC_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 13,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route anthropic exists with adapter @ai-sdk/anthropic. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "cloudflare-workers-ai",
+   "v3CanonicalIdentity": "cloudflare-workers-ai",
+   "modelsDevIdentity": "cloudflare-workers-ai",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "CLOUDFLARE_ACCOUNT_ID",
+    "CLOUDFLARE_API_KEY",
+    "CLOUDFLARE_API_TOKEN"
+   ],
+   "credentialAliasDeclared": true,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 27,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route cloudflare-workers-ai exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "cohere",
+   "v3CanonicalIdentity": "cohere",
+   "modelsDevIdentity": "cohere",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "COHERE_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 14,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "AVAILABLE",
+   "disposition": "Realized through the V3 Vercel AI SDK transport.",
+   "evidence": "AVAILABLE: executed north-mini-code-1-0, 106 tokens"
+  },
+  {
+   "v2Identity": "nvidia-nim",
+   "v3CanonicalIdentity": "nvidia",
+   "modelsDevIdentity": "nvidia",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "NVIDIA_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 103,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": true,
+   "currentStatus": "AVAILABLE_VIA_NEW_TRANSPORT",
+   "disposition": "Realized through the V3 Vercel AI SDK transport.",
+   "evidence": "AVAILABLE_VIA_NEW_TRANSPORT: endpoint and credential valid; provider returned 404 model-not-served for the catalogue model ids"
+  },
+  {
+   "v2Identity": "deepinfra",
+   "v3CanonicalIdentity": "deepinfra",
+   "modelsDevIdentity": "deepinfra",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "DEEPINFRA_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 62,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route deepinfra exists with adapter @ai-sdk/deepinfra. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "replicate",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "REPLICATE_API_TOKEN"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "fal",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "FAL_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "featherless",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "FEATHERLESS_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "hyperbolic",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "HYPERBOLIC_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "novita",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "NOVITA_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "nscale",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "NSCALE_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "ovhcloud-ai",
+   "v3CanonicalIdentity": "ovhcloud",
+   "modelsDevIdentity": "ovhcloud",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "OVHCLOUD_API_KEY",
+    "OVH_AI_ENDPOINTS_ACCESS_TOKEN"
+   ],
+   "credentialAliasDeclared": true,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 14,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route ovhcloud exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "public-ai",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "PUBLIC_AI_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "scaleway",
+   "v3CanonicalIdentity": "scaleway",
+   "modelsDevIdentity": "scaleway",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "SCALEWAY_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 15,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route scaleway exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "wavespeed",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "WAVESPEED_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "z-ai",
+   "v3CanonicalIdentity": "zai",
+   "modelsDevIdentity": "zai",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "ZAI_API_KEY",
+    "ZHIPU_API_KEY"
+   ],
+   "credentialAliasDeclared": true,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 16,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_ECONOMICALLY_INELIGIBLE",
+   "disposition": "Credential present and adapter @ai-sdk/openai-compatible installed. Every catalogue model for this provider is priced or unknown-price, so the zero-paid policy refuses it before contact.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "ai21",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "AI21_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "perplexity",
+   "v3CanonicalIdentity": "perplexity",
+   "modelsDevIdentity": "perplexity",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "PERPLEXITY_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 4,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route perplexity exists with adapter @ai-sdk/perplexity. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "nebius",
+   "v3CanonicalIdentity": "nebius",
+   "modelsDevIdentity": "nebius",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "NEBIUS_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 34,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route nebius exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "siliconflow",
+   "v3CanonicalIdentity": "siliconflow",
+   "modelsDevIdentity": "siliconflow",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "SILICONFLOW_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 49,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route siliconflow exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "baseten",
+   "v3CanonicalIdentity": "baseten",
+   "modelsDevIdentity": "baseten",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "BASETEN_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": true,
+   "catalogueModelCount": 21,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route baseten exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "modal",
+   "v3CanonicalIdentity": "modal",
+   "modelsDevIdentity": "modal",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "MODAL_PROXY_TOKEN",
+    "MODAL_TOKEN_ID"
+   ],
+   "credentialAliasDeclared": true,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 4,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route modal exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "runpod-serverless",
+   "v3CanonicalIdentity": null,
+   "modelsDevIdentity": null,
+   "v3Transport": null,
+   "credentialMechanism": "api token",
+   "safeCredentialNames": [
+    "RUNPOD_API_KEY"
+   ],
+   "economicPolicy": "n/a",
+   "v2Enabled": false,
+   "currentStatus": "NO_LONGER_EXISTS",
+   "disposition": "Not present in the current models.dev projection. No canonical V3 model identity exists, so no route can be derived.",
+   "evidence": "absent from models.dev projection of 212 providers"
+  },
+  {
+   "v2Identity": "google-vertex-ai",
+   "v3CanonicalIdentity": "google-vertex",
+   "modelsDevIdentity": "google-vertex",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "GOOGLE_APPLICATION_CREDENTIALS",
+    "GOOGLE_VERTEX_LOCATION",
+    "GOOGLE_VERTEX_PROJECT"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 43,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route google-vertex exists with adapter @ai-sdk/google-vertex. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "amazon-bedrock",
+   "v3CanonicalIdentity": "amazon-bedrock",
+   "modelsDevIdentity": "amazon-bedrock",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_BEARER_TOKEN_BEDROCK",
+    "AWS_REGION",
+    "AWS_SECRET_ACCESS_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 120,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route amazon-bedrock exists with adapter @ai-sdk/amazon-bedrock. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "azure-ai-foundry",
+   "v3CanonicalIdentity": "azure",
+   "modelsDevIdentity": "azure",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "AZURE_AI_FOUNDRY_API_KEY",
+    "AZURE_API_KEY",
+    "AZURE_RESOURCE_NAME"
+   ],
+   "credentialAliasDeclared": true,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 84,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route azure exists with adapter @ai-sdk/azure. No credential supplied.",
+   "evidence": ""
+  },
+  {
+   "v2Identity": "alibaba-dashscope",
+   "v3CanonicalIdentity": "alibaba",
+   "modelsDevIdentity": "alibaba",
+   "v3Transport": "vercel-ai-sdk",
+   "credentialMechanism": "owner-private credential file",
+   "safeCredentialNames": [
+    "DASHSCOPE_API_KEY"
+   ],
+   "credentialAliasDeclared": false,
+   "graphDeclaredEndpoint": false,
+   "catalogueModelCount": 55,
+   "economicPolicy": "zero-paid; eligibility from catalogue zero price or explicit operator authorization",
+   "v2Enabled": false,
+   "currentStatus": "SUPPORTED_BUT_NOT_AUTHENTICATED",
+   "disposition": "models.dev route alibaba exists with adapter @ai-sdk/openai-compatible. No credential supplied.",
+   "evidence": ""
+  }
+ ],
+ "acceptanceNotes": [
+  "No provider is classified as forgotten. Every one of the 47 V2 providers carries a status and a reason.",
+  "Credential values never appear here; only variable names and presence.",
+  "A legitimate external refusal (payment required, usage limit, model not served) is recorded as evidence of correct wiring."
+ ]
+}

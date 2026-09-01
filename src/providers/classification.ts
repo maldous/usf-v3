@@ -25,6 +25,7 @@ export type ReadinessState = (typeof readinessLadder)[number];
 export type ClassificationReason =
   | "TRANSPORT_UNKNOWN_ADAPTER"
   | "TRANSPORT_ADAPTER_NOT_INSTALLED"
+  | "PROVIDER_ENDPOINT_UNDECLARED"
   | "CREDENTIAL_NAME_UNDECLARED"
   | "CREDENTIAL_ABSENT"
   | "SESSION_UNAUTHENTICATED"
@@ -53,6 +54,10 @@ export interface ClassificationInput {
   readonly requirement: RoutingRequirement;
   /** Route identifiers with a durable successful invocation record. */
   readonly observedAvailableRouteIds: readonly string[];
+  /** Extra credential names that also supply a provider, from graph authority. */
+  readonly credentialAliases?: ReadonlyMap<string, readonly string[]>;
+  /** Endpoints an OpenAI-compatible adapter needs, from graph authority. */
+  readonly providerEndpoints?: ReadonlyMap<string, string>;
 }
 
 export interface ModelClassification {
@@ -61,6 +66,8 @@ export interface ModelClassification {
   readonly adapterPackage: string | null;
   readonly transport: ExecutionTransportId | null;
   readonly credentialName: string | null;
+  /** Endpoint required to reach this provider, when the adapter needs one. */
+  readonly baseUrl: string | null;
   readonly costClass: CatalogueCostClass;
   /** How eligibility was established, distinct from the catalogue list price. */
   readonly economicBasis: string | null;
@@ -133,7 +140,12 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
   for (const provider of input.snapshot.providers) {
     const adapterPackage = provider.adapter.package ?? null;
     const transport = transportForAdapterPackage(adapterPackage);
-    const credentialNames = provider.credentialNames ?? [];
+    const declaredNames = provider.credentialNames ?? [];
+    const credentialNames = Object.freeze([...new Set([
+      ...declaredNames,
+      ...(input.credentialAliases?.get(provider.providerRoute) ?? []),
+    ])].sort());
+    const baseUrl = input.providerEndpoints?.get(provider.providerRoute) ?? null;
     for (const model of provider.models) {
       const costClass = catalogueCostClass(model.cost);
       const base = {
@@ -141,6 +153,7 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
         model: model.route.model,
         adapterPackage,
         transport,
+        baseUrl,
         costClass,
       } as const;
 
@@ -150,6 +163,10 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
       }
       if (adapterPackage === null || !installed.has(adapterPackage)) {
         classifications.push(Object.freeze({ ...base, credentialName: null, economicBasis: null, economicCode: null, state: "DISCOVERED", reason: "TRANSPORT_ADAPTER_NOT_INSTALLED" }));
+        continue;
+      }
+      if (adapterPackage === "@ai-sdk/openai-compatible" && baseUrl === null) {
+        classifications.push(Object.freeze({ ...base, credentialName: null, economicBasis: null, economicCode: null, state: "DISCOVERED", reason: "PROVIDER_ENDPOINT_UNDECLARED" }));
         continue;
       }
       if (credentialNames.length === 0) {

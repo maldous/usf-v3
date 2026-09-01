@@ -23,6 +23,8 @@ export interface ExecutionCandidate {
   readonly model: string | null;
   readonly adapterPackage: string | null;
   readonly credentialName: string | null;
+  /** Endpoint the adapter needs, from graph authority; null when it needs none. */
+  readonly baseUrl: string | null;
   /** Catalogue list-price class: zero-price, priced or unknown. */
   readonly costClass: string;
   /** How eligibility was established, e.g. an operator free-quota authorization. */
@@ -66,6 +68,8 @@ export interface RouteUniverseInput {
   readonly policy: EffectiveCostPolicy;
   readonly requirement: RoutingRequirement;
   readonly observedAvailableRouteIds: readonly string[];
+  readonly credentialAliases?: ReadonlyMap<string, readonly string[]>;
+  readonly providerEndpoints?: ReadonlyMap<string, string>;
   /** Live capability observations for the local agent CLI transports. */
   readonly localAgentCapabilities: readonly AuthenticatedTransportCapability[];
 }
@@ -94,6 +98,8 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
     policy: input.policy,
     requirement: input.requirement,
     observedAvailableRouteIds: input.observedAvailableRouteIds,
+    credentialAliases: input.credentialAliases,
+    providerEndpoints: input.providerEndpoints,
   });
 
   const candidates: ExecutionCandidate[] = [];
@@ -108,6 +114,7 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       model: entry.model,
       adapterPackage: entry.adapterPackage,
       credentialName: entry.credentialName,
+      baseUrl: entry.baseUrl,
       costClass: entry.costClass,
       economicBasis: entry.economicBasis,
       capabilityNames: Object.freeze([...((model?.capabilityNames ?? []) as readonly string[])]),
@@ -165,6 +172,7 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       model: null,
       adapterPackage: null,
       credentialName: null,
+      baseUrl: null,
       costClass: "subscription-included",
       economicBasis: economics.basis,
       capabilityNames: profile.capabilityNames,

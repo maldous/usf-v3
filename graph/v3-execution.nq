@@ -20,6 +20,74 @@
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:isolation> "A refusal on one provider does not fail unrelated units that had an alternative candidate." <urn:usf:graph:v3-execution> .
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:overlapEvidence> "Peak observed concurrency is derived from actual unit start and end instants; the reported speedup ratio is summed unit duration over wall-clock duration and exceeds one only when executions genuinely overlapped." <urn:usf:graph:v3-execution> .
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:type> <urn:usf:type:ConcurrencyConstraint> <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:arcee:1> <urn:usf:predicate:catalogueCredentialName> "ARCEE_API_KEY" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:arcee:1> <urn:usf:predicate:establishedCredentialName> "ARCEE_TOKEN" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:arcee:1> <urn:usf:predicate:provider> "arcee" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:arcee:1> <urn:usf:predicate:recoveredFrom> "V2 provider observations, independently confirmed against V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:arcee:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:arcee:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential. The established name is recognized so an operator is not required to discover the catalogue's rename." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:arcee:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:arcee:1> <urn:usf:predicate:type> <urn:usf:type:CredentialNameAlias> <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:azure:1> <urn:usf:predicate:catalogueCredentialName> "AZURE_API_KEY" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:azure:1> <urn:usf:predicate:establishedCredentialName> "AZURE_AI_FOUNDRY_API_KEY" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:azure:1> <urn:usf:predicate:provider> "azure" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:azure:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:azure:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential. The established name is recognized so an operator is not required to discover the catalogue's rename." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:azure:1> <urn:usf:predicate:type> <urn:usf:type:CredentialNameAlias> <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:cloudflare-workers-ai:1> <urn:usf:predicate:catalogueCredentialName> "CLOUDFLARE_ACCOUNT_ID" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:cloudflare-workers-ai:1> <urn:usf:predicate:establishedCredentialName> "CLOUDFLARE_API_TOKEN" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:cloudflare-workers-ai:1> <urn:usf:predicate:provider> "cloudflare-workers-ai" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:cloudflare-workers-ai:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:cloudflare-workers-ai:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential. The established name is recognized so an operator is not required to discover the catalogue's rename." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:cloudflare-workers-ai:1> <urn:usf:predicate:type> <urn:usf:type:CredentialNameAlias> <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:github-copilot:1> <urn:usf:predicate:catalogueCredentialName> "GITHUB_TOKEN" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:github-copilot:1> <urn:usf:predicate:establishedCredentialName> "GITHUB_MODELS_TOKEN" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:github-copilot:1> <urn:usf:predicate:provider> "github-copilot" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:github-copilot:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:github-copilot:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential. The established name is recognized so an operator is not required to discover the catalogue's rename." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:github-copilot:1> <urn:usf:predicate:type> <urn:usf:type:CredentialNameAlias> <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:modal:1> <urn:usf:predicate:catalogueCredentialName> "MODAL_PROXY_TOKEN" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:modal:1> <urn:usf:predicate:establishedCredentialName> "MODAL_TOKEN_ID" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:modal:1> <urn:usf:predicate:provider> "modal" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:modal:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:modal:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential. The established name is recognized so an operator is not required to discover the catalogue's rename." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:modal:1> <urn:usf:predicate:type> <urn:usf:type:CredentialNameAlias> <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:ovhcloud:1> <urn:usf:predicate:catalogueCredentialName> "OVHCLOUD_API_KEY" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:ovhcloud:1> <urn:usf:predicate:establishedCredentialName> "OVH_AI_ENDPOINTS_ACCESS_TOKEN" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:ovhcloud:1> <urn:usf:predicate:provider> "ovhcloud" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:ovhcloud:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:ovhcloud:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential. The established name is recognized so an operator is not required to discover the catalogue's rename." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:ovhcloud:1> <urn:usf:predicate:type> <urn:usf:type:CredentialNameAlias> <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:zai:1> <urn:usf:predicate:catalogueCredentialName> "ZHIPU_API_KEY" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:zai:1> <urn:usf:predicate:establishedCredentialName> "ZAI_API_KEY" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:zai:1> <urn:usf:predicate:provider> "zai" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:zai:1> <urn:usf:predicate:recoveredFrom> "V2 provider observations, independently confirmed against V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:zai:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:zai:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential. The established name is recognized so an operator is not required to discover the catalogue's rename." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:zai:1> <urn:usf:predicate:rule> "Either name supplies this provider's credential." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-alias:zai:1> <urn:usf:predicate:type> <urn:usf:type:CredentialNameAlias> <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:nonProviderCredentialName> "GITHUB_PERSONAL_ACCESS_TOKEN" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:nonProviderCredentialName> "LINEAR_API_KEY" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:nonProviderCredentialName> "STARDOG_DATABASE" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:nonProviderCredentialName> "STARDOG_PASSWORD" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:nonProviderCredentialName> "STARDOG_SERVER" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:nonProviderCredentialName> "STARDOG_TOKEN" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:nonProviderCredentialName> "STARDOG_USERNAME" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:recoveredFrom> "V1 and V2 service infrastructure" <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:rule> "These variable names belong to service infrastructure, not to a model provider. They must never be offered as a provider credential or admitted to a provider credential allowlist." <urn:usf:graph:v3-execution> .
+<urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:type> <urn:usf:type:CredentialClass> <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:disposition> "HISTORICAL" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:historicalSource> "V1 graph/providers.ttl and the V1 service catalogue; V2 carried the same platform through its Stardog control plane" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:implementations> "clickhouse, fastify, in-memory, pgbackrest, postgres, redis, nats, clamav, meilisearch, keycloak, mailpit, minio, localstack, wiremock, sonarqube, openbao, windmill, temporal, sentry, webhook-sink" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:invariantProtected> "A capability port is fulfilled by a named provider in a declared mode, and a deferred or in-memory mode is a first-class disposition rather than an absence." <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:legacyConcept> "V1 graph/providers.ttl: 52 service providers, each a (fulfilsPort, hasProviderMode) tuple" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:modes> "inmemory, composedtest, deferred, local, unavailable, disabled" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:patternSupersededBy> "urn:usf:transport-compatibility-rule:execution:1" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:ports> "analyticsstore, apigateway, auditledger, autocomplete, backuprestore, cache, config, database, eventbus, filescan, fulltextsearch, guardrail, identity, importexport, notificationdelivery, objectstorage, observability, operationaljobengine, provideremulator, providermock, qualitygate, resourcelifecycle, searchindex, secrets, sessionstore, tenantmembership, vectorsearch, workflowengine" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:reason> "The invariant survives in V3 as capability-to-transport fulfilment: a work requirement names a capability, and a transport fulfils it in a declared authentication mode. The 52 instances are ANQR product-platform facts. V3's current product slice is a pure TypeScript library that provisions no service infrastructure, so no V3 consumer exists for them. They are recorded here so a future operator can find them rather than rediscover them." <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:reinstatementCondition> "Only if a V3 product slice acquires a real service-infrastructure dependency. The port and mode vocabulary above is then the starting point." <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:scope> "product-platform" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:type> <urn:usf:type:KnowledgeDisposition> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:authorizesProvider> "claude-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:claude-cli> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:basis> "operator-declared-subscription" <urn:usf:graph:v3-execution> .
@@ -145,6 +213,66 @@
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:terminalState> "cycles-exhausted" <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:terminalState> "idle-no-pending-work" <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:type> <urn:usf:type:OperationalLifecycle> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:baseUrl> "https://api.arcee.ai/api/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:provider> "arcee" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:baseten:1> <urn:usf:predicate:baseUrl> "https://inference.baseten.co/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:baseten:1> <urn:usf:predicate:provider> "baseten" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:baseten:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:baseten:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:baseten:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:cloudflare-workers-ai:1> <urn:usf:predicate:baseUrl> "https://api.cloudflare.com/client/v4" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:cloudflare-workers-ai:1> <urn:usf:predicate:provider> "cloudflare-workers-ai" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:cloudflare-workers-ai:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:cloudflare-workers-ai:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:cloudflare-workers-ai:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:deepseek:1> <urn:usf:predicate:baseUrl> "https://api.deepseek.com/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:deepseek:1> <urn:usf:predicate:provider> "deepseek" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:deepseek:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:deepseek:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:deepseek:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:fireworks-ai:1> <urn:usf:predicate:baseUrl> "https://api.fireworks.ai/inference/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:fireworks-ai:1> <urn:usf:predicate:provider> "fireworks-ai" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:fireworks-ai:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:fireworks-ai:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:fireworks-ai:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:github-copilot:1> <urn:usf:predicate:baseUrl> "https://models.github.ai/inference" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:github-copilot:1> <urn:usf:predicate:provider> "github-copilot" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:github-copilot:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:github-copilot:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:github-copilot:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:huggingface:1> <urn:usf:predicate:baseUrl> "https://router.huggingface.co/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:huggingface:1> <urn:usf:predicate:provider> "huggingface" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:huggingface:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:huggingface:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:huggingface:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nebius:1> <urn:usf:predicate:baseUrl> "https://api.tokenfactory.nebius.com/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nebius:1> <urn:usf:predicate:provider> "nebius" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nebius:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nebius:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nebius:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nvidia:1> <urn:usf:predicate:baseUrl> "https://integrate.api.nvidia.com/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nvidia:1> <urn:usf:predicate:provider> "nvidia" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nvidia:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nvidia:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:nvidia:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:scaleway:1> <urn:usf:predicate:baseUrl> "https://api.scaleway.ai/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:scaleway:1> <urn:usf:predicate:provider> "scaleway" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:scaleway:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:scaleway:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:scaleway:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:siliconflow:1> <urn:usf:predicate:baseUrl> "https://api.siliconflow.com/v1" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:siliconflow:1> <urn:usf:predicate:provider> "siliconflow" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:siliconflow:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:siliconflow:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:siliconflow:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:zai:1> <urn:usf:predicate:baseUrl> "https://api.z.ai/api/paas/v4" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:zai:1> <urn:usf:predicate:provider> "zai" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:zai:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:zai:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-endpoint:zai:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
 <urn:usf:readiness-ladder:execution:1> <urn:usf:predicate:determinism> "Every discovered model is classified exactly once, ordered by provider then model identity, independent of catalogue iteration order." <urn:usf:graph:v3-execution> .
 <urn:usf:readiness-ladder:execution:1> <urn:usf:predicate:failureMode> "fail-closed-at-every-boundary" <urn:usf:graph:v3-execution> .
 <urn:usf:readiness-ladder:execution:1> <urn:usf:predicate:ladderState> "1=DISCOVERED" <urn:usf:graph:v3-execution> .

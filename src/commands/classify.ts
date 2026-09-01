@@ -9,6 +9,7 @@ import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
 import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 import { readGraphDerivedEconomics } from "../providers/economics-projection.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
+import { readProviderBindings, type ProviderBindings } from "../providers/provider-bindings.ts";
 import { readTrackedJson } from "./probe.ts";
 import { parseEffectiveCostPolicy } from "./execute.ts";
 
@@ -66,9 +67,11 @@ export async function classifyCatalogueCommand(repositoryRoot: string, args: rea
   const catalogue = await readLocalCatalogue(repositoryRoot);
   // Economics come from graph authority through the verified projection; no
   // surface decides against a separately maintained policy file.
+  const semanticGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
+  const bindings = readProviderBindings(semanticGraph);
   const economics = readGraphDerivedEconomics(
     await readTrackedJson(repositoryRoot, "config/execution-economics.json"),
-    loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json"),
+    semanticGraph,
   );
   const policy = economics.policy;
   const authorizations = economics.authorizations;
@@ -113,6 +116,8 @@ export async function classifyCatalogueCommand(repositoryRoot: string, args: rea
     policy,
     requirement: parsed.requirement,
     observedAvailableRouteIds: (await observeAvailableRoutes(repositoryRoot)).routeIds,
+    credentialAliases: bindings.credentialAliases,
+    providerEndpoints: bindings.endpoints,
   });
 
   const shown = parsed.showStates.length === 0

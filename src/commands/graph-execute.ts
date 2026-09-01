@@ -19,6 +19,7 @@ import type { CommandResult } from "./dispatcher.ts";
 import { languageModelFor, parseEffectiveCostPolicy } from "./execute.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
 import { observeAvailableRoutes } from "../providers/evidence-index.ts";
+import { readProviderBindings, type ProviderBindings } from "../providers/provider-bindings.ts";
 import { readTrackedJson } from "./probe.ts";
 
 const typePredicate = "urn:usf:predicate:type";
@@ -227,8 +228,10 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   // projection only after proving it still corresponds to graph authority.
   let economicsClosureDigest: string;
   let graphPolicy: EffectiveCostPolicy;
+  let bindings: ProviderBindings;
   try {
     const semanticGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
+    bindings = readProviderBindings(semanticGraph);
     const verified = verifyEconomicsProjection(economicsDocument, semanticGraph);
     economicsClosureDigest = verified.graphClosureDigest;
     graphPolicy = Object.freeze({ ...verified.projection.costPolicy });
@@ -342,6 +345,8 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         minimumOutputTokens: unit.maximumOutputTokens,
       }),
       observedAvailableRouteIds: observedRoutes,
+      credentialAliases: bindings.credentialAliases,
+      providerEndpoints: bindings.endpoints,
       localAgentCapabilities,
     });
     // Spread units across providers so one quota failure cannot collapse the batch.
@@ -403,7 +408,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           }));
           continue;
         }
-        const model = await languageModelFor(candidate.adapterPackage, candidate.model, credential);
+        const model = await languageModelFor(candidate.adapterPackage, candidate.model, credential, candidate.baseUrl);
         const produced = await generateText({
           model: model as Parameters<typeof generateText>[0]["model"],
           prompt: unit.prompt,

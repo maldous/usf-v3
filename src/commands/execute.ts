@@ -14,6 +14,7 @@ import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
 import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 import { readGraphDerivedEconomics } from "../providers/economics-projection.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
+import { readProviderBindings, type ProviderBindings } from "../providers/provider-bindings.ts";
 import { readTrackedJson } from "./probe.ts";
 
 const maximumPromptBytes = 64 * 1024;
@@ -103,7 +104,11 @@ export async function languageModelFor(
   adapterPackage: string,
   modelId: string,
   credential: string,
+  baseUrl: string | null = null,
 ): Promise<unknown> {
+  // One factory per installed adapter package. A provider becomes reachable by
+  // installing its adapter and declaring any endpoint it needs; no routing logic
+  // changes.
   switch (adapterPackage) {
     case "@ai-sdk/groq":
       return (await import("@ai-sdk/groq")).createGroq({ apiKey: credential })(modelId);
@@ -111,6 +116,23 @@ export async function languageModelFor(
       return (await import("@ai-sdk/cerebras")).createCerebras({ apiKey: credential })(modelId);
     case "@openrouter/ai-sdk-provider":
       return (await import("@openrouter/ai-sdk-provider")).createOpenRouter({ apiKey: credential })(modelId);
+    case "@ai-sdk/openai":
+      return (await import("@ai-sdk/openai")).createOpenAI({ apiKey: credential })(modelId);
+    case "@ai-sdk/mistral":
+      return (await import("@ai-sdk/mistral")).createMistral({ apiKey: credential })(modelId);
+    case "@ai-sdk/togetherai":
+      return (await import("@ai-sdk/togetherai")).createTogetherAI({ apiKey: credential })(modelId);
+    case "@ai-sdk/cohere":
+      return (await import("@ai-sdk/cohere")).createCohere({ apiKey: credential })(modelId);
+    case "@ai-sdk/openai-compatible": {
+      // The catalogue carries no endpoint; it comes from graph authority.
+      if (baseUrl === null) {
+        throw new UsfError("EXECUTE_PROVIDER_ENDPOINT_UNDECLARED", exitCodes.NO_ELIGIBLE_ROUTE,
+          "An OpenAI-compatible provider requires a graph-declared endpoint.", { adapterPackage, modelId });
+      }
+      return (await import("@ai-sdk/openai-compatible"))
+        .createOpenAICompatible({ name: "usf-openai-compatible", apiKey: credential, baseURL: baseUrl })(modelId);
+    }
     default:
       throw new UsfError("EXECUTE_ADAPTER_UNSUPPORTED", exitCodes.NO_ELIGIBLE_ROUTE,
         "The selected candidate's adapter package has no registered AI SDK factory.", { adapterPackage });
@@ -132,9 +154,11 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
 
   // Economics come from graph authority through the verified projection; no
   // surface decides against a separately maintained policy file.
+  const semanticGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
+  const bindings = readProviderBindings(semanticGraph);
   const economics = readGraphDerivedEconomics(
     await readTrackedJson(repositoryRoot, "config/execution-economics.json"),
-    loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json"),
+    semanticGraph,
   );
   const policy = economics.policy;
   const authorizations = economics.authorizations;
@@ -177,6 +201,8 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     policy,
     requirement: parsed.requirement,
     observedAvailableRouteIds: (await observeAvailableRoutes(repositoryRoot)).routeIds,
+    credentialAliases: bindings.credentialAliases,
+    providerEndpoints: bindings.endpoints,
   });
 
   const selectable = classifications.filter((entry) =>
@@ -253,7 +279,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     }
     const attemptStarted = performance.now();
     try {
-      const model = await languageModelFor(candidate.adapterPackage, candidate.model, credential);
+      const model = await languageModelFor(candidate.adapterPackage, candidate.model, credential, candidate.baseUrl);
       const produced = await generateText({
         model: model as Parameters<typeof generateText>[0]["model"],
         prompt: parsed.prompt,
