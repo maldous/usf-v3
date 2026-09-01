@@ -1,6 +1,135 @@
 # USF V3 handover
 
-## Current live boundary — root authority restored; file-asset-index policy gap evidenced
+## Current live boundary — census complete; account-tier proven to need real implementation
+
+This section supersedes every older `Current`, `Live continuation` and `Next`
+heading retained below as chronological evidence; do not operationalize those
+older boundaries unless this section explicitly restates them.
+
+Prepared 2026-09-01 from clean pushed carrier
+`281e47c879fa555f3aa9d64c3f1ab4585f1e33e7` in an isolated standalone clone.
+Read current Git and remote state rather than treating that identifier as the
+new carrier. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded.
+
+`urn:usf:work:provider-census` is now `verified-complete`; batched construction
+authority is current for both `provider-census` and
+`provider-account-tier-receipt`. Semantic digest movement:
+
+- base `sha256:218d0b132188d3eca2121de5a0efa11f5e46db8e1daf63b46faa4e86725427dc`;
+- batched two-member construction authority ->
+  `sha256:47351eb17f93d4b8be2d4f5d6b8e13700c83053183d4cdf6ff9c3edfeba9aef8`;
+- provider-census completion ->
+  `sha256:be453c4fb736396991a817dd722644a4600fa3dee1f1148e3a9ef723faa0cb5e`.
+
+Census no-change candidate
+`sha256:55118a66881bcdafaa230bcdbdec7f8b40d40c2b5f2b35daec48fb4ee7256194`
+passed both graph-selected `provider-census` and
+`provider-subscription-host-authorization` validations with exit code zero. Two
+new tracked receipts:
+`evidence/construction-authority/8e00502c1f7ecfdf79f7297e3dab86026240b07e285d02e40a0a19e2add8baf1.json`
+(digest `sha256:23bbdad96e75e477567047a07f41280913c2d165226d33f53755d4b1850fd5b9`,
+two members) and
+`evidence/work-completion/24ae263e68cb5ce1d4c1efffdc7f38565a3e85716b26286a332686ba0ab4051f.json`
+(digest `sha256:b2f399812192adb42a9e85092c9a8018d4e02e4651e704912ba8f6209c80c797`).
+
+### Evidenced: account-tier cannot be completed as a no-change candidate
+
+`provider-account-tier-receipt` was taken through the full registered no-change
+chain and **rolled back before commit**. Its construction proof, no-change
+candidate
+`sha256:d5c45ca5565ddec93574d5e15fd39038a43f92fb35ce8b69d6b512d925726449`
+and sole graph-selected `urn:usf:validation:provider-account-tier-receipt`
+check all passed with exit code zero, and its completion published cleanly to
+`sha256:c49c8d4ca147227083c4ce43dde6e2bcbf05f9c3a27da288de36d83b429f29a4`.
+The authoritative full gate then failed 208/209.
+
+The single failure is `tests/integration/provider-cli.test.ts:244`:
+`usf providers receipt acquire` returned exit 4
+`PROVIDERS_RECEIPT_DEPENDENCY_REFUSED` where the registered boundary requires
+exit 1 `PROVIDERS_RECEIPT_PROOFBLOCKED`. The cause is exact and reproducible.
+`urn:usf:requirement:provider-receipt-production-runtime-closure` declares a
+20-member `ProductionLeafRuntimeClosure`, and three declared members do not
+exist in the repository:
+
+- `src/providers/account-sources.ts`;
+- `src/providers/disposition.ts`; and
+- `src/providers/host-source-identities.ts`.
+
+All three are owned by `urn:usf:work:provider-account-tier-receipt`. While the
+packet is incomplete, the leaf dispatcher refuses at the proofblock boundary
+before closure authentication, so the missing members are never reached.
+Publishing completion moves the packet past that boundary, the child then
+authenticates the declared closure, and the missing members correctly refuse as
+a currentness failure. The confined completion validation cannot observe this
+because it does not exercise the production leaf; only the outer registered CLI
+boundary does.
+
+The conclusion is that the graph deliberately models receipt v2 ahead of its
+implementation, so **a no-change completion of this packet mints authority its
+own production path cannot honour**. The packet requires real implementation of
+its three owned modules, not a no-change candidate. After rollback,
+`usf providers receipt acquire` again returns exit 1
+`PROVIDERS_RECEIPT_PROOFBLOCKED` naming
+`COMPLETION_CONSTRUCTION_AUTHORITY_NOT_CURRENT` and
+`WORK_COMPLETION_NO_CHANGE_RECEIPT_MISSING`, and the full gate passes 209/209.
+Do not retry a no-change completion for this packet.
+
+### Observed publication batching boundary
+
+Batching works for construction-authority: two independent construction bundles
+published as one two-member transition with one receipt, replacing two serial
+digest moves, and reproduced the identical resulting digest on a later repeat.
+The same two-member batch refused for **work-completion** with exit 4 and
+stable `WORK_COMPLETION_CANDIDATE_READBACK_INVALID`, applied nothing and left
+the semantic digest unchanged; each bundle then verified and applied
+independently. Completion bundles bind candidate workspaces and their
+work-scoped manifest digests, so independent construction bundles batch while
+independent completion bundles generally do not. Use `--verify` on the intended
+cohort as the pre-check; a refused batch never justifies weakening currentness.
+
+### Registered-command gap register
+
+The authority chain itself is fully served by registered commands and needed no
+ad hoc tooling. The **navigation around** that chain still depends on operator
+knowledge rederived each session, which is a reproducibility bottleneck. Each
+gap below has a real owner and must be registered as the smallest deterministic
+`usf` command with stable arguments, JSON result, help, effects and refusal
+classes. None may be smuggled into an unrelated write set.
+
+| Gap | Rederived by hand as | Owner | Required registered behaviour |
+|---|---|---|---|
+| Carrier truth | raw `git log`/`rev-parse`/`worktree list`/`ls-remote` across primary, clones and remote | `operator-observability` (`src/commands/status.ts`) | Bounded projection comparing local `HEAD`, tree, tracked cleanliness, current semantic digest and, only on explicit request, one named remote ref. Must distinguish "primary is behind a local clone" from "primary is behind the remote" and refuse rather than guess. |
+| Checkpoint qualification | `git clone --no-hardlinks`, detach, `scripts/bootstrap.sh`, `node --run check`, containment, read-back — run four times tonight | `operator-observability` | One command taking an exact commit and performing the standalone empty-`.usf` qualification, emitting test totals, containment result, reproduced semantic digest and unchanged commit/tree/status. The skill already flags this for registration once BAU; it now is. |
+| Obligation identity | `grep 'urn:usf:proof:<work>' graph/*.nq` | `operator-observability` (`usf work`/`usf query`) | Project each selected work's exact construction and completion obligation and evidence-requirement IRIs at every stage, not only inside `CONSTRUCTION_*_MISSING` reason codes that vanish once authority exists. Composing the IRI from the work IRI refuses `CONSTRUCTION_OBLIGATION_MISMATCH`. |
+| Publication policy coverage | manual transitive resolution of manifest `imports`/`sources`, then `grep eligibleWork`, then cross-tabulation | `provider-census` (`src/commands/doctor.ts`) | Assert over the exact selected closure that every selected work has exactly one construction-authority and one completion policy; report zero as `CONSTRUCTION_WORK_NOT_ELIGIBLE` risk and more than one as `CONSTRUCTION_AUTHORITY_POLICY_AMBIGUOUS` risk before evidence derivation is attempted. This invariant would have caught `file-asset-index` deterministically. |
+| Production closure satisfiability | manual enumeration of `runtimePath` members against the filesystem after a failing gate | `provider-census` (`src/commands/doctor.ts`) | Assert for every typed `ProductionLeafRuntimeClosure` that its declared member count matches its `runtimePath` rows and that every member exists as a same-root regular file. This invariant would have caught the three missing account-tier modules **before** a completion publication rather than through a failing outer test. |
+| Batch incompatibility detail | trial `--verify` of the cohort | existing `usf publish` | Name the incompatible member and the compared identity in the `WORK_COMPLETION_CANDIDATE_READBACK_INVALID` refusal so cohort formation does not need bisection. |
+
+### Next safe order
+
+1. implement the three account-tier modules through the registered
+   `usf call`/`resolve`/`apply` chain under its current construction authority,
+   then check, integrate and only then complete the packet;
+2. register the closure-satisfiability and policy-coverage assertions through
+   `provider-census`, and the carrier/qualification/obligation projections
+   through `operator-observability`;
+3. correct the `file-asset-index` publication-policy gap with a disjoint sibling
+   policy pair, then run its registered chain; and
+4. only then advance `provider-invocation-boundary`, adapter preflight,
+   qualification and parallel execution toward live multi-provider work.
+
+Verified evidence at this boundary: authoritative typecheck and full suite
+209/209 pass, containment pass, `git diff --check` clean.
+
+Provider contact remains disabled. `usf probe availability` fails closed before
+contact and `usf providers receipt acquire` is proofblocked, because no trusted
+account-tier receipt exists. No receipt v2 runtime, list runtime, account
+observation, provider entitlement, model qualification, adapter load, live
+parallel run, semantic-token reduction, ANQR realisation, staging, production,
+BAU or terminal proof is claimed.
+
+## Prior boundary — root authority restored; file-asset-index policy gap evidenced
 
 This section supersedes every older `Current`, `Live continuation` and `Next`
 heading retained below as chronological evidence; do not operationalize those
