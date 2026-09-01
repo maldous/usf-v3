@@ -1,6 +1,140 @@
 # USF V3 handover
 
-## Current live boundary — census complete; account-tier proven to need real implementation
+## Current live boundary — four packets complete; file-asset-index policy gap closed
+
+This section supersedes every older `Current`, `Live continuation` and `Next`
+heading retained below as chronological evidence; do not operationalize those
+older boundaries unless this section explicitly restates them.
+
+Prepared 2026-09-01 from clean pushed carrier
+`41e76317c375d2d6ebca972f4cef7426ae78bbee` in an isolated standalone clone.
+Read current Git and remote state rather than treating that identifier as the
+new carrier. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded.
+
+`repository-path-scope`, `file-asset-index`, `operator-observability` and
+`provider-census` are all `verified-complete` with completion verified and no
+reason codes. `provider-account-tier-receipt` holds current construction
+authority through `integrate`. Semantic digest movement:
+
+- base `sha256:be453c4fb736396991a817dd722644a4600fa3dee1f1148e3a9ef723faa0cb5e`;
+- new disjoint policy pair and reciprocal algorithms ->
+  `sha256:6e1f83ceb49c5c97c2588284eddd2db0b650a008e31eee1a65fd1708ce3fda67`;
+- file-asset-index construction authority ->
+  `sha256:720168f93319af7261b12fca4dc75ada98aea633c990fd7e9585d8cc333cee47`;
+- file-asset-index completion ->
+  `sha256:d14cdff17d884d9126cdb6678ec135432241a665782171a4ad181afd9a1a5d5c`.
+
+No-change candidate
+`sha256:231fa14df146d5724a386cd454878b8f16d4aa8eb9baf7995cabf2c8836289f5`
+passed its sole graph-selected `urn:usf:validation:file-asset-index-tests` with
+exit code zero. New tracked receipts are
+`evidence/construction-authority/6a6fe1a9ca72796ea288c61614de39044714e782d8a3b9006711fcb1bfb4b3ad.json`
+and
+`evidence/work-completion/836c0a5cd62cc768b1b53977d90a12b42ac16ba4ffc0f353b68142d9f569f79c.json`.
+
+### Resolved: the file-asset-index publication-policy gap
+
+The predecessor boundary recorded that `file-asset-index` was selected,
+dependency-ready and permanently non-actionable because no publication policy in
+this manifest's import closure enumerated it. Two candidate corrections were
+tested empirically rather than assumed, which produced one decision-changing
+result worth keeping:
+
+- **adding the work to the existing `provider-pipeline-construction-authority:1`
+  and `provider-pipeline-no-change-completion:1` policies staled every current
+  grant.** Registered read-back immediately dropped `repository-path-scope`,
+  `operator-observability` and `provider-census` from `verified-complete` to
+  `blocked`. A publication policy's resource digest is inside the scoped
+  dependency closure of every work it makes eligible, so widening a policy
+  reproofs its whole cohort. This correction was rolled back.
+- **a disjoint sibling policy pair covering only `file-asset-index` preserved
+  every grant.** All three completions and the account-tier construction
+  authority survived unchanged.
+
+The accepted correction therefore adds
+`urn:usf:publication-policy:provider-pipeline-construction-authority:3` and
+`urn:usf:publication-policy:provider-pipeline-no-change-completion:3`, each
+enumerating only `urn:usf:work:file-asset-index` and otherwise copying the `:1`
+policy shape.
+
+A new policy additionally requires its **own** publication algorithm. Reusing
+the `:1` algorithms refused exit 4
+`CONSTRUCTION_AUTHORITY_PUBLICATION_CHAIN_INVALID`, because
+`src/realisation/construction-authority.ts` requires the selected policy's
+`publicationAlgorithm` to declare a reciprocal `publicationPolicy` edge back to
+that exact policy, and `src/realisation/work-completion.ts` enforces the same
+invariant for completion. The correction therefore also defines
+`urn:usf:algorithm:provider-pipeline-construction-authority-publication:3` and
+`urn:usf:algorithm:provider-pipeline-work-completion-publication:3` with that
+reciprocal edge. Policy and publication algorithm are a one-to-one pair; a new
+policy is never a policy-only change.
+
+### Still open: account-tier requires real implementation
+
+Unchanged from the predecessor boundary and reconfirmed here.
+`provider-account-tier-receipt` must not be completed as a no-change candidate:
+`urn:usf:requirement:provider-receipt-production-runtime-closure` declares a
+20-member `ProductionLeafRuntimeClosure` whose members
+`src/providers/account-sources.ts`, `src/providers/disposition.ts` and
+`src/providers/host-source-identities.ts` do not exist. Its confined validation
+cannot observe this; only the outer registered
+`usf providers receipt acquire` boundary does, by turning exit 1
+`PROVIDERS_RECEIPT_PROOFBLOCKED` into exit 4
+`PROVIDERS_RECEIPT_DEPENDENCY_REFUSED`. Verified again at this boundary: the
+packet is construction-ready and acquire returns exit 1.
+
+Its declared write set is 24 paths, of which 19 do not yet exist: 16 new JSON
+schemas plus the three modules above. The packet objective is reusable
+no-contact API and subscription-host source verification, the shared
+`accountSourceKeyDigest` domain, stable secret-safe host identity, deterministic
+source-local retry, explicit copy-on-write manifest/head-set protocols and exact
+candidate-local economics/service-tier disposition projection. This is the
+single largest remaining item before any provider contact is reachable, and it
+is explicitly no-contact work in its own right.
+
+### Registered-command gap register
+
+Carried forward unchanged from the predecessor boundary, with one addition
+evidenced tonight. The authority chain is fully served by registered commands;
+the navigation around it is not, and each session currently pays the
+rediscovery cost.
+
+| Gap | Rederived by hand as | Owner | Required registered behaviour |
+|---|---|---|---|
+| Carrier truth | raw `git log`/`rev-parse`/`worktree list`/`ls-remote` across primary, clones and remote | `operator-observability` (`src/commands/status.ts`) | Bounded projection comparing local `HEAD`, tree, tracked cleanliness, current semantic digest and, only on explicit request, one named remote ref. Must distinguish "primary is behind a local clone" from "primary is behind the remote" and refuse rather than guess. |
+| Checkpoint qualification | `git clone --no-hardlinks`, detach, `scripts/bootstrap.sh`, `node --run check`, containment, read-back — run five times tonight | `operator-observability` | One command taking an exact commit and performing the standalone empty-`.usf` qualification, emitting test totals, containment result, reproduced semantic digest and unchanged commit/tree/status. |
+| Obligation identity | `grep 'urn:usf:proof:<work>' graph/*.nq` | `operator-observability` (`usf work`/`usf query`) | Project each selected work's exact construction and completion obligation and evidence-requirement IRIs at every stage, not only inside `CONSTRUCTION_*_MISSING` reason codes that vanish once authority exists. Composing the IRI from the work IRI refuses `CONSTRUCTION_OBLIGATION_MISMATCH`. |
+| Publication policy coverage | manual transitive manifest resolution, then `grep eligibleWork`, then cross-tabulation | `provider-census` (`src/commands/doctor.ts`) | Assert over the exact selected closure that every selected work has exactly one construction-authority and one completion policy, and that each policy's publication algorithm carries the reciprocal `publicationPolicy` edge. Report zero as `CONSTRUCTION_WORK_NOT_ELIGIBLE` risk, more than one as `CONSTRUCTION_AUTHORITY_POLICY_AMBIGUOUS` risk and a broken pair as `CONSTRUCTION_AUTHORITY_PUBLICATION_CHAIN_INVALID` risk, before evidence derivation. |
+| Production closure satisfiability | manual enumeration of `runtimePath` members against the filesystem after a failing gate | `provider-census` (`src/commands/doctor.ts`) | Assert for every typed `ProductionLeafRuntimeClosure` that its declared member count matches its `runtimePath` rows and every member exists as a same-root regular file. Would have caught the three missing account-tier modules before a completion publication. |
+| Policy-widening blast radius | trial amendment, read-back, rollback | `provider-census` (`src/commands/doctor.ts`) | Project which current grants a proposed policy change would stale, so widening an existing policy versus adding a disjoint sibling is a read-back decision rather than an experiment. |
+| Batch incompatibility detail | trial `--verify` of the cohort | existing `usf publish` | Name the incompatible member and the compared identity in the `WORK_COMPLETION_CANDIDATE_READBACK_INVALID` refusal so cohort formation does not need bisection. |
+
+### Next safe order
+
+1. implement the account-tier packet's 19 missing paths through the registered
+   `usf call`/`resolve`/`apply` chain under its current construction authority,
+   check, integrate and only then complete it;
+2. register the closure-satisfiability, policy-coverage and blast-radius
+   assertions through `provider-census`, and the carrier, qualification and
+   obligation projections through `operator-observability`; and
+3. only then advance `provider-invocation-boundary`, adapter preflight,
+   qualification and parallel execution toward live multi-provider work.
+
+Verified evidence at this boundary: authoritative typecheck and full suite
+209/209 pass, containment pass, `git diff --check` clean, and
+`usf providers receipt acquire` correctly exit 1 proofblocked.
+
+Provider contact remains disabled and no live demonstration exists.
+`usf start` runs one bounded foreground lifecycle instance that binds the
+carrier, semantic digest and per-work scoped dependency digests and stops
+cleanly, but its own nonclaims record
+`provider-pipeline-remains-unwired-and-fake-only`. No receipt v2 runtime, list
+runtime, account observation, provider entitlement, model qualification, adapter
+load, live parallel run, semantic-token reduction, ANQR realisation, staging,
+production, BAU or terminal proof is claimed.
+
+## Prior boundary — census complete; account-tier proven to need real implementation
 
 This section supersedes every older `Current`, `Live continuation` and `Next`
 heading retained below as chronological evidence; do not operationalize those
