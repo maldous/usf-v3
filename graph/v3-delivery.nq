@@ -1215,6 +1215,30 @@
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:writeonlysecretsettings" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:predicate:declarationCount> "238" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:predicate:note> "82 tests, 53 proof results, 52 proofs, 51 proof executions: the content inside the proof and validation facets" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:declarationCount> "50" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:note> "declared domain events" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:declarationCount> "186" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:note> "93 framework controls and 93 applicability decisions" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:realisation-bindings> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:realisation-bindings> <urn:usf:predicate:declarationCount> "119" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:realisation-bindings> <urn:usf:predicate:note> "72 realisations and 47 bindings from specification to implementation" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:realisation-bindings> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:state-machine-content> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:state-machine-content> <urn:usf:predicate:declarationCount> "443" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:state-machine-content> <urn:usf:predicate:note> "193 audit events, 131 states, 119 transitions: the content inside the statemodel and auditmodel facets" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:state-machine-content> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:validator-rules> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:validator-rules> <urn:usf:predicate:declarationCount> "46" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:validator-rules> <urn:usf:predicate:note> "the executable checks inside the validation facets" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:validator-rules> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-contract-set:v1:1> <urn:usf:predicate:contractCount> "67" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-contract-set:v1:1> <urn:usf:predicate:declaresContract> <urn:usf:delivery-contract:abacpolicydecisionpoint> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-contract-set:v1:1> <urn:usf:predicate:declaresContract> <urn:usf:delivery-contract:accessibilitya11ygate> <urn:usf:graph:v3-delivery> .
@@ -5512,10 +5536,23 @@
 <urn:usf:delivery-provider:workflowenginetemporalcomposedtest> <urn:usf:predicate:type> <urn:usf:type:DeliveryProvider> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:foundation> <urn:usf:predicate:canonicalName> "foundation" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:foundation> <urn:usf:predicate:type> <urn:usf:type:DeliveryRepository> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:captureBoundary> "The captured layers are the structural backbone: what must be delivered, what completion means, what infrastructure fulfils it, and what artefacts are produced where. The remaining layers are the content inside individual facets. They are enumerated so the boundary is explicit rather than implied." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:captureProgress> "structural-backbone-captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:capturedLayer> "artefact realisation: 37 plans, 37 artefacts, 38 path rules, 14 generators, 15 kinds" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:capturedLayer> "capability dependency graph: 67 capabilities, 14 domains, 77 edges" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:capturedLayer> "completion criteria: 67 contracts, 670 facets, 10 facet kinds" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:capturedLayer> "infrastructure: 60 services, 52 providers, 25 ports, 2 modes" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:capturedSet> <urn:usf:delivery-artefact-set:v1:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:capturedSet> <urn:usf:delivery-capability-set:v1:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:capturedSet> <urn:usf:delivery-contract-set:v1:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:capturedSet> <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:remainingLayer> <urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:remainingLayer> <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:remainingLayer> <urn:usf:delivery-capture-remainder:governance-content> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:remainingLayer> <urn:usf:delivery-capture-remainder:realisation-bindings> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:remainingLayer> <urn:usf:delivery-capture-remainder:state-machine-content> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:remainingLayer> <urn:usf:delivery-capture-remainder:validator-rules> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:schedulabilityProof> "The captured capability graph derives a seven-wave realisation plan of 20, 10, 11, 11, 8, 4 and 3 capabilities through the same dependency derivation the work scheduler uses, acyclic with no defects and all 67 reachable." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-service:alertmanager> <urn:usf:predicate:canonicalName> "alertmanager" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-service:alertmanager> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-service:alertmanager> <urn:usf:predicate:servesCapability> <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:graph:v3-delivery> .
