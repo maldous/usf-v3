@@ -1,6 +1,150 @@
 # USF V3 handover
 
-## Current live boundary — the receipt seam is derived, and its missing primitive proven
+## Current live boundary — the feature model is unreconstructible; two live alternatives per digest
+
+This section supersedes every older `Current`, `Live continuation`, `Prior
+boundary` and `Next` heading retained below as chronological evidence; do not
+operationalize those older boundaries unless this section explicitly restates
+them.
+
+Prepared 2026-09-01. Read current Git and remote state rather than trusting any
+identifier here. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded. **No repository
+source, schema or graph mutation was made at this boundary.**
+
+Nine of nine packets remain `verified-complete` at semantic digest
+`sha256:41d15ade...`, zero stale-authority reason codes, gate 237/237,
+containment `pass`, empty-`.usf` standalone reproduction confirmed, 12/12 routes
+`UNQUALIFIED`, no credential file present, `README.md` still uncommitted.
+
+### The archaeology: the concepts never had a carrier
+
+`git log -S` places the first and only appearance of both terms in **`fe04a6b`
+"Model primary-owned provider receipt semantics"** — the commit that introduced
+the whole v2 model (`providers-receipt:2`, its four command modes,
+`providers-receipt-list:1`, the activation record and its algorithm). That commit
+added exactly one feature-related predicate, `featureOwner`. It did **not** add a
+registration-feature resource.
+
+Counted precisely: each term occurs **twice**, both times as a substring inside
+two prose literals (`coherentTransitionRule`, `currentHelpRule`) on the single
+subject `urn:usf:rule:provider-receipt-target-registration:1`. Zero predicates,
+zero schemas, zero record fields, zero `src/`, zero `tests/`.
+
+Searched beyond the current tree: the prior carrier
+`usf-v3-carrier-fe04a6b` holds byte-identical prose and no extra definition;
+`bak/` (35 entries incl. legacy and ANQR material) and `GOAL.md` contain no
+registration-feature, feature-operations or postimage-set concept. So of the four
+possibilities, this is **(4) genuinely never existed** — with the important
+qualifications below.
+
+### What does exist: an adjacent but disqualified mechanism, and the right pattern
+
+Adjacent machinery exists and is **explicitly unsuitable**, which is informative
+rather than incidental. `candidateReceiptFacts` (`src/commands/check.ts:531-558`)
+already computes `byteDeltaDigest` over `{kind, path, beforeDigest, afterDigest}`
+and `fileModeDigest` over `{path, beforeMode, afterMode}`. Both embed the
+**preimage**, and `resolve.ts` builds the candidate identity from
+`{basisDigest, operations, acceptedContributionDigests}`. All three are therefore
+**basis-dependent**, which is exactly what the rule forbids: it requires
+"basis-independent" feature digests precisely because the final candidate's basis
+changes when the operator predecessor completes.
+
+The repository also already has the correct *pattern* for a key of this kind:
+`urn:usf:type:CanonicalKeyedMemberDigestProtocol`, with three instances
+(`account-source-key:1`, `candidate-member-key:1`, `route-member-key:1`). Every
+one carries `digestAlgorithm "sha256-usf-canonical-json-v1"`, a `memberSchema`,
+a `currentnessRule`, and — decisively — a **`digestPreimage` that enumerates the
+exact fields**. There are exactly **3** `digestPreimage` declarations in the
+graph and **none** mentions a registration feature.
+
+That is the strongest single finding here: **this repository never leaves a
+digest preimage to inference.** `route-member-key:1` even carries
+`excludesFromDigest "whole config/providers.json bytes"` to remove doubt.
+Inferring a preimage for the two registrationFeature digests would break the
+modelling discipline that every comparable key follows.
+
+### Constraints that *are* firmly established
+
+Worth recording, because they narrow the eventual model and were not previously
+captured:
+
+- `staticRegistrationCandidateStage: "checked-awaiting-integration"` — Phase 1's
+  preliminary candidate must be checked and **not** integrated.
+- `requiredLeafStage: "verified-complete"` with
+  `requiredLeafStageAppliesTo: "production-runtime-invocation-only"`.
+- `repositoryClosureDigest: "canonical-sorted-path-digest-role-set"` — the
+  repository's naming convention for a closure digest is a sorted
+  path/digest/role tuple set; a sibling shape, not this one.
+- `resolve.ts:63` path-sorts operations (`[...seen.keys()].sort()`), so
+  "canonical ordered" unambiguously means **path order** in this repository.
+  Ordering is *not* one of the open questions.
+- The two owners' write sets are disjoint, which is what makes a write-set-scoped
+  postimage set basis-independent in practice.
+
+### Why the model is still unreconstructible: two live alternatives per digest
+
+Ordering is settled; the **preimage membership** is not. Each digest has at least
+two materially different, equally defensible readings of the same sentence.
+
+**`registrationFeatureOperationsDigest`** — "SHA-256 of its canonical ordered
+normalized feature operations"
+
+| | O1 — resolved operations inline | O2 — content-digested operations |
+|---|---|---|
+| preimage | `canonicalDigest(payload.operations)` with each op `{kind, path, content, encoding, mediaType}` | `canonicalDigest([{kind, path, contentDigest}])` |
+| for | `resolve` *is* this repository's normalization step; its output is literally "the normalized operations" | bounded input; "normalized" then does real work; matches the sibling discipline of never digesting whole file bytes into a key |
+| against | digest input is multi-megabyte; "normalized" becomes a no-op | drops `encoding`/`mediaType` — or keeps them, which is a third variant |
+
+**`registrationFeaturePostimageSetDigest`** — "SHA-256 of the canonical
+path-ordered tuples of operation kind, resulting mode and resulting raw-byte
+SHA-256-or-null **across the exact account-tier write set**"
+
+| | P1 — operation-spanning | P2 — write-set-spanning, real resulting state | P3 — write-set-spanning, null for untouched |
+|---|---|---|---|
+| members | one tuple per operation | one tuple per write-set path (24), untouched paths carry their unchanged mode/digest | one tuple per write-set path, untouched paths carry nulls |
+| reading of "across the write set" | a scope constraint: every operation lies within it | the span of the set | the span of the set |
+| for | "operation kind" presupposes an operation | a complete statement of the feature's resulting footprint; "or-null" then covers deletes | uses "or-null" uniformly |
+| against | nearly redundant with O2 | "operation kind" undefined for an untouched member | two features ending in the same state digest differently, which is wrong for a *postimage* set |
+
+These are not stylistic variants. The digests are the seam's **cross-phase
+equality key**, and the rule makes inequality a hard refusal. Picking O1 vs O2, or
+P1 vs P2 vs P3, silently changes what "the same feature" means. Choosing one
+arbitrarily and encoding it in the graph would mint exactly the kind of
+unfounded authority this programme exists to prevent — so the choice is left to
+whoever owns the model.
+
+### The decision needed, and the shape of the answer
+
+One decision unblocks everything: **declare the `digestPreimage` for each of the
+two digests**, following the existing `CanonicalKeyedMemberDigestProtocol`
+pattern — `digestAlgorithm "sha256-usf-canonical-json-v1"`, a `memberSchema`
+naming a new closed record, an enumerated `digestPreimage`, a `currentnessRule`
+asserting basis-independence, and an `excludesFromDigest` naming `basisDigest`,
+`acceptedContributionDigests` and every preimage field.
+
+Once that single choice is recorded, the rest is mechanical and already proven
+here: the definition is a set of **new inbound-linked subjects** (zero blast
+radius, as measured twice before), landed through `realisation-basis-chain` into
+`graph/usf-bootstrap.nq`; the implementation and its tests then follow, covering
+deterministic re-derivation, mutation detection, missing/extra operation refusal,
+postimage mismatch, canonicalization, the
+`checked-awaiting-integration` versus final distinction, operator mutation after
+final construction, and equality re-derivation — turning the rule's refusal prose
+into executable invariants.
+
+### Next safe order
+
+1. record the chosen `digestPreimage` for both digests (O1 or O2; P1, P2 or P3),
+   with the reasoning, so the equality key is declared rather than inferred;
+2. land the definition as new inbound-linked subjects through
+   `realisation-basis-chain`, with tests, and prove it independently before any
+   seam work;
+3. then implement the three-phase seam against the declared key;
+4. only then supply one operator credential — it changes `CREDENTIAL_MISSING`
+   alone and provides no useful proof before the repository path is ready.
+
+## Prior boundary — the receipt seam is derived, and its missing primitive proven
 
 This section supersedes every older `Current`, `Live continuation`, `Prior
 boundary` and `Next` heading retained below as chronological evidence; do not
