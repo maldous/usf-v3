@@ -1,6 +1,189 @@
 # USF V3 handover
 
-## Current live boundary — graph-owned authority can now evolve legitimately
+## Current live boundary — eight packets complete; confinement repaired properly
+
+This section supersedes every older `Current`, `Live continuation`, `Prior
+boundary` and `Next` heading retained below as chronological evidence; do not
+operationalize those older boundaries unless this section explicitly restates
+them.
+
+Prepared 2026-09-01. Read current Git and remote state rather than trusting any
+identifier here. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded.
+
+**Eight packets are `verified-complete`**, newly including
+`provider-semantic-qualification-v2`. Its eight-file validation now passes
+*inside* the hermetic bwrap cage under Node `--permission`, not around it.
+
+### Read this first: a read-closure fix was not the answer
+
+The previous boundary left `CHECK_FAILED` after the 11-member
+`ValidationRuntimeClosure` made confinement provable. The residual failure was a
+**write-effect** defect, and it was fixed as one:
+
+`tests/unit/providers/config.test.ts` computed
+`runtimeRoot = join(process.cwd(), ".usf", "tmp")`. The cage grants exactly one
+`--allow-fs-write` for its scratch root and exports that root as `TMPDIR`, so the
+test now resolves `join(tmpdir(), "usf-provider-config")` instead. Nothing was
+exempted: the repository root was not made writable, `.usf/tmp` was not added as
+a fake read dependency, no test was deleted and nothing ran outside the canonical
+validator.
+
+A second, harder fact was measured rather than assumed: **`fs.symlink` requires
+the full unscoped filesystem capability**, so it is categorically unavailable
+under `--permission` no matter how the scratch is scoped. The symlink-refusal
+assertion was therefore split into its own case behind an explicit
+`confinedFileSystem()` guard — the same pattern the repository already uses for
+cage-incompatible coverage — and is asserted in the ordinary outer carrier lane.
+
+The declared boundary is now proved from **both** sides inside the cage: a write
+beneath the launcher-supplied scratch root succeeds, and a planted write to
+`<cwd>/.usf-scratch-boundary-probe` and `<cwd>/src/...` is rejected with
+`ERR_ACCESS_DENIED`. Confinement got stronger, not weaker.
+
+| lane | result |
+|---|---|
+| `config.test.ts` caged | 7 tests, 6 pass, 0 fail, 1 guarded skip |
+| `config.test.ts` outer | 7 tests, 7 pass, 0 skipped |
+| the full eight-file command caged | 64 tests, 63 pass, 0 fail, 1 guarded skip |
+
+Both hermetic validations that name `config.test.ts` are covered:
+`urn:usf:validation:provider-qualification-v2` passed as a graph-bound
+`usf check`, and `urn:usf:validation:provider-qualification-tests` has a
+**byte-identical** `command`, `environment` (`hermetic`), `executionMode` and
+`hostToolDependency` (`bwrap:0.9.0`), and that exact command was exercised under
+the cage directly. Its own graph-bound `usf check` refuses
+`CHECK_VALIDATION_NOT_BOUND` against another work's candidate, which is correct;
+running it as a bound check needs the v1 work's own candidate, and that work
+remains blocked in the separate `v3-self-host:2` lineage for unrelated reasons.
+
+### The scoping lesson, sharpened by two rejected designs
+
+The previous boundary's rule — measure blast radius from resource closure, never
+from file membership — held, and this session found its converse. **Adding a new
+unreferenced subject is free; modifying an existing shared subject is not**, and
+both live in the same files.
+
+Two designs were authored, measured and **rejected** before anything was landed:
+
+| attempted change | measured effect |
+|---|---|
+| add `writeAccess`/`sourceAccess`/`environmentRule` to `urn:usf:environment:hermetic` (in the owned `graph/foundation.nq`) | **all seven completions staled.** That resource is reached from every work via validation/proof `environment>` edges, so its digest is in every `coreScope`. |
+| add one `permitsWrite` quad to `urn:usf:contract:semantic-first-order:1` | **all seven completions staled.** `coreToProductDigest` moved `597f94e1` -> `334fe492` while `profileDigest` and `productDigest` were untouched. |
+
+So the appealing "declare the write contract on the hermetic environment" design
+is wrong, however well it reads. Measure first; both of these looked safe.
+
+### What was actually landed: a narrowly scoped maintenance work
+
+`urn:usf:work:validation-scratch-confinement`, declared through
+`realisation-basis-chain` into `graph/usf-bootstrap.nq` as **63 new quads, every
+subject new**:
+
+- Its write set is **exactly one path**: `tests/unit/providers/config.test.ts`.
+- It needed **no contract edit**, because
+  `urn:usf:contract:provider-semantic-qualification:1` already permits the
+  `tests/unit/providers/` prefix (`isPermittedWrite` accepts `/`-suffixed
+  prefixes, `src/graph/work.ts:317`).
+- It needed **no profile edit**, because profiles select *contracts*, and that
+  contract is already selected by `v3-self-host-hermes:1`.
+- Its authority comes from a **disjoint sibling policy**,
+  `urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1`,
+  which enumerates exactly one work. `policyBlastRadius` now reports it as
+  `eligible 1, stales 0` — it cannot stale a cohort by construction.
+
+Measured blast radius of the whole scaffold: the provider profile projection was
+**identical**, and in hermes only the three works whose `readSet` contains
+`graph/usf-bootstrap.nq` moved, none of them complete.
+
+A second `realisation-basis-chain` contribution added
+`urn:usf:validation-runtime-closure:validation-scratch-confinement:1` (6 quads)
+supplying the two files the confined config validation reaches through
+`src/providers/config.ts`: `src/schema/index.ts` (value import) and
+`schemas/provider-config.schema.json` (read during module evaluation). Note the
+confirmation that inbound linkage works as designed: adding that closure did
+**not** stale the work's own grant.
+
+Why an existing owner could not be used: `urn:usf:work:provider-semantic-qualification`
+already declares `tests/unit/providers/` as a `writePath`, but it is
+`WORK_DEPENDENCY_NOT_READY` in the `v3-self-host:2` lineage where no work is
+complete. Reviving that lineage is a separate programme.
+
+### Verified evidence at this boundary
+
+Five carrier commits: two `realisation-basis-chain` graph contributions, one
+grant checkpoint each for `validation-scratch-confinement` and
+`provider-semantic-qualification-v2`, the confinement fix, and the psq-v2 byte
+delta (1074 insertions across its three paths) plus its completion. Every graph
+publication was a pure append with zero rewritten quads, and every confined
+check passed.
+
+Full gate **223 -> 230** (five routing tests, two confinement tests) with
+containment `pass`. Preflight before minting completion: `closureSatisfiability`
+`satisfiable` with empty `blockedWorks`, `publicationPolicyCoverage` `covered`
+with zero works at risk, `policyBlastRadius` over seven policies derived from
+scoped-dependency-closure membership, `carrier` observed from local refs only.
+
+The construction grant rolled back in the previous session was **not** reused or
+repaired; fresh grants were derived at each basis, and the two-grant rule held
+again for the byte delta.
+
+### Environment trap: FORCE_COLOR breaks the authoritative lane
+
+The first standalone run of this boundary failed the gate with three
+`SyntaxError: Unexpected token '(', "(node:8564"... is not valid JSON` failures
+in `tests/integration/provider-cli.test.ts`, while the primary passed 230/230.
+It is **not** a repository defect and not caused by this session's changes.
+
+`src/providers/subscription-hosts.ts:322` deliberately sets `NO_COLOR: "1"` in
+its scrubbed child environment. If the surrounding session exports
+`FORCE_COLOR`, that variable is not scrubbed, Node then emits
+`The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.` and the
+warning lands in output the test `JSON.parse`s.
+
+Run the authoritative and standalone lanes with `FORCE_COLOR` unset. The
+qualification procedure recorded below now does that explicitly. Re-run clean,
+the same commit passes 230/230.
+
+There is a real latent robustness gap here worth a future packet: the scrubbed
+child drops credentials and proxies but not the colour variables, so a caller's
+`FORCE_COLOR` can corrupt a bounded JSON protocol. It belongs to whoever owns
+`src/providers/subscription-hosts.ts`, not to this boundary, and it is recorded
+rather than smuggled into an unrelated write set.
+
+### Provider state re-derived after completion
+
+Unchanged where it matters, and honest: all **twelve** routes remain
+`UNQUALIFIED` and `usf providers receipt acquire` still refuses
+`PROVIDERS_RECEIPT_PROOFBLOCKED`. Completing semantic qualification qualified no
+route, because qualification consumes live observations that do not exist.
+
+`provider-parallel-execution` is now **`dependencyReady: true` with
+`verified-completion`** for the first time (its predecessors
+`operator-observability` and `provider-semantic-qualification-v2` are both
+complete). It is blocked only on its own evidence, proof and grant. Three of its
+five write paths do not exist yet:
+`schemas/parallel-provider-run.schema.json`,
+`schemas/semantic-token-comparison.schema.json` and
+`src/commands/provider-parallel.ts`. Its permission `maximumThrough` is
+`runtime`.
+
+The receipt-target seam remains as derived last session: no authority blocker,
+both owners `verified-complete` yet retaining `active-permission`/`integrate`, and
+the receipt v2 protocol entirely unbuilt.
+
+### Next safe order
+
+1. `provider-parallel-execution`: dependency-ready, repository-contained and
+   reversible. It needs three new files implemented, and it is where a live
+   multi-provider run first becomes reachable;
+2. the receipt-v2 registration seam, which is implementation-scale, not
+   authority-scale;
+3. reuse `urn:usf:work:validation-scratch-confinement` only for genuine
+   ephemeral-write repairs under `tests/unit/providers/`; widen its write set
+   through a new disjoint policy rather than by editing a shared contract.
+
+## Prior boundary — graph-owned authority can now evolve legitimately
 
 This section supersedes every older `Current`, `Live continuation`, `Prior
 boundary` and `Next` heading retained below as chronological evidence; do not
