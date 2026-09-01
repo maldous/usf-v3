@@ -113,6 +113,7 @@ function isValidDomain(domain: string): boolean {
   if (domain.includes('..')) return false;
   const parts = domain.split('.');
   if (parts.some((part) => part.length === 0)) return false;
+  if (/^[0-9]+(\.[0-9]+){3}$/.test(domain)) return false;
   return true;
 }
 
@@ -164,7 +165,7 @@ export function createOwnershipChallenge(
   }
 
   const existingAnyTenant = findAnyTenantDomainRecord(state, domain);
-  if (existingAnyTenant !== null) {
+  if (existingAnyTenant !== null && !existingAnyTenant.disabled) {
     const auditError = emitAudit('CONFLICT_REJECTED', domain, tenant, auditFn);
     if (auditError !== null) return auditError;
     return { kind: 'DOMAIN_ALREADY_CLAIMED', message: 'Domain already claimed by another tenant' };
@@ -227,8 +228,6 @@ export function verifyDnsOwnership(
 
   const tokenMatch = record.challengeTokens.some((t) => t.token === expectedToken);
   if (!tokenMatch) {
-    const auditError = emitAudit('VERIFICATION', domain, tenant, auditFn);
-    if (auditError !== null) return auditError;
     return { kind: 'DNS_MISMATCH', message: 'DNS verification token mismatch' };
   }
 
@@ -264,7 +263,7 @@ export function activateAuthClient(
   }
 
   if (record.authClientStatus === 'ACTIVE') {
-    return { kind: 'ALREADY_VERIFIED', message: 'Auth client already active' };
+    return { kind: 'SUCCESS', message: 'Auth client already active' };
   }
 
   const success = authClientPort.activate(domain, tenant);
@@ -490,9 +489,6 @@ export function disableDomain(
   if (record.disabled) {
     return { kind: 'SUCCESS', message: 'Domain already disabled' };
   }
-
-  const auditError = emitAudit('AUTH_CLIENT_DEACTIVATED', domain, tenant, auditFn);
-  if (auditError !== null) return auditError;
 
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
     ...record,

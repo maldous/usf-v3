@@ -166,6 +166,14 @@
 <urn:usf:command:hermes-stop:1> <urn:usf:predicate:synopsis> "usf hermes stop [--wait-ms N]" <urn:usf:graph:v3-delivery> .
 <urn:usf:command:hermes-stop:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
 <urn:usf:command:hermes-stop:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:appliesToFacetKind> <urn:usf:facet-kind:uisemantics> <urn:usf:graph:v3-delivery> .
+<urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:canonicalName> "v1" <urn:usf:graph:v3-delivery> .
+<urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:disposition> "PROFILE_SUPPLIED" <urn:usf:graph:v3-delivery> .
+<urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:nonClaim> "A profile-supplied requirement is excluded from Core's completion denominator because it is not Core's to satisfy. It is not evidence that any profile has satisfied it." <urn:usf:graph:v3-delivery> .
+<urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:nonClaim> "Marking a requirement profile-supplied does not retract the recovered V1 applicability that recorded it. V1 USF satisfied these requirements; V3 Core deliberately does not, and the requirement passes to whichever profile needs it rather than ceasing to exist." <urn:usf:graph:v3-delivery> .
+<urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:ownerAuthorityRule> "A user interface belongs to the product. A profile that needs one declares its own UI semantics against the Core grammar, and may need surfaces Core has no equivalent for. Core supplies the grammar for describing a UI; it declares no surface of its own." <urn:usf:graph:v3-delivery> .
+<urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:surfaceRule> "Every USF Core capability must be fully usable through an SDK surface, an API surface and a CLI surface. A capability reachable only through a rendered interface is incomplete as Core, because a product cannot compose what it cannot call." <urn:usf:graph:v3-delivery> .
+<urn:usf:core-surface-policy:v1:1> <urn:usf:predicate:type> <urn:usf:type:CoreSurfacePolicy> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact-plan:accessibilityprofile> <urn:usf:predicate:canonicalName> "accessibilityprofile" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact-plan:accessibilityprofile> <urn:usf:predicate:ownedByRepository> <urn:usf:delivery-repository:foundation> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact-plan:accessibilityprofile> <urn:usf:predicate:plansArtefact> <urn:usf:delivery-artefact:accessibilityprofile> <urn:usf:graph:v3-delivery> .
@@ -10274,6 +10282,15 @@
 <urn:usf:provider-mode:composedreal> <urn:usf:predicate:type> <urn:usf:type:ProviderMode> <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:hermeticmock> <urn:usf:predicate:canonicalName> "hermeticmock" <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:hermeticmock> <urn:usf:predicate:type> <urn:usf:type:ProviderMode> <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:canonicalName> "v1" <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:currentnessRule> "Foundation or profile movement within a profile's declared dependency closure makes its realisation stale and requires regeneration of exactly the affected outputs. External fact drift does not. Drift is recorded so a difference between two realisations can be attributed to it, and it never silently invalidates evidence that was truthfully observed at the time." <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:externalFactRule> "A realisation is produced against third-party facts that evolve independently of both foundation and profile: the model catalogue, which providers and models exist and answer, adapter and runtime versions, and the behaviour of external services. Running the same realisation later may legitimately produce a different result. A realisation therefore records the external facts it was produced against, and reproducibility is claimed only against those pinned facts." <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:member> "external-fact-snapshot" <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:member> "product-profile-revision" <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:member> "profile-core-dependency-closure" <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:member> "usf-foundation-revision" <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:nonClaim> "Recording the external facts a realisation was produced against is not a claim that re-running it will reproduce the same output. It is what makes a difference explainable rather than mysterious." <urn:usf:graph:v3-delivery> .
+<urn:usf:realisation-identity:v1:1> <urn:usf:predicate:type> <urn:usf:type:RealisationIdentityModel> <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:antiSelfWarrant> "The evidence records that a validator ran and what it returned. It never records satisfaction. The facet evaluator derives satisfaction from this evidence, and a requirement can never be its own evidence." <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:bottleneck> "none: validation happens at the point of realization, in parallel, with no gate between producing and accepting" <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:evidenceShape> "artefact identity, content digest, validator identity, validation outcome, authority snapshot digest" <urn:usf:graph:v3-delivery> .

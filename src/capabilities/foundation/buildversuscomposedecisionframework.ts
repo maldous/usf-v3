@@ -181,7 +181,7 @@ function runProof(state: BuildVersusComposeState): BuildVersusComposeState {
   const consistencyCheck = consistencyError === null && authorityError === null;
 
   const proofDocument: ProofDocument = {
-    decisionRecords: activeRecords,
+    decisionRecords: state.decisionRecords,
     consistencyCheck,
     authorityOrder: state.authorityOrder,
     proofRun: true,
@@ -231,7 +231,8 @@ export function createDecision(
   decision: BuildVersusComposeDecision,
   justification: DecisionJustification,
   authority: string,
-  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null
+  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
+  timestamp: string
 ): BuildVersusComposeState | BuildVersusComposeError {
   if (state.decisionRecords.some(r => r.capabilityId === capabilityId && r.supersededBy === null)) {
     return createError('CONTRADICTION_DETECTED', `Capability ${capabilityId} already has active decision`);
@@ -245,7 +246,6 @@ export function createDecision(
 
   const version = getNextVersion(state.decisionRecords, capabilityId);
   const id = generateDecisionId(capabilityId, version);
-  const timestamp = new Date().toISOString();
   const record: DecisionRecord = { id, capabilityId, decision, justification, version, authority, supersededBy: null };
   const event = auditDecisionChange('DECISION_CREATED', id, capabilityId, version, authority, timestamp);
 
@@ -270,7 +270,8 @@ export function reviseDecision(
   decision: BuildVersusComposeDecision,
   justification: DecisionJustification,
   authority: string,
-  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null
+  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
+  timestamp: string
 ): BuildVersusComposeState | BuildVersusComposeError {
   const activeRecord = state.decisionRecords.find(r => r.capabilityId === capabilityId && r.supersededBy === null);
   if (!activeRecord) {
@@ -285,7 +286,6 @@ export function reviseDecision(
 
   const newVersion = activeRecord.version + 1;
   const newId = generateDecisionId(capabilityId, newVersion);
-  const timestamp = new Date().toISOString();
   const newRecord: DecisionRecord = {
     id: newId,
     capabilityId,
@@ -319,7 +319,8 @@ export function supersedeDecision(
   state: BuildVersusComposeState,
   capabilityId: string,
   authority: string,
-  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null
+  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
+  timestamp: string
 ): BuildVersusComposeState | BuildVersusComposeError {
   const activeRecord = state.decisionRecords.find(r => r.capabilityId === capabilityId && r.supersededBy === null);
   if (!activeRecord) {
@@ -331,7 +332,6 @@ export function supersedeDecision(
 
   const newVersion = activeRecord.version + 1;
   const newId = generateDecisionId(capabilityId, newVersion);
-  const timestamp = new Date().toISOString();
   const newRecord: DecisionRecord = {
     id: newId,
     capabilityId,
@@ -365,7 +365,8 @@ export function rollbackDecision(
   state: BuildVersusComposeState,
   capabilityId: string,
   authority: string,
-  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null
+  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
+  timestamp: string
 ): BuildVersusComposeState | BuildVersusComposeError {
   const activeRecord = state.decisionRecords.find(r => r.capabilityId === capabilityId && r.supersededBy === null);
   if (!activeRecord) {
@@ -386,7 +387,6 @@ export function rollbackDecision(
     return createError('AUTHORITY_VIOLATION', `Authority ${authority} not authorized`);
   }
 
-  const timestamp = new Date().toISOString();
   const event = auditDecisionChange('DECISION_ROLLED_BACK', targetRecord.id, capabilityId, targetRecord.version, authority, timestamp);
 
   const auditError = auditFn(event);
@@ -410,9 +410,9 @@ export function initializeFramework(
   state: BuildVersusComposeState,
   inScopeCapabilities: readonly string[],
   authorityOrder: readonly string[],
-  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null
+  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
+  timestamp: string
 ): BuildVersusComposeState | BuildVersusComposeError {
-  const timestamp = new Date().toISOString();
   const event = auditDecisionChange('DECISION_CREATED', 'framework-init', 'framework', 1, 'platform', timestamp);
 
   const auditError = auditFn(event);

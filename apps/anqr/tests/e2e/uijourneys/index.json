@@ -1,0 +1,22 @@
+{
+  "artifactId": "e2ejourneymanifest",
+  "kind": "test",
+  "version": "1.0",
+  "content": {
+    "journeyName": "ANQR_e2e",
+    "steps": [
+      {
+        "name": "setup",
+        "type": "pre"
+      },
+      {
+        "name": "runTests",
+        "type": "execution"
+      },
+      {
+        "name": "teardown",
+        "type": "post"
+      }
+    ]
+  }
+}

@@ -34,7 +34,7 @@ export interface TenantThemeOverride {
 
 export interface BrandingDefinition {
   readonly applicationName: string;
-  readonly themeSelection: typeof BrandingAndThemingThemeSelection[number];
+  readonly themeSelection: BrandingAndThemingThemeSelection;
 }
 
 export type BrandingAndThemingState = Readonly<{
@@ -81,32 +81,53 @@ export type BrandingPermissionCheckResult =
   | { readonly kind: 'GRANTED' }
   | { readonly kind: 'DENIED'; readonly error: BrandingAndThemingError };
 
-export type BrandingValidationSuccess = { readonly kind: 'SUCCESS'; readonly definition: BrandingDefinition };
+export type BrandingValidationSuccess = {
+  readonly kind: 'SUCCESS';
+  readonly definition: BrandingDefinition;
+};
+
+export type BrandingValidationResult =
+  | BrandingValidationSuccess
+  | BrandingAndThemingError;
 
 export function checkBrandingPermission(
   tenantId: string,
   token: unknown,
-  state: BrandingAndThemingState,
 ): BrandingPermissionCheckResult {
-  if (token === null || typeof token !== 'object' || !('tenantId' in token) || (token as { readonly tenantId?: string }).tenantId !== tenantId) {
+  if (
+    token === null ||
+    typeof token !== 'object' ||
+    !('tenantId' in token) ||
+    (token as { readonly tenantId?: string }).tenantId !== tenantId
+  ) {
     return {
       kind: 'DENIED',
       error: { kind: 'FORBIDDEN', message: 'Tenant-scoped permission required' },
     };
   }
 
-  if (!('permissions' in token) || !Array.isArray((token as { readonly permissions?: unknown }).permissions)) {
+  if (
+    !('permissions' in token) ||
+    !Array.isArray((token as { readonly permissions?: unknown }).permissions)
+  ) {
     return {
       kind: 'DENIED',
       error: { kind: 'FORBIDDEN', message: 'Invalid permissions in token' },
     };
   }
 
-  const permissions = (token as { readonly permissions: readonly string[] }).permissions;
-  if (!permissions.includes('configuration:read') || !permissions.includes('configuration:write')) {
+  const permissions = (token as { readonly permissions: readonly string[] })
+    .permissions;
+  if (
+    !permissions.includes('configuration:read') ||
+    !permissions.includes('configuration:write')
+  ) {
     return {
       kind: 'DENIED',
-      error: { kind: 'FORBIDDEN', message: 'Configuration read/write permissions required' },
+      error: {
+        kind: 'FORBIDDEN',
+        message: 'Configuration read/write permissions required',
+      },
     };
   }
 
@@ -115,29 +136,40 @@ export function checkBrandingPermission(
 
 export function validateBrandingDefinition(
   definition: unknown,
-): BrandingValidationSuccess | BrandingAndThemingError {
+): BrandingValidationResult {
   if (definition === null || typeof definition !== 'object') {
-    return { kind: 'VALIDATION_ERROR', message: 'Branding definition must be an object' };
+    return {
+      kind: 'VALIDATION_ERROR',
+      message: 'Branding definition must be an object',
+    };
   }
 
   const def = definition as Record<string, unknown>;
 
   if (typeof def.applicationName !== 'string') {
-    return { kind: 'VALIDATION_ERROR', message: 'applicationName must be a string' };
+    return {
+      kind: 'VALIDATION_ERROR',
+      message: 'applicationName must be a string',
+    };
   }
 
   if (
     typeof def.themeSelection !== 'string' ||
-    !BrandingAndThemingThemeSelection.includes(def.themeSelection as any)
+    !BrandingAndThemingThemeSelection.includes(
+      def.themeSelection as BrandingAndThemingThemeSelection,
+    )
   ) {
-    return { kind: 'VALIDATION_ERROR', message: 'themeSelection must be one of system, light, dark' };
+    return {
+      kind: 'VALIDATION_ERROR',
+      message: 'themeSelection must be one of system, light, dark',
+    };
   }
 
   return {
     kind: 'SUCCESS',
     definition: {
       applicationName: def.applicationName,
-      themeSelection: def.themeSelection as any,
+      themeSelection: def.themeSelection as BrandingAndThemingThemeSelection,
     },
   };
 }
@@ -157,13 +189,18 @@ export function resolveEffectiveTheme(
 
   return {
     primaryColor: override.primaryColor ?? state.defaultTheme.primaryColor,
-    secondaryColor: override.secondaryColor ?? state.defaultTheme.secondaryColor,
-    backgroundColor: override.backgroundColor ?? state.defaultTheme.backgroundColor,
+    secondaryColor:
+      override.secondaryColor ?? state.defaultTheme.secondaryColor,
+    backgroundColor:
+      override.backgroundColor ?? state.defaultTheme.backgroundColor,
     textColor: override.textColor ?? state.defaultTheme.textColor,
   };
 }
 
-export function readTheme(host: string, state: BrandingAndThemingState): ThemeReadResult {
+export function readTheme(
+  host: string,
+  state: BrandingAndThemingState,
+): ThemeReadResult {
   try {
     const tenantId = host === '' ? null : host;
     const theme = resolveEffectiveTheme(tenantId, state);
@@ -181,7 +218,7 @@ export function listBrandingDefinitions(
   token: unknown,
   state: BrandingAndThemingState,
 ): readonly BrandingDefinition[] | BrandingAndThemingError {
-  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  const permissionCheck = checkBrandingPermission(tenantId, token);
   if (permissionCheck.kind === 'DENIED') {
     return permissionCheck.error;
   }
@@ -197,7 +234,7 @@ export function createBrandingDefinition(
   state: BrandingAndThemingState,
   audit: (event: AuditEvent) => BrandingAndThemingError | null,
 ): BrandingMutationResult {
-  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  const permissionCheck = checkBrandingPermission(tenantId, token);
   if (permissionCheck.kind === 'DENIED') {
     return { kind: 'ERROR', error: permissionCheck.error };
   }
@@ -211,7 +248,10 @@ export function createBrandingDefinition(
   if (currentDef !== undefined) {
     return {
       kind: 'ERROR',
-      error: { kind: 'FORBIDDEN', message: 'Branding definition already exists for tenant' },
+      error: {
+        kind: 'FORBIDDEN',
+        message: 'Branding definition already exists for tenant',
+      },
     };
   }
 
@@ -245,7 +285,7 @@ export function patchBrandingDefinition(
   state: BrandingAndThemingState,
   audit: (event: AuditEvent) => BrandingAndThemingError | null,
 ): BrandingMutationResult {
-  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  const permissionCheck = checkBrandingPermission(tenantId, token);
   if (permissionCheck.kind === 'DENIED') {
     return { kind: 'ERROR', error: permissionCheck.error };
   }
@@ -254,13 +294,18 @@ export function patchBrandingDefinition(
   if (currentDef === undefined) {
     return {
       kind: 'ERROR',
-      error: { kind: 'UNKNOWN_KEY', message: 'No branding definition exists for tenant' },
+      error: {
+        kind: 'UNKNOWN_KEY',
+        message: 'No branding definition exists for tenant',
+      },
     };
   }
 
   const mergedDefinition: BrandingDefinition = {
-    applicationName: partialDefinition.applicationName ?? currentDef.applicationName,
-    themeSelection: partialDefinition.themeSelection ?? currentDef.themeSelection,
+    applicationName:
+      partialDefinition.applicationName ?? currentDef.applicationName,
+    themeSelection:
+      partialDefinition.themeSelection ?? currentDef.themeSelection,
   };
 
   const validation = validateBrandingDefinition(mergedDefinition);
@@ -297,7 +342,7 @@ export function deleteBrandingDefinition(
   state: BrandingAndThemingState,
   audit: (event: AuditEvent) => BrandingAndThemingError | null,
 ): BrandingMutationResult {
-  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  const permissionCheck = checkBrandingPermission(tenantId, token);
   if (permissionCheck.kind === 'DENIED') {
     return { kind: 'ERROR', error: permissionCheck.error };
   }
@@ -306,7 +351,10 @@ export function deleteBrandingDefinition(
   if (currentDef === undefined) {
     return {
       kind: 'ERROR',
-      error: { kind: 'UNKNOWN_KEY', message: 'No branding definition exists for tenant' },
+      error: {
+        kind: 'UNKNOWN_KEY',
+        message: 'No branding definition exists for tenant',
+      },
     };
   }
 

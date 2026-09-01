@@ -198,7 +198,6 @@ export function evaluateRequestWithFallback(
 
   if (directResult.decision === 'SERVER_UNAVAILABLE' || directResult.decision === 'RESOURCE_NOT_REGISTERED') {
     return {
-      ...directResult,
       decision: directResult.decision,
       error: directResult.error,
     };
@@ -300,7 +299,11 @@ export function computeReadiness(
   if (state.readiness === 'READY') {
     return 'READY';
   }
-  if (state.lastDecision === 'SERVER_UNAVAILABLE' || state.lastDecision === 'RESOURCE_NOT_REGISTERED') {
+  if (
+    state.lastDecision === 'SERVER_UNAVAILABLE' ||
+    state.lastDecision === 'RESOURCE_NOT_REGISTERED' ||
+    state.lastError !== null
+  ) {
     return 'DEGRADED';
   }
   return 'NOT_READY';

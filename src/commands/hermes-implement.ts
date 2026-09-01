@@ -202,6 +202,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     }));
 
   const rounds = await readRepairRounds(repositoryRoot);
+  const candidateFailures = await readCandidateFailures(repositoryRoot);
   const repairs = deriveRepairState(needs, evidenceBefore, rounds);
   // Capabilities whose module was last seen compiling against current bytes.
   const holding = new Set(needs
@@ -282,12 +283,19 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       ? await inspectRepositoryFile(repositoryRoot, unit.need.modulePath, maximumRewriteBytes) : null;
     if (unit.stage === "conformance" && moduleSource === null) continue;
     const specifier = importSpecifierFor(unit.need);
+    const priorFailure = candidateFailures[unit.need.capability];
+    const carried: readonly FailingRequirement[] = unit.repairs.length > 0 ? unit.repairs
+      : priorFailure === undefined ? Object.freeze([])
+      : Object.freeze([Object.freeze({
+          facetName: unit.need.canonicalName,
+          detail: `a previous attempt at this module was discarded because it did not compile: ${priorFailure}`,
+        })]);
     const prompt = unit.stage === "implementation"
       ? deriveImplementationPrompt(unit.need, convention, Object.freeze({
           existingTarget,
           moduleSource: null,
           siblingModule: await siblingModule(repositoryRoot, needs, present, unit.need.modulePath),
-        }), unit.repairs)
+        }), carried)
       : deriveConformancePrompt(unit.need, moduleSource!, specifier, unit.repairs, existingTarget);
     // Existing source is part of identity: a changed module must not reuse a
     // test written against the surface it used to have.
@@ -295,7 +303,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       ...(existingTarget === null ? [] : [canonicalDigest(existingTarget)]),
       ...(moduleSource === null ? [] : [canonicalDigest(moduleSource)]),
       ...unit.need.requirements.map((requirement) => canonicalDigest(requirement.statement)),
-      ...(unit.repairs.length === 0 ? [] : [canonicalDigest(unit.repairs)]),
+      ...(carried.length === 0 ? [] : [canonicalDigest(carried)]),
     ];
     const outputTokens = outputBudgetFor(Math.max(existingTarget?.length ?? 0, moduleSource?.length ?? 0));
     const identity = identityFor(unit, prompt, inputDigests, policyDigest);
@@ -366,21 +374,27 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         }));
         continue;
       }
-      // Never regress a module that holds up. A repair rewrites the whole file
-      // to correct one requirement, and a rewrite that no longer compiles takes
-      // every requirement of that capability down with it. Where the current
-      // module was last observed compiling, the replacement must compile too.
-      if (unit.stage === "implementation" && holding.has(unit.need.capability)) {
+      // A capability module is USF source and enters USF's own typecheck, so a
+      // module that does not compile must never land. Landing one and repairing
+      // it afterwards was defensible while these lived in a product directory;
+      // it is not defensible when it turns the framework's own gate red.
+      //
+      // The compiler output is what makes the next attempt effective, so it is
+      // kept even though the candidate is discarded.
+      if (unit.stage === "implementation") {
         const candidate = await typecheckCandidateModule(repositoryRoot, checked.content);
         if (!candidate.clean) {
+          candidateFailures[unit.need.capability] = (candidate.detail ?? "the module does not compile").slice(0, 1_200);
           outcomes.push(Object.freeze({
             unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName,
-            outcome: "output-refused", code: "candidate-regresses-module",
-            detail: (candidate.detail ?? "the replacement does not compile").slice(0, 300),
+            outcome: "output-refused",
+            code: holding.has(unit.need.capability) ? "candidate-regresses-module" : "candidate-does-not-compile",
+            detail: (candidate.detail ?? "the module does not compile").slice(0, 300),
             transport: record.transport ?? null, actualModel: record.actualModel ?? null,
           }));
           continue;
         }
+        delete candidateFailures[unit.need.capability];
       }
       await storeSemanticResult(repositoryRoot, identity, checked.content, evidenceDigest);
       accepted.push(Object.freeze({
@@ -407,6 +421,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     advanced[unit.need.capability] = unit.repairRound + 1;
   }
   if (Object.keys(advanced).length > 0 || Object.keys(rounds).length > 0) await writeRepairRounds(repositoryRoot, advanced);
+  await writeCandidateFailures(repositoryRoot, candidateFailures);
 
   // Independent results are batched into one transaction. Conflict sets, not
   // unit count, decide the boundary, and every unit here owns a distinct path.
@@ -508,4 +523,27 @@ function deriveRepairState(
     }));
   }
   return state;
+}
+
+const candidateFailurePath = ".usf/hermes/candidate-failures.json";
+
+/** Compiler output from candidates that were discarded rather than landed. */
+async function readCandidateFailures(repositoryRoot: string): Promise<Record<string, string>> {
+  const bytes = await readFile(resolve(repositoryRoot, candidateFailurePath), "utf8").catch(() => undefined);
+  if (bytes === undefined) return {};
+  try {
+    const parsed = JSON.parse(bytes) as { failures?: Record<string, unknown> };
+    const failures: Record<string, string> = {};
+    for (const [capability, detail] of Object.entries(parsed.failures ?? {})) {
+      if (typeof detail === "string") failures[capability] = detail;
+    }
+    return failures;
+  } catch { return {}; }
+}
+
+async function writeCandidateFailures(repositoryRoot: string, failures: Record<string, string>): Promise<void> {
+  await mkdir(resolve(repositoryRoot, ".usf", "hermes"), { recursive: true, mode: 0o700 });
+  await writeFile(resolve(repositoryRoot, candidateFailurePath),
+    `${JSON.stringify({ schema: "urn:usf:hermes-candidate-failures:1", version: 1, failures }, null, 1)}\n`,
+    { mode: 0o600 });
 }

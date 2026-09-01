@@ -12,7 +12,17 @@ import type { SemanticGraph } from "../graph/index.ts";
  */
 const P = "urn:usf:predicate:";
 
-export type FacetState = "NOT_ASSESSED" | "SATISFIED" | "UNSATISFIED" | "BLOCKED" | "STALE" | "NOT_APPLICABLE";
+export type FacetState =
+  | "NOT_ASSESSED" | "SATISFIED" | "UNSATISFIED" | "BLOCKED" | "STALE"
+  | "NOT_APPLICABLE"
+  /**
+   * Real, applicable, and not Core's to satisfy. USF Core is surface-agnostic:
+   * every capability must be reachable by SDK, API and CLI, and a rendered
+   * interface belongs to whichever product profile needs one. Recovered V1
+   * applicability recorded that V1 USF did satisfy these; saying so is not the
+   * same as saying V3 Core must.
+   */
+  | "PROFILE_SUPPLIED";
 
 export interface FacetVerdict {
   readonly facet: string;
@@ -114,6 +124,17 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
     if (quad.predicate !== `${P}declaresFacet`) continue;
     facetOwner.set(quad.object, quad.subject);
   }
+  // Facet kinds Core declares are the product's to supply, read from policy
+  // rather than hardcoded, so a later policy change needs no code change.
+  const surfacePolicies = graph.quads
+    .filter((quad) => quad.predicate === `${P}type` && quad.object === "urn:usf:type:CoreSurfacePolicy")
+    .map((quad) => quad.subject);
+  const profileSuppliedKinds = new Set(graph.quads
+    .filter((quad) => surfacePolicies.includes(quad.subject) && quad.predicate === `${P}appliesToFacetKind`)
+    .map((quad) => quad.object));
+  const surfacePolicyReason = graph.quads
+    .find((quad) => surfacePolicies.includes(quad.subject) && quad.predicate === `${P}ownerAuthorityRule`)?.object ?? null;
+
   const facets = graph.quads
     .filter((quad) => quad.predicate === `${P}type` && quad.object === "urn:usf:type:DeliveryFacet")
     .map((quad) => quad.subject).sort();
@@ -124,6 +145,16 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
     const contract = facetOwner.get(facet) ?? null;
     const capability = contract === null ? null : contractFor.get(contract) ?? null;
 
+    // A requirement Core hands to the profile is not retracted, and its
+    // recovered applicability is left exactly as V1 recorded it.
+    if (kindIri !== null && profileSuppliedKinds.has(kindIri)
+      && values(graph, facet, "facetApplicability")[0] === "APPLICABLE") {
+      return Object.freeze({
+        facet, facetKind: kind, capability, state: "PROFILE_SUPPLIED" as const, evidence: Object.freeze([]),
+        reason: surfacePolicyReason
+          ?? "This requirement describes a rendered surface. USF Core is surface-agnostic, so it belongs to the product profile that needs one.",
+      });
+    }
     // Applicability is authored authority recovered from V1, not inferred here.
     if (values(graph, facet, "facetApplicability")[0] === "NOT_APPLICABLE") {
       return Object.freeze({
@@ -263,7 +294,8 @@ export interface FacetSummary {
 
 export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary {
   const stateCounts: Record<FacetState, number> = {
-    NOT_ASSESSED: 0, SATISFIED: 0, UNSATISFIED: 0, BLOCKED: 0, STALE: 0, NOT_APPLICABLE: 0,
+    NOT_ASSESSED: 0, SATISFIED: 0, UNSATISFIED: 0, BLOCKED: 0, STALE: 0,
+    NOT_APPLICABLE: 0, PROFILE_SUPPLIED: 0,
   };
   const byKind: Record<string, Record<string, number>> = {};
   const byCapability = new Map<string, { total: number; satisfied: number }>();
@@ -276,7 +308,9 @@ export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary
     // A capability is complete when every applicable requirement is satisfied.
     // An inapplicable requirement is excluded from the denominator rather than
     // counted as satisfied.
-    if (verdict.state === "NOT_APPLICABLE") continue;
+    // Neither an inapplicable requirement nor one the profile owns belongs in
+    // Core's completion denominator.
+    if (verdict.state === "NOT_APPLICABLE" || verdict.state === "PROFILE_SUPPLIED") continue;
     const entry = byCapability.get(verdict.capability) ?? { total: 0, satisfied: 0 };
     entry.total += 1;
     if (verdict.state === "SATISFIED") entry.satisfied += 1;
@@ -297,6 +331,7 @@ export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary
       "An implementation-conformance verdict is derived from an executed behavioural subtest named for the facet. The presence of a module at its canonical path is never admissible for one.",
       "BLOCKED means the required evidence class must be produced by running a check and cannot be authored.",
       "NOT_APPLICABLE is authored authority recovered from V1, not an absence of evidence, and is excluded from the completion denominator rather than counted as satisfied.",
+      "PROFILE_SUPPLIED means the requirement is real and applicable but belongs to a product profile rather than to Core. It is excluded from Core's denominator and is not a claim that any profile has satisfied it.",
     ]),
   });
 }
