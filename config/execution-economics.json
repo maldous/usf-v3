@@ -3,10 +3,18 @@
   "version": 1,
   "generated": true,
   "derivedFrom": "graph/v3-execution.nq via urn:usf:economic-policy:zero-paid:1",
-  "sourceGraphDigest": "sha256:fd889bba91615903f3a0f2540b4352c1121a2d015e8759f0c73c35161766ae76",
-  "additionalAcceptedCostClasses": [
-    "subscription-included"
-  ],
+  "sourceGraphDigest": "sha256:cf00427b8670477a50283494877b2ee9f52d9e1884f838edaabb8b373c680703",
+  "costPolicy": {
+    "maximumPaidCost": 0,
+    "paidFallback": "prohibited",
+    "unknownPrice": "ineligible",
+    "acceptedCostClasses": [
+      "free-quota",
+      "local",
+      "subscription-included",
+      "zero-price"
+    ]
+  },
   "authorizations": [
     {
       "transport": "claude-cli",

@@ -20,7 +20,13 @@ export interface ProjectedEconomics {
   readonly derivedFrom: string;
   /** Digest of exactly the graph quads that produced this projection. */
   readonly sourceGraphDigest: string;
-  readonly additionalAcceptedCostClasses: readonly string[];
+  /** The complete effective cost policy, derived from graph authority. */
+  readonly costPolicy: Readonly<{
+    maximumPaidCost: number;
+    paidFallback: string;
+    unknownPrice: string;
+    acceptedCostClasses: readonly string[];
+  }>;
   readonly authorizations: readonly Readonly<{
     transport: string;
     provider: string;
@@ -46,6 +52,19 @@ function many(graph: SemanticGraph, subject: string, predicate: string): readonl
  * The digest covers the economics closure only, so unrelated graph movement
  * does not invalidate the projection.
  */
+function derivePolicy(graph: SemanticGraph): ProjectedEconomics["costPolicy"] {
+  const maximum = one(graph, policyIri, "urn:usf:predicate:maximumPaidCostUsd");
+  const paidFallback = one(graph, policyIri, "urn:usf:predicate:paidFallback");
+  const unknownPrice = one(graph, policyIri, "urn:usf:predicate:unknownPrice");
+  const acceptedCostClasses = many(graph, policyIri, "urn:usf:predicate:acceptedCostClass");
+  if (maximum === null || paidFallback === null || unknownPrice === null || acceptedCostClasses.length === 0) {
+    throw new Error("ECONOMICS_POLICY_INCOMPLETE");
+  }
+  const maximumPaidCost = Number(maximum);
+  if (!Number.isFinite(maximumPaidCost)) throw new Error("ECONOMICS_POLICY_BUDGET_INVALID");
+  return Object.freeze({ maximumPaidCost, paidFallback, unknownPrice, acceptedCostClasses });
+}
+
 export function projectEconomics(graph: SemanticGraph): ProjectedEconomics {
   const subjects = Object.freeze(graph.quads
     .filter((quad) => quad.predicate === typePredicate && quad.object === authorizationType)
@@ -84,7 +103,7 @@ export function projectEconomics(graph: SemanticGraph): ProjectedEconomics {
     generated: true as const,
     derivedFrom: "graph/v3-execution.nq via urn:usf:economic-policy:zero-paid:1",
     sourceGraphDigest: canonicalDigest(closureQuads),
-    additionalAcceptedCostClasses: many(graph, policyIri, "urn:usf:predicate:additionalAcceptedCostClass"),
+    costPolicy: derivePolicy(graph),
     authorizations: Object.freeze(authorizations),
     nonClaims: many(graph, policyIri, "urn:usf:predicate:nonClaim"),
   });
@@ -125,7 +144,7 @@ export function verifyEconomicsProjection(
   // The projection must also equal what the graph produces, not merely quote a
   // matching digest, so a hand-edited body cannot ride a correct digest.
   if (canonicalDigest(record.authorizations) !== canonicalDigest(expected.authorizations)
-    || canonicalDigest(record.additionalAcceptedCostClasses) !== canonicalDigest(expected.additionalAcceptedCostClasses)) {
+    || canonicalDigest(record.costPolicy) !== canonicalDigest(expected.costPolicy)) {
     throw new Error("ECONOMICS_PROJECTION_DIVERGED");
   }
   return Object.freeze({ projection: expected, graphClosureDigest: expected.sourceGraphDigest, verified: true as const });

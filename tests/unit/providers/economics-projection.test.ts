@@ -31,7 +31,11 @@ const policy = "urn:usf:economic-policy:zero-paid:1";
 function baseQuads(): Quad[] {
   return [
     ...authorization("vercel-ai-sdk-groq", "vercel-ai-sdk", "groq", "free-quota"),
-    quad(policy, `${P}additionalAcceptedCostClass`, "subscription-included"),
+    quad(policy, `${P}acceptedCostClass`, "free-quota"),
+    quad(policy, `${P}acceptedCostClass`, "subscription-included"),
+    quad(policy, `${P}maximumPaidCostUsd`, "0"),
+    quad(policy, `${P}paidFallback`, "prohibited"),
+    quad(policy, `${P}unknownPrice`, "ineligible"),
     quad(policy, `${P}nonClaim`, "not an observed account tier"),
   ];
 }
@@ -44,7 +48,9 @@ test("the projection is derived from the graph, sorted and complete", () => {
   assert.equal(projected.generated, true);
   assert.deepEqual(projected.authorizations.map((entry) => `${entry.transport}:${entry.provider}`),
     ["claude-cli:claude-cli", "vercel-ai-sdk:groq"]);
-  assert.deepEqual(projected.additionalAcceptedCostClasses, ["subscription-included"]);
+  assert.deepEqual(projected.costPolicy.acceptedCostClasses, ["free-quota", "subscription-included"]);
+  assert.equal(projected.costPolicy.maximumPaidCost, 0);
+  assert.equal(projected.costPolicy.paidFallback, "prohibited");
   assert.match(projected.sourceGraphDigest, /^sha256:[0-9a-f]{64}$/u);
 });
 
@@ -54,10 +60,13 @@ test("projection identity is independent of quad order", () => {
     projectEconomics(graphOf([...quads].reverse())).sourceGraphDigest);
 });
 
-test("an incomplete authorization fails closed rather than projecting a partial policy", () => {
-  const incomplete = authorization("x-y", "vercel-ai-sdk", "groq", "free-quota")
-    .filter((entry) => entry.predicate !== `${P}evidence`);
+test("an incomplete authorization or policy fails closed rather than projecting a partial policy", () => {
+  const incomplete = [...baseQuads().filter((entry) => entry.subject === policy),
+    ...authorization("x-y", "vercel-ai-sdk", "groq", "free-quota").filter((entry) => entry.predicate !== `${P}evidence`)];
   assert.throws(() => projectEconomics(graphOf(incomplete)), /ECONOMICS_AUTHORIZATION_INCOMPLETE/u);
+  // A policy missing a scalar is equally refused.
+  const noPolicy = baseQuads().filter((entry) => entry.predicate !== `${P}paidFallback`);
+  assert.throws(() => projectEconomics(graphOf(noPolicy)), /ECONOMICS_POLICY_INCOMPLETE/u);
 });
 
 test("verification accepts a faithful projection and rejects every unfaithful one", () => {
@@ -79,18 +88,19 @@ test("verification accepts a faithful projection and rejects every unfaithful on
   }, graph), /DIVERGED/u);
   // A hand-added cost class riding a correct digest.
   assert.throws(() => verifyEconomicsProjection({
-    ...faithful, additionalAcceptedCostClasses: ["subscription-included", "paid"],
+    ...faithful,
+    costPolicy: { ...faithful.costPolicy, acceptedCostClasses: [...faithful.costPolicy.acceptedCostClasses, "paid"] },
   }, graph), /DIVERGED/u);
 });
 
 test("withdrawing a cost class from the graph changes the projection and its identity", () => {
   const withClass = graphOf(baseQuads());
   const withoutClass = graphOf(baseQuads().filter(
-    (entry) => !(entry.subject === policy && entry.predicate === `${P}additionalAcceptedCostClass`),
+    (entry) => !(entry.subject === policy && entry.predicate === `${P}acceptedCostClass` && entry.object === "subscription-included"),
   ));
   const before = projectEconomics(withClass);
   const after = projectEconomics(withoutClass);
-  assert.deepEqual(after.additionalAcceptedCostClasses, []);
+  assert.deepEqual(after.costPolicy.acceptedCostClasses, ["free-quota"]);
   assert.notEqual(after.sourceGraphDigest, before.sourceGraphDigest);
   // The old projection must not verify against the new graph.
   assert.throws(() => verifyEconomicsProjection(before, withoutClass), /STALE/u);

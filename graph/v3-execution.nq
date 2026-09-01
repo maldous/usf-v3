@@ -66,7 +66,6 @@
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:acceptedCostClass> "local" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:acceptedCostClass> "subscription-included" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:acceptedCostClass> "zero-price" <urn:usf:graph:v3-execution> .
-<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:additionalAcceptedCostClass> "subscription-included" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:evaluationScope> "per-execution-transport-and-provider-pair" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:failureMode> "An absent authorization is ineligible. Eligibility is never inferred and one provider's economics never transfer to another." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .

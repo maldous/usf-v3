@@ -9,7 +9,7 @@ import { invokeClaudeCli, invokeCodexCli } from "../providers/cli-transports.ts"
 import {
   CredentialEnvError, loadCredentialEnvFile, parseProviderConfig, providerCredentialNames,
 } from "../providers/config.ts";
-import { parseExecutionEconomicAuthorizations, parseAdditionalAcceptedCostClasses } from "../providers/execution-economics.ts";
+import { parseExecutionEconomicAuthorizations, type EffectiveCostPolicy } from "../providers/execution-economics.ts";
 import { verifyEconomicsProjection } from "../providers/economics-projection.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
 import {
@@ -210,25 +210,27 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   }
 
   // 2. Authority and candidate universe inputs.
-  const basePolicy = parseEffectiveCostPolicy(await readTrackedJson(repositoryRoot, "config/policy.json"));
+
   const economicsDocument = await readTrackedJson(repositoryRoot, "config/execution-economics.json");
   // The graph is the semantic source. The runtime consumes the derived
   // projection only after proving it still corresponds to graph authority.
   let economicsClosureDigest: string;
+  let graphPolicy: EffectiveCostPolicy;
   try {
     const semanticGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
-    economicsClosureDigest = verifyEconomicsProjection(economicsDocument, semanticGraph).graphClosureDigest;
+    const verified = verifyEconomicsProjection(economicsDocument, semanticGraph);
+    economicsClosureDigest = verified.graphClosureDigest;
+    graphPolicy = Object.freeze({ ...verified.projection.costPolicy });
   } catch (error) {
     throw new UsfError("GRAPH_EXECUTE_ECONOMICS_NOT_GRAPH_DERIVED", exitCodes.CURRENTNESS_FAILURE,
       "The runtime economics projection does not correspond to current graph authority.",
       { reasonCode: error instanceof Error ? error.message : "UNKNOWN" });
   }
   const authorizations = parseExecutionEconomicAuthorizations(economicsDocument);
-  const additionalClasses = parseAdditionalAcceptedCostClasses(economicsDocument);
-  const policy = Object.freeze({
-    ...basePolicy,
-    acceptedCostClasses: Object.freeze([...new Set([...basePolicy.acceptedCostClasses, ...additionalClasses])].sort()),
-  });
+
+  // The whole effective policy comes from graph authority; config/policy.json
+  // remains only for the superseded probe lane.
+  const policy = graphPolicy;
   const catalogue = await readLocalCatalogue(repositoryRoot);
   const adapterPackages = Object.freeze([...new Set(
     catalogue.snapshot.providers.map((provider) => provider.adapter.package)
@@ -282,7 +284,6 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     return canonicalDigest(stats);
   };
   const snapshotNow = async (): Promise<AuthoritySnapshot> => {
-    const currentPolicy = parseEffectiveCostPolicy(await readTrackedJson(repositoryRoot, "config/policy.json"));
     const currentEconomics = await readTrackedJson(repositoryRoot, "config/execution-economics.json");
     const currentAdapters: string[] = [];
     for (const adapterPackage of adapterPackages) {
@@ -297,13 +298,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     return readAuthoritySnapshot({
       catalogueRawDigest: catalogue.snapshot.rawDigest,
       catalogueNormalizedDigest: await catalogueFingerprint(),
-      policy: Object.freeze({
-        ...currentPolicy,
-        acceptedCostClasses: Object.freeze([...new Set([
-          ...currentPolicy.acceptedCostClasses,
-          ...parseAdditionalAcceptedCostClasses(currentEconomics),
-        ])].sort()),
-      }),
+      policy: (currentEconomics as { costPolicy?: unknown }).costPolicy ?? null,
       authorizations: Object.freeze({
         projection: parseExecutionEconomicAuthorizations(currentEconomics),
         graphClosureDigest: economicsClosureDigest,
