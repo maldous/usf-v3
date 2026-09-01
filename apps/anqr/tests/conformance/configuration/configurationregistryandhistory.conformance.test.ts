@@ -1,6 +1,3 @@
-Here's the corrected test file with the fixed `configurationregistryandhistoryvalidation` subtest:
-
-```typescript
 import assert from "node:assert/strict";
 import test from "node:test";
 import * as capability from "../../../src/capabilities/configuration/configurationregistryandhistory.ts";
@@ -430,7 +427,6 @@ test("configurationregistryandhistoryvalidation", () => {
   };
   const auditFn = () => null;
 
-  // Test unknown key validation
   const unknownKeyError = capability.validateDefinition(
     state.definitions,
     "unknownKey",
@@ -438,7 +434,6 @@ test("configurationregistryandhistoryvalidation", () => {
   );
   assert.ok(unknownKeyError && unknownKeyError.kind === "NOT_FOUND");
 
-  // Test non-overridable definition validation
   const nonOverridableError = capability.validateDefinition(
     state.definitions,
     "systemMode",
@@ -446,7 +441,6 @@ test("configurationregistryandhistoryvalidation", () => {
   );
   assert.ok(nonOverridableError && nonOverridableError.kind === "UNPROCESSABLE_ENTITY");
 
-  // Test missing value validation
   const missingValueError = capability.validateDefinition(
     state.definitions,
     "featureX",
@@ -454,7 +448,6 @@ test("configurationregistryandhistoryvalidation", () => {
   );
   assert.ok(missingValueError && missingValueError.kind === "VALIDATION_ERROR");
 
-  // Test enum value outside allowed set
   const invalidEnumError = capability.validateDefinition(
     state.definitions,
     "color",
@@ -462,7 +455,6 @@ test("configurationregistryandhistoryvalidation", () => {
   );
   assert.ok(invalidEnumError && invalidEnumError.kind === "VALIDATION_ERROR");
 
-  // Test type mismatch (string instead of boolean)
   const typeMismatchError = capability.validateDefinition(
     state.definitions,
     "featureX",
@@ -470,7 +462,6 @@ test("configurationregistryandhistoryvalidation", () => {
   );
   assert.ok(typeMismatchError && typeMismatchError.kind === "VALIDATION_ERROR");
 
-  // Test category filter and permission scope
   const listFiltered = capability.listConfigurations(
     state,
     "tenant1",
@@ -488,4 +479,3 @@ test("configurationregistryandhistoryvalidation", () => {
   );
   assert.strictEqual(listWrongPerm.result.length, 0);
 });
-```

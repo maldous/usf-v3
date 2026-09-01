@@ -36,15 +36,16 @@ test("historyreadmodelreadonlyprojectionauditmodel", () => {
   const page = result as capability.HistoryReadModelReadOnlyProjectionPage;
   assert.strictEqual(page.entries.length, 1);
   const entry = page.entries[0];
-  const allowedKeys: readonly (keyof capability.HistoryReadModelReadOnlyProjectionEntry)[] = [
-    "id",
-    "source",
-    "type",
-    "title",
-    "occurrenceTime",
-    "actor",
-    "status",
-  ];
+  const allowedKeys: readonly (keyof capability.HistoryReadModelReadOnlyProjectionEntry)[] =
+    [
+      "id",
+      "source",
+      "type",
+      "title",
+      "occurrenceTime",
+      "actor",
+      "status",
+    ];
   for (const key of Object.keys(entry)) {
     assert.ok(
       allowedKeys.includes(key as keyof capability.HistoryReadModelReadOnlyProjectionEntry),
@@ -82,8 +83,8 @@ test("historyreadmodelreadonlyprojectioncontracts", () => {
   assert.ok(!Array.isArray(result) && "entries" in result);
   const page = result as capability.HistoryReadModelReadOnlyProjectionPage;
   assert.deepStrictEqual(
-    Object.keys(page).sort(),
-    ["entries", "limit", "offset", "total"].sort()
+    Object.keys(page),
+    ["entries", "limit", "offset", "total"]
   );
   assert.strictEqual(page.limit, 5);
   assert.strictEqual(page.offset, 0);
@@ -309,18 +310,19 @@ test("historyreadmodelreadonlyprojectionproof", () => {
   ) as capability.HistoryReadModelReadOnlyProjectionPage;
   assert.strictEqual(result.entries.length, 1);
   const entry = result.entries[0];
-  const allowedKeys: readonly (keyof capability.HistoryReadModelReadOnlyProjectionEntry)[] = [
-    "id",
-    "source",
-    "type",
-    "title",
-    "occurrenceTime",
-    "actor",
-    "status",
-  ];
+  const allowedKeys: readonly (keyof capability.HistoryReadModelReadOnlyProjectionEntry)[] =
+    [
+      "id",
+      "source",
+      "type",
+      "title",
+      "occurrenceTime",
+      "actor",
+      "status",
+    ];
   assert.deepStrictEqual(
-    Object.keys(entry).sort(),
-    allowedKeys.sort(),
+    Object.keys(entry),
+    allowedKeys,
     "projection must assert the safe summarised shape"
   );
   let proofTenantId: string | null = null;
@@ -363,16 +365,17 @@ test("historyreadmodelreadonlyprojectionstatemodel", () => {
   const projected = capability.projectHistoryEntry(rawEntry);
   assert.ok(projected !== null);
   const entry = projected as capability.HistoryReadModelReadOnlyProjectionEntry;
-  const allowedKeys: readonly (keyof capability.HistoryReadModelReadOnlyProjectionEntry)[] = [
-    "id",
-    "source",
-    "type",
-    "title",
-    "occurrenceTime",
-    "actor",
-    "status",
-  ];
-  assert.deepStrictEqual(Object.keys(entry).sort(), allowedKeys.sort());
+  const allowedKeys: readonly (keyof capability.HistoryReadModelReadOnlyProjectionEntry)[] =
+    [
+      "id",
+      "source",
+      "type",
+      "title",
+      "occurrenceTime",
+      "actor",
+      "status",
+    ];
+  assert.deepStrictEqual(Object.keys(entry), allowedKeys);
 
   const context: capability.HistoryReadModelReadOnlyProjectionTenantContext = {
     tenantId: "tenant-stat",
@@ -391,8 +394,8 @@ test("historyreadmodelreadonlyprojectionstatemodel", () => {
     repository
   ) as capability.HistoryReadModelReadOnlyProjectionPage;
   assert.deepStrictEqual(
-    Object.keys(page).sort(),
-    ["entries", "limit", "offset", "total"].sort()
+    Object.keys(page),
+    ["entries", "limit", "offset", "total"]
   );
   assert.strictEqual(page.limit, 7);
   assert.strictEqual(page.offset, 2);

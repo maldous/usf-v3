@@ -1,4 +1,3 @@
-```typescript
 export const EndUserProfileAndPreferencesSelfServiceAuditEventKind = [
   'PROFILE_UPDATED',
   'PREFERENCE_UPDATED',
@@ -315,4 +314,65 @@ export function updatePreference(
 
 export function testNotification(
   authenticatedUserId: string,
-  authenticatedTenantId:
+  authenticatedTenantId: string,
+  payload: unknown,
+  auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
+): EndUserProfileAndPreferencesSelfServiceError | null {
+  const secretError = validateNotificationPayload(payload);
+  if (secretError !== null) {
+    return secretError;
+  }
+
+  return emitAudit(
+    'NOTIFICATION_TESTED',
+    authenticatedUserId,
+    authenticatedTenantId,
+    payload,
+    auditFn,
+  );
+}
+
+export function readDispatchLogs(
+  state: EndUserProfileAndPreferencesSelfServiceState,
+  authenticatedUserId: string,
+  authenticatedTenantId: string,
+): { readonly result: 'success'; readonly dispatchLogs: readonly EndUserProfileAndPreferencesSelfServiceDispatchLog[] } |
+  { readonly result: 'error'; readonly error: EndUserProfileAndPreferencesSelfServiceError } {
+  if (state.tenantId !== authenticatedTenantId || state.userId !== authenticatedUserId) {
+    return {
+      result: 'error',
+      error: { kind: 'NO_TENANT', message: 'Tenant or user mismatch' },
+    };
+  }
+
+  return {
+    result: 'success',
+    dispatchLogs: [...state.dispatchLogs],
+  };
+}
+
+export function simulateDispatch(
+  state: EndUserProfileAndPreferencesSelfServiceState,
+  authenticatedUserId: string,
+  authenticatedTenantId: string,
+  preference: EndUserProfileAndPreferencesSelfServicePreference,
+): EndUserProfileAndPreferencesSelfServiceState {
+  const matchingPreference = state.preferences.find(
+    (p) => p.channel === preference.channel && p.category === preference.category,
+  );
+
+  const status: EndUserProfileAndPreferencesSelfServiceDispatchStatus =
+    matchingPreference && matchingPreference.enabled ? 'SENT' : 'SUPPRESSED';
+
+  const newLog: EndUserProfileAndPreferencesSelfServiceDispatchLog = {
+    userId: authenticatedUserId,
+    tenantId: authenticatedTenantId,
+    preference: { ...preference },
+    status,
+  };
+
+  return {
+    ...state,
+    dispatchLogs: [...state.dispatchLogs, newLog],
+  };
+}

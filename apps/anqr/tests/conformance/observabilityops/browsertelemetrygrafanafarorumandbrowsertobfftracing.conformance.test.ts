@@ -89,6 +89,7 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingerrormodel", () => {
   );
   assert.strictEqual(stateWithError.readiness, "DEGRADED");
   assert.notStrictEqual(stateWithError.lastError, null);
+  assert.strictEqual(stateWithError.errorCount, 1);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle", () => {
@@ -180,13 +181,17 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingproof", () => {
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingreadinessmodel", () => {
   assert.strictEqual(capability.initialState.readiness, "NOT_READY");
+  assert.strictEqual(capability.initialState.errorCount, 0);
+
   const degradedState: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
     readiness: "DEGRADED",
     lastError: { kind: "CONFIG_MISSING", message: "missing" },
     lastAuditEvents: [],
     lastProcessedPayload: null,
+    errorCount: 1,
   };
-  assert.strictEqual(capability.computeReadiness(degradedState), "DEGRADED");
+  assert.strictEqual(capability.computeReadiness(degradedState, true), "DEGRADED");
+
   const readyState: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
     readiness: "READY",
     lastError: null,
@@ -198,8 +203,10 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingreadinessmodel", () =>
       startTimeUnixNano: "123",
       attributes: {},
     },
+    errorCount: 0,
   };
-  assert.strictEqual(capability.computeReadiness(readyState), "READY");
+  assert.strictEqual(capability.computeReadiness(readyState, true), "READY");
+  assert.strictEqual(capability.computeReadiness(capability.initialState, false), "NOT_READY");
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingvalidation", () => {

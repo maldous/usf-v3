@@ -71,6 +71,17 @@ export const MAX_LIMIT = 100;
 export const MIN_LIMIT = 1;
 export const MAX_OFFSET = 10000;
 
+export interface HistoryReadModelReadOnlyProjectionRepositoryResult {
+  readonly total: number;
+  readonly entries: readonly unknown[];
+}
+
+export type HistoryReadModelReadOnlyProjectionRepository = (
+  tenantId: string,
+  limit: number,
+  offset: number,
+) => HistoryReadModelReadOnlyProjectionRepositoryResult;
+
 function isValidSource(
   v: unknown,
 ): v is HistoryReadModelReadOnlyProjectionEntrySource {
@@ -107,10 +118,16 @@ export function validatePaging(
   return null;
 }
 
+function isTenantContext(
+  context: HistoryReadModelReadOnlyProjectionTenantContext | null,
+): context is HistoryReadModelReadOnlyProjectionTenantContext {
+  return context !== null && context.tenantId.trim() !== '';
+}
+
 export function validateTenantContext(
   context: HistoryReadModelReadOnlyProjectionTenantContext | null,
 ): HistoryReadModelReadOnlyProjectionError | null {
-  if (context === null || context.tenantId.trim() === '') {
+  if (!isTenantContext(context)) {
     return {
       kind: 'TENANT_CONTEXT_MISSING',
       message: 'Tenant context is required',
@@ -139,19 +156,19 @@ export function projectHistoryEntry(
     raw !== null &&
     typeof raw === 'object' &&
     'id' in raw &&
-    typeof (raw as any).id === 'string' &&
+    typeof (raw as { id: unknown }).id === 'string' &&
     'source' in raw &&
-    isValidSource((raw as any).source) &&
+    isValidSource((raw as { source: unknown }).source) &&
     'type' in raw &&
-    isValidType((raw as any).type) &&
+    isValidType((raw as { type: unknown }).type) &&
     'title' in raw &&
-    typeof (raw as any).title === 'string' &&
+    typeof (raw as { title: unknown }).title === 'string' &&
     'occurrenceTime' in raw &&
-    typeof (raw as any).occurrenceTime === 'string' &&
+    typeof (raw as { occurrenceTime: unknown }).occurrenceTime === 'string' &&
     'actor' in raw &&
-    typeof (raw as any).actor === 'string' &&
+    typeof (raw as { actor: unknown }).actor === 'string' &&
     'status' in raw &&
-    typeof (raw as any).status === 'string'
+    typeof (raw as { status: unknown }).status === 'string'
   ) {
     const r = raw as {
       readonly id: string;
@@ -180,12 +197,10 @@ export function tenantHistory(
   context: HistoryReadModelReadOnlyProjectionTenantContext | null,
   limit: number,
   offset: number,
-  repository: (
-    tenantId: string,
-    limit: number,
-    offset: number,
-  ) => readonly unknown[],
-): HistoryReadModelReadOnlyProjectionPage | HistoryReadModelReadOnlyProjectionError {
+  repository: HistoryReadModelReadOnlyProjectionRepository,
+):
+  | HistoryReadModelReadOnlyProjectionPage
+  | HistoryReadModelReadOnlyProjectionError {
   const pagingError = validatePaging(limit, offset);
   if (pagingError !== null) {
     return pagingError;
@@ -196,7 +211,12 @@ export function tenantHistory(
     return contextError;
   }
 
-  const ctx = context as HistoryReadModelReadOnlyProjectionTenantContext;
+  if (!isTenantContext(context)) {
+    return {
+      kind: 'TENANT_CONTEXT_MISSING',
+      message: 'Tenant context is required',
+    };
+  }
 
   if (state.readiness !== 'READY') {
     return {
@@ -205,18 +225,23 @@ export function tenantHistory(
     };
   }
 
-  const rawEntries = repository(ctx.tenantId, limit, offset);
-  const entries: HistoryReadModelReadOnlyProjectionEntry[] = [];
-  for (const raw of rawEntries) {
+  const accessError = validateTenantAccess(context, context.tenantId);
+  if (accessError !== null) {
+    return accessError;
+  }
+
+  const repositoryResult = repository(context.tenantId, limit, offset);
+  const projectedEntries: HistoryReadModelReadOnlyProjectionEntry[] = [];
+  for (const raw of repositoryResult.entries) {
     const projected = projectHistoryEntry(raw);
     if (projected !== null) {
-      entries.push(projected);
+      projectedEntries.push(projected);
     }
   }
 
   return {
-    entries,
-    total: entries.length,
+    entries: projectedEntries,
+    total: repositoryResult.total,
     limit,
     offset,
   };
@@ -228,12 +253,10 @@ export function adminTenantHistory(
   requestedTenantId: string,
   limit: number,
   offset: number,
-  repository: (
-    tenantId: string,
-    limit: number,
-    offset: number,
-  ) => readonly unknown[],
-): HistoryReadModelReadOnlyProjectionPage | HistoryReadModelReadOnlyProjectionError {
+  repository: HistoryReadModelReadOnlyProjectionRepository,
+):
+  | HistoryReadModelReadOnlyProjectionPage
+  | HistoryReadModelReadOnlyProjectionError {
   const pagingError = validatePaging(limit, offset);
   if (pagingError !== null) {
     return pagingError;
@@ -244,11 +267,11 @@ export function adminTenantHistory(
     return contextError;
   }
 
-  const ctx = context as HistoryReadModelReadOnlyProjectionTenantContext;
-
-  const accessError = validateTenantAccess(ctx, requestedTenantId);
-  if (accessError !== null) {
-    return accessError;
+  if (!isTenantContext(context)) {
+    return {
+      kind: 'TENANT_CONTEXT_MISSING',
+      message: 'Tenant context is required',
+    };
   }
 
   if (state.readiness !== 'READY') {
@@ -258,41 +281,24 @@ export function adminTenantHistory(
     };
   }
 
-  const rawEntries = repository(requestedTenantId, limit, offset);
-  const entries: HistoryReadModelReadOnlyProjectionEntry[] = [];
-  for (const raw of rawEntries) {
+  const accessError = validateTenantAccess(context, requestedTenantId);
+  if (accessError !== null) {
+    return accessError;
+  }
+
+  const repositoryResult = repository(requestedTenantId, limit, offset);
+  const projectedEntries: HistoryReadModelReadOnlyProjectionEntry[] = [];
+  for (const raw of repositoryResult.entries) {
     const projected = projectHistoryEntry(raw);
     if (projected !== null) {
-      entries.push(projected);
+      projectedEntries.push(projected);
     }
   }
 
   return {
-    entries,
-    total: entries.length,
+    entries: projectedEntries,
+    total: repositoryResult.total,
     limit,
     offset,
-  };
-}
-
-export function checkReadiness(
-  state: HistoryReadModelReadOnlyProjectionState,
-  storeReachable: boolean,
-): HistoryReadModelReadOnlyProjectionState {
-  if (!storeReachable) {
-    return {
-      ...state,
-      readiness: 'DEGRADED',
-      lastError: {
-        kind: 'STORE_UNAVAILABLE',
-        message: 'History store is unreachable',
-      },
-    };
-  }
-
-  return {
-    ...state,
-    readiness: 'READY',
-    lastError: null,
   };
 }

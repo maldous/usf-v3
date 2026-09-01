@@ -58,7 +58,7 @@ test("environmentspecificvssharedservicemodelerrormodel", () => {
   assert.strictEqual(readiness.readiness, "DEGRADED");
   assert.strictEqual(readiness.error?.kind, "PROVIDER_FAILURE");
 
-  const proof = capability.pendingProof(degradedState);
+  const proof = capability.pendingProof(degradedState, () => null);
   assert.strictEqual(proof.pending, true);
   assert.strictEqual(proof.error?.kind, "PROVIDER_FAILURE");
 });
@@ -81,19 +81,22 @@ test("environmentspecificvssharedservicemodelpermissions", () => {
 });
 
 test("environmentspecificvssharedservicemodelproof", () => {
-  const state = capability.initialState;
-  const classifiedState = capability.classifyService(
-    state,
-    "svc1",
-    "SHARED",
-    () => null
-  ) as capability.EnvironmentServiceClassificationState;
+  const auditEvents: capability.EnvironmentServiceClassificationAuditEvent[] = [];
+  const auditFn = (event: capability.EnvironmentServiceClassificationAuditEvent): capability.EnvironmentServiceClassificationError | null => {
+    auditEvents.push(event);
+    return null;
+  };
 
-  const proofResult = capability.generateProof(classifiedState);
+  let state = capability.initialState;
+  state = capability.classifyService(state, "svc1", "SHARED", () => null) as capability.EnvironmentServiceClassificationState;
+
+  const proofResult = capability.generateProof(state, auditFn);
   assert.deepStrictEqual(proofResult.proof, [{ service: "svc1", classification: "SHARED" }]);
   assert.strictEqual(proofResult.error, null);
+  assert.strictEqual(auditEvents.length, 1);
+  assert.strictEqual(auditEvents[0].kind, "PROOF_GENERATED");
 
-  const pendingResult = capability.pendingProof(classifiedState);
+  const pendingResult = capability.pendingProof(state, auditFn);
   assert.deepStrictEqual(pendingResult.proof, [{ service: "svc1", classification: "SHARED" }]);
   assert.strictEqual(pendingResult.pending, true);
   assert.strictEqual(pendingResult.error, null);

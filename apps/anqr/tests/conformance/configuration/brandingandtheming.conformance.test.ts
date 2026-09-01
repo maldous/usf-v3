@@ -1,5 +1,5 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { test } from "node:test";
+import assert from "node:assert/strict";
 import * as capability from "../../../src/capabilities/configuration/brandingandtheming.ts";
 
 test("brandingandthemingauditmodel", () => {
@@ -24,6 +24,7 @@ test("brandingandthemingauditmodel", () => {
     'tenant1',
     'applicationName',
     'NewApp',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     audit
   );
@@ -40,7 +41,12 @@ test("brandingandthemingauditmodel", () => {
     ...state,
     brandingDefinitions: new Map([['tenant1', { applicationName: 'NewApp', themeSelection: 'light' as const }]])
   };
-  const deleteResult = capability.deleteBrandingDefinition('tenant1', deleteState, audit);
+  const deleteResult = capability.deleteBrandingDefinition(
+    'tenant1',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
+    deleteState,
+    audit
+  );
   assert.equal(auditEvents.length, 2);
   assert.equal(auditEvents[1].action, 'value-cleared');
   assert.equal(deleteResult.kind, 'SUCCESS');
@@ -59,13 +65,18 @@ test("brandingandthemingcontracts", () => {
   assert.equal(themeResult.kind, 'SUCCESS');
 
   // Configuration registry operations
-  const listResult = capability.listBrandingDefinitions('tenant1', state);
+  const listResult = capability.listBrandingDefinitions(
+    'tenant1',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
+    state
+  );
   assert.deepEqual(listResult, [{ applicationName: 'TestApp', themeSelection: 'dark' as const }]);
 
   const patchResult = capability.patchBrandingDefinition(
     'tenant1',
     'themeSelection',
     'system' as const,
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );
@@ -73,6 +84,7 @@ test("brandingandthemingcontracts", () => {
 
   const deleteResult = capability.deleteBrandingDefinition(
     'tenant1',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );
@@ -84,7 +96,7 @@ test("brandingandthemingerrormodel", () => {
 
   // Theme read should always succeed (fail-open)
   const readResult = capability.readTheme('nonexistent', state);
-  assert.equal(readResult.kind, 'SUCCESS');
+  assert.equal(readResult.kind, 'FALLBACK');
   assert.deepEqual(readResult.theme, capability.initialState.defaultTheme);
 
   // Branding mutations should fail-closed
@@ -92,6 +104,7 @@ test("brandingandthemingerrormodel", () => {
     'tenant1',
     'applicationName',
     123,
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );
@@ -102,6 +115,7 @@ test("brandingandthemingerrormodel", () => {
     'tenant1',
     'invalidKey',
     'value',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );
@@ -112,6 +126,7 @@ test("brandingandthemingerrormodel", () => {
     'tenant1',
     'applicationName',
     'App',
+    { tenantId: 'wrong-tenant', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );
@@ -141,6 +156,7 @@ test("brandingandtheminglifecycle", () => {
     'tenant1',
     'themeSelection',
     'light' as const,
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );
@@ -166,10 +182,18 @@ test("brandingandthemingpermissions", () => {
   assert.equal(themeResult.kind, 'SUCCESS');
 
   // Tenant-scoped operations
-  const listTenant1 = capability.listBrandingDefinitions('tenant1', state);
+  const listTenant1 = capability.listBrandingDefinitions(
+    'tenant1',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
+    state
+  );
   assert.deepEqual(listTenant1, [{ applicationName: 'App1', themeSelection: 'light' as const }]);
 
-  const listTenant2 = capability.listBrandingDefinitions('tenant2', state);
+  const listTenant2 = capability.listBrandingDefinitions(
+    'tenant2',
+    { tenantId: 'tenant2', permissions: ['configuration:read', 'configuration:write'] },
+    state
+  );
   assert.deepEqual(listTenant2, [{ applicationName: 'App2', themeSelection: 'dark' as const }]);
 
   // Cross-tenant access should fail
@@ -177,7 +201,8 @@ test("brandingandthemingpermissions", () => {
     'tenant1',
     'applicationName',
     'NewApp',
-    { ...state, brandingDefinitions: new Map([['tenant2', { applicationName: 'App2', themeSelection: 'dark' as const }]]) },
+    { tenantId: 'tenant2', permissions: ['configuration:read', 'configuration:write'] },
+    state,
     () => null
   );
   assert.equal(patchResult.kind, 'ERROR');
@@ -200,7 +225,11 @@ test("brandingandthemingproof", () => {
   assert.equal(themeResult.kind, 'SUCCESS');
   assert.equal(themeResult.theme.primaryColor, '#00ff00');
 
-  const listResult = capability.listBrandingDefinitions('tenant1', state);
+  const listResult = capability.listBrandingDefinitions(
+    'tenant1',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
+    state
+  );
   assert.deepEqual(listResult, [{ applicationName: 'ProofApp', themeSelection: 'system' as const }]);
 
   const auditEvents: capability.AuditEvent[] = [];
@@ -208,6 +237,7 @@ test("brandingandthemingproof", () => {
     'tenant1',
     'applicationName',
     'UpdatedApp',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     (e) => { auditEvents.push(e); return null; }
   );
@@ -217,7 +247,7 @@ test("brandingandthemingproof", () => {
 
   // Route-level coverage of theme bootstrap
   const defaultThemeResult = capability.readTheme('nonexistent', state);
-  assert.equal(defaultThemeResult.kind, 'SUCCESS');
+  assert.equal(defaultThemeResult.kind, 'FALLBACK');
   assert.deepEqual(defaultThemeResult.theme, capability.initialState.defaultTheme);
 });
 
@@ -226,7 +256,7 @@ test("brandingandthemingreadinessmodel", () => {
 
   // Degraded to default when tenant settings unavailable
   const themeResult = capability.readTheme('nonexistent', state);
-  assert.equal(themeResult.kind, 'SUCCESS');
+  assert.equal(themeResult.kind, 'FALLBACK');
   assert.deepEqual(themeResult.theme, capability.initialState.defaultTheme);
 
   // Configuration-managed branding requires persistence
@@ -240,6 +270,7 @@ test("brandingandthemingreadinessmodel", () => {
     'tenant1',
     'applicationName',
     'App',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     emptyState,
     () => null
   );
@@ -268,7 +299,11 @@ test("brandingandthemingstatemodel", () => {
   assert.equal(themeResult.theme.secondaryColor, capability.initialState.defaultTheme.secondaryColor);
 
   // Registry-managed branding definitions
-  const listResult = capability.listBrandingDefinitions('tenant1', state);
+  const listResult = capability.listBrandingDefinitions(
+    'tenant1',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
+    state
+  );
   assert.deepEqual(listResult, [{ applicationName: 'StateApp', themeSelection: 'dark' as const }]);
 
   // Theme selection constrained to allowed set
@@ -286,7 +321,7 @@ test("brandingandthemingvalidation", () => {
 
   // Theme reads tolerate missing tenant
   const themeResult = capability.readTheme('nonexistent', state);
-  assert.equal(themeResult.kind, 'SUCCESS');
+  assert.equal(themeResult.kind, 'FALLBACK');
   assert.deepEqual(themeResult.theme, capability.initialState.defaultTheme);
 
   // Branding edits validate theme selection
@@ -294,6 +329,7 @@ test("brandingandthemingvalidation", () => {
     'tenant1',
     'themeSelection',
     'invalid' as capability.BrandingAndThemingThemeSelection,
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );
@@ -305,6 +341,7 @@ test("brandingandthemingvalidation", () => {
     'tenant1',
     'applicationName',
     123,
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );
@@ -316,6 +353,7 @@ test("brandingandthemingvalidation", () => {
     'tenant1',
     'applicationName',
     'ValidApp',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state,
     () => null
   );

@@ -132,7 +132,7 @@ export function uploadObject(
   sizeInBytes: number,
   quota: number,
   auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
-): ObjectStorageAndTenantPrefixesAndSignedUrlsState | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
+): { readonly kind: 'success'; readonly state: ObjectStorageAndTenantPrefixesAndSignedUrlsState } | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
   if (state.readiness === 'UNAVAILABLE') {
     return {
       kind: 'PROVIDER_UNAVAILABLE',
@@ -192,10 +192,13 @@ export function uploadObject(
   const newStorageBytesMeter = state.storageBytesMeter + sizeInBytes;
 
   return {
-    ...state,
-    registry: newRegistry,
-    storageBytesMeter: newStorageBytesMeter,
-    lastError: null,
+    kind: 'success',
+    state: {
+      ...state,
+      registry: newRegistry,
+      storageBytesMeter: newStorageBytesMeter,
+      lastError: null,
+    },
   };
 }
 
@@ -205,7 +208,7 @@ export function updateScanState(
   tenantId: string,
   newScanState: ObjectStorageAndTenantPrefixesAndSignedUrlsScanState,
   auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
-): ObjectStorageAndTenantPrefixesAndSignedUrlsState | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
+): { readonly kind: 'success'; readonly state: ObjectStorageAndTenantPrefixesAndSignedUrlsState } | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
   if (state.readiness === 'UNAVAILABLE') {
     return {
       kind: 'REGISTRY_UNAVAILABLE',
@@ -228,7 +231,13 @@ export function updateScanState(
   }
 
   const record = state.registry[recordIndex];
-  const auditKind = `OBJECT_${newScanState}` as ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEventKind;
+  const auditKindMap: Record<ObjectStorageAndTenantPrefixesAndSignedUrlsScanState, ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEventKind> = {
+    UPLOADED: 'OBJECT_UPLOAD',
+    QUARANTINED: 'OBJECT_QUARANTINE',
+    CLEAN: 'OBJECT_CLEAN',
+    REJECTED: 'OBJECT_REJECTION',
+  };
+  const auditKind = auditKindMap[newScanState];
   const auditError = auditEvent(
     auditKind,
     record.tenantId,
@@ -252,9 +261,12 @@ export function updateScanState(
   newRegistry[recordIndex] = newRecord;
 
   return {
-    ...state,
-    registry: newRegistry,
-    lastError: null,
+    kind: 'success',
+    state: {
+      ...state,
+      registry: newRegistry,
+      lastError: null,
+    },
   };
 }
 
@@ -263,6 +275,7 @@ export function issueSignedUrl(
   objectId: string,
   tenantId: string,
   expiresInSeconds: number,
+  auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
 ): ObjectStorageAndTenantPrefixesAndSignedUrlsSignedUrl | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
   if (state.readiness === 'UNAVAILABLE') {
     return {
@@ -302,7 +315,7 @@ export function issueSignedUrl(
     record.objectId,
     record.objectKey,
     { expiresAt },
-    (): null => null,
+    auditFn,
   );
   if (auditError !== null) {
     return auditError;
@@ -361,7 +374,8 @@ export function enforceQuota(
   state: ObjectStorageAndTenantPrefixesAndSignedUrlsState,
   tenantId: string,
   quota: number,
-): ObjectStorageAndTenantPrefixesAndSignedUrlsState | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
+  auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
+): { readonly kind: 'success'; readonly state: ObjectStorageAndTenantPrefixesAndSignedUrlsState } | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
   const tenantObjects = state.registry.filter((r) => r.tenantId === tenantId);
   const totalUsage = tenantObjects.reduce((sum, obj) => sum + obj.sizeInBytes, 0);
 
@@ -373,21 +387,25 @@ export function enforceQuota(
     };
   }
 
+  const organisationId = tenantObjects.length > 0 ? tenantObjects[0].organisationId : 'unknown';
   const auditError = auditEvent(
     'QUOTA_CHANGE',
     tenantId,
-    tenantObjects[0]?.organisationId ?? 'unknown',
+    organisationId,
     '',
     '',
     { totalUsage, quota },
-    (): null => null,
+    auditFn,
   );
   if (auditError !== null) {
     return auditError;
   }
 
   return {
-    ...state,
-    lastError: null,
+    kind: 'success',
+    state: {
+      ...state,
+      lastError: null,
+    },
   };
 }

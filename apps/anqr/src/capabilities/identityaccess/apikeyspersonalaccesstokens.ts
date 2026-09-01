@@ -16,7 +16,7 @@ export interface ApiKeysPersonalAccessTokensError {
 export const ApiKeysPersonalAccessTokensReadiness = ['READY', 'DEGRADED'] as const;
 export type ApiKeysPersonalAccessTokensReadiness = typeof ApiKeysPersonalAccessTokensReadiness[number];
 
-export const ApiKeysPersonalAccessTokensAuditEventKind = ['KEY_CREATED', 'KEY_REVOKED'] as const;
+export const ApiKeysPersonalAccessTokensAuditEventKind = ['key-created', 'key-revoked'] as const;
 export type ApiKeysPersonalAccessTokensAuditEventKind = typeof ApiKeysPersonalAccessTokensAuditEventKind[number];
 
 export interface ApiKeysPersonalAccessTokensAuditEvent {
@@ -58,7 +58,7 @@ export interface ApiKeysPersonalAccessTokensRepository {
   ) => ApiKeysPersonalAccessTokensState | ApiKeysPersonalAccessTokensError;
   readonly readMetadata: (tenantId: string, keyId: string) => ApiKeysPersonalAccessTokensMetadata | null | ApiKeysPersonalAccessTokensError;
   readonly listMetadata: (tenantId: string) => readonly ApiKeysPersonalAccessTokensMetadata[] | ApiKeysPersonalAccessTokensError;
-  readonly delete: (tenantId: string, keyId: string) => void | ApiKeysPersonalAccessTokensError;
+  readonly revoke: (tenantId: string, keyId: string) => void | ApiKeysPersonalAccessTokensError;
   readonly authenticate: (
     keyId: string,
     secret: string,
@@ -90,6 +90,24 @@ export function validateRouteIdentifier(keyId: string): boolean {
   return /^[a-zA-Z0-9-]{1,64}$/.test(keyId);
 }
 
+export function computeReadiness(
+  config: ApiKeysPersonalAccessTokensConfig,
+): ApiKeysPersonalAccessTokensReadiness {
+  try {
+    const result = config.repository.listMetadata('dummy-tenant');
+    if (result === null || 'kind' in result) {
+      return 'DEGRADED';
+    }
+    return 'READY';
+  } catch {
+    return 'DEGRADED';
+  }
+}
+
+function wrapRepositoryError(error: ApiKeysPersonalAccessTokensError): ApiKeysPersonalAccessTokensError {
+  return { kind: 'PROVIDER_FAILURE', message: error.message };
+}
+
 export function createKey(
   config: ApiKeysPersonalAccessTokensConfig,
   tenantId: string,
@@ -100,6 +118,10 @@ export function createKey(
   }
   if (!config.permissions.tenantApiKeyWrite) {
     return { outcome: 'NOT_ENTITLED' };
+  }
+
+  if (computeReadiness(config) === 'DEGRADED') {
+    return { kind: 'PROVIDER_FAILURE', message: 'Store unavailable for mutation' };
   }
 
   const keyId = `ak-${config.crypto.generateSalt().substring(0, 16)}`;
@@ -125,7 +147,7 @@ export function createKey(
   };
 
   const auditEvent: ApiKeysPersonalAccessTokensAuditEvent = {
-    kind: 'KEY_CREATED',
+    kind: 'key-created',
     tenantId,
     keyId,
     timestamp: now,
@@ -138,7 +160,7 @@ export function createKey(
 
   const repoResult = config.repository.create(tenantId, keyId, state);
   if ('kind' in repoResult) {
-    return repoResult;
+    return wrapRepositoryError(repoResult);
   }
 
   const metadata: ApiKeysPersonalAccessTokensMetadata = {
@@ -168,17 +190,21 @@ export function revokeKey(
     return { kind: 'INVALID_ROUTE_IDENTIFIER', message: 'Invalid key identifier' };
   }
 
+  if (computeReadiness(config) === 'DEGRADED') {
+    return { kind: 'PROVIDER_FAILURE', message: 'Store unavailable for mutation' };
+  }
+
   const metadata = config.repository.readMetadata(tenantId, keyId);
   if (metadata === null) {
     return { kind: 'INVALID_ROUTE_IDENTIFIER', message: 'Key not found' };
   }
   if ('kind' in metadata) {
-    return metadata;
+    return wrapRepositoryError(metadata);
   }
 
   const now = config.now();
   const auditEvent: ApiKeysPersonalAccessTokensAuditEvent = {
-    kind: 'KEY_REVOKED',
+    kind: 'key-revoked',
     tenantId,
     keyId,
     timestamp: now,
@@ -189,9 +215,9 @@ export function revokeKey(
     return auditResult;
   }
 
-  const repoResult = config.repository.delete(tenantId, keyId);
+  const repoResult = config.repository.revoke(tenantId, keyId);
   if (repoResult && 'kind' in repoResult) {
-    return repoResult;
+    return wrapRepositoryError(repoResult);
   }
 
   return { outcome: 'OK' };
@@ -200,14 +226,14 @@ export function revokeKey(
 export function listKeys(
   config: ApiKeysPersonalAccessTokensConfig,
   tenantId: string,
-): readonly ApiKeysPersonalAccessTokensMetadata[] | ApiKeysPersonalAccessTokensError {
+): readonly ApiKeysPersonalAccessTokensMetadata[] | { readonly kind: ApiKeysPersonalAccessTokensErrorKind; readonly message: string } {
   if (!config.permissions.tenantApiKeyRead) {
     return { kind: 'INVALID_ROUTE_IDENTIFIER', message: 'Not entitled' };
   }
 
   const result = config.repository.listMetadata(tenantId);
-  if ('kind' in result) {
-    return result;
+  if (result === null || 'kind' in result) {
+    return result === null ? [] : wrapRepositoryError(result);
   }
   return result;
 }
@@ -215,14 +241,14 @@ export function listKeys(
 export function operatorListKeys(
   config: ApiKeysPersonalAccessTokensConfig,
   tenantId: string,
-): readonly ApiKeysPersonalAccessTokensMetadata[] | ApiKeysPersonalAccessTokensError {
+): readonly ApiKeysPersonalAccessTokensMetadata[] | { readonly kind: ApiKeysPersonalAccessTokensErrorKind; readonly message: string } {
   if (!config.permissions.platformApiKeyRead) {
     return { kind: 'INVALID_ROUTE_IDENTIFIER', message: 'Not entitled' };
   }
 
   const result = config.repository.listMetadata(tenantId);
-  if ('kind' in result) {
-    return result;
+  if (result === null || 'kind' in result) {
+    return result === null ? [] : wrapRepositoryError(result);
   }
   return result;
 }
@@ -231,7 +257,7 @@ export function readKeyMetadata(
   config: ApiKeysPersonalAccessTokensConfig,
   tenantId: string,
   keyId: string,
-): ApiKeysPersonalAccessTokensMetadata | ApiKeysPersonalAccessTokensError {
+): ApiKeysPersonalAccessTokensMetadata | { readonly kind: ApiKeysPersonalAccessTokensErrorKind; readonly message: string } {
   if (!config.permissions.tenantApiKeyRead) {
     return { kind: 'INVALID_ROUTE_IDENTIFIER', message: 'Not entitled' };
   }
@@ -244,7 +270,7 @@ export function readKeyMetadata(
     return { kind: 'INVALID_ROUTE_IDENTIFIER', message: 'Key not found' };
   }
   if ('kind' in result) {
-    return result;
+    return wrapRepositoryError(result);
   }
   return result;
 }
@@ -263,18 +289,7 @@ export function authenticateKey(
     return null;
   }
   if ('kind' in result) {
-    return result;
+    return wrapRepositoryError(result);
   }
   return result;
-}
-
-export function computeReadiness(
-  config: ApiKeysPersonalAccessTokensConfig,
-): ApiKeysPersonalAccessTokensReadiness {
-  try {
-    config.repository.listMetadata('dummy');
-    return 'READY';
-  } catch {
-    return 'DEGRADED';
-  }
 }

@@ -77,6 +77,40 @@ export type BrandingMutationResult =
   | { readonly kind: 'SUCCESS'; readonly newState: BrandingAndThemingState }
   | { readonly kind: 'ERROR'; readonly error: BrandingAndThemingError };
 
+export type BrandingPermissionCheckResult =
+  | { readonly kind: 'GRANTED' }
+  | { readonly kind: 'DENIED'; readonly error: BrandingAndThemingError };
+
+export function checkBrandingPermission(
+  tenantId: string,
+  token: unknown,
+  state: BrandingAndThemingState,
+): BrandingPermissionCheckResult {
+  if (token === null || typeof token !== 'object' || !('tenantId' in token) || token.tenantId !== tenantId) {
+    return {
+      kind: 'DENIED',
+      error: { kind: 'FORBIDDEN', message: 'Tenant-scoped permission required' },
+    };
+  }
+
+  if (!('permissions' in token) || !Array.isArray(token.permissions)) {
+    return {
+      kind: 'DENIED',
+      error: { kind: 'FORBIDDEN', message: 'Invalid permissions in token' },
+    };
+  }
+
+  const permissions = token.permissions as readonly string[];
+  if (!permissions.includes('configuration:read') || !permissions.includes('configuration:write')) {
+    return {
+      kind: 'DENIED',
+      error: { kind: 'FORBIDDEN', message: 'Configuration read/write permissions required' },
+    };
+  }
+
+  return { kind: 'GRANTED' };
+}
+
 export function resolveEffectiveTheme(
   tenantId: string | null,
   state: BrandingAndThemingState,
@@ -116,8 +150,14 @@ export function readTheme(
 
 export function listBrandingDefinitions(
   tenantId: string,
+  token: unknown,
   state: BrandingAndThemingState,
-): readonly BrandingDefinition[] {
+): readonly BrandingDefinition[] | BrandingAndThemingError {
+  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  if (permissionCheck.kind === 'DENIED') {
+    return permissionCheck.error;
+  }
+
   const definition = state.brandingDefinitions.get(tenantId);
   return definition ? [definition] : [];
 }
@@ -125,9 +165,15 @@ export function listBrandingDefinitions(
 export function createBrandingDefinition(
   tenantId: string,
   definition: unknown,
+  token: unknown,
   state: BrandingAndThemingState,
   audit: (event: AuditEvent) => BrandingAndThemingError | null,
 ): BrandingMutationResult {
+  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  if (permissionCheck.kind === 'DENIED') {
+    return { kind: 'ERROR', error: permissionCheck.error };
+  }
+
   const validation = validateBrandingDefinition(definition);
   if (validation.kind !== 'SUCCESS') {
     return { kind: 'ERROR', error: validation };
@@ -167,9 +213,15 @@ export function patchBrandingDefinition(
   tenantId: string,
   key: string,
   value: unknown,
+  token: unknown,
   state: BrandingAndThemingState,
   audit: (event: AuditEvent) => BrandingAndThemingError | null,
 ): BrandingMutationResult {
+  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  if (permissionCheck.kind === 'DENIED') {
+    return { kind: 'ERROR', error: permissionCheck.error };
+  }
+
   if (key !== 'applicationName' && key !== 'themeSelection') {
     return {
       kind: 'ERROR',
@@ -236,9 +288,15 @@ export function patchBrandingDefinition(
 
 export function deleteBrandingDefinition(
   tenantId: string,
+  token: unknown,
   state: BrandingAndThemingState,
   audit: (event: AuditEvent) => BrandingAndThemingError | null,
 ): BrandingMutationResult {
+  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  if (permissionCheck.kind === 'DENIED') {
+    return { kind: 'ERROR', error: permissionCheck.error };
+  }
+
   const currentDef = state.brandingDefinitions.get(tenantId);
   if (!currentDef) {
     return {

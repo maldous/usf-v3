@@ -151,6 +151,23 @@ export function validateI18n(
   );
   findings.push(...rawLiteralFindings);
 
+  // Check interpolation parameters
+  for (const [key, expectedParams] of state.interpolationParams) {
+    if (!state.localeKeyMap.has(key)) continue;
+    const template = state.localeKeyMap.get(key)!;
+    const templateParams = (template.match(/\{(\w+)\}/g) || []).map(m => m.slice(1, -1));
+    const missingInTemplate = expectedParams.filter(p => !templateParams.includes(p));
+    const extraInTemplate = templateParams.filter(p => !expectedParams.includes(p));
+
+    if (missingInTemplate.length > 0 || extraInTemplate.length > 0) {
+      findings.push({
+        kind: 'MISMATCHED_INTERPOLATION',
+        message: `Interpolation parameter mismatch for key ${key}: expected ${expectedParams.join(', ')}, found ${templateParams.join(', ')}`,
+        key,
+      } as const);
+    }
+  }
+
   // Determine exit state
   const hasStrictFailures =
     state.validationMode === 'STRICT' &&
@@ -165,7 +182,7 @@ export function validateI18n(
   const exitState: I18nRuntimeAndValidationExitState = hasStrictFailures ? 'FAIL' : 'PASS';
 
   return {
-    findings: state.validationMode === 'REPORT_ONLY' ? findings : findings.filter(f => hasStrictFailures || f.kind === 'UNUSED_KEY'),
+    findings,
     exitState,
   };
 }
@@ -229,5 +246,46 @@ export function createState(
     config,
     validationMode,
     exitState: 'PASS',
+  };
+}
+
+export function validateConfiguration(
+  config: unknown,
+): { readonly kind: 'VALID'; readonly config: I18nRuntimeAndValidationConfig } | I18nRuntimeAndValidationError {
+  if (
+    config === null ||
+    typeof config !== 'object' ||
+    !('strictFailOnRawLiteral' in config) ||
+    !('governedLiterals' in config) ||
+    !('excludedKeys' in config) ||
+    !('exceptionPatterns' in config)
+  ) {
+    return {
+      kind: 'INVALID_CONFIGURATION',
+      message: 'Invalid i18n configuration structure',
+    };
+  }
+
+  const typedConfig = config as Record<string, unknown>;
+  if (
+    typeof typedConfig.strictFailOnRawLiteral !== 'boolean' ||
+    !Array.isArray(typedConfig.governedLiterals) ||
+    !Array.isArray(typedConfig.excludedKeys) ||
+    !Array.isArray(typedConfig.exceptionPatterns)
+  ) {
+    return {
+      kind: 'INVALID_CONFIGURATION',
+      message: 'Invalid i18n configuration types',
+    };
+  }
+
+  return {
+    kind: 'VALID',
+    config: {
+      strictFailOnRawLiteral: typedConfig.strictFailOnRawLiteral,
+      governedLiterals: typedConfig.governedLiterals as readonly string[],
+      excludedKeys: typedConfig.excludedKeys as readonly string[],
+      exceptionPatterns: typedConfig.exceptionPatterns as readonly string[],
+    },
   };
 }

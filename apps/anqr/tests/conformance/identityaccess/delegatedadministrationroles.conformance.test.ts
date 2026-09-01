@@ -31,8 +31,7 @@ test("delegatedadministrationrolesauditmodel", () => {
     grantAuditFn,
   );
   assert.ok(grantAuditCalled, "Grant should emit audit event before persistence");
-  assert.equal("outcome" in grantResult, true);
-  assert.strictEqual(grantResult.outcome, "OK");
+  assert.ok("outcome" in grantResult && grantResult.outcome === "OK");
   assert.strictEqual(grantResult.state.delegations.length, 1);
   assert.strictEqual(grantResult.state.delegations[0].grantor, "system-admin-user");
 
@@ -52,8 +51,7 @@ test("delegatedadministrationrolesauditmodel", () => {
     revokeAuditFn,
   );
   assert.ok(revokeAuditCalled, "Revoke should emit audit event after successful revoke");
-  assert.equal("outcome" in revokeResult, true);
-  assert.strictEqual(revokeResult.outcome, "OK");
+  assert.ok("outcome" in revokeResult && revokeResult.outcome === "OK");
 
   let listAuditCalled = false;
   const listAuditFn: (event: capability.DelegatedAdministrationRolesAuditEvent) => capability.DelegatedAdministrationRolesError | null = (event) => {
@@ -68,8 +66,7 @@ test("delegatedadministrationrolesauditmodel", () => {
     listAuditFn,
   );
   assert.ok(listAuditCalled, "List should emit audit event on authorised path");
-  assert.equal("outcome" in listResult, true);
-  assert.strictEqual(listResult.outcome, "OK");
+  assert.ok("outcome" in listResult && listResult.outcome === "OK");
 
   const deniedContext: capability.DelegatedAdministrationRolesContext = {
     callerId: "user-1",
@@ -90,8 +87,7 @@ test("delegatedadministrationrolesauditmodel", () => {
     null,
     deniedAuditFn,
   );
-  assert.equal("kind" in deniedResult, true);
-  assert.strictEqual(deniedResult.kind, "STATIC_PERMISSION_DENIED");
+  assert.ok("kind" in deniedResult && deniedResult.kind === "STATIC_PERMISSION_DENIED");
   assert.ok(!deniedAuditCalled, "Denied grant should not emit audit event");
 
   const notFoundResult = capability.revokeDelegation(
@@ -100,8 +96,7 @@ test("delegatedadministrationrolesauditmodel", () => {
     "non-existent",
     deniedAuditFn,
   );
-  assert.equal("kind" in notFoundResult, true);
-  assert.strictEqual(notFoundResult.kind, "NOT_FOUND");
+  assert.ok("kind" in notFoundResult && notFoundResult.kind === "NOT_FOUND");
   assert.ok(!deniedAuditCalled, "Not found revoke should not emit audit event");
 });
 
@@ -122,8 +117,7 @@ test("delegatedadministrationrolescontracts", () => {
     null,
     () => null,
   );
-  assert.equal("outcome" in grantResult, true);
-  assert.strictEqual(grantResult.outcome, "OK");
+  assert.ok("outcome" in grantResult && grantResult.outcome === "OK");
   assert.strictEqual(grantResult.state.delegations.length, 1);
   assert.strictEqual(grantResult.state.delegations[0].grantor, "tenant-admin-user");
 
@@ -132,8 +126,7 @@ test("delegatedadministrationrolescontracts", () => {
     context,
     () => null,
   );
-  assert.equal("outcome" in listResult, true);
-  assert.strictEqual(listResult.outcome, "OK");
+  assert.ok("outcome" in listResult && listResult.outcome === "OK");
   assert.strictEqual(listResult.delegations.length, 1);
 
   const revokeResult = capability.revokeDelegation(
@@ -142,8 +135,7 @@ test("delegatedadministrationrolescontracts", () => {
     "del-1",
     () => null,
   );
-  assert.equal("outcome" in revokeResult, true);
-  assert.strictEqual(revokeResult.outcome, "OK");
+  assert.ok("outcome" in revokeResult && revokeResult.outcome === "OK");
 });
 
 test("delegatedadministrationroleserrormodel", () => {
@@ -163,8 +155,7 @@ test("delegatedadministrationroleserrormodel", () => {
     null,
     () => null,
   );
-  assert.equal("kind" in deniedResult, true);
-  assert.strictEqual(deniedResult.kind, "STATIC_PERMISSION_DENIED");
+  assert.ok("kind" in deniedResult && deniedResult.kind === "STATIC_PERMISSION_DENIED");
 
   const adminContext: capability.DelegatedAdministrationRolesContext = {
     callerId: "admin-1",
@@ -180,10 +171,9 @@ test("delegatedadministrationroleserrormodel", () => {
     null,
     () => null,
   );
-  assert.equal("outcome" in firstGrant, true);
-  const secondGrantState = firstGrant.outcome === "OK" ? firstGrant.state : state;
+  assert.ok("outcome" in firstGrant && firstGrant.outcome === "OK");
   const secondGrant = capability.grantDelegation(
-    secondGrantState,
+    firstGrant.state,
     adminContext,
     "del-2",
     "grantee-1",
@@ -191,8 +181,7 @@ test("delegatedadministrationroleserrormodel", () => {
     null,
     () => null,
   );
-  assert.equal("kind" in secondGrant, true);
-  assert.strictEqual(secondGrant.kind, "DELEGATION_ALREADY_ACTIVE");
+  assert.ok("kind" in secondGrant && secondGrant.kind === "DELEGATION_ALREADY_ACTIVE");
 
   const notFoundResult = capability.revokeDelegation(
     state,
@@ -200,8 +189,7 @@ test("delegatedadministrationroleserrormodel", () => {
     "non-existent",
     () => null,
   );
-  assert.equal("kind" in notFoundResult, true);
-  assert.strictEqual(notFoundResult.kind, "NOT_FOUND");
+  assert.ok("kind" in notFoundResult && notFoundResult.kind === "NOT_FOUND");
 
   const failClosedResult = capability.grantDelegation(
     state,
@@ -212,8 +200,7 @@ test("delegatedadministrationroleserrormodel", () => {
     null,
     () => ({ kind: "FAIL_CLOSED", message: "Audit failed" }),
   );
-  assert.equal("kind" in failClosedResult, true);
-  assert.strictEqual(failClosedResult.kind, "FAIL_CLOSED");
+  assert.ok("kind" in failClosedResult && failClosedResult.kind === "FAIL_CLOSED");
 });
 
 test("delegatedadministrationroleslifecycle", () => {
@@ -233,8 +220,7 @@ test("delegatedadministrationroleslifecycle", () => {
     null,
     () => null,
   );
-  assert.equal("outcome" in grantResult, true);
-  assert.strictEqual(grantResult.outcome, "OK");
+  assert.ok("outcome" in grantResult && grantResult.outcome === "OK");
   const delegation = grantResult.state.delegations[0];
   assert.ok(capability.isDelegationActive(delegation));
 
@@ -247,8 +233,7 @@ test("delegatedadministrationroleslifecycle", () => {
     null,
     () => null,
   );
-  assert.equal("kind" in duplicateResult, true);
-  assert.strictEqual(duplicateResult.kind, "DELEGATION_ALREADY_ACTIVE");
+  assert.ok("kind" in duplicateResult && duplicateResult.kind === "DELEGATION_ALREADY_ACTIVE");
 
   const revokeResult = capability.revokeDelegation(
     grantResult.state,
@@ -256,8 +241,7 @@ test("delegatedadministrationroleslifecycle", () => {
     "del-1",
     () => null,
   );
-  assert.equal("outcome" in revokeResult, true);
-  assert.strictEqual(revokeResult.outcome, "OK");
+  assert.ok("outcome" in revokeResult && revokeResult.outcome === "OK");
   const revokedDelegation = revokeResult.state.delegations.find(d => d.id === "del-1");
   assert.ok(revokedDelegation !== undefined && !capability.isDelegationActive(revokedDelegation));
 
@@ -266,8 +250,7 @@ test("delegatedadministrationroleslifecycle", () => {
     adminContext,
     () => null,
   );
-  assert.equal("outcome" in listResult, true);
-  assert.strictEqual(listResult.outcome, "OK");
+  assert.ok("outcome" in listResult && listResult.outcome === "OK");
 
   const nonAdminContext: capability.DelegatedAdministrationRolesContext = {
     callerId: "grantee-1",
@@ -279,8 +262,7 @@ test("delegatedadministrationroleslifecycle", () => {
     nonAdminContext,
     "del-1",
   );
-  assert.equal("outcome" in selfLookupResult, true);
-  assert.strictEqual(selfLookupResult.outcome, "OK");
+  assert.ok("outcome" in selfLookupResult && selfLookupResult.outcome === "OK");
   assert.strictEqual(selfLookupResult.delegation?.granteeId, "grantee-1");
 });
 
@@ -311,8 +293,7 @@ test("delegatedadministrationrolespermissions", () => {
     null,
     () => null,
   );
-  assert.equal("outcome" in grantResult, true);
-  assert.strictEqual(grantResult.outcome, "OK");
+  assert.ok("outcome" in grantResult && grantResult.outcome === "OK");
 
   const revokeResult = capability.revokeDelegation(
     grantResult.state,
@@ -320,8 +301,7 @@ test("delegatedadministrationrolespermissions", () => {
     "del-1",
     () => null,
   );
-  assert.equal("kind" in revokeResult, true);
-  assert.strictEqual(revokeResult.kind, "STATIC_PERMISSION_DENIED");
+  assert.ok("kind" in revokeResult && revokeResult.kind === "STATIC_PERMISSION_DENIED");
 
   const systemAdminRevokeResult = capability.revokeDelegation(
     grantResult.state,
@@ -329,16 +309,14 @@ test("delegatedadministrationrolespermissions", () => {
     "del-1",
     () => null,
   );
-  assert.equal("outcome" in systemAdminRevokeResult, true);
-  assert.strictEqual(systemAdminRevokeResult.outcome, "OK");
+  assert.ok("outcome" in systemAdminRevokeResult && systemAdminRevokeResult.outcome === "OK");
 
   const selfLookupResult = capability.getDelegation(
     grantResult.state,
     nonAdminContext,
     "del-1",
   );
-  assert.equal("kind" in selfLookupResult, true);
-  assert.strictEqual(selfLookupResult.kind, "NOT_FOUND");
+  assert.ok("kind" in selfLookupResult && selfLookupResult.kind === "NOT_FOUND");
 
   const otherOrgContext: capability.DelegatedAdministrationRolesContext = {
     callerId: "admin-1",
@@ -350,8 +328,7 @@ test("delegatedadministrationrolespermissions", () => {
     otherOrgContext,
     () => null,
   );
-  assert.equal("outcome" in otherOrgListResult, true);
-  assert.strictEqual(otherOrgListResult.outcome, "OK");
+  assert.ok("outcome" in otherOrgListResult && otherOrgListResult.outcome === "OK");
   assert.strictEqual(otherOrgListResult.delegations.length, 0);
 });
 
@@ -397,8 +374,7 @@ test("delegatedadministrationrolesreadinessmodel", () => {
     context,
     () => null,
   );
-  assert.equal("outcome" in listResult, true);
-  assert.strictEqual(listResult.outcome, "OK");
+  assert.ok("outcome" in listResult && listResult.outcome === "OK");
   assert.strictEqual(listResult.delegations.length, 0);
 
   const grantResult = capability.grantDelegation(
@@ -410,8 +386,7 @@ test("delegatedadministrationrolesreadinessmodel", () => {
     null,
     () => null,
   );
-  assert.equal("outcome" in grantResult, true);
-  assert.strictEqual(grantResult.outcome, "OK");
+  assert.ok("outcome" in grantResult && grantResult.outcome === "OK");
 });
 
 test("delegatedadministrationrolesstatemodel", () => {
@@ -463,16 +438,14 @@ test("delegatedadministrationrolesvalidation", () => {
     null,
     () => null,
   );
-  assert.equal("kind" in grantResult, true);
-  assert.strictEqual(grantResult.kind, "STATIC_PERMISSION_DENIED");
+  assert.ok("kind" in grantResult && grantResult.kind === "STATIC_PERMISSION_DENIED");
 
   const listResult = capability.listDelegations(
     state,
     nonAdminContext,
     () => null,
   );
-  assert.equal("kind" in listResult, true);
-  assert.strictEqual(listResult.kind, "STATIC_PERMISSION_DENIED");
+  assert.ok("kind" in listResult && listResult.kind === "STATIC_PERMISSION_DENIED");
 
   const revokeResult = capability.revokeDelegation(
     state,
@@ -480,8 +453,7 @@ test("delegatedadministrationrolesvalidation", () => {
     "del-1",
     () => null,
   );
-  assert.equal("kind" in revokeResult, true);
-  assert.strictEqual(revokeResult.kind, "STATIC_PERMISSION_DENIED");
+  assert.ok("kind" in revokeResult && revokeResult.kind === "STATIC_PERMISSION_DENIED");
 
   const adminContext: capability.DelegatedAdministrationRolesContext = {
     callerId: "admin-1",
@@ -497,7 +469,7 @@ test("delegatedadministrationrolesvalidation", () => {
     null,
     () => null,
   );
-  assert.equal("outcome" in firstGrant, true);
+  assert.ok("outcome" in firstGrant && firstGrant.outcome === "OK");
   const duplicateResult = capability.grantDelegation(
     firstGrant.state,
     adminContext,
@@ -507,8 +479,7 @@ test("delegatedadministrationrolesvalidation", () => {
     null,
     () => null,
   );
-  assert.equal("kind" in duplicateResult, true);
-  assert.strictEqual(duplicateResult.kind, "DELEGATION_ALREADY_ACTIVE");
+  assert.ok("kind" in duplicateResult && duplicateResult.kind === "DELEGATION_ALREADY_ACTIVE");
 
   const grantWithClientGrantor = capability.grantDelegation(
     state,
@@ -519,7 +490,7 @@ test("delegatedadministrationrolesvalidation", () => {
     null,
     () => null,
   );
-  assert.equal("outcome" in grantWithClientGrantor, true);
+  assert.ok("outcome" in grantWithClientGrantor && grantWithClientGrantor.outcome === "OK");
   assert.strictEqual(grantWithClientGrantor.state.delegations[0].grantor, "admin-1");
 
   const otherOrgContext: capability.DelegatedAdministrationRolesContext = {
@@ -532,6 +503,6 @@ test("delegatedadministrationrolesvalidation", () => {
     otherOrgContext,
     () => null,
   );
-  assert.equal("outcome" in otherOrgListResult, true);
+  assert.ok("outcome" in otherOrgListResult && otherOrgListResult.outcome === "OK");
   assert.strictEqual(otherOrgListResult.delegations.length, 0);
 });

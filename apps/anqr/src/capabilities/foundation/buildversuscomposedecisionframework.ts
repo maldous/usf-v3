@@ -11,6 +11,8 @@ export const BuildVersusComposeErrorKind = [
   'AUTHORITY_VIOLATION',
   'PROOF_INCONSISTENT',
   'DEPENDENCY_UNAVAILABLE',
+  'CONFIGURATION_LOSS',
+  'SEMANTIC_DRIFT',
 ] as const;
 export type BuildVersusComposeErrorKind = typeof BuildVersusComposeErrorKind[number];
 
@@ -53,12 +55,19 @@ export const initialState: BuildVersusComposeState = {
   lastError: null,
 };
 
+const isObject = (value: unknown): value is Record<string, unknown> => {
+  return value !== null && typeof value === 'object';
+};
+
 export function validateDecision(
   decision: unknown,
+  authorityOrder: readonly string[],
 ): DecisionRecord | BuildVersusComposeError {
+  if (!isObject(decision)) {
+    return { kind: 'DECISION_INCOMPLETE', message: 'Decision record is missing required fields' };
+  }
+
   if (
-    decision === null ||
-    typeof decision !== 'object' ||
     !('capabilityId' in decision) ||
     !('decision' in decision) ||
     !('justification' in decision) ||
@@ -69,46 +78,60 @@ export function validateDecision(
   }
 
   const d = decision as Record<string, unknown>;
+  const capabilityId = d.capabilityId;
+  const decisionValue = d.decision;
+  const justification = d.justification;
+  const version = d.version;
+  const supersededBy = d.supersededBy;
+
   if (
-    typeof d.capabilityId !== 'string' ||
-    !BuildVersusComposeDecision.includes(d.decision as BuildVersusComposeDecision) ||
-    typeof d.justification !== 'object' ||
-    d.justification === null ||
-    typeof d.version !== 'number' ||
-    (d.supersededBy !== null && typeof d.supersededBy !== 'string')
+    typeof capabilityId !== 'string' ||
+    typeof decisionValue !== 'string' ||
+    !BuildVersusComposeDecision.includes(decisionValue as BuildVersusComposeDecision) ||
+    !isObject(justification) ||
+    typeof version !== 'number' ||
+    (supersededBy !== null && typeof supersededBy !== 'string')
   ) {
     return { kind: 'DECISION_INCOMPLETE', message: 'Decision record has invalid field types' };
   }
 
-  const justification = d.justification as Record<string, unknown>;
-  if (
-    typeof justification.rationale !== 'string' ||
-    typeof justification.criteria !== 'object' ||
-    justification.criteria === null
-  ) {
+  if (!authorityOrder.includes(capabilityId)) {
+    return { kind: 'AUTHORITY_VIOLATION', message: `Capability ${capabilityId} not in authority order` };
+  }
+
+  if (!('rationale' in justification) || !('criteria' in justification)) {
     return { kind: 'JUSTIFICATION_MISSING', message: 'Decision justification is incomplete or invalid' };
   }
 
-  const criteria = justification.criteria as Record<string, unknown>;
+  const rationale = justification.rationale;
+  const criteria = justification.criteria;
+
+  if (typeof rationale !== 'string' || !isObject(criteria)) {
+    return { kind: 'JUSTIFICATION_MISSING', message: 'Decision justification is incomplete or invalid' };
+  }
+
+  const criteriaRecord: Record<string, string> = {};
   for (const c of BuildVersusComposeCriteria) {
-    if (!(c in criteria) || typeof criteria[c] !== 'string') {
+    const criterionValue = criteria[c];
+    if (typeof criterionValue !== 'string') {
       return { kind: 'JUSTIFICATION_MISSING', message: `Missing or invalid justification for criterion: ${c}` };
     }
+    criteriaRecord[c] = criterionValue;
   }
 
   return {
-    capabilityId: d.capabilityId,
-    decision: d.decision as BuildVersusComposeDecision,
+    capabilityId,
+    decision: decisionValue as BuildVersusComposeDecision,
     justification: {
       criteria: {
-        COST: criteria.COST as string,
-        CONTROL: criteria.CONTROL as string,
-        READINESS: criteria.READINESS as string,
+        COST: criteriaRecord.COST,
+        CONTROL: criteriaRecord.CONTROL,
+        READINESS: criteriaRecord.READINESS,
       },
-      rationale: justification.rationale,
+      rationale,
     },
-    version: d.version,
-    supersededBy: d.supersededBy as string | null,
+    version,
+    supersededBy: supersededBy as string | null,
   };
 }
 
@@ -116,9 +139,11 @@ export function validateProofDocument(
   proofDocument: unknown,
   authorityOrder: readonly string[],
 ): ProofDocument | BuildVersusComposeError {
+  if (!isObject(proofDocument)) {
+    return { kind: 'PROOF_INCONSISTENT', message: 'Proof document is missing required fields' };
+  }
+
   if (
-    proofDocument === null ||
-    typeof proofDocument !== 'object' ||
     !('decisionRecords' in proofDocument) ||
     !('consistencyCheck' in proofDocument) ||
     !('authorityOrder' in proofDocument)
@@ -127,34 +152,38 @@ export function validateProofDocument(
   }
 
   const p = proofDocument as Record<string, unknown>;
+  const decisionRecords = p.decisionRecords;
+  const consistencyCheck = p.consistencyCheck;
+  const proofAuthorityOrder = p.authorityOrder;
+
   if (
-    !Array.isArray(p.decisionRecords) ||
-    typeof p.consistencyCheck !== 'boolean' ||
-    !Array.isArray(p.authorityOrder)
+    !Array.isArray(decisionRecords) ||
+    typeof consistencyCheck !== 'boolean' ||
+    !Array.isArray(proofAuthorityOrder)
   ) {
     return { kind: 'PROOF_INCONSISTENT', message: 'Proof document has invalid field types' };
   }
 
-  const decisionRecords: DecisionRecord[] = [];
-  for (const record of p.decisionRecords) {
-    const validatedRecord = validateDecision(record);
+  const validatedRecords: DecisionRecord[] = [];
+  for (const record of decisionRecords) {
+    const validatedRecord = validateDecision(record, authorityOrder);
     if ('kind' in validatedRecord) {
       return validatedRecord;
     }
-    decisionRecords.push(validatedRecord);
+    validatedRecords.push(validatedRecord);
   }
 
   const authorityOrderSet = new Set(authorityOrder);
-  for (const record of decisionRecords) {
+  for (const record of validatedRecords) {
     if (!authorityOrderSet.has(record.capabilityId)) {
       return { kind: 'AUTHORITY_VIOLATION', message: `Capability ${record.capabilityId} not in authority order` };
     }
   }
 
   return {
-    decisionRecords,
-    consistencyCheck: p.consistencyCheck as boolean,
-    authorityOrder: p.authorityOrder as readonly string[],
+    decisionRecords: validatedRecords,
+    consistencyCheck: consistencyCheck as boolean,
+    authorityOrder: proofAuthorityOrder as readonly string[],
   };
 }
 
@@ -167,6 +196,21 @@ export function checkConsistency(
       return false;
     }
     capabilityDecisions.set(record.capabilityId, record);
+  }
+  return true;
+}
+
+export function checkDownstreamContracts(
+  proofDocument: ProofDocument,
+  downstreamContracts: Readonly<Record<string, Readonly<Record<string, string>>>,
+): boolean {
+  for (const record of proofDocument.decisionRecords) {
+    const contract = downstreamContracts[record.capabilityId];
+    if (contract !== undefined) {
+      if (record.decision === 'COMPOSE' && contract.proofPosture === 'HIGH') {
+        return false;
+      }
+    }
   }
   return true;
 }
@@ -190,44 +234,45 @@ export function createDecisionRecord(
 export function authorDecision(
   currentProof: ProofDocument | null,
   newRecord: DecisionRecord,
+  authorityOrder: readonly string[],
 ): ProofDocument | BuildVersusComposeError {
-  if (currentProof === null) {
-    const newProof: ProofDocument = {
-      decisionRecords: [newRecord],
-      consistencyCheck: true,
-      authorityOrder: [newRecord.capabilityId],
-    };
-    return newProof;
-  }
-
-  const validatedNewRecord = validateDecision(newRecord);
+  const validatedNewRecord = validateDecision(newRecord, authorityOrder);
   if ('kind' in validatedNewRecord) {
     return validatedNewRecord;
   }
 
+  if (currentProof === null) {
+    const newProof: ProofDocument = {
+      decisionRecords: [validatedNewRecord],
+      consistencyCheck: true,
+      authorityOrder,
+    };
+    return newProof;
+  }
+
   const existingRecordIndex = currentProof.decisionRecords.findIndex(
-    (r) => r.capabilityId === newRecord.capabilityId,
+    (r) => r.capabilityId === validatedNewRecord.capabilityId,
   );
   if (existingRecordIndex !== -1) {
     const existingRecord = currentProof.decisionRecords[existingRecordIndex];
-    if (newRecord.version <= existingRecord.version) {
+    if (validatedNewRecord.version <= existingRecord.version) {
       return {
         kind: 'PROOF_INCONSISTENT',
-        message: `New decision version ${newRecord.version} must be greater than existing version ${existingRecord.version}`,
+        message: `New decision version ${validatedNewRecord.version} must be greater than existing version ${existingRecord.version}`,
       };
     }
   }
 
   const updatedRecords = existingRecordIndex === -1
-    ? [...currentProof.decisionRecords, newRecord]
+    ? [...currentProof.decisionRecords, validatedNewRecord]
     : currentProof.decisionRecords.map((r, i) =>
-        i === existingRecordIndex ? newRecord : r,
+        i === existingRecordIndex ? validatedNewRecord : r,
       );
 
   const newProof: ProofDocument = {
     decisionRecords: updatedRecords,
     consistencyCheck: checkConsistency({ ...currentProof, decisionRecords: updatedRecords }),
-    authorityOrder: currentProof.authorityOrder,
+    authorityOrder,
   };
 
   return newProof;
@@ -238,6 +283,7 @@ export function reviseDecision(
   capabilityId: string,
   newDecision: BuildVersusComposeDecision,
   newJustification: DecisionJustification,
+  authorityOrder: readonly string[],
 ): ProofDocument | BuildVersusComposeError {
   if (currentProof === null) {
     return { kind: 'DEPENDENCY_UNAVAILABLE', message: 'No proof document available for revision' };
@@ -258,13 +304,14 @@ export function reviseDecision(
     supersededBy: null,
   };
 
-  return authorDecision(currentProof, newRecord);
+  return authorDecision(currentProof, newRecord, authorityOrder);
 }
 
 export function supersedeDecision(
   currentProof: ProofDocument | null,
   capabilityId: string,
   newRecord: DecisionRecord,
+  authorityOrder: readonly string[],
 ): ProofDocument | BuildVersusComposeError {
   if (currentProof === null) {
     return { kind: 'DEPENDENCY_UNAVAILABLE', message: 'No proof document available for superseding' };
@@ -277,24 +324,29 @@ export function supersedeDecision(
     return { kind: 'DECISION_INCOMPLETE', message: `No existing decision for capability ${capabilityId}` };
   }
 
-  if (newRecord.version <= existingRecord.version) {
+  const validatedNewRecord = validateDecision(newRecord, authorityOrder);
+  if ('kind' in validatedNewRecord) {
+    return validatedNewRecord;
+  }
+
+  if (validatedNewRecord.version <= existingRecord.version) {
     return {
       kind: 'PROOF_INCONSISTENT',
-      message: `New decision version ${newRecord.version} must be greater than existing version ${existingRecord.version}`,
+      message: `New decision version ${validatedNewRecord.version} must be greater than existing version ${existingRecord.version}`,
     };
   }
 
   const updatedRecords = currentProof.decisionRecords.map((r) =>
-    r.capabilityId === capabilityId ? { ...r, supersededBy: newRecord.capabilityId } : r,
+    r.capabilityId === capabilityId ? { ...r, supersededBy: validatedNewRecord.capabilityId } : r,
   );
 
   const newProof: ProofDocument = {
-    decisionRecords: [...updatedRecords, newRecord],
+    decisionRecords: [...updatedRecords, validatedNewRecord],
     consistencyCheck: checkConsistency({
       ...currentProof,
-      decisionRecords: [...updatedRecords, newRecord],
+      decisionRecords: [...updatedRecords, validatedNewRecord],
     }),
-    authorityOrder: currentProof.authorityOrder,
+    authorityOrder,
   };
 
   return newProof;
@@ -349,7 +401,8 @@ export function computeReadiness(
   if (
     state.proofDocument !== null &&
     state.proofDocument.consistencyCheck &&
-    state.lastError === null
+    state.lastError === null &&
+    state.proofDocument.decisionRecords.length > 0
   ) {
     return 'READY';
   }
@@ -364,9 +417,13 @@ export function runBuildVersusComposeFramework(
     readonly decision?: BuildVersusComposeDecision;
     readonly justification?: DecisionJustification;
     readonly newRecord?: DecisionRecord;
+    readonly authorityOrder?: readonly string[];
   },
   auditFn: (record: DecisionRecord) => BuildVersusComposeError | null,
+  downstreamContracts?: Readonly<Record<string, Readonly<Record<string, string>>>,
 ): BuildVersusComposeState {
+  const authorityOrder = action.authorityOrder ?? state.proofDocument?.authorityOrder ?? [];
+
   if (state.proofDocument === null && action.type !== 'AUTHOR') {
     return {
       ...state,
@@ -374,6 +431,31 @@ export function runBuildVersusComposeFramework(
         kind: 'DEPENDENCY_UNAVAILABLE',
         message: 'No proof document available for mutation',
       },
+      readiness: 'NOT_READY',
+    };
+  }
+
+  if (action.type === 'AUTHOR' && action.newRecord === undefined) {
+    return {
+      ...state,
+      lastError: { kind: 'DECISION_INCOMPLETE', message: 'New record is required for AUTHOR action' },
+      readiness: 'NOT_READY',
+    };
+  }
+
+  if (action.type === 'REVISE' && (action.decision === undefined || action.justification === undefined)) {
+    return {
+      ...state,
+      lastError: { kind: 'DECISION_INCOMPLETE', message: 'Decision and justification are required for REVISE action' },
+      readiness: 'NOT_READY',
+    };
+  }
+
+  if (action.type === 'SUPERSEDE' && action.newRecord === undefined) {
+    return {
+      ...state,
+      lastError: { kind: 'DECISION_INCOMPLETE', message: 'New record is required for SUPERSEDE action' },
+      readiness: 'NOT_READY',
     };
   }
 
@@ -381,47 +463,50 @@ export function runBuildVersusComposeFramework(
   let newError: BuildVersusComposeError | null = null;
 
   switch (action.type) {
-    case 'AUTHOR':
-      if (action.newRecord === undefined) {
-        newError = { kind: 'DECISION_INCOMPLETE', message: 'New record is required for AUTHOR action' };
-        break;
-      }
-      const auditError = auditFn(action.newRecord);
+    case 'AUTHOR': {
+      const newRecord = action.newRecord as DecisionRecord;
+      const auditError = auditFn(newRecord);
       if (auditError !== null) {
-        return { ...state, lastError: auditError };
+        return { ...state, lastError: auditError, readiness: 'NOT_READY' };
       }
-      const authorResult = authorDecision(state.proofDocument, action.newRecord);
+      const authorResult = authorDecision(state.proofDocument, newRecord, authorityOrder);
       if ('kind' in authorResult) {
         newError = authorResult;
       } else {
         newProof = authorResult;
       }
       break;
-    case 'REVISE':
-      if (action.decision === undefined || action.justification === undefined) {
-        newError = { kind: 'DECISION_INCOMPLETE', message: 'Decision and justification are required for REVISE action' };
-        break;
-      }
-      const reviseResult = reviseDecision(state.proofDocument, action.capabilityId, action.decision, action.justification);
+    }
+    case 'REVISE': {
+      const reviseResult = reviseDecision(
+        state.proofDocument,
+        action.capabilityId,
+        action.decision as BuildVersusComposeDecision,
+        action.justification as DecisionJustification,
+        authorityOrder,
+      );
       if ('kind' in reviseResult) {
         newError = reviseResult;
       } else {
         newProof = reviseResult;
       }
       break;
-    case 'SUPERSEDE':
-      if (action.newRecord === undefined) {
-        newError = { kind: 'DECISION_INCOMPLETE', message: 'New record is required for SUPERSEDE action' };
-        break;
+    }
+    case 'SUPERSEDE': {
+      const newRecord = action.newRecord as DecisionRecord;
+      const auditError = auditFn(newRecord);
+      if (auditError !== null) {
+        return { ...state, lastError: auditError, readiness: 'NOT_READY' };
       }
-      const supersedeResult = supersedeDecision(state.proofDocument, action.capabilityId, action.newRecord);
+      const supersedeResult = supersedeDecision(state.proofDocument, action.capabilityId, newRecord, authorityOrder);
       if ('kind' in supersedeResult) {
         newError = supersedeResult;
       } else {
         newProof = supersedeResult;
       }
       break;
-    case 'ROLLBACK':
+    }
+    case 'ROLLBACK': {
       const rollbackResult = rollbackDecision(state.proofDocument, action.capabilityId);
       if ('kind' in rollbackResult) {
         newError = rollbackResult;
@@ -429,6 +514,14 @@ export function runBuildVersusComposeFramework(
         newProof = rollbackResult;
       }
       break;
+    }
+  }
+
+  if (newProof !== null && downstreamContracts !== undefined) {
+    if (!checkDownstreamContracts(newProof, downstreamContracts)) {
+      newError = { kind: 'CONTRADICTION_DETECTED', message: 'Decision contradicts downstream semantic contracts' };
+      newProof = state.proofDocument;
+    }
   }
 
   return {

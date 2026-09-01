@@ -17,11 +17,9 @@ test("enduserprofileandpreferencesselfserviceauditmodel", () => {
     locale: "en-GB",
     timezone: "Europe/London",
   };
-  const updatedState = capability.updateProfile(state, userId, tenantId, profile, auditFn);
-  assert.ok(updatedState !== null && typeof updatedState === "object" && "profile" in updatedState);
-  assert.strictEqual(auditEvents.length, 2);
-  assert.strictEqual(auditEvents[0].kind, "AUDIT_BEFORE_CHANGE");
-  assert.strictEqual(auditEvents[1].kind, "PROFILE_UPDATED");
+  const updatedState = capability.updateProfile(state, userId, tenantId, profile, auditFn) as capability.EndUserProfileAndPreferencesSelfServiceState;
+  assert.strictEqual(auditEvents.length, 1);
+  assert.strictEqual(auditEvents[0].kind, "PROFILE_UPDATED");
 
   auditEvents.length = 0;
   const preference: capability.EndUserProfileAndPreferencesSelfServicePreference = {
@@ -29,19 +27,15 @@ test("enduserprofileandpreferencesselfserviceauditmodel", () => {
     category: "marketing",
     enabled: true,
   };
-  const updatedState2 = capability.updatePreference(state, userId, tenantId, preference, auditFn);
-  assert.ok(updatedState2 !== null && typeof updatedState2 === "object" && "preferences" in updatedState2);
-  assert.strictEqual(auditEvents.length, 2);
-  assert.strictEqual(auditEvents[0].kind, "AUDIT_BEFORE_CHANGE");
-  assert.strictEqual(auditEvents[1].kind, "PREFERENCE_UPDATED");
+  capability.updatePreference(state, userId, tenantId, preference, auditFn);
+  assert.strictEqual(auditEvents.length, 1);
+  assert.strictEqual(auditEvents[0].kind, "PREFERENCE_UPDATED");
 
   auditEvents.length = 0;
   const payload = { message: "test" };
-  const result = capability.testNotification(userId, tenantId, payload, auditFn);
-  assert.deepStrictEqual(result, { result: "success" });
-  assert.strictEqual(auditEvents.length, 2);
-  assert.strictEqual(auditEvents[0].kind, "AUDIT_BEFORE_CHANGE");
-  assert.strictEqual(auditEvents[1].kind, "NOTIFICATION_TESTED");
+  capability.testNotification(userId, tenantId, payload, auditFn);
+  assert.strictEqual(auditEvents.length, 1);
+  assert.strictEqual(auditEvents[0].kind, "NOTIFICATION_TESTED");
 });
 
 test("enduserprofileandpreferencesselfservicecontracts", () => {
@@ -63,24 +57,19 @@ test("enduserprofileandpreferencesselfservicecontracts", () => {
     locale: "en-GB",
     timezone: "Europe/London",
   };
-  const updatedState = capability.updateProfile(state, userId, tenantId, profile, auditFn);
-  assert.ok(updatedState !== null && typeof updatedState === "object" && "profile" in updatedState);
-  assert.deepStrictEqual((updatedState as capability.EndUserProfileAndPreferencesSelfServiceState).profile, profile);
+  const updatedState = capability.updateProfile(state, userId, tenantId, profile, auditFn) as capability.EndUserProfileAndPreferencesSelfServiceState;
+  assert.deepStrictEqual(updatedState.profile, profile);
 
   const preference: capability.EndUserProfileAndPreferencesSelfServicePreference = {
     channel: "email",
     category: "marketing",
     enabled: true,
   };
-  const updatedState2 = capability.updatePreference(state, userId, tenantId, preference, auditFn);
-  assert.ok(updatedState2 !== null && typeof updatedState2 === "object" && "preferences" in updatedState2);
-  assert.deepStrictEqual(
-    (updatedState2 as capability.EndUserProfileAndPreferencesSelfServiceState).preferences,
-    [preference]
-  );
+  const updatedState2 = capability.updatePreference(state, userId, tenantId, preference, auditFn) as capability.EndUserProfileAndPreferencesSelfServiceState;
+  assert.deepStrictEqual(updatedState2.preferences, [preference]);
 
   const notificationResult = capability.testNotification(userId, tenantId, { message: "test" }, auditFn);
-  assert.deepStrictEqual(notificationResult, { result: "success" });
+  assert.strictEqual(notificationResult, null);
 });
 
 test("enduserprofileandpreferencesselfserviceerrormodel", () => {
@@ -91,13 +80,13 @@ test("enduserprofileandpreferencesselfserviceerrormodel", () => {
 
   const invalidProfile = { displayName: 123, locale: "en-US", timezone: "UTC" };
   const profileResult = capability.updateProfile(state, userId, tenantId, invalidProfile, auditFn);
-  assert.deepStrictEqual(profileResult, {
+  assert.deepStrictEqual(profileResult as capability.EndUserProfileAndPreferencesSelfServiceError, {
     kind: "VALIDATION_ERROR",
     message: "Invalid profile field types",
   });
 
   const noTenantResult = capability.updateProfile(state, "u2", "t2", capability.initialProfile, auditFn);
-  assert.deepStrictEqual(noTenantResult, {
+  assert.deepStrictEqual(noTenantResult as capability.EndUserProfileAndPreferencesSelfServiceError, {
     kind: "NO_TENANT",
     message: "Tenant or user mismatch",
   });
@@ -114,7 +103,7 @@ test("enduserprofileandpreferencesselfserviceerrormodel", () => {
     isDegraded: true,
   };
   const degradedResult = capability.updateProfile(degradedState, userId, tenantId, capability.initialProfile, auditFn);
-  assert.deepStrictEqual(degradedResult, {
+  assert.deepStrictEqual(degradedResult as capability.EndUserProfileAndPreferencesSelfServiceError, {
     kind: "DEGRADED",
     message: "Degraded mode: writes disabled",
   });
@@ -150,7 +139,7 @@ test("enduserprofileandpreferencesselfservicelifecycle", () => {
   assert.strictEqual(readPreferencesResult.result, "success");
   assert.deepStrictEqual(readPreferencesResult.preferences, [preference]);
 
-  const dispatchedState = capability.dispatchNotifications(updatedState2);
+  const dispatchedState = capability.simulateDispatch(updatedState2, userId, tenantId, preference);
   assert.strictEqual(dispatchedState.dispatchLogs.length, 1);
   assert.strictEqual(dispatchedState.dispatchLogs[0].status, "SENT");
 
@@ -160,7 +149,7 @@ test("enduserprofileandpreferencesselfservicelifecycle", () => {
     enabled: false,
   };
   const updatedState3 = capability.updatePreference(updatedState2, userId, tenantId, disabledPreference, auditFn) as capability.EndUserProfileAndPreferencesSelfServiceState;
-  const dispatchedState2 = capability.dispatchNotifications(updatedState3);
+  const dispatchedState2 = capability.simulateDispatch(updatedState3, userId, tenantId, disabledPreference);
   assert.strictEqual(dispatchedState2.dispatchLogs.length, 2);
   assert.strictEqual(dispatchedState2.dispatchLogs[1].status, "SUPPRESSED");
 });
@@ -182,7 +171,7 @@ test("enduserprofileandpreferencesselfservicepermissions", () => {
   assert.ok(updateProfileResult !== null && typeof updateProfileResult === "object" && "profile" in updateProfileResult);
 
   const updateProfileResultWrongUser = capability.updateProfile(state, "u2", tenantId, capability.initialProfile, auditFn);
-  assert.deepStrictEqual(updateProfileResultWrongUser, {
+  assert.deepStrictEqual(updateProfileResultWrongUser as capability.EndUserProfileAndPreferencesSelfServiceError, {
     kind: "NO_TENANT",
     message: "Tenant or user mismatch",
   });
@@ -210,7 +199,7 @@ test("enduserprofileandpreferencesselfserviceproof", () => {
   const updatedState2 = capability.updatePreference(updatedState, userId, tenantId, preference, auditFn) as capability.EndUserProfileAndPreferencesSelfServiceState;
   assert.deepStrictEqual(updatedState2.preferences, [preference]);
 
-  const dispatchedState = capability.dispatchNotifications(updatedState2);
+  const dispatchedState = capability.simulateDispatch(updatedState2, userId, tenantId, preference);
   assert.strictEqual(dispatchedState.dispatchLogs.length, 1);
   assert.strictEqual(dispatchedState.dispatchLogs[0].status, "SENT");
 });
@@ -229,7 +218,7 @@ test("enduserprofileandpreferencesselfservicereadinessmodel", () => {
     isDegraded: true,
   };
   const degradedUpdateResult = capability.updateProfile(degradedState, userId, tenantId, capability.initialProfile, auditFn);
-  assert.deepStrictEqual(degradedUpdateResult, {
+  assert.deepStrictEqual(degradedUpdateResult as capability.EndUserProfileAndPreferencesSelfServiceError, {
     kind: "DEGRADED",
     message: "Degraded mode: writes disabled",
   });

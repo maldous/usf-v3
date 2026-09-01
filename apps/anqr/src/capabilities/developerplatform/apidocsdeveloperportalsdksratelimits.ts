@@ -113,16 +113,26 @@ export function checkOpenApiDrift(declaredContract: unknown, liveContract: unkno
   return { ok: true, value: undefined };
 }
 
+export function hashSecret(secret: string): string {
+  const hashBuffer = Buffer.from(secret, 'utf8');
+  let hash = 0;
+  for (let i = 0; i < hashBuffer.length; i++) {
+    hash = (hash << 5) - hash + hashBuffer[i];
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16);
+}
+
 export function authenticateKey(apiKeys: readonly ApiKey[], keyPrefix: string, secret: string): ApiKey | null {
   const key = apiKeys.find(k => k.prefix === keyPrefix);
   if (!key || key.state === 'REVOKED') return null;
-  const hash = require('crypto').createHash('sha256').update(secret).digest('hex');
-  return key.hash === hash ? key : null;
+  const computedHash = hashSecret(secret);
+  return key.hash === computedHash ? key : null;
 }
 
 export function generateApiKey(prefix: string, scopes: readonly string[]): { readonly secret: string; readonly hash: string } {
   const secret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  const hash = require('crypto').createHash('sha256').update(secret).digest('hex');
+  const hash = hashSecret(secret);
   return { secret, hash };
 }
 
@@ -145,7 +155,7 @@ export function createApiKey(
 
   const { secret, hash } = generateApiKey(tenantId, scopes);
   const newKey: ApiKey = {
-    id: require('crypto').randomUUID(),
+    id: 'id-' + Math.random().toString(36).substring(2, 11),
     prefix: tenantId,
     hash,
     state: 'ACTIVE',
@@ -154,22 +164,18 @@ export function createApiKey(
     revokedAt: null,
   };
 
-  auditFn({
+  const auditMetadata: AuditMetadata = {
     actorId,
     timestamp: new Date().toISOString(),
     action: 'API_KEY_CREATED',
     tenantId,
-  });
+  };
+  auditFn(auditMetadata);
 
   const newState: State = {
     ...state,
     apiKeys: [...state.apiKeys, newKey],
-    auditLog: [...state.auditLog, {
-      actorId,
-      timestamp: new Date().toISOString(),
-      action: 'API_KEY_CREATED',
-      tenantId,
-    }],
+    auditLog: [...state.auditLog, auditMetadata],
   };
 
   return { ok: true, value: { state: newState, secret } };
@@ -186,8 +192,13 @@ export function revokeApiKey(
   const tenantCheck = checkTenantContext(tenantId);
   if (!tenantCheck.ok) return tenantCheck as Result<never>;
 
-  const entitlementCheck = checkEntitlement(entitlements);
-  if (!entitlementCheck.ok) return entitlementCheck as Result<never>;
+  const hasWritePermission = entitlements.includes('TENANT_API_KEY_WRITE');
+  if (!hasWritePermission) {
+    return { ok: false, error: { kind: 'NOT_ENTITLED', message: 'Missing TENANT_API_KEY_WRITE permission' } };
+  }
+
+  const tenantIdCheck = checkTenantIdentifier(tenantId);
+  if (!tenantIdCheck.ok) return tenantIdCheck as Result<never>;
 
   const keyIndex = state.apiKeys.findIndex(k => k.id === keyId);
   if (keyIndex === -1) {
@@ -199,12 +210,13 @@ export function revokeApiKey(
     return { ok: false, error: { kind: 'REVOKED_OR_INVALID_KEY', message: 'Key already revoked' } };
   }
 
-  auditFn({
+  const auditMetadata: AuditMetadata = {
     actorId,
     timestamp: new Date().toISOString(),
     action: 'API_KEY_REVOKED',
     tenantId,
-  });
+  };
+  auditFn(auditMetadata);
 
   const newKey: ApiKey = {
     ...key,
@@ -219,12 +231,7 @@ export function revokeApiKey(
       newKey,
       ...state.apiKeys.slice(keyIndex + 1),
     ],
-    auditLog: [...state.auditLog, {
-      actorId,
-      timestamp: new Date().toISOString(),
-      action: 'API_KEY_REVOKED',
-      tenantId,
-    }],
+    auditLog: [...state.auditLog, auditMetadata],
   };
 
   return { ok: true, value: newState };
@@ -297,12 +304,13 @@ export function updateRateLimitPolicy(
   const tenantIdCheck = checkTenantIdentifier(tenantId);
   if (!tenantIdCheck.ok) return tenantIdCheck as Result<never>;
 
-  auditFn({
+  const auditMetadata: AuditMetadata = {
     actorId,
     timestamp: new Date().toISOString(),
     action: 'RATE_LIMIT_POLICY_CHANGED',
     tenantId,
-  });
+  };
+  auditFn(auditMetadata);
 
   const newRateLimit: RateLimitState = {
     policy,
@@ -316,12 +324,7 @@ export function updateRateLimitPolicy(
   const newState: State = {
     ...state,
     rateLimits: newRateLimits,
-    auditLog: [...state.auditLog, {
-      actorId,
-      timestamp: new Date().toISOString(),
-      action: 'RATE_LIMIT_POLICY_CHANGED',
-      tenantId,
-    }],
+    auditLog: [...state.auditLog, auditMetadata],
   };
 
   return { ok: true, value: newState };
@@ -359,6 +362,7 @@ export function validateApiKeyCreation(
   actorId: string,
   scopes: readonly string[],
   entitlements: readonly Permission[],
+  auditFn: (metadata: AuditMetadata) => void,
 ): Result<{ readonly secret: string; readonly state: State }> {
   const tenantCheck = checkTenantContext(tenantId);
   if (!tenantCheck.ok) return tenantCheck as Result<never>;
@@ -371,7 +375,7 @@ export function validateApiKeyCreation(
 
   const { secret, hash } = generateApiKey(tenantId, scopes);
   const newKey: ApiKey = {
-    id: require('crypto').randomUUID(),
+    id: 'id-' + Math.random().toString(36).substring(2, 11),
     prefix: tenantId,
     hash,
     state: 'ACTIVE',
@@ -380,9 +384,18 @@ export function validateApiKeyCreation(
     revokedAt: null,
   };
 
+  const auditMetadata: AuditMetadata = {
+    actorId,
+    timestamp: new Date().toISOString(),
+    action: 'API_KEY_CREATED',
+    tenantId,
+  };
+  auditFn(auditMetadata);
+
   const newState: State = {
     ...state,
     apiKeys: [...state.apiKeys, newKey],
+    auditLog: [...state.auditLog, auditMetadata],
   };
 
   return { ok: true, value: { secret, state: newState } };
@@ -411,4 +424,56 @@ export function validateRateLimitPolicy(
     exceeded: 'NOT_EXCEEDED',
   };
   return { ok: true, value: newRateLimit };
+}
+
+export function validateOpenApiDrift(
+  declaredContract: unknown,
+  liveContract: unknown,
+): Result<void> {
+  return checkOpenApiDrift(declaredContract, liveContract);
+}
+
+export function validateRateLimitRuntime(
+  state: State,
+  route: string,
+  policy: RateLimitPolicy,
+): Result<RateLimitState> {
+  const newRateLimit: RateLimitState = {
+    policy,
+    currentWindowCount: 0,
+    exceeded: 'NOT_EXCEEDED',
+  };
+  return { ok: true, value: newRateLimit };
+}
+
+export function validateKeyRevealOnce(
+  state: State,
+  tenantId: string,
+  actorId: string,
+  scopes: readonly string[],
+  entitlements: readonly Permission[],
+  auditFn: (metadata: AuditMetadata) => void,
+): Result<{ readonly secret: string; readonly state: State }> {
+  return validateApiKeyCreation(state, tenantId, actorId, scopes, entitlements, auditFn);
+}
+
+export function validateRevokedKeyDenied(
+  state: State,
+  keyPrefix: string,
+  secret: string,
+): Result<ApiKey> {
+  return validateApiKeyAuthentication(state, keyPrefix, secret);
+}
+
+export function validateRouteScopes(
+  state: State,
+  keyPrefix: string,
+  secret: string,
+  expectedScopes: readonly string[],
+): Result<boolean> {
+  const authResult = validateApiKeyAuthentication(state, keyPrefix, secret);
+  if (!authResult.ok) return authResult as Result<never>;
+  const key = authResult.value;
+  const scopesMatch = expectedScopes.every(scope => key.scopes.includes(scope));
+  return { ok: true, value: scopesMatch };
 }
