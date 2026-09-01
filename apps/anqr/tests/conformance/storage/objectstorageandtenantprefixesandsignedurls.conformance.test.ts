@@ -3,18 +3,7 @@ import { strict as assert } from "node:assert/strict";
 import { test } from "node:test";
 
 test("objectstorageandtenantprefixesandsignedurlsauditmodel", () => {
-  const mockAuditFn = (): null => null;
-  const auditEvent = capability.auditEvent(
-    "OBJECT_UPLOAD" as const,
-    "tenant-123",
-    "org-456",
-    "obj-789",
-    "key.txt",
-    { contentType: "text/plain", sizeInBytes: 1024 },
-    mockAuditFn,
-  );
-  assert.strictEqual(auditEvent, null);
-
+  const mockAuditFn = (_event: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent): null => null;
   const state = capability.initialState;
   const uploaded = capability.uploadObject(
     state,
@@ -27,66 +16,58 @@ test("objectstorageandtenantprefixesandsignedurlsauditmodel", () => {
     2048,
     mockAuditFn,
   );
-  if ("registry" in uploaded) {
-    assert.strictEqual(uploaded.registry[0]?.tenantId, "tenant-123");
-    assert.strictEqual(uploaded.registry[0]?.organisationId, "org-456");
-  } else {
-    assert.fail("uploadObject should return state with registry");
-  }
+  assert.equal(uploaded.kind, "success");
+  assert.equal(uploaded.state.registry[0]?.tenantId, "tenant-123");
+  assert.equal(uploaded.state.registry[0]?.organisationId, "org-456");
+  assert.equal(uploaded.state.registry[0]?.scanState, "UPLOADED");
 
   const clean = capability.updateScanState(
-    uploaded,
+    uploaded.state,
     "obj-789",
     "tenant-123",
     "CLEAN",
     mockAuditFn,
   );
-  if ("registry" in clean) {
-    assert.strictEqual(clean.registry[0]?.scanState, "CLEAN");
-  } else {
-    assert.fail("updateScanState should return state with registry");
-  }
+  assert.equal(clean.kind, "success");
+  assert.equal(clean.state.registry[0]?.scanState, "CLEAN");
 
   const signedUrl = capability.issueSignedUrl(
-    clean,
+    clean.state,
     "obj-789",
     "tenant-123",
     3600,
+    mockAuditFn,
   );
-  if ("url" in signedUrl) {
-    assert.ok(signedUrl.url.includes("tenant-tenant-123-"));
-    assert.ok(signedUrl.expiresAt);
-  } else {
-    assert.fail("issueSignedUrl should return signed URL for clean object");
-  }
+  assert.equal(typeof signedUrl, "object");
+  assert.ok("url" in signedUrl);
+  assert.ok(signedUrl.url.includes("tenant-tenant-123-"));
+  assert.ok(signedUrl.expiresAt);
 
   const quotaState = capability.enforceQuota(
-    clean,
+    clean.state,
     "tenant-123",
     2048,
+    mockAuditFn,
   );
-  if ("registry" in quotaState) {
-    assert.strictEqual(quotaState.storageBytesMeter, 1024);
-  } else {
-    assert.fail("enforceQuota should return state with storageBytesMeter");
-  }
+  assert.equal(quotaState.kind, "success");
+  assert.equal(quotaState.state.storageBytesMeter, 1024);
 });
 
 test("objectstorageandtenantprefixesandsignedurlscontracts", () => {
   const state = capability.initialState;
-  assert.deepStrictEqual(state.registry, []);
-  assert.strictEqual(state.storageBytesMeter, 0);
-  assert.strictEqual(state.readiness, "UNAVAILABLE");
-  assert.strictEqual(state.lastError, null);
+  assert.deepEqual(state.registry, []);
+  assert.equal(state.storageBytesMeter, 0);
+  assert.equal(state.readiness, "UNAVAILABLE");
+  assert.equal(state.lastError, null);
 
-  assert(typeof capability.probe === "function");
-  assert(typeof capability.checkReadiness === "function");
-  assert(typeof capability.uploadObject === "function");
-  assert(typeof capability.updateScanState === "function");
-  assert(typeof capability.issueSignedUrl === "function");
-  assert(typeof capability.enforceQuota === "function");
+  assert.equal(typeof capability.probe, "function");
+  assert.equal(typeof capability.checkReadiness, "function");
+  assert.equal(typeof capability.uploadObject, "function");
+  assert.equal(typeof capability.updateScanState, "function");
+  assert.equal(typeof capability.issueSignedUrl, "function");
+  assert.equal(typeof capability.enforceQuota, "function");
 
-  const mockAuditFn = (): null => null;
+  const mockAuditFn = (_event: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent): null => null;
   const uploaded = capability.uploadObject(
     state,
     "tenant-123",
@@ -98,37 +79,32 @@ test("objectstorageandtenantprefixesandsignedurlscontracts", () => {
     1000,
     mockAuditFn,
   );
-  if ("registry" in uploaded) {
-    assert.strictEqual(uploaded.registry.length, 1);
-    assert.strictEqual(uploaded.registry[0]?.tenantId, "tenant-123");
-    assert.strictEqual(uploaded.registry[0]?.organisationId, "org-456");
-    assert(uploaded.registry[0]?.objectKey.startsWith("tenant-tenant-123-"));
-    assert.strictEqual(uploaded.storageBytesMeter, 100);
-  } else {
-    assert.fail("uploadObject should return state with registry");
-  }
+  assert.equal(uploaded.kind, "success");
+  assert.equal(uploaded.state.registry.length, 1);
+  assert.equal(uploaded.state.registry[0]?.tenantId, "tenant-123");
+  assert.equal(uploaded.state.registry[0]?.organisationId, "org-456");
+  assert.ok(uploaded.state.registry[0]?.objectKey.startsWith("tenant-tenant-123-"));
+  assert.equal(uploaded.state.storageBytesMeter, 100);
 
-  const probeResult = capability.probe(uploaded);
-  assert.strictEqual(probeResult.readiness, "UNAVAILABLE");
-  assert.strictEqual(probeResult.storageBytesMeter, 100);
-  assert.strictEqual(probeResult.error, null);
+  const probeResult = capability.probe(uploaded.state);
+  assert.equal(probeResult.readiness, "UNAVAILABLE");
+  assert.equal(probeResult.storageBytesMeter, 100);
+  assert.equal(probeResult.error, null);
 });
 
 test("objectstorageandtenantprefixesandsignedurlserrormodel", () => {
-  const mockAuditFn = (): null => null;
+  const mockAuditFn = (_event: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent): null => null;
   const state = capability.initialState;
 
-  // Unscanned object cannot be signed
   const signedUrlResult = capability.issueSignedUrl(
     state,
     "non-existent-obj",
     "tenant-123",
     3600,
+    mockAuditFn,
   );
-  assert("kind" in signedUrlResult);
-  assert.strictEqual(signedUrlResult.kind, "TENANT_DATA_OR_SECURITY");
+  assert.equal(signedUrlResult.kind, "TENANT_DATA_OR_SECURITY");
 
-  // Quarantined object cannot be signed
   const uploaded = capability.uploadObject(
     state,
     "tenant-123",
@@ -140,31 +116,26 @@ test("objectstorageandtenantprefixesandsignedurlserrormodel", () => {
     1000,
     mockAuditFn,
   );
-  if ("registry" in uploaded) {
-    const quarantined = capability.updateScanState(
-      uploaded,
-      "obj-789",
-      "tenant-123",
-      "QUARANTINED",
-      mockAuditFn,
-    );
-    if ("registry" in quarantined) {
-      const signedUrlForQuarantined = capability.issueSignedUrl(
-        quarantined,
-        "obj-789",
-        "tenant-123",
-        3600,
-      );
-      assert("kind" in signedUrlForQuarantined);
-      assert.strictEqual(signedUrlForQuarantined.kind, "SCAN_FAILED");
-    } else {
-      assert.fail("updateScanState should return state with registry");
-    }
-  } else {
-    assert.fail("uploadObject should return state with registry");
-  }
+  assert.equal(uploaded.kind, "success");
 
-  // Provider unavailable returns typed error
+  const quarantined = capability.updateScanState(
+    uploaded.state,
+    "obj-789",
+    "tenant-123",
+    "QUARANTINED",
+    mockAuditFn,
+  );
+  assert.equal(quarantined.kind, "success");
+
+  const signedUrlForQuarantined = capability.issueSignedUrl(
+    quarantined.state,
+    "obj-789",
+    "tenant-123",
+    3600,
+    mockAuditFn,
+  );
+  assert.equal(signedUrlForQuarantined.kind, "SCAN_FAILED");
+
   const unavailableState: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsState = {
     ...state,
     readiness: "UNAVAILABLE",
@@ -180,10 +151,8 @@ test("objectstorageandtenantprefixesandsignedurlserrormodel", () => {
     1000,
     mockAuditFn,
   );
-  assert("kind" in uploadError);
-  assert.strictEqual(uploadError.kind, "PROVIDER_UNAVAILABLE");
+  assert.equal(uploadError.kind, "PROVIDER_UNAVAILABLE");
 
-  // Cross-tenant access denied
   const tenantAState = capability.uploadObject(
     state,
     "tenant-A",
@@ -195,22 +164,20 @@ test("objectstorageandtenantprefixesandsignedurlserrormodel", () => {
     1000,
     mockAuditFn,
   );
-  if ("registry" in tenantAState) {
-    const tenantBError = capability.issueSignedUrl(
-      tenantAState,
-      "obj-A",
-      "tenant-B",
-      3600,
-    );
-    assert("kind" in tenantBError);
-    assert.strictEqual(tenantBError.kind, "TENANT_DATA_OR_SECURITY");
-  } else {
-    assert.fail("uploadObject should return state with registry");
-  }
+  assert.equal(tenantAState.kind, "success");
+
+  const tenantBError = capability.issueSignedUrl(
+    tenantAState.state,
+    "obj-A",
+    "tenant-B",
+    3600,
+    mockAuditFn,
+  );
+  assert.equal(tenantBError.kind, "TENANT_DATA_OR_SECURITY");
 });
 
 test("objectstorageandtenantprefixesandsignedurlslifecycle", () => {
-  const mockAuditFn = (): null => null;
+  const mockAuditFn = (_event: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent): null => null;
   const state = capability.initialState;
 
   const uploaded = capability.uploadObject(
@@ -224,67 +191,61 @@ test("objectstorageandtenantprefixesandsignedurlslifecycle", () => {
     1000,
     mockAuditFn,
   );
-  if ("registry" in uploaded) {
-    assert.strictEqual(uploaded.registry[0]?.scanState, "UPLOADED");
-    assert.strictEqual(uploaded.storageBytesMeter, 100);
+  assert.equal(uploaded.kind, "success");
+  assert.equal(uploaded.state.registry[0]?.scanState, "UPLOADED");
+  assert.equal(uploaded.state.storageBytesMeter, 100);
 
-    const clean = capability.updateScanState(
-      uploaded,
-      "obj-789",
-      "tenant-123",
-      "CLEAN",
-      mockAuditFn,
-    );
-    if ("registry" in clean) {
-      assert.strictEqual(clean.registry[0]?.scanState, "CLEAN");
+  const clean = capability.updateScanState(
+    uploaded.state,
+    "obj-789",
+    "tenant-123",
+    "CLEAN",
+    mockAuditFn,
+  );
+  assert.equal(clean.kind, "success");
+  assert.equal(clean.state.registry[0]?.scanState, "CLEAN");
 
-      const signedUrl = capability.issueSignedUrl(
-        clean,
-        "obj-789",
-        "tenant-123",
-        3600,
-      );
-      assert("url" in signedUrl);
-      assert(signedUrl.url.includes("tenant-tenant-123-"));
-      assert(signedUrl.expiresAt.includes("T"));
+  const signedUrl = capability.issueSignedUrl(
+    clean.state,
+    "obj-789",
+    "tenant-123",
+    3600,
+    mockAuditFn,
+  );
+  assert.equal(typeof signedUrl, "object");
+  assert.ok("url" in signedUrl);
+  assert.ok(signedUrl.url.includes("tenant-tenant-123-"));
+  assert.ok(signedUrl.expiresAt.includes("T"));
 
-      const quarantined = capability.updateScanState(
-        clean,
-        "obj-789",
-        "tenant-123",
-        "QUARANTINED",
-        mockAuditFn,
-      );
-      if ("registry" in quarantined) {
-        assert.strictEqual(quarantined.registry[0]?.scanState, "QUARANTINED");
-      }
+  const quarantined = capability.updateScanState(
+    clean.state,
+    "obj-789",
+    "tenant-123",
+    "QUARANTINED",
+    mockAuditFn,
+  );
+  assert.equal(quarantined.kind, "success");
+  assert.equal(quarantined.state.registry[0]?.scanState, "QUARANTINED");
 
-      const rejected = capability.updateScanState(
-        clean,
-        "obj-789",
-        "tenant-123",
-        "REJECTED",
-        mockAuditFn,
-      );
-      if ("registry" in rejected) {
-        assert.strictEqual(rejected.registry[0]?.scanState, "REJECTED");
-      }
-    } else {
-      assert.fail("updateScanState should return state with registry");
-    }
-  } else {
-    assert.fail("uploadObject should return state with registry");
-  }
+  const rejected = capability.updateScanState(
+    clean.state,
+    "obj-789",
+    "tenant-123",
+    "REJECTED",
+    mockAuditFn,
+  );
+  assert.equal(rejected.kind, "success");
+  assert.equal(rejected.state.registry[0]?.scanState, "REJECTED");
 });
 
 test("objectstorageandtenantprefixesandsignedurlspermissions", () => {
   const tenantPrefixA = capability.generateTenantPrefix("tenant-A");
   const tenantPrefixB = capability.generateTenantPrefix("tenant-B");
-  assert.strictEqual(tenantPrefixA, "tenant-tenant-A-");
-  assert.strictEqual(tenantPrefixB, "tenant-tenant-B-");
-  assert.notStrictEqual(tenantPrefixA, tenantPrefixB);
+  assert.equal(tenantPrefixA, "tenant-tenant-A-");
+  assert.equal(tenantPrefixB, "tenant-tenant-B-");
+  assert.notEqual(tenantPrefixA, tenantPrefixB);
 
-  const mockAuditFn = (): null => null;
+  const mockAuditFn = (_event: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent): null => null;
   const tenantAState = capability.uploadObject(
     capability.initialState,
     "tenant-A",
@@ -296,58 +257,56 @@ test("objectstorageandtenantprefixesandsignedurlspermissions", () => {
     1000,
     mockAuditFn,
   );
-  if ("registry" in tenantAState) {
-    assert.strictEqual(tenantAState.registry.length, 1);
-    assert.strictEqual(tenantAState.registry[0]?.tenantId, "tenant-A");
-    assert(tenantAState.registry[0]?.objectKey.startsWith("tenant-tenant-A-"));
+  assert.equal(tenantAState.kind, "success");
+  assert.equal(tenantAState.state.registry.length, 1);
+  assert.equal(tenantAState.state.registry[0]?.tenantId, "tenant-A");
+  assert.ok(tenantAState.state.registry[0]?.objectKey.startsWith("tenant-tenant-A-"));
 
-    const tenantBState = capability.uploadObject(
-      capability.initialState,
-      "tenant-B",
-      "org-2",
-      "obj-B",
-      "key-B.txt",
-      "text/plain",
-      200,
-      1000,
-      mockAuditFn,
-    );
-    if ("registry" in tenantBState) {
-      assert.strictEqual(tenantBState.registry.length, 1);
-      assert.strictEqual(tenantBState.registry[0]?.tenantId, "tenant-B");
-      assert(tenantBState.registry[0]?.objectKey.startsWith("tenant-tenant-B-"));
+  const tenantBState = capability.uploadObject(
+    capability.initialState,
+    "tenant-B",
+    "org-2",
+    "obj-B",
+    "key-B.txt",
+    "text/plain",
+    200,
+    1000,
+    mockAuditFn,
+  );
+  assert.equal(tenantBState.kind, "success");
+  assert.equal(tenantBState.state.registry.length, 1);
+  assert.equal(tenantBState.state.registry[0]?.tenantId, "tenant-B");
+  assert.ok(tenantBState.state.registry[0]?.objectKey.startsWith("tenant-tenant-B-"));
 
-      const signedUrlA = capability.issueSignedUrl(
-        tenantAState,
-        "obj-A",
-        "tenant-A",
-        3600,
-      );
-      assert("url" in signedUrlA);
-      assert(signedUrlA.url.includes("tenant-tenant-A-"));
+  const signedUrlA = capability.issueSignedUrl(
+    tenantAState.state,
+    "obj-A",
+    "tenant-A",
+    3600,
+    mockAuditFn,
+  );
+  assert.equal(typeof signedUrlA, "object");
+  assert.ok("url" in signedUrlA);
+  assert.ok(signedUrlA.url.includes("tenant-tenant-A-"));
 
-      const signedUrlB = capability.issueSignedUrl(
-        tenantBState,
-        "obj-B",
-        "tenant-B",
-        3600,
-      );
-      assert("url" in signedUrlB);
-      assert(signedUrlB.url.includes("tenant-tenant-B-"));
-    } else {
-      assert.fail("uploadObject should return state with registry");
-    }
-  } else {
-    assert.fail("uploadObject should return state with registry");
-  }
+  const signedUrlB = capability.issueSignedUrl(
+    tenantBState.state,
+    "obj-B",
+    "tenant-B",
+    3600,
+    mockAuditFn,
+  );
+  assert.equal(typeof signedUrlB, "object");
+  assert.ok("url" in signedUrlB);
+  assert.ok(signedUrlB.url.includes("tenant-tenant-B-"));
 });
 
 test("objectstorageandtenantprefixesandsignedurlsproof", () => {
   const state = capability.initialState;
-  assert.deepStrictEqual(state.registry, []);
-  assert.strictEqual(state.storageBytesMeter, 0);
-  assert.strictEqual(state.readiness, "UNAVAILABLE");
-  assert.strictEqual(state.lastError, null);
+  assert.deepEqual(state.registry, []);
+  assert.equal(state.storageBytesMeter, 0);
+  assert.equal(state.readiness, "UNAVAILABLE");
+  assert.equal(state.lastError, null);
 
   const capabilities = [
     capability.uploadObject,
@@ -357,10 +316,10 @@ test("objectstorageandtenantprefixesandsignedurlsproof", () => {
     capability.probe,
     capability.enforceQuota,
   ];
-  assert.strictEqual(capabilities.length, 6);
-  capabilities.forEach((fn) => assert(typeof fn === "function"));
+  assert.equal(capabilities.length, 6);
+  capabilities.forEach((fn) => assert.equal(typeof fn, "function"));
 
-  const mockAuditFn = (): null => null;
+  const mockAuditFn = (_event: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent): null => null;
   const uploaded = capability.uploadObject(
     state,
     "tenant-123",
@@ -372,75 +331,71 @@ test("objectstorageandtenantprefixesandsignedurlsproof", () => {
     1000,
     mockAuditFn,
   );
-  if ("registry" in uploaded) {
-    assert.strictEqual(uploaded.registry[0]?.objectId, "obj-789");
+  assert.equal(uploaded.kind, "success");
+  assert.equal(uploaded.state.registry[0]?.objectId, "obj-789");
 
-    const clean = capability.updateScanState(
-      uploaded,
-      "obj-789",
-      "tenant-123",
-      "CLEAN",
-      mockAuditFn,
-    );
-    if ("registry" in clean) {
-      assert.strictEqual(clean.registry[0]?.scanState, "CLEAN");
+  const clean = capability.updateScanState(
+    uploaded.state,
+    "obj-789",
+    "tenant-123",
+    "CLEAN",
+    mockAuditFn,
+  );
+  assert.equal(clean.kind, "success");
+  assert.equal(clean.state.registry[0]?.scanState, "CLEAN");
 
-      const signedUrl = capability.issueSignedUrl(
-        clean,
-        "obj-789",
-        "tenant-123",
-        1800,
-      );
-      assert("url" in signedUrl);
-      assert(signedUrl.expiresAt.includes("T"));
+  const signedUrl = capability.issueSignedUrl(
+    clean.state,
+    "obj-789",
+    "tenant-123",
+    1800,
+    mockAuditFn,
+  );
+  assert.equal(typeof signedUrl, "object");
+  assert.ok("url" in signedUrl);
+  assert.ok(signedUrl.expiresAt.includes("T"));
 
-      const readinessState = capability.checkReadiness(
-        clean,
-        true,
-        true,
-      );
-      assert.strictEqual(readinessState.readiness, "READY");
+  const readinessState = capability.checkReadiness(
+    clean.state,
+    true,
+    true,
+  );
+  assert.equal(readinessState.readiness, "READY");
 
-      const probeResult = capability.probe(clean);
-      assert.strictEqual(probeResult.readiness, "READY");
-      assert.strictEqual(probeResult.storageBytesMeter, 500);
-    } else {
-      assert.fail("updateScanState should return state with registry");
-    }
-  } else {
-    assert.fail("uploadObject should return state with registry");
-  }
+  const probeResult = capability.probe(clean.state);
+  assert.equal(probeResult.readiness, "READY");
+  assert.equal(probeResult.storageBytesMeter, 500);
 });
 
 test("objectstorageandtenantprefixesandsignedurlsreadinessmodel", () => {
   const state = capability.initialState;
 
   const readyState = capability.checkReadiness(state, true, true);
-  assert.strictEqual(readyState.readiness, "READY");
-  assert.strictEqual(readyState.lastError, null);
+  assert.equal(readyState.readiness, "READY");
+  assert.equal(readyState.lastError, null);
 
   const degradedProvider = capability.checkReadiness(state, false, true);
-  assert.strictEqual(degradedProvider.readiness, "UNAVAILABLE");
-  assert.notStrictEqual(degradedProvider.lastError, null);
-  assert.strictEqual(degradedProvider.lastError?.kind, "PROVIDER_UNAVAILABLE");
+  assert.equal(degradedProvider.readiness, "UNAVAILABLE");
+  assert.notEqual(degradedProvider.lastError, null);
+  assert.equal(degradedProvider.lastError?.kind, "PROVIDER_UNAVAILABLE");
 
   const degradedRegistry = capability.checkReadiness(state, true, false);
-  assert.strictEqual(degradedRegistry.readiness, "UNAVAILABLE");
-  assert.notStrictEqual(degradedRegistry.lastError, null);
-  assert.strictEqual(degradedRegistry.lastError?.kind, "PROVIDER_UNAVAILABLE");
+  assert.equal(degradedRegistry.readiness, "UNAVAILABLE");
+  assert.notEqual(degradedRegistry.lastError, null);
+  assert.equal(degradedRegistry.lastError?.kind, "PROVIDER_UNAVAILABLE");
 
   const readyProbe = capability.probe(readyState);
-  assert.strictEqual(readyProbe.readiness, "READY");
+  assert.equal(readyProbe.readiness, "READY");
 
   const unavailableProbe = capability.probe(degradedProvider);
-  assert.strictEqual(unavailableProbe.readiness, "UNAVAILABLE");
-  assert.strictEqual(unavailableProbe.error?.kind, "PROVIDER_UNAVAILABLE");
+  assert.equal(unavailableProbe.readiness, "UNAVAILABLE");
+  assert.equal(unavailableProbe.error?.kind, "PROVIDER_UNAVAILABLE");
 
   const unavailableState: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsState = {
     ...state,
     readiness: "UNAVAILABLE",
   };
-  const mockAuditFn = (): null => null;
+  const mockAuditFn = (_event: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent): null => null;
   const uploadBlocked = capability.uploadObject(
     unavailableState,
     "tenant-123",
@@ -452,8 +407,7 @@ test("objectstorageandtenantprefixesandsignedurlsreadinessmodel", () => {
     1000,
     mockAuditFn,
   );
-  assert("kind" in uploadBlocked);
-  assert.strictEqual(uploadBlocked.kind, "PROVIDER_UNAVAILABLE");
+  assert.equal(uploadBlocked.kind, "PROVIDER_UNAVAILABLE");
 });
 
 test("objectstorageandtenantprefixesandsignedurlsstatemodel", () => {
@@ -470,14 +424,14 @@ test("objectstorageandtenantprefixesandsignedurlsstatemodel", () => {
     tenantPrefix: "tenant-tenant-123-",
   };
 
-  assert.strictEqual(registryRecord.objectId, "obj-123");
-  assert.strictEqual(registryRecord.tenantId, "tenant-123");
-  assert.strictEqual(registryRecord.organisationId, "org-456");
-  assert(registryRecord.objectKey.startsWith("tenant-tenant-123-"));
-  assert.strictEqual(registryRecord.contentType, "text/plain");
-  assert.strictEqual(registryRecord.sizeInBytes, 1024);
-  assert.strictEqual(registryRecord.scanState, "CLEAN");
-  assert.strictEqual(registryRecord.tenantPrefix, capability.generateTenantPrefix("tenant-123"));
+  assert.equal(registryRecord.objectId, "obj-123");
+  assert.equal(registryRecord.tenantId, "tenant-123");
+  assert.equal(registryRecord.organisationId, "org-456");
+  assert.ok(registryRecord.objectKey.startsWith("tenant-tenant-123-"));
+  assert.equal(registryRecord.contentType, "text/plain");
+  assert.equal(registryRecord.sizeInBytes, 1024);
+  assert.equal(registryRecord.scanState, "CLEAN");
+  assert.equal(registryRecord.tenantPrefix, capability.generateTenantPrefix("tenant-123"));
 
   const state: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsState = {
     registry: [registryRecord],
@@ -489,14 +443,13 @@ test("objectstorageandtenantprefixesandsignedurlsstatemodel", () => {
   const tenantUsage = state.registry
     .filter((r) => r.tenantId === "tenant-123")
     .reduce((sum, obj) => sum + obj.sizeInBytes, 0);
-  assert.strictEqual(tenantUsage, 1024);
+  assert.equal(tenantUsage, 1024);
 });
 
 test("objectstorageandtenantprefixesandsignedurlsvalidation", () => {
-  const mockAuditFn = (): null => null;
+  const mockAuditFn = (_event: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent): null => null;
   const state = capability.initialState;
 
-  // Valid content type and size
   const uploadedValid = capability.uploadObject(
     state,
     "tenant-123",
@@ -508,24 +461,21 @@ test("objectstorageandtenantprefixesandsignedurlsvalidation", () => {
     1000,
     mockAuditFn,
   );
-  assert("registry" in uploadedValid);
+  assert.equal(uploadedValid.kind, "success");
 
-  // Invalid content type
   const uploadInvalidContentType = capability.uploadObject(
     state,
     "tenant-123",
     "org-456",
     "obj-789",
     "key.txt",
-    "invalid/type",
+    "invalid/type" as capability.ObjectStorageAndTenantPrefixesAndSignedUrlsObjectRegistryRecord["contentType"],
     100,
     1000,
     mockAuditFn,
   );
-  assert("kind" in uploadInvalidContentType);
-  assert.strictEqual(uploadInvalidContentType.kind, "INVALID_CONTENT_TYPE");
+  assert.equal(uploadInvalidContentType.kind, "INVALID_CONTENT_TYPE");
 
-  // Invalid size (0)
   const uploadInvalidSize = capability.uploadObject(
     state,
     "tenant-123",
@@ -537,10 +487,8 @@ test("objectstorageandtenantprefixesandsignedurlsvalidation", () => {
     1000,
     mockAuditFn,
   );
-  assert("kind" in uploadInvalidSize);
-  assert.strictEqual(uploadInvalidSize.kind, "INVALID_SIZE");
+  assert.equal(uploadInvalidSize.kind, "INVALID_SIZE");
 
-  // Size exceeds quota
   const uploadSizeTooLarge = capability.uploadObject(
     state,
     "tenant-123",
@@ -552,10 +500,8 @@ test("objectstorageandtenantprefixesandsignedurlsvalidation", () => {
     1000,
     mockAuditFn,
   );
-  assert("kind" in uploadSizeTooLarge);
-  assert.strictEqual(uploadSizeTooLarge.kind, "INVALID_SIZE");
+  assert.equal(uploadSizeTooLarge.kind, "INVALID_SIZE");
 
-  // Valid size within quota
   const uploadValidSize = capability.uploadObject(
     state,
     "tenant-123",
@@ -567,9 +513,8 @@ test("objectstorageandtenantprefixesandsignedurlsvalidation", () => {
     1000,
     mockAuditFn,
   );
-  assert("registry" in uploadValidSize);
+  assert.equal(uploadValidSize.kind, "success");
 
-  // Non-clean objects cannot be used for signed URLs
   const uploaded = capability.uploadObject(
     state,
     "tenant-123",
@@ -581,27 +526,23 @@ test("objectstorageandtenantprefixesandsignedurlsvalidation", () => {
     1000,
     mockAuditFn,
   );
-  if ("registry" in uploaded) {
-    const quarantined = capability.updateScanState(
-      uploaded,
-      "obj-789",
-      "tenant-123",
-      "QUARANTINED",
-      mockAuditFn,
-    );
-    if ("registry" in quarantined) {
-      const signedUrlQuarantined = capability.issueSignedUrl(
-        quarantined,
-        "obj-789",
-        "tenant-123",
-        3600,
-      );
-      assert("kind" in signedUrlQuarantined);
-      assert.strictEqual(signedUrlQuarantined.kind, "SCAN_FAILED");
-    } else {
-      assert.fail("updateScanState should return state with registry");
-    }
-  } else {
-    assert.fail("uploadObject should return state with registry");
-  }
+  assert.equal(uploaded.kind, "success");
+
+  const quarantined = capability.updateScanState(
+    uploaded.state,
+    "obj-789",
+    "tenant-123",
+    "QUARANTINED",
+    mockAuditFn,
+  );
+  assert.equal(quarantined.kind, "success");
+
+  const signedUrlQuarantined = capability.issueSignedUrl(
+    quarantined.state,
+    "obj-789",
+    "tenant-123",
+    3600,
+    mockAuditFn,
+  );
+  assert.equal(signedUrlQuarantined.kind, "SCAN_FAILED");
 });

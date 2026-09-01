@@ -1,12 +1,35 @@
 ```typescript
-export const CodeQualityAndSecretAndDependencyScanningVerdict = ['PASS', 'FAIL'] as const;
-export type CodeQualityAndSecretAndDependencyScanningVerdict = typeof CodeQualityAndSecretAndDependencyScanningVerdict[number];
+// State definitions for the security-gating capability
+export interface StaticAnalysisFinding {
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
+  message: string;
+  location: string;
+}
 
-export const CodeQualityAndSecretAndDependencyScanningReadiness = ['READY', 'NOT_READY'] as const;
-export type CodeQualityAndSecretAndDependencyScanningReadiness = typeof CodeQualityAndSecretAndDependencyScanningReadiness[number];
+export interface SBOMBaseline {
+  version: string;
+  lockHash: string;
+  createdAt: string;
+}
 
-export const CodeQualityAndSecretAndDependencyScanningErrorKind = [
-  'STATIC_ANALYSIS_ERROR',
-  'SBOM_MISSING',
-  'SBOM_STALE',
-  'SBOM_POLICY_VIOLATION
+export interface SBOMPolicyAudit {
+  passed: boolean;
+  details: string[];
+}
+
+export interface CodeScanningConfig {
+  enabled: boolean;
+  binaryPath?: string;
+  dbConnection?: string;
+  resultStore?: string;
+}
+
+export interface SecurityRoute {
+  resource: string;
+  scope: string;
+  requiredPermission: string;
+  registeredAt: string;
+}
+
+export interface ConsoleReadiness {
+  servicesPro

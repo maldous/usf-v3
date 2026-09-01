@@ -10,7 +10,9 @@ test("productcatalogplanspricesauditmodel", () => {
   const request: capability.CreateProductRequest = { name: "Test Product", description: "Test Description" };
   const result = capability.createProduct(initial, operatorId, request, auditFn, ["PLATFORM_BILLING_ADMIN"] as const);
 
-  assert.ok(!("kind" in result), "Should not return an error");
+  if ("kind" in result) {
+    assert.fail("Should not return an error");
+  }
   assert.equal(result.lastAuditEvent?.kind, "CATALOG_CHANGED");
   assert.equal(result.lastAuditEvent?.operatorId, operatorId);
   assert.equal(result.lastAuditEvent?.entityType, "PRODUCT");
@@ -46,7 +48,9 @@ test("productcatalogplanspricescontracts", () => {
   assert.equal(filteredPrices[0].id, "pr1");
 
   const tenantCatalog = capability.getTenantCatalog(state, ["TENANT_BILLING_READ"] as const);
-  assert.ok(!("kind" in tenantCatalog));
+  if ("kind" in tenantCatalog) {
+    assert.fail("Should not return an error");
+  }
   assert.equal(tenantCatalog.products.length, 1);
   assert.equal(tenantCatalog.plans.length, 1);
   assert.equal(tenantCatalog.prices.length, 1);
@@ -58,13 +62,22 @@ test("productcatalogplanspriceserrormodel", () => {
 
   const invalidRequest = { name: "", description: "Test" };
   const validationResult = capability.validateCreateProductRequest(invalidRequest);
+  if (!("kind" in validationResult)) {
+    assert.fail("Should return validation error");
+  }
   assert.equal(validationResult.kind, "VALIDATION_ERROR");
 
   const permissionResult = capability.createProduct(state, "operator-123", { name: "Test", description: "Test" }, auditFn, []);
+  if (!("kind" in permissionResult)) {
+    assert.fail("Should return permission error");
+  }
   assert.equal(permissionResult.kind, "PERMISSION_DENIED");
 
   const readinessState: capability.ProductCatalogPlansPricesState = { ...state, readiness: "READ_ONLY" };
   const readinessResult = capability.createProduct(readinessState, "operator-123", { name: "Test", description: "Test" }, auditFn, ["PLATFORM_BILLING_ADMIN"] as const);
+  if (!("kind" in readinessResult)) {
+    assert.fail("Should return readiness error");
+  }
   assert.equal(readinessResult.kind, "READINESS_FAILURE");
 });
 
@@ -77,24 +90,32 @@ test("productcatalogplanspriceslifecycle", () => {
 
   const productRequest: capability.CreateProductRequest = { name: "Test Product", description: "Test Description" };
   const productResult = capability.createProduct(state, operatorId, productRequest, auditFn, permissions);
-  assert.ok(!("kind" in productResult));
+  if ("kind" in productResult) {
+    assert.fail("Should not return an error");
+  }
   state = productResult;
   assert.equal(state.products.length, 1);
 
   const planRequest: capability.CreatePlanRequest = { productId: state.products[0].id, name: "Test Plan", currency: "USD", billingPeriod: "MONTHLY" };
   const planResult = capability.createPlan(state, operatorId, planRequest, auditFn, permissions);
-  assert.ok(!("kind" in planResult));
+  if ("kind" in planResult) {
+    assert.fail("Should not return an error");
+  }
   state = planResult;
   assert.equal(state.plans.length, 1);
 
   const priceRequest: capability.CreatePriceRequest = { planId: state.plans[0].id, version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" };
   const priceResult = capability.createPrice(state, operatorId, priceRequest, auditFn, permissions);
-  assert.ok(!("kind" in priceResult));
+  if ("kind" in priceResult) {
+    assert.fail("Should not return an error");
+  }
   state = priceResult;
   assert.equal(state.prices.length, 1);
 
   const tenantCatalog = capability.getTenantCatalog(state, ["TENANT_BILLING_READ"] as const);
-  assert.ok(!("kind" in tenantCatalog));
+  if ("kind" in tenantCatalog) {
+    assert.fail("Should not return an error");
+  }
   assert.equal(tenantCatalog.products.length, 1);
   assert.equal(tenantCatalog.plans.length, 1);
   assert.equal(tenantCatalog.prices.length, 1);
@@ -105,16 +126,26 @@ test("productcatalogplanspricespermissions", () => {
   const auditFn = (event: capability.ProductCatalogPlansPricesAuditEvent): capability.ProductCatalogPlansPricesError | null => null;
 
   const noPermissionResult = capability.createProduct(state, "operator-123", { name: "Test", description: "Test" }, auditFn, []);
+  if (!("kind" in noPermissionResult)) {
+    assert.fail("Should return permission error");
+  }
   assert.equal(noPermissionResult.kind, "PERMISSION_DENIED");
 
   const tenantReadResult = capability.getTenantCatalog(state, []);
+  if (!("kind" in tenantReadResult)) {
+    assert.fail("Should return permission error");
+  }
   assert.equal(tenantReadResult.kind, "PERMISSION_DENIED");
 
   const validCreateResult = capability.createProduct(state, "operator-123", { name: "Test", description: "Test" }, auditFn, ["PLATFORM_BILLING_ADMIN"] as const);
-  assert.ok(!("kind" in validCreateResult));
+  if ("kind" in validCreateResult) {
+    assert.fail("Should not return an error");
+  }
 
   const validReadResult = capability.getTenantCatalog(state, ["TENANT_BILLING_READ"] as const);
-  assert.ok(!("kind" in validReadResult));
+  if ("kind" in validReadResult) {
+    assert.fail("Should not return an error");
+  }
 });
 
 test("productcatalogplanspricesproof", () => {
@@ -137,6 +168,9 @@ test("productcatalogplanspricesreadinessmodel", () => {
   const auditFn = (event: capability.ProductCatalogPlansPricesAuditEvent): capability.ProductCatalogPlansPricesError | null => null;
 
   const result = capability.createProduct(readOnlyState, "operator-123", { name: "Test", description: "Test" }, auditFn, ["PLATFORM_BILLING_ADMIN"] as const);
+  if (!("kind" in result)) {
+    assert.fail("Should return readiness error");
+  }
   assert.equal(result.kind, "READINESS_FAILURE");
 
   const products = capability.listProducts(readOnlyState);
@@ -175,12 +209,21 @@ test("productcatalogplanspricesstatemodel", () => {
 
 test("productcatalogplanspricesvalidation", () => {
   const invalidProduct = capability.validateCreateProductRequest({ name: "", description: "Test" });
+  if (!("kind" in invalidProduct)) {
+    assert.fail("Should return validation error");
+  }
   assert.equal(invalidProduct.kind, "VALIDATION_ERROR");
 
   const invalidPlan = capability.validateCreatePlanRequest({ productId: "", name: "Test", currency: "USD", billingPeriod: "MONTHLY" });
+  if (!("kind" in invalidPlan)) {
+    assert.fail("Should return validation error");
+  }
   assert.equal(invalidPlan.kind, "VALIDATION_ERROR");
 
   const invalidPrice = capability.validateCreatePriceRequest({ planId: "", version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" });
+  if (!("kind" in invalidPrice)) {
+    assert.fail("Should return validation error");
+  }
   assert.equal(invalidPrice.kind, "VALIDATION_ERROR");
 
   const state: capability.ProductCatalogPlansPricesState = capability.initialState;
@@ -189,9 +232,15 @@ test("productcatalogplanspricesvalidation", () => {
 
   const planRequest: capability.CreatePlanRequest = { productId: "non-existent", name: "Test", currency: "USD", billingPeriod: "MONTHLY" };
   const planResult = capability.createPlan(state, "operator-123", planRequest, auditFn, permissions);
+  if (!("kind" in planResult)) {
+    assert.fail("Should return reference error");
+  }
   assert.equal(planResult.kind, "REFERENCE_NOT_FOUND");
 
   const priceRequest: capability.CreatePriceRequest = { planId: "non-existent", version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" };
   const priceResult = capability.createPrice(state, "operator-123", priceRequest, auditFn, permissions);
+  if (!("kind" in priceResult)) {
+    assert.fail("Should return reference error");
+  }
   assert.equal(priceResult.kind, "REFERENCE_NOT_FOUND");
 });

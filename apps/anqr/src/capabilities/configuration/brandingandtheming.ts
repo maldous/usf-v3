@@ -1,3 +1,4 @@
+```typescript
 export const BrandingAndThemingThemeSelection = ['system', 'light', 'dark'] as const;
 export type BrandingAndThemingThemeSelection = typeof BrandingAndThemingThemeSelection[number];
 
@@ -111,6 +112,31 @@ export function checkBrandingPermission(
   return { kind: 'GRANTED' };
 }
 
+export function validateBrandingDefinition(
+  definition: unknown,
+): BrandingValidationSuccess | BrandingAndThemingError {
+  if (definition === null || typeof definition !== 'object') {
+    return { kind: 'VALIDATION_ERROR', message: 'Branding definition must be an object' };
+  }
+
+  const def = definition as Record<string, unknown>;
+
+  if (typeof def.applicationName !== 'string') {
+    return { kind: 'VALIDATION_ERROR', message: 'applicationName must be a string' };
+  }
+
+  if (typeof def.themeSelection !== 'string' || !BrandingAndThemingThemeSelection.includes(def.themeSelection as BrandingAndThemingThemeSelection)) {
+    return { kind: 'VALIDATION_ERROR', message: 'themeSelection must be one of system, light, dark' };
+  }
+
+  const validDef: BrandingDefinition = {
+    applicationName: def.applicationName,
+    themeSelection: def.themeSelection as BrandingAndThemingThemeSelection,
+  };
+
+  return { kind: 'SUCCESS', definition: validDef };
+}
+
 export function resolveEffectiveTheme(
   tenantId: string | null,
   state: BrandingAndThemingState,
@@ -185,171 +211,3 @@ export function createBrandingDefinition(
       kind: 'ERROR',
       error: { kind: 'FORBIDDEN', message: 'Branding definition already exists for tenant' },
     };
-  }
-
-  const auditError = audit({
-    action: 'value-changed',
-    tenantId,
-    key: 'brandingDefinition',
-    previousValue: null,
-    newValue: definition,
-  });
-  if (auditError !== null) {
-    return { kind: 'ERROR', error: auditError };
-  }
-
-  const updatedDefinitions = new Map(state.brandingDefinitions);
-  updatedDefinitions.set(tenantId, validation.definition);
-
-  const newState: BrandingAndThemingState = {
-    ...state,
-    brandingDefinitions: updatedDefinitions,
-  };
-
-  return { kind: 'SUCCESS', newState };
-}
-
-export function patchBrandingDefinition(
-  tenantId: string,
-  key: string,
-  value: unknown,
-  token: unknown,
-  state: BrandingAndThemingState,
-  audit: (event: AuditEvent) => BrandingAndThemingError | null,
-): BrandingMutationResult {
-  const permissionCheck = checkBrandingPermission(tenantId, token, state);
-  if (permissionCheck.kind === 'DENIED') {
-    return { kind: 'ERROR', error: permissionCheck.error };
-  }
-
-  if (key !== 'applicationName' && key !== 'themeSelection') {
-    return {
-      kind: 'ERROR',
-      error: { kind: 'UNKNOWN_KEY', message: `Unknown branding key: ${key}` },
-    };
-  }
-
-  const currentDef = state.brandingDefinitions.get(tenantId);
-  if (!currentDef) {
-    return {
-      kind: 'ERROR',
-      error: { kind: 'FORBIDDEN', message: 'No branding definition exists for tenant' },
-    };
-  }
-
-  let nextDefinition: BrandingDefinition;
-  if (key === 'applicationName') {
-    if (typeof value !== 'string') {
-      return {
-        kind: 'ERROR',
-        error: { kind: 'VALIDATION_ERROR', message: 'applicationName must be a string' },
-      };
-    }
-    nextDefinition = { ...currentDef, applicationName: value };
-  } else {
-    if (typeof value !== 'string' || !BrandingAndThemingThemeSelection.includes(value as BrandingAndThemingThemeSelection)) {
-      return {
-        kind: 'ERROR',
-        error: { kind: 'VALIDATION_ERROR', message: 'themeSelection must be one of system, light, dark' },
-      };
-    }
-    nextDefinition = { ...currentDef, themeSelection: value as BrandingAndThemingThemeSelection };
-  }
-
-  const validation = validateBrandingDefinition(nextDefinition);
-  if (validation.kind !== 'SUCCESS') {
-    return { kind: 'ERROR', error: validation };
-  }
-
-  const currentDefAsAny = currentDef as unknown as Record<string, unknown>;
-  const previousValue = currentDefAsAny[key];
-
-  const auditError = audit({
-    action: 'value-changed',
-    tenantId,
-    key,
-    previousValue,
-    newValue: value,
-  });
-  if (auditError !== null) {
-    return { kind: 'ERROR', error: auditError };
-  }
-
-  const updatedDefinitions = new Map(state.brandingDefinitions);
-  updatedDefinitions.set(tenantId, validation.definition);
-
-  const newState: BrandingAndThemingState = {
-    ...state,
-    brandingDefinitions: updatedDefinitions,
-  };
-
-  return { kind: 'SUCCESS', newState };
-}
-
-export function deleteBrandingDefinition(
-  tenantId: string,
-  token: unknown,
-  state: BrandingAndThemingState,
-  audit: (event: AuditEvent) => BrandingAndThemingError | null,
-): BrandingMutationResult {
-  const permissionCheck = checkBrandingPermission(tenantId, token, state);
-  if (permissionCheck.kind === 'DENIED') {
-    return { kind: 'ERROR', error: permissionCheck.error };
-  }
-
-  const currentDef = state.brandingDefinitions.get(tenantId);
-  if (!currentDef) {
-    return {
-      kind: 'ERROR',
-      error: { kind: 'FORBIDDEN', message: 'No branding definition exists for tenant' },
-    };
-  }
-
-  const auditError = audit({
-    action: 'value-cleared',
-    tenantId,
-    key: 'brandingDefinition',
-    previousValue: currentDef,
-    newValue: null,
-  });
-  if (auditError !== null) {
-    return { kind: 'ERROR', error: auditError };
-  }
-
-  const updatedDefinitions = new Map(state.brandingDefinitions);
-  updatedDefinitions.delete(tenantId);
-
-  const newState: BrandingAndThemingState = {
-    ...state,
-    brandingDefinitions: updatedDefinitions,
-  };
-
-  return { kind: 'SUCCESS', newState };
-}
-
-type BrandingValidationSuccess = { readonly kind: 'SUCCESS'; readonly definition: BrandingDefinition };
-
-function validateBrandingDefinition(
-  definition: unknown,
-): BrandingValidationSuccess | BrandingAndThemingError {
-  if (definition === null || typeof definition !== 'object') {
-    return { kind: 'VALIDATION_ERROR', message: 'Branding definition must be an object' };
-  }
-
-  const def = definition as Record<string, unknown>;
-
-  if (typeof def.applicationName !== 'string') {
-    return { kind: 'VALIDATION_ERROR', message: 'applicationName must be a string' };
-  }
-
-  if (typeof def.themeSelection !== 'string' || !BrandingAndThemingThemeSelection.includes(def.themeSelection as BrandingAndThemingThemeSelection)) {
-    return { kind: 'VALIDATION_ERROR', message: 'themeSelection must be one of system, light, dark' };
-  }
-
-  const validDef: BrandingDefinition = {
-    applicationName: def.applicationName,
-    themeSelection: def.themeSelection as BrandingAndThemingThemeSelection,
-  };
-
-  return { kind: 'SUCCESS', definition: validDef };
-}

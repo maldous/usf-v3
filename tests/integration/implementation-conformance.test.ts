@@ -117,3 +117,22 @@ test("an absent module is a recorded fact, not a passing check", async () => {
   assert.equal(run.modulePathDigest, "");
   assert.notEqual(canonicalDigest(run), "");
 });
+
+test("a proposed module body is compiled without being landed", async () => {
+  const { typecheckCandidateModule } = await import("../../src/providers/implementation-conformance.ts");
+  const { readdir } = await import("node:fs/promises");
+
+  const good = await typecheckCandidateModule(repositoryRoot,
+    'export function decide(allow: boolean): "granted" | "denied" {\n  return allow ? "granted" : "denied";\n}\n');
+  assert.equal(good.clean, true);
+  assert.equal(good.detail, null);
+
+  const bad = await typecheckCandidateModule(repositoryRoot,
+    'export function decide(allow: boolean): string {\n  return allow.missingMethod();\n}\n');
+  assert.equal(bad.clean, false);
+  assert.match(String(bad.detail), /missingMethod/u);
+
+  // Nothing survives the check: a candidate is never left in the tree.
+  const left = await readdir(resolve(repositoryRoot, ".usf/hermes/candidate")).catch(() => [] as string[]);
+  assert.deepEqual(left, []);
+});

@@ -49,7 +49,7 @@ test("entitlementengineauditmodel", () => {
     {},
     goodAuditFn,
   );
-  if ("entitlements" in newState) {
+  if (newState && "entitlements" in newState) {
     assert.notEqual(newState, state);
     assert.equal(capturedEvent?.kind, "ENTITLEMENT_GRANTED");
     assert.equal(capturedEvent?.newState, "GRANTED");
@@ -66,7 +66,7 @@ test("entitlementengineauditmodel", () => {
     {},
     goodAuditFn,
   );
-  if ("entitlements" in revokedState) {
+  if (revokedState && "entitlements" in revokedState) {
     assert.notEqual(revokedState, newState);
     assert.equal(capturedEvent?.kind, "ENTITLEMENT_REVOKED");
     assert.equal(capturedEvent?.newState, "REVOKED");

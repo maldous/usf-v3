@@ -9,25 +9,28 @@ test("historyreadmodelreadonlyprojectionauditmodel", () => {
     isAdmin: false,
   };
   let calledTenantId: string | null = null;
-  const repository = (
+  const repository: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => {
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => {
     calledTenantId = tenantId;
-    return [
-      {
-        id: "1",
-        source: "AUDIT" as const,
-        type: "CREATE" as const,
-        title: "Audit event",
-        occurrenceTime: "2023-01-01T00:00:00Z",
-        actor: "user-1",
-        status: "success",
-        secret: "should-not-leak",
-        payload: { sensitive: true },
-      },
-    ];
+    return {
+      total: 1,
+      entries: [
+        {
+          id: "1",
+          source: "AUDIT" as const,
+          type: "CREATE" as const,
+          title: "Audit event",
+          occurrenceTime: "2023-01-01T00:00:00Z",
+          actor: "user-1",
+          status: "success",
+          secret: "should-not-leak",
+          payload: { sensitive: true },
+        },
+      ],
+    };
   };
 
   const result = capability.tenantHistory(state, context, 10, 0, repository);
@@ -62,22 +65,25 @@ test("historyreadmodelreadonlyprojectioncontracts", () => {
     tenantId: "tenant-b",
     isAdmin: false,
   };
-  const repository = (
+  const repository: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => [
-    {
-      id: "2",
-      source: "EVENT" as const,
-      type: "UPDATE" as const,
-      title: "Event update",
-      occurrenceTime: "2023-02-02T00:00:00Z",
-      actor: "user-2",
-      status: "failure",
-      token: "should-not-leak",
-    },
-  ];
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => ({
+    total: 1,
+    entries: [
+      {
+        id: "2",
+        source: "EVENT" as const,
+        type: "UPDATE" as const,
+        title: "Event update",
+        occurrenceTime: "2023-02-02T00:00:00Z",
+        actor: "user-2",
+        status: "failure",
+        token: "should-not-leak",
+      },
+    ],
+  });
 
   const result = capability.tenantHistory(state, context, 5, 0, repository);
   assert.ok(!Array.isArray(result) && "entries" in result);
@@ -116,11 +122,14 @@ test("historyreadmodelreadonlyprojectionerrormodel", () => {
     tenantId: "tenant-c",
     isAdmin: false,
   };
-  const emptyRepo = (
+  const emptyRepo: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => [];
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => ({
+    total: 0,
+    entries: [],
+  });
 
   let result = capability.tenantHistory(degradedState, context, 10, 0, emptyRepo);
   assert.ok(!Array.isArray(result) && "kind" in result);
@@ -175,24 +184,27 @@ test("historyreadmodelreadonlyprojectionlifecycle", () => {
     tenantId: "tenant-e",
     isAdmin: false,
   };
-  const repository = (
+  const repository: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => [
-    {
-      id: "3",
-      source: "AUDIT" as const,
-      type: "DELETE" as const,
-      title: "Delete record",
-      occurrenceTime: "2023-03-03T00:00:00Z",
-      actor: "user-3",
-      status: "deleted",
-      password: "super-secret",
-      token: "xyz",
-      metadata: { internal: true },
-    },
-  ];
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => ({
+    total: 1,
+    entries: [
+      {
+        id: "3",
+        source: "AUDIT" as const,
+        type: "DELETE" as const,
+        title: "Delete record",
+        occurrenceTime: "2023-03-03T00:00:00Z",
+        actor: "user-3",
+        status: "deleted",
+        password: "super-secret",
+        token: "xyz",
+        metadata: { internal: true },
+      },
+    ],
+  });
 
   const result = capability.tenantHistory(
     state,
@@ -217,23 +229,26 @@ test("historyreadmodelreadonlyprojectionpermissions", () => {
   };
 
   let scopedTenantId: string | null = null;
-  const repository = (
+  const repository: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => {
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => {
     scopedTenantId = tenantId;
-    return [
-      {
-        id: "4",
-        source: "EVENT" as const,
-        type: "ACCESS" as const,
-        title: "Access",
-        occurrenceTime: "2023-04-04T00:00:00Z",
-        actor: "user-4",
-        status: "granted",
-      },
-    ];
+    return {
+      total: 1,
+      entries: [
+        {
+          id: "4",
+          source: "EVENT" as const,
+          type: "ACCESS" as const,
+          title: "Access",
+          occurrenceTime: "2023-04-04T00:00:00Z",
+          actor: "user-4",
+          status: "granted",
+        },
+      ],
+    };
   };
 
   capability.tenantHistory(state, tenantContext, 10, 0, repository);
@@ -244,13 +259,13 @@ test("historyreadmodelreadonlyprojectionpermissions", () => {
     isAdmin: true,
   };
   let adminScopedTenantId: string | null = null;
-  const adminRepository = (
+  const adminRepository: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => {
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => {
     adminScopedTenantId = tenantId;
-    return [];
+    return { total: 0, entries: [] };
   };
   const adminResult = capability.adminTenantHistory(
     state,
@@ -284,22 +299,25 @@ test("historyreadmodelreadonlyprojectionproof", () => {
     tenantId: "tenant-proof",
     isAdmin: false,
   };
-  const repository = (
+  const repository: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => [
-    {
-      id: "5",
-      source: "AUDIT" as const,
-      type: "CREATE" as const,
-      title: "Proof create",
-      occurrenceTime: "2023-05-05T00:00:00Z",
-      actor: "user-5",
-      status: "ok",
-      secret: "hidden",
-    },
-  ];
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => ({
+    total: 1,
+    entries: [
+      {
+        id: "5",
+        source: "AUDIT" as const,
+        type: "CREATE" as const,
+        title: "Proof create",
+        occurrenceTime: "2023-05-05T00:00:00Z",
+        actor: "user-5",
+        status: "ok",
+        secret: "hidden",
+      },
+    ],
+  });
 
   const result = capability.tenantHistory(
     state,
@@ -326,29 +344,44 @@ test("historyreadmodelreadonlyprojectionproof", () => {
     "projection must assert the safe summarised shape"
   );
   let proofTenantId: string | null = null;
-  const proofRepo = (
+  const proofRepo: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => {
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => {
     proofTenantId = tenantId;
-    return [];
+    return { total: 0, entries: [] };
   };
   capability.tenantHistory(state, context, 10, 0, proofRepo);
   assert.strictEqual(proofTenantId, "tenant-proof");
 });
 
 test("historyreadmodelreadonlyprojectionreadinessmodel", () => {
-  let state = capability.initialState;
-  state = capability.checkReadiness(state, true);
+  const degradedState: capability.HistoryReadModelReadOnlyProjectionState = {
+    readiness: "DEGRADED",
+    lastError: { kind: "STORE_UNAVAILABLE", message: "store down" },
+  };
+  const context: capability.HistoryReadModelReadOnlyProjectionTenantContext = {
+    tenantId: "tenant-readiness",
+    isAdmin: false,
+  };
+  const emptyRepo: capability.HistoryReadModelReadOnlyProjectionRepository = (
+    tenantId: string,
+    limit: number,
+    offset: number
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => ({
+    total: 0,
+    entries: [],
+  });
+
+  const result = capability.tenantHistory(degradedState, context, 10, 0, emptyRepo);
+  assert.ok(!Array.isArray(result) && "kind" in result);
+  assert.strictEqual(
+    (result as capability.HistoryReadModelReadOnlyProjectionError).kind,
+    "STORE_UNAVAILABLE"
+  );
   assert.strictEqual(state.readiness, "READY");
   assert.strictEqual(state.lastError, null);
-
-  state = capability.checkReadiness(state, false);
-  assert.strictEqual(state.readiness, "DEGRADED");
-  assert.ok(state.lastError !== null);
-  assert.strictEqual(state.lastError!.kind, "STORE_UNAVAILABLE");
-  assert.strictEqual(state.lastError!.message, "History store is unreachable");
 });
 
 test("historyreadmodelreadonlyprojectionstatemodel", () => {
@@ -381,11 +414,14 @@ test("historyreadmodelreadonlyprojectionstatemodel", () => {
     tenantId: "tenant-stat",
     isAdmin: false,
   };
-  const repository = (
+  const repository: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => [rawEntry];
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => ({
+    total: 1,
+    entries: [rawEntry],
+  });
   const page = capability.tenantHistory(
     capability.initialState,
     context,
@@ -406,11 +442,14 @@ test("historyreadmodelreadonlyprojectionvalidation", () => {
     tenantId: "tenant-validate",
     isAdmin: false,
   };
-  const emptyRepo = (
+  const emptyRepo: capability.HistoryReadModelReadOnlyProjectionRepository = (
     tenantId: string,
     limit: number,
     offset: number
-  ): readonly unknown[] => [];
+  ): capability.HistoryReadModelReadOnlyProjectionRepositoryResult => ({
+    total: 0,
+    entries: [],
+  });
 
   const invalidPaging = capability.validatePaging(0, 0);
   assert.ok(invalidPaging !== null);

@@ -66,6 +66,16 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
   assert.strictEqual(auditEvents[2].entityType, "NOTIFICATION");
   assert.strictEqual(auditEvents[2].requestId, "req-3");
   assert.strictEqual(auditEvents[2].traceId, "trace-3");
+
+  const suppressResult = capability.suppressNotification(
+    dispatchResult,
+    "inc-1",
+    "req-4",
+    "trace-4",
+    auditFn,
+  );
+  assert.ok("kind" in suppressResult);
+  assert.strictEqual(suppressResult.kind, "ILLEGAL_INCIDENT_TRANSITION");
 });
 
 test("observabilitybuiltinalertingandincidentscontracts", () => {
@@ -318,6 +328,7 @@ test("observabilitybuiltinalertingandincidentsreadinessmodel", () => {
 
   const errorState = capability.handleProviderFailure(stateWithRule, "PROVIDER_FAILURE", "Provider down");
   assert.strictEqual(errorState.readiness, "DEGRADED_SIGNAL_INGESTION");
+  assert.strictEqual(errorState.lastError?.kind, "PROVIDER_FAILURE");
 });
 
 test("observabilitybuiltinalertingandincidentsstatemodel", () => {

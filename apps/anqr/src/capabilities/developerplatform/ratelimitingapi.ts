@@ -46,6 +46,7 @@ export interface RateLimitError {
 }
 
 export interface RateLimitPolicy {
+  readonly tenantId: string;
   readonly policyKey: string;
   readonly entitlementKey: string;
   readonly limit: number;
@@ -206,6 +207,7 @@ export function setPolicy(
   permissionFn: (required: RateLimitPermission, operatorId: string) => boolean,
 ): RateLimitState | RateLimitError {
   const policy: RateLimitPolicy = {
+    tenantId,
     policyKey,
     entitlementKey,
     limit,
@@ -349,25 +351,25 @@ export function evaluateRateLimit(
   const windowStart = getCurrentWindowStart(policy.windowSeconds);
 
   let counter = cacheAdapter.getCounter(tenantId, policyKey, windowStart);
+  const cacheAvailable = cacheAdapter.ping();
 
-  if (counter === null) {
+  if (counter === null && cacheAvailable) {
     counter = relationalAdapter.getCounter(tenantId, policyKey, windowStart);
-
     if (counter !== null) {
       cacheAdapter.setCounter(counter);
     }
   }
 
-  const cacheAvailable = cacheAdapter.ping();
-
   if (counter === null) {
+    const newUsedCount = 1;
+    const exceeded = newUsedCount > policy.limit;
     const newCounter: RateLimitCounter = {
       tenantId,
       policyKey,
       windowStart,
-      usedCount: 1,
+      usedCount: newUsedCount,
       limit: policy.limit,
-      exceeded: false,
+      exceeded,
     };
 
     if (cacheAvailable) {
@@ -376,14 +378,13 @@ export function evaluateRateLimit(
     relationalAdapter.setCounter(newCounter);
 
     return {
-      decision: cacheAvailable ? 'ALLOWED' : 'DEGRADED',
-      error: null,
+      decision: exceeded ? 'DENIED_LIMIT_EXCEEDED' : (cacheAvailable ? 'ALLOWED' : 'DEGRADED'),
+      error: exceeded ? { kind: 'LIMIT_EXCEEDED', message: 'Rate limit exceeded' } : null,
     };
   }
 
   const newUsedCount = counter.usedCount + 1;
   const exceeded = newUsedCount > policy.limit;
-
   const updatedCounter: RateLimitCounter = {
     tenantId,
     policyKey,
@@ -396,6 +397,7 @@ export function evaluateRateLimit(
   if (cacheAvailable) {
     cacheAdapter.setCounter(updatedCounter);
   } else {
+    relationalAdapter.setCounter(updatedCounter);
     return {
       decision: 'DEGRADED',
       error: { kind: 'CACHE_UNAVAILABLE', message: 'Cache unavailable, using relational' },
@@ -404,16 +406,9 @@ export function evaluateRateLimit(
 
   relationalAdapter.setCounter(updatedCounter);
 
-  if (exceeded) {
-    return {
-      decision: 'DENIED_LIMIT_EXCEEDED',
-      error: { kind: 'LIMIT_EXCEEDED', message: 'Rate limit exceeded' },
-    };
-  }
-
   return {
-    decision: 'ALLOWED',
-    error: null,
+    decision: exceeded ? 'DENIED_LIMIT_EXCEEDED' : 'ALLOWED',
+    error: exceeded ? { kind: 'LIMIT_EXCEEDED', message: 'Rate limit exceeded' } : null,
   };
 }
 
@@ -453,7 +448,18 @@ export function assertRateLimit(
       if (counter) {
         return createOrUpdateCounter(state, tenantId, policyKey, windowStart, counter.usedCount + 1, policy.limit);
       }
+      const newCounter: RateLimitCounter = {
+        tenantId,
+        policyKey,
+        windowStart,
+        usedCount: 1,
+        limit: policy.limit,
+        exceeded: 1 > policy.limit,
+      };
+      relationalAdapter.setCounter(newCounter);
+      return createOrUpdateCounter(state, tenantId, policyKey, windowStart, 1, policy.limit);
     }
+    return state;
   }
 
   if (result.decision === 'ALLOWED') {

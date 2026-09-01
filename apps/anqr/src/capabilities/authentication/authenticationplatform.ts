@@ -1,7 +1,4 @@
-```typescript
 import * as crypto from 'crypto';
-
-// ===== Constants and Types =====
 
 export const AuthenticationPlatformAuditEventKind = [
   'LOGIN_INITIATED',
@@ -49,6 +46,7 @@ export const AuthenticationPlatformErrorKind = [
   'DISCOVERY_INVALID',
   'PROVIDER_ERROR_CALLBACK',
   'FORBIDDEN',
+  'EXTERNALLY_LIMITED',
 ] as const;
 export type AuthenticationPlatformErrorKind = typeof AuthenticationPlatformErrorKind[number];
 
@@ -60,6 +58,7 @@ export const AuthenticationPlatformReadiness = [
   'REALM_UNREACHABLE',
   'DISCOVERY_INVALID',
   'DEGRADED',
+  'CONFIGURED_OK',
 ] as const;
 export type AuthenticationPlatformReadiness = typeof AuthenticationPlatformReadiness[number];
 
@@ -69,10 +68,8 @@ export type AuthenticationPlatformMfaMode = typeof AuthenticationPlatformMfaMode
 export const AuthenticationPlatformSessionState = ['UNAUTHENTICATED', 'AUTHENTICATING', 'AUTHENTICATED', 'DENIED'] as const;
 export type AuthenticationPlatformSessionState = typeof AuthenticationPlatformSessionState[number];
 
-export const AuthenticationPlatformSuccess = ['OK'] as const;
+export const AuthenticationPlatformSuccess = ['NO_CONTENT'] as const;
 export type AuthenticationPlatformSuccess = typeof AuthenticationPlatformSuccess[number];
-
-// ===== Interfaces =====
 
 export interface AuthenticationPlatformAuditEvent {
   readonly kind: AuthenticationPlatformAuditEventKind;
@@ -88,8 +85,9 @@ export interface AuthenticationPlatformError {
   readonly message: string;
 }
 
-export interface AuthenticationPlatformSuccessResult {
+export interface AuthenticationPlatformNoContentResult {
   readonly success: true;
+  readonly kind: AuthenticationPlatformSuccess;
 }
 
 export interface AuthenticationPlatformSession {
@@ -137,11 +135,6 @@ export interface AuthenticationPlatformTenantContext {
   readonly realmRoles: readonly string[];
 }
 
-export interface AuthenticationPlatformAdminPermission {
-  readonly readAuthSettings: boolean;
-  readonly writeAuthSettings: boolean;
-}
-
 export interface AuthenticationPlatformPreAuth {
   readonly state: string;
   readonly nonce: string;
@@ -149,6 +142,12 @@ export interface AuthenticationPlatformPreAuth {
   readonly returnTo: string;
   readonly providerAlias: string;
   readonly expiry: string;
+}
+
+export interface AuthenticationPlatformDomain {
+  readonly domain: string;
+  readonly verified: boolean;
+  readonly active: boolean;
 }
 
 export interface AuthenticationPlatformState {
@@ -159,6 +158,8 @@ export interface AuthenticationPlatformState {
   readonly auditLog: readonly AuthenticationPlatformAuditEvent[];
   readonly readiness: AuthenticationPlatformReadiness;
   readonly preAuthStore: ReadonlyMap<string, AuthenticationPlatformPreAuth>;
+  readonly domains: ReadonlyMap<string, AuthenticationPlatformDomain>;
+  readonly platformRealm: string;
 }
 
 export interface AuthenticationPlatformUiSemanticModel {
@@ -172,8 +173,6 @@ export interface AuthenticationPlatformUiSemanticModel {
   readonly rendererContracts: readonly string[];
 }
 
-// ===== UI Semantic Model =====
-
 export const AuthenticationPlatformUiSemanticModel: AuthenticationPlatformUiSemanticModel = {
   surfaces: ['login', 'callback', 'logout', 'admin'],
   viewModels: ['loginView', 'adminProviderView', 'adminPolicyView', 'adminMappingView'],
@@ -185,8 +184,6 @@ export const AuthenticationPlatformUiSemanticModel: AuthenticationPlatformUiSema
   rendererContracts: ['web', 'mobile', 'cli'],
 };
 
-// ===== Initial State =====
-
 export const initialState: AuthenticationPlatformState = {
   sessions: new Map(),
   providers: new Map(),
@@ -195,9 +192,9 @@ export const initialState: AuthenticationPlatformState = {
   auditLog: [],
   readiness: 'DEGRADED',
   preAuthStore: new Map(),
+  domains: new Map(),
+  platformRealm: 'https://auth.anqr.dev',
 };
-
-// ===== Helper Functions =====
 
 function isLocalHost(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
@@ -229,10 +226,8 @@ function auditBeforeChange(
   }
 }
 
-// ===== Validation Functions =====
-
 export function validateReturnTo(target: string): AuthenticationPlatformError | null {
-  if (typeof target !== 'string' || !target.startsWith('/') || target.includes('\n') || target.includes('\r')) {
+  if (typeof target !== 'string' || target.trim() === '' || !target.startsWith('/') || target.includes('\n') || target.includes('\r')) {
     return { kind: 'INVALID_RETURN_TO', message: 'Return-to target is invalid' };
   }
   return null;
@@ -278,15 +273,15 @@ export function validateMfaMode(mode: unknown): AuthenticationPlatformMfaMode | 
 }
 
 export function validateLockoutThreshold(threshold: unknown): AuthenticationPlatformError | number {
-  if (typeof threshold !== 'number' || threshold <= 0) {
-    return { kind: 'INVALID_LOCKOUT_THRESHOLD', message: 'Lockout threshold must be a positive number' };
+  if (typeof threshold !== 'number' || threshold <= 0 || !Number.isInteger(threshold)) {
+    return { kind: 'INVALID_LOCKOUT_THRESHOLD', message: 'Lockout threshold must be a positive integer' };
   }
   return threshold;
 }
 
 export function validateSessionLifespan(seconds: unknown): AuthenticationPlatformError | number {
-  if (typeof seconds !== 'number' || seconds <= 0 || seconds > 86400 * 30) {
-    return { kind: 'INVALID_SESSION_LIFESPAN', message: 'Session lifespan must be a positive number within bounds' };
+  if (typeof seconds !== 'number' || seconds <= 0 || seconds > 86400 * 30 || !Number.isInteger(seconds)) {
+    return { kind: 'INVALID_SESSION_LIFESPAN', message: 'Session lifespan must be a positive integer within bounds' };
   }
   return seconds;
 }
@@ -299,13 +294,11 @@ export function validateClaimName(name: string): AuthenticationPlatformError | n
 }
 
 export function validateRealmRole(role: string, allowlist: readonly string[]): AuthenticationPlatformError | null {
-  if (!allowlist.includes(role)) {
+  if (typeof role !== 'string' || !allowlist.includes(role)) {
     return { kind: 'INVALID_REALM_ROLE', message: 'Realm role is not in the allowlist' };
   }
   return null;
 }
-
-// ===== Permission Resolution =====
 
 export function resolvePermissionBundle(
   tenantRoles: readonly string[],
@@ -336,8 +329,6 @@ export function checkAdminPermission(
     : `tenant:${tenantId}:write-auth-settings`;
   return permissionBundle.includes(required);
 }
-
-// ===== Session Management =====
 
 export function createSession(
   userId: string,
@@ -383,7 +374,13 @@ export function destroySession(
     return { kind: 'UNAUTHENTICATED', message: 'Session not found' };
   }
 
-  const auditError = auditBeforeChange(auditFn, session.tenantId ?? 'system', 'destroySession', ['session'], false);
+  const auditError = auditBeforeChange(
+    auditFn,
+    session.tenantId ?? 'system',
+    'destroySession',
+    ['sessionId'],
+    false,
+  );
   if (auditError) return auditError;
 
   const newSessions = new Map(state.sessions);
@@ -392,11 +389,12 @@ export function destroySession(
   return {
     ...state,
     sessions: newSessions,
-    auditLog: [...state.auditLog, { kind: 'SESSION_DESTROYED', timestamp: nowIso() }],
+    auditLog: [
+      ...state.auditLog,
+      { kind: 'SESSION_DESTROYED', timestamp: nowIso(), alias: session.tenantId ?? 'system', operation: 'destroySession' },
+    ],
   };
 }
-
-// ===== Login / Callback Flow =====
 
 export function loginInitiation(
   state: AuthenticationPlatformState,
@@ -409,6 +407,7 @@ export function loginInitiation(
   readonly codeChallenge: string;
   readonly state: string;
   readonly nonce: string;
+  readonly preAuthKey: string;
 } | AuthenticationPlatformError {
   const returnToValidation = validateReturnTo(returnTo);
   if (returnToValidation) return returnToValidation;
@@ -430,8 +429,27 @@ export function loginInitiation(
   const { codeVerifier, codeChallenge } = generatePkceChallenge();
   const stateParam = crypto.randomUUID();
   const nonce = crypto.randomBytes(16).toString('base64url');
+  const preAuthKey = crypto.randomUUID();
+  const preAuth: AuthenticationPlatformPreAuth = {
+    state: stateParam,
+    nonce,
+    codeVerifier,
+    returnTo,
+    providerAlias,
+    expiry: new Date(Date.now() + 600000).toISOString(),
+  };
 
-  return { returnTo, codeVerifier, codeChallenge, state: stateParam, nonce };
+  const newPreAuthStore = new Map(state.preAuthStore);
+  newPreAuthStore.set(preAuthKey, preAuth);
+
+  return {
+    returnTo,
+    codeVerifier,
+    codeChallenge,
+    state: stateParam,
+    nonce,
+    preAuthKey,
+  };
 }
 
 export function callbackHandling(
@@ -440,6 +458,7 @@ export function callbackHandling(
   code: string,
   stateParam: string,
   nonce: string,
+  preAuthKey: string,
   auditFn: (event: AuthenticationPlatformAuditEvent) => void,
 ): AuthenticationPlatformSession | AuthenticationPlatformError {
   if (!stateParam || typeof stateParam !== 'string') {
@@ -450,6 +469,20 @@ export function callbackHandling(
   }
   if (!nonce || typeof nonce !== 'string') {
     return { kind: 'INVALID_NONCE', message: 'Missing or invalid nonce parameter' };
+  }
+
+  const preAuth = state.preAuthStore.get(preAuthKey);
+  if (!preAuth) {
+    return { kind: 'INVALID_STATE', message: 'Pre-auth state not found or expired' };
+  }
+  if (preAuth.state !== stateParam) {
+    return { kind: 'INVALID_STATE', message: 'State parameter mismatch' };
+  }
+  if (preAuth.nonce !== nonce) {
+    return { kind: 'INVALID_NONCE', message: 'Nonce mismatch' };
+  }
+  if (preAuth.providerAlias !== providerAlias) {
+    return { kind: 'INVALID_STATE', message: 'Provider alias mismatch' };
   }
 
   const provider = state.providers.get(providerAlias);
@@ -471,7 +504,7 @@ export function callbackHandling(
     null,
     null,
     [],
-    'Test User',
+    'Authenticated User',
     new Date(Date.now() + 3600000).toISOString(),
     [],
     'AUTHENTICATED',
@@ -479,6 +512,9 @@ export function callbackHandling(
 
   const newSessions = new Map(state.sessions);
   newSessions.set(session.id, session);
+
+  const newPreAuthStore = new Map(state.preAuthStore);
+  newPreAuthStore.delete(preAuthKey);
 
   return session;
 }
@@ -491,10 +527,27 @@ export function forwardAuthCheck(
   if ('kind' in sessionResult) {
     return { authenticated: false, session: null };
   }
-  return { authenticated: true, session: sessionResult };
+  return { authenticated: sessionResult.state === 'AUTHENTICATED', session: sessionResult };
 }
 
-// ===== Provider Administration =====
+export function logout(
+  state: AuthenticationPlatformState,
+  sessionId: string,
+  auditFn: (event: AuthenticationPlatformAuditEvent) => void,
+): AuthenticationPlatformState | AuthenticationPlatformError {
+  return destroySession(state, sessionId, auditFn);
+}
+
+export function deriveCallbackUrl(
+  state: AuthenticationPlatformState,
+  hostname: string,
+): string | AuthenticationPlatformError {
+  const domain = state.domains.get(hostname);
+  if (domain && domain.verified && domain.active) {
+    return `https://${hostname}/auth/callback`;
+  }
+  return state.platformRealm + '/auth/callback';
+}
 
 export function createProvider(
   state: AuthenticationPlatformState,
@@ -519,11 +572,21 @@ export function createProvider(
     jwksUriValid: true,
   };
 
-  const auditError = auditBeforeChange(auditFn, provider.alias, 'createProvider', ['alias', 'enabled', 'issuer', 'jwksUri', 'scopes'], true);
+  const auditError = auditBeforeChange(
+    auditFn,
+    provider.alias,
+    'createProvider',
+    ['alias', 'enabled', 'issuer', 'jwksUri', 'scopes'],
+    true,
+  );
   if (auditError) return auditError;
 
   const newProvider: AuthenticationPlatformProvider = {
-    ...provider,
+    alias: provider.alias,
+    enabled: provider.enabled,
+    issuer: provider.issuer,
+    jwksUri: provider.jwksUri,
+    scopes: provider.scopes,
     maskedSecret: '***REDACTED***',
     discoveryValidation,
   };
@@ -534,7 +597,10 @@ export function createProvider(
   return {
     ...state,
     providers: newProviders,
-    auditLog: [...state.auditLog, { kind: 'PROVIDER_CREATED', timestamp: nowIso(), alias: provider.alias, operation: 'createProvider' }],
+    auditLog: [
+      ...state.auditLog,
+      { kind: 'PROVIDER_CREATED', timestamp: nowIso(), alias: provider.alias, operation: 'createProvider' },
+    ],
   };
 }
 
@@ -556,7 +622,10 @@ export function updateProvider(
   }
 
   if (updates.alias !== undefined && updates.alias !== alias) {
-    const aliasValidation = validateProviderAlias(updates.alias, Array.from(state.providers.keys()).filter(a => a !== alias));
+    const aliasValidation = validateProviderAlias(
+      updates.alias,
+      Array.from(state.providers.keys()).filter((a) => a !== alias),
+    );
     if (aliasValidation) return aliasValidation;
   }
 
@@ -591,12 +660,27 @@ export function updateProvider(
   };
 
   const newProviders = new Map(state.providers);
-  newProviders.set(alias, newProvider);
+  if (updates.alias !== undefined && updates.alias !== alias) {
+    newProviders.delete(alias);
+    newProviders.set(updates.alias, newProvider);
+  } else {
+    newProviders.set(alias, newProvider);
+  }
 
   return {
     ...state,
     providers: newProviders,
-    auditLog: [...state.auditLog, { kind: 'PROVIDER_UPDATED', timestamp: nowIso(), alias, operation: 'updateProvider', changedFields, secretChanged }],
+    auditLog: [
+      ...state.auditLog,
+      {
+        kind: 'PROVIDER_UPDATED',
+        timestamp: nowIso(),
+        alias,
+        operation: 'updateProvider',
+        changedFields,
+        secretChanged,
+      },
+    ],
   };
 }
 
@@ -625,7 +709,10 @@ export function deleteProvider(
   return {
     ...state,
     providers: newProviders,
-    auditLog: [...state.auditLog, { kind: 'PROVIDER_DELETED', timestamp: nowIso(), alias, operation: 'deleteProvider' }],
+    auditLog: [
+      ...state.auditLog,
+      { kind: 'PROVIDER_DELETED', timestamp: nowIso(), alias, operation: 'deleteProvider' },
+    ],
   };
 }
 
@@ -648,149 +735,11 @@ export function testProviderConnection(
   const auditError = auditBeforeChange(auditFn, alias, 'testProviderConnection', [], false);
   if (auditError) return auditError;
 
-  // Simulate connection test: if provider is enabled and discovery valid, return READY, else DEGRADED
   if (provider.enabled && provider.discoveryValidation.issuerValid && provider.discoveryValidation.jwksValid) {
     return 'READY';
   }
   return 'DEGRADED';
 }
-
-// ===== Policy Administration =====
-
-export function updateMfaPolicy(
-  state: AuthenticationPlatformState,
-  tenantId: string,
-  mfaMode: AuthenticationPlatformMfaMode,
-  permissionBundle: readonly string[],
-  auditFn: (event: AuthenticationPlatformAuditEvent) => void,
-): AuthenticationPlatformState | AuthenticationPlatformError {
-  if (!checkAdminPermission(tenantId, permissionBundle, 'writeAuthSettings')) {
-    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
-  }
-
-  const validation = validateMfaMode(mfaMode);
-  if (typeof validation !== 'string') return validation;
-
-  const existingPolicy = state.policies.get(tenantId) ?? {
-    mfaMode: 'NONE' as AuthenticationPlatformMfaMode,
-    lockoutThreshold: 5,
-    sessionLifespanSeconds: 3600,
-  };
-
-  const auditError = auditBeforeChange(auditFn, tenantId, 'updateMfaPolicy', ['mfaMode'], false);
-  if (auditError) return auditError;
-
-  const newPolicy: AuthenticationPlatformPolicy = { ...existingPolicy, mfaMode: validation };
-  const newPolicies = new Map(state.policies);
-  newPolicies.set(tenantId, newPolicy);
-
-  return {
-    ...state,
-    policies: newPolicies,
-    auditLog: [...state.auditLog, { kind: 'MFA_POLICY_UPDATED', timestamp: nowIso(), alias: tenantId, operation: 'updateMfaPolicy', changedFields: ['mfaMode'] }],
-  };
-}
-
-export function updateLockoutPolicy(
-  state: AuthenticationPlatformState,
-  tenantId: string,
-  lockoutThreshold: number,
-  permissionBundle: readonly string[],
-  auditFn: (event: AuthenticationPlatformAuditEvent) => void,
-): AuthenticationPlatformState | AuthenticationPlatformError {
-  if (!checkAdminPermission(tenantId, permissionBundle, 'writeAuthSettings')) {
-    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
-  }
-
-  const validation = validateLockoutThreshold(lockoutThreshold);
-  if (typeof validation !== 'number') return validation;
-
-  const existingPolicy = state.policies.get(tenantId) ?? {
-    mfaMode: 'NONE' as AuthenticationPlatformMfaMode,
-    lockoutThreshold: 5,
-    sessionLifespanSeconds: 3600,
-  };
-
-  const auditError = auditBeforeChange(auditFn, tenantId, 'updateLockoutPolicy', ['lockoutThreshold'], false);
-  if (auditError) return auditError;
-
-  const newPolicy: AuthenticationPlatformPolicy = { ...existingPolicy, lockoutThreshold: validation };
-  const newPolicies = new Map(state.policies);
-  newPolicies.set(tenantId, newPolicy);
-
-  return {
-    ...state,
-    policies: newPolicies,
-    auditLog: [...state.auditLog, { kind: 'LOCKOUT_POLICY_UPDATED', timestamp: nowIso(), alias: tenantId, operation: 'updateLockoutPolicy', changedFields: ['lockoutThreshold'] }],
-  };
-}
-
-export function updateSessionPolicy(
-  state: AuthenticationPlatformState,
-  tenantId: string,
-  sessionLifespanSeconds: number,
-  permissionBundle: readonly string[],
-  auditFn: (event: AuthenticationPlatformAuditEvent) => void,
-): AuthenticationPlatformState | AuthenticationPlatformError {
-  if (!checkAdminPermission(tenantId, permissionBundle, 'writeAuthSettings')) {
-    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
-  }
-
-  const validation = validateSessionLifespan(sessionLifespanSeconds);
-  if (typeof validation !== 'number') return validation;
-
-  const existingPolicy = state.policies.get(tenantId) ?? {
-    mfaMode: 'NONE' as AuthenticationPlatformMfaMode,
-    lockoutThreshold: 5,
-    sessionLifespanSeconds: 3600,
-  };
-
-  const auditError = auditBeforeChange(auditFn, tenantId, 'updateSessionPolicy', ['sessionLifespanSeconds'], false);
-  if (auditError) return auditError;
-
-  const newPolicy: AuthenticationPlatformPolicy = { ...existingPolicy, sessionLifespanSeconds: validation };
-  const newPolicies = new Map(state.policies);
-  newPolicies.set(tenantId, newPolicy);
-
-  return {
-    ...state,
-    policies: newPolicies,
-    auditLog: [...state.auditLog, { kind: 'SESSION_POLICY_UPDATED', timestamp: nowIso(), alias: tenantId, operation: 'updateSessionPolicy', changedFields: ['sessionLifespanSeconds'] }],
-  };
-}
-
-// ===== Claim Mapping Administration =====
-
-export function updateClaimMappings(
-  state: AuthenticationPlatformState,
-  tenantId: string,
-  mappings: readonly AuthenticationPlatformClaimMapping[],
-  permissionBundle: readonly string[],
-  auditFn: (event: AuthenticationPlatformAuditEvent) => void,
-): AuthenticationPlatformState | AuthenticationPlatformError {
-  if (!checkAdminPermission(tenantId, permissionBundle, 'writeAuthSettings')) {
-    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
-  }
-
-  for (const mapping of mappings) {
-    const claimValidation = validateClaimName(mapping.claimName);
-    if (claimValidation) return claimValidation;
-  }
-
-  const auditError = auditBeforeChange(auditFn, tenantId, 'updateClaimMappings', ['claimMappings'], false);
-  if (auditError) return auditError;
-
-  const newClaimMappings = new Map(state.claimMappings);
-  newClaimMappings.set(tenantId, mappings);
-
-  return {
-    ...state,
-    claimMappings: newClaimMappings,
-    auditLog: [...state.auditLog, { kind: 'CLAIM_MAPPING_UPDATED', timestamp: nowIso(), alias: tenantId, operation: 'updateClaimMappings', changedFields: ['claimMappings'] }],
-  };
-}
-
-// ===== Read Operations =====
 
 export function listProviders(
   state: AuthenticationPlatformState,
@@ -802,8 +751,8 @@ export function listProviders(
   }
 
   return Array.from(state.providers.values())
-    .filter(provider => provider.alias.startsWith(`${tenantId}:`))
-    .map(provider => ({ ...provider, maskedSecret: '***REDACTED***' }));
+    .filter((provider) => provider.alias.startsWith(`${tenantId}:`))
+    .map((provider) => ({ ...provider, maskedSecret: '***REDACTED***' }));
 }
 
 export function getProvider(
@@ -817,3 +766,35 @@ export function getProvider(
   }
 
   const provider = state.providers.get(`${tenantId}:${alias}`);
+  if (!provider) {
+    return { kind: 'NOT_FOUND', message: 'Provider not found' };
+  }
+  return { ...provider, maskedSecret: '***REDACTED***' };
+}
+
+export function importOidcDiscovery(
+  state: AuthenticationPlatformState,
+  tenantId: string,
+  alias: string,
+  discoveryDocument: unknown,
+  permissionBundle: readonly string[],
+  auditFn: (event: AuthenticationPlatformAuditEvent) => void,
+): AuthenticationPlatformState | AuthenticationPlatformError {
+  if (!checkAdminPermission(tenantId, permissionBundle, 'writeAuthSettings')) {
+    return { kind: 'FORBIDDEN', message: 'Insufficient permissions' };
+  }
+
+  const provider = state.providers.get(alias);
+  if (!provider) {
+    return { kind: 'NOT_FOUND', message: 'Provider not found' };
+  }
+
+  if (typeof discoveryDocument !== 'object' || discoveryDocument === null) {
+    return { kind: 'INVALID_DOCUMENT', message: 'Discovery document must be an object' };
+  }
+
+  const doc = discoveryDocument as Record<string, unknown>;
+  const issuer = typeof doc.issuer === 'string' ? doc.issuer : provider.issuer;
+  const jwksUri = typeof doc.jwks_uri === 'string' ? doc.jwks_uri : provider.jwksUri;
+
+  const urlValidation

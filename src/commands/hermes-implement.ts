@@ -5,7 +5,7 @@ import { exitCodes, UsfError } from "../core/errors.ts";
 import { canonicalQuadLine } from "../graph/nquads.ts";
 import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import {
-  loadConformanceEvidence, recordConformanceRun, runCapabilityConformance,
+  loadConformanceEvidence, recordConformanceRun, runCapabilityConformance, typecheckCandidateModule,
 } from "../providers/implementation-conformance.ts";
 import {
   deriveCapabilityImplementationNeeds, deriveConformancePrompt, deriveImplementationPrompt,
@@ -203,6 +203,13 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
 
   const rounds = await readRepairRounds(repositoryRoot);
   const repairs = deriveRepairState(needs, evidenceBefore, rounds);
+  // Capabilities whose module was last seen compiling against current bytes.
+  const holding = new Set(needs
+    .filter((need) => need.requirements.some((requirement) => {
+      const entry = evidenceBefore.get(requirement.facet);
+      return entry !== undefined && entry.executed && !entry.stale;
+    }))
+    .map((need) => need.capability));
   const units = deriveImplementationWorkUnits(needs, present, repairs);
   const ready = units.filter((unit) => unit.ready);
   const blocked = units.filter((unit) => !unit.ready);
@@ -358,6 +365,22 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
           code: checked.code, detail: checked.detail, transport: record.transport ?? null, actualModel: record.actualModel ?? null,
         }));
         continue;
+      }
+      // Never regress a module that holds up. A repair rewrites the whole file
+      // to correct one requirement, and a rewrite that no longer compiles takes
+      // every requirement of that capability down with it. Where the current
+      // module was last observed compiling, the replacement must compile too.
+      if (unit.stage === "implementation" && holding.has(unit.need.capability)) {
+        const candidate = await typecheckCandidateModule(repositoryRoot, checked.content);
+        if (!candidate.clean) {
+          outcomes.push(Object.freeze({
+            unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName,
+            outcome: "output-refused", code: "candidate-regresses-module",
+            detail: (candidate.detail ?? "the replacement does not compile").slice(0, 300),
+            transport: record.transport ?? null, actualModel: record.actualModel ?? null,
+          }));
+          continue;
+        }
       }
       await storeSemanticResult(repositoryRoot, identity, checked.content, evidenceDigest);
       accepted.push(Object.freeze({

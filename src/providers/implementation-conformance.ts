@@ -274,6 +274,30 @@ export function repositoryRelative(repositoryRoot: string, path: string): string
 export const conformanceEvidenceDirectory = ".usf/conformance-evidence";
 
 /**
+ * Compile one proposed module body without landing it.
+ *
+ * A capability module imports only Node builtins, so compiling the candidate in
+ * a scratch directory is equivalent to compiling it in place. This exists so a
+ * repair that fixes one requirement cannot land a module that breaks the others.
+ */
+export async function typecheckCandidateModule(
+  repositoryRoot: string,
+  content: string,
+): Promise<Readonly<{ clean: boolean; detail: string | null }>> {
+  const directory = resolve(repositoryRoot, ".usf", "hermes", "candidate");
+  await mkdir(directory, { recursive: true, mode: 0o700 });
+  const name = `${canonicalDigest(content).slice("sha256:".length, 24)}.ts`;
+  const path = resolve(directory, name);
+  try {
+    await writeFile(path, content, { mode: 0o600 });
+    const result = await typecheck(repositoryRoot, [`.usf/hermes/candidate/${name}`]);
+    return Object.freeze({ clean: result.clean, detail: result.detail });
+  } finally {
+    await rm(path, { force: true });
+  }
+}
+
+/**
  * Load every recorded conformance run and reduce it to one entry per facet.
  *
  * Admission is deliberately strict: only a confined, typechecked, executed run

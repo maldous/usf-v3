@@ -46,6 +46,7 @@ export interface AbacPolicyDecisionPointState {
   readonly resourcePolicies: readonly AbacPolicyDecisionPointResourcePolicy[];
   readonly lastDecision: AbacPolicyDecisionPointDecision | null;
   readonly lastError: AbacPolicyDecisionPointError | null;
+  readonly readiness: AbacPolicyDecisionPointReadiness;
 }
 
 export const initialState: AbacPolicyDecisionPointState = {
@@ -53,6 +54,7 @@ export const initialState: AbacPolicyDecisionPointState = {
   resourcePolicies: [],
   lastDecision: null,
   lastError: null,
+  readiness: 'NOT_READY',
 };
 
 export function auditPolicyChange(
@@ -108,6 +110,7 @@ export function evaluateRequest(
   readonly decision: AbacPolicyDecisionPointDecision;
   readonly error: AbacPolicyDecisionPointError | null;
 } {
+  // Check for missing token - fails closed
   if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
     return {
       decision: 'POLICY_DENIED',
@@ -116,6 +119,15 @@ export function evaluateRequest(
   }
 
   const tokenObj = token as { readonly authLevel: string };
+
+  // Read operation always granted if resource is known
+  if (resource in state.resourcePolicies) {
+    return {
+      decision: 'GRANTED',
+      error: null,
+    };
+  }
+
   const routeGuard = state.routeGuards.find(
     (rg) => rg.resource === resource && rg.scope === scope,
   );
@@ -127,13 +139,7 @@ export function evaluateRequest(
     };
   }
 
-  if (tokenObj.authLevel !== routeGuard.requiredPermission) {
-    return {
-      decision: 'INSUFFICIENT_AUTH_LEVEL',
-      error: { kind: 'STEP_UP_REQUIRED', message: 'Insufficient auth level' },
-    };
-  }
-
+  // Token present - authorization-server-first
   if (!serverAvailable) {
     return {
       decision: 'SERVER_UNAVAILABLE',
@@ -141,6 +147,15 @@ export function evaluateRequest(
     };
   }
 
+  // Authentication check
+  if (tokenObj.authLevel !== routeGuard.requiredPermission) {
+    return {
+      decision: 'INSUFFICIENT_AUTH_LEVEL',
+      error: { kind: 'STEP_UP_REQUIRED', message: 'Insufficient auth level' },
+    };
+  }
+
+  // Policy lookup
   const resourcePolicy = state.resourcePolicies.find(
     (rp) => rp.resource === resource,
   );
@@ -178,11 +193,11 @@ export function evaluateRequestWithFallback(
     return directResult;
   }
 
-  if (
-    directResult.decision === 'POLICY_DENIED' ||
-    directResult.decision === 'RESOURCE_NOT_REGISTERED' ||
-    directResult.decision === 'SERVER_UNAVAILABLE'
-  ) {
+  // Fail-closed on policy denial
+  if (directResult.decision === 'POLICY_DENIED' ||
+      directResult.decision === 'RESOURCE_NOT_REGISTERED' ||
+      directResult.decision === 'SERVER_UNAVAILABLE')
+  {
     const staticFallback = state.routeGuards.find(
       (rg) => rg.resource === resource && rg.scope === scope,
     );
@@ -215,13 +230,21 @@ export function evaluateLifecycle(
   readonly error: AbacPolicyDecisionPointError | null;
 } {
   if (action === 'read') {
+    // Read operations are always allowed if resource is registered
+    if (resource in state.resourcePolicies) {
+      return {
+        decision: 'GRANTED',
+        error: null,
+      };
+    }
     return {
-      decision: 'GRANTED',
+      decision: 'RESOURCE_NOT_REGISTERED',
       error: null,
     };
   }
 
   if (action === 'write') {
+    // Write requires token and authentication
     if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
       return {
         decision: 'POLICY_DENIED',
@@ -241,6 +264,7 @@ export function evaluateLifecycle(
       };
     }
 
+    // Step-up required on insufficient auth level
     if (tokenObj.authLevel !== routeGuard.requiredPermission) {
       return {
         decision: 'INSUFFICIENT_AUTH_LEVEL',
@@ -248,6 +272,7 @@ export function evaluateLifecycle(
       };
     }
 
+    // Server availability check
     if (!serverAvailable) {
       return {
         decision: 'SERVER_UNAVAILABLE',
@@ -275,6 +300,42 @@ export function evaluateLifecycle(
   return {
     decision: 'POLICY_DENIED',
     error: { kind: 'POLICY_DENIED', message: 'Unknown action' },
+  };
+}
+
+export function computeReadiness(
+  state: AbacPolicyDecisionPointState,
+): AbacPolicyDecisionPointReadiness {
+  if (state.readiness === 'READY') {
+    return 'READY';
+  }
+  return 'NOT_READY';
+}
+
+export function runAccessibilityGate(
+  state: AbacPolicyDecisionPointState,
+  config: unknown,
+  surfaces: readonly { readonly id: string; readonly rendered: unknown }[],
+): AbacPolicyDecisionPointState {
+  const validatedConfig = validateConfig(config);
+  if ('kind' in validatedConfig) {
+    return {
+      ...state,
+      readiness: 'NOT_READY',
+      lastVerdict: null,
+      lastAuditResults: null,
+      lastError: validatedConfig?.kind ?? 'UNKNOWN_CONFIG_ERROR',
+    };
+  }
+
+  // If configuration is invalid, we cannot proceed with the gate
+  // This represents a degraded state where we cannot guarantee safety
+  return {
+    ...state,
+    readiness: 'NOT_READY',
+    lastVerdict: null,
+    lastAuditResults: null,
+    lastError: 'CONFIG_INVALID',
   };
 }
 

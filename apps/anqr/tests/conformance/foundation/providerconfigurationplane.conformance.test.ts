@@ -1,4 +1,4 @@
-import { assert } from "node:assert/strict";
+import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import * as capability from "../../../src/capabilities/foundation/providerconfigurationplane.ts";
 
@@ -35,9 +35,24 @@ test("providerconfigurationplaneauditmodel", () => {
     auditMetadata,
     auditFn,
   );
-  assert.deepStrictEqual(result.lastError, null);
+  if (capability.ProviderConfigurationPlaneErrorKind.includes(result.kind as capability.ProviderConfigurationPlaneErrorKind)) {
+    throw new Error("Unexpected error");
+  }
+  assert.strictEqual(result.lastError, null);
   assert.strictEqual(result.providerConfigs.length, 1);
-  assert.strictEqual(result.providerConfigs[0].auditMetadata, auditMetadata);
+  assert.deepStrictEqual(result.providerConfigs[0].auditMetadata, auditMetadata);
+
+  const degradedState: capability.ProviderConfigurationPlaneState = {
+    providerConfigs: [
+      {
+        ...result.providerConfigs[0],
+        lifecycleState: "DEGRADED" as const,
+      },
+    ],
+    lastError: null,
+  };
+  const readiness = capability.getProviderReadiness(degradedState, "test-provider");
+  assert.strictEqual(readiness, "DEGRADED");
 });
 
 test("providerconfigurationplanecontracts", () => {
@@ -66,7 +81,7 @@ test("providerconfigurationplanecontracts", () => {
   assert.strictEqual(all.length, 1);
   assert.deepStrictEqual(all[0], config);
 
-  const invalidConfig = { ...config, providerKey: "" };
+  const invalidConfig = { ...config, providerKey: "", lifecycleState: "PROPOSED" as const, auditMetadata: null };
   const validationError = capability.validateProviderConfig(invalidConfig);
   assert.notStrictEqual(validationError, null);
   assert.strictEqual(validationError?.kind, "INVALID_CONFIGURATION");
@@ -107,10 +122,8 @@ test("providerconfigurationplaneerrormodel", () => {
     auditFn,
     false,
   );
-  assert.notStrictEqual(result, null);
-  if (result && typeof result === "object" && "kind" in result) {
-    assert.strictEqual(result.kind, "HEALTH_PROBE_FAILED");
-  }
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.includes((result as capability.ProviderConfigurationPlaneError).kind));
+  assert.strictEqual((result as capability.ProviderConfigurationPlaneError).kind, "HEALTH_PROBE_FAILED");
 
   const degradedState: capability.ProviderConfigurationPlaneState = {
     providerConfigs: [
@@ -154,38 +167,40 @@ test("providerconfigurationplanelifecycle", () => {
     requiresCredential: false,
   };
 
-  let state = capability.createProviderConfig(
+  let result = capability.createProviderConfig(
     capability.initialState,
     config,
     auditMetadata,
     auditFn,
   );
-  assert.deepStrictEqual(state.lastError, null);
-  assert.strictEqual(state.providerConfigs[0].lifecycleState, "PROPOSED");
+  assert.ok(!capability.ProviderConfigurationPlaneErrorKind.includes((result as capability.ProviderConfigurationPlaneError).kind));
+  const state1 = result as capability.ProviderConfigurationPlaneState;
+  assert.strictEqual(state1.lastError, null);
+  assert.strictEqual(state1.providerConfigs[0].lifecycleState, "PROPOSED");
 
-  state = capability.transitionProviderLifecycle(
-    state as capability.ProviderConfigurationPlaneState,
+  const result2 = capability.transitionProviderLifecycle(
+    state1,
     "test-provider",
     "CONFIGURED",
     auditMetadata,
     auditFn,
     true,
   );
-  assert.deepStrictEqual((state as capability.ProviderConfigurationPlaneState).lastError, null);
-  assert.strictEqual((state as capability.ProviderConfigurationPlaneState).providerConfigs[0].lifecycleState, "CONFIGURED");
+  assert.ok(!capability.ProviderConfigurationPlaneErrorKind.includes((result2 as capability.ProviderConfigurationPlaneError).kind));
+  const state2 = result2 as capability.ProviderConfigurationPlaneState;
+  assert.strictEqual(state2.lastError, null);
+  assert.strictEqual(state2.providerConfigs[0].lifecycleState, "CONFIGURED");
 
   const invalidTransition = capability.transitionProviderLifecycle(
-    state as capability.ProviderConfigurationPlaneState,
+    state2,
     "test-provider",
     "READY",
     auditMetadata,
     auditFn,
     false,
   );
-  assert.notStrictEqual(invalidTransition, null);
-  if (invalidTransition && typeof invalidTransition === "object" && "kind" in invalidTransition) {
-    assert.strictEqual(invalidTransition.kind, "HEALTH_PROBE_FAILED");
-  }
+  assert.ok(capability.ProviderConfigurationPlaneErrorKind.includes((invalidTransition as capability.ProviderConfigurationPlaneError).kind));
+  assert.strictEqual((invalidTransition as capability.ProviderConfigurationPlaneError).kind, "HEALTH_PROBE_FAILED");
 });
 
 test("providerconfigurationplanepermissions", () => {
@@ -230,19 +245,18 @@ test("providerconfigurationplaneproof", () => {
     requiresCredential: false,
   };
 
-  const state = capability.createProviderConfig(
+  const result = capability.createProviderConfig(
     capability.initialState,
     config,
     auditMetadata,
     auditFn,
   );
-  assert.deepStrictEqual(state.lastError, null);
+  assert.ok(!capability.ProviderConfigurationPlaneErrorKind.includes((result as capability.ProviderConfigurationPlaneError).kind));
+  const state = result as capability.ProviderConfigurationPlaneState;
+  assert.strictEqual(state.lastError, null);
   assert.strictEqual(state.providerConfigs.length, 1);
 
-  const readiness = capability.getProviderReadiness(
-    state as capability.ProviderConfigurationPlaneState,
-    "test-provider",
-  );
+  const readiness = capability.getProviderReadiness(state, "test-provider");
   assert.strictEqual(readiness, null);
 });
 
@@ -340,8 +354,8 @@ test("providerconfigurationplanevalidation", () => {
   assert.strictEqual(invalidError?.kind, "INVALID_CONFIGURATION");
 
   const illegalTransition = capability.validateLifecycleTransition(
-    "PROPOSED" as const,
-    "READY" as const,
+    "PROPOSED",
+    "READY",
   );
   assert.notStrictEqual(illegalTransition, null);
   assert.strictEqual(illegalTransition?.kind, "ILLEGAL_LIFECYCLE_TRANSITION");

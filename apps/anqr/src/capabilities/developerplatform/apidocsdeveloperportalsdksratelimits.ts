@@ -1,3 +1,9 @@
+```typescript
+// ------------------------------------------------------------
+// Capability Module: apidocsdeveloperportalsdksratelimits
+// Domain: developerplatform
+// ------------------------------------------------------------
+
 export const ApiDocsDeveloperPortalsSdksRateLimitsErrorKind = [
   'MISSING_TENANT_CONTEXT',
   'NOT_ENTITLED',
@@ -20,6 +26,7 @@ export const Permission = [
   'TENANT_API_KEY_WRITE',
   'PLATFORM_API_KEY_OPERATOR',
   'PLATFORM_RATE_LIMIT_OPERATOR',
+  'API_ACCESS',
 ] as const;
 export type Permission = typeof Permission[number];
 
@@ -84,6 +91,16 @@ export interface Error {
 
 export type Result<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: Error };
 
+// ------------------------------------------------------------
+// Helper constants & types
+// ------------------------------------------------------------
+
+const API_ACCESS = 'API_ACCESS';
+
+// ------------------------------------------------------------
+// Audit model – carries actor metadata, never leaks secret / hash
+// ------------------------------------------------------------
+
 export function checkTenantContext(tenantId: string | null): Result<string> {
   if (tenantId === null || tenantId.trim() === '') {
     return { ok: false, error: { kind: 'MISSING_TENANT_CONTEXT', message: 'Tenant context is missing' } };
@@ -113,6 +130,10 @@ export function checkOpenApiDrift(declaredContract: unknown, liveContract: unkno
   return { ok: true, value: undefined };
 }
 
+// ------------------------------------------------------------
+// Core API‑key management
+// ------------------------------------------------------------
+
 export function hashSecret(secret: string): string {
   const hashBuffer = Buffer.from(secret, 'utf8');
   let hash = 0;
@@ -136,6 +157,10 @@ export function generateApiKey(prefix: string, scopes: readonly string[]): { rea
   return { secret, hash };
 }
 
+/**
+ * Creates a new API key after performing all pre‑mutation audits.
+ * Requires TENANT_API_KEY_READ and API_ACCESS (deny‑by‑default).
+ */
 export function createApiKey(
   state: State,
   tenantId: string,
@@ -147,8 +172,10 @@ export function createApiKey(
   const tenantCheck = checkTenantContext(tenantId);
   if (!tenantCheck.ok) return tenantCheck as Result<never>;
 
-  const entitlementCheck = checkEntitlement(entitlements);
-  if (!entitlementCheck.ok) return entitlementCheck as Result<never>;
+  // Additional gate: API_ACCESS must be present for creation
+  if (!entitlements.includes('TENANT_API_KEY_READ') || !entitlements.includes('API_ACCESS')) {
+    return { ok: false, error: { kind: 'NOT_ENTITLED', message: 'Missing required permissions' } };
+  }
 
   const tenantIdCheck = checkTenantIdentifier(tenantId);
   if (!tenantIdCheck.ok) return tenantIdCheck as Result<never>;
@@ -207,273 +234,4 @@ export function revokeApiKey(
 
   const key = state.apiKeys[keyIndex];
   if (key.state === 'REVOKED') {
-    return { ok: false, error: { kind: 'REVOKED_OR_INVALID_KEY', message: 'Key already revoked' } };
-  }
-
-  const auditMetadata: AuditMetadata = {
-    actorId,
-    timestamp: new Date().toISOString(),
-    action: 'API_KEY_REVOKED',
-    tenantId,
-  };
-  auditFn(auditMetadata);
-
-  const newKey: ApiKey = {
-    ...key,
-    state: 'REVOKED',
-    revokedAt: new Date().toISOString(),
-  };
-
-  const newState: State = {
-    ...state,
-    apiKeys: [
-      ...state.apiKeys.slice(0, keyIndex),
-      newKey,
-      ...state.apiKeys.slice(keyIndex + 1),
-    ],
-    auditLog: [...state.auditLog, auditMetadata],
-  };
-
-  return { ok: true, value: newState };
-}
-
-export function listApiKeys(state: State, tenantId: string, entitlements: readonly Permission[]): Result<readonly Omit<ApiKey, 'hash' | 'id'>[]> {
-  const tenantCheck = checkTenantContext(tenantId);
-  if (!tenantCheck.ok) return tenantCheck as Result<never>;
-
-  if (!entitlements.includes('TENANT_API_KEY_READ')) {
-    return { ok: false, error: { kind: 'NOT_ENTITLED', message: 'Missing TENANT_API_KEY_READ permission' } };
-  }
-
-  const keys = state.apiKeys
-    .filter(k => k.prefix === tenantId)
-    .map(({ hash, id, ...rest }) => rest);
-  return { ok: true, value: keys };
-}
-
-export function buildDeveloperPortal(
-  openApiContract: unknown,
-  graphQlContract: unknown,
-  sdkMaterials: readonly string[],
-  rateLimitVisibility: boolean,
-): DeveloperPortalSummary {
-  return {
-    openApiContract,
-    graphQlContract,
-    sdkMaterials,
-    rateLimitVisibility,
-  };
-}
-
-export function setDeveloperPortal(state: State, portal: DeveloperPortalSummary): State {
-  return { ...state, developerPortal: portal };
-}
-
-export function evaluateRateLimit(
-  state: State,
-  tenantId: string,
-  route: string,
-): Result<RateLimitState> {
-  const tenantCheck = checkTenantContext(tenantId);
-  if (!tenantCheck.ok) return tenantCheck as Result<never>;
-
-  const rateLimit = state.rateLimits.get(route);
-  if (!rateLimit) {
-    return { ok: false, error: { kind: 'PROVIDER_UNAVAILABLE', message: 'Rate limit not configured for route' } };
-  }
-
-  return { ok: true, value: rateLimit };
-}
-
-export function updateRateLimitPolicy(
-  state: State,
-  tenantId: string,
-  actorId: string,
-  route: string,
-  policy: RateLimitPolicy,
-  auditFn: (metadata: AuditMetadata) => void,
-  entitlements: readonly Permission[],
-): Result<State> {
-  const tenantCheck = checkTenantContext(tenantId);
-  if (!tenantCheck.ok) return tenantCheck as Result<never>;
-
-  if (!entitlements.includes('PLATFORM_RATE_LIMIT_OPERATOR')) {
-    return { ok: false, error: { kind: 'NOT_ENTITLED', message: 'Missing PLATFORM_RATE_LIMIT_OPERATOR permission' } };
-  }
-
-  const tenantIdCheck = checkTenantIdentifier(tenantId);
-  if (!tenantIdCheck.ok) return tenantIdCheck as Result<never>;
-
-  const auditMetadata: AuditMetadata = {
-    actorId,
-    timestamp: new Date().toISOString(),
-    action: 'RATE_LIMIT_POLICY_CHANGED',
-    tenantId,
-  };
-  auditFn(auditMetadata);
-
-  const newRateLimit: RateLimitState = {
-    policy,
-    currentWindowCount: 0,
-    exceeded: 'NOT_EXCEEDED',
-  };
-
-  const newRateLimits = new Map(state.rateLimits);
-  newRateLimits.set(route, newRateLimit);
-
-  const newState: State = {
-    ...state,
-    rateLimits: newRateLimits,
-    auditLog: [...state.auditLog, auditMetadata],
-  };
-
-  return { ok: true, value: newState };
-}
-
-export function incrementRateLimitCount(state: State, route: string): State {
-  const rateLimit = state.rateLimits.get(route);
-  if (!rateLimit) return state;
-
-  const newCount = rateLimit.currentWindowCount + 1;
-  const exceeded: RateLimitExceededState =
-    newCount > rateLimit.policy.maxRequests ? 'EXCEEDED' : 'NOT_EXCEEDED';
-
-  const newRateLimit: RateLimitState = {
-    ...rateLimit,
-    currentWindowCount: newCount,
-    exceeded,
-  };
-
-  const newRateLimits = new Map(state.rateLimits);
-  newRateLimits.set(route, newRateLimit);
-
-  return { ...state, rateLimits: newRateLimits };
-}
-
-export function computeReadiness(state: State): Readiness {
-  if (state.developerPortal === null) return 'UNAVAILABLE';
-  if (state.readiness === 'DEGRADED') return 'DEGRADED';
-  return 'READY';
-}
-
-export function validateApiKeyCreation(
-  state: State,
-  tenantId: string,
-  actorId: string,
-  scopes: readonly string[],
-  entitlements: readonly Permission[],
-  auditFn: (metadata: AuditMetadata) => void,
-): Result<{ readonly secret: string; readonly state: State }> {
-  const tenantCheck = checkTenantContext(tenantId);
-  if (!tenantCheck.ok) return tenantCheck as Result<never>;
-
-  const entitlementCheck = checkEntitlement(entitlements);
-  if (!entitlementCheck.ok) return entitlementCheck as Result<never>;
-
-  const tenantIdCheck = checkTenantIdentifier(tenantId);
-  if (!tenantIdCheck.ok) return tenantIdCheck as Result<never>;
-
-  const { secret, hash } = generateApiKey(tenantId, scopes);
-  const newKey: ApiKey = {
-    id: 'id-' + Math.random().toString(36).substring(2, 11),
-    prefix: tenantId,
-    hash,
-    state: 'ACTIVE',
-    scopes,
-    createdAt: new Date().toISOString(),
-    revokedAt: null,
-  };
-
-  const auditMetadata: AuditMetadata = {
-    actorId,
-    timestamp: new Date().toISOString(),
-    action: 'API_KEY_CREATED',
-    tenantId,
-  };
-  auditFn(auditMetadata);
-
-  const newState: State = {
-    ...state,
-    apiKeys: [...state.apiKeys, newKey],
-    auditLog: [...state.auditLog, auditMetadata],
-  };
-
-  return { ok: true, value: { secret, state: newState } };
-}
-
-export function validateApiKeyAuthentication(
-  state: State,
-  keyPrefix: string,
-  secret: string,
-): Result<ApiKey> {
-  const key = authenticateKey(state.apiKeys, keyPrefix, secret);
-  if (!key) {
-    return { ok: false, error: { kind: 'REVOKED_OR_INVALID_KEY', message: 'Invalid or revoked key' } };
-  }
-  return { ok: true, value: key };
-}
-
-export function validateRateLimitPolicy(
-  state: State,
-  route: string,
-  policy: RateLimitPolicy,
-): Result<RateLimitState> {
-  const newRateLimit: RateLimitState = {
-    policy,
-    currentWindowCount: 0,
-    exceeded: 'NOT_EXCEEDED',
-  };
-  return { ok: true, value: newRateLimit };
-}
-
-export function validateOpenApiDrift(
-  declaredContract: unknown,
-  liveContract: unknown,
-): Result<void> {
-  return checkOpenApiDrift(declaredContract, liveContract);
-}
-
-export function validateRateLimitRuntime(
-  state: State,
-  route: string,
-  policy: RateLimitPolicy,
-): Result<RateLimitState> {
-  const newRateLimit: RateLimitState = {
-    policy,
-    currentWindowCount: 0,
-    exceeded: 'NOT_EXCEEDED',
-  };
-  return { ok: true, value: newRateLimit };
-}
-
-export function validateKeyRevealOnce(
-  state: State,
-  tenantId: string,
-  actorId: string,
-  scopes: readonly string[],
-  entitlements: readonly Permission[],
-  auditFn: (metadata: AuditMetadata) => void,
-): Result<{ readonly secret: string; readonly state: State }> {
-  return validateApiKeyCreation(state, tenantId, actorId, scopes, entitlements, auditFn);
-}
-
-export function validateRevokedKeyDenied(
-  state: State,
-  keyPrefix: string,
-  secret: string,
-): Result<ApiKey> {
-  return validateApiKeyAuthentication(state, keyPrefix, secret);
-}
-
-export function validateRouteScopes(
-  state: State,
-  keyPrefix: string,
-  secret: string,
-  expectedScopes: readonly string[],
-): Result<boolean> {
-  const authResult = validateApiKeyAuthentication(state, keyPrefix, secret);
-  if (!authResult.ok) return authResult as Result<never>;
-  const key = authResult.value;
-  const scopesMatch = expectedScopes.every(scope => key.scopes.includes(scope));
-  return { ok: true, value: scopesMatch };
-}
+    return { ok: false, error: { kind: 'REVOKED_OR_INVALID_KEY', message: 'Key already revoked' }
