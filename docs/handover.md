@@ -1,6 +1,200 @@
 # USF V3 handover
 
-## Current live boundary — all nine provider packets verified-complete
+## Current live boundary — the receipt seam is derived, and its missing primitive proven
+
+This section supersedes every older `Current`, `Live continuation`, `Prior
+boundary` and `Next` heading retained below as chronological evidence; do not
+operationalize those older boundaries unless this section explicitly restates
+them.
+
+Prepared 2026-09-01. Read current Git and remote state rather than trusting any
+identifier here. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded. **No repository
+source, schema or graph mutation was made at this boundary**; the carrier is
+unchanged apart from this ledger entry.
+
+Nine of nine provider packets remain `verified-complete` at semantic digest
+`sha256:41d15ade4561b5a7f9dcb169b8f4bce56ca68600e85430ad9449d321ed191120`, with
+zero stale-authority reason codes, gate 237/237, containment `pass` and an
+empty-`.usf` standalone reproduction of that digest.
+
+### Read this first: the seam has an unimplementable binding key
+
+`urn:usf:rule:provider-receipt-target-registration:1` mandates that the
+operator's static registration be **bound to two feature digests**:
+`registrationFeatureOperationsDigest` and
+`registrationFeaturePostimageSetDigest`.
+
+Searched exhaustively: **both names occur only inside that rule's own prose
+literals** (`coherentTransitionRule` and `currentnessRule`). There is
+
+- no `urn:usf:predicate:registrationFeature*` predicate anywhere in the graph,
+- no `SemanticRecordSchema` or `schemas/*.json` carrying them,
+- no field for them on
+  `urn:usf:provider-account-receipt-acquisition-activation:1` (33 required
+  fields, checked against its graph `requiredFieldSet`), and
+- no implementation in `src/`, `tests/` or `schemas/`.
+
+So Phase 2 cannot bind what Phase 1 must produce. That is the seam's missing
+primitive, and it is why the seam was **not** implemented at this boundary rather
+than half-built: the rule explicitly refuses "a partial registry, mixed v1/v2
+option surface, preliminary-candidate substitution or drift before operator
+publication, unequal rederived feature digests, or operator mutation after final
+feature construction". Any of those is a refusal, so there is no honest partial
+landing.
+
+The rule does specify the derivation precisely enough to implement later:
+`registrationFeatureOperationsDigest` is SHA-256 of the canonical ordered
+normalized feature operations; `registrationFeaturePostimageSetDigest` is SHA-256
+of the canonical path-ordered tuples of operation kind, resulting mode and
+resulting raw-byte SHA-256-or-null across the exact account-tier write set. It
+was deliberately not defined in isolation, because the operation set it digests
+is the account-tier v2 contribution that does not exist yet; fixing a
+cross-seam equality key over a not-yet-existing operation set would be
+speculative, and the key is load-bearing refusal machinery.
+
+### The three phases, derived from the graph
+
+Order is semantically constrained: Phase 2 binds digests produced by Phase 1, and
+Phase 3 binds the operator completion produced by Phase 2 while proving the
+feature digests are unchanged. `currentnessRule` adds that the registration
+update must **never follow** final account-tier completion, so it cannot stale
+the completion it unlocks.
+
+| | Phase 1 — preliminary feature | Phase 2 — static registration | Phase 3 — final feature |
+|---|---|---|---|
+| owning resource | `urn:usf:work:provider-account-tier-receipt` (`featureOwner`) | `urn:usf:work:operator-observability` (`staticRegistryOwner`) | `provider-account-tier-receipt` again |
+| authority now | `verified-complete`, `active-permission`, `maximumThrough: integrate` | same | same |
+| write paths | its 24-path write set, incl. `src/commands/provider-receipts.ts` | its 26-path set, incl. `src/commands/providers.ts`, `src/commands/help.ts`, `src/commands/provider-leaf-dispatch.ts` | same 24 paths |
+| existing implementation | `provider-receipts.ts` is 506 lines implementing only v1 `acquire`/`verify` against `account-source-protocol:1`; `acquire` refuses unconditionally. All 11 v2 record schemas already exist, as do `src/providers/account-sources.ts`, `disposition.ts`, `host-source-identities.ts` | v1 `providers receipt acquire|verify` help and dispatch | — |
+| missing implementation | the four v2 modes `activate|acquire|verify|reduce` plus `providers receipt list`, wired to `account-source-protocol:2`, with real persistence: no-replace activation records, authorizations, observations, sanitized receipts, attempt records, copy-on-write source-state manifests, the bounded head-set with compare-and-swap and its retry-DAG deferral antichain, and the 256-bucket persisted economics projection with its context-bound list cursor | the **complete** v2/list dispatch and truthful registered-but-proofblocked help, superseding the v1 option shape **atomically in one candidate**, bound to the two feature digests | rematerialise the same feature semantics against the new operator basis |
+| transition precondition | none beyond current authority; no source contact permitted | an authenticated preliminary checked candidate plus its two feature digests | the final current operator completion |
+| currentness requirement | candidate checked in isolated copy-on-write state | no feature-owner write to operator paths | both feature digests exactly equal; `candidateDigest` is expected to differ and is never the equality key |
+| validation obligation | `urn:usf:validation:provider-account-tier-receipt` | `operator-composable-input-tests`, `operator-observability-tests`, `operator-provider-leaf-boundary` | same as Phase 1 |
+| resulting state | a checked, unintegrated candidate | operator completion carrying the registration | account-tier integrated and re-completed; `providers-receipt:2` and `providers-receipt-list:1` become operationally admissible |
+| failure behaviour | refuses on any source contact | refuses on partial registry or mixed option surface | refuses on unequal digests or on operator mutation after final feature construction |
+
+`availabilityRule` is explicit that operator registration alone never activates
+receipt v2/list, authorizes provider contact or proves account-tier completion.
+Static path reservation and registered-but-proofblocked help are distinct from
+semantic runtime eligibility.
+
+### Contact state re-derived, and why the seam would not change it
+
+| item | current registered value |
+|---|---|
+| `credentialPresent` | **false** on all 12 routes (`credentialPresent=true` count: 0) |
+| account receipt | `economics.accountTierReceipt: "missing"` |
+| receipt acquisition | `PROVIDERS_RECEIPT_PROOFBLOCKED` |
+| authenticated answer | `AUTHENTICATED_ANSWER_MISSING` |
+| hidden holdout | `HIDDEN_HOLDOUT_MISSING` |
+| route qualification | 12/12 `UNQUALIFIED`, `allocation: excluded` |
+| exclusion reasons | `[ACCOUNT_RECEIPT_MISSING, AUTHENTICATED_ANSWER_MISSING, CREDENTIAL_MISSING, HIDDEN_HOLDOUT_MISSING, UNQUALIFIED]` |
+| assignment derivation | no assignment; `usf route` refuses `ROUTE_ARGUMENTS_INVALID` without an input |
+| invocation authorization | `usf probe answer` is not dispatchable; `usf call parallel` refuses `CALL_LEAF_DEPENDENCY_REFUSED` |
+
+Completing all three phases would move receipt acquisition from
+`PROVIDERS_RECEIPT_PROOFBLOCKED` to a **credential** refusal, because v2
+`acquire` requires `--activation` plus `--env-file`. It cannot remove
+`CREDENTIAL_MISSING`. The credential boundary is therefore terminal for contact
+regardless of the seam, and the seam is best done as one coherent programme.
+
+### Credential mechanics, read from the implementation
+
+`src/providers/config.ts` **never reads `process.env`**. A provider key present
+in the shell environment is not credential authority; USF authenticates an
+explicitly selected owner-private file and nothing else. It never enumerates
+credential directories.
+
+`loadCredentialEnvFile` refuses `CREDENTIAL_ENV_REFUSED` unless the selected file
+is owned by the current uid, has mode **exactly `0600`**, has `nlink === 1`, and
+opens cleanly with `O_RDONLY | O_NOFOLLOW`. Parsing is literal `KEY=VALUE` with
+no expansion: an `export ` prefix, a leading space in the value, a blank value or
+a duplicate name each refuse (`CREDENTIAL_ENV_INVALID` /
+`CREDENTIAL_ENV_DUPLICATE`). Only allowlisted names are retained, and the loader
+exposes names and presence only — never values, never the path.
+
+Presence is proven without exposure: `usf providers status --env-file PATH`
+returns `credentialPresent` per route plus the `credentialName`, and its help
+states that "values and paths are never emitted". With no `--env-file`, presence
+is simply false; USF does not go looking. A missing file refuses
+`PROVIDERS_ENV_FILE_REFUSED` with `credentialReasonCode: CREDENTIAL_ENV_UNREADABLE`,
+verified here with a non-existent path and no secret involved.
+
+Route-to-variable mapping from `config/providers.json`, matching the tracked
+`.env.example` template exactly:
+
+| route | provider | credential name | adapter |
+|---|---|---|---|
+| `groq-qwen3.6-27b` | groq | `GROQ_API_KEY` | `@ai-sdk/groq` |
+| `cerebras-gpt-oss-120b` | cerebras | `CEREBRAS_API_KEY` | `@ai-sdk/cerebras` |
+
+**One credential is sufficient** to make one route's `credentialPresent` true;
+each variable activates only its own route. Both remain `UNQUALIFIED` until the
+receipt, answer and holdout gates also close.
+
+Untracked by construction: `.gitignore` ignores `.usf/` (line 2) and `.env` /
+`.env.*` (lines 5-6), so every candidate location is outside the carrier.
+`.usf/inputs` is already mode `700` and owner-private, and the v2 synopsis names
+`--env-file .usf/inputs/FILE`, so that is the intended location. `--env-file`
+itself is a bounded explicit path resolved against the repository root; the
+`.usf/inputs/*.json` restriction applies to `--input` JSON payloads, not to the
+env file.
+
+The confined validation launcher clears the environment (`--clearenv`) and sets
+only a fixed allowlist, and the provider child receives only the one selected
+credential variable — so an inherited shell variable cannot reach a provider
+call.
+
+### Operator activation sequence
+
+Run from `/home/user/src/usf-v3`. Never echo the key, never `cat` the file, and
+do not add it to Git — the paths are already ignored.
+
+```sh
+# 1. create the owner-private credential file (one variable is enough).
+#    Substitute the real key; do not print it. Literal KEY=VALUE, no export,
+#    no spaces around "=", no quotes needed, single trailing newline.
+umask 077
+printf 'GROQ_API_KEY=%s
+' "$YOUR_GROQ_KEY" > .usf/inputs/provider.env
+chmod 600 .usf/inputs/provider.env
+
+# 2. prove presence without exposing the value.
+./bin/usf providers status   --profile urn:usf:profile:v3-self-host:3   --manifest graph/manifests/self-host-provider-v3.json   --env-file .usf/inputs/provider.env
+#    expect credentialPresent: true on groq-qwen3.6-27b and CREDENTIAL_MISSING
+#    to disappear from its exclusionReasons. The other gates remain.
+
+# 3. attempt receipt acquisition through the registered command.
+./bin/usf providers receipt acquire --route groq-qwen3.6-27b   --profile urn:usf:profile:v3-self-host:3   --manifest graph/manifests/self-host-provider-v3.json
+#    expect PROVIDERS_RECEIPT_PROOFBLOCKED until the three-phase seam above is
+#    implemented. This is the honest ordering: credentials do not bypass it.
+
+# 4. after the seam exists, re-check qualification and then run the smallest
+#    legitimate execution through registered semantics only.
+./bin/usf providers status --profile urn:usf:profile:v3-self-host:3   --manifest graph/manifests/self-host-provider-v3.json   --env-file .usf/inputs/provider.env
+./bin/usf probe availability --route groq-qwen3.6-27b   --env-file .usf/inputs/provider.env --allow-inference --max-cost-usd 0   --economics -
+```
+
+No persisted receipt or digest of the credential is created by step 2: the census
+retains only the non-secret name and a boolean. A durable non-secret
+credential-source identity digest is derived only later, by the v2 acquisition
+path, from the same owner-private no-follow descriptor.
+
+### Next safe order
+
+1. implement the receipt seam as one coherent programme, beginning by defining
+   the missing binding primitive (a record and derivation for the two feature
+   digests) together with the account-tier v2 contribution whose operations it
+   digests, so the key is fixed against real operations rather than speculatively;
+2. then Phase 2's atomic operator registry supersession, then Phase 3's
+   rederivation and equality proof;
+3. operator credential activation is independent of 1-2 and can happen at any
+   time; it changes `CREDENTIAL_MISSING` only;
+4. leave the `CALL_LEAF_DEPENDENCY_REFUSED` leaf-closure boundary alone: it is
+   off the contact path and changing the contract for a refusal code is churn.
+
+## Prior boundary — all nine provider packets verified-complete
 
 This section supersedes every older `Current`, `Live continuation`, `Prior
 boundary` and `Next` heading retained below as chronological evidence; do not
