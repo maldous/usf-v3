@@ -242,6 +242,13 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     const dispatches: unknown[] = [];
     for (const [graphIri, units] of [...byGraph.entries()].sort(([left], [right]) => left.localeCompare(right))) {
       const work = graphOfUnit.get(units[0]!)!;
+      const inThisGraph = new Set(work.unitIris);
+      // The dispatched graph validates its entire dependency set, so every
+      // externally-referenced dependency in that graph must be named, not only
+      // those of the selected units.
+      const externallySatisfied = Object.freeze([...new Set(work.unitIris
+        .flatMap((unit) => dependencyGraph.dependencies.get(unit) ?? [])
+        .filter((dependency) => !inThisGraph.has(dependency)))].sort());
       // The whole work graph is supplied so its dependency edges validate; the
       // scheduler names exactly the units it selected.
       const executed = await graphExecuteCommand(repositoryRoot, [
@@ -250,8 +257,17 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
         "--env-file", parsed.envFile,
         "--concurrency", String(parsed.concurrency),
         "--only", [...units].sort().join(","),
+        // Dependencies satisfied in another work graph are named explicitly so
+        // the dispatched graph can validate its edges without assuming them.
+        ...(externallySatisfied.length > 0 ? ["--satisfied-dependency", externallySatisfied.join(",")] : []),
       ]).catch((error: unknown) => ({
-        output: Object.freeze({ status: "refused", failure: error instanceof Error ? error.message.slice(0, 200) : "unknown" }),
+        output: Object.freeze({
+          status: "refused",
+          // A dispatch that could not even be attempted is reported, not hidden.
+          failure: error instanceof Error ? error.message.slice(0, 300) : "unknown",
+          reasonCode: (error as { code?: unknown }).code ?? null,
+          details: (error as { details?: unknown }).details ?? null,
+        }),
         exitCode: exitCodes.EXTERNAL_UNAVAILABLE as ExitCode,
       }));
       const evidence = executed.output as Record<string, unknown>;
@@ -295,6 +311,8 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
         workGraph: graphIri,
         dispatchedUnits: Object.freeze([...units].sort()),
         graphExecutionStatus: evidence.status ?? "unknown",
+        dispatchFailure: evidence.reasonCode ?? null,
+        dispatchFailureDetail: evidence.details ?? null,
         graphExecutionEvidenceDigest: evidence.evidenceDigest ?? null,
         authoritySnapshot: evidence.authoritySnapshot ?? null,
         concurrency: evidence.concurrency ?? null,

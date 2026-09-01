@@ -46,13 +46,19 @@ interface ParsedArguments {
   readonly outputPath: string | null;
   /** Restrict execution to these work units; the scheduler supplies them. */
   readonly only: readonly string[] | null;
+  /**
+   * Units the caller has already proven terminally successful, possibly in
+   * another work graph. They are treated as declared and satisfied for
+   * dependency validation only; nothing about them is assumed otherwise.
+   */
+  readonly satisfiedDependencies: readonly string[];
 }
 
 function parse(args: readonly string[]): ParsedArguments {
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
-    if (!["--input", "--graph", "--env-file", "--concurrency", "--output", "--only"].includes(option) || values.has(option)) {
+    if (!["--input", "--graph", "--env-file", "--concurrency", "--output", "--only", "--satisfied-dependency"].includes(option) || values.has(option)) {
       invalid(`Graph execute options must be unique and explicit: ${option}`);
     }
     const value = args[++index];
@@ -70,10 +76,14 @@ function parse(args: readonly string[]): ParsedArguments {
   const concurrency = Number(concurrencyText);
   if (concurrency > hardMaximumConcurrency) invalid("--concurrency exceeds the bounded maximum.");
   const onlyText = values.get("--only");
+  const satisfiedText = values.get("--satisfied-dependency");
   return Object.freeze({
     input, graph, envFile, concurrency,
     outputPath: values.get("--output") ?? null,
     only: onlyText === undefined ? null : Object.freeze([...new Set(onlyText.split(","))].sort()),
+    satisfiedDependencies: satisfiedText === undefined
+      ? Object.freeze([])
+      : Object.freeze([...new Set(satisfiedText.split(","))].sort()),
   });
 }
 
@@ -193,7 +203,10 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   // A work graph must be a cycle-safe DAG over declared units before anything
   // is scheduled. This is validated on the whole graph, not on the subset the
   // scheduler selected, so a cycle cannot hide outside the current slice.
-  const dependencyGraph = readDependencyGraph(quads, allUnits.map((unit) => unit.iri));
+  const dependencyGraph = readDependencyGraph(
+    quads,
+    Object.freeze([...new Set([...allUnits.map((unit) => unit.iri), ...parsed.satisfiedDependencies])].sort()),
+  );
   if (dependencyGraph.defects.length > 0) {
     throw new UsfError("GRAPH_EXECUTE_DEPENDENCY_INVALID", exitCodes.INVALID_INPUT,
       "The work graph's dependency edges are not a valid acyclic graph over declared work units.",
@@ -532,6 +545,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     dependencyEdgeCount: [...dependencyGraph.dependencies.values()].reduce((total, edges) => total + edges.length, 0),
     dependencyAcyclic: dependencyGraph.acyclic,
     selectedUnits: parsed.only,
+    externallySatisfiedDependencies: parsed.satisfiedDependencies,
     succeededCount: succeeded,
     authoritySnapshot,
     catalogue: Object.freeze({
