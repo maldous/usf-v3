@@ -1,0 +1,258 @@
+{
+ "schema": "urn:usf:semantic-consolidation-closure:1",
+ "version": 1,
+ "closedAt": "2026-09-02",
+ "corporaAssessed": {
+  "v1": "V1 historical checkout: graph/ with 281 ontology classes across 156 graph files. Absolute location is recorded only in docs/historical-inventory.md, which is the single tracked file permitted to name a historical path.",
+  "v2": "V2 historical checkout: semantic-model/ with 495 ontology classes, 1616 properties, 60449 lines of Turtle/TriG, 98 SPARQL integrity branches, 721 SHACL constraint messages, and documentation/correction-and-invariant-record.md carrying its own distilled C1-C16 invariants.",
+  "v3": "This repository: 12 graph sources, 13580 quads, 144 declared types, 897 declared predicates."
+ },
+ "dispositionTotals": {
+  "HISTORICAL": 153,
+  "MERGE": 14,
+  "OBSOLETE": 173,
+  "RETAIN": 76,
+  "SIMPLIFY": 202,
+  "SUPERSEDE": 35
+ },
+ "dispositionEntryCounts": {
+  "handAssessed": 21,
+  "systematicallyMapped": 632,
+  "total": 653,
+  "repositoryConventionDispositions": 7
+ },
+ "v3SemanticFamilies": [
+  "authority-and-change",
+  "economics",
+  "execution-evidence",
+  "execution-routing",
+  "graph-representation",
+  "operational-lifecycle",
+  "repository-convention",
+  "semantic-integrity",
+  "validation-confinement",
+  "work-dependency"
+ ],
+ "retainedInvariants": [
+  "Anti-self-warrant: a derived-only type is never authored and no record is evidence for itself.",
+  "The authority digest is a pure function of graph content; no environment statistic may enter it.",
+  "Exactly one implementation decides any given semantic question.",
+  "Absence is never permission: a consequential state declares its basis and fails closed.",
+  "An empty result is never ambiguous between evaluated-and-clean and not-evaluated.",
+  "Scope, authorization and conclusion are three separate facts.",
+  "Exact identity or none; ambiguity is a rejection, never a silent first pick.",
+  "A superseded resource is never referenced as current.",
+  "Documentation is never semantic authority.",
+  "One authoritative declaration of where each artefact belongs and what it is called.",
+  "Authority impact derives from semantic closure, not physical file membership.",
+  "The authority used to select an execution must still be current when that execution begins.",
+  "Work that depends on other work is not executable until its dependencies are satisfied.",
+  "Readiness is derived, never stored.",
+  "Secrets are confined to exactly one artefact class and never digested into a record."
+ ],
+ "supersededMechanisms": [
+  "Detached signing and content-addressed attestation",
+  "Publication receipts with before/after/settled phases",
+  "Graph to Factory to Operate handoff packets and coordinator fencing",
+  "Generation transitions and construction grants",
+  "The materialisation contract with its authority-digest gateway",
+  "98-branch whole-dataset SPARQL integrity query over a Stardog control plane",
+  "721 SHACL constraint messages covering ANQR realisation-decision ceremony",
+  "The nine-stage contribution chain for V3 graph mutation",
+  "Universal provider account-tier receipts and route qualification"
+ ],
+ "conventionsRecovered": {
+  "iri": "urn:usf:<kind>:<name>[:<version>]; type=PascalCase, predicate=camelCase, any other kind=kebab-case; an era label is not a kind",
+  "layout": "14 artefact classes each declaring canonicalLocation, filenameConvention, authorship, persistence, gitTracked and maySucceedSecret",
+  "declaredAt": [
+   "urn:usf:convention:iri-naming:1",
+   "urn:usf:convention:repository-layout:1",
+   "urn:usf:convention:terminal-identifier:1"
+  ],
+  "enforcedBy": "usf graph integrity"
+ },
+ "knowledgeCompression": {
+  "v2IntegrityBranches": 98,
+  "v2ShaclMessages": 721,
+  "v2OntologyClasses": 495,
+  "v2OntologyProperties": 1616,
+  "v3CorpusInvariants": 12,
+  "note": "The universal subset of V2's integrity and assurance apparatus compresses to twelve corpus invariants enforced by one command. The remainder was ANQR realisation-decision ceremony with no surviving universal invariant."
+ },
+ "dependencyModel": {
+  "predicate": "urn:usf:predicate:dependsOn",
+  "states": [
+   "ready",
+   "blocked",
+   "unreachable",
+   "succeeded",
+   "failed"
+  ],
+  "derivation": "recomputed every cycle from edges plus recorded outcomes; never stored",
+  "refuses": [
+   "dependency-cycle",
+   "self-dependency",
+   "unknown-dependency"
+  ],
+  "crossGraph": "supported; the dispatched graph names externally satisfied dependencies explicitly"
+ },
+ "authorityBracket": {
+  "coveredInputs": [
+   "catalogue projection identity",
+   "effective cost policy",
+   "operator economic authorizations",
+   "installed adapter set",
+   "supplied credential names",
+   "transport authentication metadata"
+  ],
+  "excluded": "observation instants and all unrelated graph state",
+  "onMismatch": "refuse the dispatch with AUTHORITY_MOVED naming the field that moved",
+  "recordedIn": "execution evidence authoritySnapshot.snapshotDigest"
+ },
+ "boundedTransaction": {
+  "command": "usf transact",
+  "stages": [
+   "propose",
+   "derive affected closure",
+   "validate",
+   "apply atomically",
+   "emit evidence"
+  ],
+  "failsClosedOn": [
+   "TRANSACT_STALE_PREIMAGE",
+   "TRANSACT_UNDECLARED_EFFECT",
+   "TRANSACT_UNAUTHORIZED_PATH",
+   "TRANSACT_GRAPH_INVALID",
+   "TRANSACT_INTEGRITY_VIOLATION"
+  ],
+  "identity": "digest of the transaction's own content; Git carries bytes, not identity",
+  "persistentIntermediateIdentities": 0
+ },
+ "graphDerivedProjections": [
+  {
+   "projection": "config/execution-economics.json",
+   "source": "urn:usf:economic-policy:zero-paid:1 and its authorizations",
+   "carries": [
+    "generated",
+    "derivedFrom",
+    "sourceGraphDigest"
+   ],
+   "verifiedBy": "readGraphDerivedEconomics on every V3 surface",
+   "rejects": [
+    "ECONOMICS_PROJECTION_STALE",
+    "ECONOMICS_PROJECTION_DIVERGED",
+    "ECONOMICS_PROJECTION_NOT_DERIVED"
+   ]
+  }
+ ],
+ "operationalSimplification": {
+  "legacyGraphChange": {
+   "namedStages": 9,
+   "persistentIntermediateArtefacts": "candidate, construction grant, check receipt, integration record, completion evidence, proof bundle, publication receipt",
+   "operatorInterventions": "one command per stage, shepherded in order",
+   "identity": "multiple, including Git commit identity"
+  },
+  "v3GraphChange": {
+   "namedStages": 5,
+   "persistentIntermediateArtefacts": "none",
+   "operatorInterventions": "one command",
+   "identity": "one content digest"
+  },
+  "measured": "Five real graph mutations were applied this session through usf transact, including one three-path atomic change and one from a clean checkout."
+ },
+ "legacyDisposition": {
+  "activeV3Authority": {
+   "graphs": [
+    "urn:usf:graph:foundation",
+    "urn:usf:graph:usf-bootstrap",
+    "urn:usf:graph:semantic-first",
+    "urn:usf:graph:v3-execution",
+    "urn:usf:graph:v3-convention"
+   ],
+   "moduleCount": 42,
+   "entryPoints": [
+    "usf graph execute",
+    "usf hermes",
+    "usf transact",
+    "usf graph integrity",
+    "usf models classify",
+    "usf execute"
+   ]
+  },
+  "supersededLegacyRetained": {
+   "graphs": [
+    "urn:usf:graph:provider-pipeline",
+    "urn:usf:graph:provider-qualification",
+    "urn:usf:graph:integration",
+    "urn:usf:graph:profile-authority",
+    "urn:usf:graph:semantic-recovery",
+    "urn:usf:graph:anqr-first-slice",
+    "urn:usf:graph:hermes-management"
+   ],
+   "contributionChain": [
+    "src/commands/apply.ts",
+    "src/commands/call.ts",
+    "src/commands/resolve.ts",
+    "src/commands/publish.ts",
+    "src/commands/construction-authority.ts",
+    "src/commands/work-completion.ts",
+    "src/collaboration/",
+    "src/core/envelope.ts",
+    "src/core/dependencies.ts"
+   ],
+   "providerAccountLane": [
+    "src/commands/provider-receipts.ts",
+    "src/commands/provider-leaf-dispatch.ts",
+    "src/commands/providers.ts",
+    "src/providers/account-sources.ts",
+    "src/providers/host-source-identities.ts",
+    "src/providers/subscription-hosts.ts",
+    "src/providers/routing.ts",
+    "src/providers/disposition.ts"
+   ],
+   "reason": "Retained as historical evidence and for the nine completed works that own them. Not consulted by any V3 entry point."
+  },
+  "obsoleteImplementation": {
+   "modules": [
+    "src/commands/provider-parallel.ts",
+    "src/commands/graph-leaf-dispatch.ts",
+    "src/providers/fake.ts",
+    "src/continuous/fake-provider.ts",
+    "src/semantic/store.ts",
+    "src/semantic/query.ts",
+    "src/semantic/canonical.ts",
+    "src/semantic/types.ts",
+    "src/semantic/index.ts"
+   ],
+   "reason": "No active semantic path reaches them. src/semantic/ is a parallel store implementation superseded by src/graph/. Removal is deferred hygiene, not closure work.",
+   "runtimeAmbiguity": "none observed: no V3 entry point imports any of these"
+  },
+  "inspectionOnly": [
+   "usf doctor",
+   "usf status",
+   "usf query",
+   "usf work",
+   "usf metrics",
+   "usf models",
+   "usf providers",
+   "usf probe",
+   "usf route",
+   "usf call"
+  ]
+ },
+ "externalDependencies": [
+  "Provider API credentials (GROQ_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY) supplied by the operator in .usf/credentials/providers.env",
+  "Local agent CLI sessions (.claude/.credentials.json, .codex/auth.json)",
+  "Live provider availability and quota, including the Cerebras exhausted free trial and the Codex usage limit resetting 2026-09-07",
+  "models.dev catalogue reachability for projection refresh"
+ ],
+ "nonBlockingHistoricalCleanup": [
+  "24 recorded legacy multiple-type-declaration items between urn:usf:graph:integration and urn:usf:graph:profile-authority",
+  "1 legacy instance-local-name-style item: urn:usf:authority-class:HistoricalCarrierObservation",
+  "103 legacy state-missing-reason items on activationState, exempt by declared scope",
+  "trustedAccountTierReceiptAvailable() remains a hardcoded false in the superseded probe lane",
+  "src/semantic/ parallel store implementation may be removed",
+  "config/policy.json remains for the superseded probe lane only",
+  "Rotate the three provider credentials exposed in session transcript"
+ ]
+}
