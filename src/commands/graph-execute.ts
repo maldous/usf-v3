@@ -38,7 +38,10 @@ const maximumQuads = 20_000;
 const maximumWorkUnits = 64;
 const defaultConcurrency = 4;
 const hardMaximumConcurrency = 16;
-const invocationTimeoutMs = 240_000;
+// Measured against real routes: a model still silent at this point is not the
+// productive one, and eight attempts at four minutes each would let one work
+// unit consume an entire operating cycle.
+const invocationTimeoutMs = 150_000;
 // The candidate universe is deep and one refusal is an availability fact, not a
 // terminal state, so a unit walks further down its diversified order before it
 // gives up. The bound keeps a single unit from consuming a whole cycle.
@@ -169,6 +172,8 @@ interface UnitAttempt {
   readonly statusCode: number | null;
   readonly retryAfter: string | null;
   readonly costIncurred: boolean;
+  /** The provider's own refusal text, bounded and token-redacted. */
+  readonly providerDetail?: string | null;
 }
 
 interface UnitOutcome {
@@ -493,6 +498,11 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         const elapsed = Math.round(performance.now() - attemptStarted);
         const status = typeof (error as { statusCode?: unknown }).statusCode === "number"
           ? (error as { statusCode: number }).statusCode : null;
+        // The provider's own words are the fastest way to tell a tier ceiling
+        // from a malformed request. Anything token-shaped is redacted first, so
+        // a refusal that echoes a header cannot leak one.
+        const detail = (error instanceof Error ? error.message : "")
+          .replaceAll(/[A-Za-z0-9_-]{24,}/gu, "[redacted]").slice(0, 300);
         const reasonCode = status === 402 ? "PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED"
           : status === 429 ? "PROVIDER_RATE_LIMITED"
           : status === 401 || status === 403 ? "PROVIDER_AUTHENTICATION_REFUSED"
@@ -503,6 +513,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
           model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
           outcome: "refused" as const, reasonCode, statusCode: status, retryAfter: null, costIncurred: false,
+          providerDetail: detail.length === 0 ? null : detail,
         }));
         observedRouteOutcomes.push(Object.freeze({ candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode }));
       }
@@ -647,6 +658,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       "Costs a transport reports for a subscription are list-basis attribution, not charges against this repository.",
       "Refusals are provider-stated facts; a usage-limit refusal denies access without performing paid work.",
       "Every dispatch was preceded by a re-read of the semantic authority the route was derived from. A unit refused with AUTHORITY_MOVED was never dispatched on a stale selection.",
+      "A provider detail is the provider's own refusal text, bounded and redacted of token-shaped substrings. It is a provider claim, not an independently verified fact.",
       "A deferred route is one this repository observed refusing recently. The deferral is local, bounded, self-expiring and per exact route; it is not a provider-family disablement and asserts nothing about the provider.",
     ]),
     deferredRouteCount: deferred.size,

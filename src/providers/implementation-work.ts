@@ -429,8 +429,11 @@ export function validateImplementationOutput(raw: string): ImplementationOutputC
   const refuse = (code: string, detail: string): ImplementationOutputCheck =>
     Object.freeze({ accepted: false, code, detail, content, contentDigest: canonicalDigest(content) });
   if (content.length === 0) return refuse("empty-output", "the model returned no content");
-  if (content.startsWith("/")) {
-    return refuse("leading-slash", "canonical contribution content may not begin with a slash; imports must precede any docblock");
+  // Content beginning with a slash reads as an absolute path to the canonical
+  // envelope. A leading comment is not that, and rejecting idiomatic TypeScript
+  // that opens with a docblock would discard most valid output.
+  if (content.startsWith("/") && !content.startsWith("//") && !content.startsWith("/*")) {
+    return refuse("leading-slash", "module content may not begin with a path-like slash");
   }
   if (!/\bexport\b/u.test(content)) return refuse("no-export", "a capability module must export its surface");
   for (const match of content.matchAll(forbiddenImport)) {
@@ -439,7 +442,9 @@ export function validateImplementationOutput(raw: string): ImplementationOutputC
       return refuse("external-import", `a capability module may import only Node builtins and its own directory: ${specifier}`);
     }
   }
-  if (/\bany\b\s*[;,)\]=>]/u.test(content) && /:\s*any\b/u.test(content)) {
+  // Only an actual annotation position, so prose mentioning the word in a
+  // comment cannot cost a whole dispatch.
+  if (/:\s*any\s*[;,)\]=>]/u.test(content)) {
     return refuse("any-type", "a capability module must be typed without any");
   }
   return Object.freeze({ accepted: true, code: "accepted", detail: null, content, contentDigest: canonicalDigest(content) });
@@ -461,7 +466,9 @@ export function validateConformanceOutput(
     accepted: false, code, detail, content, contentDigest: digest, coveredFacets: Object.freeze([] as readonly string[]),
   });
   if (content.length === 0) return refuse("empty-output", "the model returned no content");
-  if (content.startsWith("/")) return refuse("leading-slash", "content may not begin with a slash");
+  if (content.startsWith("/") && !content.startsWith("//") && !content.startsWith("/*")) {
+    return refuse("leading-slash", "test content may not begin with a path-like slash");
+  }
   if (!content.includes(importSpecifier)) {
     return refuse("module-not-imported", `the test must import the module under test at ${importSpecifier}`);
   }

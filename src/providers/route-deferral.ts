@@ -44,6 +44,9 @@ export function deferralDurationMs(reasonCode: string, consecutiveFailures: numb
     case "PROVIDER_AUTHENTICATION_REFUSED": return 12 * hour;
     case "PROVIDER_MODEL_NOT_SERVED": return 24 * hour;
     case "PROVIDER_RATE_LIMITED": return 5 * minute;
+    // A timeout is the most expensive refusal to discover, so it is the one
+    // most worth not rediscovering.
+    case "PROVIDER_TIMEOUT": return Math.min(2 * hour, 15 * minute * 2 ** Math.min(consecutiveFailures - 1, 3));
     // One empty answer can be the prompt; a second is the route.
     case "PROVIDER_EMPTY_RESULT": return consecutiveFailures < 2 ? 0 : 30 * minute;
     case "CREDENTIAL_ABSENT": return 24 * hour;

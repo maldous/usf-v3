@@ -34,10 +34,13 @@ import type { CommandResult } from "./dispatcher.ts";
 const deliveryManifest = "graph/manifests/v3-delivery.json";
 const maximumDispatch = 12;
 const maximumConformanceRuns = 24;
-// A reasoning model spends output budget before it writes anything, so a
-// budget sized for prose returns an empty result with finishReason "length".
-// Implementation work asks for a whole module, so it is budgeted accordingly.
-const modelOutputTokens = 16_000;
+// Measured, not assumed. Requiring the catalogue "reasoning" capability halved
+// the universe to the models that spend their whole output budget thinking and
+// return nothing (finishReason "length" after three minutes), while raising the
+// budget to 16000 made that worse and tripped one provider's request ceiling.
+// Writing a self-contained module is instruction-following, not reasoning, so
+// the requirement is dropped and the budget is sized for the module itself.
+const modelOutputTokens = 8_000;
 const minimumContextTokens = 32_768;
 
 interface ParsedArguments {
@@ -120,7 +123,7 @@ function identityFor(
     inputDigests: Object.freeze([canonicalDigest(prompt), ...inputDigests]),
     dependencyResultDigests: Object.freeze([]),
     acceptanceRequirements: Object.freeze(unit.need.requirements.map((entry) => entry.facet)),
-    requiredCapabilities: Object.freeze(["reasoning"]),
+    requiredCapabilities: Object.freeze([]),
     outputContract: unit.stage === "implementation"
       ? "urn:usf:artefact-kind:capability-module"
       : "urn:usf:artefact-kind:capability-conformance-test",
@@ -284,7 +287,6 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       { subject: unit.unit, predicate: "urn:usf:predicate:prompt", object: prompt, objectKind: "literal" as const, graph: workGraph, canonical: "" },
       { subject: unit.unit, predicate: "urn:usf:predicate:maximumOutputTokens", object: String(modelOutputTokens), objectKind: "literal" as const, graph: workGraph, canonical: "" },
       { subject: unit.unit, predicate: "urn:usf:predicate:minimumContextTokens", object: String(minimumContextTokens), objectKind: "literal" as const, graph: workGraph, canonical: "" },
-      { subject: unit.unit, predicate: "urn:usf:predicate:requiredCapability", object: "reasoning", objectKind: "literal" as const, graph: workGraph, canonical: "" },
     ]).map((quad) => ({ ...quad, canonical: canonicalQuadLine(quad) }));
     const workPath = ".usf/work/implementation-realisation.nq";
     await mkdir(resolve(repositoryRoot, ".usf", "work"), { recursive: true, mode: 0o700 });
@@ -341,11 +343,16 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   // A repair attempt is counted whether or not it produced a result, so a
   // capability that no provider can complete still reaches its bound.
   const advanced = { ...rounds };
+  // A capability whose behaviour now holds starts its next repair, if it ever
+  // needs one, from the beginning rather than from a history it has outgrown.
+  for (const need of needs) {
+    if (!repairs.has(need.capability)) delete advanced[need.capability];
+  }
   for (const unit of selected) {
     if (unit.repairs.length === 0) continue;
     advanced[unit.need.capability] = unit.repairRound + 1;
   }
-  if (Object.keys(advanced).length > 0) await writeRepairRounds(repositoryRoot, advanced);
+  if (Object.keys(advanced).length > 0 || Object.keys(rounds).length > 0) await writeRepairRounds(repositoryRoot, advanced);
 
   // Independent results are batched into one transaction. Conflict sets, not
   // unit count, decide the boundary, and every unit here owns a distinct path.

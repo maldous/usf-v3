@@ -13,6 +13,10 @@ test("a refusal class maps to a bounded, self-expiring deferral", () => {
   // One empty answer can be the prompt; the second is the route.
   assert.equal(deferralDurationMs("PROVIDER_EMPTY_RESULT:length", 1), 0);
   assert.equal(deferralDurationMs("PROVIDER_EMPTY_RESULT:length", 2), 30 * minute);
+  // A timeout is the most expensive refusal to discover, so it defers longest.
+  assert.equal(deferralDurationMs("PROVIDER_TIMEOUT", 1), 15 * minute);
+  assert.equal(deferralDurationMs("PROVIDER_TIMEOUT", 4), 120 * minute);
+  assert.equal(deferralDurationMs("PROVIDER_TIMEOUT", 9), 120 * minute);
   // An unclassified failure backs off and stays capped.
   assert.equal(deferralDurationMs("PROVIDER_INVOCATION_FAILED", 1), 2 * minute);
   assert.equal(deferralDurationMs("PROVIDER_INVOCATION_FAILED", 20), 60 * minute);

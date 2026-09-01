@@ -120,8 +120,13 @@ test("module output is admitted structurally and refuses smuggled dependencies",
   assert.equal(validateImplementationOutput("const a = 1;").code, "no-export");
   assert.equal(validateImplementationOutput('import x from "left-pad";\nexport const a = 1;').code, "external-import");
   assert.equal(validateImplementationOutput('import { readFile } from "node:fs";\nexport const a = 1;').accepted, true);
-  assert.equal(validateImplementationOutput("/** doc */\nexport const a = 1;").code, "leading-slash");
+  // An idiomatic docblock opening is not a path; an actual path-like opening is.
+  assert.equal(validateImplementationOutput("/** doc */\nexport const a = 1;").accepted, true);
+  assert.equal(validateImplementationOutput("/home/user/x.ts\nexport const a = 1;").code, "leading-slash");
   assert.equal(validateImplementationOutput("   ").code, "empty-output");
+  assert.equal(validateImplementationOutput("export function f(x: any) { return x; }").code, "any-type");
+  // Prose mentioning the word must not cost a whole dispatch.
+  assert.equal(validateImplementationOutput("// never returns any, ever\nexport const a = 1;").accepted, true);
 });
 
 test("a conformance test that does not bind to the real module is refused before execution", () => {
