@@ -24,7 +24,7 @@ test("a conforming corpus yields zero violations and says so explicitly", () => 
   assert.deepEqual(report.violations, []);
   // An empty violation list must never be ambiguous with "not evaluated".
   assert.equal(report.evaluated, true);
-  assert.equal(report.checkedCodes.length, 12);
+  assert.equal(report.checkedCodes.length, 13);
 });
 
 test("a phantom type is refused: no typo may invent a class", () => {
@@ -133,6 +133,29 @@ test("the corpus states each fact once", () => {
   const one = quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget");
   const report = checkIntegrity([declareType("urn:usf:type:Widget"), one, one]);
   assert.ok(report.violations.some((v) => v.code === "duplicate-quad"));
+});
+
+test("a functional predicate may not carry two values", () => {
+  // Two values is a contradiction, not extra information: a reader that resolves
+  // it by taking the first or by defaulting silently does the wrong thing.
+  const report = checkIntegrity([
+    metaType,
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:realizationMechanism", "DETERMINISTIC_GENERATOR", "literal"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:realizationMechanism", "EXTERNAL_TOOL", "literal"),
+  ]);
+  const conflict = report.violations.find((v) => v.code === "functional-predicate-conflict");
+  assert.ok(conflict, "two values for a functional predicate must be refused");
+  assert.match(conflict!.detail, /2 conflicting values/u);
+  // One value is fine.
+  const single = checkIntegrity([
+    metaType,
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:realizationMechanism", "EXTERNAL_TOOL", "literal"),
+  ]);
+  assert.equal(single.violations.some((v) => v.code === "functional-predicate-conflict"), false);
 });
 
 test("violations are deterministically ordered so two runs agree", () => {
