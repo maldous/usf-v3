@@ -1,6 +1,92 @@
 # USF V3 handover
 
-## Current live boundary — the feature model is unreconstructible; two live alternatives per digest
+## Current live boundary — the registration-feature digest model is declared and executable
+
+Prepared 2026-09-01. Read current Git and remote state rather than trusting any
+identifier here. No provider contacted, no credential read, no adapter loaded.
+
+The two prose-only binding terms are now a canonical, graph-owned, executable
+semantic model. Landed as **one alignment**: a single contribution over four
+paths through `realisation-basis-chain`, integrated once, with **zero completion
+restoration required** — all nine packets stayed `verified-complete` throughout.
+Gate **240/240**, containment `pass`, and a fresh empty-`.usf` standalone clone at
+`91bc726ecca56cef806bff0c35171aa5779c8dfc` reproduces semantic digest
+`sha256:aea7ac1b81bce8f4d38714457a8b748cfcc6bf6226b6d30e5902254b08b5d720` with
+`closureSatisfiability satisfiable` and `publicationPolicyCoverage covered`.
+
+### The decision, made and recorded
+
+Following `urn:usf:type:CanonicalKeyedMemberDigestProtocol`, both digests now
+have declared preimages rather than prose:
+
+- `urn:usf:provider-operation:registration-feature-operations-key:1` declares
+  `registrationFeatureOperationsDigest` over the **path-ordered resolved
+  operations**, each a closed `{kind, path, contentDigest}` member. Content is
+  bound by digest; transport `encoding` and `mediaType` are excluded.
+- `urn:usf:provider-operation:registration-feature-postimage-key:1` declares
+  `registrationFeaturePostimageSetDigest` over the **entire declared write set**,
+  one `{path, kind, resultingMode, resultingContentDigest}` member per declared
+  path. A path the feature does not operate on carries all-null: canonical
+  absence of effect, never an omitted member. So the key binds intended scope as
+  well as resulting state.
+
+Both carry `excludesFromDigest` for `basisDigest`, candidate `artifactDigest`,
+`acceptedContributionDigests`, construction-grant identity and timestamps, making
+them basis-independent by declaration — which is exactly why candidate identity
+cannot serve as the cross-phase equality key.
+
+Member records are backed by `schemas/candidate.schema.json#/$defs/...`,
+following the existing fragment convention. Implementation sits in
+`src/collaboration/resolve.ts` — the module that already produces the resolved
+path-sorted operations the key binds. Choosing it over `src/realisation/index.ts`
+kept the blast radius at zero; the same change in `index.ts` staled all nine.
+
+Three focused tests make the rule's refusal prose executable: canonical
+path-ordering independent of submission order, cross-phase equality of
+independently constructed representations, and fail-closed refusal on changed,
+missing, extra, duplicate, out-of-scope, absolute and traversing members.
+
+### The demo is capped by provider reality, not by repository work
+
+Re-derived this session and load-bearing for planning: **no available lane can
+produce a trusted zero-paid account receipt**, so no route can qualify and the
+end-to-end demo cannot complete regardless of further building.
+
+`urn:usf:requirement:provider-pipeline-account-tier` demands a *provider-owned
+non-inference account source* proving zero paid cost, paid usage disabled,
+automatic overage disabled, bounded quota and source authenticity, and states
+that "self-authored assertions ... are insufficient". Against that:
+
+| lane | status |
+|---|---|
+| `groq-qwen3.6-27b`, `cerebras-gpt-oss-120b` (the only configured routes) | **no `ProviderAccountSourceMapping` at all**; zero mentions of groq/cerebras in any account-source context |
+| `codex-cli`, `claude-cli` subscription hosts | mapped, but `configuredRouteJoinRule` states "Subscription-host candidates have no configured-route join under the current route schema" — they can never yield an assignment |
+| `openrouter-current-key:1` | the only real mapped endpoint, but `mappingDisposition: insufficient-alone-for-zero-paid-account-receipt` with four enumerated `missingRequiredEvidence` items: paid usage disabled, automatic overage disabled, automatic top-up disabled, free-model eligibility plus fallback prohibition. Not a configured route. |
+
+Every route to a demo therefore requires one of: fabricating a Groq/Cerebras
+account endpoint that does not exist; asserting OpenRouter returns evidence its
+endpoint does not return; changing the route schema so host candidates can join;
+or relaxing the zero-paid evidence requirement. The first two are fabrication.
+The last two materially redefine USF's trust model, which is an operator
+decision, not a bounded implementation choice.
+
+Note this is **not** the receipt-v2 seam blocking the demo. Completing all three
+seam phases would move `providers receipt acquire` from
+`PROVIDERS_RECEIPT_PROOFBLOCKED` to a credential/mapping refusal and no further,
+because there is no mapping for either configured route to acquire against.
+
+### Gap register (non-demo-path)
+
+- receipt-v2 seam remains unimplemented; its binding key now exists, so it is
+  implementable without invented authority.
+- `CALL_LEAF_DEPENDENCY_REFUSED` on `call parallel`: no
+  `ProductionLeafRuntimeClosure` for `src/commands/provider-parallel.ts`;
+  off the contact path.
+- `src/realisation/index.ts` begins with `/` and is therefore uncontributable
+  through `usf call` (`ABSOLUTE_PATH_FORBIDDEN`); worked around here by siting
+  the change in `resolve.ts`.
+
+## Prior boundary — the feature model was unreconstructible; alternatives compared
 
 This section supersedes every older `Current`, `Live continuation`, `Prior
 boundary` and `Next` heading retained below as chronological evidence; do not
