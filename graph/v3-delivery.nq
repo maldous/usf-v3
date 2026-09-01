@@ -398,6 +398,8 @@
 <urn:usf:delivery-artefact:accessibilityprofile> <urn:usf:predicate:canonicalPath> "ui/accessibility/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:accessibilityprofile> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:accessibilityprofile> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:accessibilityprofile> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:accessibilityprofile> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:accessibilityprofile> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:accessibilityprofile> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:architectureguide> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:report> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:architectureguide> <urn:usf:predicate:canonicalName> "architectureguide" <urn:usf:graph:v3-delivery> .
@@ -405,6 +407,8 @@
 <urn:usf:delivery-artefact:architectureguide> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:documentation> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:architectureguide> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:architectureguide> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:architectureguide> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:architectureguide> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:architectureguide> <urn:usf:predicate:realizationMechanismReason> "Prose explaining architecture to a reader. Genuinely semantic." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:architectureguide> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:canonicalName> "authorityprojection" <urn:usf:graph:v3-delivery> .
@@ -412,6 +416,8 @@
 <urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:authorityprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:authorityprojection> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:schema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:canonicalName> "compileroutputschema" <urn:usf:graph:v3-delivery> .
@@ -419,24 +425,32 @@
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:compileroutputschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:canonicalName> "componentmodel" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:canonicalPath> "ui/components/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:componentmodel> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:componentmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:e2ejourneymanifest> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:test> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:e2ejourneymanifest> <urn:usf:predicate:canonicalName> "e2ejourneymanifest" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:e2ejourneymanifest> <urn:usf:predicate:canonicalPath> "tests/e2e/uijourneys/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:e2ejourneymanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:e2ejourneymanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:e2ejourneymanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:e2ejourneymanifest> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:e2ejourneymanifest> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:e2ejourneymanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:errorcatalogue> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:errorcatalogue> <urn:usf:predicate:canonicalName> "errorcatalogue" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:errorcatalogue> <urn:usf:predicate:canonicalPath> "ui/errors/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:errorcatalogue> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:errorcatalogue> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:errorcatalogue> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:errorcatalogue> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:errorcatalogue> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:errorcatalogue> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:executable> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:canonicalName> "evidencepipeline" <urn:usf:graph:v3-delivery> .
@@ -444,12 +458,16 @@
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:proof> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:evidencepipeline> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared proof obligations." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:evidencepipeline> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:canonicalName> "formmodel" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:canonicalPath> "ui/forms/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:formmodel> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:formmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:test> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:canonicalName> "generatedtests" <urn:usf:graph:v3-delivery> .
@@ -457,13 +475,21 @@
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:validation> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:generatedtests> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared validator rules and facets. The rules are the input." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:generatedtests> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:blockedReason> "format-specific-projector-absent" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:canonicalName> "graphqlcontract" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:canonicalPath> "contracts/graphql/foundation.graphql" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:graphqlcontract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanismReason> "A total projection of contract authority is deterministic, but this artefact must be a valid GraphQL schema definition language. Emitting the projection as JSON into this path would produce a syntactically wrong artefact. A format-specific projector is required and is not implemented; the artefact is therefore not realized rather than realized wrongly." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:requiredProjectionFormat> "GraphQL schema definition language" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:source> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:canonicalName> "implementationscaffold" <urn:usf:graph:v3-delivery> .
@@ -471,18 +497,24 @@
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:scaffold> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:implementationscaffold> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:realizationMechanismReason> "Expands a template over declared obligations. No semantic judgement is required." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:canonicalName> "localisationbundle" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:canonicalPath> "ui/localisation/bundles/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:localisationbundle> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationbundle> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationprofile> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationprofile> <urn:usf:predicate:canonicalName> "localisationprofile" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationprofile> <urn:usf:predicate:canonicalPath> "ui/localisation/profiles/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationprofile> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:localisationprofile> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationprofile> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:localisationprofile> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:localisationprofile> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:localisationprofile> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:canonicalName> "mobilerendererinput" <urn:usf:graph:v3-delivery> .
@@ -490,19 +522,29 @@
 <urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:mobileui> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:mobilerendererinput> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:realizationMechanismReason> "Mobile render input derived from UI semantic models; semantic where those models are not yet authored." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:mobilerendererinput> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:blockedReason> "format-specific-projector-absent" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:canonicalName> "openapicontract" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:canonicalPath> "contracts/openapi/foundation.openapi.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:openapicontract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanismReason> "A total projection of contract authority is deterministic, but this artefact must be a valid OpenAPI 3 document. Emitting the projection as JSON into this path would produce a syntactically wrong artefact. A format-specific projector is required and is not implemented; the artefact is therefore not realized rather than realized wrongly." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:requiredProjectionFormat> "OpenAPI 3 document" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:canonicalName> "previewmodel" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:canonicalPath> "ui/previews/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:previewmodel> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:configuration> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:canonicalName> "proofanchorworkflow" <urn:usf:graph:v3-delivery> .
@@ -510,6 +552,8 @@
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:proofanchorworkflow> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:proofanchorworkflow> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:realizationMechanismReason> "Continuous-integration configuration templated over declared proof steps." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofanchorworkflow> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:proof> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:canonicalName> "proofmanifest" <urn:usf:graph:v3-delivery> .
@@ -517,6 +561,8 @@
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:proof> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:proofmanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared proof obligations." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:proofmanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:provenancerecord> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:canonicalName> "provenancerecord" <urn:usf:graph:v3-delivery> .
@@ -524,6 +570,8 @@
 <urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:release> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:provenancerecord> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:realizationMechanismReason> "Manifests, checksums, SBOM, attestation and provenance are computed from the realized artefact set. A model cannot compute a checksum." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:provenancerecord> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releaseattestation> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:evidence> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releaseattestation> <urn:usf:predicate:canonicalName> "releaseattestation" <urn:usf:graph:v3-delivery> .
@@ -531,6 +579,8 @@
 <urn:usf:delivery-artefact:releaseattestation> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:release> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releaseattestation> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:releaseattestation> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releaseattestation> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releaseattestation> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releaseattestation> <urn:usf:predicate:realizationMechanismReason> "Manifests, checksums, SBOM, attestation and provenance are computed from the realized artefact set. A model cannot compute a checksum." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releaseattestation> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasechecksums> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:checksum> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasechecksums> <urn:usf:predicate:canonicalName> "releasechecksums" <urn:usf:graph:v3-delivery> .
@@ -538,6 +588,8 @@
 <urn:usf:delivery-artefact:releasechecksums> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:release> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasechecksums> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:releasechecksums> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasechecksums> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasechecksums> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasechecksums> <urn:usf:predicate:realizationMechanismReason> "Manifests, checksums, SBOM, attestation and provenance are computed from the realized artefact set. A model cannot compute a checksum." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasechecksums> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasemanifest> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:bundle> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasemanifest> <urn:usf:predicate:canonicalName> "releasemanifest" <urn:usf:graph:v3-delivery> .
@@ -545,6 +597,8 @@
 <urn:usf:delivery-artefact:releasemanifest> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:release> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasemanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:releasemanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasemanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasemanifest> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasemanifest> <urn:usf:predicate:realizationMechanismReason> "Manifests, checksums, SBOM, attestation and provenance are computed from the realized artefact set. A model cannot compute a checksum." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasemanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:signature> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:canonicalName> "releasesignature" <urn:usf:graph:v3-delivery> .
@@ -552,6 +606,8 @@
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:release> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:releasesignature> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:realizationMechanismReason> "Manifests, checksums, SBOM, attestation and provenance are computed from the realized artefact set. A model cannot compute a checksum." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:releasesignature> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:schema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:canonicalName> "rendererinputschema" <urn:usf:graph:v3-delivery> .
@@ -559,12 +615,16 @@
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:rendererinputschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:canonicalName> "routemanifest" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:canonicalPath> "ui/routes/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:routemanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:routemanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:configuration> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:canonicalName> "runtimecompose" <urn:usf:graph:v3-delivery> .
@@ -572,6 +632,8 @@
 <urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:runtime> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:runtimecompose> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:realizationMechanismReason> "Composed from the captured service, provider, port and mode graph. The infrastructure graph is the input." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:runtimecompose> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:schema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:canonicalName> "semanticcontractschema" <urn:usf:graph:v3-delivery> .
@@ -579,6 +641,8 @@
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:semanticcontractschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:softwarebillofmaterials> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:canonicalName> "softwarebillofmaterials" <urn:usf:graph:v3-delivery> .
@@ -586,6 +650,8 @@
 <urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:release> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:softwarebillofmaterials> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:realizationMechanismReason> "Manifests, checksums, SBOM, attestation and provenance are computed from the realized artefact set. A model cannot compute a checksum." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:softwarebillofmaterials> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:configuration> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:canonicalName> "specvalidationworkflow" <urn:usf:graph:v3-delivery> .
@@ -593,6 +659,8 @@
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:specvalidationworkflow> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:specvalidationworkflow> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:realizationMechanismReason> "Continuous-integration configuration templated over declared validation steps." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:report> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:canonicalName> "statementofapplicability" <urn:usf:graph:v3-delivery> .
@@ -600,18 +668,24 @@
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:assurance> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:statementofapplicability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanismReason> "A statement of applicability is a projection over declared framework controls and their applicability decisions." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:report> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:canonicalName> "uidocumentationmodel" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:canonicalPath> "docs/ui/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:uidocumentationmodel> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uisemanticmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uisemanticmodel> <urn:usf:predicate:canonicalName> "uisemanticmodel" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uisemanticmodel> <urn:usf:predicate:canonicalPath> "ui/models/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uisemanticmodel> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:uisemanticmodel> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uisemanticmodel> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:uisemanticmodel> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:uisemanticmodel> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uisemanticmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:canonicalName> "validatormanifest" <urn:usf:graph:v3-delivery> .
@@ -619,12 +693,16 @@
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:validation> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:validatormanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared validator rules and facets. The rules are the input." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:validatormanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:contract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:canonicalName> "viewmodel" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:canonicalPath> "ui/viewmodels/index.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:viewmodel> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:realizationMechanismReason> "No generator is declared: this artefact is authored semantic content, not a projection." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:viewmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:webrendererinput> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:webrendererinput> <urn:usf:predicate:canonicalName> "webrendererinput" <urn:usf:graph:v3-delivery> .
@@ -632,6 +710,8 @@
 <urn:usf:delivery-artefact:webrendererinput> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:webui> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:webrendererinput> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:webrendererinput> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:webrendererinput> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:webrendererinput> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:webrendererinput> <urn:usf:predicate:realizationMechanismReason> "Web render input derived from UI semantic models; semantic where those models are not yet authored." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:webrendererinput> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:canonicalName> "workspacemanifest" <urn:usf:graph:v3-delivery> .
@@ -639,6 +719,8 @@
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:scaffold> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:workspacemanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:realizationMechanismReason> "Expands a template over declared obligations. No semantic judgement is required." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:workspacemanifest> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability-set:v1:1> <urn:usf:predicate:capabilityCount> "67" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability-set:v1:1> <urn:usf:predicate:declaresCapability> <urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:graph:v3-delivery> .
@@ -732,9 +814,11 @@
 <urn:usf:delivery-capability-set:v1:1> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapabilitySet> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:canonicalName> "abacpolicydecisionpoint" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:authenticationplatform> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:authenticationplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:authenticationplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:abacpolicydecisionpoint" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:abacpolicydecisionpoint> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -748,74 +832,93 @@
 <urn:usf:delivery-capability:accessibilitya11ygate> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:canonicalName> "alertingincidentmanagementoncallstatuspage" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:observabilityops> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:alertingincidentmanagementoncallstatuspage" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:canonicalName> "apidocsdeveloperportalsdksratelimits" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:openapidrifthardgate> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:developerplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:openapidrifthardgate> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:openapidrifthardgate> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:apidocsdeveloperportalsdksratelimits" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:canonicalName> "apikeyspersonalaccesstokens" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:apikeyspersonalaccesstokens" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:canonicalName> "auditofprivilegedaccess" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:auditofprivilegedaccess" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:auditofprivilegedaccess> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:canonicalName> "authenticationplatform" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:authentication> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:authenticationplatform" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:authenticationplatform> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:canonicalName> "backgroundworkersjobrunner" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:computeruntime> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:backgroundworkersjobrunner" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backgroundworkersjobrunner> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:canonicalName> "backupandrestore" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:dataplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:backupandrestore" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:backupandrestore> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:canonicalName> "brandingandtheming" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:configuration> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:brandingandtheming" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:brandingandtheming> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:canonicalName> "browsertelemetrygrafanafarorumandbrowsertobfftracing" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:observabilityops> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:browsertelemetrygrafanafarorumandbrowsertobfftracing" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -835,33 +938,41 @@
 <urn:usf:delivery-capability:codequalityandsecretanddependencyscanning> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:canonicalName> "compliancereportsaccessreviewsevidencepacks" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:securitygovernance> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:compliancereportsaccessreviewsevidencepacks" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:canonicalName> "composedproviderreadinessspine" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:foundation> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:composedproviderreadinessspine" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:canonicalName> "configurationregistryandhistory" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:configuration> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:configurationregistryandhistory" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:configurationregistryandhistory> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:canonicalName> "customdomainsdnsownershiptlscanonical" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:configuration> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:customdomainsdnsownershiptlscanonical" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -893,15 +1004,17 @@
 <urn:usf:delivery-capability:enduserprofileandpreferencesselfservice> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:canonicalName> "entitlementengine" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:entitlementengine" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:entitlementengine> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:canonicalName> "environmentregistryandbootstrap" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:foundation> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:environmentregistryandbootstrap" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:environmentregistryandbootstrap> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -913,15 +1026,17 @@
 <urn:usf:delivery-capability:environmentspecificvssharedservicemodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:canonicalName> "eventbusdurablequeuesdlqredrive" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:eventsworkflow> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:eventbusdurablequeuesdlqredrive" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:canonicalName> "historyreadmodelreadonlyprojection" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:dataplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:historyreadmodelreadonlyprojection" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -933,8 +1048,9 @@
 <urn:usf:delivery-capability:i18nruntimeandvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:canonicalName> "internalservicecatalogandreadiness" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:observabilityops> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:internalservicecatalogandreadiness" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -958,26 +1074,33 @@
 <urn:usf:delivery-capability:mockprovidersdevtest> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:canonicalName> "notificationdeliveryandpreferencesandchannels" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:enduserprofileandpreferencesselfservice> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:eventsworkflow> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:enduserprofileandpreferencesselfservice> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:enduserprofileandpreferencesselfservice> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:notificationdeliveryandpreferencesandchannels" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:canonicalName> "objectstorageandtenantprefixesandsignedurls" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:quotaenforcement> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:storage> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:quotaenforcement> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:quotaenforcement> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:objectstorageandtenantprefixesandsignedurls" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:canonicalName> "observabilitybuiltinalertingandincidents" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:observabilityops> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:metricsandtraces> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:observabilitybuiltinalertingandincidents" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:observabilitybuiltinalertingandincidents> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -989,9 +1112,11 @@
 <urn:usf:delivery-capability:openapidrifthardgate> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:canonicalName> "pitrretentionlegalholddataresidency" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:backupandrestore> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:dataplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:backupandrestore> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:backupandrestore> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:pitrretentionlegalholddataresidency" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -1003,8 +1128,9 @@
 <urn:usf:delivery-capability:productcatalogplansprices> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:canonicalName> "providerconfigurationplane" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:foundation> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:providerconfigurationplane" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -1016,23 +1142,27 @@
 <urn:usf:delivery-capability:providerenvironmentclassification> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:canonicalName> "quotaenforcement" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:entitlementsbilling> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:quotaenforcement" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:quotaenforcement> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:canonicalName> "ratelimitingapi" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:developerplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:ratelimitingapi" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:ratelimitingapi> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:canonicalName> "rbacrolesandpermissions" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:rbacrolesandpermissions" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -1044,22 +1174,25 @@
 <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:canonicalName> "runtimesecretsmanagement" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:computeruntime> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:runtimesecretsmanagement" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:canonicalName> "scheduledjobsbuiltinontheeventsubstrate" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:eventsworkflow> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:scheduledjobsbuiltinontheeventsubstrate" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:canonicalName> "searchandindexingproductsearch" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:search> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:searchandindexingproductsearch" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:searchandindexingproductsearch> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -1071,75 +1204,89 @@
 <urn:usf:delivery-capability:serverlessfunctionruntime> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:canonicalName> "servicecatalogandproviderintegrationmodel" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:foundation> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:servicecatalogandproviderintegrationmodel" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:canonicalName> "suborganisations" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:suborganisations" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:suborganisations> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:canonicalName> "subscriptionsinvoicespaymentmethodsdunning" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:productcatalogplansprices> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:entitlementsbilling> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:productcatalogplansprices> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:productcatalogplansprices> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:subscriptionsinvoicespaymentmethodsdunning" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:canonicalName> "supportmodebreakglassaccess" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:supportmodebreakglassaccess" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:canonicalName> "supportticketscustomerhealthannouncements" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:supportadmin> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:supportticketscustomerhealthannouncements" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:canonicalName> "tenantcanonicaldomainsetunset" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:configuration> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:tenantcanonicaldomainsetunset" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:canonicalName> "tenantdataimportexport" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:dataplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:tenantdataimportexport" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:canonicalName> "tenantdomainactivationauthclient" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:configuration> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:tenantdomainactivationauthclient" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:canonicalName> "tenantgroups" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:authenticationplatform> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:authenticationplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:authenticationplatform> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:tenantgroups" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantgroups> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:canonicalName> "tenanthostidentityresolution" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:identityaccess> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:tenanthostidentityresolution" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -1151,25 +1298,31 @@
 <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:canonicalName> "tenantisolationproof" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:securitygovernance> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:tenantisolationproof" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantisolationproof> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:canonicalName> "tenantlifecycleprovisionsuspenddeleteexport" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:supportadmin> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:tenantdataimportexport> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:tenantlifecycleprovisionsuspenddeleteexport" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:canonicalName> "tenantserviceclickthroughpolicy" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:observabilityops> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:internalservicecatalogandreadiness> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:tenantserviceclickthroughpolicy" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -1181,8 +1334,9 @@
 <urn:usf:delivery-capability:universalservicefoundationscopeandprinciples> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:canonicalName> "usagemeteringandmetereventingestion" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:entitlementsbilling> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:entitlementengine> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:usagemeteringandmetereventingestion" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -1194,24 +1348,29 @@
 <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:canonicalName> "webhooksdeveloperfacing" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:developerplatform> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:webhooksdeveloperfacing" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:canonicalName> "workflowenginescheduledjobsapprovals" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:eventsworkflow> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:workflowenginescheduledjobsapprovals" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:canonicalName> "writeonlysecretsettings" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:captureStatus> "specified" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:dependsOn> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:inDomain> <urn:usf:delivery-domain:configuration> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:integrationValidationDependency> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:productRuntimeDependency> <urn:usf:delivery-capability:runtimesecretsmanagement> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:specifiedByContract> "urn:usf:semanticcontract:writeonlysecretsettings" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:usf:graph:v3-delivery> .
@@ -2263,6 +2422,34 @@
 <urn:usf:delivery-contract:writeonlysecretsettings> <urn:usf:predicate:definesCompletionFor> <urn:usf:delivery-capability:writeonlysecretsettings> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-contract:writeonlysecretsettings> <urn:usf:predicate:facetCount> "10" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-contract:writeonlysecretsettings> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:convertedToIntegrationValidationDependency> "77" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:convertedToProductRuntimeDependency> "77" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:disposition> "PARALLELIZABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:evidenceContractsAlreadySatisfied> "All 67 capabilities are paired one-to-one with a captured contract, so every dependency interface a downstream implementation needs already exists as authority. An implementation needs its dependencies' contracts, not their implementations." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:evidenceNoArtefactInputs> "No captured artefact takes another capability's artefact as a generation input, so no artefact production is ordered by another capability." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:finding> "Every one of the 77 V1 capability edges describes what must be true of the finished product, not what must be built first. None is a realization prerequisite." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:nonClaim> "This audit reclassifies dependency meaning. It does not assert that any capability is realized or that integration validation has been performed." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:originalEdgeCount> "77" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:removedObsolete> "0" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:retainedHardRealizationPrerequisites> "0" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:retainedInvariant> "The dependency knowledge is not discarded. It now states a product runtime dependency and gates integration validation, which genuinely cannot conclude before the upstream runtime exists." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:schedulingEffect> "Realization readiness is no longer serialized by these edges. Integration validation retains the original ordering." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:type> <urn:usf:type:DeliveryDependencyAudit> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:workedExample> <urn:usf:delivery-dependency-example:composedproviderreadinessspine-providerconfigurationplane> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:workedExample> <urn:usf:delivery-dependency-example:pitrretentionlegalholddataresidency-backupandrestore> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-audit:v1:1> <urn:usf:predicate:workedExample> <urn:usf:delivery-dependency-example:rbacrolesandpermissions-useridentityandtenantmembership> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:composedproviderreadinessspine-providerconfigurationplane> <urn:usf:predicate:dependencyCapability> <urn:usf:delivery-capability:providerconfigurationplane> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:composedproviderreadinessspine-providerconfigurationplane> <urn:usf:predicate:dependentCapability> <urn:usf:delivery-capability:composedproviderreadinessspine> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:composedproviderreadinessspine-providerconfigurationplane> <urn:usf:predicate:reasoning> "The readiness spine composes provider configuration. It is implemented against the configuration schema the provider-configuration contract already states." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:composedproviderreadinessspine-providerconfigurationplane> <urn:usf:predicate:type> <urn:usf:type:DeliveryDependencyExample> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:pitrretentionlegalholddataresidency-backupandrestore> <urn:usf:predicate:dependencyCapability> <urn:usf:delivery-capability:backupandrestore> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:pitrretentionlegalholddataresidency-backupandrestore> <urn:usf:predicate:dependentCapability> <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:pitrretentionlegalholddataresidency-backupandrestore> <urn:usf:predicate:reasoning> "Point-in-time recovery consumes backup artefacts at runtime. Its own implementation is written against the backup interface, which the backup contract already states." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:pitrretentionlegalholddataresidency-backupandrestore> <urn:usf:predicate:type> <urn:usf:type:DeliveryDependencyExample> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:rbacrolesandpermissions-useridentityandtenantmembership> <urn:usf:predicate:dependencyCapability> <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:rbacrolesandpermissions-useridentityandtenantmembership> <urn:usf:predicate:dependentCapability> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:rbacrolesandpermissions-useridentityandtenantmembership> <urn:usf:predicate:reasoning> "Roles and permissions are defined against the identity model's shape, which the identity contract already states. The RBAC implementation needs that contract, not a running identity service; it needs the running service only to validate integration." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-dependency-example:rbacrolesandpermissions-useridentityandtenantmembership> <urn:usf:predicate:type> <urn:usf:type:DeliveryDependencyExample> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-domain:authentication> <urn:usf:predicate:canonicalName> "authentication" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-domain:authentication> <urn:usf:predicate:type> <urn:usf:type:DeliveryDomain> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-domain:computeruntime> <urn:usf:predicate:canonicalName> "computeruntime" <urn:usf:graph:v3-delivery> .
@@ -4973,45 +5160,71 @@
 <urn:usf:delivery-facet:writeonlysecretsettingsvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:assurance> <urn:usf:predicate:canonicalName> "assurance" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:assurance> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:assurance> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:assurance> <urn:usf:predicate:realizationMechanismReason> "A statement of applicability is a projection over declared framework controls and their applicability decisions." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:assurance> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:contractprojection> <urn:usf:predicate:canonicalName> "contractprojection" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:contractprojection> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:contractprojection> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:contractprojection> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:contractprojection> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:documentation> <urn:usf:predicate:canonicalName> "documentation" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:documentation> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:documentation> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:documentation> <urn:usf:predicate:realizationMechanismReason> "Prose explaining architecture to a reader. Genuinely semantic." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:documentation> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:mobileui> <urn:usf:predicate:canonicalName> "mobileui" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:mobileui> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:mobileui> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:mobileui> <urn:usf:predicate:realizationMechanismReason> "Mobile render input derived from UI semantic models; semantic where those models are not yet authored." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:mobileui> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:proof> <urn:usf:predicate:canonicalName> "proof" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:proof> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:proof> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:proof> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared proof obligations." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:proof> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:proofanchorworkflow> <urn:usf:predicate:canonicalName> "proofanchorworkflow" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:proofanchorworkflow> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:proofanchorworkflow> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:proofanchorworkflow> <urn:usf:predicate:realizationMechanismReason> "Continuous-integration configuration templated over declared proof steps." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:proofanchorworkflow> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:release> <urn:usf:predicate:canonicalName> "release" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:release> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:release> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:release> <urn:usf:predicate:realizationMechanismReason> "Manifests, checksums, SBOM, attestation and provenance are computed from the realized artefact set. A model cannot compute a checksum." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:release> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:runtime> <urn:usf:predicate:canonicalName> "runtime" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:runtime> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:runtime> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:runtime> <urn:usf:predicate:realizationMechanismReason> "Composed from the captured service, provider, port and mode graph. The infrastructure graph is the input." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:runtime> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:scaffold> <urn:usf:predicate:canonicalName> "scaffold" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:scaffold> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:scaffold> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:scaffold> <urn:usf:predicate:realizationMechanismReason> "Expands a template over declared obligations. No semantic judgement is required." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:scaffold> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:semanticcontract> <urn:usf:predicate:canonicalName> "semanticcontract" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:semanticcontract> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:semanticcontract> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:specvalidationworkflow> <urn:usf:predicate:canonicalName> "specvalidationworkflow" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:specvalidationworkflow> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:specvalidationworkflow> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:specvalidationworkflow> <urn:usf:predicate:realizationMechanismReason> "Continuous-integration configuration templated over declared validation steps." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:specvalidationworkflow> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:ui> <urn:usf:predicate:canonicalName> "ui" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:ui> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:ui> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:ui> <urn:usf:predicate:realizationMechanismReason> "UI semantic content requiring design judgement." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:ui> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:validation> <urn:usf:predicate:canonicalName> "validation" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:validation> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:validation> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:validation> <urn:usf:predicate:realizationMechanismReason> "Derived from the declared validator rules and facets. The rules are the input." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:validation> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:webui> <urn:usf:predicate:canonicalName> "webui" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:webui> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:webui> <urn:usf:predicate:realizationMechanism> "SEMANTIC_MODEL_WORK" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-generator:webui> <urn:usf:predicate:realizationMechanismReason> "Web render input derived from UI semantic models; semantic where those models are not yet authored." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-generator:webui> <urn:usf:predicate:type> <urn:usf:type:DeliveryGenerator> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:declaresPort> <urn:usf:capability-port:analyticseventstore> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:declaresPort> <urn:usf:capability-port:apiruntime> <urn:usf:graph:v3-delivery> .
@@ -5160,6 +5373,17 @@
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:retainedInvariant> "A capability port is fulfilled by a named provider in a declared mode. A hermetic mock is a first-class fulfilment, not an absence, and a composed-real provider is what a deployed environment requires." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:serviceCount> "60" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:type> <urn:usf:type:DeliveryInfrastructureSet> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:artefactCount> "37" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:correction> "Two artefacts were initially realized by the JSON contract projector into .graphql and .openapi.json paths, producing syntactically wrong artefacts. Adversarial review caught it; both were withdrawn and reclassified as requiring a format-specific projector. A deterministic projection is only correct when the target format is the projection's own." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:deterministicCount> "20" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:deterministicCount> "22" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:externalToolCount> "2" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:nonClaim> "Classification states how an artefact should be realized. It asserts none has been realized." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:preferenceOrder> "ALREADY_SATISFIED, then DETERMINISTIC_GENERATOR, then SEMANTIC_MODEL_WORK. A model is the last resort, not the default." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:rule> "A model is invoked only where semantic judgement is required. Where graph authority is a total input to the artefact, the artefact is generated deterministically and no model is called." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:semanticModelCount> "15" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:type> <urn:usf:type:RealizationMechanismClassification> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-classification:v1:1> <urn:usf:predicate:vocabulary> "DETERMINISTIC_GENERATOR, SEMANTIC_MODEL_WORK, EXTERNAL_TOOL, HUMAN_INPUT_REQUIRED, ALREADY_SATISFIED" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-path-rule:accessibilityprofile> <urn:usf:predicate:canonicalName> "accessibilityprofile" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-path-rule:accessibilityprofile> <urn:usf:predicate:pathPattern> "ui/accessibility/{uimodelid}.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-path-rule:accessibilityprofile> <urn:usf:predicate:type> <urn:usf:type:DeliveryPathRule> <urn:usf:graph:v3-delivery> .
@@ -5535,6 +5759,9 @@
 <urn:usf:delivery-provider:workflowenginetemporalcomposedtest> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-provider:workflowenginetemporalcomposedtest> <urn:usf:predicate:type> <urn:usf:type:DeliveryProvider> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:foundation> <urn:usf:predicate:canonicalName> "foundation" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-repository:foundation> <urn:usf:predicate:pathDerivation> "canonicalPath = realisationRoot + / + artefact canonicalPath" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-repository:foundation> <urn:usf:predicate:realisationRoot> "apps/anqr" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-repository:foundation> <urn:usf:predicate:realisationRootReason> "V1 artefact paths are relative to the foundation repository. This repository realizes that product under apps/anqr, so a canonical artefact path is the realisation root joined with the artefact path the graph states. A model never proposes a path." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-repository:foundation> <urn:usf:predicate:type> <urn:usf:type:DeliveryRepository> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:captureBoundary> "The captured layers are the structural backbone: what must be delivered, what completion means, what infrastructure fulfils it, and what artefacts are produced where. The remaining layers are the content inside individual facets. They are enumerated so the boundary is explicit rather than implied." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:captureProgress> "structural-backbone-captured" <urn:usf:graph:v3-delivery> .

@@ -1,0 +1,1151 @@
+{
+  "schema": "urn:usf:contract-projection:1",
+  "projectedArtefact": "urn:usf:delivery-artefact:compileroutputschema",
+  "artefactKind": "urn:usf:artefact-kind:schema",
+  "contractCount": 67,
+  "contracts": [
+    {
+      "contract": "urn:usf:delivery-contract:abacpolicydecisionpoint",
+      "canonicalName": "abacpolicydecisionpoint",
+      "definesCompletionFor": "urn:usf:delivery-capability:abacpolicydecisionpoint",
+      "facets": [
+        "urn:usf:delivery-facet:abacpolicydecisionpointauditmodel",
+        "urn:usf:delivery-facet:abacpolicydecisionpointcontracts",
+        "urn:usf:delivery-facet:abacpolicydecisionpointerrormodel",
+        "urn:usf:delivery-facet:abacpolicydecisionpointlifecycle",
+        "urn:usf:delivery-facet:abacpolicydecisionpointpermissions",
+        "urn:usf:delivery-facet:abacpolicydecisionpointproof",
+        "urn:usf:delivery-facet:abacpolicydecisionpointreadinessmodel",
+        "urn:usf:delivery-facet:abacpolicydecisionpointstatemodel",
+        "urn:usf:delivery-facet:abacpolicydecisionpointuisemantics",
+        "urn:usf:delivery-facet:abacpolicydecisionpointvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:accessibilitya11ygate",
+      "canonicalName": "accessibilitya11ygate",
+      "definesCompletionFor": "urn:usf:delivery-capability:accessibilitya11ygate",
+      "facets": [
+        "urn:usf:delivery-facet:accessibilitya11ygateauditmodel",
+        "urn:usf:delivery-facet:accessibilitya11ygatecontracts",
+        "urn:usf:delivery-facet:accessibilitya11ygateerrormodel",
+        "urn:usf:delivery-facet:accessibilitya11ygatelifecycle",
+        "urn:usf:delivery-facet:accessibilitya11ygatepermissions",
+        "urn:usf:delivery-facet:accessibilitya11ygateproof",
+        "urn:usf:delivery-facet:accessibilitya11ygatereadinessmodel",
+        "urn:usf:delivery-facet:accessibilitya11ygatestatemodel",
+        "urn:usf:delivery-facet:accessibilitya11ygateuisemantics",
+        "urn:usf:delivery-facet:accessibilitya11ygatevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:alertingincidentmanagementoncallstatuspage",
+      "canonicalName": "alertingincidentmanagementoncallstatuspage",
+      "definesCompletionFor": "urn:usf:delivery-capability:alertingincidentmanagementoncallstatuspage",
+      "facets": [
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspageauditmodel",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspagecontracts",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspageerrormodel",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspagelifecycle",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspagepermissions",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspageproof",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspagereadinessmodel",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspagestatemodel",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspageuisemantics",
+        "urn:usf:delivery-facet:alertingincidentmanagementoncallstatuspagevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:apidocsdeveloperportalsdksratelimits",
+      "canonicalName": "apidocsdeveloperportalsdksratelimits",
+      "definesCompletionFor": "urn:usf:delivery-capability:apidocsdeveloperportalsdksratelimits",
+      "facets": [
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitsauditmodel",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitscontracts",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitserrormodel",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitslifecycle",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitspermissions",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitsproof",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitsreadinessmodel",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitsstatemodel",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitsuisemantics",
+        "urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:apikeyspersonalaccesstokens",
+      "canonicalName": "apikeyspersonalaccesstokens",
+      "definesCompletionFor": "urn:usf:delivery-capability:apikeyspersonalaccesstokens",
+      "facets": [
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokensauditmodel",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokenscontracts",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokenserrormodel",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokenslifecycle",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokenspermissions",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokensproof",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokensreadinessmodel",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokensstatemodel",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokensuisemantics",
+        "urn:usf:delivery-facet:apikeyspersonalaccesstokensvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:auditofprivilegedaccess",
+      "canonicalName": "auditofprivilegedaccess",
+      "definesCompletionFor": "urn:usf:delivery-capability:auditofprivilegedaccess",
+      "facets": [
+        "urn:usf:delivery-facet:auditofprivilegedaccessauditmodel",
+        "urn:usf:delivery-facet:auditofprivilegedaccesscontracts",
+        "urn:usf:delivery-facet:auditofprivilegedaccesserrormodel",
+        "urn:usf:delivery-facet:auditofprivilegedaccesslifecycle",
+        "urn:usf:delivery-facet:auditofprivilegedaccesspermissions",
+        "urn:usf:delivery-facet:auditofprivilegedaccessproof",
+        "urn:usf:delivery-facet:auditofprivilegedaccessreadinessmodel",
+        "urn:usf:delivery-facet:auditofprivilegedaccessstatemodel",
+        "urn:usf:delivery-facet:auditofprivilegedaccessuisemantics",
+        "urn:usf:delivery-facet:auditofprivilegedaccessvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:authenticationplatform",
+      "canonicalName": "authenticationplatform",
+      "definesCompletionFor": "urn:usf:delivery-capability:authenticationplatform",
+      "facets": [
+        "urn:usf:delivery-facet:authenticationplatformauditmodel",
+        "urn:usf:delivery-facet:authenticationplatformcontracts",
+        "urn:usf:delivery-facet:authenticationplatformerrormodel",
+        "urn:usf:delivery-facet:authenticationplatformlifecycle",
+        "urn:usf:delivery-facet:authenticationplatformpermissions",
+        "urn:usf:delivery-facet:authenticationplatformproof",
+        "urn:usf:delivery-facet:authenticationplatformreadinessmodel",
+        "urn:usf:delivery-facet:authenticationplatformstatemodel",
+        "urn:usf:delivery-facet:authenticationplatformuisemantics",
+        "urn:usf:delivery-facet:authenticationplatformvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:backgroundworkersjobrunner",
+      "canonicalName": "backgroundworkersjobrunner",
+      "definesCompletionFor": "urn:usf:delivery-capability:backgroundworkersjobrunner",
+      "facets": [
+        "urn:usf:delivery-facet:backgroundworkersjobrunnerauditmodel",
+        "urn:usf:delivery-facet:backgroundworkersjobrunnercontracts",
+        "urn:usf:delivery-facet:backgroundworkersjobrunnererrormodel",
+        "urn:usf:delivery-facet:backgroundworkersjobrunnerlifecycle",
+        "urn:usf:delivery-facet:backgroundworkersjobrunnerpermissions",
+        "urn:usf:delivery-facet:backgroundworkersjobrunnerproof",
+        "urn:usf:delivery-facet:backgroundworkersjobrunnerreadinessmodel",
+        "urn:usf:delivery-facet:backgroundworkersjobrunnerstatemodel",
+        "urn:usf:delivery-facet:backgroundworkersjobrunneruisemantics",
+        "urn:usf:delivery-facet:backgroundworkersjobrunnervalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:backupandrestore",
+      "canonicalName": "backupandrestore",
+      "definesCompletionFor": "urn:usf:delivery-capability:backupandrestore",
+      "facets": [
+        "urn:usf:delivery-facet:backupandrestoreauditmodel",
+        "urn:usf:delivery-facet:backupandrestorecontracts",
+        "urn:usf:delivery-facet:backupandrestoreerrormodel",
+        "urn:usf:delivery-facet:backupandrestorelifecycle",
+        "urn:usf:delivery-facet:backupandrestorepermissions",
+        "urn:usf:delivery-facet:backupandrestoreproof",
+        "urn:usf:delivery-facet:backupandrestorereadinessmodel",
+        "urn:usf:delivery-facet:backupandrestorestatemodel",
+        "urn:usf:delivery-facet:backupandrestoreuisemantics",
+        "urn:usf:delivery-facet:backupandrestorevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:brandingandtheming",
+      "canonicalName": "brandingandtheming",
+      "definesCompletionFor": "urn:usf:delivery-capability:brandingandtheming",
+      "facets": [
+        "urn:usf:delivery-facet:brandingandthemingauditmodel",
+        "urn:usf:delivery-facet:brandingandthemingcontracts",
+        "urn:usf:delivery-facet:brandingandthemingerrormodel",
+        "urn:usf:delivery-facet:brandingandtheminglifecycle",
+        "urn:usf:delivery-facet:brandingandthemingpermissions",
+        "urn:usf:delivery-facet:brandingandthemingproof",
+        "urn:usf:delivery-facet:brandingandthemingreadinessmodel",
+        "urn:usf:delivery-facet:brandingandthemingstatemodel",
+        "urn:usf:delivery-facet:brandingandtheminguisemantics",
+        "urn:usf:delivery-facet:brandingandthemingvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:browsertelemetrygrafanafarorumandbrowsertobfftracing",
+      "canonicalName": "browsertelemetrygrafanafarorumandbrowsertobfftracing",
+      "definesCompletionFor": "urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing",
+      "facets": [
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracingauditmodel",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracingcontracts",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracingerrormodel",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracingpermissions",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracingproof",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracingreadinessmodel",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracingstatemodel",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracinguisemantics",
+        "urn:usf:delivery-facet:browsertelemetrygrafanafarorumandbrowsertobfftracingvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:buildversuscomposedecisionframework",
+      "canonicalName": "buildversuscomposedecisionframework",
+      "definesCompletionFor": "urn:usf:delivery-capability:buildversuscomposedecisionframework",
+      "facets": [
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkauditmodel",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkcontracts",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkerrormodel",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworklifecycle",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkpermissions",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkproof",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkreadinessmodel",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkstatemodel",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkuisemantics",
+        "urn:usf:delivery-facet:buildversuscomposedecisionframeworkvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:codequalityandsecretanddependencyscanning",
+      "canonicalName": "codequalityandsecretanddependencyscanning",
+      "definesCompletionFor": "urn:usf:delivery-capability:codequalityandsecretanddependencyscanning",
+      "facets": [
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanningauditmodel",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanningcontracts",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanningerrormodel",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanninglifecycle",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanningpermissions",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanningproof",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanningreadinessmodel",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanningstatemodel",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanninguisemantics",
+        "urn:usf:delivery-facet:codequalityandsecretanddependencyscanningvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:compliancereportsaccessreviewsevidencepacks",
+      "canonicalName": "compliancereportsaccessreviewsevidencepacks",
+      "definesCompletionFor": "urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks",
+      "facets": [
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepacksauditmodel",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepackscontracts",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepackserrormodel",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepackslifecycle",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepackspermissions",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepacksproof",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepacksreadinessmodel",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepacksstatemodel",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepacksuisemantics",
+        "urn:usf:delivery-facet:compliancereportsaccessreviewsevidencepacksvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:composedproviderreadinessspine",
+      "canonicalName": "composedproviderreadinessspine",
+      "definesCompletionFor": "urn:usf:delivery-capability:composedproviderreadinessspine",
+      "facets": [
+        "urn:usf:delivery-facet:composedproviderreadinessspineauditmodel",
+        "urn:usf:delivery-facet:composedproviderreadinessspinecontracts",
+        "urn:usf:delivery-facet:composedproviderreadinessspineerrormodel",
+        "urn:usf:delivery-facet:composedproviderreadinessspinelifecycle",
+        "urn:usf:delivery-facet:composedproviderreadinessspinepermissions",
+        "urn:usf:delivery-facet:composedproviderreadinessspineproof",
+        "urn:usf:delivery-facet:composedproviderreadinessspinereadinessmodel",
+        "urn:usf:delivery-facet:composedproviderreadinessspinestatemodel",
+        "urn:usf:delivery-facet:composedproviderreadinessspineuisemantics",
+        "urn:usf:delivery-facet:composedproviderreadinessspinevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:configurationregistryandhistory",
+      "canonicalName": "configurationregistryandhistory",
+      "definesCompletionFor": "urn:usf:delivery-capability:configurationregistryandhistory",
+      "facets": [
+        "urn:usf:delivery-facet:configurationregistryandhistoryauditmodel",
+        "urn:usf:delivery-facet:configurationregistryandhistorycontracts",
+        "urn:usf:delivery-facet:configurationregistryandhistoryerrormodel",
+        "urn:usf:delivery-facet:configurationregistryandhistorylifecycle",
+        "urn:usf:delivery-facet:configurationregistryandhistorypermissions",
+        "urn:usf:delivery-facet:configurationregistryandhistoryproof",
+        "urn:usf:delivery-facet:configurationregistryandhistoryreadinessmodel",
+        "urn:usf:delivery-facet:configurationregistryandhistorystatemodel",
+        "urn:usf:delivery-facet:configurationregistryandhistoryuisemantics",
+        "urn:usf:delivery-facet:configurationregistryandhistoryvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:customdomainsdnsownershiptlscanonical",
+      "canonicalName": "customdomainsdnsownershiptlscanonical",
+      "definesCompletionFor": "urn:usf:delivery-capability:customdomainsdnsownershiptlscanonical",
+      "facets": [
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicalauditmodel",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicalcontracts",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicalerrormodel",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicallifecycle",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicalpermissions",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicalproof",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicalreadinessmodel",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicalstatemodel",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicaluisemantics",
+        "urn:usf:delivery-facet:customdomainsdnsownershiptlscanonicalvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:datagovernancecataloglineageclassificationpiidsrgdpr",
+      "canonicalName": "datagovernancecataloglineageclassificationpiidsrgdpr",
+      "definesCompletionFor": "urn:usf:delivery-capability:datagovernancecataloglineageclassificationpiidsrgdpr",
+      "facets": [
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprauditmodel",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprcontracts",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprerrormodel",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprlifecycle",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprpermissions",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprproof",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprstatemodel",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdpruisemantics",
+        "urn:usf:delivery-facet:datagovernancecataloglineageclassificationpiidsrgdprvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:delegatedadministrationroles",
+      "canonicalName": "delegatedadministrationroles",
+      "definesCompletionFor": "urn:usf:delivery-capability:delegatedadministrationroles",
+      "facets": [
+        "urn:usf:delivery-facet:delegatedadministrationrolesauditmodel",
+        "urn:usf:delivery-facet:delegatedadministrationrolescontracts",
+        "urn:usf:delivery-facet:delegatedadministrationroleserrormodel",
+        "urn:usf:delivery-facet:delegatedadministrationroleslifecycle",
+        "urn:usf:delivery-facet:delegatedadministrationrolespermissions",
+        "urn:usf:delivery-facet:delegatedadministrationrolesproof",
+        "urn:usf:delivery-facet:delegatedadministrationrolesreadinessmodel",
+        "urn:usf:delivery-facet:delegatedadministrationrolesstatemodel",
+        "urn:usf:delivery-facet:delegatedadministrationrolesuisemantics",
+        "urn:usf:delivery-facet:delegatedadministrationrolesvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:e2econfidenceladderstageaware",
+      "canonicalName": "e2econfidenceladderstageaware",
+      "definesCompletionFor": "urn:usf:delivery-capability:e2econfidenceladderstageaware",
+      "facets": [
+        "urn:usf:delivery-facet:e2econfidenceladderstageawareauditmodel",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawarecontracts",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawareerrormodel",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawarelifecycle",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawarepermissions",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawareproof",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawarereadinessmodel",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawarestatemodel",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawareuisemantics",
+        "urn:usf:delivery-facet:e2econfidenceladderstageawarevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:enduserprofileandpreferencesselfservice",
+      "canonicalName": "enduserprofileandpreferencesselfservice",
+      "definesCompletionFor": "urn:usf:delivery-capability:enduserprofileandpreferencesselfservice",
+      "facets": [
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfserviceauditmodel",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfservicecontracts",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfserviceerrormodel",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfservicelifecycle",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfservicepermissions",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfserviceproof",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfservicereadinessmodel",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfservicestatemodel",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfserviceuisemantics",
+        "urn:usf:delivery-facet:enduserprofileandpreferencesselfservicevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:entitlementengine",
+      "canonicalName": "entitlementengine",
+      "definesCompletionFor": "urn:usf:delivery-capability:entitlementengine",
+      "facets": [
+        "urn:usf:delivery-facet:entitlementengineauditmodel",
+        "urn:usf:delivery-facet:entitlementenginecontracts",
+        "urn:usf:delivery-facet:entitlementengineerrormodel",
+        "urn:usf:delivery-facet:entitlementenginelifecycle",
+        "urn:usf:delivery-facet:entitlementenginepermissions",
+        "urn:usf:delivery-facet:entitlementengineproof",
+        "urn:usf:delivery-facet:entitlementenginereadinessmodel",
+        "urn:usf:delivery-facet:entitlementenginestatemodel",
+        "urn:usf:delivery-facet:entitlementengineuisemantics",
+        "urn:usf:delivery-facet:entitlementenginevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:environmentregistryandbootstrap",
+      "canonicalName": "environmentregistryandbootstrap",
+      "definesCompletionFor": "urn:usf:delivery-capability:environmentregistryandbootstrap",
+      "facets": [
+        "urn:usf:delivery-facet:environmentregistryandbootstrapauditmodel",
+        "urn:usf:delivery-facet:environmentregistryandbootstrapcontracts",
+        "urn:usf:delivery-facet:environmentregistryandbootstraperrormodel",
+        "urn:usf:delivery-facet:environmentregistryandbootstraplifecycle",
+        "urn:usf:delivery-facet:environmentregistryandbootstrappermissions",
+        "urn:usf:delivery-facet:environmentregistryandbootstrapproof",
+        "urn:usf:delivery-facet:environmentregistryandbootstrapreadinessmodel",
+        "urn:usf:delivery-facet:environmentregistryandbootstrapstatemodel",
+        "urn:usf:delivery-facet:environmentregistryandbootstrapuisemantics",
+        "urn:usf:delivery-facet:environmentregistryandbootstrapvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:environmentspecificvssharedservicemodel",
+      "canonicalName": "environmentspecificvssharedservicemodel",
+      "definesCompletionFor": "urn:usf:delivery-capability:environmentspecificvssharedservicemodel",
+      "facets": [
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodelauditmodel",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodelcontracts",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodelerrormodel",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodellifecycle",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodelpermissions",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodelproof",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodelreadinessmodel",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodelstatemodel",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodeluisemantics",
+        "urn:usf:delivery-facet:environmentspecificvssharedservicemodelvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:eventbusdurablequeuesdlqredrive",
+      "canonicalName": "eventbusdurablequeuesdlqredrive",
+      "definesCompletionFor": "urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive",
+      "facets": [
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredriveauditmodel",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredrivecontracts",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredriveerrormodel",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredrivelifecycle",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredrivepermissions",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredriveproof",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredrivereadinessmodel",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredrivestatemodel",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredriveuisemantics",
+        "urn:usf:delivery-facet:eventbusdurablequeuesdlqredrivevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:historyreadmodelreadonlyprojection",
+      "canonicalName": "historyreadmodelreadonlyprojection",
+      "definesCompletionFor": "urn:usf:delivery-capability:historyreadmodelreadonlyprojection",
+      "facets": [
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionauditmodel",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectioncontracts",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionerrormodel",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionlifecycle",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionpermissions",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionproof",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionreadinessmodel",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionstatemodel",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionuisemantics",
+        "urn:usf:delivery-facet:historyreadmodelreadonlyprojectionvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:i18nruntimeandvalidation",
+      "canonicalName": "i18nruntimeandvalidation",
+      "definesCompletionFor": "urn:usf:delivery-capability:i18nruntimeandvalidation",
+      "facets": [
+        "urn:usf:delivery-facet:i18nruntimeandvalidationauditmodel",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationcontracts",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationerrormodel",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationlifecycle",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationpermissions",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationproof",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationreadinessmodel",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationstatemodel",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationuisemantics",
+        "urn:usf:delivery-facet:i18nruntimeandvalidationvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:internalservicecatalogandreadiness",
+      "canonicalName": "internalservicecatalogandreadiness",
+      "definesCompletionFor": "urn:usf:delivery-capability:internalservicecatalogandreadiness",
+      "facets": [
+        "urn:usf:delivery-facet:internalservicecatalogandreadinessauditmodel",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinesscontracts",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinesserrormodel",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinesslifecycle",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinesspermissions",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinessproof",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinessreadinessmodel",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinessstatemodel",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinessuisemantics",
+        "urn:usf:delivery-facet:internalservicecatalogandreadinessvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:logsaggregationandtenantscopedsearch",
+      "canonicalName": "logsaggregationandtenantscopedsearch",
+      "definesCompletionFor": "urn:usf:delivery-capability:logsaggregationandtenantscopedsearch",
+      "facets": [
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchauditmodel",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchcontracts",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearcherrormodel",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchlifecycle",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchpermissions",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchproof",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchreadinessmodel",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchstatemodel",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchuisemantics",
+        "urn:usf:delivery-facet:logsaggregationandtenantscopedsearchvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:metricsandtraces",
+      "canonicalName": "metricsandtraces",
+      "definesCompletionFor": "urn:usf:delivery-capability:metricsandtraces",
+      "facets": [
+        "urn:usf:delivery-facet:metricsandtracesauditmodel",
+        "urn:usf:delivery-facet:metricsandtracescontracts",
+        "urn:usf:delivery-facet:metricsandtraceserrormodel",
+        "urn:usf:delivery-facet:metricsandtraceslifecycle",
+        "urn:usf:delivery-facet:metricsandtracespermissions",
+        "urn:usf:delivery-facet:metricsandtracesproof",
+        "urn:usf:delivery-facet:metricsandtracesreadinessmodel",
+        "urn:usf:delivery-facet:metricsandtracesstatemodel",
+        "urn:usf:delivery-facet:metricsandtracesuisemantics",
+        "urn:usf:delivery-facet:metricsandtracesvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:mockprovidersdevtest",
+      "canonicalName": "mockprovidersdevtest",
+      "definesCompletionFor": "urn:usf:delivery-capability:mockprovidersdevtest",
+      "facets": [
+        "urn:usf:delivery-facet:mockprovidersdevtestauditmodel",
+        "urn:usf:delivery-facet:mockprovidersdevtestcontracts",
+        "urn:usf:delivery-facet:mockprovidersdevtesterrormodel",
+        "urn:usf:delivery-facet:mockprovidersdevtestlifecycle",
+        "urn:usf:delivery-facet:mockprovidersdevtestpermissions",
+        "urn:usf:delivery-facet:mockprovidersdevtestproof",
+        "urn:usf:delivery-facet:mockprovidersdevtestreadinessmodel",
+        "urn:usf:delivery-facet:mockprovidersdevteststatemodel",
+        "urn:usf:delivery-facet:mockprovidersdevtestuisemantics",
+        "urn:usf:delivery-facet:mockprovidersdevtestvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:notificationdeliveryandpreferencesandchannels",
+      "canonicalName": "notificationdeliveryandpreferencesandchannels",
+      "definesCompletionFor": "urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels",
+      "facets": [
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelsauditmodel",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelscontracts",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelserrormodel",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelslifecycle",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelspermissions",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelsproof",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelsreadinessmodel",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelsstatemodel",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelsuisemantics",
+        "urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:objectstorageandtenantprefixesandsignedurls",
+      "canonicalName": "objectstorageandtenantprefixesandsignedurls",
+      "definesCompletionFor": "urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls",
+      "facets": [
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlsauditmodel",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlscontracts",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlserrormodel",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlslifecycle",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlspermissions",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlsproof",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlsreadinessmodel",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlsstatemodel",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlsuisemantics",
+        "urn:usf:delivery-facet:objectstorageandtenantprefixesandsignedurlsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:observabilitybuiltinalertingandincidents",
+      "canonicalName": "observabilitybuiltinalertingandincidents",
+      "definesCompletionFor": "urn:usf:delivery-capability:observabilitybuiltinalertingandincidents",
+      "facets": [
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentsauditmodel",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentscontracts",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentserrormodel",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentslifecycle",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentspermissions",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentsproof",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentsreadinessmodel",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentsstatemodel",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentsuisemantics",
+        "urn:usf:delivery-facet:observabilitybuiltinalertingandincidentsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:openapidrifthardgate",
+      "canonicalName": "openapidrifthardgate",
+      "definesCompletionFor": "urn:usf:delivery-capability:openapidrifthardgate",
+      "facets": [
+        "urn:usf:delivery-facet:openapidrifthardgateauditmodel",
+        "urn:usf:delivery-facet:openapidrifthardgatecontracts",
+        "urn:usf:delivery-facet:openapidrifthardgateerrormodel",
+        "urn:usf:delivery-facet:openapidrifthardgatelifecycle",
+        "urn:usf:delivery-facet:openapidrifthardgatepermissions",
+        "urn:usf:delivery-facet:openapidrifthardgateproof",
+        "urn:usf:delivery-facet:openapidrifthardgatereadinessmodel",
+        "urn:usf:delivery-facet:openapidrifthardgatestatemodel",
+        "urn:usf:delivery-facet:openapidrifthardgateuisemantics",
+        "urn:usf:delivery-facet:openapidrifthardgatevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:pitrretentionlegalholddataresidency",
+      "canonicalName": "pitrretentionlegalholddataresidency",
+      "definesCompletionFor": "urn:usf:delivery-capability:pitrretentionlegalholddataresidency",
+      "facets": [
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencyauditmodel",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencycontracts",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencyerrormodel",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencylifecycle",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencypermissions",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencyproof",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencyreadinessmodel",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencystatemodel",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencyuisemantics",
+        "urn:usf:delivery-facet:pitrretentionlegalholddataresidencyvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:productcatalogplansprices",
+      "canonicalName": "productcatalogplansprices",
+      "definesCompletionFor": "urn:usf:delivery-capability:productcatalogplansprices",
+      "facets": [
+        "urn:usf:delivery-facet:productcatalogplanspricesauditmodel",
+        "urn:usf:delivery-facet:productcatalogplanspricescontracts",
+        "urn:usf:delivery-facet:productcatalogplanspriceserrormodel",
+        "urn:usf:delivery-facet:productcatalogplanspriceslifecycle",
+        "urn:usf:delivery-facet:productcatalogplanspricespermissions",
+        "urn:usf:delivery-facet:productcatalogplanspricesproof",
+        "urn:usf:delivery-facet:productcatalogplanspricesreadinessmodel",
+        "urn:usf:delivery-facet:productcatalogplanspricesstatemodel",
+        "urn:usf:delivery-facet:productcatalogplanspricesuisemantics",
+        "urn:usf:delivery-facet:productcatalogplanspricesvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:providerconfigurationplane",
+      "canonicalName": "providerconfigurationplane",
+      "definesCompletionFor": "urn:usf:delivery-capability:providerconfigurationplane",
+      "facets": [
+        "urn:usf:delivery-facet:providerconfigurationplaneauditmodel",
+        "urn:usf:delivery-facet:providerconfigurationplanecontracts",
+        "urn:usf:delivery-facet:providerconfigurationplaneerrormodel",
+        "urn:usf:delivery-facet:providerconfigurationplanelifecycle",
+        "urn:usf:delivery-facet:providerconfigurationplanepermissions",
+        "urn:usf:delivery-facet:providerconfigurationplaneproof",
+        "urn:usf:delivery-facet:providerconfigurationplanereadinessmodel",
+        "urn:usf:delivery-facet:providerconfigurationplanestatemodel",
+        "urn:usf:delivery-facet:providerconfigurationplaneuisemantics",
+        "urn:usf:delivery-facet:providerconfigurationplanevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:providerenvironmentclassification",
+      "canonicalName": "providerenvironmentclassification",
+      "definesCompletionFor": "urn:usf:delivery-capability:providerenvironmentclassification",
+      "facets": [
+        "urn:usf:delivery-facet:providerenvironmentclassificationauditmodel",
+        "urn:usf:delivery-facet:providerenvironmentclassificationcontracts",
+        "urn:usf:delivery-facet:providerenvironmentclassificationerrormodel",
+        "urn:usf:delivery-facet:providerenvironmentclassificationlifecycle",
+        "urn:usf:delivery-facet:providerenvironmentclassificationpermissions",
+        "urn:usf:delivery-facet:providerenvironmentclassificationproof",
+        "urn:usf:delivery-facet:providerenvironmentclassificationreadinessmodel",
+        "urn:usf:delivery-facet:providerenvironmentclassificationstatemodel",
+        "urn:usf:delivery-facet:providerenvironmentclassificationuisemantics",
+        "urn:usf:delivery-facet:providerenvironmentclassificationvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:quotaenforcement",
+      "canonicalName": "quotaenforcement",
+      "definesCompletionFor": "urn:usf:delivery-capability:quotaenforcement",
+      "facets": [
+        "urn:usf:delivery-facet:quotaenforcementauditmodel",
+        "urn:usf:delivery-facet:quotaenforcementcontracts",
+        "urn:usf:delivery-facet:quotaenforcementerrormodel",
+        "urn:usf:delivery-facet:quotaenforcementlifecycle",
+        "urn:usf:delivery-facet:quotaenforcementpermissions",
+        "urn:usf:delivery-facet:quotaenforcementproof",
+        "urn:usf:delivery-facet:quotaenforcementreadinessmodel",
+        "urn:usf:delivery-facet:quotaenforcementstatemodel",
+        "urn:usf:delivery-facet:quotaenforcementuisemantics",
+        "urn:usf:delivery-facet:quotaenforcementvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:ratelimitingapi",
+      "canonicalName": "ratelimitingapi",
+      "definesCompletionFor": "urn:usf:delivery-capability:ratelimitingapi",
+      "facets": [
+        "urn:usf:delivery-facet:ratelimitingapiauditmodel",
+        "urn:usf:delivery-facet:ratelimitingapicontracts",
+        "urn:usf:delivery-facet:ratelimitingapierrormodel",
+        "urn:usf:delivery-facet:ratelimitingapilifecycle",
+        "urn:usf:delivery-facet:ratelimitingapipermissions",
+        "urn:usf:delivery-facet:ratelimitingapiproof",
+        "urn:usf:delivery-facet:ratelimitingapireadinessmodel",
+        "urn:usf:delivery-facet:ratelimitingapistatemodel",
+        "urn:usf:delivery-facet:ratelimitingapiuisemantics",
+        "urn:usf:delivery-facet:ratelimitingapivalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:rbacrolesandpermissions",
+      "canonicalName": "rbacrolesandpermissions",
+      "definesCompletionFor": "urn:usf:delivery-capability:rbacrolesandpermissions",
+      "facets": [
+        "urn:usf:delivery-facet:rbacrolesandpermissionsauditmodel",
+        "urn:usf:delivery-facet:rbacrolesandpermissionscontracts",
+        "urn:usf:delivery-facet:rbacrolesandpermissionserrormodel",
+        "urn:usf:delivery-facet:rbacrolesandpermissionslifecycle",
+        "urn:usf:delivery-facet:rbacrolesandpermissionspermissions",
+        "urn:usf:delivery-facet:rbacrolesandpermissionsproof",
+        "urn:usf:delivery-facet:rbacrolesandpermissionsreadinessmodel",
+        "urn:usf:delivery-facet:rbacrolesandpermissionsstatemodel",
+        "urn:usf:delivery-facet:rbacrolesandpermissionsuisemantics",
+        "urn:usf:delivery-facet:rbacrolesandpermissionsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:relationalstorageandmigrationsandrls",
+      "canonicalName": "relationalstorageandmigrationsandrls",
+      "definesCompletionFor": "urn:usf:delivery-capability:relationalstorageandmigrationsandrls",
+      "facets": [
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlsauditmodel",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlscontracts",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlserrormodel",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlslifecycle",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlspermissions",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlsproof",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlsreadinessmodel",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlsstatemodel",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlsuisemantics",
+        "urn:usf:delivery-facet:relationalstorageandmigrationsandrlsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:runtimesecretsmanagement",
+      "canonicalName": "runtimesecretsmanagement",
+      "definesCompletionFor": "urn:usf:delivery-capability:runtimesecretsmanagement",
+      "facets": [
+        "urn:usf:delivery-facet:runtimesecretsmanagementauditmodel",
+        "urn:usf:delivery-facet:runtimesecretsmanagementcontracts",
+        "urn:usf:delivery-facet:runtimesecretsmanagementerrormodel",
+        "urn:usf:delivery-facet:runtimesecretsmanagementlifecycle",
+        "urn:usf:delivery-facet:runtimesecretsmanagementpermissions",
+        "urn:usf:delivery-facet:runtimesecretsmanagementproof",
+        "urn:usf:delivery-facet:runtimesecretsmanagementreadinessmodel",
+        "urn:usf:delivery-facet:runtimesecretsmanagementstatemodel",
+        "urn:usf:delivery-facet:runtimesecretsmanagementuisemantics",
+        "urn:usf:delivery-facet:runtimesecretsmanagementvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:scheduledjobsbuiltinontheeventsubstrate",
+      "canonicalName": "scheduledjobsbuiltinontheeventsubstrate",
+      "definesCompletionFor": "urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate",
+      "facets": [
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstrateauditmodel",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstratecontracts",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstrateerrormodel",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstratelifecycle",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstratepermissions",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstrateproof",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstratereadinessmodel",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstratestatemodel",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstrateuisemantics",
+        "urn:usf:delivery-facet:scheduledjobsbuiltinontheeventsubstratevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:searchandindexingproductsearch",
+      "canonicalName": "searchandindexingproductsearch",
+      "definesCompletionFor": "urn:usf:delivery-capability:searchandindexingproductsearch",
+      "facets": [
+        "urn:usf:delivery-facet:searchandindexingproductsearchauditmodel",
+        "urn:usf:delivery-facet:searchandindexingproductsearchcontracts",
+        "urn:usf:delivery-facet:searchandindexingproductsearcherrormodel",
+        "urn:usf:delivery-facet:searchandindexingproductsearchlifecycle",
+        "urn:usf:delivery-facet:searchandindexingproductsearchpermissions",
+        "urn:usf:delivery-facet:searchandindexingproductsearchproof",
+        "urn:usf:delivery-facet:searchandindexingproductsearchreadinessmodel",
+        "urn:usf:delivery-facet:searchandindexingproductsearchstatemodel",
+        "urn:usf:delivery-facet:searchandindexingproductsearchuisemantics",
+        "urn:usf:delivery-facet:searchandindexingproductsearchvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:serverlessfunctionruntime",
+      "canonicalName": "serverlessfunctionruntime",
+      "definesCompletionFor": "urn:usf:delivery-capability:serverlessfunctionruntime",
+      "facets": [
+        "urn:usf:delivery-facet:serverlessfunctionruntimeauditmodel",
+        "urn:usf:delivery-facet:serverlessfunctionruntimecontracts",
+        "urn:usf:delivery-facet:serverlessfunctionruntimeerrormodel",
+        "urn:usf:delivery-facet:serverlessfunctionruntimelifecycle",
+        "urn:usf:delivery-facet:serverlessfunctionruntimepermissions",
+        "urn:usf:delivery-facet:serverlessfunctionruntimeproof",
+        "urn:usf:delivery-facet:serverlessfunctionruntimereadinessmodel",
+        "urn:usf:delivery-facet:serverlessfunctionruntimestatemodel",
+        "urn:usf:delivery-facet:serverlessfunctionruntimeuisemantics",
+        "urn:usf:delivery-facet:serverlessfunctionruntimevalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:servicecatalogandproviderintegrationmodel",
+      "canonicalName": "servicecatalogandproviderintegrationmodel",
+      "definesCompletionFor": "urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel",
+      "facets": [
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodelauditmodel",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodelcontracts",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodelerrormodel",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodellifecycle",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodelpermissions",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodelproof",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodelreadinessmodel",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodelstatemodel",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodeluisemantics",
+        "urn:usf:delivery-facet:servicecatalogandproviderintegrationmodelvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:suborganisations",
+      "canonicalName": "suborganisations",
+      "definesCompletionFor": "urn:usf:delivery-capability:suborganisations",
+      "facets": [
+        "urn:usf:delivery-facet:suborganisationsauditmodel",
+        "urn:usf:delivery-facet:suborganisationscontracts",
+        "urn:usf:delivery-facet:suborganisationserrormodel",
+        "urn:usf:delivery-facet:suborganisationslifecycle",
+        "urn:usf:delivery-facet:suborganisationspermissions",
+        "urn:usf:delivery-facet:suborganisationsproof",
+        "urn:usf:delivery-facet:suborganisationsreadinessmodel",
+        "urn:usf:delivery-facet:suborganisationsstatemodel",
+        "urn:usf:delivery-facet:suborganisationsuisemantics",
+        "urn:usf:delivery-facet:suborganisationsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:subscriptionsinvoicespaymentmethodsdunning",
+      "canonicalName": "subscriptionsinvoicespaymentmethodsdunning",
+      "definesCompletionFor": "urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning",
+      "facets": [
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunningauditmodel",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunningcontracts",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunningerrormodel",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunninglifecycle",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunningpermissions",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunningproof",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunningreadinessmodel",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunningstatemodel",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunninguisemantics",
+        "urn:usf:delivery-facet:subscriptionsinvoicespaymentmethodsdunningvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:supportmodebreakglassaccess",
+      "canonicalName": "supportmodebreakglassaccess",
+      "definesCompletionFor": "urn:usf:delivery-capability:supportmodebreakglassaccess",
+      "facets": [
+        "urn:usf:delivery-facet:supportmodebreakglassaccessauditmodel",
+        "urn:usf:delivery-facet:supportmodebreakglassaccesscontracts",
+        "urn:usf:delivery-facet:supportmodebreakglassaccesserrormodel",
+        "urn:usf:delivery-facet:supportmodebreakglassaccesslifecycle",
+        "urn:usf:delivery-facet:supportmodebreakglassaccesspermissions",
+        "urn:usf:delivery-facet:supportmodebreakglassaccessproof",
+        "urn:usf:delivery-facet:supportmodebreakglassaccessreadinessmodel",
+        "urn:usf:delivery-facet:supportmodebreakglassaccessstatemodel",
+        "urn:usf:delivery-facet:supportmodebreakglassaccessuisemantics",
+        "urn:usf:delivery-facet:supportmodebreakglassaccessvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:supportticketscustomerhealthannouncements",
+      "canonicalName": "supportticketscustomerhealthannouncements",
+      "definesCompletionFor": "urn:usf:delivery-capability:supportticketscustomerhealthannouncements",
+      "facets": [
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementsauditmodel",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementscontracts",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementserrormodel",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementslifecycle",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementspermissions",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementsproof",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementsreadinessmodel",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementsstatemodel",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementsuisemantics",
+        "urn:usf:delivery-facet:supportticketscustomerhealthannouncementsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenantcanonicaldomainsetunset",
+      "canonicalName": "tenantcanonicaldomainsetunset",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenantcanonicaldomainsetunset",
+      "facets": [
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetauditmodel",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetcontracts",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunseterrormodel",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetlifecycle",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetpermissions",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetproof",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetreadinessmodel",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetstatemodel",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetuisemantics",
+        "urn:usf:delivery-facet:tenantcanonicaldomainsetunsetvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenantdataimportexport",
+      "canonicalName": "tenantdataimportexport",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenantdataimportexport",
+      "facets": [
+        "urn:usf:delivery-facet:tenantdataimportexportauditmodel",
+        "urn:usf:delivery-facet:tenantdataimportexportcontracts",
+        "urn:usf:delivery-facet:tenantdataimportexporterrormodel",
+        "urn:usf:delivery-facet:tenantdataimportexportlifecycle",
+        "urn:usf:delivery-facet:tenantdataimportexportpermissions",
+        "urn:usf:delivery-facet:tenantdataimportexportproof",
+        "urn:usf:delivery-facet:tenantdataimportexportreadinessmodel",
+        "urn:usf:delivery-facet:tenantdataimportexportstatemodel",
+        "urn:usf:delivery-facet:tenantdataimportexportuisemantics",
+        "urn:usf:delivery-facet:tenantdataimportexportvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenantdomainactivationauthclient",
+      "canonicalName": "tenantdomainactivationauthclient",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenantdomainactivationauthclient",
+      "facets": [
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientauditmodel",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientcontracts",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclienterrormodel",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientlifecycle",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientpermissions",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientproof",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientreadinessmodel",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientstatemodel",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientuisemantics",
+        "urn:usf:delivery-facet:tenantdomainactivationauthclientvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenantgroups",
+      "canonicalName": "tenantgroups",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenantgroups",
+      "facets": [
+        "urn:usf:delivery-facet:tenantgroupsauditmodel",
+        "urn:usf:delivery-facet:tenantgroupscontracts",
+        "urn:usf:delivery-facet:tenantgroupserrormodel",
+        "urn:usf:delivery-facet:tenantgroupslifecycle",
+        "urn:usf:delivery-facet:tenantgroupspermissions",
+        "urn:usf:delivery-facet:tenantgroupsproof",
+        "urn:usf:delivery-facet:tenantgroupsreadinessmodel",
+        "urn:usf:delivery-facet:tenantgroupsstatemodel",
+        "urn:usf:delivery-facet:tenantgroupsuisemantics",
+        "urn:usf:delivery-facet:tenantgroupsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenanthostidentityresolution",
+      "canonicalName": "tenanthostidentityresolution",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenanthostidentityresolution",
+      "facets": [
+        "urn:usf:delivery-facet:tenanthostidentityresolutionauditmodel",
+        "urn:usf:delivery-facet:tenanthostidentityresolutioncontracts",
+        "urn:usf:delivery-facet:tenanthostidentityresolutionerrormodel",
+        "urn:usf:delivery-facet:tenanthostidentityresolutionlifecycle",
+        "urn:usf:delivery-facet:tenanthostidentityresolutionpermissions",
+        "urn:usf:delivery-facet:tenanthostidentityresolutionproof",
+        "urn:usf:delivery-facet:tenanthostidentityresolutionreadinessmodel",
+        "urn:usf:delivery-facet:tenanthostidentityresolutionstatemodel",
+        "urn:usf:delivery-facet:tenanthostidentityresolutionuisemantics",
+        "urn:usf:delivery-facet:tenanthostidentityresolutionvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenantidentityrecordandfqdn",
+      "canonicalName": "tenantidentityrecordandfqdn",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenantidentityrecordandfqdn",
+      "facets": [
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnauditmodel",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdncontracts",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnerrormodel",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnlifecycle",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnpermissions",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnproof",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnreadinessmodel",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnstatemodel",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnuisemantics",
+        "urn:usf:delivery-facet:tenantidentityrecordandfqdnvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenantisolationproof",
+      "canonicalName": "tenantisolationproof",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenantisolationproof",
+      "facets": [
+        "urn:usf:delivery-facet:tenantisolationproofauditmodel",
+        "urn:usf:delivery-facet:tenantisolationproofcontracts",
+        "urn:usf:delivery-facet:tenantisolationprooferrormodel",
+        "urn:usf:delivery-facet:tenantisolationprooflifecycle",
+        "urn:usf:delivery-facet:tenantisolationproofpermissions",
+        "urn:usf:delivery-facet:tenantisolationproofproof",
+        "urn:usf:delivery-facet:tenantisolationproofreadinessmodel",
+        "urn:usf:delivery-facet:tenantisolationproofstatemodel",
+        "urn:usf:delivery-facet:tenantisolationproofuisemantics",
+        "urn:usf:delivery-facet:tenantisolationproofvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenantlifecycleprovisionsuspenddeleteexport",
+      "canonicalName": "tenantlifecycleprovisionsuspenddeleteexport",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport",
+      "facets": [
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportauditmodel",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportcontracts",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexporterrormodel",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportlifecycle",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportpermissions",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportproof",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportreadinessmodel",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportstatemodel",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportuisemantics",
+        "urn:usf:delivery-facet:tenantlifecycleprovisionsuspenddeleteexportvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:tenantserviceclickthroughpolicy",
+      "canonicalName": "tenantserviceclickthroughpolicy",
+      "definesCompletionFor": "urn:usf:delivery-capability:tenantserviceclickthroughpolicy",
+      "facets": [
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicyauditmodel",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicycontracts",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicyerrormodel",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicylifecycle",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicypermissions",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicyproof",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicyreadinessmodel",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicystatemodel",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicyuisemantics",
+        "urn:usf:delivery-facet:tenantserviceclickthroughpolicyvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:universalservicefoundationscopeandprinciples",
+      "canonicalName": "universalservicefoundationscopeandprinciples",
+      "definesCompletionFor": "urn:usf:delivery-capability:universalservicefoundationscopeandprinciples",
+      "facets": [
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprinciplesauditmodel",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprinciplescontracts",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprincipleserrormodel",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprincipleslifecycle",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprinciplespermissions",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprinciplesproof",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprinciplesreadinessmodel",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprinciplesstatemodel",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprinciplesuisemantics",
+        "urn:usf:delivery-facet:universalservicefoundationscopeandprinciplesvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:usagemeteringandmetereventingestion",
+      "canonicalName": "usagemeteringandmetereventingestion",
+      "definesCompletionFor": "urn:usf:delivery-capability:usagemeteringandmetereventingestion",
+      "facets": [
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionauditmodel",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestioncontracts",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionerrormodel",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionlifecycle",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionpermissions",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionproof",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionreadinessmodel",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionstatemodel",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionuisemantics",
+        "urn:usf:delivery-facet:usagemeteringandmetereventingestionvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:useridentityandtenantmembership",
+      "canonicalName": "useridentityandtenantmembership",
+      "definesCompletionFor": "urn:usf:delivery-capability:useridentityandtenantmembership",
+      "facets": [
+        "urn:usf:delivery-facet:useridentityandtenantmembershipauditmodel",
+        "urn:usf:delivery-facet:useridentityandtenantmembershipcontracts",
+        "urn:usf:delivery-facet:useridentityandtenantmembershiperrormodel",
+        "urn:usf:delivery-facet:useridentityandtenantmembershiplifecycle",
+        "urn:usf:delivery-facet:useridentityandtenantmembershippermissions",
+        "urn:usf:delivery-facet:useridentityandtenantmembershipproof",
+        "urn:usf:delivery-facet:useridentityandtenantmembershipreadinessmodel",
+        "urn:usf:delivery-facet:useridentityandtenantmembershipstatemodel",
+        "urn:usf:delivery-facet:useridentityandtenantmembershipuisemantics",
+        "urn:usf:delivery-facet:useridentityandtenantmembershipvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:webhooksdeveloperfacing",
+      "canonicalName": "webhooksdeveloperfacing",
+      "definesCompletionFor": "urn:usf:delivery-capability:webhooksdeveloperfacing",
+      "facets": [
+        "urn:usf:delivery-facet:webhooksdeveloperfacingauditmodel",
+        "urn:usf:delivery-facet:webhooksdeveloperfacingcontracts",
+        "urn:usf:delivery-facet:webhooksdeveloperfacingerrormodel",
+        "urn:usf:delivery-facet:webhooksdeveloperfacinglifecycle",
+        "urn:usf:delivery-facet:webhooksdeveloperfacingpermissions",
+        "urn:usf:delivery-facet:webhooksdeveloperfacingproof",
+        "urn:usf:delivery-facet:webhooksdeveloperfacingreadinessmodel",
+        "urn:usf:delivery-facet:webhooksdeveloperfacingstatemodel",
+        "urn:usf:delivery-facet:webhooksdeveloperfacinguisemantics",
+        "urn:usf:delivery-facet:webhooksdeveloperfacingvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:workflowenginescheduledjobsapprovals",
+      "canonicalName": "workflowenginescheduledjobsapprovals",
+      "definesCompletionFor": "urn:usf:delivery-capability:workflowenginescheduledjobsapprovals",
+      "facets": [
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsauditmodel",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalscontracts",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalserrormodel",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalslifecycle",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalspermissions",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsproof",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsreadinessmodel",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsstatemodel",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsuisemantics",
+        "urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsvalidation"
+      ]
+    },
+    {
+      "contract": "urn:usf:delivery-contract:writeonlysecretsettings",
+      "canonicalName": "writeonlysecretsettings",
+      "definesCompletionFor": "urn:usf:delivery-capability:writeonlysecretsettings",
+      "facets": [
+        "urn:usf:delivery-facet:writeonlysecretsettingsauditmodel",
+        "urn:usf:delivery-facet:writeonlysecretsettingscontracts",
+        "urn:usf:delivery-facet:writeonlysecretsettingserrormodel",
+        "urn:usf:delivery-facet:writeonlysecretsettingslifecycle",
+        "urn:usf:delivery-facet:writeonlysecretsettingspermissions",
+        "urn:usf:delivery-facet:writeonlysecretsettingsproof",
+        "urn:usf:delivery-facet:writeonlysecretsettingsreadinessmodel",
+        "urn:usf:delivery-facet:writeonlysecretsettingsstatemodel",
+        "urn:usf:delivery-facet:writeonlysecretsettingsuisemantics",
+        "urn:usf:delivery-facet:writeonlysecretsettingsvalidation"
+      ]
+    }
+  ],
+  "nonClaims": [
+    "This document is a total projection of delivery-contract authority. It introduces no fact the graph does not already state.",
+    "It asserts no contract is satisfied."
+  ]
+}

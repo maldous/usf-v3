@@ -57,7 +57,13 @@ const bootstrapHandlers: CommandHandlers = {
   probe: probeCommandHandler,
   publish: completionAwarePublishCommandHandler,
   execute: executeCommandHandler,
-  hermes: ({ args, repositoryRoot }) => hermesCommand(repositoryRoot, args),
+  hermes: async ({ args, repositoryRoot }) => {
+    if (args[0] === "realise") {
+      const { realisePlanCommand } = await import("./commands/hermes-realise.ts");
+      return realisePlanCommand(repositoryRoot, args.slice(1));
+    }
+    return hermesCommand(repositoryRoot, args);
+  },
   transact: ({ args, repositoryRoot }) => transactCommand(repositoryRoot, args),
   graph: async ({ args, repositoryRoot }) => {
     if (args[0] === "integrity") return graphIntegrityCommand(repositoryRoot, args.slice(1));

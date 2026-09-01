@@ -1,4 +1,5 @@
 import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { relative, resolve, sep } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
@@ -315,7 +316,11 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
       }
     }
     for (const entry of staged) {
-      await rename(entry.temporary, resolve(canonicalRoot, entry.path));
+      const target = resolve(canonicalRoot, entry.path);
+      // A realized artefact may be the first file in its canonical directory.
+      // The directory is part of the declared path, not a separate effect.
+      await mkdir(dirname(target), { recursive: true, mode: 0o755 });
+      await rename(entry.temporary, target);
     }
   } catch (error) {
     // Restore every captured preimage so a partial application cannot survive.

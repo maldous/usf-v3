@@ -1,0 +1,625 @@
+{
+  "schema": "urn:usf:runtime-composition:1",
+  "projectedArtefact": "urn:usf:delivery-artefact:runtimecompose",
+  "serviceCount": 60,
+  "providerCount": 52,
+  "services": [
+    {
+      "service": "urn:usf:delivery-service:alertmanager",
+      "canonicalName": "alertmanager",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:alloy",
+      "canonicalName": "alloy",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:breakglassregistry",
+      "canonicalName": "breakglassregistry",
+      "servesCapability": "urn:usf:delivery-capability:supportmodebreakglassaccess"
+    },
+    {
+      "service": "urn:usf:delivery-service:caddy",
+      "canonicalName": "caddy",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:clamav",
+      "canonicalName": "clamav",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:clickhouse",
+      "canonicalName": "clickhouse",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:contextfromclaims",
+      "canonicalName": "contextfromclaims",
+      "servesCapability": "urn:usf:delivery-capability:tenanthostidentityresolution"
+    },
+    {
+      "service": "urn:usf:delivery-service:createauditqueryservice",
+      "canonicalName": "createauditqueryservice",
+      "servesCapability": "urn:usf:delivery-capability:auditofprivilegedaccess"
+    },
+    {
+      "service": "urn:usf:delivery-service:createauditrecorder",
+      "canonicalName": "createauditrecorder",
+      "servesCapability": "urn:usf:delivery-capability:auditofprivilegedaccess"
+    },
+    {
+      "service": "urn:usf:delivery-service:createauthorizer",
+      "canonicalName": "createauthorizer",
+      "servesCapability": "urn:usf:delivery-capability:rbacrolesandpermissions"
+    },
+    {
+      "service": "urn:usf:delivery-service:createauthservice",
+      "canonicalName": "createauthservice",
+      "servesCapability": "urn:usf:delivery-capability:authenticationplatform"
+    },
+    {
+      "service": "urn:usf:delivery-service:createbulkoperationservice",
+      "canonicalName": "createbulkoperationservice",
+      "servesCapability": "urn:usf:delivery-capability:tenantdataimportexport"
+    },
+    {
+      "service": "urn:usf:delivery-service:createconfigservice",
+      "canonicalName": "createconfigservice",
+      "servesCapability": "urn:usf:delivery-capability:configurationregistryandhistory"
+    },
+    {
+      "service": "urn:usf:delivery-service:createenterpriseidentitycontrolplane",
+      "canonicalName": "createenterpriseidentitycontrolplane",
+      "servesCapability": "urn:usf:delivery-capability:useridentityandtenantmembership"
+    },
+    {
+      "service": "urn:usf:delivery-service:createenterprisenotificationcontrolplane",
+      "canonicalName": "createenterprisenotificationcontrolplane",
+      "servesCapability": "urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels"
+    },
+    {
+      "service": "urn:usf:delivery-service:createenterpriseworkflowcontrolplane",
+      "canonicalName": "createenterpriseworkflowcontrolplane",
+      "servesCapability": "urn:usf:delivery-capability:workflowenginescheduledjobsapprovals"
+    },
+    {
+      "service": "urn:usf:delivery-service:createfileservice",
+      "canonicalName": "createfileservice",
+      "servesCapability": "urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls"
+    },
+    {
+      "service": "urn:usf:delivery-service:createjobservice",
+      "canonicalName": "createjobservice",
+      "servesCapability": "urn:usf:delivery-capability:backgroundworkersjobrunner"
+    },
+    {
+      "service": "urn:usf:delivery-service:createkeycloakauthservice",
+      "canonicalName": "createkeycloakauthservice",
+      "servesCapability": "urn:usf:delivery-capability:authenticationplatform"
+    },
+    {
+      "service": "urn:usf:delivery-service:createpolicydecisionpoint",
+      "canonicalName": "createpolicydecisionpoint",
+      "servesCapability": "urn:usf:delivery-capability:abacpolicydecisionpoint"
+    },
+    {
+      "service": "urn:usf:delivery-service:createresourcelifecycleservice",
+      "canonicalName": "createresourcelifecycleservice",
+      "servesCapability": "urn:usf:delivery-capability:servicecatalogandproviderintegrationmodel"
+    },
+    {
+      "service": "urn:usf:delivery-service:createsearchservice",
+      "canonicalName": "createsearchservice",
+      "servesCapability": "urn:usf:delivery-capability:searchandindexingproductsearch"
+    },
+    {
+      "service": "urn:usf:delivery-service:createsecretservice",
+      "canonicalName": "createsecretservice",
+      "servesCapability": "urn:usf:delivery-capability:runtimesecretsmanagement"
+    },
+    {
+      "service": "urn:usf:delivery-service:createsessionservice",
+      "canonicalName": "createsessionservice",
+      "servesCapability": "urn:usf:delivery-capability:authenticationplatform"
+    },
+    {
+      "service": "urn:usf:delivery-service:createworkflowservice",
+      "canonicalName": "createworkflowservice",
+      "servesCapability": "urn:usf:delivery-capability:workflowenginescheduledjobsapprovals"
+    },
+    {
+      "service": "urn:usf:delivery-service:grafana",
+      "canonicalName": "grafana",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:keycloak",
+      "canonicalName": "keycloak",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:keycloakdb",
+      "canonicalName": "keycloakdb",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:localstack",
+      "canonicalName": "localstack",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:loki",
+      "canonicalName": "loki",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:mailpit",
+      "canonicalName": "mailpit",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:meilisearch",
+      "canonicalName": "meilisearch",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:minio",
+      "canonicalName": "minio",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:mockoidc",
+      "canonicalName": "mockoidc",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:nats",
+      "canonicalName": "nats",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:openbao",
+      "canonicalName": "openbao",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:otelcollector",
+      "canonicalName": "otelcollector",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:pgadmin",
+      "canonicalName": "pgadmin",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:pgbackrest",
+      "canonicalName": "pgbackrest",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:platformapi",
+      "canonicalName": "platformapi",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:postgres",
+      "canonicalName": "postgres",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:prometheus",
+      "canonicalName": "prometheus",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:publicprooforigin",
+      "canonicalName": "publicprooforigin",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:redis",
+      "canonicalName": "redis",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:sentry",
+      "canonicalName": "sentry",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:sonaroidcplugin",
+      "canonicalName": "sonaroidcplugin",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:sonarpostgres",
+      "canonicalName": "sonarpostgres",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:sonarqube",
+      "canonicalName": "sonarqube",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:stagingproofcockpit",
+      "canonicalName": "stagingproofcockpit",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:tempo",
+      "canonicalName": "tempo",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:temporal",
+      "canonicalName": "temporal",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:temporalpostgres",
+      "canonicalName": "temporalpostgres",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:temporalui",
+      "canonicalName": "temporalui",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:webapp",
+      "canonicalName": "webapp",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:webhooksink",
+      "canonicalName": "webhooksink",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:windmill",
+      "canonicalName": "windmill",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:windmillpostgres",
+      "canonicalName": "windmillpostgres",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:windmillredis",
+      "canonicalName": "windmillredis",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:windmillworker",
+      "canonicalName": "windmillworker",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    },
+    {
+      "service": "urn:usf:delivery-service:wiremock",
+      "canonicalName": "wiremock",
+      "servesCapability": "urn:usf:delivery-capability:internalservicecatalogandreadiness"
+    }
+  ],
+  "providers": [
+    {
+      "provider": "urn:usf:delivery-provider:analyticsstoreclickhousecomposedtest",
+      "canonicalName": "analyticsstoreclickhousecomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:analyticseventstore",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:analyticsstoreclickhousedeferred",
+      "canonicalName": "analyticsstoreclickhousedeferred",
+      "fulfilsPort": "urn:usf:capability-port:analyticseventstore",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:apigatewayfastifylocaltest",
+      "canonicalName": "apigatewayfastifylocaltest",
+      "fulfilsPort": "urn:usf:capability-port:apiruntime",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:auditledgerinmemory",
+      "canonicalName": "auditledgerinmemory",
+      "fulfilsPort": "urn:usf:capability-port:auditledger",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:autocompletelivedeferred",
+      "canonicalName": "autocompletelivedeferred",
+      "fulfilsPort": "urn:usf:capability-port:searchindexport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:backuprestorepgbackrestcomposedtest",
+      "canonicalName": "backuprestorepgbackrestcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:backuprestoreprovider",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:backuprestorepgbackrestdeferred",
+      "canonicalName": "backuprestorepgbackrestdeferred",
+      "fulfilsPort": "urn:usf:capability-port:backuprestoreprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:cacherediscomposedtest",
+      "canonicalName": "cacherediscomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:cacheprovider",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:cacheredisdeferred",
+      "canonicalName": "cacheredisdeferred",
+      "fulfilsPort": "urn:usf:capability-port:cacheprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:cacheunavailable",
+      "canonicalName": "cacheunavailable",
+      "fulfilsPort": "urn:usf:capability-port:cacheprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:configinmemory",
+      "canonicalName": "configinmemory",
+      "fulfilsPort": "urn:usf:capability-port:configlayerprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:databasepostgrescomposedtest",
+      "canonicalName": "databasepostgrescomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:tenantscopedrepository",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:eventbusinmemory",
+      "canonicalName": "eventbusinmemory",
+      "fulfilsPort": "urn:usf:capability-port:eventbus",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:eventbusnatscomposedtest",
+      "canonicalName": "eventbusnatscomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:eventbus",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:filescanclamavcomposedtest",
+      "canonicalName": "filescanclamavcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:scanprovider",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:filescanclamavdeferred",
+      "canonicalName": "filescanclamavdeferred",
+      "fulfilsPort": "urn:usf:capability-port:scanprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:filescaninmemory",
+      "canonicalName": "filescaninmemory",
+      "fulfilsPort": "urn:usf:capability-port:scanprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:fulltextsearchlivedeferred",
+      "canonicalName": "fulltextsearchlivedeferred",
+      "fulfilsPort": "urn:usf:capability-port:searchindexport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:fulltextsearchmeilisearchcomposedtest",
+      "canonicalName": "fulltextsearchmeilisearchcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:searchindexport",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:fulltextsearchmeilisearchdeferred",
+      "canonicalName": "fulltextsearchmeilisearchdeferred",
+      "fulfilsPort": "urn:usf:capability-port:searchindexport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:guardrailinmemory",
+      "canonicalName": "guardrailinmemory",
+      "fulfilsPort": "urn:usf:capability-port:guardrailport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:identityinmemory",
+      "canonicalName": "identityinmemory",
+      "fulfilsPort": "urn:usf:capability-port:identityprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:identitykeycloakcomposedtest",
+      "canonicalName": "identitykeycloakcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:identityprovider",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:importexportinmemory",
+      "canonicalName": "importexportinmemory",
+      "fulfilsPort": "urn:usf:capability-port:importexportport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:notificationdeliveryinmemory",
+      "canonicalName": "notificationdeliveryinmemory",
+      "fulfilsPort": "urn:usf:capability-port:notificationprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:notificationdeliverylivedeferred",
+      "canonicalName": "notificationdeliverylivedeferred",
+      "fulfilsPort": "urn:usf:capability-port:notificationprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:notificationdeliverymailpitcomposedtest",
+      "canonicalName": "notificationdeliverymailpitcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:notificationprovider",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:notificationdeliverywebhooksinkcomposedtest",
+      "canonicalName": "notificationdeliverywebhooksinkcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:webhookcaptureprovider",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:notificationdeliverywebhooksinkdeferred",
+      "canonicalName": "notificationdeliverywebhooksinkdeferred",
+      "fulfilsPort": "urn:usf:capability-port:webhookcaptureprovider",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:objectstorageinmemory",
+      "canonicalName": "objectstorageinmemory",
+      "fulfilsPort": "urn:usf:capability-port:objectstore",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:objectstorageminiocomposedtest",
+      "canonicalName": "objectstorageminiocomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:objectstore",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:observabilitycapturedlocal",
+      "canonicalName": "observabilitycapturedlocal",
+      "fulfilsPort": "urn:usf:capability-port:observabilitysink",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:observabilitycomposestack",
+      "canonicalName": "observabilitycomposestack",
+      "fulfilsPort": "urn:usf:capability-port:observabilitysink",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:observabilitysentrysdkenvelopelocal",
+      "canonicalName": "observabilitysentrysdkenvelopelocal",
+      "fulfilsPort": "urn:usf:capability-port:observabilitysink",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:operationaljobengineinmemory",
+      "canonicalName": "operationaljobengineinmemory",
+      "fulfilsPort": "urn:usf:capability-port:operationaljobport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:operationaljobenginewindmillcomposedtest",
+      "canonicalName": "operationaljobenginewindmillcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:operationaljobport",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:operationaljobenginewindmilldeferred",
+      "canonicalName": "operationaljobenginewindmilldeferred",
+      "fulfilsPort": "urn:usf:capability-port:operationaljobport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:provideremulatorlocalstackcomposedtest",
+      "canonicalName": "provideremulatorlocalstackcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:cloudprovideremulator",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:provideremulatorlocalstackdeferred",
+      "canonicalName": "provideremulatorlocalstackdeferred",
+      "fulfilsPort": "urn:usf:capability-port:cloudprovideremulator",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:providermockwiremockcomposedtest",
+      "canonicalName": "providermockwiremockcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:httpprovidermock",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:providermockwiremockdeferred",
+      "canonicalName": "providermockwiremockdeferred",
+      "fulfilsPort": "urn:usf:capability-port:httpprovidermock",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:qualitygatesonarqubecomposedtest",
+      "canonicalName": "qualitygatesonarqubecomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:qualitygateprovider",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:resourcelifecycleinmemory",
+      "canonicalName": "resourcelifecycleinmemory",
+      "fulfilsPort": "urn:usf:capability-port:resourcelifecycleport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:searchindexdisabled",
+      "canonicalName": "searchindexdisabled",
+      "fulfilsPort": "urn:usf:capability-port:searchindexport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:searchindexinmemory",
+      "canonicalName": "searchindexinmemory",
+      "fulfilsPort": "urn:usf:capability-port:searchindexport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:secretsinmemory",
+      "canonicalName": "secretsinmemory",
+      "fulfilsPort": "urn:usf:capability-port:secretresolver",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:secretstoreopenbaocomposedtest",
+      "canonicalName": "secretstoreopenbaocomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:secretresolver",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:sessionstoreinmemory",
+      "canonicalName": "sessionstoreinmemory",
+      "fulfilsPort": "urn:usf:capability-port:sessionstore",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:tenantmembershipinmemory",
+      "canonicalName": "tenantmembershipinmemory",
+      "fulfilsPort": "urn:usf:capability-port:tenantscopedrepository",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:vectorsearchlivedeferred",
+      "canonicalName": "vectorsearchlivedeferred",
+      "fulfilsPort": "urn:usf:capability-port:searchindexport",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:workflowengineinmemory",
+      "canonicalName": "workflowengineinmemory",
+      "fulfilsPort": "urn:usf:capability-port:workflowengine",
+      "providerMode": "urn:usf:provider-mode:hermeticmock"
+    },
+    {
+      "provider": "urn:usf:delivery-provider:workflowenginetemporalcomposedtest",
+      "canonicalName": "workflowenginetemporalcomposedtest",
+      "fulfilsPort": "urn:usf:capability-port:workflowengine",
+      "providerMode": "urn:usf:provider-mode:composedreal"
+    }
+  ],
+  "nonClaims": [
+    "This composition states which provider fulfils which port in which mode. It provisions nothing and asserts no service is running."
+  ]
+}
