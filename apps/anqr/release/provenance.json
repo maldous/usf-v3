@@ -1,0 +1,8 @@
+{
+  "schema": "urn:usf:provenance-record:1",
+  "derivedFrom": "delivery authority",
+  "artefactCount": 37,
+  "nonClaims": [
+    "Provenance states which artefacts the delivery graph declares. It asserts no build occurred."
+  ]
+}

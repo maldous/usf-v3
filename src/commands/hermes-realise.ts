@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { canonicalQuadLine } from "../graph/nquads.ts";
 import { validateArtefactOutput } from "../providers/artefact-validation.ts";
+import { evaluateFacets, summariseFacets, type EvidenceIndex } from "../providers/facet-evaluation.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import {
@@ -133,6 +134,43 @@ export function generateDeterministically(
       inputDigests: Object.freeze(contracts.map((entry) => canonicalDigest(entry)).sort()),
     });
   }
+  if (generator === "release") {
+    // Release artefacts are computed from the realized artefact set. A model
+    // cannot compute a checksum, and a signature requires a key this repository
+    // deliberately does not hold, so the signature artefact is not produced here.
+    const name = work.canonicalName;
+    if (name === "releasesignature") return null;
+    const realized = graph.quads
+      .filter((quad) => quad.predicate === `${P}canonicalPath` && quad.subject.startsWith("urn:usf:delivery-artefact:"))
+      .map((quad) => Object.freeze({ artefact: quad.subject, path: quad.object }))
+      .sort((left, right) => left.path.localeCompare(right.path));
+    const body = name === "releasechecksums"
+      ? Object.freeze({
+          schema: "urn:usf:release-checksums:1", algorithm: "sha256-usf-canonical-json-v1",
+          entryCount: realized.length, entries: realized,
+          nonClaims: ["Digests are computed over declared artefact identity, not over bytes that may not yet exist."],
+        })
+      : name === "softwarebillofmaterials"
+      ? Object.freeze({
+          schema: "urn:usf:software-bill-of-materials:1", componentCount: realized.length,
+          components: realized.map((entry) => Object.freeze({ artefact: entry.artefact, path: entry.path })),
+          nonClaims: ["This bill enumerates declared delivery artefacts. It asserts no third-party dependency inventory."],
+        })
+      : name === "provenancerecord"
+      ? Object.freeze({
+          schema: "urn:usf:provenance-record:1",
+          derivedFrom: "delivery authority", artefactCount: realized.length,
+          nonClaims: ["Provenance states which artefacts the delivery graph declares. It asserts no build occurred."],
+        })
+      : Object.freeze({
+          schema: "urn:usf:release-manifest:1", artefactCount: realized.length, artefacts: realized,
+          nonClaims: ["A manifest enumerates declared artefacts. It asserts none is realized."],
+        });
+    return Object.freeze({
+      content: `${JSON.stringify(body, null, 2)}\n`,
+      inputDigests: Object.freeze(realized.map((entry) => canonicalDigest(entry)).sort()),
+    });
+  }
   if (generator === "runtime") {
     // Compose the runtime from the captured service, provider, port and mode graph.
     const services = subjectsOfType(graph, "urn:usf:type:DeliveryService").map((service) => Object.freeze({
@@ -245,8 +283,27 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     work: Object.freeze(pending),
   });
 
+  // Facet satisfaction is derived from the evidence that exists now, never read
+  // from a stored value.
+  const realizedArtefacts = new Map<string, string>();
+  for (const entry of work) {
+    if (entry.canonicalPath === null || !satisfied.has(entry.artefact)) continue;
+    const bytes = await readFile(resolve(repositoryRoot, entry.canonicalPath), "utf8").catch(() => undefined);
+    if (bytes !== undefined) realizedArtefacts.set(entry.canonicalPath, canonicalDigest(bytes));
+  }
+  const evidence: EvidenceIndex = Object.freeze({
+    realizedArtefacts,
+    runtimeComposed: [...realizedArtefacts.keys()].some((path) => path.endsWith("/runtime/compose.json")),
+    validatorOutcomes: Object.freeze([]),
+    proofOutcomes: Object.freeze([]),
+  });
+  const facets = summariseFacets(evaluateFacets(graph, evidence));
+
   if (!apply) {
-    return { output: Object.freeze({ ...plan, cache: await semanticCacheStatistics(repositoryRoot) }), exitCode: exitCodes.SUCCESS };
+    return {
+      output: Object.freeze({ ...plan, facets, cache: await semanticCacheStatistics(repositoryRoot) }),
+      exitCode: exitCodes.SUCCESS,
+    };
   }
 
   // Realize the deterministic frontier. Every unit is independent, so results
@@ -435,6 +492,7 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
       proposedPostimages: Object.freeze(postimages.map((entry) => Object.freeze({
         path: entry.path, contentDigest: canonicalDigest(entry.content),
       }))),
+      facets,
       cache: await semanticCacheStatistics(repositoryRoot),
     }),
     exitCode: exitCodes.SUCCESS,

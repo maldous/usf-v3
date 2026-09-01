@@ -1,0 +1,157 @@
+{
+  "schema": "urn:usf:release-manifest:1",
+  "artefactCount": 37,
+  "artefacts": [
+    {
+      "artefact": "urn:usf:delivery-artefact:proofanchorworkflow",
+      "path": ".github/workflows/proof-anchor.yml"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:specvalidationworkflow",
+      "path": ".github/workflows/validate-spec.yml"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:statementofapplicability",
+      "path": "assurance/statement-of-applicability.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:authorityprojection",
+      "path": "authority/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:graphqlcontract",
+      "path": "contracts/graphql/foundation.graphql"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:openapicontract",
+      "path": "contracts/openapi/foundation.openapi.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:compileroutputschema",
+      "path": "contracts/schemas/compiler-output.schema.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:semanticcontractschema",
+      "path": "contracts/schemas/semantic-contract.schema.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:architectureguide",
+      "path": "docs/architecture/index.md"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:uidocumentationmodel",
+      "path": "docs/ui/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:evidencepipeline",
+      "path": "proof/evidence-pipeline.mjs"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:proofmanifest",
+      "path": "proof/obligations.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:releaseattestation",
+      "path": "release/attestation.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:releasechecksums",
+      "path": "release/checksums.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:releasemanifest",
+      "path": "release/manifest.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:provenancerecord",
+      "path": "release/provenance.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:softwarebillofmaterials",
+      "path": "release/sbom.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:releasesignature",
+      "path": "release/signature.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:runtimecompose",
+      "path": "runtime/compose.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:e2ejourneymanifest",
+      "path": "tests/e2e/uijourneys/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:accessibilityprofile",
+      "path": "ui/accessibility/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:componentmodel",
+      "path": "ui/components/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:errorcatalogue",
+      "path": "ui/errors/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:formmodel",
+      "path": "ui/forms/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:localisationbundle",
+      "path": "ui/localisation/bundles/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:localisationprofile",
+      "path": "ui/localisation/profiles/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:uisemanticmodel",
+      "path": "ui/models/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:previewmodel",
+      "path": "ui/previews/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:mobilerendererinput",
+      "path": "ui/renderinputs/mobile/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:webrendererinput",
+      "path": "ui/renderinputs/web/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:routemanifest",
+      "path": "ui/routes/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:rendererinputschema",
+      "path": "ui/schemas/rendererinput.schema.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:viewmodel",
+      "path": "ui/viewmodels/index.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:validatormanifest",
+      "path": "validation/validators.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:workspacemanifest",
+      "path": "workspace/package.json"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:implementationscaffold",
+      "path": "workspace/src/implementation-obligations.mjs"
+    },
+    {
+      "artefact": "urn:usf:delivery-artefact:generatedtests",
+      "path": "workspace/test/generated.test.mjs"
+    }
+  ],
+  "nonClaims": [
+    "A manifest enumerates declared artefacts. It asserts none is realized."
+  ]
+}
