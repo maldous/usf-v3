@@ -5,6 +5,9 @@ import { admissionCheckHandler, applyHandler, integrateCommandHandler } from "./
 import { bootstrapCarrierCommandHandler } from "./commands/bootstrap-carrier.ts";
 import { callCommandHandler } from "./commands/call.ts";
 import { doctorCommandHandler } from "./commands/doctor.ts";
+import { executeCommandHandler } from "./commands/execute.ts";
+import { graphExecuteCommand } from "./commands/graph-execute.ts";
+import { hermesCommand } from "./commands/hermes.ts";
 import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
 import { metricsCommandHandler } from "./commands/metrics.ts";
 import { modelsCommandHandler } from "./commands/models.ts";
@@ -51,6 +54,14 @@ const bootstrapHandlers: CommandHandlers = {
   providers: providersCommandHandler,
   probe: probeCommandHandler,
   publish: completionAwarePublishCommandHandler,
+  execute: executeCommandHandler,
+  hermes: ({ args, repositoryRoot }) => hermesCommand(repositoryRoot, args),
+  graph: async ({ args, repositoryRoot }) => {
+    if (args[0] !== "execute") {
+      throw new UsfError("GRAPH_OPERATION_UNKNOWN", exitCodes.INVALID_INPUT, "Graph requires exactly one of: execute.");
+    }
+    return graphExecuteCommand(repositoryRoot, args.slice(1));
+  },
   route: routeCommandHandler,
   start: startCommandHandler,
   stop: stopCommandHandler,

@@ -154,7 +154,7 @@ async function assertCredentialFileUntracked(repositoryRoot: string, selectedPat
   throw new UsfError("PROBE_ENV_FILE_TRACKED", exitCodes.CONTAINMENT_REFUSAL, "Tracked credential files are refused.");
 }
 
-async function readTrackedJson(repositoryRoot: string, path: string): Promise<unknown> {
+export async function readTrackedJson(repositoryRoot: string, path: string): Promise<unknown> {
   await assertTracked(repositoryRoot, path);
   return decodeJson(await readBoundedFile(repositoryRoot, resolve(repositoryRoot, path), maximumTrackedBytes, false));
 }

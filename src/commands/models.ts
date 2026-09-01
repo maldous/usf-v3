@@ -622,6 +622,10 @@ function modelsOutput(
 }
 
 export const modelsCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
+  if (args[0] === "classify") {
+    const { classifyCatalogueCommand } = await import("./classify.ts");
+    return classifyCatalogueCommand(repositoryRoot, args.slice(1));
+  }
   const parsed = parseModelsArguments(args);
   if (parsed.operation !== "refresh") {
     return { output: modelsOutput(parsed, await readLocalCatalogue(repositoryRoot, parsed.maximumBytes), false), exitCode: exitCodes.SUCCESS };

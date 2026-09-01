@@ -1,0 +1,16 @@
+{
+ "schema": "urn:usf:graph-manifest:2",
+ "version": 2,
+ "imports": [
+  "graph/manifests/self-host.json"
+ ],
+ "sources": [
+  {
+   "path": "graph/v3-execution.nq",
+   "format": "application/n-quads",
+   "graph": "urn:usf:graph:v3-execution",
+   "role": "contract",
+   "validationProfile": "bootstrap-nquads-v1"
+  }
+ ]
+}

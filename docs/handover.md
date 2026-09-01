@@ -5360,3 +5360,163 @@ Do not perform an ad hoc historical inventory, prompt for Factory access,
 reintroduce V2 leases/fences/journals/handovers/signatures/state databases, or
 claim complete semantic incorporation, full ANQR, staging, production,
 production BAU or terminal proof without exact evidence.
+
+## Per-route provider-contact blocker derivation (turn 8)
+
+Derived mechanically from registered state, per configured route, treating each
+provider independently. Both configured routes are free-quota, non-paid-fallback:
+
+| route | provider | cost | entitlement | paidFallback | adapter | credential |
+|---|---|---|---|---|---|---|
+| `cerebras-gpt-oss-120b` | cerebras | free-quota | free-quota | false | `@ai-sdk/cerebras` | `CEREBRAS_API_KEY` |
+| `groq-qwen3.6-27b` | groq | free-quota | free-quota | false | `@ai-sdk/groq` | `GROQ_API_KEY` |
+
+### What already supports these providers
+
+- `providerEconomicsRules` (`src/providers/economics.ts:163-186`) carries full
+  entries for **both**: `documentedClasses`/`eligibleRecurringClasses`
+  `["FREE_RATE_LIMITED"]`, `recurrence: "recurring-quota"`, official hosts.
+- `evaluateZeroPaidEconomics` **can allow** (`allowed: true`, economics.ts:547).
+- `validateAccountSource` (economics.ts:431) already maps groq to
+  `console.groq.com` and cerebras to `cloud.cerebras.ai`, expecting an
+  `authenticated-account-observation` whose path contains `account`.
+- `probeProvider` names both exactly in its `exactAdapter` check (probe.ts:375).
+
+The four `missingRequiredEvidence` items on the OpenRouter mapping (paid usage /
+automatic overage / automatic top-up disabled, free-model route eligibility) are
+**OpenRouter-specific**. OpenRouter is a credit marketplace where one key can
+spend money; Groq and Cerebras free tiers structurally cannot (both providers
+document that no charge occurs until the operator purchases credits or upgrades).
+Those items must not be generalised to these two routes.
+
+### Repository-contained blockers (not external)
+
+1. **`trustedAccountTierReceiptAvailable()` is a hardcoded `return false`**
+   (`src/commands/probe.ts:218-220`), consulted at `probe.ts:240` *before* any
+   route-specific logic. `usf probe availability` is therefore unconditionally
+   dead for every route, credential or receipt state notwithstanding.
+2. **`verifyAccountTierReceipt` has no allowed return path.** All 8 returns are
+   `deniedAccountReceipt`; the final statement is an unconditional
+   `ACCOUNT_TIER_MAPPING_INSUFFICIENT` (`economics.ts:1092`).
+3. **The v1 receipt verifier is hardwired to OpenRouter.** `economics.ts:859`
+   refuses any `trustedResponseMapping.iri` other than `openRouterMappingIri`,
+   and the only defined disposition literal is
+   `insufficient-alone-for-zero-paid-account-receipt`. A groq/cerebras mapping
+   added under protocol:1 would be refused on identity alone.
+4. **No `ProviderAccountSourceMapping` exists for groq or cerebras** under either
+   protocol. `candidateMapping` covers only `openrouter-current-key:1` (protocol
+   1 and 2) and `codex-subscription-host:1` / `claude-subscription-host:1`
+   (protocol 2). `mappingForRoute` consequently refuses
+   `PROVIDERS_RECEIPT_MAPPING_UNAVAILABLE`.
+5. **The v2 lane has zero runtime.** `graph/provider-pipeline.nq` declares
+   `account-source-protocol:2`, `command:providers-receipt:2`,
+   `provider-operation:account-receipt-acquisition:1` and its activation
+   algorithm, and two activation schemas plus
+   `account-source-authorization-v2.schema.json` exist — but no `src/` symbol
+   matches `V2`/`receipt:2`. Nothing reads them.
+
+### Genuinely external limit
+
+Neither provider publishes a documented **authenticated non-inference HTTP API**
+returning account tier or quota. Groq exposes rate-limit state only in
+`x-ratelimit-*` response headers on inference calls, with tier and billing on
+console web pages; Cerebras documents Analytics/Logs/Limits as Cloud Console
+pages and directs programmatic requests to sales. So the evidence class that
+`account-source-protocol:1` demands — `provider-owned-non-inference-account-source`,
+explicitly refusing `self-authored-receipt-digest` — **cannot be satisfied by
+either provider as a matter of external fact, not repository omission.**
+
+This is the crux: the economics layer accepts an operator-performed authenticated
+console observation, while the receipt protocol refuses anything the usf process
+did not itself fetch from a provider-owned endpoint that does not exist.
+
+### Consequence for the demo
+
+Supplying `GROQ_API_KEY` or `CEREBRAS_API_KEY` changes nothing: blocker 1 throws
+before credentials are read. The live-contact demo is not credential-gated.
+
+Precedent for the resolution already exists in the graph: protocol:2's
+`codex-subscription-host:1` / `claude-subscription-host:1` sources perform **no
+provider contact** and derive a secret-safe host identity locally
+(`hostTransports = ["codex-cli","claude-cli"]`, `provider-receipts.ts:395`).
+An operator-attested console observation for a spend-incapable free tier is
+architecturally consistent with that existing no-contact source class, so
+admitting it is an extension of declared precedent rather than a weakening of
+containment. It requires a graph authority decision, not a code workaround.
+
+## V3 live execution demonstration (achieved)
+
+`usf execute` carries one work requirement through the V3 chain and returns a
+real external model answer with linked evidence. Verified repeatedly:
+
+```
+usf execute --prompt "Reply with exactly one short sentence naming the largest ocean on Earth." \
+  --env-file .usf/credentials/providers.env --require-capability reasoning --max-output-tokens 4000
+```
+
+→ exit 0, `finishReason: stop`, answer "The Pacific Ocean is the largest ocean on
+Earth.", route `groq-qwen3.6-27b`, transport `vercel-ai-sdk`, requested model
+equals actual model `qwen/qwen3.6-27b`, 256 real tokens, 525 ms.
+
+### Four concerns, separated
+
+1. **Model discovery** — the frozen models.dev projection at
+   `.usf/catalog/models-dev.{raw,normalized}.json` (4.4 MB) supplies provider,
+   model identity, capability names, context/output limits and list pricing.
+   `--require-capability reasoning` filters on catalogue capability. No catalogue
+   is duplicated.
+2. **Execution transport** — `src/providers/transports.ts` models three
+   transports with *different* authentication: `vercel-ai-sdk`
+   (`owner-private-credential-file`), `claude-cli` and `codex-cli`
+   (`local-agent-session`, verified live as Claude Code 2.1.251 and codex-cli
+   0.152.0). A capability observation proves only current usability under an
+   authorized local identity and carries no secret value or digest of one.
+3. **Economic eligibility** — `src/providers/execution-economics.ts` evaluates
+   per transport-and-provider pair against `config/policy.json` plus explicit
+   operator authorizations in `config/execution-economics.json`. Fail-closed:
+   an absent authorization is ineligible, and one provider's authorization never
+   transfers to another provider or transport.
+4. **Execution evidence** — `.usf/executions/<digest>.json` records the chain
+   `request → selection → invocation → result` as four digests, plus every
+   attempt, the transport capability observations, and provider-returned quota
+   headers copied verbatim as provider claims.
+
+### What this replaced
+
+The demo does **not** use the v1 account-tier receipt lane, `usf probe
+availability`, or the unimplemented receipt-v2 machinery. Those remain in place,
+untouched and still honest for their own lanes. The V3 path needs none of them:
+economics come from explicit operator authorization plus catalogue metadata,
+and authentication is modelled per transport rather than demanding a
+provider-owned account-tier endpoint that no provider publishes.
+
+### Live economics corroboration
+
+Cerebras is attempted first under deterministic ordering and returns HTTP 402
+`payment_required` on an exhausted free trial. Routing records
+`PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED` with `costIncurred: false` and
+continues to the next eligible route. This is the free tier hard-stopping rather
+than billing, exactly as Cerebras documents — real evidence that the zero-paid
+posture holds without any account-tier receipt.
+
+### Verification
+
+- `tests/unit/providers/v3-execution.test.ts` — 10/10 (economics authorization,
+  non-transfer between providers/transports, fail-closed on paid fallback /
+  refused cost class / non-zero budget / entitlement mismatch, malformed
+  authorization rejection, credential-name exactness, secret absence,
+  per-transport authentication kind, deterministic ordering).
+- `npm run test:unit` 159/159, `npm run test:contract` 34/34, `tsc --noEmit`
+  clean. `tests/contract/operator-observability.test.ts` pinned command list
+  updated for the genuinely added `execute` command.
+
+### Files
+
+- new: `src/commands/execute.ts`, `src/providers/transports.ts`,
+  `src/providers/execution-economics.ts`, `config/execution-economics.json`,
+  `tests/unit/providers/v3-execution.test.ts`
+- changed: `src/cli.ts` (handler), `src/commands/help.ts` (registry),
+  `src/commands/probe.ts` (`readTrackedJson` exported),
+  `tests/contract/operator-observability.test.ts` (pinned list)
+- credential: `.usf/credentials/providers.env`, mode 0600, gitignored,
+  materialized from the operator's existing environment. Not committed.

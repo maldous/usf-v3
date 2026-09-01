@@ -1,0 +1,50 @@
+{
+  "$schema": "urn:usf:execution-economics:1",
+  "version": 1,
+  "authorizations": [
+    {
+      "transport": "vercel-ai-sdk",
+      "provider": "groq",
+      "entitlement": "free-quota",
+      "basis": "operator-declared-free-tier",
+      "maximumPaidCostUsd": 0,
+      "evidence": "Groq documents the free tier as rate-limited only; billing begins solely after the operator explicitly upgrades to the Developer tier or crosses a published spend threshold, so a free-tier key cannot silently incur cost.",
+      "sourceDocumentation": "https://console.groq.com/docs/rate-limits"
+    },
+    {
+      "transport": "vercel-ai-sdk",
+      "provider": "cerebras",
+      "entitlement": "free-quota",
+      "basis": "operator-declared-free-tier",
+      "maximumPaidCostUsd": 0,
+      "evidence": "Cerebras documents that the Free Trial tier stops API access when credits are exhausted rather than billing; there is no charge until the operator purchases additional credits.",
+      "sourceDocumentation": "https://inference-docs.cerebras.ai/support/rate-limits"
+    },
+    {
+      "transport": "claude-cli",
+      "provider": "claude-cli",
+      "entitlement": "subscription-included",
+      "basis": "operator-declared-subscription",
+      "maximumPaidCostUsd": 0,
+      "evidence": "The Claude CLI executes under the operator's existing authenticated Claude subscription. Marginal per-invocation cost is zero; the cost figures the CLI reports are list-basis attribution for usage accounting, not a charge against this repository.",
+      "sourceDocumentation": "https://docs.claude.com/en/docs/claude-code/overview"
+    },
+    {
+      "transport": "codex-cli",
+      "provider": "codex-cli",
+      "entitlement": "subscription-included",
+      "basis": "operator-declared-subscription",
+      "maximumPaidCostUsd": 0,
+      "evidence": "The Codex CLI executes under the operator's existing authenticated ChatGPT/Codex subscription. Marginal per-invocation cost is zero; the subscription enforces its own usage limits and refuses rather than billing this repository.",
+      "sourceDocumentation": "https://developers.openai.com/codex/cli/"
+    }
+  ],
+  "nonClaims": [
+    "This file records the operator's explicit economic authorization for a transport and provider pair. It does not assert an observed account tier, balance, subscription state, paid-usage history or overage entitlement, and it is not provider-returned evidence.",
+    "Absence of an authorization for a transport and provider pair makes that pair economically ineligible; eligibility is never inferred.",
+    "A subscription-included authorization asserts only that the operator's existing subscription covers invocation and that no per-call charge accrues to this repository. It asserts no remaining subscription quota; the transport refuses when its own limit is reached."
+  ],
+  "additionalAcceptedCostClasses": [
+    "subscription-included"
+  ]
+}

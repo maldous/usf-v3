@@ -16,13 +16,27 @@ Requirements: Git, Node.js 22 or later, Corepack, pnpm, and a POSIX-compatible
 shell.
 
 ```sh
+./scripts/bootstrap.sh
+corepack pnpm install --frozen-lockfile
 ./bin/usf init
 ./scripts/verify-contained.sh
 ```
 
-`init` creates ignored runtime state beneath `.usf/` and contacts no provider.
+The dependency-free tracked bootstrap creates the initial ignored layout; the
+lockfile-pinned install then makes the TypeScript CLI available. `init`
+revalidates repository-local operational state beneath `.usf/` and contacts no
+provider. The current CLI cannot bootstrap its own package dependencies before
+they are installed, so this ordering is required until `usf init` gains a
+dependency-free entry boundary.
 Provider routes are disabled until explicit zero-cost, privacy, credential, and
 fresh probe evidence make them eligible.
+
+The complete `.usf/` tree is disposable operational state: candidates, caches,
+local receipts and run history may be deleted and rederived. Semantic knowledge,
+accepted authority, integrated implementation and reproducible operator behavior
+must live in tracked graph/source/evidence plus the registered `usf` CLI and its
+help. External Codex skills are optional operator guidance, never a clean-clone
+build, runtime, proof or third-party usability dependency.
 
 The default graph manifest contains reusable USF foundation knowledge only.
 Select a product or self-host overlay explicitly:
