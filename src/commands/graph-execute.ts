@@ -503,10 +503,14 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         // a refusal that echoes a header cannot leak one.
         const detail = (error instanceof Error ? error.message : "")
           .replaceAll(/[A-Za-z0-9_-]{24,}/gu, "[redacted]").slice(0, 300);
+        // The adapter retries internally and then reports a generic failure, so
+        // the provider's own words are the only place a rate limit or a retired
+        // model is still visible. Classifying from them keeps the deferral
+        // proportionate: a rate limit clears in minutes, a retired model does not.
         const reasonCode = status === 402 ? "PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED"
-          : status === 429 ? "PROVIDER_RATE_LIMITED"
+          : status === 429 || /rate.?limit/iu.test(detail) ? "PROVIDER_RATE_LIMITED"
           : status === 401 || status === 403 ? "PROVIDER_AUTHENTICATION_REFUSED"
-          : status === 404 ? "PROVIDER_MODEL_NOT_SERVED"
+          : status === 404 || status === 410 ? "PROVIDER_MODEL_NOT_SERVED"
           : error instanceof Error && error.name === "TimeoutError" ? "PROVIDER_TIMEOUT"
           : "PROVIDER_INVOCATION_FAILED";
         attempts.push(Object.freeze({

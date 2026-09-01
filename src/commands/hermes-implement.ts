@@ -82,6 +82,18 @@ function parse(args: readonly string[]): ParsedArguments {
   });
 }
 
+/**
+ * Exact current bytes, never the bounded inspection read.
+ *
+ * A preimage digest must describe the whole file. Deriving it from the
+ * truncated copy shown to a model made the transaction refuse
+ * TRANSACT_STALE_PREIMAGE and discarded nine accepted results in one cycle.
+ */
+async function preimageDigestOf(repositoryRoot: string, path: string): Promise<string | null> {
+  const bytes = await readFile(resolve(repositoryRoot, path), "utf8").catch(() => undefined);
+  return bytes === undefined ? null : canonicalDigest(bytes);
+}
+
 async function presentPaths(
   repositoryRoot: string,
   needs: readonly CapabilityImplementationNeed[],
@@ -272,7 +284,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         await recordSemanticReuse(repositoryRoot, lookup.entry);
         accepted.push(Object.freeze({
           path: unit.targetPath, content: checked.content,
-          preimageDigest: existingTarget === null ? null : canonicalDigest(existingTarget),
+          preimageDigest: await preimageDigestOf(repositoryRoot, unit.targetPath),
         }));
         outcomes.push(Object.freeze({ unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "reused" }));
         continue;
@@ -329,11 +341,10 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         }));
         continue;
       }
-      const existingTarget = await inspectRepositoryFile(repositoryRoot, unit.targetPath);
       await storeSemanticResult(repositoryRoot, identity, checked.content, evidenceDigest);
       accepted.push(Object.freeze({
         path: unit.targetPath, content: checked.content,
-        preimageDigest: existingTarget === null ? null : canonicalDigest(existingTarget),
+        preimageDigest: await preimageDigestOf(repositoryRoot, unit.targetPath),
       }));
       outcomes.push(Object.freeze({
         unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "accepted",

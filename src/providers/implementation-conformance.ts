@@ -28,9 +28,19 @@ export interface FacetConformanceOutcome {
   readonly detail: string | null;
 }
 
+/**
+ * What a run established. Distinguishing these matters: a module that compiles
+ * while its test has simply not been written yet is progress, and treating it
+ * as a defect deadlocks the capability -- the conformance unit is withheld
+ * because the capability "fails", and the failure is that no conformance test
+ * exists.
+ */
+export type ConformanceOutcomeClass = "observed" | "awaiting-test" | "blocked";
+
 export interface ConformanceRun {
   readonly schema: "urn:usf:implementation-conformance-evidence:1";
   readonly version: 1;
+  readonly outcomeClass: ConformanceOutcomeClass;
   readonly capability: string;
   readonly modulePath: string;
   readonly modulePathDigest: string;
@@ -164,8 +174,8 @@ export async function runCapabilityConformance(
       "The test does not claim to be a complete characterization of the requirement it is named for.",
     ]),
   };
-  const refused = (refusal: string): ConformanceRun => Object.freeze({
-    ...base, confined: false, command: Object.freeze([]), executed: false, exitCode: null, signal: null,
+  const refused = (refusal: string, outcomeClass: ConformanceOutcomeClass = "blocked"): ConformanceRun => Object.freeze({
+    ...base, outcomeClass, confined: false, command: Object.freeze([]), executed: false, exitCode: null, signal: null,
     typecheck: Object.freeze({ ran: false, clean: false, detail: null }),
     reportedPassCount: 0, reportedFailCount: 0,
     outcomes: Object.freeze(need.requirements.map((requirement) => Object.freeze({
@@ -186,7 +196,12 @@ export async function runCapabilityConformance(
       typecheck: moduleOnly,
     });
   }
-  if (testBytes === undefined) return refused("the conformance test does not exist");
+  if (testBytes === undefined) {
+    return Object.freeze({
+      ...refused("the module compiles; its conformance test has not been written yet", "awaiting-test"),
+      typecheck: moduleOnly,
+    });
+  }
 
   const compiled = await typecheck(repositoryRoot, [need.modulePath, need.conformancePath]);
   if (!compiled.clean) {
@@ -216,6 +231,7 @@ export async function runCapabilityConformance(
   const parsed = parseSpecOutcomes(result.output);
   return Object.freeze({
     ...base,
+    outcomeClass: "observed" as const,
     confined: true,
     command,
     executed: true,
@@ -286,15 +302,19 @@ export async function loadConformanceEvidence(
     let record: ConformanceRun;
     try { record = JSON.parse(bytes) as ConformanceRun; } catch { continue; }
     if (record.schema !== "urn:usf:implementation-conformance-evidence:1") continue;
-    // A module-only observation binds no test, so only the module decides
-    // whether it still describes current bytes.
+    // A module-only observation binds no test. It stops describing the current
+    // repository the moment either the module changes or a test appears.
+    const currentTest = await digestOf(record.conformancePath);
+    const moduleOnly = record.conformancePathDigest.length === 0;
     const stale = await digestOf(record.modulePath) !== record.modulePathDigest
-      || (record.conformancePathDigest.length > 0
-        && await digestOf(record.conformancePath) !== record.conformancePathDigest);
+      || (moduleOnly ? currentTest !== null : currentTest !== record.conformancePathDigest);
     // A run that could not execute is retained as a blocked observation. It
     // satisfies nothing, but it is the difference between "this capability is
-    // waiting for work" and "this capability is silently stuck".
-    const blocked = !record.executed || !record.confined || record.typecheck.clean !== true;
+    // waiting for work" and "this capability is silently stuck". A module that
+    // compiles while its test is merely unwritten is neither.
+    const blocked = record.outcomeClass === undefined
+      ? !record.executed || !record.confined || record.typecheck.clean !== true
+      : record.outcomeClass === "blocked";
     if (blocked && record.modulePathDigest.length === 0) continue;
     for (const outcome of record.outcomes ?? []) {
       if (typeof outcome.facet !== "string") continue;

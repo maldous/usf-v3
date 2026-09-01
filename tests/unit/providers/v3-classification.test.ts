@@ -205,3 +205,23 @@ test("diversification interleaves providers so one quota cannot absorb every uni
   assert.equal(second[0], "beta");
   assert.equal(diversifyCandidates([], 0).length, 0);
 });
+
+test("a model that cannot emit text is not a candidate for text work", () => {
+  const withModalities = (id: string, output: readonly string[] | null) => ({
+    ...model(id, 0, 0),
+    ...(output === null ? {} : { modalities: { input: ["text"], output } }),
+  });
+  const providers = [{
+    providerRoute: "groq", name: "G", adapter: { package: "@ai-sdk/groq", installedVersion: "1" },
+    credentialNames: ["GROQ_API_KEY"],
+    models: [withModalities("text-model", ["text"]), withModalities("audio-model", ["audio"]),
+      withModalities("undeclared-model", null)],
+  }];
+  const universe = deriveRouteUniverse({
+    ...input({ snapshot: snapshot(providers), authorizations: [] }),
+    localAgentCapabilities: [],
+  });
+  const models = universe.candidates.map((entry) => entry.model).sort();
+  // An audio route is excluded; an undeclared modality is not a disqualification.
+  assert.deepEqual(models, ["text-model", "undeclared-model"]);
+});

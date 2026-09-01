@@ -120,6 +120,8 @@ test("module output is admitted structurally and refuses smuggled dependencies",
   assert.equal(validateImplementationOutput("const a = 1;").code, "no-export");
   assert.equal(validateImplementationOutput('import x from "left-pad";\nexport const a = 1;').code, "external-import");
   assert.equal(validateImplementationOutput('import { readFile } from "node:fs";\nexport const a = 1;').accepted, true);
+  // A builtin reached by its bare legacy name is still a builtin.
+  assert.equal(validateImplementationOutput('import { createHash } from "crypto";\nexport const a = 1;').accepted, true);
   // An idiomatic docblock opening is not a path; an actual path-like opening is.
   assert.equal(validateImplementationOutput("/** doc */\nexport const a = 1;").accepted, true);
   assert.equal(validateImplementationOutput("/home/user/x.ts\nexport const a = 1;").code, "leading-slash");

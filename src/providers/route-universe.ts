@@ -119,6 +119,12 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
     if (entry.state !== "ROUTABLE" && entry.state !== "AVAILABLE") continue;
     const provider = input.snapshot.providers.find((item) => item.providerRoute === entry.provider);
     const model = provider?.models.find((item) => item.route.model === entry.model);
+    // A model that does not emit text cannot answer a text work unit. The
+    // catalogue carries image, audio and video routes, and one of them refusing
+    // an "invalid argument" is an attempt spent learning what the catalogue
+    // already said. An undeclared modality is not treated as a disqualification.
+    const outputModalities = model?.modalities?.output ?? null;
+    if (outputModalities !== null && outputModalities.length > 0 && !outputModalities.includes("text")) continue;
     candidates.push(Object.freeze({
       candidateId: `${entry.transport ?? "unknown"}:${entry.provider}:${entry.model}`,
       transport: entry.transport ?? "vercel-ai-sdk",

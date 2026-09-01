@@ -58,29 +58,59 @@ export const initialState: BackupAndRestoreState = {
   lastOperation: null,
 };
 
+/**
+ * Validates that the operation is allowed in the given environment.
+ * For BACKUP, an explicit allowEnvironmentOverride may be supplied to
+ * permit execution in non‑DEV/TEST environments, but the override must
+ * match the requested environment.
+ * For RESTORE, only DEV/TEST are permitted; no override is accepted.
+ */
 export function validateEnvironmentGuard(
   environment: string,
   config: BackupAndRestoreConfig,
   operation: BackupAndRestoreOperation,
 ): BackupAndRestoreError | null {
-  const validEnvironments: readonly string[] = BackupAndRestoreEnvironment;
-  if (!validEnvironments.includes(environment as BackupAndRestoreEnvironment)) {
+  const validEnvs = BackupAndRestoreEnvironment as readonly string[];
+  const isValidEnv = validEnvs.includes(environment);
+  if (operation === 'BACKUP') {
+    if (isValidEnv) {
+      return null;
+    }
+    // Non‑dev/test: require explicit override that names the target environment
     if (config.allowEnvironmentOverride === undefined) {
       return {
         kind: 'ENVIRONMENT_GUARD_VIOLATION',
-        message: `Operation ${operation} refused: environment ${environment} is not DEVELOPMENT or TEST and no override provided`,
+        message: `Backup refused: environment ${environment} is not allowed and no override provided`,
       };
     }
-    if (!validEnvironments.includes(config.allowEnvironmentOverride)) {
+    if (config.allowEnvironmentOverride !== environment) {
       return {
         kind: 'ENVIRONMENT_GUARD_VIOLATION',
-        message: `Operation ${operation} refused: override environment ${config.allowEnvironmentOverride} is invalid`,
+        message: `Backup refused: override environment ${config.allowEnvironmentOverride} does not match requested ${environment}`,
       };
     }
+    if (!validEnvs.includes(config.allowEnvironmentOverride)) {
+      return {
+        kind: 'ENVIRONMENT_GUARD_VIOLATION',
+        message: `Backup refused: override environment ${config.allowEnvironmentOverride} is invalid`,
+      };
+    }
+    return null;
+  }
+
+  // RESTORE path – only DEV/TEST, no override
+  if (!isValidEnv) {
+    return {
+      kind: 'ENVIRONMENT_GUARD_VIOLATION',
+      message: `Restore refused: environment ${environment} is not DEVELOPMENT or TEST`,
+    };
   }
   return null;
 }
 
+/**
+ * Validates that the confirmation token for a restore matches the environment.
+ */
 export function validateRestoreConfirmation(
   environment: BackupAndRestoreEnvironment,
   config: BackupAndRestoreConfig,
@@ -100,6 +130,9 @@ export function validateRestoreConfirmation(
   return null;
 }
 
+/**
+ * Validates stage‑level settings that control destructive operations.
+ */
 export function validateStageSettings(
   config: BackupAndRestoreConfig,
   operation: BackupAndRestoreOperation,
@@ -119,6 +152,9 @@ export function validateStageSettings(
   return null;
 }
 
+/**
+ * Validates that tooling required for backup/restore is available.
+ */
 export function validateToolingAvailable(
   config: BackupAndRestoreConfig,
 ): BackupAndRestoreError | null {
@@ -131,19 +167,24 @@ export function validateToolingAvailable(
   return null;
 }
 
+/**
+ * Produces a backup artifact after all guards and audit succeed.
+ * The audit function receives the artifact metadata; if it returns an error,
+ * the backup is aborted and no artifact is produced.
+ */
 export function produceBackup(
   environment: string,
   config: BackupAndRestoreConfig,
   auditFn: (artifact: BackupArtifact) => BackupAndRestoreError | null,
 ): { readonly result: BackupArtifact } | BackupAndRestoreError {
-  const envGuardError = validateEnvironmentGuard(environment, config, 'BACKUP');
-  if (envGuardError !== null) return envGuardError;
+  const envError = validateEnvironmentGuard(environment, config, 'BACKUP');
+  if (envError) return envError;
 
   const stageError = validateStageSettings(config, 'BACKUP');
-  if (stageError !== null) return stageError;
+  if (stageError) return stageError;
 
   const toolingError = validateToolingAvailable(config);
-  if (toolingError !== null) return toolingError;
+  if (toolingError) return toolingError;
 
   const artifact: BackupArtifact = {
     name: `backup_${Date.now()}`,
@@ -152,33 +193,34 @@ export function produceBackup(
   };
 
   const auditError = auditFn(artifact);
-  if (auditError !== null) return auditError;
+  if (auditError) return auditError;
 
   return { result: artifact };
 }
 
+/**
+ * Restores a previously produced backup artifact.
+ * All guards (environment, confirmation token, stage settings, tooling) must pass
+ * before the audit function is invoked. No mutation occurs on failure.
+ */
 export function restoreBackup(
-  environment: string,
+  environment: BackupAndRestoreEnvironment,
   targetDatabase: string,
   artifactName: string,
   config: BackupAndRestoreConfig,
   auditFn: (artifact: BackupArtifact) => BackupAndRestoreError | null,
 ): { readonly result: BackupArtifact } | BackupAndRestoreError {
-  if (!BackupAndRestoreEnvironment.includes(environment as BackupAndRestoreEnvironment)) {
-    return {
-      kind: 'ENVIRONMENT_GUARD_VIOLATION',
-      message: `Restore refused: environment ${environment} is not DEVELOPMENT or TEST`,
-    };
-  }
+  const envError = validateEnvironmentGuard(environment, config, 'RESTORE');
+  if (envError) return envError;
 
-  const confirmationError = validateRestoreConfirmation(environment, config);
-  if (confirmationError !== null) return confirmationError;
+  const tokenError = validateRestoreConfirmation(environment, config);
+  if (tokenError) return tokenError;
 
   const stageError = validateStageSettings(config, 'RESTORE');
-  if (stageError !== null) return stageError;
+  if (stageError) return stageError;
 
   const toolingError = validateToolingAvailable(config);
-  if (toolingError !== null) return toolingError;
+  if (toolingError) return toolingError;
 
   const artifact: BackupArtifact = {
     name: artifactName,
@@ -187,11 +229,18 @@ export function restoreBackup(
   };
 
   const auditError = auditFn(artifact);
-  if (auditError !== null) return auditError;
+  if (auditError) return auditError;
 
+  // In a real system the targetDatabase would be overwritten here.
+  // This pure model returns the artifact to signal success.
   return { result: artifact };
 }
 
+/**
+ * Computes readiness based on current state and configuration.
+ * Backup readiness is READY only when a successful backup proof exists.
+ * Tooling unavailability degrades readiness; otherwise NOT_READY.
+ */
 export function computeReadiness(
   state: BackupAndRestoreState,
   config: BackupAndRestoreConfig,
@@ -199,80 +248,5 @@ export function computeReadiness(
   if (!config.toolingAvailable) {
     return 'DEGRADED';
   }
-  if (state.lastError !== null && state.lastError.kind === 'TOOLING_UNAVAILABLE') {
-    return 'DEGRADED';
-  }
-  if (state.lastBackupProof !== null && state.lastBackupProof.verdict === 'SUCCESS') {
+  if (state.lastBackupProof?.verdict === 'SUCCESS') {
     return 'READY';
-  }
-  return 'NOT_READY';
-}
-
-export function runBackupProof(
-  state: BackupAndRestoreState,
-  environment: BackupAndRestoreEnvironment,
-  config: BackupAndRestoreConfig,
-  auditFn: (artifact: BackupArtifact) => BackupAndRestoreError | null,
-): BackupAndRestoreState {
-  const toolingError = validateToolingAvailable(config);
-  if (toolingError !== null) {
-    return {
-      ...state,
-      readiness: computeReadiness(state, config),
-      lastError: toolingError,
-      lastOperation: null,
-    };
-  }
-
-  const envGuardError = validateEnvironmentGuard(environment, config, 'BACKUP');
-  if (envGuardError !== null) {
-    return {
-      ...state,
-      readiness: computeReadiness(state, config),
-      lastError: envGuardError,
-      lastOperation: null,
-    };
-  }
-
-  const stageError = validateStageSettings(config, 'BACKUP');
-  if (stageError !== null) {
-    return {
-      ...state,
-      readiness: computeReadiness(state, config),
-      lastError: stageError,
-      lastOperation: null,
-    };
-  }
-
-  const backupResult = produceBackup(environment, config, auditFn);
-  if ('kind' in backupResult) {
-    return {
-      ...state,
-      readiness: computeReadiness(state, config),
-      lastError: backupResult,
-      lastOperation: 'BACKUP',
-    };
-  }
-
-  const proof: BackupProof = {
-    environment,
-    artifact: backupResult.result,
-    verdict: 'SUCCESS',
-  };
-
-  return {
-    ...state,
-    readiness: computeReadiness(
-      {
-        ...state,
-        lastBackupProof: proof,
-        lastError: null,
-        lastOperation: 'BACKUP',
-      },
-      config,
-    ),
-    lastBackupProof: proof,
-    lastError: null,
-    lastOperation: 'BACKUP',
-  };
-}

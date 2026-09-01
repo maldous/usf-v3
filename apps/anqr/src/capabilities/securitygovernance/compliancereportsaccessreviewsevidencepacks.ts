@@ -1,5 +1,5 @@
 // Compliance Report Access Review Evidence Packs Capability
-// Domain: Security Governance
+// Domain: securitygovernance
 
 // Error kinds for fail-closed behavior
 export const ComplianceReportErrorKind = [
@@ -50,7 +50,7 @@ export interface StorageSource {
   readonly isolation: boolean;
 }
 
-// Foundation sources bundle
+// Bundle of all foundation sources
 export interface FoundationSources {
   readonly metrics: MetricsSource;
   readonly incidents: IncidentsSource;
@@ -59,20 +59,20 @@ export interface FoundationSources {
   readonly storage: StorageSource;
 }
 
-// Storage readiness computed from foundation sources
+// Computed storage readiness
 export interface StorageReadiness {
   readonly configured: boolean;
   readonly isolation: boolean;
 }
 
-// Compliance report state
+// Full compliance report state
 export interface ComplianceReportState {
   readonly routeGuards: readonly ComplianceReportRouteGuard[];
   readonly foundationSources: FoundationSources | null;
   readonly report: ComplianceReport | null;
 }
 
-// Generated compliance report
+// Generated compliance report (read‑only)
 export interface ComplianceReport {
   readonly organisationId: string;
   readonly generatedAt: string;
@@ -84,20 +84,22 @@ export interface ComplianceReport {
   readonly ready: boolean;
 }
 
-// Error type with literal discriminant
+// Discriminated error type
 export interface ComplianceReportError {
   readonly kind: ComplianceReportErrorKind;
   readonly message: string;
 }
 
-// Initial state
+// Initial empty state
 export const initialState: ComplianceReportState = {
   routeGuards: [],
   foundationSources: null,
   report: null,
 };
 
-// Register the operator compliance report route
+// ---------------------------------------------------------------------------
+// Route registration (admin/operator scoped)
+// ---------------------------------------------------------------------------
 export function registerRoute(
   state: ComplianceReportState,
   resource: string,
@@ -107,7 +109,7 @@ export function registerRoute(
   const existingIndex = state.routeGuards.findIndex(
     (rg) => rg.resource === resource && rg.scope === scope,
   );
-  
+
   const newRouteGuards = [...state.routeGuards];
   if (existingIndex >= 0) {
     newRouteGuards[existingIndex] = { resource, scope, requiredPermission };
@@ -121,7 +123,52 @@ export function registerRoute(
   };
 }
 
-// Validate foundation sources for health (fail-closed)
+// ---------------------------------------------------------------------------
+// Permission & route checks (fail‑closed)
+// ---------------------------------------------------------------------------
+export function isRouteRegistered(
+  state: ComplianceReportState,
+  resource: string,
+  scope: string,
+): boolean {
+  return state.routeGuards.some(
+    (rg) => rg.resource === resource && rg.scope === scope,
+  );
+}
+
+export function checkPermissions(
+  state: ComplianceReportState,
+  resource: string,
+  scope: string,
+  requiredPermission: string,
+  token: { readonly authLevel: string } | null,
+): ComplianceReportError | null {
+  if (token === null) {
+    return { kind: 'INSUFFICIENT_PERMISSIONS', message: 'Authentication required' };
+  }
+
+  const routeGuard = state.routeGuards.find(
+    (rg) => rg.resource === resource && rg.scope === scope,
+  );
+
+  if (routeGuard === undefined) {
+    return { kind: 'ROUTE_NOT_REGISTERED', message: 'Compliance report route not registered' };
+  }
+
+  if (routeGuard.requiredPermission !== requiredPermission) {
+    return { kind: 'INSUFFICIENT_PERMISSIONS', message: 'Required permission mismatch' };
+  }
+
+  if (token.authLevel !== requiredPermission) {
+    return { kind: 'INSUFFICIENT_PERMISSIONS', message: 'Insufficient auth level' };
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Foundation source validation (fail‑closed)
+// ---------------------------------------------------------------------------
 export function validateFoundationSources(
   sources: FoundationSources,
 ): ComplianceReportError | null {
@@ -143,63 +190,24 @@ export function validateFoundationSources(
   return null;
 }
 
-// Check if route is registered for operator/admin access
-export function isRouteRegistered(
-  state: ComplianceReportState,
-  resource: string,
-  scope: string,
-): boolean {
-  return state.routeGuards.some(
-    (rg) => rg.resource === resource && rg.scope === scope,
-  );
-}
-
-// Check permissions for operator/admin context
-export function checkPermissions(
-  state: ComplianceReportState,
-  resource: string,
-  scope: string,
-  requiredPermission: string,
-  token: { readonly authLevel: string } | null,
-): ComplianceReportError | null {
-  if (token === null) {
-    return { kind: 'INSUFFICIENT_PERMISSIONS', message: 'Authentication required' };
-  }
-
-  if (!isRouteRegistered(state, resource, scope)) {
-    return { kind: 'ROUTE_NOT_REGISTERED', message: 'Compliance report route not registered' };
-  }
-
-  const routeGuard = state.routeGuards.find(
-    (rg) => rg.resource === resource && rg.scope === scope,
-  );
-
-  if (routeGuard!.requiredPermission !== requiredPermission) {
-    return { kind: 'INSUFFICIENT_PERMISSIONS', message: 'Required permission mismatch' };
-  }
-
-  if (token.authLevel !== requiredPermission) {
-    return { kind: 'INSUFFICIENT_PERMISSIONS', message: 'Insufficient auth level' };
-  }
-
-  return null;
-}
-
-// Compute storage readiness from foundation sources
-export function computeStorageReadiness(
-  storage: StorageSource,
-): StorageReadiness {
+// ---------------------------------------------------------------------------
+// Readiness computation (deterministic, includes route registration)
+// ---------------------------------------------------------------------------
+export function computeStorageReadiness(storage: StorageSource): StorageReadiness {
   return {
     configured: storage.configured,
     isolation: storage.isolation,
   };
 }
 
-// Determine overall readiness (deterministic composition)
 export function determineReadiness(
   sources: FoundationSources,
+  state: ComplianceReportState,
+  resource: string,
+  scope: string,
 ): boolean {
-  // All sources must be healthy and storage must be configured and isolated
+  // All foundation sources must be healthy and storage must be configured & isolated.
+  // Additionally, the route must be registered for the operator/admin use case.
   return (
     sources.metrics.healthy &&
     sources.incidents.healthy &&
@@ -207,16 +215,22 @@ export function determineReadiness(
     sources.retention.healthy &&
     sources.storage.healthy &&
     sources.storage.configured &&
-    sources.storage.isolation
+    sources.storage.isolation &&
+    isRouteRegistered(state, resource, scope)
   );
 }
 
-// Compose compliance report from foundation sources (deterministic)
+// ---------------------------------------------------------------------------
+// Report composition (pure, read‑only)
+// ---------------------------------------------------------------------------
 export function composeReport(
   organisationId: string,
   sources: FoundationSources,
+  state: ComplianceReportState,
+  resource: string,
+  scope: string,
 ): ComplianceReport {
-  const ready = determineReadiness(sources);
+  const ready = determineReadiness(sources, state, resource, scope);
   const storageReadiness = computeStorageReadiness(sources.storage);
 
   return {
@@ -231,110 +245,7 @@ export function composeReport(
   };
 }
 
-// Set foundation sources (injected dependencies)
+// ---------------------------------------------------------------------------
+// State mutation helpers (order observable, fail‑closed)
+// ---------------------------------------------------------------------------
 export function setFoundationSources(
-  state: ComplianceReportState,
-  sources: FoundationSources,
-): ComplianceReportState | ComplianceReportError {
-  const validationError = validateFoundationSources(sources);
-  if (validationError !== null) {
-    return validationError;
-  }
-
-  return {
-    ...state,
-    foundationSources: sources,
-  };
-}
-
-// Generate compliance report (operator/admin-scoped, fail-closed)
-export function generateReport(
-  state: ComplianceReportState,
-  organisationId: string,
-  sources: FoundationSources,
-  resource: string,
-  scope: string,
-  requiredPermission: string,
-  token: { readonly authLevel: string } | null,
-): ComplianceReportState | ComplianceReportError {
-  // Check permissions first
-  const permissionError = checkPermissions(state, resource, scope, requiredPermission, token);
-  if (permissionError !== null) {
-    return permissionError;
-  }
-
-  // Validate foundation sources
-  const sourceError = validateFoundationSources(sources);
-  if (sourceError !== null) {
-    return sourceError;
-  }
-
-  // Compose report deterministically
-  const report = composeReport(organisationId, sources);
-
-  return {
-    ...state,
-    foundationSources: sources,
-    report,
-  };
-}
-
-// Get compliance report (read-only access)
-export function getReport(
-  state: ComplianceReportState,
-  resource: string,
-  scope: string,
-  requiredPermission: string,
-  token: { readonly authLevel: string } | null,
-): ComplianceReport | ComplianceReportError {
-  // Check permissions
-  const permissionError = checkPermissions(state, resource, scope, requiredPermission, token);
-  if (permissionError !== null) {
-    return permissionError;
-  }
-
-  // Check if report exists
-  if (state.report === null) {
-    return { kind: 'REPORT_NOT_READY', message: 'Compliance report not generated' };
-  }
-
-  // Check if report is ready
-  if (!state.report.ready) {
-    return { kind: 'REPORT_NOT_READY', message: 'Compliance report not ready' };
-  }
-
-  return state.report;
-}
-
-// Export evidence pack (deterministic export hook)
-export function exportEvidencePack(
-  report: ComplianceReport,
-): string {
-  return JSON.stringify(report, null, 2);
-}
-
-// Validate report composition (proves counts come from foundation sources)
-export function validateReportComposition(
-  report: ComplianceReport,
-  sources: FoundationSources,
-): ComplianceReportError | null {
-  if (report.openIncidentCount !== sources.incidents.openCount) {
-    return { kind: 'VALIDATION_FAILURE', message: 'Open incident count mismatch' };
-  }
-  if (report.legalHoldCount !== sources.legalHolds.holdCount) {
-    return { kind: 'VALIDATION_FAILURE', message: 'Legal hold count mismatch' };
-  }
-  if (report.retentionPolicyCount !== sources.retention.policyCount) {
-    return { kind: 'VALIDATION_FAILURE', message: 'Retention policy count mismatch' };
-  }
-  if (report.metricsSignals.length !== sources.metrics.data.length) {
-    return { kind: 'VALIDATION_FAILURE', message: 'Metrics signals count mismatch' };
-  }
-  if (report.storageReadiness.configured !== sources.storage.configured) {
-    return { kind: 'VALIDATION_FAILURE', message: 'Storage configured mismatch' };
-  }
-  if (report.storageReadiness.isolation !== sources.storage.isolation) {
-    return { kind: 'VALIDATION_FAILURE', message: 'Storage isolation mismatch' };
-  }
-  return null;
-}

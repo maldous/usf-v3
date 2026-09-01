@@ -459,7 +459,17 @@ function stripCodeFence(text: string): string {
 }
 
 const forbiddenImport = /(?:^|\n)\s*(?:import[\s\S]{0,200}?from\s*|import\s*)["']([^"']+)["']/gu;
-const nodeBuiltin = /^node:/u;
+
+/**
+ * A Node builtin reached by its bare legacy name is still a Node builtin. The
+ * rule exists to keep a package out of a capability module, not to enforce a
+ * specifier style, and refusing `crypto` cost a whole dispatch.
+ */
+function nodeBuiltin(specifier: string): boolean {
+  if (specifier.startsWith("node:")) return true;
+  const { isBuiltin } = process.getBuiltinModule?.("module") ?? {};
+  return typeof isBuiltin === "function" ? isBuiltin(specifier) : false;
+}
 
 /**
  * Structural admission for a generated module. This checks that the output is
@@ -480,7 +490,7 @@ export function validateImplementationOutput(raw: string): ImplementationOutputC
   if (!/\bexport\b/u.test(content)) return refuse("no-export", "a capability module must export its surface");
   for (const match of content.matchAll(forbiddenImport)) {
     const specifier = match[1]!;
-    if (!nodeBuiltin.test(specifier) && !specifier.startsWith(".")) {
+    if (!nodeBuiltin(specifier) && !specifier.startsWith(".")) {
       return refuse("external-import", `a capability module may import only Node builtins and its own directory: ${specifier}`);
     }
   }
