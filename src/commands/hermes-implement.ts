@@ -33,7 +33,7 @@ import type { CommandResult } from "./dispatcher.ts";
  */
 const deliveryManifest = "graph/manifests/v3-delivery.json";
 const maximumDispatch = 12;
-const maximumConformanceRuns = 8;
+const maximumConformanceRuns = 24;
 // A reasoning model spends output budget before it writes anything, so a
 // budget sized for prose returns an empty result with finishReason "length".
 // Implementation work asks for a whole module, so it is budgeted accordingly.

@@ -114,6 +114,58 @@
 <urn:usf:capture-completeness-method:1> <urn:usf:predicate:lesson> "A resource can be discovered without its semantics being captured. The 670 facet identities were captured from capabilities.trig while their required statements lived in semantic-depth.trig. Discovery is not capture." <urn:usf:graph:v3-delivery> .
 <urn:usf:capture-completeness-method:1> <urn:usf:predicate:result> "None of the remaining nine types carries the split. Each attaches its semantics at its declaration site and no other authored graph attaches predicates to it. The facet split was unique." <urn:usf:graph:v3-delivery> .
 <urn:usf:capture-completeness-method:1> <urn:usf:predicate:type> <urn:usf:type:CaptureCompletenessMethod> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:authorityEffect> "Derives implementation work from outstanding facet requirements, executes behavioural conformance checks inside the repository confinement and writes ignored evidence; with --apply it contacts eligible external models under explicit operator economic authorization and emits one bounded semantic transaction proposal. It creates no construction, completion, publication or Git authority and never writes satisfaction." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:commandPath> "hermes implement" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:contactClass> "explicit-with-apply-only" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:outputSchema> "urn:usf:implementation-realisation-plan:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:refusalClass> "HERMES_IMPLEMENT_ARGUMENTS_INVALID" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:refusalClass> "HERMES_IMPLEMENT_CAPABILITY_UNKNOWN" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:refusalClass> "IMPLEMENTATION_CONVENTION_INCOMPLETE" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:refusalClass> "IMPLEMENTATION_CONVENTION_UNAVAILABLE" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:synopsis> "usf hermes implement [--apply --env-file PATH] [--limit N] [--concurrency N] [--capability NAME]" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-implement:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:authorityEffect> "Spawns one detached business-as-usual supervisor and writes ignored supervisor and log records. It resets no semantic state and creates no construction, completion, publication or Git authority." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:commandPath> "hermes start" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:contactClass> "none-in-this-command" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:idempotence> "Refuses while a supervisor with a matching durable process identity is live; reclaims a record whose process is gone." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:outputSchema> "urn:usf:hermes-lifecycle:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:refusalClass> "HERMES_CREDENTIAL_FILE_UNSAFE" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:refusalClass> "HERMES_LIFECYCLE_ARGUMENTS_INVALID" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:refusalClass> "HERMES_SUPERVISOR_ALREADY_ACTIVE" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:refusalClass> "HERMES_SUPERVISOR_DID_NOT_START" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:synopsis> "usf hermes start [--env-file PATH] [--pause-seconds N] [--concurrency N] [--limit N]" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-start:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:authorityEffect> "Reads current repository state only. It contacts no provider, mutates nothing and creates no authority." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:commandPath> "hermes status" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:contactClass> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:outputSchema> "urn:usf:hermes-lifecycle-status:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:synopsis> "usf hermes status" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-status:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:authorityEffect> "Writes one ignored stop request, then signals the supervisor if it does not drain within the operator bound. Completed semantic and evidence state is untouched." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:commandPath> "hermes stop" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:contactClass> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:idempotence> "Stopping a supervisor that is not running is a success. A stale record is reclaimed without signalling anything." <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:outputSchema> "urn:usf:hermes-lifecycle:1" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:refusalClass> "HERMES_LIFECYCLE_ARGUMENTS_INVALID" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:refusalClass> "HERMES_SUPERVISOR_NOT_TERMINATED" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:synopsis> "usf hermes stop [--wait-ms N]" <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-delivery> .
+<urn:usf:command:hermes-stop:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact-plan:accessibilityprofile> <urn:usf:predicate:canonicalName> "accessibilityprofile" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact-plan:accessibilityprofile> <urn:usf:predicate:ownedByRepository> <urn:usf:delivery-repository:foundation> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact-plan:accessibilityprofile> <urn:usf:predicate:plansArtefact> <urn:usf:delivery-artefact:accessibilityprofile> <urn:usf:graph:v3-delivery> .

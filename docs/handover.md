@@ -1,6 +1,100 @@
 # USF V3 handover
 
-## Current live boundary — the registration-feature digest model is declared and executable
+## Current live boundary — product implementation realization is wired and executable
+
+Prepared 2026-09-02. Read current Git and remote state rather than trusting any
+identifier here.
+
+Branch `v3-authority-transition`. The semantic consolidation established that
+the 553 outstanding requirements are **implementation-conformance** statements,
+not missing artefacts: V3 has largely realized the ANQR *specification* and had
+not begun the ANQR *product behaviour* that specification describes. Nothing
+turned those requirements into work, so `usf hermes realise` reported
+`readyFrontier 0` and BAU had nothing to do.
+
+That gap is now closed end to end.
+
+### Graph authority for implementation
+
+Two resources landed through `usf transact` (append-only, zero owned integrity
+violations, resulting corpus 24 365 quads):
+
+- `urn:usf:capability-implementation-convention:v1:1` — owning repository,
+  module and conformance path rules, path derivation, filename convention, the
+  cohesion rule and the dependency rule.
+- `urn:usf:implementation-conformance-rule:v1:1` — what may evidence an
+  implementation-conformance requirement, and what is refused before execution.
+
+Paths are graph-derived: `apps/anqr/src/capabilities/{domain}/{capability}.ts`
+and `apps/anqr/tests/conformance/{domain}/{capability}.conformance.test.ts`. No
+model proposes, chooses or influences a path.
+
+### The bridge
+
+`usf hermes implement` projects the frontier. Every outstanding applicable
+requirement of one capability forms **one** implementation unit, because one
+module realizes them jointly; the conformance unit is the only dependency edge,
+because a behavioural test needs a concrete exported surface. That yields
+**64 ready implementation units, 64 following, over 553 requirements** — the
+widest truthful frontier, with pairwise-disjoint write ownership.
+
+### Evidence is executed
+
+`src/providers/implementation-conformance.ts` typechecks the module and its
+test, then runs the test inside the repository's existing bubblewrap and Node
+permission confinement — no network, no writable filesystem outside a scratch
+root, no ambient environment — and records what each facet-named subtest
+returned. The facet evaluator derives `SATISFIED`, `UNSATISFIED` or `STALE` from
+that outcome. A realized artefact can no longer evidence a behavioural
+requirement, and a test that does not import the real module is refused before
+it is executed.
+
+A failing check drives **bounded alternating repair**: round 1 regenerates the
+module, round 2 the test, and after four rounds the capability is reported as a
+blocker rather than consuming further provider budget.
+
+### The supported operator interface
+
+`usf hermes start | status | stop` own process identity, duplicate refusal,
+orderly drain and every runtime file. `scripts/hermes-bau.sh` is no longer the
+interface. Liveness comes from durable Linux process identity (boot id, start
+ticks, uid, argv digest, executable digest), so a recycled PID is never mistaken
+for the supervisor. Stop is idempotent, drains at a cycle boundary, honours
+SIGTERM at the next boundary rather than mid-transaction, and keeps SIGKILL as
+the deterministic backstop. Semantic state is never reset by process lifecycle.
+
+### Two dispatch defects found under real load
+
+Both fixed in `src/commands/graph-execute.ts`:
+
+1. A provider returning HTTP 200 with **no text** was recorded as success, so a
+   silent model consumed a unit another route could complete. An empty answer is
+   now a refusal (`PROVIDER_EMPTY_RESULT:<finishReason>`) and falls through.
+2. Only **four** candidates of a 57-route universe were ever attempted. The
+   bound is now eight, which reaches the deep providers.
+
+Routes that refuse now earn a bounded, self-expiring, **per-route** deferral
+(`src/providers/route-deferral.ts`), so unattended operation stops re-paying a
+two-minute empty answer every cycle. It is never a provider-family disablement:
+quota exhaustion defers one exact route for six hours and clears on the next
+success.
+
+### Observed provider reality
+
+Real dispatch on this host, recorded in `.usf/graph-executions/`:
+
+| route | observation |
+| --- | --- |
+| `cerebras` | HTTP 402 `payment_required`, free trial exhausted |
+| `codex-cli` | usage limit exceeded, retry after 7 Sep 2026 |
+| `cohere north-mini-code-1-0` | 200 with empty text, `finishReason: length` after ~120 s |
+| `groq qwen/qwen3.6-27b` | HTTP 413 at a 16 000-token output budget |
+| `nvidia` | 27 zero-price reasoning routes eligible at that budget; the deep bench |
+
+Claude remains reserved and unroutable throughout
+(`urn:usf:provider-execution-policy:operator-reserved-claude:1`, untouched).
+
+## Previous boundary — the registration-feature digest model is declared and executable
 
 Prepared 2026-09-01. Read current Git and remote state rather than trusting any
 identifier here. No provider contacted, no credential read, no adapter loaded.
