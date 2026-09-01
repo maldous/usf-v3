@@ -101,12 +101,12 @@ export function generateDeterministically(
   const generator = work.generator?.split(":").pop() ?? null;
   if (generator === "contractprojection") {
     // A total projection of authority is only a correct artefact when the target
-    // format is the projection's own. An OpenAPI document and a GraphQL schema
-    // need format-specific projection, which is not implemented, so they are
-    // not realized here rather than realized wrongly.
-    const jsonProjectable = work.canonicalPath !== null
-      && (work.canonicalPath.endsWith(".json") || work.canonicalPath.endsWith(".schema.json"));
-    if (!jsonProjectable) return null;
+    // format is the projection's own. An OpenAPI document, a GraphQL schema and
+    // a JSON Schema each have their own required shape; emitting a projection
+    // into those paths yields a syntactically wrong artefact. Only a manifest
+    // target accepts the projection directly.
+    const kind = work.artefactKind?.split(":").pop() ?? null;
+    if (kind !== "manifest") return null;
     // Project the delivery contracts and their facets, which is exactly what a
     // contract projection is: authority rendered into a consumable document.
     const contracts = subjectsOfType(graph, "urn:usf:type:DeliveryContract").map((contract) => Object.freeze({
