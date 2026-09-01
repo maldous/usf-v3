@@ -76,6 +76,34 @@
 <urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:recoveredFrom> "V1 and V2 service infrastructure" <urn:usf:graph:v3-execution> .
 <urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:rule> "These variable names belong to service infrastructure, not to a model provider. They must never be offered as a provider credential or admitted to a provider credential allowlist." <urn:usf:graph:v3-execution> .
 <urn:usf:credential-class:non-ai-service:1> <urn:usf:predicate:type> <urn:usf:type:CredentialClass> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:correctionReason> "The earlier disposition classified V1's graph as historical product-platform material with no V3 consumer. That was wrong. V1's graph is USF, authored to support ANQR, and it specifies infrastructure and tooling that Hermes is to deliver. It is a forward requirement, not history." <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:disposition> "RETAIN" <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:nextStep> "Capture the 328 semantic contracts, their 1341 facets and 269 artefact plans as V3 delivery-requirement resources with path rules and generators, so Hermes can derive and realise them. This inventory is the entry point; the capture itself is a scoped programme, not a closure step." <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:nonClaim> "This resource records what V1 specifies and that it is retained as a delivery requirement. It does not claim any of it has been realised." <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:origin> "V1 graph/, 66 authored specification files; 542000 of its 574000 lines are observed source artefacts and derived dispositions rather than specification." <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:portVocabulary> "analyticsstore, apigateway, auditledger, autocomplete, backuprestore, cache, config, database, eventbus, filescan, fulltextsearch, guardrail, identity, importexport, notificationdelivery, objectstorage, observability, operationaljobengine, provideremulator, providermock, qualitygate, resourcelifecycle, searchindex, secrets, sessionstore, tenantmembership, vectorsearch, workflowengine" <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:providerImplementations> "clickhouse, fastify, in-memory, pgbackrest, postgres, redis, nats, clamav, meilisearch, keycloak, mailpit, minio, localstack, wiremock, sonarqube, openbao, windmill, temporal, sentry, webhook-sink" <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:providerModes> "inmemory, composedtest, deferred, local, unavailable, disabled" <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:realisationOperator> "hermes" <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:relationToAnqr> "ANQR predates the graph. Its code is not yet semantically defined; V1's graph provides the specification that definition needs." <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:retainedInvariant> "A capability port is fulfilled by a named provider in a declared mode, and a deferred or in-memory mode is a first-class disposition rather than an absence." <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:artefact> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:artefactkind> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:artefactplan> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:componentkind> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:contractfacet> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:equivalencerule> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:generator> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:pathrule> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:provider> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:repository> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:semanticcontract> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:sourceartefact> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:specifiesElement> <urn:usf:v1-specification-element:sourcesemanticbinding> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:status> "captured-inventory-pending-realisation" <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:supersedes> <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:graph:v3-execution> .
+<urn:usf:delivery-requirement:v1-specification:1> <urn:usf:predicate:type> <urn:usf:type:DeliveryRequirement> <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:correctedDisposition> "The HISTORICAL classification is withdrawn." <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:disposition> "HISTORICAL" <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:historicalSource> "V1 graph/providers.ttl and the V1 service catalogue; V2 carried the same platform through its Stardog control plane" <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:implementations> "clickhouse, fastify, in-memory, pgbackrest, postgres, redis, nats, clamav, meilisearch, keycloak, mailpit, minio, localstack, wiremock, sonarqube, openbao, windmill, temporal, sentry, webhook-sink" <urn:usf:graph:v3-execution> .
@@ -87,6 +115,7 @@
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:reason> "The invariant survives in V3 as capability-to-transport fulfilment: a work requirement names a capability, and a transport fulfils it in a declared authentication mode. The 52 instances are ANQR product-platform facts. V3's current product slice is a pure TypeScript library that provisions no service infrastructure, so no V3 consumer exists for them. They are recorded here so a future operator can find them rather than rediscover them." <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:reinstatementCondition> "Only if a V3 product slice acquires a real service-infrastructure dependency. The port and mode vocabulary above is then the starting point." <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:scope> "product-platform" <urn:usf:graph:v3-execution> .
+<urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:supersededBy> <urn:usf:delivery-requirement:v1-specification:1> <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:type> <urn:usf:type:KnowledgeDisposition> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:authorizesProvider> "antigravity-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:antigravity-cli> <urn:usf:graph:v3-execution> .
@@ -411,3 +440,68 @@
 <urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:optionalPredicate> "urn:usf:predicate:minimumContextTokens" <urn:usf:graph:v3-execution> .
 <urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:optionalPredicate> "urn:usf:predicate:requiredCapability" <urn:usf:graph:v3-execution> .
 <urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:requiredPredicate> "urn:usf:predicate:prompt" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefact> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefact> <urn:usf:predicate:legacyKind> "urn:usf:artefact:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefact> <urn:usf:predicate:observedCount> "201" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefact> <urn:usf:predicate:role> "artefact identities" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefact> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactkind> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactkind> <urn:usf:predicate:legacyKind> "urn:usf:artefactkind:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactkind> <urn:usf:predicate:observedCount> "124" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactkind> <urn:usf:predicate:role> "artefact classification vocabulary" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactkind> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactplan> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactplan> <urn:usf:predicate:legacyKind> "urn:usf:artefactplan:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactplan> <urn:usf:predicate:observedCount> "269" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactplan> <urn:usf:predicate:role> "planned artefacts with owner and path" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:artefactplan> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:componentkind> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:componentkind> <urn:usf:predicate:legacyKind> "urn:usf:componentkind:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:componentkind> <urn:usf:predicate:observedCount> "31" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:componentkind> <urn:usf:predicate:role> "component classification" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:componentkind> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:contractfacet> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:contractfacet> <urn:usf:predicate:legacyKind> "urn:usf:contractfacet:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:contractfacet> <urn:usf:predicate:observedCount> "1341" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:contractfacet> <urn:usf:predicate:role> "facets each contract declares" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:contractfacet> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:equivalencerule> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:equivalencerule> <urn:usf:predicate:legacyKind> "urn:usf:equivalencerule:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:equivalencerule> <urn:usf:predicate:observedCount> "67" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:equivalencerule> <urn:usf:predicate:role> "equivalence rules between representations" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:equivalencerule> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:generator> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:generator> <urn:usf:predicate:legacyKind> "urn:usf:generator:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:generator> <urn:usf:predicate:observedCount> "68" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:generator> <urn:usf:predicate:role> "generators that produce artefacts" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:generator> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:pathrule> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:pathrule> <urn:usf:predicate:legacyKind> "urn:usf:pathrule:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:pathrule> <urn:usf:predicate:observedCount> "135" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:pathrule> <urn:usf:predicate:role> "authorized path rules per repository" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:pathrule> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:provider> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:provider> <urn:usf:predicate:legacyKind> "urn:usf:provider:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:provider> <urn:usf:predicate:observedCount> "52" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:provider> <urn:usf:predicate:role> "service providers, each a port and mode pair" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:provider> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:repository> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:repository> <urn:usf:predicate:legacyKind> "urn:usf:repository:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:repository> <urn:usf:predicate:observedCount> "135" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:repository> <urn:usf:predicate:role> "target repositories" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:repository> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:semanticcontract> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:semanticcontract> <urn:usf:predicate:legacyKind> "urn:usf:semanticcontract:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:semanticcontract> <urn:usf:predicate:observedCount> "328" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:semanticcontract> <urn:usf:predicate:role> "the delivery contracts themselves" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:semanticcontract> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourceartefact> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourceartefact> <urn:usf:predicate:legacyKind> "urn:usf:sourceartefact:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourceartefact> <urn:usf:predicate:observedCount> "68" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourceartefact> <urn:usf:predicate:role> "observed source artefact identities" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourceartefact> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourcesemanticbinding> <urn:usf:predicate:captureStatus> "inventoried" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourcesemanticbinding> <urn:usf:predicate:legacyKind> "urn:usf:sourcesemanticbinding:" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourcesemanticbinding> <urn:usf:predicate:observedCount> "804" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourcesemanticbinding> <urn:usf:predicate:role> "bindings from source artefacts to semantics" <urn:usf:graph:v3-execution> .
+<urn:usf:v1-specification-element:sourcesemanticbinding> <urn:usf:predicate:type> <urn:usf:type:V1SpecificationElement> <urn:usf:graph:v3-execution> .
