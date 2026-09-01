@@ -2,13 +2,13 @@ import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { classifyCatalogue, type RoutingRequirement } from "../providers/classification.ts";
-import {
-  CredentialEnvError, loadCredentialEnvFile, parseProviderConfig, providerCredentialNames,
-} from "../providers/config.ts";
+import { CredentialEnvError, loadCredentialEnvFile } from "../providers/config.ts";
 import { parseExecutionEconomicAuthorizations } from "../providers/execution-economics.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
 import { observeAvailableRoutes } from "../providers/evidence-index.ts";
+import { readGraphDerivedEconomics } from "../providers/economics-projection.ts";
+import { loadSemanticGraph } from "../graph/index.ts";
 import { readTrackedJson } from "./probe.ts";
 import { parseEffectiveCostPolicy } from "./execute.ts";
 
@@ -64,10 +64,14 @@ function parse(args: readonly string[]): ParsedClassifyArguments {
 export async function classifyCatalogueCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const parsed = parse(args);
   const catalogue = await readLocalCatalogue(repositoryRoot);
-  const policy = parseEffectiveCostPolicy(await readTrackedJson(repositoryRoot, "config/policy.json"));
-  const authorizations = parseExecutionEconomicAuthorizations(
+  // Economics come from graph authority through the verified projection; no
+  // surface decides against a separately maintained policy file.
+  const economics = readGraphDerivedEconomics(
     await readTrackedJson(repositoryRoot, "config/execution-economics.json"),
+    loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json"),
   );
+  const policy = economics.policy;
+  const authorizations = economics.authorizations;
 
   // Installed adapter observation across every adapter package the catalogue names.
   const adapterPackages = Object.freeze([...new Set(
@@ -81,8 +85,6 @@ export async function classifyCatalogueCommand(repositoryRoot: string, args: rea
   // Credential names actually supplied by the owner-private credential file.
   let suppliedCredentialNames: readonly string[] = Object.freeze([]);
   if (parsed.envFile !== null) {
-    const config = parseProviderConfig(await readTrackedJson(repositoryRoot, "config/providers.json"));
-    const declared = providerCredentialNames(config);
     const catalogueNames = Object.freeze([...new Set(
       catalogue.snapshot.providers.flatMap((provider) => provider.credentialNames ?? []),
     )].sort());
@@ -90,7 +92,7 @@ export async function classifyCatalogueCommand(repositoryRoot: string, args: rea
     // cannot be supplied by any credential file; excluding it keeps the rest of
     // the allowlist usable instead of failing the whole observation closed.
     const environmentNamePattern = /^[A-Z_][A-Z0-9_]{0,127}$/u;
-    const allowlist = Object.freeze([...new Set([...declared, ...catalogueNames])]
+    const allowlist = Object.freeze([...catalogueNames]
       .filter((name) => environmentNamePattern.test(name)).sort());
     try {
       const environment = await loadCredentialEnvFile(resolve(repositoryRoot, parsed.envFile), allowlist);

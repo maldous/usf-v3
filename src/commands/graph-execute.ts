@@ -6,9 +6,7 @@ import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
 import { readDependencyGraph } from "../graph/work-dependency.ts";
 import { invokeClaudeCli, invokeCodexCli } from "../providers/cli-transports.ts";
-import {
-  CredentialEnvError, loadCredentialEnvFile, parseProviderConfig, providerCredentialNames,
-} from "../providers/config.ts";
+import { CredentialEnvError, loadCredentialEnvFile } from "../providers/config.ts";
 import { parseExecutionEconomicAuthorizations, type EffectiveCostPolicy } from "../providers/execution-economics.ts";
 import { verifyEconomicsProjection } from "../providers/economics-projection.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
@@ -241,11 +239,11 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     if (await observeInstalledAdapter(repositoryRoot, adapterPackage) !== undefined) installed.push(adapterPackage);
   }
   const environmentNamePattern = /^[A-Z_][A-Z0-9_]{0,127}$/u;
-  const config = parseProviderConfig(await readTrackedJson(repositoryRoot, "config/providers.json"));
-  const allowlist = Object.freeze([...new Set([
-    ...providerCredentialNames(config),
-    ...catalogue.snapshot.providers.flatMap((provider) => provider.credentialNames ?? []),
-  ])].filter((name) => environmentNamePattern.test(name)).sort());
+  // The catalogue projection is the authority for credential names; it already
+  // supplies every name the configured routes named.
+  const allowlist = Object.freeze([...new Set(
+    catalogue.snapshot.providers.flatMap((provider) => provider.credentialNames ?? []),
+  )].filter((name) => environmentNamePattern.test(name)).sort());
   let environment: Awaited<ReturnType<typeof loadCredentialEnvFile>>;
   try {
     environment = await loadCredentialEnvFile(resolve(repositoryRoot, parsed.envFile), allowlist);

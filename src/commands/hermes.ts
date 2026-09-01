@@ -112,7 +112,6 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
   // Authority inspection: what V3 state Hermes is operating against.
   const catalogue = await readLocalCatalogue(repositoryRoot);
   const economics = await readTrackedJson(repositoryRoot, "config/execution-economics.json");
-  const policy = await readTrackedJson(repositoryRoot, "config/policy.json");
   // Hermes inspects the consolidated semantic corpus itself, not only operator
   // configuration: a non-conforming corpus is an authority fact it must report.
   const integrity = await graphIntegrityCommand(repositoryRoot, []).then(
@@ -125,7 +124,8 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     catalogueProviderCount: catalogue.snapshot.providers.length,
     catalogueModelCount: catalogue.snapshot.providers.reduce((total, provider) => total + provider.models.length, 0),
     economicAuthorizationDigest: canonicalDigest(economics),
-    costPolicyDigest: canonicalDigest(policy),
+    // The identity of the graph closure the runtime economics derive from.
+    economicsClosureDigest: (economics as { sourceGraphDigest?: unknown }).sourceGraphDigest ?? null,
     corpus: Object.freeze({
       quadCount: integrity?.quadCount ?? null,
       subjectCount: integrity?.subjectCount ?? null,

@@ -5,15 +5,15 @@ import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import {
   classifyCatalogue, type ModelClassification, type RoutingRequirement,
 } from "../providers/classification.ts";
-import {
-  CredentialEnvError, loadCredentialEnvFile, parseProviderConfig, providerCredentialNames,
-} from "../providers/config.ts";
+import { CredentialEnvError, loadCredentialEnvFile } from "../providers/config.ts";
 import {
   parseExecutionEconomicAuthorizations, type EffectiveCostPolicy,
 } from "../providers/execution-economics.ts";
 import type { CommandHandler } from "./dispatcher.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
 import { observeAvailableRoutes } from "../providers/evidence-index.ts";
+import { readGraphDerivedEconomics } from "../providers/economics-projection.ts";
+import { loadSemanticGraph } from "../graph/index.ts";
 import { readTrackedJson } from "./probe.ts";
 
 const maximumPromptBytes = 64 * 1024;
@@ -130,10 +130,14 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
   });
   const requestDigest = canonicalDigest(requirement);
 
-  const policy = parseEffectiveCostPolicy(await readTrackedJson(repositoryRoot, "config/policy.json"));
-  const authorizations = parseExecutionEconomicAuthorizations(
+  // Economics come from graph authority through the verified projection; no
+  // surface decides against a separately maintained policy file.
+  const economics = readGraphDerivedEconomics(
     await readTrackedJson(repositoryRoot, "config/execution-economics.json"),
+    loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json"),
   );
+  const policy = economics.policy;
+  const authorizations = economics.authorizations;
   const catalogue = await readLocalCatalogue(repositoryRoot);
 
   const adapterPackages = Object.freeze([...new Set(
@@ -146,11 +150,10 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
   }
 
   const environmentNamePattern = /^[A-Z_][A-Z0-9_]{0,127}$/u;
-  const config = parseProviderConfig(await readTrackedJson(repositoryRoot, "config/providers.json"));
-  const allowlist = Object.freeze([...new Set([
-    ...providerCredentialNames(config),
-    ...catalogue.snapshot.providers.flatMap((provider) => provider.credentialNames ?? []),
-  ])].filter((name) => environmentNamePattern.test(name)).sort());
+  // The catalogue projection is the authority for credential names.
+  const allowlist = Object.freeze([...new Set(
+    catalogue.snapshot.providers.flatMap((provider) => provider.credentialNames ?? []),
+  )].filter((name) => environmentNamePattern.test(name)).sort());
   const envPath = resolve(repositoryRoot, parsed.envFile);
   let environment;
   try {

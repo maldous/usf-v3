@@ -1,5 +1,6 @@
 import { canonicalDigest } from "../core/canonical.ts";
 import type { SemanticGraph } from "../graph/index.ts";
+import type { ExecutionTransportId } from "./transports.ts";
 import { objectsFor } from "../graph/index.ts";
 
 /**
@@ -28,7 +29,7 @@ export interface ProjectedEconomics {
     acceptedCostClasses: readonly string[];
   }>;
   readonly authorizations: readonly Readonly<{
-    transport: string;
+    transport: ExecutionTransportId;
     provider: string;
     entitlement: string;
     basis: string;
@@ -73,7 +74,15 @@ export function projectEconomics(graph: SemanticGraph): ProjectedEconomics {
 
   const authorizations = subjects.map((subject) => {
     const transportIri = one(graph, subject, "urn:usf:predicate:authorizesTransport");
-    const transport = transportIri === null ? null : transportIri.split(":").at(-1) ?? null;
+    const transportName = transportIri === null ? null : transportIri.split(":").at(-1) ?? null;
+    // A transport the runtime does not implement fails closed rather than
+    // projecting an authorization nothing can honour.
+    const transport = transportName === "vercel-ai-sdk" || transportName === "claude-cli" || transportName === "codex-cli"
+      ? transportName
+      : null;
+    if (transportName !== null && transport === null) {
+      throw new Error(`ECONOMICS_TRANSPORT_UNKNOWN:${transportName}`);
+    }
     const provider = one(graph, subject, "urn:usf:predicate:authorizesProvider");
     const entitlement = one(graph, subject, "urn:usf:predicate:entitlement");
     const basis = one(graph, subject, "urn:usf:predicate:basis");
@@ -148,4 +157,32 @@ export function verifyEconomicsProjection(
     throw new Error("ECONOMICS_PROJECTION_DIVERGED");
   }
   return Object.freeze({ projection: expected, graphClosureDigest: expected.sourceGraphDigest, verified: true as const });
+}
+
+/**
+ * The single accessor for graph-derived execution economics. Every V3 execution
+ * surface reads the policy and authorizations here, so no surface can decide
+ * against a different copy.
+ */
+export interface GraphDerivedEconomics {
+  readonly policy: Readonly<{
+    maximumPaidCost: number;
+    paidFallback: string;
+    unknownPrice: string;
+    acceptedCostClasses: readonly string[];
+  }>;
+  readonly authorizations: ProjectedEconomics["authorizations"];
+  readonly closureDigest: string;
+}
+
+export function readGraphDerivedEconomics(
+  projectionValue: unknown,
+  graph: SemanticGraph,
+): GraphDerivedEconomics {
+  const verified = verifyEconomicsProjection(projectionValue, graph);
+  return Object.freeze({
+    policy: verified.projection.costPolicy,
+    authorizations: verified.projection.authorizations,
+    closureDigest: verified.graphClosureDigest,
+  });
 }
