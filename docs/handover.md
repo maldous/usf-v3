@@ -1,5 +1,145 @@
 # USF V3 handover
 
+## Current live boundary — primary-owned receipt semantics ready for durable carrier
+
+This section supersedes every older `Current`, `Live continuation` and `Next`
+heading retained below as chronological evidence; do not operationalize those
+older boundaries unless this section explicitly restates them.
+
+Prepared 2026-09-01 from clean pushed carrier
+`9f15fe407b4bcaf72568890c37eefbd31c5c5b1c` in the isolated final clone. Read
+current Git and remote state rather than treating the preparation commit as the
+new carrier identity. This coherent packet changes the provider graph, prunes
+one stale topology assertion that required a deleted secondary contract, and
+updates this handover. It changes no provider runtime, schema or help source.
+No provider or inference endpoint was contacted and no credential content was
+read, copied or digested.
+
+The final composed provider manifest is
+`graph/manifests/self-host-provider-v3.json`, profile
+`urn:usf:profile:v3-self-host:3`, semantic digest
+`sha256:c8fd0765b63b726cb6bca6f6308a716954dcb995a4e4ab6db30d66274a4ffe81`.
+The changed graph file is
+`sha256:3f0baf8fbe72af8c51b941fb968ec368fbfdbd5ae822a692426cd12918396472`.
+Profile-bound `usf query` and `usf work` read-back establish the following
+current boundary:
+
+- the profile no longer selects
+  `urn:usf:contract:provider-account-receipt-acquisition:1`; that secondary
+  contract and its permission, evidence, proof, validation and reciprocal work
+  ownership have been removed;
+- acquisition is now the non-authoritative owner-attached protocol
+  `urn:usf:provider-operation:account-receipt-acquisition:1`, owned only by
+  `urn:usf:work:provider-account-tier-receipt` and its primary contract;
+- `providers receipt activate` is only
+  `urn:usf:command-mode:providers-receipt-activate:2` beneath receipt v2. It
+  derives one ignored content-addressed call-admission record from the exact
+  current primary construction grant and verified completion. It creates no
+  second work, contract, permission, policy, proof lane or command leaf;
+- acquire, verify and reduce each require that exact admission at
+  `.usf/provider-operations/activations/provider-account-tier-receipt/`, while
+  list requires no acquisition activation and remains a read-only projection;
+- API verify requires explicit current env-file, stored authorization and
+  source-owned observation-chain inputs and rederives their account/source and
+  credential identity. Ambient credentials and stored identity alone are not
+  authority. Host verify separately requires provider home, exact host census
+  and host-source identity;
+- all provider-home language now reuses the completed
+  `exactOwnerControlledDirectory` rule, including lexical/realpath equality,
+  invoking uid/gid ownership, owner-rwx, no world-write/special bits/symlink,
+  nlink bound, exclusive-current-primary-group proof for group-write, fixed
+  auth-file rules and drift rechecks; and
+- `urn:usf:command:providers-receipt-list:1` remains a `CliCommandTarget` with
+  availability `target`, implementation state `proofblocked` and refusal
+  `PROVIDERS_RECEIPT_LIST_PROOFBLOCKED`. It authenticates the selected complete
+  256-bucket root, exact case-sensitive provider/model filters, every candidate
+  member digest, a projection/filter/root-bound unpadded base64url cursor and
+  only the selected page records. The current 7,478 candidate-keyed catalogue
+  denominator produces both binding and disposition records and cannot be
+  returned within the four-MiB child output ceiling as one result; the graph
+  binds the pagination rationale without hard-coding a row count that could
+  survive catalogue movement incorrectly.
+
+`urn:usf:rule:provider-receipt-target-registration:1` keeps registration
+truthful through one bounded non-recurring seam rather than a BAU bottleneck.
+The executable and help surface remains the registered v1 acquire/verify
+interface; `usf help providers receipt list` returns `HELP_TOPIC_UNKNOWN`.
+Receipt v2/list stays graph-only until the account-tier owner has one exact
+isolated handler/schema/mode/test candidate that passes its selected checks.
+Only then may the predecessor operator owner register the complete reserved
+v2/list dispatch and registered-but-proofblocked help after authenticating that
+preliminary candidate and binding the SHA-256 of its canonical ordered feature
+operations plus the canonical path-ordered resulting feature mode/content
+digest set. Account-tier is subsequently rederived and completed against the
+final operator predecessor. Its final candidate digest is expected to differ
+because candidate identity includes that changed basis; exact equality is
+instead required for both basis-independent feature digests before integration.
+Neither owner crosses the other's write set, the registration update never
+follows final account-tier completion, and no intermediate Git checkpoint is
+authority. A partial registry, mixed v1/v2 surface, preliminary-candidate
+substitution before operator publication or unequal rederived feature bytes
+refuses. The `usf-v3-operator` skill remains advisory and was not changed before
+runtime/help stability; no plugin is needed for this packet.
+
+The operator reservation now carries that registration rule as an explicit
+semantic dependency. Its `verified-complete` leaf stage applies only to
+production runtime invocation; the one static registration candidate is
+explicitly `checked-awaiting-integration`. The same rule is therefore bound by
+both owner packets without making either work depend on the other except for
+the already declared account-tier predecessor edge.
+
+The current v1 `src/commands/provider-receipts.ts` preimage still contains one
+dormant lookup of the deleted secondary contract for its old privacy digest.
+Current primary proofblocking refuses before that lookup; it is not graph
+authority or an operational v2 implementation. Do not reactivate or preserve
+the alias. The first checked account-tier candidate must replace it with the
+primary-owner privacy projection. The operator registry then atomically
+supersedes the v1 option shape and leaves every v2/list path proofblocked until
+the same content-bound feature bytes are rederived and completed, so no
+intermediate path invokes the legacy lookup. This semantic packet deliberately
+does not edit that source before a fresh primary construction grant.
+
+The only test change deletes the obsolete assertion that the removed secondary
+contract registers receipt v1. It adds no fixture, provider/model matrix or
+temporary test. Verified evidence at this boundary is:
+
+- authoritative typecheck and full suite: 209/209 pass;
+- exact provider/product suite: 76/76 pass;
+- bootstrap/carrier/schema lane: 13/13 pass;
+- profile-scoped authority: 1/1 pass;
+- focused provider topology test: 11/11 pass;
+- containment: pass; and
+- `git diff --check`: pass.
+
+Because semantic source moved, historical construction/completion receipts are
+not reused. Current `usf work` read-back shows repository-path and operator as
+dependency roots with no current construction authority, file-asset-index
+dependency-blocked on repository-path, and account-tier dependency/proofblocked
+on repository-path and operator. No receipt v2 runtime, list runtime, account
+observation, provider entitlement, model qualification, live parallel run,
+semantic-token reduction, ANQR realisation, staging, production, BAU or terminal
+proof is claimed.
+
+After authenticating this packet as a clean pushed carrier, the next safe order
+is:
+
+1. restore repository-path and operator authority through their registered
+   construction/completion chains; file-asset-index may proceed through its
+   already recorded isolated no-change chain once repository-path is current;
+2. use the registered account-tier work packet to realise and check one exact
+   isolated receipt-v2 activation/acquire/verify/reduce, sole-writer reducer,
+   read-only list, closed-schema and bounded-test candidate, without provider
+   contact or static help changes;
+3. bind the predecessor-owned complete static dispatch/help candidate to that
+   exact checked digest, validate and complete operator, then rederive
+   account-tier against the final operator predecessor, rematerialise the same
+   feature bytes, recheck, integrate and complete it. Accumulate the entire
+   bounded seam locally and commit/push once as one coherent packet; and
+4. only then derive an activation, acquire trusted account observations and
+   continue through content-verified adapters, authenticated provider answers,
+   genuine hidden holdout, live multi-provider parallelism and comparable
+   semantic-token measurement.
+
 ## Live continuation update — repository-path currentness restored
 
 Semantic packet `44f9e2129714d00192eaf2e60e83218bb7fab3ce`
@@ -67,7 +207,12 @@ operator candidate from it through registered `usf` call/resolve/apply/check,
 integration and completion commands. No live provider action is part of that
 packet.
 
-## Current live boundary — provider account-source semantics ready for durable commit
+## Superseded historical boundary — former secondary account-source model
+
+This section records the pre-remodel checkpoint only. Its secondary contract,
+standalone activate target, permission-path syntax, authority statements and
+next actions are obsolete and MUST NOT be invoked or treated as current. The
+first section of this handover is the sole live continuation boundary.
 
 Prepared 2026-09-01 from clean committed carrier
 `95e8985b267c5a72b3da9b363ec171497db0fc74` (tree
@@ -145,13 +290,10 @@ built:
   applicable current sources is explicit `not-observed`; competing sources are
   conflict-ineligible. Reduction takes no provider, Git or global mutation
   lock; and
-- a registered target `usf providers receipt activate` derives a reusable
-  ignored content-addressed call-admission bundle from exact current completion
-  of the primary implementing work plus the distinct secondary acquisition
-  contract evidence/proof. Each later v2 acquire/verify/reduce call
-  reauthenticates the bundle and binds its digest. This requires neither a tenth
-  work packet nor an acquisition construction-publication policy, database,
-  external CAS, Git commit or GitHub round trip.
+- the then-proposed activation used a distinct secondary evidence/proof lane.
+  That design was later rejected because it duplicated authority and serialized
+  an owner-local call admission; the current primary-owned mode is defined only
+  in the first section.
 
 The currently executable registered interface remains
 `urn:usf:command:providers-receipt:1`, and current help truthfully exposes only
@@ -164,59 +306,11 @@ its route-bound proofblocked forms:
   --profile VERSIONED_IRI --manifest PATH
 ```
 
-The graph now defines, but deliberately does not yet expose as executable, the
-proofblocked target commands
-`urn:usf:command:providers-receipt-activate:1`,
-`urn:usf:command:providers-receipt:2` and
-`urn:usf:command:providers-receipt-list:1`. Their deterministic operator forms
-are:
-
-```sh
-./bin/usf providers receipt activate \
-  --profile VERSIONED_IRI --manifest PATH
-
-./bin/usf providers receipt acquire \
-  --activation .usf/provider-operations/permissions/provider-account-receipt-acquisition/DIGEST.json \
-  --account-source IRI --env-file .usf/inputs/FILE \
-  --source-state-head-set PATH_OR_NONE \
-  --source-state-manifest PATH_OR_NONE [--source-state-manifest PATH ...] \
-  --catalogue-raw-digest DIGEST --catalogue-normalized-digest DIGEST \
-  --profile VERSIONED_IRI --manifest PATH \
-  [--credential-sources .usf/inputs/FILE] \
-  [--host-census PATH_OR_STDIN] [--route ID]
-
-./bin/usf providers receipt verify \
-  --activation .usf/provider-operations/permissions/provider-account-receipt-acquisition/DIGEST.json \
-  --account-source IRI --env-file .usf/inputs/FILE --observation PATH \
-  --source-state-head-set PATH_OR_NONE \
-  --source-state-manifest PATH_OR_NONE [--source-state-manifest PATH ...] \
-  --catalogue-raw-digest DIGEST --catalogue-normalized-digest DIGEST \
-  --profile VERSIONED_IRI --manifest PATH \
-  [--credential-sources .usf/inputs/FILE] \
-  [--host-census PATH_OR_STDIN] [--route ID]
-
-./bin/usf providers receipt reduce \
-  --activation .usf/provider-operations/permissions/provider-account-receipt-acquisition/DIGEST.json \
-  --source-state-head-set PATH_OR_NONE \
-  --source-state-manifest PATH_OR_NONE [--source-state-manifest PATH ...] \
-  --catalogue-raw-digest DIGEST --catalogue-normalized-digest DIGEST \
-  --profile VERSIONED_IRI --manifest PATH \
-  [--credential-sources .usf/inputs/FILE] \
-  [--provider-home ABSOLUTE_PATH --host-census PATH_OR_STDIN] [--route ID]
-
-./bin/usf providers receipt list --projection PATH \
-  --kind binding\|disposition --profile VERSIONED_IRI --manifest PATH \
-  [--provider NAME] [--model NAME] \
-  [--after BASE64URL_CURSOR] [--max-items N]
-```
-
-The API examples show the selected-source form; typed subscription-host
-acquire/verify instead use the graph-declared `--provider-home`, host census and
-host-source-identity inputs. `--route` only narrows output. An omitted host
-census leaves graph-known subscription candidates explicit as `not-observed`;
-it does not fabricate absence. Conditional/unsupported price dimensions,
-missing current account/quota/service-tier evidence, paid capability, automatic
-overage/top-up or fallback remain explicit and ineligible.
+The obsolete target identifiers and permission-path command examples have been
+removed from this historical section so they cannot be mistaken for an
+operator interface. Use profile-bound `usf query` for graph targets and current
+`usf help` for the executable surface; the first section records the exact
+current nonclaims and continuation order.
 
 Fresh local `usf models summary` observes the frozen no-contact denominator as
 212 provider routes, 7,478 provider/model candidates, 3,806 underlying models,
@@ -364,10 +458,10 @@ permission boundary; it cannot supply the live account facts that its later
 receipt acquisition observes. Every exact route/model/transport must fail
 closed on unknown price dimensions, entitlement, quota, identity, metering or
 fallback behavior. Direct SDK routes, OpenRouter, Codex subscription CLI and
-Claude subscription CLI remain distinct transports. Current registered
-`provider-account-receipt-acquisition` and `providers receipt` authority is
-still proofblocked, so no account or provider contact may occur until that
-explicit permission is current. Once activated, trusted receipt acquisition
+Claude subscription CLI remain distinct transports. At that historical
+boundary the then-proposed secondary acquisition and `providers receipt`
+authority remained proofblocked, so no account or provider contact could occur.
+Under the current primary-owned model, trusted receipt acquisition
 precedes adapter or inference contact. OpenRouter must additionally prove
 current account identity, eligible free models, disabled paid/overage fallback
 or an enforceable zero spend cap, quota and exact selected/actual model identity.

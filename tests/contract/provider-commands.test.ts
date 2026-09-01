@@ -780,7 +780,6 @@ test("provider graph separates fixture capabilities from route-keyed operational
   assert.deepEqual(objects(receiptCommand, "registryReservation"), [providerRegistryReservation]);
   assert.deepEqual(objects(receiptCommand, "refusalCode"), ["PROVIDERS_RECEIPT_PROOFBLOCKED"]);
   assert.deepEqual(objects("urn:usf:contract:provider-account-tier-receipt:1", "registeredCommand"), [receiptCommand]);
-  assert.deepEqual(objects("urn:usf:contract:provider-account-receipt-acquisition:1", "registeredCommand"), [receiptCommand]);
   assert.deepEqual(objects("urn:usf:command:providers-host-census:1", "registryReservation"), [providerRegistryReservation]);
   for (const policy of [
     "urn:usf:publication-policy:provider-pipeline-construction-authority:1",
