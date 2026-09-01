@@ -4,6 +4,7 @@ import { canonicalDigest } from "../core/canonical.ts";
 import { canonicalQuadLine } from "../graph/nquads.ts";
 import { validateArtefactOutput } from "../providers/artefact-validation.ts";
 import { evaluateFacets, summariseFacets, type EvidenceIndex } from "../providers/facet-evaluation.ts";
+import { loadConformanceEvidence } from "../providers/implementation-conformance.ts";
 import { deterministicGenerators, projectByFormat, validateGeneratedFormat } from "../providers/delivery-generators.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
@@ -340,6 +341,9 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     } catch { continue; }
   }
   const evidence: EvidenceIndex = Object.freeze({
+    // Behavioural outcomes come from executed conformance runs, so the artefact
+    // lane reports the same facet truth the implementation lane produces.
+    conformanceOutcomes: await loadConformanceEvidence(repositoryRoot),
     realizedArtefacts,
     runtimeComposed: [...realizedArtefacts.keys()].some((path) => path.endsWith("/runtime/compose.json")),
     validatorOutcomes: Object.freeze([...new Set(validatorOutcomes)].sort()),

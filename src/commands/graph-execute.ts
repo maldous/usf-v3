@@ -22,6 +22,10 @@ import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 import { readProviderBindings, type ProviderBindings } from "../providers/provider-bindings.ts";
 import { readProviderExecutionPolicy, type ProviderExecutionPolicy } from "../providers/provider-policy.ts";
 import { readTrackedJson } from "./probe.ts";
+import {
+  applyRouteOutcomes, deferredCandidateIds, readRouteDeferrals, writeRouteDeferrals,
+  type ObservedRouteOutcome,
+} from "../providers/route-deferral.ts";
 
 const typePredicate = "urn:usf:predicate:type";
 const workUnitType = "urn:usf:type:SemanticWorkUnit";
@@ -35,6 +39,10 @@ const maximumWorkUnits = 64;
 const defaultConcurrency = 4;
 const hardMaximumConcurrency = 16;
 const invocationTimeoutMs = 240_000;
+// The candidate universe is deep and one refusal is an availability fact, not a
+// terminal state, so a unit walks further down its diversified order before it
+// gives up. The bound keeps a single unit from consuming a whole cycle.
+const maximumCandidateAttempts = 8;
 
 function invalid(message: string): never {
   throw new UsfError("GRAPH_EXECUTE_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, message);
@@ -329,6 +337,14 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   // Read authority, then derive routes against exactly that reading.
   const authoritySnapshot = await snapshotNow();
 
+  // A route that just refused is skipped while its bounded deferral stands, so
+  // unattended operation does not re-pay the same refusal on every unit. The
+  // set is frozen for the whole run: within one run every unit sees the same
+  // availability picture.
+  const deferralRecords = await readRouteDeferrals(repositoryRoot);
+  const deferred = deferredCandidateIds(deferralRecords, Date.now());
+  const observedRouteOutcomes: ObservedRouteOutcome[] = [];
+
   // 3. Dispatch independent work units under bounded parallelism.
   const { generateText } = await import("ai");
   const outcomes: UnitOutcome[] = [];
@@ -354,8 +370,14 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       transportSelectedModel: bindings.transportSelectedModel,
       localAgentCapabilities,
     });
-    // Spread units across providers so one quota failure cannot collapse the batch.
-    const ordered = diversifyCandidates(universe.candidates, ordinal);
+    // Spread units across providers so one quota failure cannot collapse the
+    // batch. Currently deferred routes drop to the back rather than out: if
+    // every eligible route is deferred, trying one is better than refusing.
+    const spread = diversifyCandidates(universe.candidates, ordinal);
+    const ordered = Object.freeze([
+      ...spread.filter((candidate) => !deferred.has(candidate.candidateId)),
+      ...spread.filter((candidate) => deferred.has(candidate.candidateId)),
+    ]);
     const attempts: UnitAttempt[] = [];
     const startedAtMs = Date.now();
 
@@ -377,7 +399,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       });
     }
 
-    for (const candidate of ordered.slice(0, 4)) {
+    for (const candidate of ordered.slice(0, maximumCandidateAttempts)) {
       const attemptStartedAt = new Date().toISOString();
       const attemptStarted = performance.now();
       try {
@@ -397,7 +419,12 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
             outcome: produced.outcome, reasonCode: produced.reasonCode, statusCode: null,
             retryAfter: produced.retryAfter, costIncurred: false,
           }));
-          if (produced.outcome === "ok" && produced.text !== null) {
+          observedRouteOutcomes.push(Object.freeze({
+            candidateId: candidate.candidateId,
+            outcome: produced.outcome === "ok" && produced.text !== null && produced.text.trim().length > 0 ? "ok" : "refused",
+            reasonCode: produced.reasonCode,
+          }));
+          if (produced.outcome === "ok" && produced.text !== null && produced.text.trim().length > 0) {
             return Object.freeze({
               unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
               status: "ok" as const, selected: candidate, actualModel: produced.actualModel,
@@ -416,6 +443,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
             model: candidate.model, startedAt: attemptStartedAt, latencyMs: 0,
             outcome: "refused" as const, reasonCode: "CREDENTIAL_ABSENT", statusCode: null, retryAfter: null, costIncurred: false,
           }));
+          observedRouteOutcomes.push(Object.freeze({ candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode: "CREDENTIAL_ABSENT" }));
           continue;
         }
         const model = await languageModelFor(candidate.adapterPackage, candidate.model, credential, candidate.baseUrl);
@@ -426,11 +454,28 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           abortSignal: AbortSignal.timeout(invocationTimeoutMs),
         });
         const elapsed = Math.round(performance.now() - attemptStarted);
+        // A 200 that carries no text is a vacuous answer, not a result. It must
+        // fall through to the next candidate: treating it as success would let
+        // one silent model consume a work unit that another can complete.
+        if (produced.text.trim().length === 0) {
+          attempts.push(Object.freeze({
+            candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
+            model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
+            outcome: "refused" as const, reasonCode: `PROVIDER_EMPTY_RESULT:${produced.finishReason ?? "unknown"}`,
+            statusCode: 200, retryAfter: null, costIncurred: false,
+          }));
+          observedRouteOutcomes.push(Object.freeze({
+            candidateId: candidate.candidateId, outcome: "refused" as const,
+            reasonCode: `PROVIDER_EMPTY_RESULT:${produced.finishReason ?? "unknown"}`,
+          }));
+          continue;
+        }
         attempts.push(Object.freeze({
           candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
           model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
           outcome: "ok" as const, reasonCode: "INVOCATION_OK", statusCode: 200, retryAfter: null, costIncurred: false,
         }));
+        observedRouteOutcomes.push(Object.freeze({ candidateId: candidate.candidateId, outcome: "ok" as const, reasonCode: "INVOCATION_OK" }));
         return Object.freeze({
           unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
           status: "ok" as const, selected: candidate,
@@ -459,6 +504,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
           outcome: "refused" as const, reasonCode, statusCode: status, retryAfter: null, costIncurred: false,
         }));
+        observedRouteOutcomes.push(Object.freeze({ candidateId: candidate.candidateId, outcome: "refused" as const, reasonCode }));
       }
     }
     return Object.freeze({
@@ -601,8 +647,15 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       "Costs a transport reports for a subscription are list-basis attribution, not charges against this repository.",
       "Refusals are provider-stated facts; a usage-limit refusal denies access without performing paid work.",
       "Every dispatch was preceded by a re-read of the semantic authority the route was derived from. A unit refused with AUTHORITY_MOVED was never dispatched on a stale selection.",
+      "A deferred route is one this repository observed refusing recently. The deferral is local, bounded, self-expiring and per exact route; it is not a provider-family disablement and asserts nothing about the provider.",
     ]),
+    deferredRouteCount: deferred.size,
   });
+
+  // Availability memory is folded in once, after the run, so a route deferred
+  // mid-run still receives every observation this run made about it.
+  await writeRouteDeferrals(repositoryRoot,
+    applyRouteOutcomes(deferralRecords, observedRouteOutcomes, Date.now()));
 
   const evidenceDirectory = resolve(repositoryRoot, ".usf", "graph-executions");
   await mkdir(evidenceDirectory, { recursive: true, mode: 0o700 });

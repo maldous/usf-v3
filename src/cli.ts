@@ -62,6 +62,17 @@ const bootstrapHandlers: CommandHandlers = {
       const { realisePlanCommand } = await import("./commands/hermes-realise.ts");
       return realisePlanCommand(repositoryRoot, args.slice(1));
     }
+    if (args[0] === "implement") {
+      const { implementCommand } = await import("./commands/hermes-implement.ts");
+      return implementCommand(repositoryRoot, args.slice(1));
+    }
+    if (args[0] === "start" || args[0] === "stop" || args[0] === "supervise" || args[0] === "status") {
+      const lifecycle = await import("./commands/hermes-lifecycle.ts");
+      if (args[0] === "start") return lifecycle.hermesStartCommand(repositoryRoot, args.slice(1));
+      if (args[0] === "stop") return lifecycle.hermesStopCommand(repositoryRoot, args.slice(1));
+      if (args[0] === "status") return lifecycle.hermesLifecycleStatusCommand(repositoryRoot, args.slice(1));
+      return lifecycle.hermesSuperviseCommand(repositoryRoot, args.slice(1));
+    }
     return hermesCommand(repositoryRoot, args);
   },
   transact: ({ args, repositoryRoot }) => transactCommand(repositoryRoot, args),

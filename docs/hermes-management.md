@@ -33,15 +33,47 @@ The first packet is product-neutral. The second proves the selected ANQR
 management closure; the final exact product packet cannot be derived from the
 core-only manifest.
 
-## Command surface
+## Implemented lifecycle surface
 
-The intended composable surface is:
+`usf hermes start`, `usf hermes status` and `usf hermes stop` are the supported
+operator interface for business-as-usual. They own process identity, duplicate
+refusal, orderly drain and the runtime files, so no operator needs to know
+`scripts/hermes-bau.sh`, a PID, or any file under `.usf/hermes/`.
 
 ```text
-usf hermes
-usf hermes start [--config config/hermes.json]
-usf hermes status [--config config/hermes.json]
-usf hermes stop [--config config/hermes.json] [--wait-ms N]
+usf hermes start  [--env-file PATH] [--pause-seconds N] [--concurrency N] [--limit N]
+usf hermes status
+usf hermes stop   [--wait-ms N]
+```
+
+`start` refuses a second supervisor while one is live, reclaims a stale record
+left by a dead process, spawns the detached supervisor and returns only after it
+has observed the record that supervisor wrote for itself. Semantic state is never
+reset by process lifecycle: the semantic cache, conformance evidence and landed
+implementation survive any restart.
+
+`stop` writes an instance-bound stop request, waits for the supervisor to observe
+it at a cycle boundary — never inside a transaction — and only then escalates to
+`SIGTERM` and `SIGKILL` within a bounded grace. It is idempotent: stopping a
+supervisor that is not running is a success, and a stale record is reclaimed
+without signalling anything.
+
+`status` contacts no provider. It reports liveness, supervisor identity, the
+current cycle and its last reason, ready/blocked/landed work counts, provider
+activity, transactions, blockers, the latest behavioural evidence, facet counts
+and the authority identity the supervisor started against.
+
+Supervisor liveness is derived from durable Linux process identity — boot id,
+start ticks, uid, argv digest and executable digest — so a recycled PID can never
+be mistaken for the owner. `usf hermes supervise` is the foreground loop `start`
+owns; it is not an operator entry point.
+
+`usf hermes implement` and `usf hermes realise` are the two work lanes the
+supervisor drives, and both remain separately invocable for inspection.
+
+The remaining planned surface is:
+
+```text
 usf hermes doctor [--config config/hermes.json]
 ```
 

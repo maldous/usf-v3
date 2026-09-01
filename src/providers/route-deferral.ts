@@ -1,0 +1,139 @@
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+
+/**
+ * Bounded per-route availability memory.
+ *
+ * A refusal is an availability fact about one exact route, never about a
+ * provider family and never permanent. Recording it stops unattended operation
+ * from re-paying the same refusal every cycle -- an exhausted quota answers in
+ * milliseconds, but a model that consumes its whole output budget and returns
+ * nothing costs two minutes each time. Every deferral expires on its own, and a
+ * success clears the record, so nothing here can disable a route for good.
+ */
+const deferralPath = ".usf/hermes/route-deferrals.json";
+const maximumRecords = 512;
+
+export interface RouteDeferral {
+  readonly candidateId: string;
+  readonly reasonCode: string;
+  readonly consecutiveFailures: number;
+  readonly observedAtMs: number;
+  readonly deferUntilMs: number;
+}
+
+export interface RouteDeferralIndex {
+  readonly schema: "urn:usf:route-deferral:1";
+  readonly version: 1;
+  readonly deferrals: Readonly<Record<string, RouteDeferral>>;
+}
+
+const minute = 60_000;
+const hour = 60 * minute;
+
+/**
+ * How long one refusal class defers one route. The values are deliberately
+ * coarse: this is a throughput heuristic over ignored local state, not an
+ * entitlement or economics claim about the provider.
+ */
+export function deferralDurationMs(reasonCode: string, consecutiveFailures: number): number {
+  const family = reasonCode.split(":", 1)[0]!;
+  switch (family) {
+    case "PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED": return 6 * hour;
+    case "TRANSPORT_USAGE_LIMIT_EXCEEDED": return 6 * hour;
+    case "PROVIDER_AUTHENTICATION_REFUSED": return 12 * hour;
+    case "PROVIDER_MODEL_NOT_SERVED": return 24 * hour;
+    case "PROVIDER_RATE_LIMITED": return 5 * minute;
+    // One empty answer can be the prompt; a second is the route.
+    case "PROVIDER_EMPTY_RESULT": return consecutiveFailures < 2 ? 0 : 30 * minute;
+    case "CREDENTIAL_ABSENT": return 24 * hour;
+    default: return Math.min(hour, 2 ** Math.min(consecutiveFailures, 6) * minute);
+  }
+}
+
+export async function readRouteDeferrals(repositoryRoot: string): Promise<Readonly<Record<string, RouteDeferral>>> {
+  const bytes = await readFile(resolve(repositoryRoot, deferralPath), "utf8").catch(() => undefined);
+  if (bytes === undefined) return Object.freeze({});
+  try {
+    const parsed = JSON.parse(bytes) as RouteDeferralIndex;
+    if (parsed.schema !== "urn:usf:route-deferral:1") return Object.freeze({});
+    const records: Record<string, RouteDeferral> = {};
+    for (const [candidateId, record] of Object.entries(parsed.deferrals ?? {})) {
+      if (typeof record?.deferUntilMs !== "number" || typeof record.reasonCode !== "string") continue;
+      records[candidateId] = Object.freeze({
+        candidateId,
+        reasonCode: record.reasonCode,
+        consecutiveFailures: Number.isInteger(record.consecutiveFailures) ? record.consecutiveFailures : 1,
+        observedAtMs: typeof record.observedAtMs === "number" ? record.observedAtMs : 0,
+        deferUntilMs: record.deferUntilMs,
+      });
+    }
+    return Object.freeze(records);
+  } catch { return Object.freeze({}); }
+}
+
+/** Candidate ids currently deferred at the supplied instant. */
+export function deferredCandidateIds(
+  records: Readonly<Record<string, RouteDeferral>>,
+  nowMs: number,
+): ReadonlySet<string> {
+  return new Set(Object.values(records).filter((record) => record.deferUntilMs > nowMs).map((record) => record.candidateId));
+}
+
+export interface ObservedRouteOutcome {
+  readonly candidateId: string;
+  readonly outcome: "ok" | "refused";
+  readonly reasonCode: string;
+}
+
+/**
+ * Fold this run's observations into the record. A success clears its route, an
+ * expired deferral is dropped, and the whole index stays bounded.
+ */
+export function applyRouteOutcomes(
+  records: Readonly<Record<string, RouteDeferral>>,
+  outcomes: readonly ObservedRouteOutcome[],
+  nowMs: number,
+): Readonly<Record<string, RouteDeferral>> {
+  const next: Record<string, RouteDeferral> = {};
+  for (const [candidateId, record] of Object.entries(records)) {
+    if (record.deferUntilMs > nowMs) next[candidateId] = record;
+  }
+  for (const outcome of outcomes) {
+    if (outcome.outcome === "ok") { delete next[outcome.candidateId]; continue; }
+    const held = records[outcome.candidateId];
+    const consecutive = held !== undefined && held.reasonCode.split(":", 1)[0] === outcome.reasonCode.split(":", 1)[0]
+      ? held.consecutiveFailures + 1 : 1;
+    const duration = deferralDurationMs(outcome.reasonCode, consecutive);
+    if (duration === 0) {
+      next[outcome.candidateId] = Object.freeze({
+        candidateId: outcome.candidateId, reasonCode: outcome.reasonCode,
+        consecutiveFailures: consecutive, observedAtMs: nowMs, deferUntilMs: 0,
+      });
+      continue;
+    }
+    next[outcome.candidateId] = Object.freeze({
+      candidateId: outcome.candidateId, reasonCode: outcome.reasonCode,
+      consecutiveFailures: consecutive, observedAtMs: nowMs, deferUntilMs: nowMs + duration,
+    });
+  }
+  const bounded = Object.entries(next)
+    .sort(([, left], [, right]) => right.observedAtMs - left.observedAtMs)
+    .slice(0, maximumRecords);
+  return Object.freeze(Object.fromEntries(bounded));
+}
+
+export async function writeRouteDeferrals(
+  repositoryRoot: string,
+  deferrals: Readonly<Record<string, RouteDeferral>>,
+): Promise<void> {
+  const directory = resolve(repositoryRoot, ".usf", "hermes");
+  await mkdir(directory, { recursive: true, mode: 0o700 });
+  const target = resolve(repositoryRoot, deferralPath);
+  const transient = `${target}.tmp-${process.pid}`;
+  const index: RouteDeferralIndex = Object.freeze({
+    schema: "urn:usf:route-deferral:1" as const, version: 1 as const, deferrals,
+  });
+  await writeFile(transient, `${JSON.stringify(index, null, 1)}\n`, { mode: 0o600 });
+  await rename(transient, target);
+}

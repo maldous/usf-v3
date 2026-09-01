@@ -57,6 +57,20 @@ export const facetEvidenceRequirement: Readonly<Record<string, Readonly<{
     requirement: "A named validator ran over a realized artefact and returned a result; the separate proof object is superseded." }),
 });
 
+/**
+ * One executed behavioural outcome for one facet. It is produced by running the
+ * capability's conformance test against the real module; nothing here can be
+ * authored, and a requirement is never its own evidence.
+ */
+export interface ConformanceEvidenceEntry {
+  readonly executed: boolean;
+  readonly passed: boolean;
+  /** The recorded run no longer binds the current module or test bytes. */
+  readonly stale: boolean;
+  readonly evidence: string;
+  readonly detail: string | null;
+}
+
 export interface EvidenceIndex {
   /** Realized artefact paths that exist, mapped to their content digest. */
   readonly realizedArtefacts: ReadonlyMap<string, string>;
@@ -66,6 +80,8 @@ export interface EvidenceIndex {
   readonly validatorOutcomes: readonly string[];
   /** Proof outcome identities available as evidence. */
   readonly proofOutcomes: readonly string[];
+  /** Executed behavioural outcomes, keyed by the facet IRI they were named for. */
+  readonly conformanceOutcomes: ReadonlyMap<string, ConformanceEvidenceEntry>;
 }
 
 function values(graph: SemanticGraph, subject: string, predicate: string): readonly string[] {
@@ -113,10 +129,32 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
     // authorization requirement.
     const declaredEvidence = values(graph, facet, "admissibleEvidenceClass")[0] ?? null;
     if (declaredEvidence === "implementation-conformance") {
-      return Object.freeze({
-        facet, facetKind: kind, capability, state: "NOT_ASSESSED" as const, evidence: Object.freeze([]),
-        reason: "This requirement asserts product behaviour, state, audit or authorization. Only observed conformance of a running implementation can evidence it, and no ANQR implementation is running. Realized specification artefacts do not evidence product behaviour.",
-      });
+      // Only an executed behavioural outcome can evidence a behaviour, state,
+      // audit or authorization requirement. A realized specification artefact
+      // cannot, and neither can the presence of a module at its canonical path.
+      const outcome = evidence.conformanceOutcomes.get(facet);
+      if (outcome === undefined || !outcome.executed) {
+        return Object.freeze({
+          facet, facetKind: kind, capability, state: "NOT_ASSESSED" as const, evidence: Object.freeze([]),
+          reason: outcome?.detail
+            ?? "This requirement asserts product behaviour, state, audit or authorization. Only an executed behavioural check against the implementation can evidence it, and none has run.",
+        });
+      }
+      if (outcome.stale) {
+        return Object.freeze({
+          facet, facetKind: kind, capability, state: "STALE" as const, evidence: Object.freeze([outcome.evidence]),
+          reason: "A behavioural outcome exists but the implementation or its conformance test has changed since it was observed, so it no longer describes the current code.",
+        });
+      }
+      return outcome.passed
+        ? Object.freeze({
+            facet, facetKind: kind, capability, state: "SATISFIED" as const, evidence: Object.freeze([outcome.evidence]),
+            reason: "A behavioural subtest named for this requirement executed against the implementation module inside the repository confinement and passed.",
+          })
+        : Object.freeze({
+            facet, facetKind: kind, capability, state: "UNSATISFIED" as const, evidence: Object.freeze([outcome.evidence]),
+            reason: outcome.detail ?? "A behavioural subtest named for this requirement executed against the implementation module and failed.",
+          });
     }
     if (declaredEvidence === "realized-artefact") {
       const realized = [...evidence.realizedArtefacts.keys()].sort();
@@ -248,6 +286,7 @@ export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary
     nonClaims: Object.freeze([
       "Every satisfied verdict names the evidence that produced it. No verdict is read from a stored satisfaction value.",
       "NOT_ASSESSED means no admissible evidence exists yet. It is not a claim that the facet is unsatisfied.",
+      "An implementation-conformance verdict is derived from an executed behavioural subtest named for the facet. The presence of a module at its canonical path is never admissible for one.",
       "BLOCKED means the required evidence class must be produced by running a check and cannot be authored.",
       "NOT_APPLICABLE is authored authority recovered from V1, not an absence of evidence, and is excluded from the completion denominator rather than counted as satisfied.",
     ]),
