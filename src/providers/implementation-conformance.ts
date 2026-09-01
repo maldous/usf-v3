@@ -304,12 +304,35 @@ export async function loadConformanceEvidence(
   return entries;
 }
 
-/** Persist one run as durable, ignored evidence named by its own content. */
+/**
+ * Persist one run as durable, ignored evidence named by its own content, and
+ * drop this capability's superseded records.
+ *
+ * A record that binds bytes the repository no longer has cannot satisfy
+ * anything, and unattended operation would otherwise accumulate one file per
+ * capability per cycle for every night it runs. This is ignored disposable
+ * acceleration, so the current observation is the one worth keeping.
+ */
 export async function recordConformanceRun(repositoryRoot: string, run: ConformanceRun): Promise<string> {
   const directory = resolve(repositoryRoot, conformanceEvidenceDirectory);
   await mkdir(directory, { recursive: true, mode: 0o700 });
   const digest = canonicalDigest(run);
   const path = `${conformanceEvidenceDirectory}/${digest.slice("sha256:".length)}.json`;
   await writeFile(resolve(repositoryRoot, path), `${JSON.stringify(run, null, 1)}\n`, { mode: 0o600 });
+
+  const keep = `${digest.slice("sha256:".length)}.json`;
+  for (const name of (await readdir(directory).catch(() => [] as string[]))) {
+    if (name === keep || !name.endsWith(".json")) continue;
+    const bytes = await readFile(resolve(directory, name), "utf8").catch(() => undefined);
+    if (bytes === undefined) continue;
+    try {
+      const held = JSON.parse(bytes) as ConformanceRun;
+      if (held.capability !== run.capability) continue;
+      // Keep any record that still binds the exact current bytes; drop the rest.
+      if (held.modulePathDigest === run.modulePathDigest
+        && held.conformancePathDigest === run.conformancePathDigest) continue;
+      await rm(resolve(directory, name), { force: true });
+    } catch { continue; }
+  }
   return path;
 }
