@@ -93,6 +93,41 @@ candidate-local economics/service-tier disposition projection. This is the
 single largest remaining item before any provider contact is reachable, and it
 is explicitly no-contact work in its own right.
 
+### Available: preserved uncommitted drafts match two packets' write sets exactly
+
+The primary checkout at `/home/user/src/usf-v3` carries nine deliberately
+preserved uncommitted drafts that exist in no commit. Five of them are exactly
+the missing write-set members of the next two packets, so those packets are
+much closer to realisable than a file listing suggests:
+
+- `urn:usf:work:provider-hidden-holdout` has `dependencyReady: true` with
+  `dependencyAuthority: no-dependencies` - it is a root - and a three-path write
+  set `schemas/hidden-evaluation-receipt.schema.json`,
+  `src/providers/qualification.ts` and
+  `tests/unit/providers/qualification.test.ts`. **All three exist as preserved
+  drafts.** Only the schema is absent from the carrier; the other two are
+  modifications. It declares no `ProductionLeafRuntimeClosure`, so it cannot hit
+  the account-tier trap, and its sole validation is
+  `urn:usf:validation:provider-hidden-holdout`.
+- `urn:usf:work:provider-invocation-boundary` is not yet dependency-ready, and
+  its four missing write paths `schemas/adapter-preflight-receipt.schema.json`,
+  `schemas/provider-answer-observation.schema.json`,
+  `schemas/run-authorization.schema.json` and
+  `tests/integration/provider-invocation.test.ts` **all exist as preserved
+  drafts** too.
+
+These drafts are unreviewed proposals, not authority: they must enter through
+the registered `usf call`/`resolve`/`apply` contribution chain under current
+construction authority, never by being committed directly, and each must pass
+its graph-selected validation. Do not delete them and do not treat their
+presence as evidence. `provider-hidden-holdout` is the cheapest next real
+implementation candidate.
+
+Note that no provider-driven assignment can be derived yet: `usf route` needs
+qualified routes, both configured routes are `UNQUALIFIED`, and qualification is
+itself downstream of the account-tier chain. A contribution must therefore be
+produced without inventing an ad hoc envelope by hand.
+
 ### Registered-command gap register
 
 Carried forward unchanged from the predecessor boundary, with one addition
