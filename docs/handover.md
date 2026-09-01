@@ -1,6 +1,293 @@
 # USF V3 handover
 
-## Current live boundary — five packets complete; first real byte-delta contribution
+## Current live boundary — five packets complete; semantic diagnostics registered
+
+This section supersedes every older `Current`, `Live continuation` and `Next`
+heading retained below as chronological evidence; do not operationalize those
+older boundaries unless this section explicitly restates them.
+
+Prepared 2026-09-01. Read current Git and remote state rather than trusting any
+identifier here. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded.
+
+Two things happened at this boundary. `provider-hidden-holdout` was completed
+through a genuine byte delta, and the three highest-value diagnostics from the
+registered-command gap register became graph-derived projections of
+`usf status` rather than operator knowledge.
+
+Five packets are `verified-complete`: `repository-path-scope`,
+`file-asset-index`, `operator-observability`, `provider-census` and
+`provider-hidden-holdout`. `provider-account-tier-receipt` is
+`construction-ready` and must still not be completed as no-change.
+
+### Registered: four graph-derived projections in `usf status`
+
+`usf status --profile PROFILE --manifest PATH` now emits `carrier`,
+`closureSatisfiability`, `publicationPolicyCoverage` and `policyBlastRadius`.
+Without an explicit profile and manifest each reports `not-selected` rather
+than implying a clean bill of health, and each appears in `coverage.unobserved`.
+
+- **`closureSatisfiability`** asserts, for every typed
+  `ProductionLeafRuntimeClosure`, that the declared `closureMemberCount` equals
+  its distinct `runtimePath` rows, that every member is a same-root regular
+  non-symlink file, and that the declared `entryModulePath` is one of its own
+  members. Reason codes are `CLOSURE_MEMBER_COUNT_UNDECLARED`,
+  `CLOSURE_MEMBER_COUNT_MISMATCH:<declared>:<actual>`,
+  `CLOSURE_MEMBER_MISSING:<path>`, `CLOSURE_MEMBER_NOT_REGULAR_FILE:<path>`,
+  `CLOSURE_MEMBER_OUTSIDE_ROOT:<path>` and
+  `CLOSURE_ENTRY_MODULE_NOT_A_MEMBER:<path>`. Against the current repository it
+  reports `unsatisfiable`, `blockedWorks:
+  ["urn:usf:work:provider-account-tier-receipt"]`, and names
+  `src/providers/account-sources.ts`, `src/providers/disposition.ts` and
+  `src/providers/host-source-identities.ts`. That is exactly the defect that
+  previously cost a completion publication and a rollback, now readable before
+  publication.
+- **`publicationPolicyCoverage`** asserts over the exact selected closure that
+  every selected work has exactly one construction-authority and one completion
+  policy, and that each named policy's `publicationAlgorithm` carries the
+  reciprocal `publicationPolicy` edge. Risks are
+  `CONSTRUCTION_WORK_NOT_ELIGIBLE`, `CONSTRUCTION_AUTHORITY_POLICY_AMBIGUOUS`,
+  `WORK_COMPLETION_NOT_ELIGIBLE`, `WORK_COMPLETION_POLICY_AMBIGUOUS` and
+  `CONSTRUCTION_AUTHORITY_PUBLICATION_CHAIN_INVALID:<policy>`. The current
+  closure is `covered`.
+- **`policyBlastRadius`** projects, per publication policy, which works would
+  stale if that policy's digest moved, split into `currentGrantsAtRisk` and
+  `currentCompletionsAtRisk`.
+- **`carrier`** reports worktree kind, detached HEAD, branch, origin presence
+  and upstream distance, and is discussed below.
+
+### Decision-changing lesson: blast radius is closure membership, not `eligibleWork`
+
+The obvious derivation is wrong. A policy's `eligibleWork` list and the set of
+works whose scoped dependency closure actually contains that policy are
+genuinely different sets. Measured at this boundary:
+
+| Work | Policies in its scoped closure |
+|---|---|
+| `repository-path-scope` | `construction-authority:1` only |
+| `file-asset-index` | `construction-authority:1`, `construction-authority:3`, `no-change-completion:1` |
+| `provider-hidden-holdout` | `construction-authority:2` only |
+| `provider-census` | `construction-authority:1`, `no-change-completion:1` |
+
+Note that `file-asset-index` does **not** carry its own completion policy
+`no-change-completion:3` in its closure, while it does carry two policies that
+do not enumerate it. Only closure membership decides what a digest move stales,
+so the projection is derived from each packet's
+`realisationBasis.work.dependencies` and reports
+`derivation: "scoped-dependency-closure-membership"`.
+
+**The projection predicted its own change's blast radius exactly.** Before
+contributing, it named `operator-observability`, `provider-census` and
+`provider-account-tier-receipt` as the works whose current authority a change
+to `src/commands/status.ts` would stale. Integration then staled exactly those
+three. That is the trial-amendment-and-rollback loop replaced by a read-back.
+
+### Decision-changing lesson: restore the stale root, not each consumer
+
+After integration all three staled works reported `blocked`. Deriving
+construction evidence for `provider-census` or `provider-account-tier-receipt`
+first refused `CONSTRUCTION_DEPENDENCY_NOT_READY`, correctly, because both
+depend on `operator-observability`'s completion. Republishing
+`operator-observability`'s construction authority and completion **restored
+both consumers' grants automatically** to `construction-ready` with
+`active-permission`; only `provider-census`, which had been complete, needed
+its own completion republished. Restoring roots first collapses what looks like
+three recovery chains into one and a half.
+
+### Decision-changing lesson: a current grant is not republished, it is reused
+
+`usf publish construction-authority --verify` refused
+`CONSTRUCTION_PUBLICATION_PARTIAL_STATE` when asked to publish a second grant
+for a packet whose grant was already current. That is correct and is not a
+defect: a packet that already holds active construction authority contributes
+under the grant it has. Only after integration stales it does a fresh grant
+become both necessary and publishable.
+
+### Confined candidates deliberately do not carry `status.ts`'s imports
+
+The operator no-change candidate contains `src/commands/status.ts` but not
+`src/graph/index.ts`, `src/graph/nquads.ts`, `src/graph/query.ts`,
+`src/continuous/lifecycle.ts`, `src/core/scope.ts` or `src/realisation/basis.ts`.
+Nothing in the confined validation previously imported `status.ts`, so those
+imports were never resolved. A static test import of `status.ts` therefore
+fails the confined check even though the outer suite passes, and
+`urn:usf:validation-runtime-closure:operator-observability:1` cannot be widened
+from this profile because `graph/usf-bootstrap.nq` is owned by
+`realisation-basis-chain`, and a second closure targeting the same validation
+refuses `VALIDATION_RUNTIME_CLOSURE_AMBIGUOUS`.
+
+The accepted correction places the new coverage in the ordinary outer carrier
+lane in `tests/integration/observability-cli.test.ts`, reached through a
+`await import(...)` guarded by the existing `childProcessUnavailable` check.
+The confined lane is unchanged. Do not rediscover this by adding a static
+import; it will fail `tests/integration/profile-scoped-authority.test.ts` with
+`CHECK_FAILED` and no module-resolution detail.
+
+### The status locality invariant was strengthened, not widened
+
+The carrier projection adds `symbolic-ref`, `config` and `rev-list` to the Git
+operations `usf status` performs. All are local reads. Rather than simply
+extending the allowlist, the assertion now carries a closed local-only
+allowlist **and** an explicit negative assertion that no remote-capable Git
+operation (`fetch`, `ls-remote`, `push`, `pull`, `clone`, `remote`,
+`submodule`) is ever invoked, plus read-backs of `carrier.remoteContact`,
+`upstream.observedFromLocalRefsOnly` and `comparisonScope`.
+
+`carrier` deliberately does not compare this checkout against sibling clones.
+One invocation observes one checkout; inventing that comparison from a single
+root would be a guess. Upstream distance comes from already-fetched local
+remote-tracking refs, so an absent or stale upstream reports `not-observed`
+with `CARRIER_HEAD_DETACHED`, `CARRIER_UPSTREAM_NOT_CONFIGURED` or
+`CARRIER_UPSTREAM_REF_UNREADABLE` rather than "up to date".
+
+### Still open: account-tier requires real implementation
+
+Unchanged and reconfirmed, and now machine-readable through
+`usf status ... | closureSatisfiability`.
+`urn:usf:requirement:provider-receipt-production-runtime-closure` declares a
+20-member `ProductionLeafRuntimeClosure` whose members
+`src/providers/account-sources.ts`, `src/providers/disposition.ts` and
+`src/providers/host-source-identities.ts` do not exist. Its confined validation
+cannot observe this; only the outer registered `usf providers receipt acquire`
+boundary does, by turning exit 1 `PROVIDERS_RECEIPT_PROOFBLOCKED` into exit 4
+`PROVIDERS_RECEIPT_DEPENDENCY_REFUSED`. Its declared write set is 24 paths, of
+which 19 do not yet exist. Resolve the exact write set from the graph rather
+than from that count.
+
+### Remaining preserved drafts
+
+Six deliberately preserved uncommitted drafts remain in the primary checkout
+and exist in no commit. Four are exactly the missing write-set members of
+`urn:usf:work:provider-invocation-boundary`, which is not yet
+dependency-ready: `schemas/adapter-preflight-receipt.schema.json`,
+`schemas/provider-answer-observation.schema.json`,
+`schemas/run-authorization.schema.json` and
+`tests/integration/provider-invocation.test.ts`. The other two, `README.md` and
+`src/providers/probe.ts`, are unreviewed and belong to no currently actionable
+packet. Do not delete them and do not treat their presence as evidence. They
+add two tests to a local `node --run check`, so only the standalone
+empty-`.usf` clone number is authoritative.
+
+### The byte-delta contribution chain, for reuse
+
+Both contributions this session used the same shape. It is not the no-change
+shape and costs two construction grants, because integration necessarily moves
+the packet's scoped dependency digest and stales the grant that authorized the
+contribution.
+
+1. Restore every owned path to its exact carrier preimage. Put the desired
+   postimage bytes only in the immutable contribution. Evidence derived while
+   an owned desired edit is already dirty becomes stale when that path is
+   restored.
+2. If the packet holds no current grant: `usf evidence construction` ->
+   `usf prove construction` -> `usf publish construction-authority --verify`
+   twice with an identical projection -> `--apply`. If it already holds one,
+   skip this; a second grant refuses `CONSTRUCTION_PUBLICATION_PARTIAL_STATE`.
+3. Build one bounded owner-private mode-0600 `.usf/inputs/*.json` holding a
+   single assignment whose `basis` is the packet's exact current
+   `realisationBasis`, whose `packet.permittedPaths` is the write set, whose
+   `proposedFileOperations` are `write` operations carrying the postimage
+   bytes, and whose `workPacketDigest`, `scopedDependencyDigest` and
+   `promptTemplateDigest` equal `basis.work.packetCoreDigest`,
+   `basis.work.scopedDependencyDigest` and `basis.inputs.policyDigest`. Use the
+   local zero-cost deterministic route.
+4. `usf call --input FILE` and authenticate a complete `ok` batch: empty
+   failures, requested equal to succeeded, failed zero.
+5. `usf resolve --input -` then `usf apply --input -`.
+6. One `usf check --candidate DIGEST --validation IRI` per completion
+   validation obligation. `usf check` takes no `--profile` or `--manifest`.
+7. `usf integrate --dry-run`. A first-time
+   `INTEGRATION_DETACHED_BASIS_MISMATCH` means the candidate basis contains
+   uncommitted semantic bytes: close a coherent carrier checkpoint containing
+   exactly those unchanged bytes and retry the same content-addressed candidate
+   and check receipt. Then `usf integrate`.
+8. Rederive construction authority at the postimage basis, restoring stale
+   roots before consumers, then `usf realise no-change` -> one `usf check` per
+   obligation -> `usf evidence completion` -> `usf prove completion` ->
+   `usf publish work-completion --verify` twice -> `--apply`.
+
+### Registered-command gap register
+
+Three gaps closed at this boundary and are struck through below. The rest are
+carried forward. Each remaining gap has a real owner and must be registered as
+the smallest deterministic `usf` command or projection with stable arguments,
+JSON result, help, effects and refusal classes. None may be smuggled into an
+unrelated write set.
+
+| Gap | State | Owner | Required registered behaviour |
+|---|---|---|---|
+| ~~Production closure satisfiability~~ | **closed** — `usf status ... .closureSatisfiability` | `operator-observability` | Implemented in `src/commands/status.ts`; planted-defect table and live filesystem cross-check in `tests/integration/observability-cli.test.ts`. |
+| ~~Publication policy coverage~~ | **closed** — `usf status ... .publicationPolicyCoverage` | `operator-observability` | As above. Note the owner is `operator-observability`, not `provider-census` as previously proposed: `usf status` already binds `--profile`/`--manifest`, so the projections needed no new CLI option and no cross-packet write to `src/commands/help.ts`. |
+| ~~Policy-widening blast radius~~ | **closed** — `usf status ... .policyBlastRadius` | `operator-observability` | As above. Derived from scoped closure membership, not `eligibleWork`. |
+| Carrier truth | **partly closed** — `usf status ... .carrier` | `operator-observability` (`src/commands/status.ts`) | Local worktree kind, detached HEAD, branch, origin presence, semantic digest and upstream distance from already-fetched local refs are now projected. Still open: comparing two named checkouts, and an explicitly requested single named remote ref. Both need an option, so both need the `help.ts` surface and a decision about `RegisteredCliCommand` authority. |
+| Checkpoint qualification | **open** — still a hand-built shell script, rebuilt from scratch again this session and run three times | `operator-observability` | One command taking an exact commit and performing the standalone empty-`.usf` qualification, emitting test totals, containment result, reproduced semantic digest and unchanged commit/tree/status. The exact procedure is recorded below so at least the rediscovery cost is gone. |
+| Obligation identity | **open** | `operator-observability` (`usf work`/`usf query`) | Project each selected work's exact construction and completion obligation and evidence-requirement IRIs at every stage. These are currently readable from `realisationAuthority.constructionProofObligation` and `.completionProofObligation` on the work packet, which is enough in practice; the remaining gap is that they vanish from reason codes once authority exists and are not projected by `usf query`. Composing the IRI from the work IRI refuses `CONSTRUCTION_OBLIGATION_MISMATCH`. |
+| Batch incompatibility detail | **open** | existing `usf publish` | Name the incompatible member and the compared identity in the `WORK_COMPLETION_CANDIDATE_READBACK_INVALID` refusal so cohort formation does not need bisection. |
+| Ignored-state readiness | **open** | `provider-census` (`src/commands/doctor.ts`) | Expose every recurring ignored operational root the active chain uses, with required owner, type and mode, so a `.usf/inputs` drift to 775 is a named doctor finding rather than a `DYNAMIC_LEAF_FIXTURE_DEPENDENCY_REFUSED` in an unrelated contract test. Observed and repaired with `usf init` this session. |
+| Graph-registered command authority for the new projections | **new, open** | unassigned | The four new `usf status` projections are implemented and tested but are not represented as versioned graph `RegisteredCliCommand` resources, because `graph/provider-pipeline.nq` and `graph/profile-authority.nq` are not any work's `writePath` and are written only by the publication commands. Decide which packet owns registering command authority for projections added to an existing command, rather than leaving TypeScript and help text as the only contract. |
+
+### The standalone empty-`.usf` qualification procedure
+
+Until it is a registered command, this is the exact procedure. It contacts no
+remote and uses only local objects.
+
+```sh
+PRIMARY=/home/user/src/usf-v3
+OUT=$(mktemp -d /home/user/src/usf-v3-q-XXXXXX) && rm -rf "$OUT"
+git clone --no-hardlinks --quiet "file://$PRIMARY" "$OUT"
+cd "$OUT" && git checkout --quiet --detach <COMMIT>
+./scripts/bootstrap.sh                       # creates the empty .usf layout
+cp -a "$PRIMARY/node_modules" "$OUT/node_modules"
+cp -a "$PRIMARY/.usf/cache/pnpm-virtual-store" "$OUT/.usf/cache/pnpm-virtual-store"
+cp -a "$PRIMARY/.usf/cache/pnpm-store"        "$OUT/.usf/cache/pnpm-store"
+cp -a "$PRIMARY/.usf/cache/pnpm-store-deps"   "$OUT/.usf/cache/pnpm-store-deps"
+cp -a "$PRIMARY/.usf/cache/bootstrap-carrier-packages" "$OUT/.usf/cache/bootstrap-carrier-packages"
+chmod 700 "$OUT/.usf/cache"                  # a group-writable cache correctly
+                                             # refuses CHECK_CONFINEMENT_UNAVAILABLE
+mkdir -p /tmp/usf-authoritative /tmp/usf-corepack
+TMPDIR=/tmp/usf-authoritative COREPACK_HOME=/tmp/usf-corepack node --run check
+TMPDIR=/tmp/usf-authoritative ./scripts/verify-contained.sh
+git rev-parse HEAD && git rev-parse HEAD^{tree} && git status --porcelain
+./bin/usf status --profile <PROFILE> --manifest <MANIFEST>   # reproduce the digest
+```
+
+### Next safe order
+
+1. implement `provider-account-tier-receipt`'s missing write-set paths through
+   the registered `usf call`/`resolve`/`apply` chain under its current
+   construction authority, check, integrate, rederive authority at the
+   postimage and only then complete it. Before minting completion, require
+   `usf status ... | .closureSatisfiability.status == "satisfiable"` and no
+   `blockedWorks`; that projection now exists precisely so this packet cannot
+   repeat its previous failure;
+2. close the remaining carrier-truth and checkpoint-qualification gaps, and
+   decide the graph `RegisteredCliCommand` ownership question; and
+3. only then advance `provider-invocation-boundary`, adapter preflight,
+   qualification and parallel execution toward live multi-provider work.
+
+Verified evidence at this boundary: a standalone empty-`.usf` clone at
+`d0904023baaf2d4143cdd71873dc50dca67c585f` passes **213/213** with containment
+`pass`, an unchanged commit, tree and clean status, and reproduces semantic
+digest `sha256:acd0321377ddc75c4af1f879a0736907e1fd56e1efd22ee900db8d104241101a`
+plus every new projection from tracked files alone. The gate moved 209 -> 210
+-> 213 across this session: one test added by the hidden-holdout contribution
+and three by the diagnostics. A byte-changing contribution that adds coverage
+must move the count.
+
+Provider contact remains disabled and no live demonstration exists.
+`usf probe availability` still fails closed before contact, both configured
+routes remain `UNQUALIFIED`, `usf route` still cannot derive an assignment and
+`usf providers receipt acquire` is still proofblocked, because no trusted
+account-tier receipt exists. No receipt v2 runtime, list runtime, account
+observation, provider entitlement, model qualification, adapter load, live
+parallel run, semantic-token reduction, ANQR realisation, staging, production,
+BAU or terminal proof is claimed. The completed hidden-holdout evaluator is
+deterministic-fixture capability only; it has never scored a provider answer.
+The `local` route used by both contributions is the in-repository
+`DeterministicFakeProvider`; it is a no-contact composition boundary, not a
+provider.
+
+## Prior boundary — five packets complete; first real byte-delta contribution
 
 This section supersedes every older `Current`, `Live continuation` and `Next`
 heading retained below as chronological evidence; do not operationalize those
