@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "name": "uidocumentationmodel",
+    "kind": "report",
+    "version": "1.0.0",
+    "description": "UI Documentation Model for ANQR product, defining the structure and components of the user interface documentation.",
+    "deliveryCapability": "ANQR"
+  },
+  "content": {
+    "sections": [
+      {
+        "id": "overview",
+        "title": "Overview",
+        "description": "High-level description of the ANQR UI, its purpose, and target users."
+      },
+      {
+        "id": "components",
+        "title": "UI Components",
+        "description": "Detailed breakdown of reusable UI components, their properties, and usage guidelines.",
+        "items": [
+          {
+            "name": "SearchBar",
+            "description": "Primary search input for querying ANQR data.",
+            "properties": {
+              "placeholder": "string",
+              "autocomplete": "boolean"
+            }
+          },
+          {
+            "name": "ResultCard",
+            "description": "Displays a single search result with metadata.",
+            "properties": {
+              "title": "string",
+              "summary": "string",
+              "tags": "array<string>"
+            }
+          }
+        ]
+      },
+      {
+        "id": "workflows",
+        "title": "User Workflows",
+        "description": "Step-by-step guides for common user tasks in the ANQR interface.",
+        "workflows": [
+          {
+            "name": "SubmitQuery",
+            "steps": [
+              "Enter search term in SearchBar",
+              "Select filters (optional)",
+              "Click 'Search' button",
+              "Review results in ResultCard list"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "accessibility",
+        "title": "Accessibility Guidelines",
+        "description": "Standards and best practices for ensuring ANQR UI is accessible to all users.",
+        "standards": [
+          "WCAG 2.1 AA",
+          "Keyboard Navigation",
+          "Screen Reader Support"
+        ]
+      }
+    ]
+  }
+}

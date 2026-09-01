@@ -1,0 +1,29 @@
+{
+  "artifact": "formmodel",
+  "kind": "contract",
+  "product": "ANQR",
+  "definition": {
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "age": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "required": [
+      "firstName",
+      "lastName",
+      "email"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "artifact": "mobilerendererinput",
+  "kind": "manifest",
+  "type": "mobile-renderer-input",
+  "version": "1.0",
+  "description": "Defines input specifications for mobile renderer"
+}

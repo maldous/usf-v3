@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "product": "ANQR",
+    "artifact": "routemanifest",
+    "kind": "manifest",
+    "version": "1.0.0",
+    "deliveryCapabilitySet": true
+  },
+  "routingRules": [
+    {
+      "id": "rr-001",
+      "match": {
+        "path": "/v1/stream/*",
+        "method": "POST"
+      },
+      "action": {
+        "target": "primary-ingress",
+        "strategy": "weighted",
+        "weights": {
+          "node-a": 80,
+          "node-b": 20
+        }
+      },
+      "timeoutMs": 5000
+    },
+    {
+      "id": "rr-002",
+      "match": {
+        "path": "/v1/control/*",
+        "method": "ANY"
+      },
+      "action": {
+        "target": "control-plane",
+        "strategy": "failover",
+        "primary": "ctrl-1",
+        "fallback": "ctrl-2"
+      },
+      "timeoutMs": 3000
+    }
+  ],
+  "deliveryTargets": [
+    "primary-ingress",
+    "control-plane",
+    "sync-replica"
+  ],
+  "validation": {
+    "status": "COMPLIANT",
+    "checks": [
+      "route-syntax",
+      "target-reachability",
+      "policy-enforcement"
+    ]
+  }
+}

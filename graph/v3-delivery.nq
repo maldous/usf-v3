@@ -426,9 +426,7 @@
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:compileroutputschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:realizationMechanismReason> "This artefact is a JSON Schema and must satisfy a supported schema dialect. A total projection of contract authority is not a JSON Schema, so projecting into this path would produce an artefact the repository schema gate correctly refuses. A JSON Schema projector is required and is not implemented." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:requiredProjectionFormat> "JSON Schema in a supported dialect" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:compileroutputschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
@@ -489,10 +487,8 @@
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:graphqlcontract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanismReason> "A total projection of contract authority is deterministic, but this artefact must be a valid GraphQL schema definition language. Emitting the projection as JSON into this path would produce a syntactically wrong artefact. A format-specific projector is required and is not implemented; the artefact is therefore not realized rather than realized wrongly." <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:requiredProjectionFormat> "GraphQL schema definition language" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:implementationscaffold> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:source> <urn:usf:graph:v3-delivery> .
@@ -536,10 +532,8 @@
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:openapicontract> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanismReason> "A total projection of contract authority is deterministic, but this artefact must be a valid OpenAPI 3 document. Emitting the projection as JSON into this path would produce a syntactically wrong artefact. A format-specific projector is required and is not implemented; the artefact is therefore not realized rather than realized wrongly." <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:requiredProjectionFormat> "OpenAPI 3 document" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:openapicontract> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:previewmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:manifest> <urn:usf:graph:v3-delivery> .
@@ -620,9 +614,7 @@
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:rendererinputschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:realizationMechanismReason> "This artefact is a JSON Schema and must satisfy a supported schema dialect. A total projection of contract authority is not a JSON Schema, so projecting into this path would produce an artefact the repository schema gate correctly refuses. A JSON Schema projector is required and is not implemented." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:requiredProjectionFormat> "JSON Schema in a supported dialect" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:rendererinputschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
@@ -650,9 +642,7 @@
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:contractprojection> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:semanticcontractschema> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanism> "EXTERNAL_TOOL" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanismReason> "Projects graph authority into a schema or contract document. The graph is the input and the mapping is total, so a model would only paraphrase authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:realizationMechanismReason> "This artefact is a JSON Schema and must satisfy a supported schema dialect. A total projection of contract authority is not a JSON Schema, so projecting into this path would produce an artefact the repository schema gate correctly refuses. A JSON Schema projector is required and is not implemented." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:requiredProjectionFormat> "JSON Schema in a supported dialect" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:semanticcontractschema> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .

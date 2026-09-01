@@ -1,0 +1,6 @@
+{
+  "artifact": "webrendererinput",
+  "kind": "manifest",
+  "version": "1.0",
+  "description": "Manifest for web renderer input artefact."
+}

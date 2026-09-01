@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
+import { canonicalQuadLine } from "../graph/nquads.ts";
+import { validateArtefactOutput } from "../providers/artefact-validation.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import {
@@ -159,6 +161,31 @@ export function generateDeterministically(
   return null;
 }
 
+/**
+ * The semantic requirement a model must satisfy, derived entirely from graph
+ * authority. The model is told what the artefact means and what format it must
+ * be in; it is never told, and never decides, where the file goes.
+ */
+export function deriveSemanticPrompt(graph: SemanticGraph, work: ArtefactWork): string {
+  const kind = work.artefactKind?.split(":").pop() ?? "artefact";
+  const format = work.canonicalPath?.endsWith(".md") === true ? "GitHub-flavoured Markdown"
+    : work.canonicalPath?.endsWith(".json") === true ? "a single JSON object"
+    : work.canonicalPath?.endsWith(".yml") === true || work.canonicalPath?.endsWith(".yaml") === true ? "YAML with a root mapping"
+    : "plain text";
+  const capability = graph.quads.find((quad) =>
+    quad.predicate === `${P}definesCompletionFor` && quad.subject.startsWith("urn:usf:delivery-contract:"))?.object ?? null;
+  const facets = work.acceptanceFacets.length === 0 ? "" :
+    `\nAcceptance facets that must be addressed: ${work.acceptanceFacets.map((facet) => facet.split(":").pop()).join(", ")}.`;
+  return [
+    `Produce the content of one delivery artefact for the ANQR product.`,
+    `Artefact: ${work.canonicalName}. Declared kind: ${kind}.`,
+    `Output format: ${format}. Return only the content, with no commentary, no code fence and no file path.`,
+    capability === null ? "" : `It belongs to the delivery capability set of this product.`,
+    facets,
+    `Be concise and concrete. Do not invent repository paths, filenames or additional files.`,
+  ].filter((line) => line.length > 0).join("\n");
+}
+
 export interface RealisePlan {
   readonly schema: "urn:usf:delivery-realisation-plan:1";
   readonly version: 1;
@@ -264,6 +291,113 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     if (postimages.length >= maximumBatch) break;
   }
 
+  // Semantic model work. The existing V3 execution path does the routing:
+  // candidate discovery, capability filtering, transport compatibility,
+  // authentication, economics, route selection, fallback and the authority
+  // bracket. Realization adds only the semantic requirement and the output
+  // check; it does not choose a provider and does not execute models itself.
+  const modelWork = semantic.filter((entry) =>
+    entry.mechanism === "SEMANTIC_MODEL_WORK" && entry.canonicalPath !== null);
+  const modelOutcomes: Array<Readonly<Record<string, unknown>>> = [];
+  let modelInvocations = 0;
+  let cacheHits = 0;
+  if (envFile !== undefined && modelWork.length > 0) {
+    const dispatch: Array<Readonly<{ work: ArtefactWork; identity: SemanticWorkIdentity; unit: string; prompt: string }>> = [];
+    for (const entry of modelWork.slice(0, maximumBatch)) {
+      const prompt = deriveSemanticPrompt(graph, entry);
+      const identity: SemanticWorkIdentity = Object.freeze({
+        requirement: entry.artefact,
+        inputDigests: Object.freeze([canonicalDigest(prompt)]),
+        dependencyResultDigests: Object.freeze([]),
+        acceptanceRequirements: entry.acceptanceFacets,
+        requiredCapabilities: Object.freeze([]),
+        outputContract: entry.artefactKind,
+        policyDigest,
+        requiredProvider: null,
+        requiredModel: null,
+      });
+      const lookup = await lookupSemanticResult(repositoryRoot, identity);
+      if (lookup.hit && lookup.entry !== null) {
+        const checked = validateArtefactOutput(lookup.entry.text, {
+          canonicalPath: entry.canonicalPath!, artefactKind: entry.artefactKind,
+        });
+        if (checked.accepted) {
+          cacheHits += 1;
+          await recordSemanticReuse(repositoryRoot, lookup.entry);
+          postimages.push(Object.freeze({ path: entry.canonicalPath!, content: checked.content }));
+          realized.push(Object.freeze({
+            artefact: entry.artefact, path: entry.canonicalPath!, mechanism: entry.mechanism,
+            cache: "reused", digest: checked.contentDigest,
+          }));
+          continue;
+        }
+      }
+      dispatch.push(Object.freeze({
+        work: entry, identity, prompt,
+        unit: `urn:usf:workunit:realise-${entry.canonicalName}`,
+      }));
+    }
+
+    if (dispatch.length > 0) {
+      // One work graph, dispatched through the ordinary graph execution path so
+      // every unit routes independently and refusals fall back per unit.
+      const workGraph = "urn:usf:graph:delivery-realisation";
+      const quads = dispatch.flatMap(({ unit, prompt }) => [
+        { subject: unit, predicate: `${P}type`, object: "urn:usf:type:SemanticWorkUnit", objectKind: "iri" as const, graph: workGraph, canonical: "" },
+        { subject: unit, predicate: `${P}prompt`, object: prompt, objectKind: "literal" as const, graph: workGraph, canonical: "" },
+        { subject: unit, predicate: `${P}maximumOutputTokens`, object: "4000", objectKind: "literal" as const, graph: workGraph, canonical: "" },
+      ]).map((quad) => ({ ...quad, canonical: canonicalQuadLine(quad) }));
+      const workPath = ".usf/work/delivery-realisation.nq";
+      await mkdir(resolve(repositoryRoot, ".usf", "work"), { recursive: true, mode: 0o700 });
+      await writeFile(resolve(repositoryRoot, workPath),
+        `${quads.map((quad) => quad.canonical).sort().join("\n")}\n`, { mode: 0o600 });
+      const { graphExecuteCommand } = await import("./graph-execute.ts");
+      const executed = await graphExecuteCommand(repositoryRoot, [
+        "--input", workPath, "--graph", workGraph, "--env-file", envFile,
+        "--concurrency", String(Math.min(8, dispatch.length)),
+      ]).catch((error: unknown) => ({
+        output: Object.freeze({ status: "refused", failure: error instanceof Error ? error.message.slice(0, 200) : "unknown" }),
+        exitCode: exitCodes.EXTERNAL_UNAVAILABLE,
+      }));
+      const evidence = executed.output as Record<string, unknown>;
+      const units = Array.isArray(evidence.units) ? evidence.units as Record<string, unknown>[] : [];
+      const byUnit = new Map(units.map((unit) => [unit.unit as string, unit] as const));
+      for (const { work: entry, identity, unit } of dispatch) {
+        const record = byUnit.get(unit);
+        if (record === undefined || record.status !== "ok" || typeof record.resultText !== "string") {
+          modelOutcomes.push(Object.freeze({
+            artefact: entry.artefact, outcome: "refused",
+            reason: (record?.attempts as Array<{ reasonCode?: unknown }> | undefined)?.at(-1)?.reasonCode ?? "NO_RESULT",
+          }));
+          continue;
+        }
+        modelInvocations += 1;
+        const checked = validateArtefactOutput(record.resultText, {
+          canonicalPath: entry.canonicalPath!, artefactKind: entry.artefactKind,
+        });
+        if (!checked.accepted) {
+          modelOutcomes.push(Object.freeze({
+            artefact: entry.artefact, outcome: "output-refused",
+            code: checked.code, detail: checked.detail, transport: record.transport ?? null,
+          }));
+          continue;
+        }
+        await storeSemanticResult(repositoryRoot, identity, checked.content,
+          typeof evidence.evidenceDigest === "string" ? evidence.evidenceDigest : null);
+        postimages.push(Object.freeze({ path: entry.canonicalPath!, content: checked.content }));
+        realized.push(Object.freeze({
+          artefact: entry.artefact, path: entry.canonicalPath!, mechanism: entry.mechanism,
+          cache: "produced", digest: checked.contentDigest,
+        }));
+        modelOutcomes.push(Object.freeze({
+          artefact: entry.artefact, outcome: "accepted",
+          transport: record.transport ?? null, actualModel: record.actualModel ?? null,
+          usage: record.usage ?? null,
+        }));
+      }
+    }
+  }
+
   // Independent realizations are batched into one proposal and applied through
   // the single semantic transaction path. Nothing is written here, so a refused
   // batch leaves nothing partially realized.
@@ -289,6 +423,12 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
       proposalPath,
       batchSize: postimages.length,
       realizedCount: realized.length,
+      modelDispatch: Object.freeze({
+        candidateCount: semantic.filter((e) => e.mechanism === "SEMANTIC_MODEL_WORK").length,
+        cacheHits, modelInvocations,
+        outcomes: Object.freeze(modelOutcomes),
+        dispatched: envFile !== undefined,
+      }),
       realized: Object.freeze(realized),
       // The caller batches these into one transaction; realise computes, it does
       // not mutate, so a failed batch leaves nothing partially written.

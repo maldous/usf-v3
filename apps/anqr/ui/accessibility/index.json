@@ -1,0 +1,28 @@
+{
+  "kind": "manifest",
+  "artifact": "accessibilityprofile",
+  "product": "ANQR",
+  "name": "Accessibility Profile",
+  "description": "Defines accessibility standards and compliance requirements for the ANQR product.",
+  "accessibilityLevel": "WCAG2.1AA",
+  "guidelines": [
+    "Perceivable",
+    "Operable",
+    "Understandable",
+    "Robust"
+  ],
+  "requirements": [
+    {
+      "id": "ARIA-1",
+      "description": "Provide appropriate ARIA labels"
+    },
+    {
+      "id": "COLOR-1",
+      "description": "Ensure sufficient color contrast"
+    },
+    {
+      "id": "NAV-1",
+      "description": "All functionality reachable via keyboard"
+    }
+  ]
+}

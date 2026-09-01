@@ -23,7 +23,8 @@ export type IntegrityCode =
   | "derived-type-authored"
   | "superseded-still-referenced-as-current"
   | "state-missing-reason"
-  | "duplicate-quad";
+  | "duplicate-quad"
+  | "functional-predicate-conflict";
 
 export interface IntegrityViolation {
   readonly code: IntegrityCode;
@@ -63,6 +64,20 @@ export const derivedOnlyTypes: readonly string[] = Object.freeze([
   "urn:usf:type:ExecutionResult",
   "urn:usf:type:CatalogueClassification",
   "urn:usf:type:ReadinessProjection",
+]);
+
+/**
+ * Predicates that state exactly one value for a subject. Two values is not extra
+ * information; it is a contradiction, and a reader that resolves it by taking
+ * the first or by defaulting will silently do the wrong thing.
+ */
+export const functionalPredicates: readonly string[] = Object.freeze([
+  "urn:usf:predicate:realizationMechanism",
+  "urn:usf:predicate:canonicalPath",
+  "urn:usf:predicate:artefactKind",
+  "urn:usf:predicate:realisationRoot",
+  "urn:usf:predicate:selectedModel",
+  "urn:usf:predicate:pathPattern",
 ]);
 
 /** States whose assertion requires an accompanying reason literal. */
@@ -227,7 +242,23 @@ export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions
     }
   }
 
-  // 12. A corpus states each fact once.
+  // 12. A functional predicate carries exactly one value per subject.
+  const functionalSeen = new Map<string, Set<string>>();
+  for (const quad of quads) {
+    if (!functionalPredicates.includes(quad.predicate)) continue;
+    const key = `${quad.subject}\u0000${quad.predicate}`;
+    const values = functionalSeen.get(key) ?? new Set<string>();
+    values.add(quad.object);
+    functionalSeen.set(key, values);
+  }
+  for (const [key, values] of functionalSeen) {
+    if (values.size <= 1) continue;
+    const [subject, predicate] = key.split("\u0000");
+    add("functional-predicate-conflict", subject!,
+      `${predicate} states ${values.size} conflicting values: ${[...values].sort().join(" | ").slice(0, 160)}`, "");
+  }
+
+  // 13. A corpus states each fact once.
   const canonicalSeen = new Map<string, number>();
   for (const quad of quads) canonicalSeen.set(quad.canonical, (canonicalSeen.get(quad.canonical) ?? 0) + 1);
   for (const [canonical, count] of canonicalSeen) {
@@ -238,7 +269,7 @@ export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions
     "undeclared-type", "dangling-reference", "multiple-type-declaration", "self-dependency",
     "type-local-name-style", "predicate-local-name-style", "instance-local-name-style",
     "iri-segment-shape", "derived-type-authored", "superseded-still-referenced-as-current",
-    "state-missing-reason", "duplicate-quad",
+    "state-missing-reason", "duplicate-quad", "functional-predicate-conflict",
   ]);
 
   return Object.freeze({

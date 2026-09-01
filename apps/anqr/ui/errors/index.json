@@ -1,0 +1,62 @@
+{
+  "kind": "manifest",
+  "metadata": {
+    "name": "errorcatalogue",
+    "description": "Catalogue of standardized error codes and messages for the ANQR product",
+    "version": "1.0.0",
+    "deliveryCapability": "errorHandling"
+  },
+  "spec": {
+    "errors": [
+      {
+        "code": "ANQR-4000",
+        "httpStatus": 400,
+        "title": "Invalid Request",
+        "description": "The request payload is malformed or missing required fields.",
+        "severity": "high"
+      },
+      {
+        "code": "ANQR-4001",
+        "httpStatus": 400,
+        "title": "Invalid Parameter",
+        "description": "One or more query parameters are invalid or out of range.",
+        "severity": "medium"
+      },
+      {
+        "code": "ANQR-4010",
+        "httpStatus": 401,
+        "title": "Unauthorized",
+        "description": "Authentication credentials are missing or invalid.",
+        "severity": "high"
+      },
+      {
+        "code": "ANQR-4030",
+        "httpStatus": 403,
+        "title": "Forbidden",
+        "description": "The user lacks permission to perform the requested operation.",
+        "severity": "high"
+      },
+      {
+        "code": "ANQR-4040",
+        "httpStatus": 404,
+        "title": "Resource Not Found",
+        "description": "The requested resource does not exist.",
+        "severity": "medium"
+      },
+      {
+        "code": "ANQR-5000",
+        "httpStatus": 500,
+        "title": "Internal Server Error",
+        "description": "An unexpected error occurred on the server.",
+        "severity": "critical"
+      },
+      {
+        "code": "ANQR-5030",
+        "httpStatus": 503,
+        "title": "Service Unavailable",
+        "description": "The service is temporarily unavailable.",
+        "severity": "high"
+      }
+    ]
+  }
+}

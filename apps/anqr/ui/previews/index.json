@@ -1,0 +1,8 @@
+{
+  "artifact": "previewmodel",
+  "product": "ANQR",
+  "kind": "manifest",
+  "capabilities": [
+    "delivery"
+  ]
+}

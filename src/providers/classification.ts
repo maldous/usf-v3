@@ -4,6 +4,7 @@ import {
   evaluateExecutionEconomics,
   type EconomicEligibilityCode, type EffectiveCostPolicy, type ExecutionEconomicAuthorization,
 } from "./execution-economics.ts";
+import { permitsExecution as policyDecision } from "./provider-policy.ts";
 import type { ExecutionTransportId } from "./transports.ts";
 
 /**
@@ -26,6 +27,8 @@ export type ClassificationReason =
   | "TRANSPORT_UNKNOWN_ADAPTER"
   | "TRANSPORT_ADAPTER_NOT_INSTALLED"
   | "PROVIDER_ENDPOINT_UNDECLARED"
+  | "POLICY_OPERATOR_RESERVED"
+  | "POLICY_DISABLED"
   | "CREDENTIAL_NAME_UNDECLARED"
   | "CREDENTIAL_ABSENT"
   | "SESSION_UNAUTHENTICATED"
@@ -58,6 +61,8 @@ export interface ClassificationInput {
   readonly credentialAliases?: ReadonlyMap<string, readonly string[]>;
   /** Endpoints an OpenAI-compatible adapter needs, from graph authority. */
   readonly providerEndpoints?: ReadonlyMap<string, string>;
+  /** Execution policy from graph authority; reserved families are not routable. */
+  readonly executionPolicy?: import("./provider-policy.ts").ProviderExecutionPolicy;
 }
 
 export interface ModelClassification {
@@ -157,6 +162,22 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
         costClass,
       } as const;
 
+      // Execution authorization is checked before anything else, so a reserved
+      // family never reaches a credential or economics conclusion that could be
+      // mistaken for the reason it was not selected.
+      if (input.executionPolicy !== undefined) {
+        const decision = policyDecision(input.executionPolicy, {
+          transport, provider: provider.providerRoute, model: model.route.model,
+        });
+        if (!decision.permitted) {
+          classifications.push(Object.freeze({
+            ...base, credentialName: null, economicBasis: null, economicCode: null,
+            state: "DISCOVERED",
+            reason: decision.disposition === "DISABLED_BY_POLICY" ? "POLICY_DISABLED" : "POLICY_OPERATOR_RESERVED",
+          }));
+          continue;
+        }
+      }
       if (transport === null) {
         classifications.push(Object.freeze({ ...base, credentialName: null, economicBasis: null, economicCode: null, state: "DISCOVERED", reason: "TRANSPORT_UNKNOWN_ADAPTER" }));
         continue;

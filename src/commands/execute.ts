@@ -16,6 +16,7 @@ import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 import { readGraphDerivedEconomics } from "../providers/economics-projection.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
 import { readProviderBindings, type ProviderBindings } from "../providers/provider-bindings.ts";
+import { readProviderExecutionPolicy, type ProviderExecutionPolicy } from "../providers/provider-policy.ts";
 import { readTrackedJson } from "./probe.ts";
 
 const maximumPromptBytes = 64 * 1024;
@@ -157,6 +158,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
   // surface decides against a separately maintained policy file.
   const semanticGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
   const bindings = readProviderBindings(semanticGraph);
+  const executionPolicy = readProviderExecutionPolicy(semanticGraph);
   const economics = readGraphDerivedEconomics(
     await readTrackedJson(repositoryRoot, "config/execution-economics.json"),
     semanticGraph,
@@ -211,6 +213,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     policy,
     requirement: parsed.requirement,
     observedAvailableRouteIds: (await observeAvailableRoutes(repositoryRoot)).routeIds,
+    executionPolicy,
     credentialAliases: bindings.credentialAliases,
     providerEndpoints: bindings.endpoints,
   });

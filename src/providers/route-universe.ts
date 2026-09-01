@@ -7,6 +7,7 @@ import {
   evaluateExecutionEconomics,
   type EffectiveCostPolicy, type ExecutionEconomicAuthorization,
 } from "./execution-economics.ts";
+import { permitsExecution, type ProviderExecutionPolicy } from "./provider-policy.ts";
 import type { AuthenticatedTransportCapability, ExecutionTransportId } from "./transports.ts";
 
 /**
@@ -79,6 +80,7 @@ export interface RouteUniverseInput {
   readonly providerEndpoints?: ReadonlyMap<string, string>;
   /** Model a local agent transport should request, from graph authority. */
   readonly transportSelectedModel?: ReadonlyMap<string, string>;
+  readonly executionPolicy?: ProviderExecutionPolicy;
   /** Live capability observations for the local agent CLI transports. */
   readonly localAgentCapabilities: readonly AuthenticatedTransportCapability[];
 }
@@ -109,6 +111,7 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
     observedAvailableRouteIds: input.observedAvailableRouteIds,
     credentialAliases: input.credentialAliases,
     providerEndpoints: input.providerEndpoints,
+    executionPolicy: input.executionPolicy,
   });
 
   const candidates: ExecutionCandidate[] = [];
@@ -141,6 +144,21 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       continue;
     }
     const profile = localAgentTransportProfiles[transport as LocalAgentTransportId];
+    // Reservation is decided before usability, so a reserved transport that is
+    // authenticated reports the policy, not a credential state.
+    if (input.executionPolicy !== undefined) {
+      const decision = permitsExecution(input.executionPolicy, {
+        transport, provider: profile.provider,
+        model: input.transportSelectedModel?.get(transport) ?? null,
+      });
+      if (!decision.permitted) {
+        dispositions.push(Object.freeze({
+          transport, admitted: false,
+          reason: decision.disposition === "DISABLED_BY_POLICY" ? "POLICY_DISABLED" : "POLICY_OPERATOR_RESERVED",
+        }));
+        continue;
+      }
+    }
     if (!capability.usable) {
       dispositions.push(Object.freeze({ transport, admitted: false, reason: `TRANSPORT_${capability.reason ?? "UNUSABLE"}` }));
       continue;

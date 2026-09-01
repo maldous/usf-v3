@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "name": "e2ejourneymanifest",
+    "kind": "test",
+    "product": "ANQR",
+    "version": "1.0.0",
+    "capabilitySet": "delivery"
+  },
+  "journey": {
+    "id": "anqr-core-e2e",
+    "description": "End-to-end validation of core ANQR functionality",
+    "environment": "staging",
+    "triggers": [
+      "build.complete",
+      "scheduled"
+    ]
+  },
+  "steps": [
+    {
+      "sequence": 1,
+      "action": "authenticate",
+      "assertion": "response.status == 200"
+    },
+    {
+      "sequence": 2,
+      "action": "submit-query",
+      "assertion": "response.payload.isValid == true"
+    },
+    {
+      "sequence": 3,
+      "action": "verify-output",
+      "assertion": "response.payload.matches(schema)"
+    }
+  ],
+  "testConfig": {
+    "framework": "cypress",
+    "timeoutSeconds": 300,
+    "retryPolicy": {
+      "maxAttempts": 2,
+      "backoffSeconds": 5
+    }
+  },
+  "deliveryAlignment": {
+    "capabilitySet": "delivery",
+    "gateName": "e2e-validation",
+    "complianceStatus": "passed"
+  }
+}

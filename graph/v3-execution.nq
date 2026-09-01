@@ -337,6 +337,18 @@
 <urn:usf:provider-endpoint:zai:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:zai:1> <urn:usf:predicate:servedByAdapter> "@ai-sdk/openai-compatible" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:zai:1> <urn:usf:predicate:type> <urn:usf:type:ProviderEndpoint> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:coverage> "Every dimension by which the family can be reached: its own transport, its catalogue provider route, and its model identity served through any other provider such as a marketplace." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:nonClaim> "This policy asserts that Claude may not be selected for execution. It asserts nothing about whether Claude is authenticated or capable." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:policyDisposition> "OPERATOR_RESERVED" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:policyReason> "Claude is reserved as the supervising engineering agent and is outside the execution pool. Reserving it prevents a recursive relationship in which the supervisor is also selected as a worker, and keeps its usage available for supervision." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedModelPrefix> "anthropic/" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedModelPrefix> "claude " <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedModelPrefix> "claude-" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedProvider> "anthropic" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:reservedTransport> <urn:usf:execution-transport:claude-cli> <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:revocation> "Removing this policy resource restores routability. No code change is required." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:separationOfFacts> "Authentication availability and execution authorization are separate facts. The Claude CLI holds a valid local session and remains unroutable; routing evidence must state OPERATOR_RESERVED rather than a missing credential." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude:1> <urn:usf:predicate:type> <urn:usf:type:ProviderExecutionPolicy> <urn:usf:graph:v3-execution> .
 <urn:usf:readiness-ladder:execution:1> <urn:usf:predicate:determinism> "Every discovered model is classified exactly once, ordered by provider then model identity, independent of catalogue iteration order." <urn:usf:graph:v3-execution> .
 <urn:usf:readiness-ladder:execution:1> <urn:usf:predicate:failureMode> "fail-closed-at-every-boundary" <urn:usf:graph:v3-execution> .
 <urn:usf:readiness-ladder:execution:1> <urn:usf:predicate:ladderState> "1=DISCOVERED" <urn:usf:graph:v3-execution> .

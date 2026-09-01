@@ -1,0 +1,21 @@
+{
+  "artifact": "componentmodel",
+  "kind": "contract",
+  "components": [
+    {
+      "name": "AuthService",
+      "type": "service",
+      "contract": {
+        "protocol": "REST",
+        "version": "v1"
+      }
+    },
+    {
+      "name": "UserStore",
+      "type": "data",
+      "contract": {
+        "access": "readWrite"
+      }
+    }
+  ]
+}

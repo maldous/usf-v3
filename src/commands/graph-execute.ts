@@ -20,6 +20,7 @@ import { languageModelFor, parseEffectiveCostPolicy } from "./execute.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
 import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 import { readProviderBindings, type ProviderBindings } from "../providers/provider-bindings.ts";
+import { readProviderExecutionPolicy, type ProviderExecutionPolicy } from "../providers/provider-policy.ts";
 import { readTrackedJson } from "./probe.ts";
 
 const typePredicate = "urn:usf:predicate:type";
@@ -229,9 +230,11 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   let economicsClosureDigest: string;
   let graphPolicy: EffectiveCostPolicy;
   let bindings: ProviderBindings;
+  let executionPolicy: ProviderExecutionPolicy;
   try {
     const semanticGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
     bindings = readProviderBindings(semanticGraph);
+    executionPolicy = readProviderExecutionPolicy(semanticGraph);
     const verified = verifyEconomicsProjection(economicsDocument, semanticGraph);
     economicsClosureDigest = verified.graphClosureDigest;
     graphPolicy = Object.freeze({ ...verified.projection.costPolicy });
@@ -345,7 +348,8 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
         minimumOutputTokens: unit.maximumOutputTokens,
       }),
       observedAvailableRouteIds: observedRoutes,
-      credentialAliases: bindings.credentialAliases,
+      executionPolicy,
+    credentialAliases: bindings.credentialAliases,
       providerEndpoints: bindings.endpoints,
       transportSelectedModel: bindings.transportSelectedModel,
       localAgentCapabilities,

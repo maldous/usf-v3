@@ -1,0 +1,37 @@
+{
+  "artifact": "uisemanticmodel",
+  "kind": "contract",
+  "product": "ANQR",
+  "version": "1.0",
+  "definition": {
+    "components": [
+      {
+        "name": "Header",
+        "type": "container",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "menuItems": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      {
+        "name": "Dashboard",
+        "type": "view",
+        "properties": {
+          "widgets": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

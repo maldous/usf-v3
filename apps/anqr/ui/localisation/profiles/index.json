@@ -1,0 +1,12 @@
+{
+  "artifact": "localisationProfile",
+  "kind": "manifest",
+  "product": "ANQR",
+  "capabilitySet": "delivery",
+  "version": "1.0",
+  "locale": "en-US",
+  "resources": [
+    "uiStrings",
+    "errorMessages"
+  ]
+}
