@@ -1,6 +1,233 @@
 # USF V3 handover
 
-## Current live boundary — six packets complete; account-tier backed by a real closure
+## Current live boundary — seven packets complete; the invocation boundary is real
+
+This section supersedes every older `Current`, `Live continuation`, `Prior
+boundary` and `Next` heading retained below as chronological evidence; do not
+operationalize those older boundaries unless this section explicitly restates
+them.
+
+Prepared 2026-09-01. Read current Git and remote state rather than trusting any
+identifier here. No provider or inference endpoint was contacted, no credential
+value was read, copied or digested, and no adapter was loaded.
+
+Seven packets are `verified-complete`: `repository-path-scope`,
+`file-asset-index`, `operator-observability`, `provider-census`,
+`provider-hidden-holdout`, `provider-account-tier-receipt` and, newly,
+`provider-invocation-boundary`. Current semantic digest
+`sha256:762de1315ee2cb3982b931a51abf0085ea7751c4dbbe1ce57199b0691cf8c1c0`.
+Remote-verified at `c7fa6a155164b5a8a9aebcc1c46065a58f12a1ec`, tree
+`5fe7d22ff7b97162d97e8227b0d856d71cf885b3`.
+
+### Read this first: the preserved drafts were stale against the graph
+
+Four drafts were carried into this session as `provider-invocation-boundary`'s
+write set. Comparing them against the graph **before** use was decisive: two of
+the three schemas disagreed with their declared `requiredFieldSet`.
+
+| Record | Draft | Graph |
+|---|---|---|
+| `adapter-preflight-receipt:1` | 14 fields | 14 — matched |
+| `provider-answer-observation:1` | 17, one `accountReceiptDigest` | **20**: adds `candidateMemberDigest`, `accountObservationDigest`, `routeModelEconomicsBindingDigest`, `credentialSourceIdentityDigest` |
+| `run-authorization:1` | 20, one `accountReceiptDigest` | **23**: the same four plus `accountSourceUseAuthorizationDigest` |
+
+The drafts predate the account-tier remodelling that split the factual account
+observation from profile-bound use authorization and gave candidate-member
+identity its own key. A single `accountReceiptDigest` is exactly the collapsed
+shape that remodelling removed. `src/providers/probe.ts` and the fixture test
+carried the same stale field names throughout.
+
+All three schemas now match their graph `requiredFieldSet` exactly **and in
+order**, verified mechanically rather than by reading. Never adopt a preserved
+draft without that comparison; a draft is a proposal, and the graph moved.
+
+### The confined lane is a permission cage over a full tree, not a pruned one
+
+`urn:usf:validation-runtime-closure:provider-invocation-boundary:1` supplies
+only `src/core/canonical.ts`, `src/core/errors.ts` and
+`src/providers/economics.ts`, and deliberately omits `src/schema/index.ts`,
+which sibling closures (`integration-validation-set`,
+`operator-composable-input`, `operator-observability`) do declare. The narrow
+validator assertions therefore sit in the ordinary outer carrier lane behind the
+same `childProcessUnavailable` guard the observability lane uses, reached through
+a dynamic import.
+
+Honest boundary on that decision: the check receipt shows `src/schema/index.ts`
+present as a `basis-input` and `validationAuthorityDependencies: []`, so the
+confined workspace is a **full candidate tree under a Node permission cage that
+denies child processes and network** — not a file-pruned scope. The static
+import would very likely have passed too. The guarded split is a conservative
+alignment with the graph's declared closure, not a proven necessity, and it
+costs nothing: measured directly, the cage runs 3 and skips 1, the outer lane
+runs all 4, and total coverage is strictly greater than the draft's.
+
+### Derived write-set truth, not the handover's count
+
+The graph's write set is six paths. Five changed. `src/commands/probe.ts` stayed
+at its exact preimage: `usf probe answer` is a graph-registered
+`RegisteredCliCommand` with `implementationState: proofblocked` and
+`postQualificationAvailabilityTarget: implemented`, and its dispatch and help
+belong to the CLI registry owner, not to this packet. `src/commands/help.ts` is
+not in this write set, so adding a dispatchable `probe answer` here would have
+made help untruthful.
+
+Write-set drift, projected against the filesystem for every work: all seven
+`verified-complete` packets have **zero** missing declared write paths,
+including the new one at 0/6. `provider-semantic-qualification-v2` is missing 1
+of 4 and `provider-parallel-execution` 3 of 5.
+
+### Gate movement
+
+The authoritative standalone empty-`.usf` gate moved **219 -> 223**. Three of the
+four new tests run confined; the fourth is the guarded outer-lane validator
+test. A byte-changing contribution that adds coverage must move the count.
+
+`README.md` carries an unrelated pre-existing uncommitted documentation draft
+(bootstrap ordering and `.usf` disposability). It is **not** in any selected
+work's write set and was preserved dirty throughout, including across the
+carrier checkpoint, the integration and both publications.
+
+### The two-grant rule held exactly
+
+The byte-delta contribution cost two construction grants. After a successful
+`usf integrate` the packet dropped to `blocked` with
+`COMPLETION_CONSTRUCTION_AUTHORITY_NOT_CURRENT` because integration moved the
+scoped dependency digest `sha256:7c4da88f...` -> `sha256:7b1f9e37...`. The first
+grant was never repaired. Both publications were pure appends: 32 quads, then
+79 quads, zero rewritten lines each.
+
+Restoring the owned paths to exact carrier preimage before deriving evidence was
+load-bearing, not ceremony: the scoped dependency digest was
+`sha256:7de96bac...` with the drafts dirty and `sha256:9f279dae...` at preimage.
+Evidence derived over the dirty desired postimage would have gone stale the
+moment the paths were restored.
+
+### Verified evidence at this boundary
+
+A standalone empty-`.usf` clone at `c7fa6a1` passes **223/223** with
+containment `pass`, a clean tracked tree, and reproduces semantic digest
+`sha256:762de131...` from tracked graph, source and evidence alone. An
+independent fresh clone from GitHub carries the exact same commit and tree
+`5fe7d22f`. The four projections at that commit report `closureSatisfiability`
+`satisfiable` with an empty `blockedWorks`, `publicationPolicyCoverage`
+`covered` with 9 works and 0 at risk, `policyBlastRadius` derived from
+scoped-dependency-closure membership over 6 policies, and `carrier` observed
+from local refs only with no remote contact.
+
+`policyBlastRadius` reproduced the V3 lesson unprompted: after this session's
+publications `provider-pipeline-construction-authority:1` enumerates **4**
+`eligibleWork` but stales **6** completions. `eligibleWork(policy)` is still not
+`workWhoseScopedClosureContains(policy)`.
+
+### What completing this packet did not buy
+
+Nothing about provider contact. Re-evaluated at this boundary: all **twelve**
+routes (2 configured, 7 legacy observations, 3 host transports) remain
+`UNQUALIFIED` with empty reason codes, and
+`usf providers receipt acquire` still refuses `PROVIDERS_RECEIPT_PROOFBLOCKED`.
+The fixture proves adapter, authorization, environment, request and sanitized
+observation construction. It is not a live answer, route qualification or
+contact authority.
+
+### Derived remaining chain to live provider invocation
+
+Do not carry forward the "three packets remain" claim. Queried from registered
+semantic state at this boundary, **two** graph-declared packets remain in the
+provider profile, and they are not sufficient:
+
+1. `provider-semantic-qualification-v2` — now `dependencyReady: true` with
+   `verified-completion` authority for the first time (its predecessors
+   `provider-hidden-holdout` and `provider-invocation-boundary` are both
+   complete). Blocked only on its own construction evidence and proof. Write
+   set 4 paths, 1 missing. Permission `maximumThrough: route`. Its completion
+   validation runs eight provider unit files, so the impact audit spans more
+   than its own write set.
+2. `provider-parallel-execution` — `dependencyReady: false`; depends on
+   `operator-observability` (complete) and the above. Owns
+   `call parallel` / `call compare`.
+
+**Neither packet lifts the acquisition proofblock.** This is the real gate, and
+it is architecture, not adapters:
+
+- `providerReceiptsCommandHandler` refuses `acquire` unconditionally at
+  `src/commands/provider-receipts.ts:484`, immediately after argument and
+  semantic-scope validation and **before** route or config lookup. That is the
+  operation-wide proofblocked boundary working as designed.
+- Lifting it requires `urn:usf:command:providers-receipt:2`, a `CliCommandTarget`
+  with `availability: "target"` and `implementationState: proofblocked`. **No
+  work declares it as a `registeredCommand`** — only as a
+  `targetRegisteredCommand`.
+- `urn:usf:rule:provider-receipt-target-registration:1` specifies the seam
+  precisely: `featureOwner` `provider-account-tier-receipt`,
+  `staticRegistryOwner` `operator-observability` — **both already
+  `verified-complete`**. Its `coherentTransitionRule` is a bounded
+  non-recurring three-phase sequence: construct and check the preliminary
+  account-tier v2 implementation in isolated copy-on-write state and derive
+  `registrationFeatureOperationsDigest` and
+  `registrationFeaturePostimageSetDigest`; then publish the predecessor-owned
+  complete static dispatch/help update bound to those two digests with no
+  feature-owner write to operator paths; then rederive account-tier
+  construction authority against the final operator completion, rematerialize
+  and recheck the same feature semantics, require both feature digests exactly
+  equal, and integrate and complete account-tier. `candidateDigest` is
+  explicitly never the cross-seam equality key.
+- Its `availabilityRule` is explicit that operator registration completion alone
+  never activates receipt v2, authorizes provider contact or proves account-tier
+  completion.
+
+So the honest chain is: **two declared packets, plus one graph-specified but
+unscheduled three-phase registration seam that re-opens two already-complete
+works.** The seam, not the packets, is what stands between current authority and
+trusted receipt acquisition. Live invocation additionally needs `probe answer`
+to move from `proofblocked` to `implemented`.
+
+### Registered-command authority gap — derived owner, and why it stays open
+
+The four `usf status` projections are implemented and tested but are not
+versioned graph `RegisteredCliCommand` resources. Resolved from the graph
+rather than by topic:
+
+- `RegisteredCliCommand` resources exist only in `graph/integration.nq` (8),
+  `graph/profile-authority.nq` (7) and `graph/provider-pipeline.nq` (7). **None
+  of those three files is any work's `writePath`**; they are written only by the
+  publication commands.
+- Across every manifest and profile, exactly two works own a graph source:
+  `realisation-basis-chain` (`graph/foundation.nq`, `graph/usf-bootstrap.nq`)
+  and `semantic-first-lifecycle-admission` (`graph/semantic-first.nq`), both in
+  the hermes profile. `realisation-basis-chain` is `construction-ready` and
+  `actionable`, and also owns `src/commands/help.ts`.
+- `graph/foundation.nq` is a transitive source of
+  `graph/manifests/self-host-provider-v3.json`. All nine works share one
+  `foundationDigest` `sha256:f1d0c4c0...`, completions bind
+  `realisationBasisDigest`, so a foundation write enters all nine bases at once
+  and stales **all seven current completions and both current grants**.
+- Registering status diagnostics is also outside `realisation-basis-chain`'s
+  declared objective (carrying one immutable RealisationBasis through route,
+  call, resolve, apply and check), so using its write permission for this would
+  be smuggling an unrelated edit into a live write set.
+
+Disposition: **preserved, not closed.** The implementation stays; the gap is
+recorded with its measured cost. The graph does not make it a prerequisite for
+the provider chain, and closing it through the only available owner would force
+a full-cohort reproof — which is precisely the derailment to avoid. It needs
+either a work that legitimately owns a `RegisteredCliCommand`-bearing graph
+source, or the same `CliTargetRegistrationRule` seam pattern the receipt-v2
+target already uses, with `operator-observability` as `staticRegistryOwner`.
+
+### Next safe order
+
+1. advance `provider-semantic-qualification-v2`: dependency-ready for the first
+   time, repository-contained and reversible. Note `maximumThrough: route` and
+   audit all eight validation files against the candidate postimage before
+   materialisation;
+2. then `provider-parallel-execution`;
+3. the receipt-v2 registration seam is the true provider gate and is fully
+   specified in `urn:usf:rule:provider-receipt-target-registration:1`. Schedule
+   it deliberately as a bounded three-phase change over two complete works, not
+   opportunistically; and
+4. leave the `RegisteredCliCommand` gap preserved until an owner exists.
+
+## Prior boundary — six packets complete; account-tier backed by a real closure
 
 This section supersedes every older `Current`, `Live continuation` and `Next`
 heading retained below as chronological evidence; do not operationalize those
