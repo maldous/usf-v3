@@ -112,3 +112,72 @@ answered `usf hermes status`. No V1/V2 operational history was replayed.
   design: the mission preferred one coherent closing change set over
   reconstructing legacy completion identities.
 - Branch is local; nothing pushed.
+
+## Semantic closure: the four remaining gaps, closed
+
+### 1. Semantic work dependencies
+
+`src/graph/work-dependency.ts`. A unit declares `urn:usf:predicate:dependsOn`
+edges; the DAG is validated for cycles, self-edges and unknown targets before
+anything is scheduled. One state per unit — `ready`, `blocked`, `unreachable`,
+`succeeded`, `failed` — is derived from edges plus recorded outcomes and never
+stored. A failed dependency makes dependent work transitively `unreachable`.
+
+Proof: workload `A,B → C → E` and `D → F`, 6 units and 4 edges. Hermes derived
+3 ready / 3 blocked before execution, then ran cycle 1 = {A,B,D} at peak
+concurrency 3 (2.66x overlap), cycle 2 = {C,F}, cycle 3 = {E}, reaching
+`all-work-terminal` at 6/6. The schedule was never specified by hand.
+
+### 2. Bounded authority re-check
+
+`src/providers/authority-snapshot.ts`. The snapshot covers exactly the
+route-invalidating inputs and excludes observation instants, so a re-observation
+cannot refuse a dispatch. Graph execution snapshots authority, derives routes,
+then re-reads immediately before every dispatch.
+
+Proof, both directions: appending a `nonClaim` mid-run changed nothing and all
+four units completed; changing groq's entitlement mid-run refused the two
+not-yet-dispatched units with `AUTHORITY_MOVED:economicAuthorizationDigest`
+while the two already dispatched completed. No stale selection executed.
+
+### 3. Bounded atomic semantic transaction
+
+`usf transact`. Propose, derive affected closure, validate the whole resulting
+corpus, apply every path together or none, emit evidence. Identity is the digest
+of the transaction's own content; no construction grant, publication object or
+intermediate persistent identity exists, and Git carries bytes rather than
+identity.
+
+Fail-closed proofs: `TRANSACT_STALE_PREIMAGE`, `TRANSACT_UNDECLARED_EFFECT`,
+`TRANSACT_UNAUTHORIZED_PATH`, `TRANSACT_GRAPH_INVALID`,
+`TRANSACT_INTEGRITY_VIOLATION`.
+
+Four real transactions were applied through it, including a three-path atomic
+change across `graph/v3-execution.nq`, `graph/v3-convention.nq` and
+`config/execution-economics.json`. The nine historical works keep their outcomes
+as history and were not re-run.
+
+### 4. Graph-derived economics
+
+`src/providers/economics-projection.ts`. The graph carries the policy and its
+authorizations including evidence and source documentation;
+`config/execution-economics.json` is derived deterministically and stamped with
+the digest of exactly the quads that produced it. The runtime consumes the
+projection only after proving correspondence.
+
+Proof: hand-adding an authorization to the projection was refused with
+`ECONOMICS_PROJECTION_DIVERGED`. Withdrawing `subscription-included` from the
+graph through a transaction left the CLI transports authenticated but
+economically ineligible, and every attempt went to `vercel-ai-sdk`. Restoring it
+through the same mechanism returned a byte-equivalent projection.
+
+### Combined state
+
+- `usf graph integrity`: 12 invariants, 13595 quads, 0 violations in V3-owned
+  graphs, 24 recorded legacy items.
+- Tests: 195 unit, 34 contract, `tsc` clean, containment `pass`.
+- Hermes: 10 units across 2 work graphs, 3 self-derived cycles, dependency
+  ordering respected, two transports, one stable authority snapshot across every
+  dispatch, `all-work-terminal`; re-run `idle-no-pending-work` with 0 cycles.
+- Fresh clone: `usf init` rc=0, catalogue refresh, integrity conforming,
+  dependency derivation and a validated transaction all from tracked authority.
