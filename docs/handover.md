@@ -1,6 +1,227 @@
 # USF V3 handover
 
-## Current live boundary — provider census complete; authenticate carrier
+## Current live boundary — provider account-source semantics ready for durable commit
+
+Prepared 2026-09-01 from clean committed carrier
+`95e8985b267c5a72b3da9b363ec171497db0fc74` (tree
+`e8ea47a0904817695cb8c72205c7f2805fb057c9`, `Complete provider census
+authority`) in an isolated clone. The coherent packet modifies only
+`graph/provider-pipeline.nq` and this handover; the compact existing contract
+test remains exact `HEAD`. The graph file is
+`sha256:6722e07e9ef43b251a8fd4a5dff1738178c0ab52b47b6df9e0f2f9ad97577823`.
+No provider or inference endpoint was contacted, no credential content was
+read, copied or digested, and no live account/provider claim was made.
+
+The exact profile remains `urn:usf:profile:v3-self-host:3` through
+`graph/manifests/self-host-provider-v3.json`; no replacement profile or
+manifest was introduced. Registered `usf work` read-back is untruncated at
+semantic digest
+`sha256:a807531784f8142e3fb08cd7bc02e1145be513ca610f8e6e4f1be263d31dbde4`:
+nine selected work packets and 11 dependency edges. The existing
+`urn:usf:work:provider-account-tier-receipt` is the sole implementation owner
+and reciprocally implements both the reusable account-tier capability contract
+and the secondary operational acquisition contract. There is no tenth
+acquisition work packet or separate acquisition construction-publication
+policy. The work remains dependency/proof blocked, so this semantic packet
+authorizes neither implementation nor account contact.
+
+Current registered work read-back carries no completion at this moved semantic
+basis. `repository-path-scope` and `operator-observability` are root packets but
+have no current construction evidence/proof/permission; `file-asset-index` is
+therefore dependency-unready, while `provider-account-tier-receipt` and
+`provider-census` are dependency-unready on both repository-path and operator.
+Earlier completions remain historical evidence only and cannot be treated as
+current authority.
+
+The semantic correction closes the following critical-path gaps before code is
+built:
+
+- every frozen models.dev provider/model route and separately typed host model
+  receives a canonical `candidateMemberDigest`; a configured
+  `routeMemberDigest` is a different optional downstream identity and is not
+  required to represent the full denominator;
+- one factual account-source key is profile-independent and binds transport,
+  provider/control plane, response mapping, credential mode/name, non-secret
+  credential-source identity and protocol; profile, policy and privacy remain a
+  separate exact use/acquisition authorization;
+- selected API acquire/verify operations require an explicit owner-private
+  `--env-file`. A bounded `--credential-sources` selection can reauthenticate
+  retained API sources without ambient environment, directory or history
+  discovery; omission makes only the unmapped retained source ineligible. A
+  file credential identity retains only its stable non-secret descriptor
+  digest—never the secret, a secret-value hash or its path. Subscription hosts
+  retain a separate stable non-secret credential namespace identity while
+  current expiring host authorization remains a distinct use gate;
+- account observations are reusable and single-flight by account-source key,
+  while candidate economics and configured-route inference authority remain
+  independently scoped; different source keys may proceed concurrently and no
+  provider contact holds the primary Git/source mutation lock;
+- the frozen raw and normalized catalogue pair is explicitly selected by its
+  two authenticated digests; catalogue movement recomputes the pure candidate
+  projection locally and does not reacquire an otherwise current account
+  observation;
+- an expiry/currentness satisfaction rule prevents unattended `usf start`,
+  `watch` or Hermes from repeatedly contacting a satisfied source. Routine
+  authorization, observation, projection and satisfaction records remain
+  owner-private ignored `.usf` state with no Git commit or semantic publication
+  requirement. Ordinary failed API contact writes both one factual manifest
+  successor and one bounded sanitized source-local retry deferral. A failed
+  conflict-reconciliation attempt writes only the deferral and preserves all
+  competing factual heads. Profile/policy/privacy movement invalidates only the
+  scoped use eligibility, not the reusable factual observation;
+- copy-on-write state is an explicit bounded head-set protocol: ordinary state
+  has at most 32 heads, the sole transient overflow has exactly 33, recovery
+  deterministically reduces the canonical first 32 while retaining the 33rd,
+  and no operation emits a 34th head or loses an incomparable concurrent head;
+- a pure source-set reducer emits exactly one binding and disposition per
+  candidate through fixed 256-bucket roots and a bounded cursor reader. Zero
+  applicable current sources is explicit `not-observed`; competing sources are
+  conflict-ineligible. Reduction takes no provider, Git or global mutation
+  lock; and
+- a registered target `usf providers receipt activate` derives a reusable
+  ignored content-addressed call-admission bundle from exact current completion
+  of the primary implementing work plus the distinct secondary acquisition
+  contract evidence/proof. Each later v2 acquire/verify/reduce call
+  reauthenticates the bundle and binds its digest. This requires neither a tenth
+  work packet nor an acquisition construction-publication policy, database,
+  external CAS, Git commit or GitHub round trip.
+
+The currently executable registered interface remains
+`urn:usf:command:providers-receipt:1`, and current help truthfully exposes only
+its route-bound proofblocked forms:
+
+```sh
+./bin/usf providers receipt acquire --route ID \
+  --profile VERSIONED_IRI --manifest PATH
+./bin/usf providers receipt verify --route ID --receipt PATH \
+  --profile VERSIONED_IRI --manifest PATH
+```
+
+The graph now defines, but deliberately does not yet expose as executable, the
+proofblocked target commands
+`urn:usf:command:providers-receipt-activate:1`,
+`urn:usf:command:providers-receipt:2` and
+`urn:usf:command:providers-receipt-list:1`. Their deterministic operator forms
+are:
+
+```sh
+./bin/usf providers receipt activate \
+  --profile VERSIONED_IRI --manifest PATH
+
+./bin/usf providers receipt acquire \
+  --activation .usf/provider-operations/permissions/provider-account-receipt-acquisition/DIGEST.json \
+  --account-source IRI --env-file .usf/inputs/FILE \
+  --source-state-head-set PATH_OR_NONE \
+  --source-state-manifest PATH_OR_NONE [--source-state-manifest PATH ...] \
+  --catalogue-raw-digest DIGEST --catalogue-normalized-digest DIGEST \
+  --profile VERSIONED_IRI --manifest PATH \
+  [--credential-sources .usf/inputs/FILE] \
+  [--host-census PATH_OR_STDIN] [--route ID]
+
+./bin/usf providers receipt verify \
+  --activation .usf/provider-operations/permissions/provider-account-receipt-acquisition/DIGEST.json \
+  --account-source IRI --env-file .usf/inputs/FILE --observation PATH \
+  --source-state-head-set PATH_OR_NONE \
+  --source-state-manifest PATH_OR_NONE [--source-state-manifest PATH ...] \
+  --catalogue-raw-digest DIGEST --catalogue-normalized-digest DIGEST \
+  --profile VERSIONED_IRI --manifest PATH \
+  [--credential-sources .usf/inputs/FILE] \
+  [--host-census PATH_OR_STDIN] [--route ID]
+
+./bin/usf providers receipt reduce \
+  --activation .usf/provider-operations/permissions/provider-account-receipt-acquisition/DIGEST.json \
+  --source-state-head-set PATH_OR_NONE \
+  --source-state-manifest PATH_OR_NONE [--source-state-manifest PATH ...] \
+  --catalogue-raw-digest DIGEST --catalogue-normalized-digest DIGEST \
+  --profile VERSIONED_IRI --manifest PATH \
+  [--credential-sources .usf/inputs/FILE] \
+  [--provider-home ABSOLUTE_PATH --host-census PATH_OR_STDIN] [--route ID]
+
+./bin/usf providers receipt list --projection PATH \
+  --kind binding\|disposition --profile VERSIONED_IRI --manifest PATH \
+  [--provider NAME] [--model NAME] \
+  [--after BASE64URL_CURSOR] [--max-items N]
+```
+
+The API examples show the selected-source form; typed subscription-host
+acquire/verify instead use the graph-declared `--provider-home`, host census and
+host-source-identity inputs. `--route` only narrows output. An omitted host
+census leaves graph-known subscription candidates explicit as `not-observed`;
+it does not fabricate absence. Conditional/unsupported price dimensions,
+missing current account/quota/service-tier evidence, paid capability, automatic
+overage/top-up or fallback remain explicit and ineligible.
+
+Fresh local `usf models summary` observes the frozen no-contact denominator as
+212 provider routes, 7,478 provider/model candidates, 3,806 underlying models,
+171 known families, 7,042 candidates with known catalogue price, 436 with
+unknown catalogue price and 10 catalogue-zero candidates. These are catalogue
+facts only, not configured routes, current entitlement, zero-paid authority,
+availability or semantic qualification.
+
+Independent frozen-graph verification passed at this boundary: 6,710 unique
+canonical quads from five sources/four manifests; nine profile-selected work
+packets and 11 dependency edges in one connected DAG; all nine works
+root-reachable; three roots, two leaves, nine singleton strongly connected
+components, longest path four edges and maximum antichain four. There are no
+missing, duplicate or self dependencies, isolated works or write collisions.
+All 84 selected write paths have unique ownership; all 19 selected read paths
+exist. Within the changed `graph/provider-pipeline.nq` source, 55 schema-path
+triples resolve to 45 unique references and 42 base files: all 20 present
+schemas are tracked regular non-symlink valid JSON, and all 22 absent targets
+have exactly one selected-work owner. Across the complete imported manifest the
+corresponding counts are 69 triples, 49 references, 46 files, 24 present and
+the same 22 owned absent targets. The compact existing contract remains 11
+tests rather than a provider/model matrix. The provider/product suite passes
+76/76, profile authority 1/1,
+bootstrap/schema 13/13 and the full authoritative typecheck/suite 209/209.
+`git diff --check` and repository containment also pass at the final documented
+boundary.
+
+`file-asset-index` retains its bootstrap role and intentionally does not
+participate in the later ordinary construction-policy partition, but it is not
+currently admitted: repository-path movement made its predecessor authority
+stale. Once repository-path current completion is restored, file-asset no-change
+recovery can proceed independently of the provider critical path. The remaining
+selected ordinary packets use the two existing versioned
+provider-pipeline construction-publication policies. The secondary acquisition
+contract is activated from exact current completion of its shared implementing
+work and its own evidence/proof; it does not create another work packet or
+construction-publication policy.
+
+The next safe actions are exact and ordered:
+
+1. Commit and push this already reviewed, authoritative-check-passing semantic
+   packet once as one coherent rollback unit. Do not contact a provider in this
+   packet.
+2. From that durable boundary use registered construction evidence, proof and
+   publication commands to restore `repository-path-scope` construction
+   authority, then run its registered no-change completion chain. Do not reuse
+   a historical receipt as current authority.
+3. Use registered construction evidence, proof, publication, integration and
+   completion commands to realise and complete `operator-observability` against
+   the new basis.
+4. Once repository-path and operator are both current, independently rederive
+   and publish construction authority for provider-census and file-asset-index,
+   then run each registered no-change completion chain while realising the
+   account-tier packet. Implement the target activate, v2 receipt and bounded
+   list commands, their closed schemas, candidate projection and ignored
+   source-state protocol through that graph-owned work; do not use ad hoc work
+   commands.
+5. Independently validate, integrate and complete the account-tier
+   implementation packet, then commit and push it. Invoke the registered
+   activation command only after its current completion/evidence/proof inputs
+   exist.
+6. Acquire current account observations through the activated registered v2
+   command. Use OpenRouter only if exact current provider-owned evidence closes
+   account identity, zero-paid eligibility, quota, service tier and mechanically
+   prohibited paid/overage/top-up/fallback. `/api/v1/key`, historical V2 credit,
+   credential presence and catalogue `:free` labels are insufficient alone.
+7. Continue in the existing graph order: content-verified scrubbed adapter,
+   authenticated provider-produced answer, genuine hidden holdout, exact route
+   qualification, then live multi-provider overlap and comparable semantic
+   token-reduction measurement. Do not claim any later stage early.
+
+## Prior provider-census completion boundary
 
 Prepared 2026-09-01 from detached isolated carrier base
 `e054fcb776c3fcf4ba468f76e48ae15bf14ae1f2`. The authoritative checkpoint is
