@@ -1,5 +1,5 @@
-```typescript
 export const EndUserProfileAndPreferencesSelfServiceAuditEventKind = [
+  'AUDIT_BEFORE_CHANGE',
   'PROFILE_UPDATED',
   'PREFERENCE_UPDATED',
   'NOTIFICATION_TESTED',
@@ -26,6 +26,12 @@ export const EndUserProfileAndPreferencesSelfServicePermission = [
   'SELF_UPDATE',
 ] as const;
 export type EndUserProfileAndPreferencesSelfServicePermission = typeof EndUserProfileAndPreferencesSelfServicePermission[number];
+
+export const EndUserProfileAndPreferencesSelfServiceReadiness = [
+  'READY',
+  'DEGRADED',
+] as const;
+export type EndUserProfileAndPreferencesSelfServiceReadiness = typeof EndUserProfileAndPreferencesSelfServiceReadiness[number];
 
 export interface EndUserProfileAndPreferencesSelfServiceAuditEvent {
   readonly kind: EndUserProfileAndPreferencesSelfServiceAuditEventKind;
@@ -65,7 +71,7 @@ export interface EndUserProfileAndPreferencesSelfServiceState {
   readonly profile: EndUserProfileAndPreferencesSelfServiceProfile;
   readonly preferences: readonly EndUserProfileAndPreferencesSelfServicePreference[];
   readonly dispatchLogs: readonly EndUserProfileAndPreferencesSelfServiceDispatchLog[];
-  readonly isDegraded: boolean;
+  readonly readiness: EndUserProfileAndPreferencesSelfServiceReadiness;
 }
 
 export const initialProfile: EndUserProfileAndPreferencesSelfServiceProfile = {
@@ -83,7 +89,7 @@ export const initialState = (
   profile: { ...initialProfile },
   preferences: [],
   dispatchLogs: [],
-  isDegraded: false,
+  readiness: 'READY',
 });
 
 export function validateProfile(
@@ -168,4 +174,276 @@ export function validateNotificationPayload(
   payload: unknown,
 ): EndUserProfileAndPreferencesSelfServiceError | null {
   const payloadStr = JSON.stringify(payload);
-  if (payloadStr && (payloadStr.includes('secret') || payloadStr.includes('
+  if (payloadStr.includes('secret') || payloadStr.includes('password') || payloadStr.includes('token')) {
+    return { kind: 'NOT_NOTIFIABLE', message: 'Payload contains secret-bearing data' };
+  }
+  return null;
+}
+
+export function auditProfileUpdate(
+  tenantId: string,
+  userId: string,
+  profile: EndUserProfileAndPreferencesSelfServiceProfile,
+  auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
+): EndUserProfileAndPreferencesSelfServiceError | null {
+  const event: EndUserProfileAndPreferencesSelfServiceAuditEvent = {
+    kind: 'AUDIT_BEFORE_CHANGE',
+    userId,
+    tenantId,
+    timestamp: new Date().toISOString(),
+    payload: { profile },
+  };
+  return auditFn(event);
+}
+
+export function auditPreferenceUpdate(
+  tenantId: string,
+  userId: string,
+  preference: EndUserProfileAndPreferencesSelfServicePreference,
+  auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
+): EndUserProfileAndPreferencesSelfServiceError | null {
+  const event: EndUserProfileAndPreferencesSelfServiceAuditEvent = {
+    kind: 'AUDIT_BEFORE_CHANGE',
+    userId,
+    tenantId,
+    timestamp: new Date().toISOString(),
+    payload: { preference },
+  };
+  return auditFn(event);
+}
+
+export function auditNotificationTest(
+  tenantId: string,
+  userId: string,
+  auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
+): EndUserProfileAndPreferencesSelfServiceError | null {
+  const event: EndUserProfileAndPreferencesSelfServiceAuditEvent = {
+    kind: 'NOTIFICATION_TESTED',
+    userId,
+    tenantId,
+    timestamp: new Date().toISOString(),
+    payload: null,
+  };
+  return auditFn(event);
+}
+
+export function readProfile(
+  state: EndUserProfileAndPreferencesSelfServiceState,
+  userId: string,
+  tenantId: string,
+  permission: EndUserProfileAndPreferencesSelfServicePermission,
+): { readonly result: 'success'; readonly profile: EndUserProfileAndPreferencesSelfServiceProfile } |
+  { readonly result: 'error'; readonly error: EndUserProfileAndPreferencesSelfServiceError } {
+  if (permission !== 'SELF_READ') {
+    return {
+      result: 'error',
+      error: { kind: 'VALIDATION_ERROR', message: 'Insufficient permissions' },
+    };
+  }
+
+  if (state.userId !== userId || state.tenantId !== tenantId) {
+    return {
+      result: 'error',
+      error: { kind: 'NO_TENANT', message: 'No tenant or user mismatch' },
+    };
+  }
+
+  return {
+    result: 'success',
+    profile: state.profile,
+  };
+}
+
+export function readPreferences(
+  state: EndUserProfileAndPreferencesSelfServiceState,
+  userId: string,
+  tenantId: string,
+  permission: EndUserProfileAndPreferencesSelfServicePermission,
+): { readonly result: 'success'; readonly preferences: readonly EndUserProfileAndPreferencesSelfServicePreference[] } |
+  { readonly result: 'error'; readonly error: EndUserProfileAndPreferencesSelfServiceError } {
+  if (permission !== 'SELF_READ') {
+    return {
+      result: 'error',
+      error: { kind: 'VALIDATION_ERROR', message: 'Insufficient permissions' },
+    };
+  }
+
+  if (state.userId !== userId || state.tenantId !== tenantId) {
+    return {
+      result: 'error',
+      error: { kind: 'NO_TENANT', message: 'No tenant or user mismatch' },
+    };
+  }
+
+  return {
+    result: 'success',
+    preferences: state.preferences,
+  };
+}
+
+export function updateProfile(
+  state: EndUserProfileAndPreferencesSelfServiceState,
+  userId: string,
+  tenantId: string,
+  newProfile: unknown,
+  permission: EndUserProfileAndPreferencesSelfServicePermission,
+  auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
+): { readonly result: 'success'; readonly state: EndUserProfileAndPreferencesSelfServiceState } |
+  { readonly result: 'error'; readonly error: EndUserProfileAndPreferencesSelfServiceError } {
+  if (permission !== 'SELF_UPDATE') {
+    return {
+      result: 'error',
+      error: { kind: 'VALIDATION_ERROR', message: 'Insufficient permissions' },
+    };
+  }
+
+  if (state.userId !== userId || state.tenantId !== tenantId) {
+    return {
+      result: 'error',
+      error: { kind: 'NO_TENANT', message: 'No tenant or user mismatch' },
+    };
+  }
+
+  if (state.readiness === 'DEGRADED') {
+    return {
+      result: 'error',
+      error: { kind: 'DEGRADED', message: 'Service in degraded mode' },
+    };
+  }
+
+  const validation = validateProfile(newProfile);
+  if (validation.result === 'invalid') {
+    return {
+      result: 'error',
+      error: validation.error,
+    };
+  }
+
+  const auditError = auditProfileUpdate(tenantId, userId, validation.profile, auditFn);
+  if (auditError !== null) {
+    return {
+      result: 'error',
+      error: auditError,
+    };
+  }
+
+  const updatedState: EndUserProfileAndPreferencesSelfServiceState = {
+    ...state,
+    profile: validation.profile,
+  };
+
+  return {
+    result: 'success',
+    state: updatedState,
+  };
+}
+
+export function updatePreference(
+  state: EndUserProfileAndPreferencesSelfServiceState,
+  userId: string,
+  tenantId: string,
+  newPreference: unknown,
+  permission: EndUserProfileAndPreferencesSelfServicePermission,
+  auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
+): { readonly result: 'success'; readonly state: EndUserProfileAndPreferencesSelfServiceState } |
+  { readonly result: 'error'; readonly error: EndUserProfileAndPreferencesSelfServiceError } {
+  if (permission !== 'SELF_UPDATE') {
+    return {
+      result: 'error',
+      error: { kind: 'VALIDATION_ERROR', message: 'Insufficient permissions' },
+    };
+  }
+
+  if (state.userId !== userId || state.tenantId !== tenantId) {
+    return {
+      result: 'error',
+      error: { kind: 'NO_TENANT', message: 'No tenant or user mismatch' },
+    };
+  }
+
+  if (state.readiness === 'DEGRADED') {
+    return {
+      result: 'error',
+      error: { kind: 'DEGRADED', message: 'Service in degraded mode' },
+    };
+  }
+
+  const validation = validatePreference(newPreference);
+  if (validation.result === 'invalid') {
+    return {
+      result: 'error',
+      error: validation.error,
+    };
+  }
+
+  const auditError = auditPreferenceUpdate(tenantId, userId, validation.preference, auditFn);
+  if (auditError !== null) {
+    return {
+      result: 'error',
+      error: auditError,
+    };
+  }
+
+  const existingIndex = state.preferences.findIndex(
+    (p) => p.channel === validation.preference.channel && p.category === validation.preference.category,
+  );
+
+  const updatedPreferences = [...state.preferences];
+  if (existingIndex >= 0) {
+    updatedPreferences[existingIndex] = validation.preference;
+  } else {
+    updatedPreferences.push(validation.preference);
+  }
+
+  const updatedState: EndUserProfileAndPreferencesSelfServiceState = {
+    ...state,
+    preferences: updatedPreferences,
+  };
+
+  return {
+    result: 'success',
+    state: updatedState,
+  };
+}
+
+export function testNotification(
+  state: EndUserProfileAndPreferencesSelfServiceState,
+  userId: string,
+  tenantId: string,
+  payload: unknown,
+  auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
+): { readonly result: 'success' } |
+  { readonly result: 'error'; readonly error: EndUserProfileAndPreferencesSelfServiceError } {
+  if (state.userId !== userId || state.tenantId !== tenantId) {
+    return {
+      result: 'error',
+      error: { kind: 'NO_TENANT', message: 'No tenant or user mismatch' },
+    };
+  }
+
+  const secretError = validateNotificationPayload(payload);
+  if (secretError !== null) {
+    return {
+      result: 'error',
+      error: secretError,
+    };
+  }
+
+  const auditError = auditNotificationTest(tenantId, userId, auditFn);
+  if (auditError !== null) {
+    return {
+      result: 'error',
+      error: auditError,
+    };
+  }
+
+  return {
+    result: 'success',
+  };
+}
+
+export function checkReadiness(
+  state: EndUserProfileAndPreferencesSelfServiceState,
+): EndUserProfileAndPreferencesSelfServiceReadiness {
+  return state.readiness;
+}

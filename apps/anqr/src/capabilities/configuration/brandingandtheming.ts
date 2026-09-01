@@ -1,4 +1,3 @@
-```typescript
 export const BrandingAndThemingThemeSelection = ['system', 'light', 'dark'] as const;
 export type BrandingAndThemingThemeSelection = typeof BrandingAndThemingThemeSelection[number];
 
@@ -82,26 +81,28 @@ export type BrandingPermissionCheckResult =
   | { readonly kind: 'GRANTED' }
   | { readonly kind: 'DENIED'; readonly error: BrandingAndThemingError };
 
+export type BrandingValidationSuccess = { readonly kind: 'SUCCESS'; readonly definition: BrandingDefinition };
+
 export function checkBrandingPermission(
   tenantId: string,
   token: unknown,
   state: BrandingAndThemingState,
 ): BrandingPermissionCheckResult {
-  if (token === null || typeof token !== 'object' || !('tenantId' in token) || token.tenantId !== tenantId) {
+  if (token === null || typeof token !== 'object' || !('tenantId' in token) || (token as { readonly tenantId?: string }).tenantId !== tenantId) {
     return {
       kind: 'DENIED',
       error: { kind: 'FORBIDDEN', message: 'Tenant-scoped permission required' },
     };
   }
 
-  if (!('permissions' in token) || !Array.isArray(token.permissions)) {
+  if (!('permissions' in token) || !Array.isArray((token as { readonly permissions?: unknown }).permissions)) {
     return {
       kind: 'DENIED',
       error: { kind: 'FORBIDDEN', message: 'Invalid permissions in token' },
     };
   }
 
-  const permissions = token.permissions as readonly string[];
+  const permissions = (token as { readonly permissions: readonly string[] }).permissions;
   if (!permissions.includes('configuration:read') || !permissions.includes('configuration:write')) {
     return {
       kind: 'DENIED',
@@ -125,16 +126,20 @@ export function validateBrandingDefinition(
     return { kind: 'VALIDATION_ERROR', message: 'applicationName must be a string' };
   }
 
-  if (typeof def.themeSelection !== 'string' || !BrandingAndThemingThemeSelection.includes(def.themeSelection as BrandingAndThemingThemeSelection)) {
+  if (
+    typeof def.themeSelection !== 'string' ||
+    !BrandingAndThemingThemeSelection.includes(def.themeSelection as BrandingAndThemingThemeSelection)
+  ) {
     return { kind: 'VALIDATION_ERROR', message: 'themeSelection must be one of system, light, dark' };
   }
 
-  const validDef: BrandingDefinition = {
-    applicationName: def.applicationName,
-    themeSelection: def.themeSelection as BrandingAndThemingThemeSelection,
+  return {
+    kind: 'SUCCESS',
+    definition: {
+      applicationName: def.applicationName,
+      themeSelection: def.themeSelection as BrandingAndThemingThemeSelection,
+    },
   };
-
-  return { kind: 'SUCCESS', definition: validDef };
 }
 
 export function resolveEffectiveTheme(
@@ -158,10 +163,7 @@ export function resolveEffectiveTheme(
   };
 }
 
-export function readTheme(
-  host: string,
-  state: BrandingAndThemingState,
-): ThemeReadResult {
+export function readTheme(host: string, state: BrandingAndThemingState): ThemeReadResult {
   try {
     const tenantId = host === '' ? null : host;
     const theme = resolveEffectiveTheme(tenantId, state);
@@ -211,3 +213,122 @@ export function createBrandingDefinition(
       kind: 'ERROR',
       error: { kind: 'FORBIDDEN', message: 'Branding definition already exists for tenant' },
     };
+  }
+
+  const auditEvent: AuditEvent = {
+    action: 'value-changed',
+    tenantId,
+    key: 'brandingDefinition',
+    previousValue: null,
+    newValue: validation.definition,
+  };
+  const auditError = audit(auditEvent);
+  if (auditError !== null) {
+    return { kind: 'ERROR', error: auditError };
+  }
+
+  const newBrandingDefinitions = new Map(state.brandingDefinitions);
+  newBrandingDefinitions.set(tenantId, validation.definition);
+
+  const newState: BrandingAndThemingState = {
+    ...state,
+    brandingDefinitions: newBrandingDefinitions,
+  };
+
+  return { kind: 'SUCCESS', newState };
+}
+
+export function patchBrandingDefinition(
+  tenantId: string,
+  partialDefinition: Partial<BrandingDefinition>,
+  token: unknown,
+  state: BrandingAndThemingState,
+  audit: (event: AuditEvent) => BrandingAndThemingError | null,
+): BrandingMutationResult {
+  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  if (permissionCheck.kind === 'DENIED') {
+    return { kind: 'ERROR', error: permissionCheck.error };
+  }
+
+  const currentDef = state.brandingDefinitions.get(tenantId);
+  if (currentDef === undefined) {
+    return {
+      kind: 'ERROR',
+      error: { kind: 'UNKNOWN_KEY', message: 'No branding definition exists for tenant' },
+    };
+  }
+
+  const mergedDefinition: BrandingDefinition = {
+    applicationName: partialDefinition.applicationName ?? currentDef.applicationName,
+    themeSelection: partialDefinition.themeSelection ?? currentDef.themeSelection,
+  };
+
+  const validation = validateBrandingDefinition(mergedDefinition);
+  if (validation.kind !== 'SUCCESS') {
+    return { kind: 'ERROR', error: validation };
+  }
+
+  const auditEvent: AuditEvent = {
+    action: 'value-changed',
+    tenantId,
+    key: 'brandingDefinition',
+    previousValue: currentDef,
+    newValue: validation.definition,
+  };
+  const auditError = audit(auditEvent);
+  if (auditError !== null) {
+    return { kind: 'ERROR', error: auditError };
+  }
+
+  const newBrandingDefinitions = new Map(state.brandingDefinitions);
+  newBrandingDefinitions.set(tenantId, validation.definition);
+
+  const newState: BrandingAndThemingState = {
+    ...state,
+    brandingDefinitions: newBrandingDefinitions,
+  };
+
+  return { kind: 'SUCCESS', newState };
+}
+
+export function deleteBrandingDefinition(
+  tenantId: string,
+  token: unknown,
+  state: BrandingAndThemingState,
+  audit: (event: AuditEvent) => BrandingAndThemingError | null,
+): BrandingMutationResult {
+  const permissionCheck = checkBrandingPermission(tenantId, token, state);
+  if (permissionCheck.kind === 'DENIED') {
+    return { kind: 'ERROR', error: permissionCheck.error };
+  }
+
+  const currentDef = state.brandingDefinitions.get(tenantId);
+  if (currentDef === undefined) {
+    return {
+      kind: 'ERROR',
+      error: { kind: 'UNKNOWN_KEY', message: 'No branding definition exists for tenant' },
+    };
+  }
+
+  const auditEvent: AuditEvent = {
+    action: 'value-cleared',
+    tenantId,
+    key: 'brandingDefinition',
+    previousValue: currentDef,
+    newValue: null,
+  };
+  const auditError = audit(auditEvent);
+  if (auditError !== null) {
+    return { kind: 'ERROR', error: auditError };
+  }
+
+  const newBrandingDefinitions = new Map(state.brandingDefinitions);
+  newBrandingDefinitions.delete(tenantId);
+
+  const newState: BrandingAndThemingState = {
+    ...state,
+    brandingDefinitions: newBrandingDefinitions,
+  };
+
+  return { kind: 'SUCCESS', newState };
+}

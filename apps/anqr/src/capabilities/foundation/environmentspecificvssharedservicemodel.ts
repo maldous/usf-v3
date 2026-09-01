@@ -63,10 +63,11 @@ export const initialState: EnvironmentServiceClassificationState = {
   readiness: 'NOT_READY',
 };
 
-/**
- * Classify a service. The mutation is guarded by an audit callback.
- * If the audit reports an error, the state is left unchanged and the error is returned.
- */
+export interface EnvironmentServiceClassificationProof {
+  readonly document: readonly ServiceClassification[];
+  readonly checks: readonly string[];
+}
+
 export function classifyService(
   state: EnvironmentServiceClassificationState,
   service: string,
@@ -113,10 +114,6 @@ export function classifyService(
   };
 }
 
-/**
- * Validate that each service appears at most once and that its classification is a known value.
- * Also validates that shared services do not violate environment isolation.
- */
 export function validateClassifications(
   state: EnvironmentServiceClassificationState,
 ): EnvironmentServiceClassificationError | null {
@@ -133,3 +130,68 @@ export function validateClassifications(
       return {
         kind: 'INCONSISTENT_CLASSIFICATION',
         message: `Duplicate classification for service ${sc.service}`,
+        service: sc.service,
+      };
+    }
+    seen.add(sc.service);
+  }
+  return null;
+}
+
+export function checkReadiness(
+  state: EnvironmentServiceClassificationState,
+): EnvironmentServiceClassificationReadiness {
+  const validationError = validateClassifications(state);
+  if (validationError !== null) {
+    return 'NOT_READY';
+  }
+  if (state.classifications.length === 0) {
+    return 'NOT_READY';
+  }
+  return 'READY';
+}
+
+export function generateProof(
+  state: EnvironmentServiceClassificationState,
+): EnvironmentServiceClassificationProof | EnvironmentServiceClassificationError {
+  const validationError = validateClassifications(state);
+  if (validationError !== null) {
+    return validationError;
+  }
+  const checks: string[] = [
+    'all-classifications-valid',
+    'no-duplicate-services',
+    'no-missing-classifications',
+  ];
+  return {
+    document: state.classifications,
+    checks,
+  };
+}
+
+export function readClassification(
+  state: EnvironmentServiceClassificationState,
+  service: string,
+): ServiceClassification | EnvironmentServiceClassificationError {
+  const classification = state.classifications.find((c) => c.service === service);
+  if (classification === undefined) {
+    return {
+      kind: 'MISSING_CLASSIFICATION',
+      message: `No classification found for service ${service}`,
+      service,
+    };
+  }
+  return classification;
+}
+
+export function getAuditEvents(
+  state: EnvironmentServiceClassificationState,
+): readonly EnvironmentServiceClassificationAuditEvent[] {
+  return state.lastAuditEvent ? [state.lastAuditEvent] : [];
+}
+
+export function getReadiness(
+  state: EnvironmentServiceClassificationState,
+): EnvironmentServiceClassificationReadiness {
+  return state.readiness;
+}

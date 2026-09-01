@@ -1,4 +1,3 @@
-```typescript
 export const I18nRuntimeAndValidationValidationMode = ['STRICT', 'REPORT_ONLY'] as const;
 export type I18nRuntimeAndValidationValidationMode = typeof I18nRuntimeAndValidationValidationMode[number];
 
@@ -118,19 +117,18 @@ export function validateI18n(
   const missingKeys = state.usedKeys.filter((key) => !state.localeKeyMap.has(key));
   findings.push(
     ...missingKeys.map((key) => ({
-      kind: 'MISSING_REQUIRED_KEY',
+      kind: 'MISSING_REQUIRED_KEY' as const,
       message: `Missing required key: ${key}`,
       key,
-    } as const))
+    }))
   );
 
-  const duplicateKeys = Array.from(new Set(state.duplicateKeys)).sort();
   findings.push(
-    ...duplicateKeys.map((key) => ({
-      kind: 'DUPLICATE_KEY',
+    ...state.duplicateKeys.map((key) => ({
+      kind: 'DUPLICATE_KEY' as const,
       message: `Duplicate key: ${key}`,
       key,
-    } as const))
+    }))
   );
 
   const unusedKeys = Array.from(state.localeKeyMap.keys()).filter(
@@ -138,10 +136,10 @@ export function validateI18n(
   );
   findings.push(
     ...unusedKeys.map((key) => ({
-      kind: 'UNUSED_KEY',
+      kind: 'UNUSED_KEY' as const,
       message: `Unused key: ${key}`,
       key,
-    } as const))
+    }))
   );
 
   const rawLiteralFindings = state.rawLiteralFindings.filter(
@@ -149,7 +147,7 @@ export function validateI18n(
   );
   findings.push(...rawLiteralFindings);
 
-  for (const [key, expectedParams] of Object.entries(state.interpolationParams)) {
+  for (const [key, expectedParams] of state.interpolationParams) {
     if (!state.localeKeyMap.has(key)) continue;
     const template = state.localeKeyMap.get(key)!;
     const templateParams = (template.match(/\{(\w+)\}/g) || []).map(m => m.slice(1, -1));
@@ -158,7 +156,22 @@ export function validateI18n(
 
     if (missingInTemplate.length > 0 || extraInTemplate.length > 0) {
       findings.push({
-        kind: 'MISMATCHED_INTERPOLATION',
+        kind: 'MISMATCHED_INTERPOLATION' as const,
         message: `Interpolation parameter mismatch for key ${key}: expected ${expectedParams.join(', ')}, found ${templateParams.join(', ')}`,
         key,
-      } as
+      });
+    }
+  }
+
+  const hasStrictFailures = findings.some(
+    f => f.kind !== 'UNUSED_KEY' && f.kind !== 'DUPLICATE_KEY'
+  );
+  const exitState = state.validationMode === 'STRICT' && hasStrictFailures
+    ? 'FAIL'
+    : 'PASS';
+
+  return {
+    findings: Object.freeze(findings),
+    exitState,
+  };
+}

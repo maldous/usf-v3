@@ -16,6 +16,9 @@ export const ObjectStorageAndTenantPrefixesAndSignedUrlsErrorKind = [
   'REGISTRY_UNAVAILABLE',
   'PREFIX_ISOLATION_VIOLATION',
   'AUDIT_FAILURE',
+  'MISSING_TENANT_CONTEXT',
+  'INVALID_CONFIGURATION',
+  'OBJECT_NOT_FOUND',
 ] as const;
 export type ObjectStorageAndTenantPrefixesAndSignedUrlsErrorKind = typeof ObjectStorageAndTenantPrefixesAndSignedUrlsErrorKind[number];
 
@@ -36,6 +39,14 @@ export const ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEventKind = [
   'QUOTA_CHANGE',
 ] as const;
 export type ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEventKind = typeof ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEventKind[number];
+
+export const ObjectStorageAndTenantPrefixesAndSignedUrlsAllowedContentType = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'text/plain',
+] as const;
+export type ObjectStorageAndTenantPrefixesAndSignedUrlsAllowedContentType = typeof ObjectStorageAndTenantPrefixesAndSignedUrlsAllowedContentType[number];
 
 export interface ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent {
   readonly kind: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEventKind;
@@ -72,6 +83,9 @@ export interface ObjectStorageAndTenantPrefixesAndSignedUrlsState {
   readonly storageBytesMeter: number;
   readonly readiness: ObjectStorageAndTenantPrefixesAndSignedUrlsReadinessState;
   readonly lastError: ObjectStorageAndTenantPrefixesAndSignedUrlsError | null;
+  readonly providerAvailable: boolean;
+  readonly registryAvailable: boolean;
+  readonly signedUrlIssuedCount: number;
 }
 
 export const initialState: ObjectStorageAndTenantPrefixesAndSignedUrlsState = {
@@ -79,6 +93,9 @@ export const initialState: ObjectStorageAndTenantPrefixesAndSignedUrlsState = {
   storageBytesMeter: 0,
   readiness: 'UNAVAILABLE',
   lastError: null,
+  providerAvailable: false,
+  registryAvailable: false,
+  signedUrlIssuedCount: 0,
 };
 
 export interface ObjectStorageAndTenantPrefixesAndSignedUrlsSignedUrl {
@@ -93,12 +110,38 @@ export function generateTenantPrefix(tenantId: string): string {
 }
 
 export function validateContentType(contentType: string): boolean {
-  const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'text/plain'];
-  return validTypes.includes(contentType);
+  return (ObjectStorageAndTenantPrefixesAndSignedUrlsAllowedContentType as readonly string[]).includes(contentType);
 }
 
 export function validateSize(sizeInBytes: number, quota: number): boolean {
-  return sizeInBytes > 0 && sizeInBytes <= quota;
+  return Number.isFinite(sizeInBytes) && sizeInBytes > 0 && sizeInBytes <= quota;
+}
+
+export function validateTenantContext(tenantId: string, organisationId: string): boolean {
+  if (typeof tenantId !== 'string' || tenantId.length === 0) {
+    return false;
+  }
+  if (typeof organisationId !== 'string' || organisationId.length === 0) {
+    return false;
+  }
+  return true;
+}
+
+export function validatePrefixIsolation(
+  state: ObjectStorageAndTenantPrefixesAndSignedUrlsState,
+  objectKey: string,
+  tenantId: string,
+): boolean {
+  const expectedPrefix = generateTenantPrefix(tenantId);
+  if (!objectKey.startsWith(expectedPrefix)) {
+    return false;
+  }
+  for (const record of state.registry) {
+    if (record.tenantId !== tenantId && objectKey === record.objectKey) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function auditEvent(
@@ -110,6 +153,12 @@ export function auditEvent(
   details: unknown,
   auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
 ): ObjectStorageAndTenantPrefixesAndSignedUrlsError | null {
+  if (!validateTenantContext(tenantId, organisationId)) {
+    return {
+      kind: 'MISSING_TENANT_CONTEXT',
+      message: 'Tenant context is required for audit events',
+    };
+  }
   const event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent = {
     kind,
     tenantId,
@@ -133,11 +182,21 @@ export function uploadObject(
   quota: number,
   auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
 ): { readonly kind: 'success'; readonly state: ObjectStorageAndTenantPrefixesAndSignedUrlsState } | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
+  if (!validateTenantContext(tenantId, organisationId)) {
+    return {
+      kind: 'MISSING_TENANT_CONTEXT',
+      message: 'Tenant context is required for upload',
+      tenantId,
+      objectId,
+    };
+  }
+
   if (state.readiness === 'UNAVAILABLE') {
     return {
       kind: 'PROVIDER_UNAVAILABLE',
       message: 'Storage provider is unavailable',
       tenantId,
+      objectId,
     };
   }
 
@@ -161,6 +220,15 @@ export function uploadObject(
 
   const tenantPrefix = generateTenantPrefix(tenantId);
   const prefixedKey = `${tenantPrefix}${objectKey}`;
+
+  if (!validatePrefixIsolation(state, prefixedKey, tenantId)) {
+    return {
+      kind: 'PREFIX_ISOLATION_VIOLATION',
+      message: 'Object key violates tenant prefix isolation',
+      tenantId,
+      objectId,
+    };
+  }
 
   const auditError = auditEvent(
     'OBJECT_UPLOAD',
@@ -206,9 +274,19 @@ export function updateScanState(
   state: ObjectStorageAndTenantPrefixesAndSignedUrlsState,
   objectId: string,
   tenantId: string,
+  organisationId: string,
   newScanState: ObjectStorageAndTenantPrefixesAndSignedUrlsScanState,
   auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
 ): { readonly kind: 'success'; readonly state: ObjectStorageAndTenantPrefixesAndSignedUrlsState } | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
+  if (!validateTenantContext(tenantId, organisationId)) {
+    return {
+      kind: 'MISSING_TENANT_CONTEXT',
+      message: 'Tenant context is required for scan state update',
+      tenantId,
+      objectId,
+    };
+  }
+
   if (state.readiness === 'UNAVAILABLE') {
     return {
       kind: 'REGISTRY_UNAVAILABLE',
@@ -223,7 +301,7 @@ export function updateScanState(
   );
   if (recordIndex === -1) {
     return {
-      kind: 'TENANT_DATA_OR_SECURITY',
+      kind: 'OBJECT_NOT_FOUND',
       message: 'Object not found or tenant mismatch',
       tenantId,
       objectId,
@@ -274,13 +352,32 @@ export function issueSignedUrl(
   state: ObjectStorageAndTenantPrefixesAndSignedUrlsState,
   objectId: string,
   tenantId: string,
+  organisationId: string,
   expiresInSeconds: number,
   auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
 ): ObjectStorageAndTenantPrefixesAndSignedUrlsSignedUrl | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
+  if (!validateTenantContext(tenantId, organisationId)) {
+    return {
+      kind: 'MISSING_TENANT_CONTEXT',
+      message: 'Tenant context is required for signed URL issuance',
+      tenantId,
+      objectId,
+    };
+  }
+
   if (state.readiness === 'UNAVAILABLE') {
     return {
       kind: 'PROVIDER_UNAVAILABLE',
       message: 'Storage provider is unavailable',
+      tenantId,
+      objectId,
+    };
+  }
+
+  if (!Number.isFinite(expiresInSeconds) || expiresInSeconds <= 0) {
+    return {
+      kind: 'INVALID_CONFIGURATION',
+      message: 'Signed URL expiration must be positive',
       tenantId,
       objectId,
     };
@@ -291,7 +388,7 @@ export function issueSignedUrl(
   );
   if (record === undefined) {
     return {
-      kind: 'TENANT_DATA_OR_SECURITY',
+      kind: 'OBJECT_NOT_FOUND',
       message: 'Object not found or tenant mismatch',
       tenantId,
       objectId,
@@ -322,11 +419,12 @@ export function issueSignedUrl(
   }
 
   return {
+    kind: 'success',
     url: `https://storage.provider.com/${record.objectKey}?expires=${expiresAt}`,
     expiresAt,
     objectId: record.objectId,
     tenantId: record.tenantId,
-  };
+  } as unknown as ObjectStorageAndTenantPrefixesAndSignedUrlsSignedUrl;
 }
 
 export function checkReadiness(
@@ -334,26 +432,54 @@ export function checkReadiness(
   providerAvailable: boolean,
   registryAvailable: boolean,
 ): ObjectStorageAndTenantPrefixesAndSignedUrlsState {
-  if (!providerAvailable || !registryAvailable) {
+  const bothAvailable = providerAvailable && registryAvailable;
+  const neitherAvailable = !providerAvailable && !registryAvailable;
+  const providerOnly = providerAvailable && !registryAvailable;
+  const registryOnly = !providerAvailable && registryAvailable;
+
+  if (neitherAvailable) {
     return {
       ...state,
       readiness: 'UNAVAILABLE',
+      providerAvailable,
+      registryAvailable,
       lastError: {
         kind: 'PROVIDER_UNAVAILABLE',
-        message: 'Storage provider or registry is unavailable',
+        message: 'Storage provider and registry are unavailable',
       },
     };
   }
 
-  if (state.readiness === 'UNAVAILABLE') {
+  if (providerOnly || registryOnly) {
+    return {
+      ...state,
+      readiness: 'DEGRADED_READ_ONLY',
+      providerAvailable,
+      registryAvailable,
+      lastError: {
+        kind: providerOnly ? 'REGISTRY_UNAVAILABLE' : 'PROVIDER_UNAVAILABLE',
+        message: providerOnly
+          ? 'Registry is unavailable; storage paths are disabled'
+          : 'Provider is unavailable; storage paths are disabled',
+      },
+    };
+  }
+
+  if (state.readiness === 'UNAVAILABLE' || state.readiness === 'DEGRADED_READ_ONLY') {
     return {
       ...state,
       readiness: 'READY',
+      providerAvailable,
+      registryAvailable,
       lastError: null,
     };
   }
 
-  return state;
+  return {
+    ...state,
+    providerAvailable,
+    registryAvailable,
+  };
 }
 
 export function probe(
@@ -362,20 +488,33 @@ export function probe(
   readonly readiness: ObjectStorageAndTenantPrefixesAndSignedUrlsReadinessState;
   readonly storageBytesMeter: number;
   readonly error: ObjectStorageAndTenantPrefixesAndSignedUrlsError | null;
+  readonly providerAvailable: boolean;
+  readonly registryAvailable: boolean;
 } {
   return {
     readiness: state.readiness,
     storageBytesMeter: state.storageBytesMeter,
     error: state.lastError,
+    providerAvailable: state.providerAvailable,
+    registryAvailable: state.registryAvailable,
   };
 }
 
 export function enforceQuota(
   state: ObjectStorageAndTenantPrefixesAndSignedUrlsState,
   tenantId: string,
+  organisationId: string,
   quota: number,
   auditFn: (event: ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEvent) => ObjectStorageAndTenantPrefixesAndSignedUrlsError | null,
 ): { readonly kind: 'success'; readonly state: ObjectStorageAndTenantPrefixesAndSignedUrlsState } | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
+  if (!validateTenantContext(tenantId, organisationId)) {
+    return {
+      kind: 'MISSING_TENANT_CONTEXT',
+      message: 'Tenant context is required for quota enforcement',
+      tenantId,
+    };
+  }
+
   const tenantObjects = state.registry.filter((r) => r.tenantId === tenantId);
   const totalUsage = tenantObjects.reduce((sum, obj) => sum + obj.sizeInBytes, 0);
 
@@ -387,7 +526,6 @@ export function enforceQuota(
     };
   }
 
-  const organisationId = tenantObjects.length > 0 ? tenantObjects[0].organisationId : 'unknown';
   const auditError = auditEvent(
     'QUOTA_CHANGE',
     tenantId,
@@ -408,4 +546,45 @@ export function enforceQuota(
       lastError: null,
     },
   };
+}
+
+export function listTenantObjects(
+  state: ObjectStorageAndTenantPrefixesAndSignedUrlsState,
+  tenantId: string,
+  organisationId: string,
+): readonly ObjectStorageAndTenantPrefixesAndSignedUrlsObjectRegistryRecord[] | ObjectStorageAndTenantPrefixesAndSignedUrlsError {
+  if (!validateTenantContext(tenantId, organisationId)) {
+    return {
+      kind: 'MISSING_TENANT_CONTEXT',
+      message: 'Tenant context is required for listing objects',
+      tenantId,
+    };
+  }
+  return state.registry.filter((r) => r.tenantId === tenantId);
+}
+
+export function isMutationAllowed(
+  state: ObjectStorageAndTenantPrefixesAndSignedUrlsState,
+): boolean {
+  return state.readiness === 'READY';
+}
+
+export function validateConfiguration(
+  providerAvailable: boolean,
+  registryAvailable: boolean,
+  quota: number,
+): ObjectStorageAndTenantPrefixesAndSignedUrlsError | null {
+  if (!providerAvailable || !registryAvailable) {
+    return {
+      kind: 'INVALID_CONFIGURATION',
+      message: 'Provider and registry must be configured',
+    };
+  }
+  if (!Number.isFinite(quota) || quota <= 0) {
+    return {
+      kind: 'INVALID_CONFIGURATION',
+      message: 'Quota must be a positive finite number',
+    };
+  }
+  return null;
 }

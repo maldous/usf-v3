@@ -18,16 +18,17 @@ export const ReadinessState = [
 ] as const;
 export type ReadinessState = typeof ReadinessState[number];
 
-export const RetentionErrorKind = [
-  'TENANT_DATA_LOSS_RISK',
-  'READINESS_DEGRADED',
-  'CONFIG_UNAVAILABLE',
+export const GlobalErrorKind = [
   'AUDIT_FAILURE',
+  'TENANT_DATA_LOSS_RISK',
+  'CONFIG_UNAVAILABLE',
+  'READINESS_DEGRADED',
   'VALIDATION_FAILURE',
 ] as const;
-export type RetentionErrorKind = typeof RetentionErrorKind[number];
+export type GlobalErrorKind = typeof GlobalErrorKind[number];
 
 export const LegalHoldErrorKind = [
+  ...GlobalErrorKind,
   'INVALID_ACTOR',
   'INVALID_REASON',
   'HOLD_NOT_FOUND',
@@ -36,11 +37,16 @@ export const LegalHoldErrorKind = [
 export type LegalHoldErrorKind = typeof LegalHoldErrorKind[number];
 
 export const ResidencyErrorKind = [
+  ...GlobalErrorKind,
   'INVALID_REGION',
   'TAG_CONFLICT',
-  'READINESS_DEGRADED',
 ] as const;
 export type ResidencyErrorKind = typeof ResidencyErrorKind[number];
+
+export const RetentionErrorKind = [
+  ...GlobalErrorKind,
+] as const;
+export type RetentionErrorKind = typeof RetentionErrorKind[number];
 
 export const IncidentClass = [
   'TENANT_DATA_OR_SECURITY',
@@ -61,9 +67,8 @@ export interface LegalHoldRecord {
 export interface RetentionPolicyRecord {
   readonly tenantId: string;
   readonly resourceClass: string;
-  readonly targetResource?: string;
   readonly timeToLiveMillis: number;
-  readonly applyFilter: 'ALL' | 'BY_STATUS' | `BY_STATUS:${string}`;
+  readonly applyFilter: 'ALL' | 'BY_STATUS';
   readonly enabled: boolean;
 }
 
@@ -115,6 +120,7 @@ export const initialState: SystemState = {
 export interface CreateLegalHoldResult {
   readonly success: true;
   readonly hold: LegalHoldRecord;
+  readonly newState: SystemState;
 }
 export interface CreateLegalHoldError {
   readonly success: false;
@@ -127,6 +133,7 @@ export type CreateLegalHoldOutput = CreateLegalHoldResult | CreateLegalHoldError
 export interface ReleaseLegalHoldResult {
   readonly success: true;
   readonly hold: LegalHoldRecord;
+  readonly newState: SystemState;
 }
 export interface ReleaseLegalHoldError {
   readonly success: false;
@@ -139,6 +146,7 @@ export type ReleaseLegalHoldOutput = ReleaseLegalHoldResult | ReleaseLegalHoldEr
 export interface SetResidencyTagResult {
   readonly success: true;
   readonly tag: ResidencyTagRecord;
+  readonly newState: SystemState;
 }
 export interface SetResidencyTagError {
   readonly success: false;
@@ -147,18 +155,6 @@ export interface SetResidencyTagError {
   readonly message: string;
 }
 export type SetResidencyTagOutput = SetResidencyTagResult | SetResidencyTagError;
-
-export interface EvaluateRetentionResult {
-  readonly success: true;
-  readonly candidates: readonly RetentionCandidate[];
-}
-export interface EvaluateRetentionError {
-  readonly success: false;
-  readonly kind: RetentionErrorKind;
-  readonly incidentClass?: IncidentClass;
-  readonly message: string;
-}
-export type EvaluateRetentionOutput = EvaluateRetentionResult | EvaluateRetentionError;
 
 export interface RunRetentionWorkerResult {
   readonly success: true;
@@ -186,7 +182,7 @@ export interface PerformRestoreDrillError {
 export type PerformRestoreDrillOutput = PerformRestoreDrillResult | PerformRestoreDrillError;
 
 export interface CheckReadinessResult {
-  readonly ready: boolean;
+  readonly ready: true;
   readonly details: unknown;
 }
 export interface CheckReadinessError {
@@ -219,19 +215,8 @@ export function createLegalHold(
   actor: string,
   auditFn: AuditFn,
 ): CreateLegalHoldOutput {
-  if (!actor || typeof actor !== 'string') {
-    return { success: false, kind: 'INVALID_ACTOR', message: 'Legal hold set by requires a valid actor' };
-  }
-  if (!reason || typeof reason !== 'string') {
-    return { success: false, kind: 'INVALID_REASON', message: 'Legal hold requires a reason' };
-  }
-
-  const existingHold = state.legalHolds.find(
-    (h) => h.tenantId === tenantId && h.resource === resource && h.state === 'ACTIVE',
-  );
-  if (existingHold !== undefined) {
-    return { success: true, hold: existingHold };
-  }
+  if (!actor) return { success: false, kind: 'INVALID_ACTOR', message: 'Actor required' };
+  if (!reason) return { success: false, kind: 'INVALID_REASON', message: 'Reason required' };
 
   const newHold: LegalHoldRecord = {
     tenantId,
@@ -242,21 +227,16 @@ export function createLegalHold(
     state: 'ACTIVE',
   };
 
-  const auditError = auditEvent('LEGAL_HOLD_SET', tenantId, newHold, auditFn);
-  if (auditError !== null) {
-    return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditError.message };
-  }
-
-  const updatedHolds = [...state.legalHolds, newHold];
-  const updatedCandidates = state.candidates.map((c) =>
-    c.tenantId === tenantId && c.resource === resource
-      ? { ...c, currentOutcome: 'HELD' as RetentionOutcome }
-      : c
-  );
+  const auditErr = auditEvent('LEGAL_HOLD_SET', tenantId, newHold, auditFn);
+  if (auditErr) return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditErr.message };
 
   return {
     success: true,
     hold: newHold,
+    newState: {
+      ...state,
+      legalHolds: [...state.legalHolds, newHold],
+    },
   };
 }
 
@@ -267,134 +247,81 @@ export function releaseLegalHold(
   actor: string,
   auditFn: AuditFn,
 ): ReleaseLegalHoldOutput {
-  if (!actor || typeof actor !== 'string') {
-    return { success: false, kind: 'INVALID_ACTOR', message: 'Legal hold release by requires a valid actor' };
-  }
+  if (!actor) return { success: false, kind: 'INVALID_ACTOR', message: 'Actor required' };
 
-  const holdIndex = state.legalHolds.findIndex(
-    (h) => h.tenantId === tenantId && h.resource === resource && h.state === 'ACTIVE',
-  );
+  const idx = state.legalHolds.findIndex(h => h.tenantId === tenantId && h.resource === resource && h.state === 'ACTIVE');
+  if (idx === -1) return { success: false, kind: 'HOLD_NOT_FOUND', message: 'No active hold' };
 
-  if (holdIndex < 0) {
-    return { success: false, kind: 'HOLD_NOT_FOUND', message: 'No active legal hold found for resource' };
-  }
-
-  const existingHold = state.legalHolds[holdIndex];
-  if (existingHold.state === 'RELEASED') {
-    return { success: false, kind: 'ALREADY_RELEASED', message: 'Legal hold already released' };
-  }
-
+  const hold = state.legalHolds[idx];
   const updatedHold: LegalHoldRecord = {
-    ...existingHold,
+    ...hold,
     releasedBy: actor,
     releasedTimestamp: new Date().toISOString(),
     state: 'RELEASED',
   };
 
-  const auditError = auditEvent('LEGAL_HOLD_RELEASED', tenantId, updatedHold, auditFn);
-  if (auditError !== null) {
-    return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditError.message };
-  }
+  const auditErr = auditEvent('LEGAL_HOLD_RELEASED', tenantId, updatedHold, auditFn);
+  if (auditErr) return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditErr.message };
 
-  const updatedHolds = [...state.legalHolds];
-  updatedHolds[holdIndex] = updatedHold;
-
-  const updatedCandidates = state.candidates.map((c) =>
-    c.tenantId === tenantId && c.resource === resource
-      ? { ...c, currentOutcome: 'PENDING' as RetentionOutcome }
-      : c
-  );
+  const newHolds = [...state.legalHolds];
+  newHolds[idx] = updatedHold;
 
   return {
     success: true,
     hold: updatedHold,
+    newState: { ...state, legalHolds: newHolds },
   };
 }
 
-export function createResidencyTag(
+export function setResidencyTag(
   state: SystemState,
   tenantId: string,
   homeRegion: string,
   auditFn: AuditFn,
 ): SetResidencyTagOutput {
-  if (!homeRegion || typeof homeRegion !== 'string') {
-    return { success: false, kind: 'INVALID_REGION', message: 'Home region must be a non-empty string' };
-  }
+  if (!homeRegion) return { success: false, kind: 'INVALID_REGION', message: 'Region required' };
 
-  const existingTag = state.residencyTags.find((t) => t.tenantId === tenantId);
-  if (existingTag !== undefined) {
-    return { success: true, tag: existingTag };
-  }
+  const tag: ResidencyTagRecord = { tenantId, homeRegion };
+  const auditErr = auditEvent('RESIDENCY_TAG_SET', tenantId, tag, auditFn);
+  if (auditErr) return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditErr.message };
 
-  const auditError = auditEvent('RESIDENCY_TAG_SET', tenantId, { homeRegion }, auditFn);
-  if (auditError !== null) {
-    return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditError.message };
-  }
-
-  const newTag: ResidencyTagRecord = { tenantId, homeRegion };
-
+  const filtered = state.residencyTags.filter(t => t.tenantId !== tenantId);
   return {
     success: true,
-    tag: newTag,
+    tag,
+    newState: { ...state, residencyTags: [...filtered, tag] },
   };
 }
 
-export function createRetentionPolicy(
+export function validateResidencyWrite(
   state: SystemState,
   tenantId: string,
-  resourceClass: string,
-  timeToLiveMillis: number,
-  applyFilter: RetentionPolicyRecord['applyFilter'],
-  enabled: boolean,
-  auditFn: AuditFn,
-): EvaluateRetentionOutput {
-  const auditError = auditEvent('RETENTION_EVALUATED', tenantId, { resourceClass, timeToLiveMillis }, auditFn);
-  if (auditError !== null) {
-    return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditError.message };
-  }
-
-  const newPolicy: RetentionPolicyRecord = {
-    tenantId,
-    resourceClass,
-    timeToLiveMillis,
-    applyFilter,
-    enabled,
-  };
-
-  return {
-    success: true,
-    candidates: state.candidates,
-  };
+  targetRegion: string,
+): boolean {
+  const tag = state.residencyTags.find(t => t.tenantId === tenantId);
+  if (!tag) return false;
+  return tag.homeRegion === targetRegion;
 }
 
 export function validateRetentionCandidate(
   state: SystemState,
-  tenantId: string,
-  resource: string,
-): RetentionOutcome | Error {
-  const policy = state.retentionPolicies.find((p) => p.tenantId === tenantId);
-  if (policy === undefined || !policy.enabled) {
-    return 'PENDING';
+  candidate: RetentionCandidate,
+  now: number,
+): RetentionOutcome {
+  const policy = state.retentionPolicies.find(p => p.tenantId === candidate.tenantId && p.enabled);
+  if (!policy) return 'PENDING';
+
+  const activeHold = state.legalHolds.find(h => h.tenantId === candidate.tenantId && h.resource === candidate.resource && h.state === 'ACTIVE');
+  if (activeHold) return 'HELD';
+
+  const createdAt = Date.parse(candidate.evaluatedAt);
+  if (isNaN(createdAt)) return 'PENDING';
+
+  if (now - createdAt > policy.timeToLiveMillis) {
+    return 'DELETED';
   }
 
-  const now = Date.now();
-  const candidateTimestamp = now; // Simplified: assuming we are evaluating "now" against TTL
-
-  const timeWindowExpired = (candidateTimestamp - policy.timeToLiveMillis) > 0;
-
-  if (!timeWindowExpired) {
-    return 'PENDING';
-  }
-
-  const activeHold = state.legalHolds.find(
-    (h) => h.tenantId === tenantId && h.resource === resource && h.state === 'ACTIVE',
-  );
-
-  if (activeHold !== undefined) {
-    return 'HELD';
-  }
-
-  return 'DELETED';
+  return 'PENDING';
 }
 
 export function runRetentionWorker(
@@ -402,40 +329,23 @@ export function runRetentionWorker(
   ctx: RetentionWorkerContext,
   auditFn: AuditFn,
 ): RunRetentionWorkerOutput {
-  if (!ctx.isPrivileged) {
-    return { success: false, kind: 'TENANT_DATA_LOSS_RISK', incidentClass: 'TENANT_DATA_OR_SECURITY', message: 'Retention worker requires privileged bypass context' };
-  }
+  if (!ctx.isPrivileged) return { success: false, kind: 'VALIDATION_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: 'Privilege required' };
+  if (!ctx.sourceDataAvailable) return { success: false, kind: 'CONFIG_UNAVAILABLE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: 'Fail-closed' };
 
-  if (!ctx.sourceDataAvailable) {
-    return { success: false, kind: 'CONFIG_UNAVAILABLE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: 'Source data unavailable, fail-closed' };
-  }
+  const now = Date.now();
+  const nextCandidates: RetentionCandidate[] = [];
 
-  const updatedCandidates: RetentionCandidate[] = [];
-
-  for (const candidate of state.candidates) {
-    const outcome = validateRetentionCandidate(state, candidate.tenantId, candidate.resource);
+  for (const c of state.candidates) {
+    const outcome = validateRetentionCandidate(state, c, now);
+    const auditErr = auditEvent('RETENTION_EVALUATED', c.tenantId, { resource: c.resource, outcome }, auditFn);
+    if (auditErr) return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditErr.message };
     
-    if (outcome instanceof Error) {
-      const auditError = auditEvent('RETENTION_EVALUATED', candidate.tenantId, { resource: candidate.resource, error: outcome.message }, auditFn);
-      if (auditError !== null) {
-         return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditError.message };
-      }
-    }
-
-    const newCandidate: RetentionCandidate = {
-      ...candidate,
-      currentOutcome: outcome as RetentionOutcome,
-      evaluatedAt: new Date().toISOString(),
-    };
-    updatedCandidates.push(newCandidate);
+    nextCandidates.push({ ...c, currentOutcome: outcome, evaluatedAt: new Date().toISOString() });
   }
 
   return {
     success: true,
-    state: {
-      ...state,
-      candidates: updatedCandidates,
-    },
+    state: { ...state, candidates: nextCandidates },
   };
 }
 
@@ -445,23 +355,13 @@ export function performRestoreDrill(
   pointInTime: string,
   auditFn: AuditFn,
 ): PerformRestoreDrillOutput {
-  const auditError = auditEvent('RESTORE_DRILL', tenantId, { pointInTime }, auditFn);
-  if (auditError !== null) {
-    return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditError.message };
-  }
+  const auditErr = auditEvent('RESTORE_DRILL', tenantId, { pointInTime }, auditFn);
+  if (auditErr) return { success: false, kind: 'AUDIT_FAILURE', incidentClass: 'TENANT_DATA_OR_SECURITY', message: auditErr.message };
 
-  const tenantHolds = state.legalHolds.filter((h) => h.tenantId === tenantId);
-  const tenantTags = state.residencyTags.filter((t) => t.tenantId === tenantId);
+  const hasActiveHold = state.legalHolds.some(h => h.tenantId === tenantId && h.state === 'ACTIVE');
+  if (hasActiveHold) return { success: false, kind: 'TENANT_DATA_LOSS_RISK', incidentClass: 'TENANT_DATA_OR_SECURITY', message: 'Hold blocks restore' };
 
-  if (tenantHolds.some((h) => h.state === 'ACTIVE')) {
-    return { success: false, kind: 'TENANT_DATA_LOSS_RISK', incidentClass: 'TENANT_DATA_OR_SECURITY', message: 'Cannot restore drill: active legal hold blocks restore' };
-  }
-
-  return {
-    success: true,
-    timestamp: pointInTime,
-    tenantIdsRestored: [tenantId],
-  };
+  return { success: true, timestamp: pointInTime, tenantIdsRestored: [tenantId] };
 }
 
 export function checkReadiness(
@@ -469,32 +369,10 @@ export function checkReadiness(
   workerReachable: boolean,
   holdStoreReachable: boolean,
   residencyEnforcerReachable: boolean,
+  drillSuccess: boolean,
 ): CheckReadinessOutput {
-  const issues: string[] = [];
-
-  if (!workerReachable || !holdStoreReachable || !residencyEnforcerReachable) {
-    issues.push('Core adapters unavailable');
+  if (!workerReachable || !holdStoreReachable || !residencyEnforcerReachable || !drillSuccess) {
+    return { ready: false, kind: 'READINESS_DEGRADED', message: 'Capability adapters or drills failed' };
   }
-
-  if (state.residencyTags.length === 0) {
-    issues.push('Residency configuration missing');
-  }
-
-  if (issues.length > 0) {
-    return {
-      ready: false,
-      kind: 'READINESS_DEGRADED',
-      message: issues.join('; '),
-    };
-  }
-
-  const drillResult = performRestoreDrill(state, 'system-wide', new Date().toISOString(), () => null);
-  if (drillResult.success === false) {
-    return { ready: false, kind: drillResult.kind, message: drillResult.message };
-  }
-
-  return {
-    ready: true,
-    details: { workerReachable, holdStoreReachable, residencyEnforcerReachable },
-  };
+  return { ready: true, details: { workerReachable, holdStoreReachable, residencyEnforcerReachable, drillSuccess } };
 }

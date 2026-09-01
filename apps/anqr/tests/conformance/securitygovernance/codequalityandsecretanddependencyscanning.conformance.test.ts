@@ -3,319 +3,259 @@ import assert from 'node:assert/strict';
 import * as capability from "../../../src/capabilities/securitygovernance/codequalityandsecretanddependencyscanning.ts";
 
 test("codequalityandsecretanddependencyscanningauditmodel", () => {
-  const state = capability.runCodeQualityAndSecretAndDependencyScanningGate(
-    capability.initialState,
-    [],
-    null,
-    null,
-    null,
-    null,
-    [],
-    "2023-01-01",
-    null
-  );
-  assert.deepEqual(state.lastVerdict, 'FAIL');
-  assert.deepEqual(state.lastError?.kind, 'SBOM_MISSING');
+  const state = capability.initialState;
+  const result = capability.runSecurityGate(state, true);
+  assert.equal(result.lastDecision, 'FAILED');
+  assert.equal(result.lastError?.kind, 'SBOM_MISSING');
 });
 
 test("codequalityandsecretanddependencyscanningcontracts", () => {
-  const rules: capability.StaticAnalysisRule[] = [{ id: "rule1", severity: "HIGH" } as const];
-  const validatedRules = capability.validateStaticAnalysisRules(rules);
-  assert.ok(!('kind' in validatedRules));
-  assert.deepEqual(validatedRules, rules);
+  const findings: capability.StaticAnalysisFinding[] = [
+    { severity: 'HIGH', message: 'test', location: 'test.ts' } as const,
+  ];
+  const result = capability.validateStaticAnalysis(findings);
+  assert.equal(result.decision, 'FAILED');
+  assert.equal(result.error?.kind, 'STATIC_ANALYSIS_ERROR');
 
-  const sbom: capability.SBOMDocument = { baseline: "baseline", lockHash: "hash", timestamp: "2023-01-01" };
-  const validatedSBOM = capability.validateSBOM(sbom);
-  assert.ok(!('kind' in validatedSBOM));
-  assert.deepEqual(validatedSBOM, sbom);
-
-  const policy: capability.SBOMPolicy = {
-    allowedLicenses: ["MIT"],
-    forbiddenLicenses: ["GPL"],
-    securityRequirements: ["req1"]
+  const baseline: capability.SBOMBaseline = {
+    version: '1.0.0',
+    lockHash: 'abc123',
+    createdAt: '2023-01-01T00:00:00Z',
   };
-  const validatedPolicy = capability.validateSBOMPolicy(policy);
-  assert.ok(!('kind' in validatedPolicy));
-  assert.deepEqual(validatedPolicy, policy);
+  const policyAudit: capability.SBOMPolicyAudit = { passed: true, details: [] };
+  const sbomResult = capability.validateSBOM(baseline, policyAudit);
+  assert.equal(sbomResult.decision, 'PASSED');
+  assert.equal(sbomResult.error, null);
 
-  const config: capability.CodeScanningConfig = {
-    binaryPath: "/bin",
-    configPath: "/config",
-    databasePath: "/db",
-    authoritative: true
+  const config: capability.CodeScanningConfig = { enabled: true };
+  const scanningResult = capability.validateCodeScanning(config, ['result1'], true);
+  assert.equal(scanningResult.decision, 'PASSED');
+  assert.equal(scanningResult.error, null);
+
+  const route: capability.SecurityRoute = {
+    resource: 'test',
+    scope: 'global',
+    requiredPermission: 'admin',
+    registeredAt: '2023-01-01T00:00:00Z',
   };
-  const validatedConfig = capability.validateCodeScanningConfig(config);
-  assert.ok(!('kind' in validatedConfig));
-  assert.deepEqual(validatedConfig, config);
-
-  const route: capability.SecurityRoute = { path: "/security", registered: true };
-  const validatedRoute = capability.validateSecurityRoute(route);
-  assert.ok(!('kind' in validatedRoute));
-  assert.deepEqual(validatedRoute, route);
+  const routeResult = capability.validateSecurityRoute(route);
+  assert.equal(routeResult.decision, 'PASSED');
+  assert.equal(routeResult.error, null);
 });
 
 test("codequalityandsecretanddependencyscanningerrormodel", () => {
-  const invalidRules = "not an array";
-  const error = capability.validateStaticAnalysisRules(invalidRules);
-  if ('kind' in error) {
-    assert.deepEqual(error.kind, 'STATIC_ANALYSIS_ERROR');
-  } else {
-    assert.fail('Expected error for invalid rules');
-  }
+  const highFinding: capability.StaticAnalysisFinding[] = [
+    { severity: 'HIGH', message: 'Critical issue', location: 'src/index.ts' } as const,
+  ];
+  const staticResult = capability.validateStaticAnalysis(highFinding);
+  assert.equal(staticResult.decision, 'FAILED');
+  assert.equal(staticResult.error?.kind, 'STATIC_ANALYSIS_ERROR');
 
-  const invalidSBOM = { baseline: 123 };
-  const sbomError = capability.validateSBOM(invalidSBOM);
-  if ('kind' in sbomError) {
-    assert.deepEqual(sbomError.kind, 'SBOM_MISSING');
-  } else {
-    assert.fail('Expected error for invalid SBOM');
-  }
+  const missingSBOM = capability.validateSBOM(null, null);
+  assert.equal(missingSBOM.decision, 'FAILED');
+  assert.equal(missingSBOM.error?.kind, 'SBOM_MISSING');
 
-  const staleSBOM: capability.SBOMDocument = { baseline: "old", lockHash: "hash", timestamp: "2020-01-01" };
-  const isFresh = capability.verifySBOMFreshness(staleSBOM, "2023-01-01");
-  assert.deepEqual(isFresh, false);
+  const failedPolicy: capability.SBOMPolicyAudit = { passed: false, details: ['License violation'] };
+  const policyResult = capability.validateSBOM(
+    { version: '1.0.0', lockHash: 'abc', createdAt: '2023-01-01' },
+    failedPolicy
+  );
+  assert.equal(policyResult.decision, 'FAILED');
+  assert.equal(policyResult.error?.kind, 'SBOM_POLICY_VIOLATION');
 
-  const invalidPolicy = { allowedLicenses: "not an array" };
-  const policyError = capability.validateSBOMPolicy(invalidPolicy);
-  if ('kind' in policyError) {
-    assert.deepEqual(policyError.kind, 'SBOM_POLICY_VIOLATION');
-  } else {
-    assert.fail('Expected error for invalid policy');
-  }
+  const missingConfig = capability.validateCodeScanning(null, [], true);
+  assert.equal(missingConfig.decision, 'FAILED');
+  assert.equal(missingConfig.error?.kind, 'CODE_SCANNING_INVALID_CONFIG');
 
-  const invalidConfig = { binaryPath: 123 };
-  const configError = capability.validateCodeScanningConfig(invalidConfig);
-  if ('kind' in configError) {
-    assert.deepEqual(configError.kind, 'CODE_SCANNING_INVALID_CONFIG');
-  } else {
-    assert.fail('Expected error for invalid config');
-  }
+  const disabledConfig: capability.CodeScanningConfig = { enabled: false };
+  const disabledResult = capability.validateCodeScanning(disabledConfig, [], true);
+  assert.equal(disabledResult.decision, 'FAILED');
+  assert.equal(disabledResult.error?.kind, 'CODE_SCANNING_MISSING');
 
-  const invalidRoute = { path: 123 };
-  const routeError = capability.validateSecurityRoute(invalidRoute);
-  if ('kind' in routeError) {
-    assert.deepEqual(routeError.kind, 'ROUTE_MISSING');
-  } else {
-    assert.fail('Expected error for invalid route');
-  }
-
-  const authoritativeConfig: capability.CodeScanningConfig = {
-    binaryPath: "/bin",
-    configPath: "/config",
-    databasePath: "/db",
-    authoritative: true
-  };
-  const scanningError = capability.validateCodeScanning(authoritativeConfig, null);
-  assert.deepEqual(scanningError?.kind, 'CODE_SCANNING_MISSING');
+  const missingRoute = capability.validateSecurityRoute(null);
+  assert.equal(missingRoute.decision, 'FAILED');
+  assert.equal(missingRoute.error?.kind, 'ROUTE_MISSING');
 });
 
 test("codequalityandsecretanddependencyscanninglifecycle", () => {
-  const rules: capability.StaticAnalysisRule[] = [{ id: "rule1", severity: "HIGH" } as const];
-  const sbom: capability.SBOMDocument = { baseline: "baseline", lockHash: "hash", timestamp: "2023-01-01" };
-  const policy: capability.SBOMPolicy = {
-    allowedLicenses: ["MIT"],
-    forbiddenLicenses: ["GPL"],
-    securityRequirements: ["req1"]
+  const stateWithHighFinding: capability.CodeQualityAndSecretAndDependencyScanningState = {
+    ...capability.initialState,
+    staticAnalysisFindings: [
+      { severity: 'HIGH', message: 'Critical', location: 'test.ts' } as const,
+    ],
   };
-  const config: capability.CodeScanningConfig = {
-    binaryPath: "/bin",
-    configPath: "/config",
-    databasePath: "/db",
-    authoritative: false
+  const result = capability.runSecurityGate(stateWithHighFinding, true);
+  assert.equal(result.lastDecision, 'FAILED');
+  assert.equal(result.lastError?.kind, 'STATIC_ANALYSIS_ERROR');
+
+  const stateWithMissingSBOM: capability.CodeQualityAndSecretAndDependencyScanningState = {
+    ...capability.initialState,
+    sbomBaseline: null,
+    sbomPolicyAudit: null,
   };
-  const route: capability.SecurityRoute = { path: "/security", registered: true };
+  const sbomResult = capability.runSecurityGate(stateWithMissingSBOM, true);
+  assert.equal(sbomResult.lastDecision, 'FAILED');
+  assert.equal(sbomResult.lastError?.kind, 'SBOM_MISSING');
 
-  const state = capability.runCodeQualityAndSecretAndDependencyScanningGate(
-    capability.initialState,
-    rules,
-    sbom,
-    policy,
-    config,
-    route,
-    ["finding1"],
-    "2023-01-01",
-    {}
-  );
-  assert.deepEqual(state.lastVerdict, 'FAIL');
-  assert.deepEqual(state.lastError?.kind, 'STATIC_ANALYSIS_ERROR');
+  const stateWithFailedPolicy: capability.CodeQualityAndSecretAndDependencyScanningState = {
+    ...capability.initialState,
+    sbomBaseline: { version: '1.0.0', lockHash: 'abc', createdAt: '2023-01-01' },
+    sbomPolicyAudit: { passed: false, details: ['Violation'] },
+  };
+  const policyResult = capability.runSecurityGate(stateWithFailedPolicy, true);
+  assert.equal(policyResult.lastDecision, 'FAILED');
+  assert.equal(policyResult.lastError?.kind, 'SBOM_POLICY_VIOLATION');
 
-  const freshState = capability.runCodeQualityAndSecretAndDependencyScanningGate(
-    capability.initialState,
-    rules,
-    sbom,
-    policy,
-    config,
-    route,
-    [],
-    "2022-01-01",
-    {}
-  );
-  assert.deepEqual(freshState.lastVerdict, 'FAIL');
-  assert.deepEqual(freshState.lastError?.kind, 'SBOM_STALE');
+  const stateWithMissingConfig: capability.CodeQualityAndSecretAndDependencyScanningState = {
+    ...capability.initialState,
+    sbomBaseline: { version: '1.0.0', lockHash: 'abc', createdAt: '2023-01-01' },
+    sbomPolicyAudit: { passed: true, details: [] },
+    codeScanningConfig: null,
+    codeScanningResults: [],
+  };
+  const configResult = capability.runSecurityGate(stateWithMissingConfig, true);
+  assert.equal(configResult.lastDecision, 'FAILED');
+  assert.equal(configResult.lastError?.kind, 'CODE_SCANNING_INVALID_CONFIG');
 
-  const policyViolationState = capability.runCodeQualityAndSecretAndDependencyScanningGate(
-    capability.initialState,
-    rules,
-    { baseline: "GPL code", lockHash: "hash", timestamp: "2023-01-01" },
-    policy,
-    config,
-    route,
-    [],
-    "2022-01-01",
-    {}
-  );
-  assert.deepEqual(policyViolationState.lastVerdict, 'FAIL');
-  assert.deepEqual(policyViolationState.lastError?.kind, 'SBOM_POLICY_VIOLATION');
+  const stateWithMissingRoute: capability.CodeQualityAndSecretAndDependencyScanningState = {
+    ...capability.initialState,
+    sbomBaseline: { version: '1.0.0', lockHash: 'abc', createdAt: '2023-01-01' },
+    sbomPolicyAudit: { passed: true, details: [] },
+    codeScanningConfig: { enabled: true },
+    codeScanningResults: ['result'],
+    securityRoute: null,
+  };
+  const routeResult = capability.runSecurityGate(stateWithMissingRoute, true);
+  assert.equal(routeResult.lastDecision, 'FAILED');
+  assert.equal(routeResult.lastError?.kind, 'ROUTE_MISSING');
 });
 
 test("codequalityandsecretanddependencyscanningpermissions", () => {
-  const route: capability.SecurityRoute = { path: "/security", registered: true };
-  const validatedRoute = capability.validateSecurityRoute(route);
-  assert.ok(!('kind' in validatedRoute));
-  assert.deepEqual(validatedRoute.registered, true);
-
-  const unregisteredRoute: capability.SecurityRoute = { path: "/security", registered: false };
-  const unregisteredResult = capability.validateSecurityRoute(unregisteredRoute);
-  assert.ok(!('kind' in unregisteredResult));
-  assert.deepEqual(unregisteredResult.registered, false);
+  const route: capability.SecurityRoute = {
+    resource: 'global-operator',
+    scope: 'global',
+    requiredPermission: 'operator',
+    registeredAt: '2023-01-01T00:00:00Z',
+  };
+  const state = capability.registerSecurityRoute(capability.initialState, route.resource, route.scope, route.requiredPermission);
+  assert.equal(state.securityRoute?.scope, 'global');
+  assert.equal(state.securityRoute?.requiredPermission, 'operator');
 });
 
 test("codequalityandsecretanddependencyscanningproof", () => {
-  const rules: capability.StaticAnalysisRule[] = [{ id: "rule1", severity: "HIGH" } as const];
-  const sbom: capability.SBOMDocument = { baseline: "baseline", lockHash: "hash", timestamp: "2023-01-01" };
-  const policy: capability.SBOMPolicy = {
-    allowedLicenses: ["MIT"],
-    forbiddenLicenses: [],
-    securityRequirements: []
+  const state: capability.CodeQualityAndSecretAndDependencyScanningState = {
+    ...capability.initialState,
+    staticAnalysisFindings: [],
+    sbomBaseline: { version: '1.0.0', lockHash: 'abc', createdAt: '2023-01-01' },
+    sbomPolicyAudit: { passed: true, details: [] },
+    codeScanningConfig: { enabled: true },
+    codeScanningResults: ['result'],
+    securityRoute: {
+      resource: 'test',
+      scope: 'global',
+      requiredPermission: 'admin',
+      registeredAt: '2023-01-01T00:00:00Z',
+    },
   };
-  const config: capability.CodeScanningConfig = {
-    binaryPath: "/bin",
-    configPath: "/config",
-    databasePath: "/db",
-    authoritative: false
-  };
-  const route: capability.SecurityRoute = { path: "/security", registered: true };
+  const result = capability.runSecurityGate(state, true);
+  assert.equal(result.lastDecision, 'PASSED');
+  assert.equal(result.lastError, null);
 
-  const state = capability.runCodeQualityAndSecretAndDependencyScanningGate(
-    capability.initialState,
-    rules,
-    sbom,
-    policy,
-    config,
-    route,
-    [],
-    "2022-01-01",
-    {}
-  );
-  assert.deepEqual(state.lastVerdict, 'PASS');
-  assert.deepEqual(state.readiness, 'READY');
-  assert.deepEqual(state.securityConsoleReady, false);
+  const routeState = capability.registerSecurityRoute(capability.initialState, 'test', 'global', 'admin');
+  assert.notEqual(routeState.securityRoute, null);
 });
 
 test("codequalityandsecretanddependencyscanningreadinessmodel", () => {
   const readyState: capability.CodeQualityAndSecretAndDependencyScanningState = {
-    readiness: 'READY',
-    lastVerdict: 'PASS',
-    staticAnalysisRules: [{ id: "rule1", severity: "HIGH" } as const],
-    sbomDocument: { baseline: "baseline", lockHash: "hash", timestamp: "2023-01-01" },
-    sbomPolicy: null,
-    codeScanningConfig: {
-      binaryPath: "/bin",
-      configPath: "/config",
-      databasePath: "/db",
-      authoritative: false
-    },
-    securityRoute: { path: "/security", registered: true },
+    ...capability.initialState,
+    lastDecision: 'PASSED',
     lastError: null,
-    securityConsoleReady: false
+    consoleReadiness: { servicesProbed: ['service1'], allReady: true },
   };
-  const computedReadiness = capability.computeReadiness(readyState);
-  assert.deepEqual(computedReadiness, 'READY');
+  const readiness = capability.checkReadiness(readyState, readyState.consoleReadiness);
+  assert.equal(readiness, 'READY');
 
   const notReadyState: capability.CodeQualityAndSecretAndDependencyScanningState = {
-    ...readyState,
-    lastVerdict: 'FAIL',
-    securityConsoleReady: false
+    ...capability.initialState,
+    lastDecision: 'FAILED',
+    lastError: { kind: 'STATIC_ANALYSIS_ERROR', message: 'test' },
+    consoleReadiness: { servicesProbed: ['service1'], allReady: true },
   };
-  const computedNotReady = capability.computeReadiness(notReadyState);
-  assert.deepEqual(computedNotReady, 'NOT_READY');
+  const notReady = capability.checkReadiness(notReadyState, notReadyState.consoleReadiness);
+  assert.equal(notReady, 'NOT_READY');
+
+  const missingConsole: capability.CodeQualityAndSecretAndDependencyScanningState = {
+    ...capability.initialState,
+    lastDecision: 'PASSED',
+    lastError: null,
+    consoleReadiness: null,
+  };
+  const missingReadiness = capability.checkReadiness(missingConsole, null);
+  assert.equal(missingReadiness, 'NOT_READY');
 });
 
 test("codequalityandsecretanddependencyscanningstatemodel", () => {
   const state: capability.CodeQualityAndSecretAndDependencyScanningState = {
-    readiness: 'NOT_READY',
-    lastVerdict: null,
-    staticAnalysisRules: [{ id: "rule1", severity: "HIGH" } as const],
-    sbomDocument: { baseline: "baseline", lockHash: "hash", timestamp: "2023-01-01" },
-    sbomPolicy: {
-      allowedLicenses: ["MIT"],
-      forbiddenLicenses: ["GPL"],
-      securityRequirements: ["req1"]
+    staticAnalysisFindings: [
+      { severity: 'HIGH', message: 'test', location: 'test.ts' } as const,
+    ],
+    sbomBaseline: { version: '1.0.0', lockHash: 'abc', createdAt: '2023-01-01' },
+    sbomPolicyAudit: { passed: true, details: ['detail'] },
+    codeScanningConfig: { enabled: true, binaryPath: '/bin' },
+    codeScanningResults: ['result'],
+    securityRoute: {
+      resource: 'test',
+      scope: 'global',
+      requiredPermission: 'admin',
+      registeredAt: '2023-01-01T00:00:00Z',
     },
-    codeScanningConfig: {
-      binaryPath: "/bin",
-      configPath: "/config",
-      databasePath: "/db",
-      authoritative: true
-    },
-    securityRoute: { path: "/security", registered: true },
+    consoleReadiness: { servicesProbed: ['service1'], allReady: true },
+    lastDecision: 'PASSED',
     lastError: null,
-    securityConsoleReady: false
   };
-  assert.deepEqual(state.staticAnalysisRules[0].severity, 'HIGH');
-  assert.deepEqual(state.sbomDocument?.baseline, 'baseline');
-  assert.deepEqual(state.sbomPolicy?.forbiddenLicenses, ['GPL']);
-  assert.deepEqual(state.codeScanningConfig?.authoritative, true);
-  assert.deepEqual(state.securityRoute?.registered, true);
+  assert.deepEqual(state.staticAnalysisFindings[0].severity, 'HIGH');
+  assert.deepEqual(state.sbomBaseline?.version, '1.0.0');
+  assert.deepEqual(state.sbomPolicyAudit?.passed, true);
+  assert.deepEqual(state.codeScanningConfig?.enabled, true);
+  assert.deepEqual(state.codeScanningResults[0], 'result');
+  assert.deepEqual(state.securityRoute?.resource, 'test');
+  assert.deepEqual(state.consoleReadiness?.allReady, true);
 });
 
 test("codequalityandsecretanddependencyscanningvalidation", () => {
-  const invalidRules = [{ id: 123, severity: "HIGH" }];
-  const rulesError = capability.validateStaticAnalysisRules(invalidRules);
-  if ('kind' in rulesError) {
-    assert.deepEqual(rulesError.kind, 'STATIC_ANALYSIS_ERROR');
-  } else {
-    assert.fail('Expected error for invalid rules');
-  }
+  const highFinding: capability.StaticAnalysisFinding[] = [
+    { severity: 'HIGH', message: 'Critical', location: 'src/index.ts' } as const,
+  ];
+  const staticResult = capability.validateStaticAnalysis(highFinding);
+  assert.equal(staticResult.decision, 'FAILED');
+  assert.equal(staticResult.error?.kind, 'STATIC_ANALYSIS_ERROR');
 
-  const invalidSBOM = { baseline: "baseline", lockHash: 123, timestamp: "2023-01-01" };
-  const sbomError = capability.validateSBOM(invalidSBOM);
-  if ('kind' in sbomError) {
-    assert.deepEqual(sbomError.kind, 'SBOM_MISSING');
-  } else {
-    assert.fail('Expected error for invalid SBOM');
-  }
-
-  const invalidPolicy = { allowedLicenses: [], forbiddenLicenses: [], securityRequirements: 123 };
-  const policyError = capability.validateSBOMPolicy(invalidPolicy);
-  if ('kind' in policyError) {
-    assert.deepEqual(policyError.kind, 'SBOM_POLICY_VIOLATION');
-  } else {
-    assert.fail('Expected error for invalid policy');
-  }
-
-  const invalidConfig = { binaryPath: "/bin", configPath: "/config", databasePath: "/db" };
-  const configError = capability.validateCodeScanningConfig(invalidConfig);
-  if ('kind' in configError) {
-    assert.deepEqual(configError.kind, 'CODE_SCANNING_INVALID_CONFIG');
-  } else {
-    assert.fail('Expected error for invalid config');
-  }
-
-  const invalidRoute = { path: "/security" };
-  const routeError = capability.validateSecurityRoute(invalidRoute);
-  if ('kind' in routeError) {
-    assert.deepEqual(routeError.kind, 'ROUTE_MISSING');
-  } else {
-    assert.fail('Expected error for invalid route');
-  }
-
-  const authoritativeConfig: capability.CodeScanningConfig = {
-    binaryPath: "/bin",
-    configPath: "/config",
-    databasePath: "/db",
-    authoritative: true
+  const baseline: capability.SBOMBaseline = {
+    version: '1.0.0',
+    lockHash: 'abc123',
+    createdAt: '2023-01-01T00:00:00Z',
   };
-  const scanningError = capability.validateCodeScanning(authoritativeConfig, null);
-  assert.deepEqual(scanningError?.kind, 'CODE_SCANNING_MISSING');
+  const policyAudit: capability.SBOMPolicyAudit = { passed: true, details: [] };
+  const sbomResult = capability.validateSBOM(baseline, policyAudit);
+  assert.equal(sbomResult.decision, 'PASSED');
+  assert.equal(sbomResult.error, null);
+
+  const config: capability.CodeScanningConfig = { enabled: true };
+  const scanningResult = capability.validateCodeScanning(config, ['result1'], true);
+  assert.equal(scanningResult.decision, 'PASSED');
+  assert.equal(scanningResult.error, null);
+
+  const route: capability.SecurityRoute = {
+    resource: 'test',
+    scope: 'global',
+    requiredPermission: 'admin',
+    registeredAt: '2023-01-01T00:00:00Z',
+  };
+  const routeResult = capability.validateSecurityRoute(route);
+  assert.equal(routeResult.decision, 'PASSED');
+  assert.equal(routeResult.error, null);
+
+  const skippedConfig = capability.validateCodeScanning(null, [], false);
+  assert.equal(skippedConfig.decision, 'SKIPPED');
+  assert.equal(skippedConfig.error, null);
 });

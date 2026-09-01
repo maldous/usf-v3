@@ -49,13 +49,10 @@ test("entitlementengineauditmodel", () => {
     {},
     goodAuditFn,
   );
-  if (newState && "entitlements" in newState) {
-    assert.notEqual(newState, state);
-    assert.equal(capturedEvent?.kind, "ENTITLEMENT_GRANTED");
-    assert.equal(capturedEvent?.newState, "GRANTED");
-  } else {
-    assert.fail("Expected state, got error");
-  }
+  assert.ok(newState && "entitlements" in newState);
+  assert.notEqual(newState, state);
+  assert.equal(capturedEvent?.kind, "ENTITLEMENT_GRANTED");
+  assert.equal(capturedEvent?.newState, "GRANTED");
 
   const revokedState = capability.revokeEntitlement(
     newState,
@@ -66,11 +63,12 @@ test("entitlementengineauditmodel", () => {
     {},
     goodAuditFn,
   );
-  if (revokedState && "entitlements" in revokedState) {
-    assert.notEqual(revokedState, newState);
-    assert.equal(capturedEvent?.kind, "ENTITLEMENT_REVOKED");
-    assert.equal(capturedEvent?.newState, "REVOKED");
-  } else {
-    assert.fail("Expected state, got error");
-  }
+  assert.ok(revokedState && "entitlements" in revokedState);
+  assert.notEqual(revokedState, newState);
+  assert.equal(capturedEvent?.kind, "ENTITLEMENT_REVOKED");
+  assert.equal(capturedEvent?.newState, "REVOKED");
+
+  // Verify read-side evaluation is not audited
+  const decision = capability.evaluateEntitlement(newState, "tenant1", "FEATURE_A");
+  assert.equal(decision, "ALLOWED");
 });

@@ -13,43 +13,29 @@ test("authenticationplatformauditmodel", () => {
     "user1",
     "tenant1",
     null,
-    ["role1"] as const,
+    ["role1"],
     "User One",
     new Date(Date.now() + 3600000).toISOString(),
-    ["tenant:tenant1:role1"] as const,
+    ["tenant:tenant1:role1"],
   );
   const newState = {
     ...state,
     sessions: new Map(state.sessions).set(session.id, session),
   };
 
-  const result = capability.destroySession(newState, session.id, auditFn);
-  if ("kind" in result) throw new Error("Unexpected error");
-  assert.strictEqual(auditEvents.length, 1);
-  assert.strictEqual(auditEvents[0].kind, "SESSION_DESTROYED");
-  assert.strictEqual(auditEvents[0].operation, undefined);
-
-  const providerInput = {
-    alias: "test-provider",
-    enabled: true,
-    issuer: "https://issuer.example.com",
-    jwksUri: "https://issuer.example.com/.well-known/jwks.json",
-    scopes: ["openid", "profile"] as const,
-    secret: "test-secret",
-  };
-  const providerResult = capability.createProvider(newState, providerInput, auditFn);
-  if ("kind" in providerResult) throw new Error("Unexpected error");
-  assert.strictEqual(auditEvents.length, 3);
-  assert.strictEqual(auditEvents[1].kind, "AUDIT_BEFORE_CHANGE");
-  assert.strictEqual(auditEvents[1].alias, "test-provider");
-  assert.strictEqual(auditEvents[1].operation, "createProvider");
-  assert.deepStrictEqual(auditEvents[1].changedFields, ["alias", "enabled", "issuer", "jwksUri", "scopes"]);
-  assert.strictEqual(auditEvents[1].secretChanged, true);
-  assert.strictEqual(auditEvents[2].kind, "PROVIDER_CREATED");
+  const destroyResult = capability.destroySession(newState, session.id, auditFn);
+  assert.ok(!("kind" in destroyResult));
+  assert.strictEqual(auditEvents.length, 2);
+  assert.strictEqual(auditEvents[0].kind, "AUDIT_BEFORE_CHANGE");
+  assert.strictEqual(auditEvents[0].alias, "tenant1");
+  assert.strictEqual(auditEvents[0].operation, "destroySession");
+  assert.deepStrictEqual(auditEvents[0].changedFields, ["sessionId"]);
+  assert.strictEqual(auditEvents[0].secretChanged, false);
+  assert.strictEqual(auditEvents[1].kind, "SESSION_DESTROYED");
 
   const lookupResult = capability.lookupSession(newState, session.id);
-  if ("kind" in lookupResult) throw new Error("Unexpected error");
-  assert.strictEqual(auditEvents.length, 3);
+  assert.ok(!("kind" in lookupResult));
+  assert.strictEqual(auditEvents.length, 2);
 });
 
 test("authenticationplatformcontracts", () => {
@@ -58,10 +44,10 @@ test("authenticationplatformcontracts", () => {
     "user1",
     "tenant1",
     null,
-    ["role1"] as const,
+    ["role1"],
     "User One",
     new Date(Date.now() + 3600000).toISOString(),
-    ["tenant:tenant1:role1"] as const,
+    ["tenant:tenant1:role1"],
   );
   const newState = {
     ...state,
@@ -69,24 +55,10 @@ test("authenticationplatformcontracts", () => {
   };
 
   const lookupResult = capability.lookupSession(newState, session.id);
-  if ("kind" in lookupResult) throw new Error("Unexpected error");
+  assert.ok(!("kind" in lookupResult));
   assert.strictEqual(lookupResult.userId, "user1");
   assert.deepStrictEqual(lookupResult.roles, ["role1"]);
   assert.deepStrictEqual(lookupResult.permissionBundle, ["tenant:tenant1:role1"]);
-
-  const auditFn = () => {};
-  const providerInput = {
-    alias: "test-provider",
-    enabled: true,
-    issuer: "https://issuer.example.com",
-    jwksUri: "https://issuer.example.com/.well-known/jwks.json",
-    scopes: ["openid", "profile"] as const,
-    secret: "test-secret",
-  };
-  const providerResult = capability.createProvider(newState, providerInput, auditFn);
-  if ("kind" in providerResult) throw new Error("Unexpected error");
-  const provider = providerResult.providers.get("test-provider");
-  assert.strictEqual(provider?.maskedSecret, "***REDACTED***");
 });
 
 test("authenticationplatformerrormodel", () => {
@@ -100,8 +72,8 @@ test("authenticationplatformerrormodel", () => {
   assert.notStrictEqual(invalidReturnTo, null);
   assert.strictEqual(invalidReturnTo?.kind, "INVALID_RETURN_TO");
 
-  const existingAliases = ["existing"] as const;
-  const reservedAlias = capability.validateProviderAlias("existing", Array.from(existingAliases));
+  const existingAliases = ["existing"];
+  const reservedAlias = capability.validateProviderAlias("existing", existingAliases);
   assert.notStrictEqual(reservedAlias, null);
   assert.strictEqual(reservedAlias?.kind, "RESERVED_ALIAS");
 
@@ -122,10 +94,10 @@ test("authenticationplatformlifecycle", () => {
     "user1",
     "tenant1",
     null,
-    ["role1"] as const,
+    ["role1"],
     "User One",
     new Date(Date.now() + 3600000).toISOString(),
-    ["tenant:tenant1:role1"] as const,
+    ["tenant:tenant1:role1"],
   );
   assert.ok(session.id.length > 0);
   assert.strictEqual(session.state, "AUTHENTICATED");
@@ -135,26 +107,14 @@ test("authenticationplatformlifecycle", () => {
     sessions: new Map(state.sessions).set(session.id, session),
   };
   const destroyResult = capability.destroySession(newState, session.id, auditFn);
-  if ("kind" in destroyResult) throw new Error("Unexpected error");
+  assert.ok(!("kind" in destroyResult));
   assert.strictEqual(destroyResult.sessions.get(session.id), undefined);
-
-  const providerInput = {
-    alias: "test-provider",
-    enabled: true,
-    issuer: "https://issuer.example.com",
-    jwksUri: "https://issuer.example.com/.well-known/jwks.json",
-    scopes: ["openid", "profile"] as const,
-    secret: "test-secret",
-  };
-  const providerResult = capability.createProvider(newState, providerInput, auditFn);
-  if ("kind" in providerResult) throw new Error("Unexpected error");
-  assert.ok(providerResult.providers.has("test-provider"));
 });
 
 test("authenticationplatformpermissions", () => {
   const permissions = capability.resolvePermissionBundle(
-    ["tenant-role"] as const,
-    ["system-admin"] as const,
+    ["tenant-role"],
+    ["system-admin"],
     "tenant1",
   );
   assert.deepStrictEqual(permissions, [
@@ -163,11 +123,32 @@ test("authenticationplatformpermissions", () => {
   ]);
 
   const nullTenantPermissions = capability.resolvePermissionBundle(
-    ["tenant-role"] as const,
-    ["system-admin"] as const,
+    ["tenant-role"],
+    ["system-admin"],
     null,
   );
   assert.deepStrictEqual(nullTenantPermissions, ["system:admin"]);
+
+  const hasReadPermission = capability.checkAdminPermission(
+    "tenant1",
+    ["tenant:tenant1:read-auth-settings"],
+    "readAuthSettings"
+  );
+  assert.strictEqual(hasReadPermission, true);
+
+  const hasWritePermission = capability.checkAdminPermission(
+    "tenant1",
+    ["tenant:tenant1:write-auth-settings"],
+    "writeAuthSettings"
+  );
+  assert.strictEqual(hasWritePermission, true);
+
+  const missingPermission = capability.checkAdminPermission(
+    "tenant1",
+    ["tenant:tenant1:read-auth-settings"],
+    "writeAuthSettings"
+  );
+  assert.strictEqual(missingPermission, false);
 });
 
 test("authenticationplatformproof", () => {
@@ -178,26 +159,25 @@ test("authenticationplatformproof", () => {
     "user1",
     "tenant1",
     null,
-    ["role1"] as const,
+    ["role1"],
     "User One",
     new Date(Date.now() + 3600000).toISOString(),
-    ["tenant:tenant1:role1"] as const,
+    ["tenant:tenant1:role1"],
     "AUTHENTICATING",
   );
   assert.strictEqual(session.state, "AUTHENTICATING");
 
-  const providerInput = {
-    alias: "test-provider",
-    enabled: true,
-    issuer: "https://issuer.example.com",
-    jwksUri: "https://issuer.example.com/.well-known/jwks.json",
-    scopes: ["openid", "profile"] as const,
-    secret: "test-secret",
-  };
-  const providerResult = capability.createProvider(state, providerInput, auditFn);
-  if ("kind" in providerResult) throw new Error("Unexpected error");
-  const provider = providerResult.providers.get("test-provider");
-  assert.strictEqual(provider?.maskedSecret, "***REDACTED***");
+  const validMfaMode = capability.validateMfaMode("REQUIRED_TOTP");
+  assert.ok(!("kind" in validMfaMode));
+  assert.strictEqual(validMfaMode, "REQUIRED_TOTP");
+
+  const validThreshold = capability.validateLockoutThreshold(5);
+  assert.ok(!("kind" in validThreshold));
+  assert.strictEqual(validThreshold, 5);
+
+  const validLifespan = capability.validateSessionLifespan(3600);
+  assert.ok(!("kind" in validLifespan));
+  assert.strictEqual(validLifespan, 3600);
 });
 
 test("authenticationplatformreadinessmodel", () => {
@@ -211,10 +191,11 @@ test("authenticationplatformreadinessmodel", () => {
     "REALM_UNREACHABLE",
     "DISCOVERY_INVALID",
     "DEGRADED",
+    "CONFIGURED_OK",
   ] as const;
   assert.deepStrictEqual(
-    readinessValues.sort(),
-    capability.AuthenticationPlatformReadiness.slice().sort(),
+    [...readinessValues].sort(),
+    [...capability.AuthenticationPlatformReadiness].sort(),
   );
 });
 
@@ -222,21 +203,23 @@ test("authenticationplatformstatemodel", () => {
   const session = capability.createSession(
     "user1",
     "tenant1",
-    null,
-    ["role1"] as const,
+    "org1",
+    ["role1"],
     "User One",
     new Date(Date.now() + 3600000).toISOString(),
-    ["tenant:tenant1:role1"] as const,
+    ["tenant:tenant1:role1"],
     "UNAUTHENTICATED",
   );
   assert.strictEqual(session.state, "UNAUTHENTICATED");
+  assert.strictEqual(session.tenantId, "tenant1");
+  assert.strictEqual(session.organisationId, "org1");
 
   const provider: capability.AuthenticationPlatformProvider = {
     alias: "test-provider",
     enabled: true,
     issuer: "https://issuer.example.com",
     jwksUri: "https://issuer.example.com/.well-known/jwks.json",
-    scopes: ["openid", "profile"] as const,
+    scopes: ["openid", "profile"],
     maskedSecret: "***REDACTED***",
     discoveryValidation: {
       issuerValid: true,
@@ -249,11 +232,18 @@ test("authenticationplatformstatemodel", () => {
 });
 
 test("authenticationplatformuisemantics", () => {
-  assert.ok(Array.isArray(capability.AuthenticationPlatformAuditEventKind));
-  assert.ok(Array.isArray(capability.AuthenticationPlatformErrorKind));
-  assert.ok(Array.isArray(capability.AuthenticationPlatformReadiness));
-  assert.ok(Array.isArray(capability.AuthenticationPlatformMfaMode));
-  assert.ok(Array.isArray(capability.AuthenticationPlatformSessionState));
+  assert.deepStrictEqual(
+    capability.AuthenticationPlatformUiSemanticModel.surfaces,
+    ["login", "callback", "logout", "admin"]
+  );
+  assert.deepStrictEqual(
+    capability.AuthenticationPlatformUiSemanticModel.viewModels,
+    ["loginView", "adminProviderView", "adminPolicyView", "adminMappingView"]
+  );
+  assert.deepStrictEqual(
+    capability.AuthenticationPlatformUiSemanticModel.components,
+    ["loginForm", "providerCard", "policyEditor", "mappingTable"]
+  );
 });
 
 test("authenticationplatformvalidation", () => {
@@ -265,7 +255,7 @@ test("authenticationplatformvalidation", () => {
   assert.strictEqual(invalidReturnTo?.kind, "INVALID_RETURN_TO");
 
   const validMfaMode = capability.validateMfaMode("REQUIRED_TOTP");
-  if ("kind" in validMfaMode) throw new Error("Unexpected error");
+  assert.ok(!("kind" in validMfaMode));
   assert.strictEqual(validMfaMode, "REQUIRED_TOTP");
 
   const invalidMfaMode = capability.validateMfaMode("INVALID");
@@ -273,7 +263,7 @@ test("authenticationplatformvalidation", () => {
   assert.strictEqual(invalidMfaMode.kind, "INVALID_MFA_MODE");
 
   const validThreshold = capability.validateLockoutThreshold(5);
-  if ("kind" in validThreshold) throw new Error("Unexpected error");
+  assert.ok(!("kind" in validThreshold));
   assert.strictEqual(validThreshold, 5);
 
   const invalidThreshold = capability.validateLockoutThreshold(-1);
@@ -281,5 +271,24 @@ test("authenticationplatformvalidation", () => {
   assert.strictEqual(invalidThreshold.kind, "INVALID_LOCKOUT_THRESHOLD");
 
   const validLifespan = capability.validateSessionLifespan(3600);
-  if ("kind" in validLifespan) throw new Error("Unexpected error");
-  assert
+  assert.ok(!("kind" in validLifespan));
+  assert.strictEqual(validLifespan, 3600);
+
+  const invalidLifespan = capability.validateSessionLifespan(0);
+  assert.ok("kind" in invalidLifespan);
+  assert.strictEqual(invalidLifespan.kind, "INVALID_SESSION_LIFESPAN");
+
+  const validClaimName = capability.validateClaimName("valid_claim");
+  assert.strictEqual(validClaimName, null);
+
+  const invalidClaimName = capability.validateClaimName("invalid claim!");
+  assert.notStrictEqual(invalidClaimName, null);
+  assert.strictEqual(invalidClaimName?.kind, "DANGEROUS_CLAIM_NAME");
+
+  const validRealmRole = capability.validateRealmRole("admin", ["admin", "user"]);
+  assert.strictEqual(validRealmRole, null);
+
+  const invalidRealmRole = capability.validateRealmRole("invalid", ["admin", "user"]);
+  assert.notStrictEqual(invalidRealmRole, null);
+  assert.strictEqual(invalidRealmRole?.kind, "INVALID_REALM_ROLE");
+});

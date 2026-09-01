@@ -25,6 +25,12 @@ export const ClassificationErrorKind = [
 ] as const;
 export type ClassificationErrorKind = typeof ClassificationErrorKind[number];
 
+export const ClassificationReadiness = ['READY', 'NOT_READY', 'DEGRADED'] as const;
+export type ClassificationReadiness = typeof ClassificationReadiness[number];
+
+export const ClassificationProofStatus = ['PENDING', 'VALID', 'INVALID'] as const;
+export type ClassificationProofStatus = typeof ClassificationProofStatus[number];
+
 export interface ClassificationAuditEvent {
   readonly kind: ClassificationAuditEventKind;
   readonly provider: string;
@@ -70,9 +76,6 @@ export function auditClassificationChange(
   return auditFn(event);
 }
 
-/**
- * Validates a single classification entry against cross‑dimension safety rules.
- */
 export function validateClassificationEntry(
   entry: ProviderClassification,
 ): ClassificationError | null {
@@ -89,7 +92,6 @@ export function validateClassificationEntry(
     };
   }
 
-  // hermetic‑mock must not be paired with live or external environments
   if (entry.mode === 'hermetic-mock' && (entry.environment === 'live' || entry.environment === 'external')) {
     return {
       kind: 'VALIDATION_FAILED',
@@ -97,7 +99,6 @@ export function validateClassificationEntry(
     };
   }
 
-  // production‑shaped must not be paired with live environment
   if (entry.mode === 'production-shaped' && entry.environment === 'live') {
     return {
       kind: 'VALIDATION_FAILED',
@@ -108,9 +109,6 @@ export function validateClassificationEntry(
   return null;
 }
 
-/**
- * Validates the entire classification matrix.
- */
 export function validateClassificationMatrix(
   matrix: readonly ProviderClassification[],
 ): ClassificationError | null {
@@ -131,10 +129,6 @@ export function validateClassificationMatrix(
   return null;
 }
 
-/**
- * Returns the classification matrix derived from the state.
- * Fails closed if the matrix is empty.
- */
 export function getClassificationMatrix(
   state: ProviderClassificationState,
 ): { readonly matrix: Record<string, { readonly mode: ProviderMode; readonly environment: Environment }>; readonly error: ClassificationError | null } {
@@ -160,10 +154,6 @@ export function getClassificationMatrix(
   return { matrix, error: null };
 }
 
-/**
- * Mutates the state by setting a provider's classification.
- * The mutation occurs only after successful audit and validation.
- */
 export function setProviderClassification(
   state: ProviderClassificationState,
   provider: string,
@@ -173,13 +163,19 @@ export function setProviderClassification(
 ): ProviderClassificationState | ClassificationError {
   const auditError = auditClassificationChange(provider, mode, environment, auditFn);
   if (auditError !== null) {
-    return auditError;
+    return {
+      ...state,
+      lastError: auditError,
+    } as ProviderClassificationState | ClassificationError;
   }
 
   const newEntry: ProviderClassification = { provider, mode, environment };
   const entryError = validateClassificationEntry(newEntry);
   if (entryError !== null) {
-    return entryError;
+    return {
+      ...state,
+      lastError: entryError,
+    } as ProviderClassificationState | ClassificationError;
   }
 
   const filtered = state.classifications.filter((c) => c.provider !== provider);
@@ -187,7 +183,10 @@ export function setProviderClassification(
 
   const matrixError = validateClassificationMatrix(newClassifications);
   if (matrixError !== null) {
-    return matrixError;
+    return {
+      ...state,
+      lastError: matrixError,
+    } as ProviderClassificationState | ClassificationError;
   }
 
   return {
@@ -196,35 +195,24 @@ export function setProviderClassification(
   };
 }
 
-/**
- * Readiness check – returns true only if every provider has a valid,
- * non‑stale classification and the matrix validates.
- */
 export function checkReadiness(
   state: ProviderClassificationState,
-): { readonly ready: boolean; readonly error: ClassificationError | null } {
+): { readonly readiness: ClassificationReadiness; readonly error: ClassificationError | null } {
   const { error } = getClassificationMatrix(state);
   if (error !== null) {
-    return { ready: false, error };
+    if (error.kind === 'CONFIG_MISSING' || error.kind === 'CONFIG_INVALID' || error.kind === 'VALIDATION_FAILED') {
+      return { readiness: 'DEGRADED', error };
+    }
+    return { readiness: 'NOT_READY', error };
   }
-  // In this pure model, we treat the presence of a valid matrix as readiness.
-  return { ready: true, error: null };
+  return { readiness: 'READY', error: null };
 }
 
-/**
- * Proof object for provider‑environment classification.
- */
-export type ClassificationProofStatus = 'PENDING' | 'VALID' | 'INVALID';
 export interface ClassificationProof {
   readonly status: ClassificationProofStatus;
   readonly details?: string;
 }
 
-/**
- * Generates a proof of correct classification.
- * If validation passes, proof is VALID; otherwise INVALID.
- * The initial call can be considered PENDING if the state is empty.
- */
 export function generateProof(
   state: ProviderClassificationState,
 ): ClassificationProof {
@@ -240,10 +228,6 @@ export function generateProof(
   return { status: 'VALID' };
 }
 
-/**
- * Degraded/readiness error factory – used when a provider cannot be
- * classified due to missing or invalid configuration.
- */
 export function degradedError(message: string): ClassificationError {
   return { kind: 'DEGRADED', message };
 }

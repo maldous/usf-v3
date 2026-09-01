@@ -45,6 +45,8 @@ export const RbacRolesAndPermissionsErrorKind = [
   'INVALID_ROLE',
   'LAST_ADMIN_VIOLATION',
   'MEMBERSHIP_NOT_FOUND',
+  'PERMISSION_DENIED',
+  'DEGRADED_MODE',
 ] as const;
 export type RbacRolesAndPermissionsErrorKind = typeof RbacRolesAndPermissionsErrorKind[number];
 
@@ -77,6 +79,20 @@ export interface RbacRolesAndPermissionsState {
   readonly lastAuditError: RbacRolesAndPermissionsError | null;
   readonly readiness: 'READY' | 'DEGRADED';
 }
+
+export interface RbacRolesAndPermissionsMemberUpdateSuccess {
+  readonly outcome: 'SUCCESS';
+  readonly state: RbacRolesAndPermissionsState;
+}
+
+export interface RbacRolesAndPermissionsMemberUpdateFailure {
+  readonly outcome: RbacRolesAndPermissionsOutcome;
+  readonly error: RbacRolesAndPermissionsError;
+}
+
+export type RbacRolesAndPermissionsMemberUpdateResult =
+  | RbacRolesAndPermissionsMemberUpdateSuccess
+  | RbacRolesAndPermissionsMemberUpdateFailure;
 
 export const initialState: RbacRolesAndPermissionsState = {
   members: [],
@@ -111,6 +127,10 @@ export function validateMemberUpdate(
   newRole: RbacRolesAndPermissionsRole | null,
   newStatus: RbacRolesAndPermissionsMembershipStatus | null,
 ): RbacRolesAndPermissionsError | null {
+  if (userId === undefined || organisationId === undefined) {
+    return { kind: 'INVALID_ROLE', message: 'User ID and organisation ID are required' };
+  }
+
   if (newRole !== null && !RbacRolesAndPermissionsRole.includes(newRole)) {
     return { kind: 'INVALID_ROLE', message: `Invalid role: ${newRole}` };
   }
@@ -154,16 +174,37 @@ export function validateMemberUpdate(
   return null;
 }
 
+function errorToOutcome(error: RbacRolesAndPermissionsError): RbacRolesAndPermissionsOutcome {
+  switch (error.kind) {
+    case 'INVALID_ROLE':
+      return 'INVALID_BODY';
+    case 'MEMBERSHIP_NOT_FOUND':
+      return 'NOT_FOUND';
+    case 'LAST_ADMIN_VIOLATION':
+    case 'AUDIT_FAILURE':
+    case 'PERMISSION_DENIED':
+    case 'DEGRADED_MODE':
+      return 'UNPROCESSABLE_ENTITY';
+    default:
+      return 'UNPROCESSABLE_ENTITY';
+  }
+}
+
 export function updateMemberRole(
   state: RbacRolesAndPermissionsState,
   userId: string,
   organisationId: string,
   newRole: RbacRolesAndPermissionsRole,
   auditFn: (event: RbacRolesAndPermissionsAuditEvent) => RbacRolesAndPermissionsError | null,
-): { readonly outcome: RbacRolesAndPermissionsOutcome } | RbacRolesAndPermissionsError {
+): RbacRolesAndPermissionsMemberUpdateResult {
+  if (state.readiness === 'DEGRADED') {
+    const error: RbacRolesAndPermissionsError = { kind: 'DEGRADED_MODE', message: 'Mutation disabled in degraded mode' };
+    return { outcome: errorToOutcome(error), error };
+  }
+
   const validationError = validateMemberUpdate(state, userId, organisationId, newRole, null);
   if (validationError !== null) {
-    return validationError;
+    return { outcome: errorToOutcome(validationError), error: validationError };
   }
 
   const existingMember = state.members.find(
@@ -171,7 +212,8 @@ export function updateMemberRole(
   );
 
   if (existingMember === undefined) {
-    return { kind: 'MEMBERSHIP_NOT_FOUND', message: `Membership not found for user ${userId} in organisation ${organisationId}` };
+    const error: RbacRolesAndPermissionsError = { kind: 'MEMBERSHIP_NOT_FOUND', message: `Membership not found for user ${userId} in organisation ${organisationId}` };
+    return { outcome: 'NOT_FOUND', error };
   }
 
   const auditEvent: RbacRolesAndPermissionsAuditEvent = {
@@ -187,19 +229,20 @@ export function updateMemberRole(
 
   const auditError = auditFn(auditEvent);
   if (auditError !== null) {
-    return auditError;
+    return { outcome: errorToOutcome(auditError), error: auditError };
   }
 
   const updatedMembers = state.members.map((m) =>
     m.userId === userId && m.organisationId === organisationId ? { ...m, role: newRole } : m,
   );
 
-  return {
-    outcome: 'SUCCESS',
+  const newState: RbacRolesAndPermissionsState = {
     ...state,
     members: updatedMembers,
     lastAuditError: null,
   };
+
+  return { outcome: 'SUCCESS', state: newState };
 }
 
 export function updateMemberStatus(
@@ -208,10 +251,15 @@ export function updateMemberStatus(
   organisationId: string,
   newStatus: RbacRolesAndPermissionsMembershipStatus,
   auditFn: (event: RbacRolesAndPermissionsAuditEvent) => RbacRolesAndPermissionsError | null,
-): { readonly outcome: RbacRolesAndPermissionsOutcome } | RbacRolesAndPermissionsError {
+): RbacRolesAndPermissionsMemberUpdateResult {
+  if (state.readiness === 'DEGRADED') {
+    const error: RbacRolesAndPermissionsError = { kind: 'DEGRADED_MODE', message: 'Mutation disabled in degraded mode' };
+    return { outcome: errorToOutcome(error), error };
+  }
+
   const validationError = validateMemberUpdate(state, userId, organisationId, null, newStatus);
   if (validationError !== null) {
-    return validationError;
+    return { outcome: errorToOutcome(validationError), error: validationError };
   }
 
   const existingMember = state.members.find(
@@ -219,7 +267,8 @@ export function updateMemberStatus(
   );
 
   if (existingMember === undefined) {
-    return { kind: 'MEMBERSHIP_NOT_FOUND', message: `Membership not found for user ${userId} in organisation ${organisationId}` };
+    const error: RbacRolesAndPermissionsError = { kind: 'MEMBERSHIP_NOT_FOUND', message: `Membership not found for user ${userId} in organisation ${organisationId}` };
+    return { outcome: 'NOT_FOUND', error };
   }
 
   const auditEvent: RbacRolesAndPermissionsAuditEvent = {
@@ -235,19 +284,20 @@ export function updateMemberStatus(
 
   const auditError = auditFn(auditEvent);
   if (auditError !== null) {
-    return auditError;
+    return { outcome: errorToOutcome(auditError), error: auditError };
   }
 
   const updatedMembers = state.members.map((m) =>
     m.userId === userId && m.organisationId === organisationId ? { ...m, status: newStatus } : m,
   );
 
-  return {
-    outcome: 'SUCCESS',
+  const newState: RbacRolesAndPermissionsState = {
     ...state,
     members: updatedMembers,
     lastAuditError: null,
   };
+
+  return { outcome: 'SUCCESS', state: newState };
 }
 
 export function getMemberPermissions(
@@ -279,6 +329,18 @@ export function checkPermission(
   return permissions.includes(requiredPermission);
 }
 
+export function enforcePermission(
+  state: RbacRolesAndPermissionsState,
+  userId: string,
+  organisationId: string,
+  requiredPermission: RbacRolesAndPermissionsPermission,
+): RbacRolesAndPermissionsError | null {
+  if (!checkPermission(state, userId, organisationId, requiredPermission)) {
+    return { kind: 'PERMISSION_DENIED', message: `Permission denied: ${requiredPermission}` };
+  }
+  return null;
+}
+
 export function validateContractDrift(
   domainVocabulary: readonly RbacRolesAndPermissionsRole[],
   adminContractRoles: readonly string[],
@@ -300,4 +362,15 @@ export function validateContractDrift(
   }
 
   return true;
+}
+
+export function setReadiness(
+  state: RbacRolesAndPermissionsState,
+  readiness: 'READY' | 'DEGRADED',
+): RbacRolesAndPermissionsState {
+  return { ...state, readiness };
+}
+
+export function isReady(state: RbacRolesAndPermissionsState): boolean {
+  return state.readiness === 'READY';
 }

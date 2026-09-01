@@ -3,238 +3,166 @@ import test from "node:test";
 import * as capability from "../../../src/capabilities/observabilityops/browsertelemetrygrafanafarorumandbrowsertobfftracing.ts";
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingauditmodel", () => {
-  const initial = capability.initialState;
-  const config: capability.BrowserTelemetryConfig = {
-    receiver: { endpoint: "https://rum.example.com", headers: {} },
-    collector: { endpoint: "https://collector.example.com", headers: {} },
-    backends: {
-      trace: { endpoint: "https://tempo.example.com", headers: {} },
-      log: { endpoint: "https://loki.example.com", headers: {} },
-    },
-    allowedAttributeNames: ["tenant", "request"],
-    allowedSpanNames: ["browser-to-bff-tracing-proof"],
-  };
   const traceId = "5B8EFFF798038103D269B633813FC60C";
-  const spanId = "E19A3088306943A38E560C0000000001";
   const requestId = "req-123";
-
-  const updatedState = capability.updateConfig(
-    initial,
-    config,
-    requestId,
-    traceId,
-    spanId,
-  );
-  assert.strictEqual(updatedState.lastAuditEvents.length, 1);
-  const auditEvent = updatedState.lastAuditEvents[0];
-  assert.strictEqual(auditEvent.action, "CONFIG_CHANGE");
-  assert.strictEqual(auditEvent.traceId, traceId);
-  assert.strictEqual(auditEvent.spanId, spanId);
-  assert.strictEqual(auditEvent.requestId, requestId);
-
-  const payload: capability.BrowserTelemetryPayload = {
-    traceContext: { traceId, spanId },
-    name: "browser-to-bff-tracing-proof",
-    kind: 0,
-    startTimeUnixNano: Date.now().toString(),
-    attributes: { tenant: "acme" },
+  const auditFn = (event: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent): capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null => {
+    assert.strictEqual(event.kind, "CONFIG_CHANGE");
+    assert.strictEqual(event.requestId, requestId);
+    assert.strictEqual(event.traceId, traceId);
+    assert.strictEqual(typeof event.changeDescription, "string");
+    assert.strictEqual(typeof event.timestamp, "string");
+    return null;
   };
-  const processedState = capability.processBrowserTelemetry(
-    updatedState,
-    config,
-    payload,
-    requestId,
-  );
-  assert.strictEqual(processedState.lastAuditEvents.length, 2);
-  const contractAudit = processedState.lastAuditEvents[1];
-  assert.strictEqual(contractAudit.action, "CONTRACT_CHANGE");
-  assert.strictEqual(contractAudit.traceId, traceId);
-  assert.strictEqual(contractAudit.spanId, spanId);
-  assert.strictEqual(contractAudit.requestId, requestId);
+  const config: capability.TelemetryConfiguration = {
+    receiverEndpoint: "https://rum.example.com",
+    collectorEndpoint: "https://collector.example.com",
+    backendEndpoint: "https://tempo.example.com",
+    enabled: true,
+  };
+  const state = capability.initialState;
+  const result = capability.updateTelemetryConfig(state, config, requestId, traceId, auditFn);
+  assert.ok(!("kind" in result));
+  assert.strictEqual((result as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState).config, config);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingcontracts", () => {
-  const config: capability.BrowserTelemetryConfig = {
-    receiver: { endpoint: "https://rum.example.com", headers: { "x-tenant": "acme" } },
-    collector: { endpoint: "https://collector.example.com", headers: {} },
-    backends: {
-      trace: { endpoint: "https://tempo.example.com", headers: {} },
-      log: { endpoint: "https://loki.example.com", headers: {} },
-    },
-    allowedAttributeNames: ["tenant"],
-    allowedSpanNames: ["browser-to-bff-tracing-proof"],
-  };
-  const validatedConfig = capability.validateConfig(config);
-  if ("kind" in validatedConfig) throw new Error("Config should be valid");
-  assert.strictEqual(validatedConfig.receiver.endpoint, "https://rum.example.com");
-  assert.strictEqual(validatedConfig.collector.endpoint, "https://collector.example.com");
-  assert.strictEqual(validatedConfig.backends.trace.endpoint, "https://tempo.example.com");
-  assert.strictEqual(validatedConfig.backends.log.endpoint, "https://loki.example.com");
-});
-
-test("browsertelemetrygrafanafarorumandbrowsertobfftracingerrormodel", () => {
-  const invalidConfig = { receiver: null };
-  const error = capability.validateConfig(invalidConfig);
-  assert.ok("kind" in error);
-  const typedError = error as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.strictEqual(typedError.kind, "CONFIG_INVALID");
-  assert.strictEqual(typeof typedError.message, "string");
-
-  const stateWithError = capability.updateConfig(
-    capability.initialState,
-    invalidConfig,
-    "req-1",
-    "trace-1",
-    "span-1",
-  );
-  assert.strictEqual(stateWithError.readiness, "DEGRADED");
-  assert.notStrictEqual(stateWithError.lastError, null);
-  assert.strictEqual(stateWithError.errorCount, 1);
-});
-
-test("browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle", () => {
-  const config: capability.BrowserTelemetryConfig = {
-    receiver: { endpoint: "https://rum.example.com", headers: {} },
-    collector: { endpoint: "https://collector.example.com", headers: {} },
-    backends: {
-      trace: { endpoint: "https://tempo.example.com", headers: {} },
-      log: { endpoint: "https://loki.example.com", headers: {} },
-    },
-    allowedAttributeNames: ["tenant"],
-    allowedSpanNames: ["browser-to-bff-tracing-proof"],
+  const config: capability.TelemetryConfiguration = {
+    receiverEndpoint: "https://rum.example.com",
+    collectorEndpoint: "https://collector.example.com",
+    backendEndpoint: "https://tempo.example.com",
+    enabled: true,
   };
   const traceId = "5B8EFFF798038103D269B633813FC60C";
   const spanId = "E19A3088306943A38E560C0000000001";
   const payload: capability.BrowserTelemetryPayload = {
-    traceContext: { traceId, spanId },
-    name: "browser-to-bff-tracing-proof",
-    kind: 0,
-    startTimeUnixNano: Date.now().toString(),
-    attributes: { tenant: "acme" },
+    context: { traceId, spanId },
+    attributes: [{ key: "tenant", value: "acme" }],
+    spanName: "browser-to-bff-tracing-proof",
+    timestamp: new Date().toISOString(),
   };
-  const state = capability.processBrowserTelemetry(
-    capability.initialState,
+  const state: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
     config,
-    payload,
-    "req-1",
-  );
-  assert.strictEqual(state.readiness, "READY");
-  assert.strictEqual(state.lastProcessedPayload?.traceContext.traceId, traceId);
-  assert.strictEqual(state.lastProcessedPayload?.traceContext.spanId, spanId);
-});
-
-test("browsertelemetrygrafanafarorumandbrowsertobfftracingpermissions", () => {
-  const invalidConfig = { receiver: { endpoint: "", headers: {} } };
-  const error = capability.validateConfig(invalidConfig);
-  assert.ok("kind" in error);
-  const typedError = error as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.strictEqual(typedError.kind, "CONFIG_INVALID");
-
-  const invalidPayload = { traceContext: {}, name: "", kind: 0, startTimeUnixNano: "", attributes: {} };
-  const config: capability.BrowserTelemetryConfig = {
-    receiver: { endpoint: "https://rum.example.com", headers: {} },
-    collector: { endpoint: "https://collector.example.com", headers: {} },
-    backends: {
-      trace: { endpoint: "https://tempo.example.com", headers: {} },
-      log: { endpoint: "https://loki.example.com", headers: {} },
-    },
-    allowedAttributeNames: ["tenant"],
-    allowedSpanNames: ["allowed-span"],
+    readiness: "READY",
+    errorCount: 0,
+    lastError: null,
   };
-  const validation = capability.validateBrowserTelemetryPayload(invalidPayload, config);
-  assert.ok("kind" in validation);
-  const typedValidation = validation as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.strictEqual(typedValidation.kind, "SHAPE_VALIDATION_FAILED");
+  const result = capability.processTelemetryIngress(state, payload, true);
+  assert.strictEqual(result.result, "SUCCESS");
+  assert.strictEqual(result.error, null);
 });
 
-test("browsertelemetrygrafanafarorumandbrowsertobfftracingproof", () => {
-  const config: capability.BrowserTelemetryConfig = {
-    receiver: { endpoint: "https://rum.example.com", headers: {} },
-    collector: { endpoint: "https://collector.example.com", headers: {} },
-    backends: {
-      trace: { endpoint: "https://tempo.example.com", headers: {} },
-      log: { endpoint: "https://loki.example.com", headers: {} },
-    },
-    allowedAttributeNames: ["proof"],
-    allowedSpanNames: ["browser-to-bff-tracing-proof"],
+test("browsertelemetrygrafanafarorumandbrowsertobfftracingerrormodel", () => {
+  const invalidPayload = { context: { traceId: "", spanId: "" }, attributes: [], spanName: "", timestamp: "" };
+  const validation = capability.validateTelemetryPayload(invalidPayload);
+  assert.strictEqual(validation.isValid, false);
+  assert.notStrictEqual(validation.error, null);
+  assert.strictEqual(validation.error!.kind, "TRACE_CONTEXT_MISSING");
+
+  const state = capability.initialState;
+  const result = capability.processTelemetryIngress(state, invalidPayload, true);
+  assert.strictEqual(result.result, "FAILURE");
+  assert.notStrictEqual(result.error, null);
+  assert.strictEqual(result.newState.errorCount, 1);
+  assert.strictEqual(result.newState.lastError, validation.error);
+
+  const config: capability.TelemetryConfiguration = {
+    receiverEndpoint: "https://rum.example.com",
+    collectorEndpoint: "https://collector.example.com",
+    backendEndpoint: "https://tempo.example.com",
+    enabled: false,
+  };
+  const stateWithDisabledConfig: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
+    config,
+    readiness: "READY",
+    errorCount: 0,
+    lastError: null,
+  };
+  const disabledResult = capability.processTelemetryIngress(stateWithDisabledConfig, invalidPayload, true);
+  assert.strictEqual(disabledResult.result, "FAILURE");
+  assert.strictEqual(disabledResult.error!.kind, "CONFIG_MISSING");
+});
+
+test("browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle", () => {
+  const config: capability.TelemetryConfiguration = {
+    receiverEndpoint: "https://rum.example.com",
+    collectorEndpoint: "https://collector.example.com",
+    backendEndpoint: "https://tempo.example.com",
+    enabled: true,
   };
   const traceId = "5B8EFFF798038103D269B633813FC60C";
   const spanId = "E19A3088306943A38E560C0000000001";
-  const state = capability.processBrowserTelemetry(
-    capability.initialState,
+  const payload: capability.BrowserTelemetryPayload = {
+    context: { traceId, spanId },
+    attributes: [{ key: "tenant", value: "acme" }],
+    spanName: "browser-to-bff-tracing-proof",
+    timestamp: new Date().toISOString(),
+  };
+  const state: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
     config,
-    {
-      traceContext: { traceId, spanId },
-      name: "browser-to-bff-tracing-proof",
-      kind: 0,
-      startTimeUnixNano: Date.now().toString(),
-      attributes: { proof: true },
-    },
-    "req-1",
-  );
-  const proof = capability.generateEndToEndProof(state, config, traceId, spanId, "req-2");
-  assert.ok("kind" in proof && proof.kind === "SUCCESS");
-  const successProof = proof as { readonly kind: "SUCCESS"; readonly traceId: string; readonly spanId: string };
-  assert.strictEqual(successProof.traceId, traceId);
-  assert.strictEqual(successProof.spanId, spanId);
+    readiness: "READY",
+    errorCount: 0,
+    lastError: null,
+  };
+  const result = capability.processTelemetryIngress(state, payload, true);
+  assert.strictEqual(result.result, "SUCCESS");
+  assert.strictEqual(result.newState.errorCount, 0);
+  assert.strictEqual(result.newState.lastError, null);
+});
+
+test("browsertelemetrygrafanafarorumandbrowsertobfftracingpermissions", () => {
+  const invalidPayload = { context: { traceId: "", spanId: "" }, attributes: [], spanName: "", timestamp: "" };
+  const validation = capability.validateTelemetryPayload(invalidPayload);
+  assert.strictEqual(validation.isValid, false);
+  assert.strictEqual(validation.error!.kind, "TRACE_CONTEXT_MISSING");
+
+  const state = capability.initialState;
+  const result = capability.processTelemetryIngress(state, invalidPayload, true);
+  assert.strictEqual(result.result, "FAILURE");
+  assert.notStrictEqual(result.error, null);
+});
+
+test("browsertelemetrygrafanafarorumandbrowsertobfftracingproof", () => {
+  const traceId = "5B8EFFF798038103D269B633813FC60C";
+  const proof = capability.verifyProof(traceId, true, true, true);
+  assert.strictEqual(proof.proofVerified, true);
+  assert.strictEqual(proof.lineage, `traceId=${traceId};joined=true`);
+
+  const failedProof = capability.verifyProof(traceId, true, false, false);
+  assert.strictEqual(failedProof.proofVerified, false);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingreadinessmodel", () => {
   assert.strictEqual(capability.initialState.readiness, "NOT_READY");
-  assert.strictEqual(capability.initialState.errorCount, 0);
-
-  const degradedState: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
-    readiness: "DEGRADED",
-    lastError: { kind: "CONFIG_MISSING", message: "missing" },
-    lastAuditEvents: [],
-    lastProcessedPayload: null,
-    errorCount: 1,
-  };
-  assert.strictEqual(capability.computeReadiness(degradedState, true), "DEGRADED");
-
-  const readyState: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
-    readiness: "READY",
-    lastError: null,
-    lastAuditEvents: [],
-    lastProcessedPayload: {
-      traceContext: { traceId: "1", spanId: "2" },
-      name: "test",
-      kind: 0,
-      startTimeUnixNano: "123",
-      attributes: {},
+  const state: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
+    config: {
+      receiverEndpoint: "https://rum.example.com",
+      collectorEndpoint: "https://collector.example.com",
+      backendEndpoint: "https://tempo.example.com",
+      enabled: true,
     },
+    readiness: "READY",
     errorCount: 0,
+    lastError: null,
   };
-  assert.strictEqual(capability.computeReadiness(readyState, true), "READY");
-  assert.strictEqual(capability.computeReadiness(capability.initialState, false), "NOT_READY");
+  assert.strictEqual(capability.evaluateReadiness(state, true, true, true), "READY");
+  assert.strictEqual(capability.evaluateReadiness(state, false, true, true), "DEGRADED");
+  assert.strictEqual(capability.evaluateReadiness(capability.initialState, true, true, true), "DEGRADED");
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingvalidation", () => {
-  const config: capability.BrowserTelemetryConfig = {
-    receiver: { endpoint: "https://rum.example.com", headers: {} },
-    collector: { endpoint: "https://collector.example.com", headers: {} },
-    backends: {
-      trace: { endpoint: "https://tempo.example.com", headers: {} },
-      log: { endpoint: "https://loki.example.com", headers: {} },
-    },
-    allowedAttributeNames: ["tenant"],
-    allowedSpanNames: ["allowed-span"],
+  const validPayload: capability.BrowserTelemetryPayload = {
+    context: { traceId: "5B8EFFF798038103D269B633813FC60C", spanId: "E19A3088306943A38E560C0000000001" },
+    attributes: [{ key: "tenant", value: "acme" }],
+    spanName: "browser-to-bff-tracing-proof",
+    timestamp: new Date().toISOString(),
   };
-  const invalidTraceContext = { traceId: "", spanId: "1" };
-  const traceError = capability.validateTraceContext(invalidTraceContext);
-  assert.ok("kind" in traceError);
-  const typedTraceError = traceError as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.strictEqual(typedTraceError.kind, "TRACE_CONTEXT_INVALID");
+  const validation = capability.validateTelemetryPayload(validPayload);
+  assert.strictEqual(validation.isValid, true);
+  assert.strictEqual(validation.error, null);
 
-  const invalidPayload = {
-    traceContext: { traceId: "1", spanId: "2" },
-    name: "disallowed-span",
-    kind: 0,
-    startTimeUnixNano: "123",
-    attributes: { tenant: "acme" },
-  };
-  const payloadError = capability.validateBrowserTelemetryPayload(invalidPayload, config);
-  assert.ok("kind" in payloadError);
-  const typedPayloadError = payloadError as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.strictEqual(typedPayloadError.kind, "SHAPE_VALIDATION_FAILED");
+  const invalidPayload = { context: { traceId: "", spanId: "" }, attributes: [], spanName: "", timestamp: "" };
+  const invalidValidation = capability.validateTelemetryPayload(invalidPayload);
+  assert.strictEqual(invalidValidation.isValid, false);
+  assert.notStrictEqual(invalidValidation.error, null);
+  assert.strictEqual(invalidValidation.error!.kind, "TRACE_CONTEXT_MISSING");
 });

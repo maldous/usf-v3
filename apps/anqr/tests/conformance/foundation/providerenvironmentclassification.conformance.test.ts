@@ -18,6 +18,16 @@ test("providerenvironmentclassificationauditmodel", () => {
     auditFn,
   );
   assert.strictEqual(result, null);
+
+  const state: capability.ProviderClassificationState = {
+    classifications: [
+      { provider: "p1", mode: "production-live", environment: "live" } as const,
+    ],
+    lastError: capability.degradedError("test degraded"),
+  };
+  const { readiness, error } = capability.checkReadiness(state);
+  assert.strictEqual(readiness, "DEGRADED");
+  assert.deepStrictEqual(error, capability.degradedError("test degraded"));
 });
 
 test("providerenvironmentclassificationcontracts", () => {
@@ -48,15 +58,15 @@ test("providerenvironmentclassificationerrormodel", () => {
     classifications: [],
     lastError: error,
   };
-  const { ready, error: readinessError } = capability.checkReadiness(state);
-  assert.strictEqual(ready, false);
+  const { readiness, error: readinessError } = capability.checkReadiness(state);
+  assert.strictEqual(readiness, "DEGRADED");
   assert.deepStrictEqual(readinessError, error);
 });
 
 test("providerenvironmentclassificationpermissions", () => {
   const state = capability.initialState;
-  const { ready } = capability.checkReadiness(state);
-  assert.strictEqual(ready, false);
+  const { readiness } = capability.checkReadiness(state);
+  assert.strictEqual(readiness, "NOT_READY");
   const { error } = capability.getClassificationMatrix(state);
   assert.strictEqual(error?.kind, "CONFIG_MISSING");
 });
@@ -83,8 +93,8 @@ test("providerenvironmentclassificationreadinessmodel", () => {
     ],
     lastError: null,
   };
-  const { ready, error } = capability.checkReadiness(state);
-  assert.strictEqual(ready, true);
+  const { readiness, error } = capability.checkReadiness(state);
+  assert.strictEqual(readiness, "READY");
   assert.strictEqual(error, null);
 
   const invalidState: capability.ProviderClassificationState = {
@@ -93,8 +103,8 @@ test("providerenvironmentclassificationreadinessmodel", () => {
     ],
     lastError: null,
   };
-  const { ready: invalidReady } = capability.checkReadiness(invalidState);
-  assert.strictEqual(invalidReady, false);
+  const { readiness: invalidReadiness } = capability.checkReadiness(invalidState);
+  assert.strictEqual(invalidReadiness, "DEGRADED");
 });
 
 test("providerenvironmentclassificationvalidation", () => {

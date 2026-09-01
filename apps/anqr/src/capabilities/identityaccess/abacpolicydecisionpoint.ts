@@ -18,6 +18,9 @@ export const AbacPolicyDecisionPointErrorKind = [
 ] as const;
 export type AbacPolicyDecisionPointErrorKind = typeof AbacPolicyDecisionPointErrorKind[number];
 
+export const AbacPolicyDecisionPointReadiness = ['READY', 'NOT_READY'] as const;
+export type AbacPolicyDecisionPointReadiness = typeof AbacPolicyDecisionPointReadiness[number];
+
 export interface AbacPolicyDecisionPointAuditEvent {
   readonly kind: AbacPolicyDecisionPointAuditEventKind;
   readonly resource: string;
@@ -110,27 +113,18 @@ export function evaluateRequest(
   readonly decision: AbacPolicyDecisionPointDecision;
   readonly error: AbacPolicyDecisionPointError | null;
 } {
-  // Check for missing token - fails closed
+  const routeGuard = state.routeGuards.find(
+    (rg) => rg.resource === resource && rg.scope === scope,
+  );
+
   if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
     return {
-      decision: 'POLICY_DENIED',
+      decision: 'RESOURCE_NOT_REGISTERED',
       error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token' },
     };
   }
 
   const tokenObj = token as { readonly authLevel: string };
-
-  // Read operation always granted if resource is known
-  if (resource in state.resourcePolicies) {
-    return {
-      decision: 'GRANTED',
-      error: null,
-    };
-  }
-
-  const routeGuard = state.routeGuards.find(
-    (rg) => rg.resource === resource && rg.scope === scope,
-  );
 
   if (routeGuard === undefined) {
     return {
@@ -139,7 +133,6 @@ export function evaluateRequest(
     };
   }
 
-  // Token present - authorization-server-first
   if (!serverAvailable) {
     return {
       decision: 'SERVER_UNAVAILABLE',
@@ -147,7 +140,6 @@ export function evaluateRequest(
     };
   }
 
-  // Authentication check
   if (tokenObj.authLevel !== routeGuard.requiredPermission) {
     return {
       decision: 'INSUFFICIENT_AUTH_LEVEL',
@@ -155,7 +147,6 @@ export function evaluateRequest(
     };
   }
 
-  // Policy lookup
   const resourcePolicy = state.resourcePolicies.find(
     (rp) => rp.resource === resource,
   );
@@ -169,7 +160,7 @@ export function evaluateRequest(
 
   return {
     decision: 'POLICY_DENIED',
-    error: { kind: 'POLICY_DENIED', message: 'No policy matching resource' },
+    error: { kind: 'POLICY_DENIED', message: 'Policy denied' },
   };
 }
 
@@ -193,29 +184,25 @@ export function evaluateRequestWithFallback(
     return directResult;
   }
 
-  // Fail-closed on policy denial
-  if (directResult.decision === 'POLICY_DENIED' ||
-      directResult.decision === 'RESOURCE_NOT_REGISTERED' ||
-      directResult.decision === 'SERVER_UNAVAILABLE')
-  {
-    const staticFallback = state.routeGuards.find(
-      (rg) => rg.resource === resource && rg.scope === scope,
-    );
+  const staticFallback = state.routeGuards.find(
+    (rg) => rg.resource === resource && rg.scope === scope,
+  );
 
-    if (staticFallback !== undefined && staticFallback.requiredPermission === '') {
-      return {
-        decision: 'GRANTED',
-        error: null,
-      };
-    }
+  if (staticFallback !== undefined && staticFallback.requiredPermission === '') {
+    return {
+      decision: 'GRANTED',
+      error: null,
+    };
   }
 
-  return directResult.decision === 'SERVER_UNAVAILABLE'
-    ? directResult
-    : {
-        decision: 'POLICY_DENIED',
-        error: { kind: 'POLICY_DENIED', message: 'Fail-closed: No permission found' },
-      };
+  if (directResult.decision === 'SERVER_UNAVAILABLE') {
+    return directResult;
+  }
+
+  return {
+    decision: 'POLICY_DENIED',
+    error: { kind: 'POLICY_DENIED', message: 'Fail-closed: No permission found' },
+  };
 }
 
 export function evaluateLifecycle(
@@ -230,8 +217,10 @@ export function evaluateLifecycle(
   readonly error: AbacPolicyDecisionPointError | null;
 } {
   if (action === 'read') {
-    // Read operations are always allowed if resource is registered
-    if (resource in state.resourcePolicies) {
+    const resourcePolicy = state.resourcePolicies.find(
+      (rp) => rp.resource === resource,
+    );
+    if (resourcePolicy !== undefined) {
       return {
         decision: 'GRANTED',
         error: null,
@@ -244,7 +233,6 @@ export function evaluateLifecycle(
   }
 
   if (action === 'write') {
-    // Write requires token and authentication
     if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
       return {
         decision: 'POLICY_DENIED',
@@ -264,7 +252,6 @@ export function evaluateLifecycle(
       };
     }
 
-    // Step-up required on insufficient auth level
     if (tokenObj.authLevel !== routeGuard.requiredPermission) {
       return {
         decision: 'INSUFFICIENT_AUTH_LEVEL',
@@ -272,7 +259,6 @@ export function evaluateLifecycle(
       };
     }
 
-    // Server availability check
     if (!serverAvailable) {
       return {
         decision: 'SERVER_UNAVAILABLE',
@@ -293,7 +279,7 @@ export function evaluateLifecycle(
 
     return {
       decision: 'POLICY_DENIED',
-      error: { kind: 'POLICY_DENIED', message: 'No policy matching resource' },
+      error: { kind: 'POLICY_DENIED', message: 'Policy denied' },
     };
   }
 
@@ -310,33 +296,6 @@ export function computeReadiness(
     return 'READY';
   }
   return 'NOT_READY';
-}
-
-export function runAccessibilityGate(
-  state: AbacPolicyDecisionPointState,
-  config: unknown,
-  surfaces: readonly { readonly id: string; readonly rendered: unknown }[],
-): AbacPolicyDecisionPointState {
-  const validatedConfig = validateConfig(config);
-  if ('kind' in validatedConfig) {
-    return {
-      ...state,
-      readiness: 'NOT_READY',
-      lastVerdict: null,
-      lastAuditResults: null,
-      lastError: validatedConfig?.kind ?? 'UNKNOWN_CONFIG_ERROR',
-    };
-  }
-
-  // If configuration is invalid, we cannot proceed with the gate
-  // This represents a degraded state where we cannot guarantee safety
-  return {
-    ...state,
-    readiness: 'NOT_READY',
-    lastVerdict: null,
-    lastAuditResults: null,
-    lastError: 'CONFIG_INVALID',
-  };
 }
 
 export function validateResourcePolicy(
