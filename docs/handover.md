@@ -48,6 +48,25 @@ file is
 profile-scoped authority passes 1/1, containment passes and `git diff --check`
 is clean.
 
+Repository-path authority packet
+`8a3b7e7d616eb9cf94edede8efbbeb2650dfd4e9` is now the verified GitHub
+`main`. From that clean carrier the registered operator construction
+evidence/proof chain verified and published receipt
+`evidence/construction-authority/215473aa1ef08c56f37160e879b5885e52aee07c1a063fb1e516c9ea7ad343a2.json`
+with receipt digest
+`sha256:41db5a0dfdc4ac65c3405e33f1301ac1566be2b00e5fda51b6284e6d0ec79b0c`.
+It moved semantic digest from
+`sha256:f734ad4a2b6a257d62a7f7d9c2c10cabd7a54b0c63ca54322d646158fbd810d5`
+to
+`sha256:646e1c14d3d8f902daf53fe418ee58d87a80371099493dc5fb534c83e7d5055c`
+without changing operator implementation bytes. The current graph file is
+`sha256:2debbbaab9ae6d19a1b85f2969c5b323c32950c2e863f84844f0f4f79e2a4737`.
+The immediate safe action is
+to commit/push this construction-authority carrier, then materialise the exact
+operator candidate from it through registered `usf` call/resolve/apply/check,
+integration and completion commands. No live provider action is part of that
+packet.
+
 ## Current live boundary — provider account-source semantics ready for durable commit
 
 Prepared 2026-09-01 from clean committed carrier
