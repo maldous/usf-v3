@@ -8,6 +8,7 @@ import {
 import { parseExecutionEconomicAuthorizations } from "../providers/execution-economics.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
+import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 import { readTrackedJson } from "./probe.ts";
 import { parseEffectiveCostPolicy } from "./execute.ts";
 
@@ -60,26 +61,6 @@ function parse(args: readonly string[]): ParsedClassifyArguments {
   });
 }
 
-/** Route identifiers with a durable successful execution-evidence record. */
-async function observedAvailableRouteIds(repositoryRoot: string): Promise<readonly string[]> {
-  const directory = resolve(repositoryRoot, ".usf", "executions");
-  const names = await readdir(directory).catch(() => [] as string[]);
-  const observed = new Set<string>();
-  for (const name of names) {
-    if (!name.endsWith(".json")) continue;
-    const bytes = await readFile(resolve(directory, name), "utf8").catch(() => undefined);
-    if (bytes === undefined) continue;
-    try {
-      const record = JSON.parse(bytes) as { status?: unknown; selection?: { provider?: unknown; model?: unknown } };
-      if (record.status !== "ok") continue;
-      const provider = record.selection?.provider;
-      const model = record.selection?.model;
-      if (typeof provider === "string" && typeof model === "string") observed.add(`${provider}:${model}`);
-    } catch { continue; }
-  }
-  return Object.freeze([...observed].sort());
-}
-
 export async function classifyCatalogueCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const parsed = parse(args);
   const catalogue = await readLocalCatalogue(repositoryRoot);
@@ -129,7 +110,7 @@ export async function classifyCatalogueCommand(repositoryRoot: string, args: rea
     authorizations,
     policy,
     requirement: parsed.requirement,
-    observedAvailableRouteIds: await observedAvailableRouteIds(repositoryRoot),
+    observedAvailableRouteIds: (await observeAvailableRoutes(repositoryRoot)).routeIds,
   });
 
   const shown = parsed.showStates.length === 0

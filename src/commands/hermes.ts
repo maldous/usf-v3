@@ -5,6 +5,7 @@ import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { graphExecuteCommand } from "./graph-execute.ts";
+import { graphIntegrityCommand } from "./graph-integrity.ts";
 import { readLocalCatalogue } from "./models.ts";
 import { readTrackedJson } from "./probe.ts";
 
@@ -111,6 +112,12 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
   const catalogue = await readLocalCatalogue(repositoryRoot);
   const economics = await readTrackedJson(repositoryRoot, "config/execution-economics.json");
   const policy = await readTrackedJson(repositoryRoot, "config/policy.json");
+  // Hermes inspects the consolidated semantic corpus itself, not only operator
+  // configuration: a non-conforming corpus is an authority fact it must report.
+  const integrity = await graphIntegrityCommand(repositoryRoot, []).then(
+    (result) => result.output as Record<string, unknown>,
+    () => undefined,
+  );
   const authority = Object.freeze({
     catalogueRawDigest: catalogue.snapshot.rawDigest,
     catalogueNormalizedDigest: catalogue.snapshot.normalizedDigest,
@@ -118,6 +125,14 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     catalogueModelCount: catalogue.snapshot.providers.reduce((total, provider) => total + provider.models.length, 0),
     economicAuthorizationDigest: canonicalDigest(economics),
     costPolicyDigest: canonicalDigest(policy),
+    corpus: Object.freeze({
+      quadCount: integrity?.quadCount ?? null,
+      subjectCount: integrity?.subjectCount ?? null,
+      checkedInvariantCount: Array.isArray(integrity?.checkedCodes) ? integrity.checkedCodes.length : null,
+      ownedGraphViolationCount: integrity?.ownedGraphViolationCount ?? null,
+      recordedLegacyDebtCount: integrity?.legacyGraphViolationCount ?? null,
+      gateConforming: integrity?.gateConforming ?? null,
+    }),
   });
 
   const discovered = await discoverWork(repositoryRoot, parsed.workDirectory);

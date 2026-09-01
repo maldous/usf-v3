@@ -16,6 +16,7 @@ import { observeTransportCapability } from "../providers/transports.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { languageModelFor, parseEffectiveCostPolicy } from "./execute.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
+import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 import { readTrackedJson } from "./probe.ts";
 
 const typePredicate = "urn:usf:predicate:type";
@@ -127,25 +128,6 @@ function extractWorkUnits(quads: readonly Quad[]): readonly SemanticWorkUnit[] {
   }));
 }
 
-async function observedAvailableRouteIds(repositoryRoot: string): Promise<readonly string[]> {
-  const directory = resolve(repositoryRoot, ".usf", "executions");
-  const names = await readdir(directory).catch(() => [] as string[]);
-  const observed = new Set<string>();
-  for (const name of names) {
-    if (!name.endsWith(".json")) continue;
-    const bytes = await readFile(resolve(directory, name), "utf8").catch(() => undefined);
-    if (bytes === undefined) continue;
-    try {
-      const record = JSON.parse(bytes) as { status?: unknown; selection?: { provider?: unknown; model?: unknown } };
-      if (record.status !== "ok") continue;
-      const provider = record.selection?.provider;
-      const model = record.selection?.model;
-      if (typeof provider === "string" && typeof model === "string") observed.add(`${provider}:${model}`);
-    } catch { continue; }
-  }
-  return Object.freeze([...observed].sort());
-}
-
 interface UnitAttempt {
   readonly candidateId: string;
   readonly transport: string;
@@ -245,7 +227,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       adapterInstalled: false,
     })),
   ));
-  const observedRoutes = await observedAvailableRouteIds(repositoryRoot);
+  const observedRoutes = (await observeAvailableRoutes(repositoryRoot)).routeIds;
 
   // 3. Dispatch independent work units under bounded parallelism.
   const { generateText } = await import("ai");

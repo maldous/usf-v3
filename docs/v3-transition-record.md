@@ -5,7 +5,7 @@ Completed 2026-09-01. Branch `v3-authority-transition`, commits `618cb5c` and
 
 ## Legacy authority superseded
 
-`graph/v3-execution.nq` declares `urn:usf:v3:supersession:legacy-provider-account-lane:1`,
+`graph/v3-execution.nq` declares `urn:usf:supersession:legacy-provider-account-lane:1`,
 superseding on the execution critical path:
 
 - `urn:usf:provider-operation:account-source-protocol:1`
@@ -33,7 +33,7 @@ historical-only material, and deletions from the active path.
 
 ## New V3 authority identity
 
-- Generation: `urn:usf:v3:generation:1`, foundation `urn:usf:foundation:v3`
+- Generation: `urn:usf:authority-generation:v3:1`, foundation `urn:usf:foundation:v3`
 - Architecture graph: `graph/v3-execution.nq`, 238 quads, 48 subjects
 - Manifest: `graph/manifests/v3-execution.json`, composing 1689 quads total
 
