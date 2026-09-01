@@ -8,6 +8,7 @@ import { doctorCommandHandler } from "./commands/doctor.ts";
 import { executeCommandHandler } from "./commands/execute.ts";
 import { graphExecuteCommand } from "./commands/graph-execute.ts";
 import { graphIntegrityCommand } from "./commands/graph-integrity.ts";
+import { transactCommand } from "./commands/transact.ts";
 import { hermesCommand } from "./commands/hermes.ts";
 import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
 import { metricsCommandHandler } from "./commands/metrics.ts";
@@ -57,6 +58,7 @@ const bootstrapHandlers: CommandHandlers = {
   publish: completionAwarePublishCommandHandler,
   execute: executeCommandHandler,
   hermes: ({ args, repositoryRoot }) => hermesCommand(repositoryRoot, args),
+  transact: ({ args, repositoryRoot }) => transactCommand(repositoryRoot, args),
   graph: async ({ args, repositoryRoot }) => {
     if (args[0] === "integrity") return graphIntegrityCommand(repositoryRoot, args.slice(1));
     if (args[0] !== "execute") {

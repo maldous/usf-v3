@@ -1,17 +1,21 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
+import { readDependencyGraph } from "../graph/work-dependency.ts";
 import { invokeClaudeCli, invokeCodexCli } from "../providers/cli-transports.ts";
 import {
   CredentialEnvError, loadCredentialEnvFile, parseProviderConfig, providerCredentialNames,
 } from "../providers/config.ts";
 import { parseExecutionEconomicAuthorizations, parseAdditionalAcceptedCostClasses } from "../providers/execution-economics.ts";
+import { verifyEconomicsProjection } from "../providers/economics-projection.ts";
+import { loadSemanticGraph } from "../graph/index.ts";
 import {
   deriveRouteUniverse, diversifyCandidates, type ExecutionCandidate,
 } from "../providers/route-universe.ts";
+import { readAuthoritySnapshot, snapshotDifference, type AuthoritySnapshot } from "../providers/authority-snapshot.ts";
 import { observeTransportCapability } from "../providers/transports.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { languageModelFor, parseEffectiveCostPolicy } from "./execute.ts";
@@ -42,13 +46,15 @@ interface ParsedArguments {
   readonly envFile: string;
   readonly concurrency: number;
   readonly outputPath: string | null;
+  /** Restrict execution to these work units; the scheduler supplies them. */
+  readonly only: readonly string[] | null;
 }
 
 function parse(args: readonly string[]): ParsedArguments {
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
-    if (!["--input", "--graph", "--env-file", "--concurrency", "--output"].includes(option) || values.has(option)) {
+    if (!["--input", "--graph", "--env-file", "--concurrency", "--output", "--only"].includes(option) || values.has(option)) {
       invalid(`Graph execute options must be unique and explicit: ${option}`);
     }
     const value = args[++index];
@@ -65,7 +71,12 @@ function parse(args: readonly string[]): ParsedArguments {
   if (!/^[1-9][0-9]?$/u.test(concurrencyText)) invalid("--concurrency must be a positive integer.");
   const concurrency = Number(concurrencyText);
   if (concurrency > hardMaximumConcurrency) invalid("--concurrency exceeds the bounded maximum.");
-  return Object.freeze({ input, graph, envFile, concurrency, outputPath: values.get("--output") ?? null });
+  const onlyText = values.get("--only");
+  return Object.freeze({
+    input, graph, envFile, concurrency,
+    outputPath: values.get("--output") ?? null,
+    only: onlyText === undefined ? null : Object.freeze([...new Set(onlyText.split(","))].sort()),
+  });
 }
 
 interface SemanticWorkUnit {
@@ -179,11 +190,39 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       { reasonCode: error instanceof Error ? error.message : "NQUADS_INVALID" });
   }
   const sourceGraphDigest = canonicalQuadDigest(quads);
-  const units = extractWorkUnits(quads);
+  const allUnits = extractWorkUnits(quads);
+
+  // A work graph must be a cycle-safe DAG over declared units before anything
+  // is scheduled. This is validated on the whole graph, not on the subset the
+  // scheduler selected, so a cycle cannot hide outside the current slice.
+  const dependencyGraph = readDependencyGraph(quads, allUnits.map((unit) => unit.iri));
+  if (dependencyGraph.defects.length > 0) {
+    throw new UsfError("GRAPH_EXECUTE_DEPENDENCY_INVALID", exitCodes.INVALID_INPUT,
+      "The work graph's dependency edges are not a valid acyclic graph over declared work units.",
+      { defects: dependencyGraph.defects.slice(0, 8) });
+  }
+  const units = parsed.only === null
+    ? allUnits
+    : allUnits.filter((unit) => parsed.only!.includes(unit.iri));
+  if (units.length === 0) {
+    throw new UsfError("GRAPH_EXECUTE_NO_SELECTED_UNITS", exitCodes.INVALID_INPUT,
+      "No declared work unit matched the selection.");
+  }
 
   // 2. Authority and candidate universe inputs.
   const basePolicy = parseEffectiveCostPolicy(await readTrackedJson(repositoryRoot, "config/policy.json"));
   const economicsDocument = await readTrackedJson(repositoryRoot, "config/execution-economics.json");
+  // The graph is the semantic source. The runtime consumes the derived
+  // projection only after proving it still corresponds to graph authority.
+  let economicsClosureDigest: string;
+  try {
+    const semanticGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
+    economicsClosureDigest = verifyEconomicsProjection(economicsDocument, semanticGraph).graphClosureDigest;
+  } catch (error) {
+    throw new UsfError("GRAPH_EXECUTE_ECONOMICS_NOT_GRAPH_DERIVED", exitCodes.CURRENTNESS_FAILURE,
+      "The runtime economics projection does not correspond to current graph authority.",
+      { reasonCode: error instanceof Error ? error.message : "UNKNOWN" });
+  }
   const authorizations = parseExecutionEconomicAuthorizations(economicsDocument);
   const additionalClasses = parseAdditionalAcceptedCostClasses(economicsDocument);
   const policy = Object.freeze({
@@ -229,6 +268,55 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
   ));
   const observedRoutes = (await observeAvailableRoutes(repositoryRoot)).routeIds;
 
+  /**
+   * Re-read exactly the inputs a route selection depends on. The catalogue is
+   * fingerprinted by size and modification instant rather than re-hashed, so
+   * the bracket stays cheap enough to run before every dispatch.
+   */
+  const cataloguePaths = Object.freeze([".usf/catalog/models-dev.raw.json", ".usf/catalog/models-dev.normalized.json"]);
+  const catalogueFingerprint = async (): Promise<string> => {
+    const stats = await Promise.all(cataloguePaths.map(async (path) => {
+      const metadata = await stat(resolve(repositoryRoot, path)).catch(() => undefined);
+      return Object.freeze({ path, size: metadata?.size ?? null, modifiedMs: metadata?.mtimeMs ?? null });
+    }));
+    return canonicalDigest(stats);
+  };
+  const snapshotNow = async (): Promise<AuthoritySnapshot> => {
+    const currentPolicy = parseEffectiveCostPolicy(await readTrackedJson(repositoryRoot, "config/policy.json"));
+    const currentEconomics = await readTrackedJson(repositoryRoot, "config/execution-economics.json");
+    const currentAdapters: string[] = [];
+    for (const adapterPackage of adapterPackages) {
+      if (await observeInstalledAdapter(repositoryRoot, adapterPackage) !== undefined) currentAdapters.push(adapterPackage);
+    }
+    const currentCapabilities = await Promise.all(
+      (["claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
+        repositoryRoot, homeDirectory: homedir(), observedAt,
+        suppliedCredentialNames, requiredCredentialName: null, adapterInstalled: false,
+      })),
+    );
+    return readAuthoritySnapshot({
+      catalogueRawDigest: catalogue.snapshot.rawDigest,
+      catalogueNormalizedDigest: await catalogueFingerprint(),
+      policy: Object.freeze({
+        ...currentPolicy,
+        acceptedCostClasses: Object.freeze([...new Set([
+          ...currentPolicy.acceptedCostClasses,
+          ...parseAdditionalAcceptedCostClasses(currentEconomics),
+        ])].sort()),
+      }),
+      authorizations: Object.freeze({
+        projection: parseExecutionEconomicAuthorizations(currentEconomics),
+        graphClosureDigest: economicsClosureDigest,
+      }),
+      installedAdapterPackages: currentAdapters,
+      suppliedCredentialNames,
+      transportCapabilities: currentCapabilities,
+    });
+  };
+
+  // Read authority, then derive routes against exactly that reading.
+  const authoritySnapshot = await snapshotNow();
+
   // 3. Dispatch independent work units under bounded parallelism.
   const { generateText } = await import("ai");
   const outcomes: UnitOutcome[] = [];
@@ -254,6 +342,24 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     const ordered = diversifyCandidates(universe.candidates, ordinal);
     const attempts: UnitAttempt[] = [];
     const startedAtMs = Date.now();
+
+    // The bracket closes here: authority must still be the authority the route
+    // was derived from. Nothing is dispatched on a stale selection.
+    const beforeDispatch = await snapshotNow();
+    if (beforeDispatch.snapshotDigest !== authoritySnapshot.snapshotDigest) {
+      const moved = snapshotDifference(authoritySnapshot, beforeDispatch);
+      attempts.push(Object.freeze({
+        candidateId: ordered[0]?.candidateId ?? "(none)", transport: "(none)", provider: "(none)",
+        model: null, startedAt: new Date().toISOString(), latencyMs: 0,
+        outcome: "refused" as const, reasonCode: `AUTHORITY_MOVED:${moved.join("+")}`,
+        statusCode: null, retryAfter: null, costIncurred: false,
+      }));
+      return Object.freeze({
+        unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
+        status: "refused" as const, selected: null, actualModel: null, invocationIdentity: null,
+        text: null, usage: null, transportReportedCostUsd: null, startedAtMs, endedAtMs: Date.now(),
+      });
+    }
 
     for (const candidate of ordered.slice(0, 4)) {
       const attemptStartedAt = new Date().toISOString();
@@ -387,6 +493,9 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     quad(resultIri, "urn:usf:predicate:sourceAssertionDigest", outcome.unit.sourceAssertionDigest, "literal");
     quad(resultIri, "urn:usf:predicate:sourceGraphDigest", sourceGraphDigest, "literal");
     quad(resultIri, "urn:usf:predicate:executionStatus", outcome.status, "literal");
+    for (const dependency of dependencyGraph.dependencies.get(outcome.unit.iri) ?? []) {
+      quad(resultIri, "urn:usf:predicate:satisfiedDependency", dependency, "iri");
+    }
     if (outcome.selected !== null) {
       quad(resultIri, "urn:usf:predicate:executionTransport", outcome.selected.transport, "literal");
       quad(resultIri, "urn:usf:predicate:selectedProvider", outcome.selected.provider, "literal");
@@ -422,10 +531,16 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     observedAt,
     sourceGraph: parsed.graph,
     sourceGraphDigest,
+    economicsClosureDigest,
     resultGraph,
     resultGraphDigest,
     workUnitCount: ordered.length,
+    declaredUnitCount: allUnits.length,
+    dependencyEdgeCount: [...dependencyGraph.dependencies.values()].reduce((total, edges) => total + edges.length, 0),
+    dependencyAcyclic: dependencyGraph.acyclic,
+    selectedUnits: parsed.only,
     succeededCount: succeeded,
+    authoritySnapshot,
     catalogue: Object.freeze({
       rawDigest: catalogue.snapshot.rawDigest,
       normalizedDigest: catalogue.snapshot.normalizedDigest,
@@ -463,6 +578,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       "A transport that does not expose its resolved model identity is recorded as unobservable rather than assigned an invented model.",
       "Costs a transport reports for a subscription are list-basis attribution, not charges against this repository.",
       "Refusals are provider-stated facts; a usage-limit refusal denies access without performing paid work.",
+      "Every dispatch was preceded by a re-read of the semantic authority the route was derived from. A unit refused with AUTHORITY_MOVED was never dispatched on a stale selection.",
     ]),
   });
 

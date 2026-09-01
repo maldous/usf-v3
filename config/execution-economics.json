@@ -1,25 +1,13 @@
 {
   "$schema": "urn:usf:execution-economics:1",
   "version": 1,
+  "generated": true,
+  "derivedFrom": "graph/v3-execution.nq via urn:usf:economic-policy:zero-paid:1",
+  "sourceGraphDigest": "sha256:fd889bba91615903f3a0f2540b4352c1121a2d015e8759f0c73c35161766ae76",
+  "additionalAcceptedCostClasses": [
+    "subscription-included"
+  ],
   "authorizations": [
-    {
-      "transport": "vercel-ai-sdk",
-      "provider": "groq",
-      "entitlement": "free-quota",
-      "basis": "operator-declared-free-tier",
-      "maximumPaidCostUsd": 0,
-      "evidence": "Groq documents the free tier as rate-limited only; billing begins solely after the operator explicitly upgrades to the Developer tier or crosses a published spend threshold, so a free-tier key cannot silently incur cost.",
-      "sourceDocumentation": "https://console.groq.com/docs/rate-limits"
-    },
-    {
-      "transport": "vercel-ai-sdk",
-      "provider": "cerebras",
-      "entitlement": "free-quota",
-      "basis": "operator-declared-free-tier",
-      "maximumPaidCostUsd": 0,
-      "evidence": "Cerebras documents that the Free Trial tier stops API access when credits are exhausted rather than billing; there is no charge until the operator purchases additional credits.",
-      "sourceDocumentation": "https://inference-docs.cerebras.ai/support/rate-limits"
-    },
     {
       "transport": "claude-cli",
       "provider": "claude-cli",
@@ -37,14 +25,30 @@
       "maximumPaidCostUsd": 0,
       "evidence": "The Codex CLI executes under the operator's existing authenticated ChatGPT/Codex subscription. Marginal per-invocation cost is zero; the subscription enforces its own usage limits and refuses rather than billing this repository.",
       "sourceDocumentation": "https://developers.openai.com/codex/cli/"
+    },
+    {
+      "transport": "vercel-ai-sdk",
+      "provider": "cerebras",
+      "entitlement": "free-quota",
+      "basis": "operator-declared-free-tier",
+      "maximumPaidCostUsd": 0,
+      "evidence": "Cerebras documents that the Free Trial tier stops API access when credits are exhausted rather than billing; there is no charge until the operator purchases additional credits.",
+      "sourceDocumentation": "https://inference-docs.cerebras.ai/support/rate-limits"
+    },
+    {
+      "transport": "vercel-ai-sdk",
+      "provider": "groq",
+      "entitlement": "free-quota",
+      "basis": "operator-declared-free-tier",
+      "maximumPaidCostUsd": 0,
+      "evidence": "Groq documents the free tier as rate-limited only; billing begins solely after the operator explicitly upgrades to the Developer tier or crosses a published spend threshold, so a free-tier key cannot silently incur cost.",
+      "sourceDocumentation": "https://console.groq.com/docs/rate-limits"
     }
   ],
   "nonClaims": [
-    "This file records the operator's explicit economic authorization for a transport and provider pair. It does not assert an observed account tier, balance, subscription state, paid-usage history or overage entitlement, and it is not provider-returned evidence.",
+    "A subscription-included authorization asserts only that the operator's existing subscription covers invocation and that no per-call charge accrues to this repository. It asserts no remaining subscription quota; the transport refuses when its own limit is reached.",
     "Absence of an authorization for a transport and provider pair makes that pair economically ineligible; eligibility is never inferred.",
-    "A subscription-included authorization asserts only that the operator's existing subscription covers invocation and that no per-call charge accrues to this repository. It asserts no remaining subscription quota; the transport refuses when its own limit is reached."
-  ],
-  "additionalAcceptedCostClasses": [
-    "subscription-included"
+    "Catalogue list prices describe provider paid-tier rates and are not evidence that an authorized execution incurs cost.",
+    "This file records the operator's explicit economic authorization for a transport and provider pair. It does not assert an observed account tier, balance, subscription state, paid-usage history or overage entitlement, and it is not provider-returned evidence."
   ]
 }

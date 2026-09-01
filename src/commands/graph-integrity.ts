@@ -26,6 +26,11 @@ const stateReasonGraphs: readonly string[] = Object.freeze([
 /** Known legacy ownership overlap, recorded rather than silently rewritten. */
 const acceptedLegacyDebtCount = 24;
 
+/** The scopes the integrity gate applies, shared with the transaction validator. */
+export function integrityScopes(): Readonly<{ conventionExemptGraphs: readonly string[]; stateReasonGraphs: readonly string[] }> {
+  return Object.freeze({ conventionExemptGraphs, stateReasonGraphs });
+}
+
 export async function graphIntegrityCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const strict = args.includes("--strict");
   if (args.some((argument) => argument !== "--strict")) {

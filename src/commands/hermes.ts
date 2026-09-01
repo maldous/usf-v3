@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
+import { deriveStates, readDependencyGraph, readyUnits, stateCounts, type WorkUnitState } from "../graph/work-dependency.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { graphExecuteCommand } from "./graph-execute.ts";
 import { graphIntegrityCommand } from "./graph-integrity.ts";
@@ -149,15 +150,31 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     return values.length === 0 ? 0 : Math.max(...values);
   };
 
-  const pendingUnits = (): readonly Readonly<{ work: DiscoveredWork; unit: string }>[] => {
-    const done = completedUnits();
-    return Object.freeze(discovered.flatMap((work) => work.unitIris
-      .filter((unit) => !done.has(unit) && attemptsFor(unit) < maximumAttemptsPerUnit)
-      .map((unit) => Object.freeze({ work, unit }))));
+  // One dependency graph across every discovered work unit, so a dependency
+  // may cross work-graph boundaries and a cycle cannot hide between files.
+  const allQuads = discovered.flatMap((work) => [...work.quads]);
+  const allUnits = discovered.flatMap((work) => [...work.unitIris]);
+  const graphOfUnit = new Map<string, DiscoveredWork>();
+  for (const work of discovered) for (const unit of work.unitIris) graphOfUnit.set(unit, work);
+  const dependencyGraph = readDependencyGraph(allQuads, allUnits);
+
+  /**
+   * Derive one state per unit from the dependency edges and the recorded
+   * outcomes. Readiness is never stored: it is recomputed every cycle so it
+   * cannot disagree with the outcomes that produce it.
+   */
+  const deriveSchedule = (): ReadonlyMap<string, WorkUnitState> => {
+    const succeeded = completedUnits();
+    const failed = new Set(allUnits.filter(
+      (unit) => !succeeded.has(unit) && attemptsFor(unit) >= maximumAttemptsPerUnit,
+    ));
+    return deriveStates(dependencyGraph, { succeeded, failed });
   };
 
   if (operation === "status") {
     const done = completedUnits();
+    const states = deriveSchedule();
+    const ready = readyUnits(states);
     return {
       output: Object.freeze({
         schema: "urn:usf:hermes-status:1" as const,
@@ -167,13 +184,26 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
           file: work.file, graph: work.graph, unitCount: work.unitIris.length,
           completedCount: work.unitIris.filter((unit) => done.has(unit)).length,
         }))),
+        dependency: Object.freeze({
+          declaredUnitCount: allUnits.length,
+          edgeCount: [...dependencyGraph.dependencies.values()].reduce((total, edges) => total + edges.length, 0),
+          acyclic: dependencyGraph.acyclic,
+          defects: dependencyGraph.defects,
+          stateCounts: stateCounts(states),
+        }),
         stateQuadCount: state.length,
         completedUnitCount: done.size,
-        pendingUnitCount: pendingUnits().length,
-        readyToRun: pendingUnits().length > 0,
+        readyUnitCount: ready.length,
+        readyToRun: ready.length > 0,
       }),
-      exitCode: exitCodes.SUCCESS,
+      exitCode: dependencyGraph.defects.length > 0 ? exitCodes.DOMAIN_FAILURE : exitCodes.SUCCESS,
     };
+  }
+
+  if (dependencyGraph.defects.length > 0) {
+    throw new UsfError("HERMES_WORK_DEPENDENCY_INVALID", exitCodes.INVALID_INPUT,
+      "The discovered workload's dependency edges are not a valid acyclic graph.",
+      { defects: dependencyGraph.defects.slice(0, 8) });
   }
 
   const cycleDirectory = resolve(repositoryRoot, ".usf", "hermes");
@@ -183,99 +213,116 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
   let terminalState = "idle-no-pending-work";
 
   for (let cycle = 1; cycle <= parsed.maximumCycles; cycle += 1) {
-    const pending = pendingUnits();
-    if (pending.length === 0) {
-      terminalState = cycle === 1 ? "idle-no-pending-work" : "all-work-terminal";
+    const states = deriveSchedule();
+    const ready = readyUnits(states);
+    const counts = stateCounts(states);
+    if (ready.length === 0) {
+      // Nothing is dispatchable. Distinguish an empty workload from one whose
+      // remaining units can never become ready.
+      terminalState = counts.blocked > 0 ? "blocked-no-progress"
+        : counts.unreachable > 0 ? "terminal-with-unreachable-work"
+        : cycle === 1 ? "idle-no-pending-work"
+        : "all-work-terminal";
       break;
     }
 
-    // Compose one cycle graph from exactly the pending units' own assertions.
-    const byGraph = new Map<string, { work: DiscoveredWork; units: string[] }>();
-    for (const entry of pending) {
-      const bucket = byGraph.get(entry.work.graph) ?? { work: entry.work, units: [] };
-      bucket.units.push(entry.unit);
-      byGraph.set(entry.work.graph, bucket);
+    // Every ready unit is dispatched this cycle, grouped by its source work
+    // graph. Independent work therefore runs concurrently, and a unit whose
+    // dependencies are unsatisfied is simply not in the ready set.
+    const byGraph = new Map<string, string[]>();
+    for (const unit of ready) {
+      const work = graphOfUnit.get(unit);
+      if (work === undefined) continue;
+      const bucket = byGraph.get(work.graph) ?? [];
+      bucket.push(unit);
+      byGraph.set(work.graph, bucket);
     }
-    // One cycle drives one work graph; remaining graphs follow in later cycles.
-    const [selectedGraph, selected] = [...byGraph.entries()].sort(([left], [right]) => left.localeCompare(right))[0]!;
-    const cycleQuads = selected.work.quads.filter((quad) => selected.units.includes(quad.subject));
-    const cyclePath = `.usf/hermes/cycle-${cycle}.nq`;
-    await writeFile(
-      resolve(repositoryRoot, cyclePath),
-      `${cycleQuads.map((quad) => quad.canonical).sort().join("\n")}\n`,
-      { mode: 0o600 },
-    );
 
-    // Route and dispatch. Hermes chooses no provider or model itself; the route
-    // universe and economic policy decide, and refusals are recovered by
-    // re-queueing the unit for a later cycle with a different provider offset.
-    const executed = await graphExecuteCommand(repositoryRoot, [
-      "--input", cyclePath,
-      "--graph", selectedGraph,
-      "--env-file", parsed.envFile,
-      "--concurrency", String(parsed.concurrency),
-    ]).catch((error: unknown) => ({
-      output: Object.freeze({ status: "refused", failure: error instanceof Error ? error.message.slice(0, 200) : "unknown" }),
-      exitCode: exitCodes.EXTERNAL_UNAVAILABLE as ExitCode,
-    }));
-    const evidence = executed.output as Record<string, unknown>;
-
-    // Merge results into durable semantic state.
-    const units = Array.isArray(evidence.units) ? evidence.units as Record<string, unknown>[] : [];
     let advanced = 0;
-    for (const unitRecord of units) {
-      const unitIri = typeof unitRecord.unit === "string" ? unitRecord.unit : null;
-      if (unitIri === null) continue;
-      const attempts = attemptsFor(unitIri) + 1;
-      state = state.filter((quad) => !(quad.subject === unitIri && quad.predicate === attemptCountPredicate));
-      state.push(quadOf(unitIri, attemptCountPredicate, String(attempts), "literal"));
-      if (unitRecord.status !== "ok") continue;
-      const resultDigest = typeof unitRecord.resultDigest === "string" ? unitRecord.resultDigest : null;
-      const resultIri = `urn:usf:execution-result:${(resultDigest ?? canonicalDigest(unitRecord)).slice("sha256:".length)}`;
-      state.push(quadOf(unitIri, executionResultPredicate, resultIri, "iri"));
-      state.push(quadOf(resultIri, typePredicate, "urn:usf:type:ExecutionResult", "iri"));
-      state.push(quadOf(resultIri, "urn:usf:predicate:derivedFrom", unitIri, "iri"));
-      if (typeof unitRecord.sourceAssertionDigest === "string") {
-        state.push(quadOf(resultIri, "urn:usf:predicate:sourceAssertionDigest", unitRecord.sourceAssertionDigest, "literal"));
+    const dispatches: unknown[] = [];
+    for (const [graphIri, units] of [...byGraph.entries()].sort(([left], [right]) => left.localeCompare(right))) {
+      const work = graphOfUnit.get(units[0]!)!;
+      // The whole work graph is supplied so its dependency edges validate; the
+      // scheduler names exactly the units it selected.
+      const executed = await graphExecuteCommand(repositoryRoot, [
+        "--input", work.file,
+        "--graph", graphIri,
+        "--env-file", parsed.envFile,
+        "--concurrency", String(parsed.concurrency),
+        "--only", [...units].sort().join(","),
+      ]).catch((error: unknown) => ({
+        output: Object.freeze({ status: "refused", failure: error instanceof Error ? error.message.slice(0, 200) : "unknown" }),
+        exitCode: exitCodes.EXTERNAL_UNAVAILABLE as ExitCode,
+      }));
+      const evidence = executed.output as Record<string, unknown>;
+      const unitRecords = Array.isArray(evidence.units) ? evidence.units as Record<string, unknown>[] : [];
+
+      for (const unitRecord of unitRecords) {
+        const unitIri = typeof unitRecord.unit === "string" ? unitRecord.unit : null;
+        if (unitIri === null) continue;
+        const attempts = attemptsFor(unitIri) + 1;
+        state = state.filter((quad) => !(quad.subject === unitIri && quad.predicate === attemptCountPredicate));
+        state.push(quadOf(unitIri, attemptCountPredicate, String(attempts), "literal"));
+        if (unitRecord.status !== "ok") continue;
+        const resultDigest = typeof unitRecord.resultDigest === "string" ? unitRecord.resultDigest : null;
+        const resultIri = `urn:usf:execution-result:${(resultDigest ?? canonicalDigest(unitRecord)).slice("sha256:".length)}`;
+        state.push(quadOf(unitIri, executionResultPredicate, resultIri, "iri"));
+        state.push(quadOf(resultIri, typePredicate, "urn:usf:type:ExecutionResult", "iri"));
+        state.push(quadOf(resultIri, "urn:usf:predicate:derivedFrom", unitIri, "iri"));
+        if (typeof unitRecord.sourceAssertionDigest === "string") {
+          state.push(quadOf(resultIri, "urn:usf:predicate:sourceAssertionDigest", unitRecord.sourceAssertionDigest, "literal"));
+        }
+        if (typeof unitRecord.transport === "string") {
+          state.push(quadOf(resultIri, "urn:usf:predicate:executionTransport", unitRecord.transport, "literal"));
+        }
+        if (typeof unitRecord.actualModel === "string") {
+          state.push(quadOf(resultIri, "urn:usf:predicate:actualModel", unitRecord.actualModel, "literal"));
+        }
+        if (typeof unitRecord.resultText === "string") {
+          state.push(quadOf(resultIri, "urn:usf:predicate:resultText", unitRecord.resultText, "literal"));
+        }
+        if (resultDigest !== null) {
+          state.push(quadOf(resultIri, "urn:usf:predicate:resultDigest", resultDigest, "literal"));
+        }
+        for (const dependency of dependencyGraph.dependencies.get(unitIri) ?? []) {
+          state.push(quadOf(resultIri, "urn:usf:predicate:satisfiedDependency", dependency, "iri"));
+        }
+        state.push(quadOf(resultIri, "urn:usf:predicate:hermesCycle", String(cycle), "literal"));
+        advanced += 1;
       }
-      if (typeof unitRecord.transport === "string") {
-        state.push(quadOf(resultIri, "urn:usf:predicate:executionTransport", unitRecord.transport, "literal"));
-      }
-      if (typeof unitRecord.actualModel === "string") {
-        state.push(quadOf(resultIri, "urn:usf:predicate:actualModel", unitRecord.actualModel, "literal"));
-      }
-      if (typeof unitRecord.resultText === "string") {
-        state.push(quadOf(resultIri, "urn:usf:predicate:resultText", unitRecord.resultText, "literal"));
-      }
-      if (resultDigest !== null) {
-        state.push(quadOf(resultIri, "urn:usf:predicate:resultDigest", resultDigest, "literal"));
-      }
-      state.push(quadOf(resultIri, "urn:usf:predicate:hermesCycle", String(cycle), "literal"));
-      advanced += 1;
+
+      dispatches.push(Object.freeze({
+        workGraph: graphIri,
+        dispatchedUnits: Object.freeze([...units].sort()),
+        graphExecutionStatus: evidence.status ?? "unknown",
+        graphExecutionEvidenceDigest: evidence.evidenceDigest ?? null,
+        authoritySnapshot: evidence.authoritySnapshot ?? null,
+        concurrency: evidence.concurrency ?? null,
+        transportsUsed: Object.freeze([...new Set(unitRecords
+          .filter((unit) => unit.status === "ok" && typeof unit.transport === "string")
+          .map((unit) => unit.transport as string))].sort()),
+        refusals: Object.freeze(unitRecords
+          .filter((unit) => unit.status !== "ok")
+          .map((unit) => Object.freeze({ unit: unit.unit, attempts: unit.attempts }))),
+      }));
     }
 
     cycles.push(Object.freeze({
       cycle,
-      workGraph: selectedGraph,
-      cycleGraphPath: cyclePath,
-      dispatchedUnitCount: selected.units.length,
+      // The schedule Hermes derived, before dispatch, from dependencies alone.
+      derivedStateCounts: counts,
+      readyUnits: Object.freeze([...ready]),
+      dispatchCount: dispatches.length,
+      dispatches: Object.freeze(dispatches),
       advancedUnitCount: advanced,
-      graphExecutionStatus: evidence.status ?? "unknown",
-      graphExecutionEvidenceDigest: evidence.evidenceDigest ?? null,
-      concurrency: evidence.concurrency ?? null,
-      transportsUsed: Object.freeze([...new Set(units
-        .filter((unit) => unit.status === "ok" && typeof unit.transport === "string")
-        .map((unit) => unit.transport as string))].sort()),
-      refusals: Object.freeze(units
-        .filter((unit) => unit.status !== "ok")
-        .map((unit) => Object.freeze({ unit: unit.unit, attempts: unit.attempts }))),
     }));
 
-    if (advanced === 0 && pendingUnits().length === pending.length) {
+    if (advanced === 0) {
       terminalState = "blocked-no-progress";
       break;
     }
-    terminalState = pendingUnits().length === 0 ? "all-work-terminal" : "cycles-exhausted";
+    const nextReady = readyUnits(deriveSchedule());
+    terminalState = nextReady.length === 0 ? "all-work-terminal" : "cycles-exhausted";
   }
 
   // Persist the semantic state graph.
@@ -301,8 +348,15 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     stateQuadCount: orderedState.length,
     stateGraphDigest: canonicalQuadDigest(orderedState),
     completedUnitCount: done.size,
-    totalUnitCount: discovered.reduce((total, work) => total + work.unitIris.length, 0),
+    totalUnitCount: allUnits.length,
+    dependency: Object.freeze({
+      declaredUnitCount: allUnits.length,
+      edgeCount: [...dependencyGraph.dependencies.values()].reduce((total, edges) => total + edges.length, 0),
+      acyclic: dependencyGraph.acyclic,
+      finalStateCounts: stateCounts(deriveSchedule()),
+    }),
     nonClaims: Object.freeze([
+      "Readiness is derived from dependency edges and recorded outcomes on every cycle; it is never stored, so it cannot disagree with the outcomes that produce it.",
       "Hermes selected no provider or model itself. Each route was derived from the catalogue classification, transport capability and economic policy in force at dispatch time.",
       "A refused unit is re-queued for a later cycle up to a bounded attempt count; exhausting that bound is recorded, never retried indefinitely.",
       "The state graph records what executed. It asserts no construction, completion, publication or Git authority.",
@@ -320,6 +374,7 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
     exitCode: (terminalState === "all-work-terminal" || terminalState === "idle-no-pending-work"
       ? exitCodes.SUCCESS
       : terminalState === "blocked-no-progress" ? exitCodes.EXTERNAL_UNAVAILABLE
+      : terminalState === "terminal-with-unreachable-work" ? exitCodes.CONTINUOUS_DEGRADED
       : exitCodes.CONTINUOUS_DEGRADED) as ExitCode,
   };
 }

@@ -1,9 +1,8 @@
-<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:acceptedSerialization> "blank-node-free IRI and literal N-Quads in one explicitly named graph" <urn:usf:graph:v3-execution> .
-<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:authority> "The graph is the work authority. Requirements are read from asserted quads, never from command arguments that would override them." <urn:usf:graph:v3-execution> .
-<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:optionalPredicate> "urn:usf:predicate:maximumOutputTokens" <urn:usf:graph:v3-execution> .
-<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:optionalPredicate> "urn:usf:predicate:minimumContextTokens" <urn:usf:graph:v3-execution> .
-<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:optionalPredicate> "urn:usf:predicate:requiredCapability" <urn:usf:graph:v3-execution> .
-<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:requiredPredicate> "urn:usf:predicate:prompt" <urn:usf:graph:v3-execution> .
+<urn:usf:authority-generation:v3:1> <urn:usf:predicate:establishedBy> "One deliberate V3 authority transition, not a reinterpretation of any historical commit, grant, receipt or completion record." <urn:usf:graph:v3-execution> .
+<urn:usf:authority-generation:v3:1> <urn:usf:predicate:foundation> <urn:usf:foundation:v3> <urn:usf:graph:v3-execution> .
+<urn:usf:authority-generation:v3:1> <urn:usf:predicate:role> "V3 owns the semantic graph, model catalogue projection, routing, economics, execution transports, execution evidence and the operational lifecycle." <urn:usf:graph:v3-execution> .
+<urn:usf:authority-generation:v3:1> <urn:usf:predicate:type> <urn:usf:type:AuthorityGeneration> <urn:usf:graph:v3-execution> .
+<urn:usf:authority-generation:v3:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-execution> .
 <urn:usf:catalogue-projection:models-dev:1> <urn:usf:predicate:authoritativeFor> "catalogue-price-metadata" <urn:usf:graph:v3-execution> .
 <urn:usf:catalogue-projection:models-dev:1> <urn:usf:predicate:authoritativeFor> "context-and-output-limits" <urn:usf:graph:v3-execution> .
 <urn:usf:catalogue-projection:models-dev:1> <urn:usf:predicate:authoritativeFor> "model-capabilities" <urn:usf:graph:v3-execution> .
@@ -21,37 +20,41 @@
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:isolation> "A refusal on one provider does not fail unrelated units that had an alternative candidate." <urn:usf:graph:v3-execution> .
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:overlapEvidence> "Peak observed concurrency is derived from actual unit start and end instants; the reported speedup ratio is summed unit duration over wall-clock duration and exceeds one only when executions genuinely overlapped." <urn:usf:graph:v3-execution> .
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:type> <urn:usf:type:ConcurrencyConstraint> <urn:usf:graph:v3-execution> .
-<urn:usf:execution-digest-link:invocation> <urn:usf:predicate:definition> "Digest of the invocation facts bound to the selection digest." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-digest-link:request> <urn:usf:predicate:definition> "Digest of the canonical work requirement." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-digest-link:result> <urn:usf:predicate:definition> "Digest of the returned model text." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-digest-link:selection> <urn:usf:predicate:definition> "Digest of the selected route bound to the request digest." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:authorizesProvider> "claude-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:claude-cli> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:basis> "operator-declared-subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:entitlement> "subscription-included" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:evidence> "The Claude CLI executes under the operator's existing authenticated Claude subscription. Marginal per-invocation cost is zero; the cost figures the CLI reports are list-basis attribution for usage accounting, not a charge against this repository." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:sourceDocumentation> "https://docs.claude.com/en/docs/claude-code/overview" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:authorizesProvider> "codex-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:codex-cli> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:basis> "operator-declared-subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:entitlement> "subscription-included" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:evidence> "The Codex CLI executes under the operator's existing authenticated ChatGPT/Codex subscription. Marginal per-invocation cost is zero; the subscription enforces its own usage limits and refuses rather than billing this repository." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:sourceDocumentation> "https://developers.openai.com/codex/cli/" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:authorizesProvider> "cerebras" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:basis> "operator-declared-free-tier" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:entitlement> "free-quota" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:evidence> "Cerebras documents that the Free Trial tier stops API access when credits are exhausted rather than billing; there is no charge until the operator purchases additional credits." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:sourceDocumentation> "https://inference-docs.cerebras.ai/support/rate-limits" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:authorizesProvider> "groq" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:basis> "operator-declared-free-tier" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:entitlement> "free-quota" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:evidence> "Groq documents the free tier as rate-limited only; billing begins solely after the operator explicitly upgrades to the Developer tier or crosses a published spend threshold, so a free-tier key cannot silently incur cost." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:sourceDocumentation> "https://console.groq.com/docs/rate-limits" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-disposition:openrouter:1> <urn:usf:predicate:distinctFrom> "Groq and Cerebras free-tier economics" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-disposition:openrouter:1> <urn:usf:predicate:eligibleSubset> "Only catalogue zero-price routes are eligible under the zero paid-cost policy; priced and unknown-price routes are refused before any contact." <urn:usf:graph:v3-execution> .
@@ -63,15 +66,33 @@
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:acceptedCostClass> "local" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:acceptedCostClass> "subscription-included" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:acceptedCostClass> "zero-price" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:additionalAcceptedCostClass> "subscription-included" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:evaluationScope> "per-execution-transport-and-provider-pair" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:failureMode> "An absent authorization is ineligible. Eligibility is never inferred and one provider's economics never transfer to another." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "A subscription-included authorization asserts only that the operator's existing subscription covers invocation and that no per-call charge accrues to this repository. It asserts no remaining subscription quota; the transport refuses when its own limit is reached." <urn:usf:graph:v3-execution> .
+<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "Absence of an authorization for a transport and provider pair makes that pair economically ineligible; eligibility is never inferred." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "Catalogue list prices describe provider paid-tier rates and are not evidence that an authorized execution incurs cost." <urn:usf:graph:v3-execution> .
+<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "This file records the operator's explicit economic authorization for a transport and provider pair. It does not assert an observed account tier, balance, subscription state, paid-usage history or overage entitlement, and it is not provider-returned evidence." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:paidFallback> "prohibited" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:projectionRule> "The runtime projection is derived deterministically from this policy and its authorizations. It carries the digest of exactly the quads that produced it and is never hand-edited." <urn:usf:graph:v3-execution> .
+<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:runtimeProjection> "config/execution-economics.json" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:trackedAt> "config/execution-economics.json" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:type> <urn:usf:type:EconomicEligibilityPolicy> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:unknownPrice> "ineligible" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:zeroPriceRule> "A catalogue-declared zero price is eligible on catalogue evidence alone, because there is no cost to authorize. A free quota is different: a quota-backed credential could sit on a paid tier, so it requires an explicit operator authorization." <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:execution-evidence:1> <urn:usf:predicate:outputSchema> "urn:usf:execution-evidence:1" <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:execution-evidence:1> <urn:usf:predicate:purpose> "One single-requirement execution: request, discovery, selection, invocation and result." <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:execution-evidence:1> <urn:usf:predicate:secretExclusion> "No credential value, and no digest of a credential value, appears in any execution record." <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:execution-evidence:1> <urn:usf:predicate:type> <urn:usf:type:ExecutionEvidenceRecord> <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:predicate:outputSchema> "urn:usf:graph-execution-evidence:1" <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:predicate:purpose> "One graph-driven dispatch: source graph, per-unit routing, concurrency evidence and the result graph." <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:predicate:secretExclusion> "No credential value, and no digest of a credential value, appears in any execution record." <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:predicate:type> <urn:usf:type:ExecutionEvidenceRecord> <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:predicate:outputSchema> "urn:usf:hermes-cycle-report:1" <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:predicate:purpose> "One autonomous operating run: authority inspected, cycles derived, transports used, refusals recovered and terminal state." <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:predicate:secretExclusion> "No credential value, and no digest of a credential value, appears in any execution record." <urn:usf:graph:v3-execution> .
+<urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:predicate:type> <urn:usf:type:ExecutionEvidenceRecord> <urn:usf:graph:v3-execution> .
 <urn:usf:execution-digest-chain:execution:1> <urn:usf:predicate:chainLink> "1=request" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-digest-chain:execution:1> <urn:usf:predicate:chainLink> "2=selection" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-digest-chain:execution:1> <urn:usf:predicate:chainLink> "3=invocation" <urn:usf:graph:v3-execution> .
@@ -79,11 +100,36 @@
 <urn:usf:execution-digest-chain:execution:1> <urn:usf:predicate:graphProvenance> "A result asserts derivedFrom its work unit, the digest of exactly the source quads that asserted that unit, and the digest of the whole source graph." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-digest-chain:execution:1> <urn:usf:predicate:rule> "Provenance is established by digest, not by narration, so any recorded claim can be recomputed." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-digest-chain:execution:1> <urn:usf:predicate:type> <urn:usf:type:ExecutionDigestChain> <urn:usf:graph:v3-execution> .
-<urn:usf:authority-generation:v3:1> <urn:usf:predicate:establishedBy> "One deliberate V3 authority transition, not a reinterpretation of any historical commit, grant, receipt or completion record." <urn:usf:graph:v3-execution> .
-<urn:usf:authority-generation:v3:1> <urn:usf:predicate:foundation> <urn:usf:foundation:v3> <urn:usf:graph:v3-execution> .
-<urn:usf:authority-generation:v3:1> <urn:usf:predicate:role> "V3 owns the semantic graph, model catalogue projection, routing, economics, execution transports, execution evidence and the operational lifecycle." <urn:usf:graph:v3-execution> .
-<urn:usf:authority-generation:v3:1> <urn:usf:predicate:type> <urn:usf:type:AuthorityGeneration> <urn:usf:graph:v3-execution> .
-<urn:usf:authority-generation:v3:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-digest-link:invocation> <urn:usf:predicate:definition> "Digest of the invocation facts bound to the selection digest." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-digest-link:request> <urn:usf:predicate:definition> "Digest of the canonical work requirement." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-digest-link:result> <urn:usf:predicate:definition> "Digest of the returned model text." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-digest-link:selection> <urn:usf:predicate:definition> "Digest of the selected route bound to the request digest." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:authenticationRequirement> "local-agent-session" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:executable> "claude" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:modelIdentityObservable> "true" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:nonClaim> "No API credential abstraction is built around this transport; it authenticates by its own session." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:sessionMaterial> ".claude/.credentials.json" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:transportIdentity> "claude-cli" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:authenticationRequirement> "local-agent-session" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:executable> "codex" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:modelIdentityObservable> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:nonClaim> "This transport does not expose its resolved underlying model identity; results record that fact rather than inventing one." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:sessionMaterial> ".codex/auth.json" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:transportIdentity> "codex-cli" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:authenticationRequirement> "owner-private-credential-file" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:carriesAdapterFamily> "Vercel AI SDK provider packages named by the catalogue projection" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:credentialContainment> "One owner-only mode-0600 repository-local credential file; ambient environment is never authority." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:modelIdentityObservable> "true" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:quotaScope> "provider-api-key" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:transportIdentity> "vercel-ai-sdk" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:autonomy> "Hermes selects no provider or model itself; routing derives them from catalogue classification, transport capability and economic policy in force at dispatch time." <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:cycleStep> "1=inspect current V3 authority" <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:cycleStep> "2=discover pending semantic work" <urn:usf:graph:v3-execution> .
@@ -127,18 +173,6 @@
 <urn:usf:readiness-state:transport-supported> <urn:usf:predicate:definition> "An installed execution transport can carry that adapter package." <urn:usf:graph:v3-execution> .
 <urn:usf:readiness-state:transport-supported> <urn:usf:predicate:ordinal> "2" <urn:usf:graph:v3-execution> .
 <urn:usf:readiness-state:transport-supported> <urn:usf:predicate:type> <urn:usf:type:ExecutionReadinessState> <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:execution-evidence:1> <urn:usf:predicate:outputSchema> "urn:usf:execution-evidence:1" <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:execution-evidence:1> <urn:usf:predicate:purpose> "One single-requirement execution: request, discovery, selection, invocation and result." <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:execution-evidence:1> <urn:usf:predicate:secretExclusion> "No credential value, and no digest of a credential value, appears in any execution record." <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:execution-evidence:1> <urn:usf:predicate:type> <urn:usf:type:ExecutionEvidenceRecord> <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:predicate:outputSchema> "urn:usf:graph-execution-evidence:1" <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:predicate:purpose> "One graph-driven dispatch: source graph, per-unit routing, concurrency evidence and the result graph." <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:predicate:secretExclusion> "No credential value, and no digest of a credential value, appears in any execution record." <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:predicate:type> <urn:usf:type:ExecutionEvidenceRecord> <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:predicate:outputSchema> "urn:usf:hermes-cycle-report:1" <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:predicate:purpose> "One autonomous operating run: authority inspected, cycles derived, transports used, refusals recovered and terminal state." <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:predicate:secretExclusion> "No credential value, and no digest of a credential value, appears in any execution record." <urn:usf:graph:v3-execution> .
-<urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:predicate:type> <urn:usf:type:ExecutionEvidenceRecord> <urn:usf:graph:v3-execution> .
 <urn:usf:refusal-classification:execution:1> <urn:usf:predicate:classifies> "CAPABILITY_MISSING" <urn:usf:graph:v3-execution> .
 <urn:usf:refusal-classification:execution:1> <urn:usf:predicate:classifies> "CONTEXT_LIMIT_INSUFFICIENT" <urn:usf:graph:v3-execution> .
 <urn:usf:refusal-classification:execution:1> <urn:usf:predicate:classifies> "CREDENTIAL_ABSENT" <urn:usf:graph:v3-execution> .
@@ -209,29 +243,9 @@
 <urn:usf:transport-compatibility-rule:execution:1> <urn:usf:predicate:perTransportCapability> "Each local agent transport declares its own capability set, context limit and output limit; these are transport facts and are never derived from the model catalogue." <urn:usf:graph:v3-execution> .
 <urn:usf:transport-compatibility-rule:execution:1> <urn:usf:predicate:rule> "An adapter-family transport carries exactly the catalogue models whose adapter package is installed and whose credential name is supplied. A local agent transport carries work in its own right and resolves its own model, capabilities and quota, which this repository does not own." <urn:usf:graph:v3-execution> .
 <urn:usf:transport-compatibility-rule:execution:1> <urn:usf:predicate:type> <urn:usf:type:TransportCompatibilityRule> <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:authenticationRequirement> "local-agent-session" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:executable> "claude" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:modelIdentityObservable> "true" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:nonClaim> "No API credential abstraction is built around this transport; it authenticates by its own session." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:sessionMaterial> ".claude/.credentials.json" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:transportIdentity> "claude-cli" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:authenticationRequirement> "local-agent-session" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:executable> "codex" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:modelIdentityObservable> "false" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:nonClaim> "This transport does not expose its resolved underlying model identity; results record that fact rather than inventing one." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:sessionMaterial> ".codex/auth.json" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:transportIdentity> "codex-cli" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:authenticationRequirement> "owner-private-credential-file" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:carriesAdapterFamily> "Vercel AI SDK provider packages named by the catalogue projection" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:credentialContainment> "One owner-only mode-0600 repository-local credential file; ambient environment is never authority." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:modelIdentityObservable> "true" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:quotaScope> "provider-api-key" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:transportIdentity> "vercel-ai-sdk" <urn:usf:graph:v3-execution> .
-<urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:predicate:type> <urn:usf:type:ExecutionTransport> <urn:usf:graph:v3-execution> .
+<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:acceptedSerialization> "blank-node-free IRI and literal N-Quads in one explicitly named graph" <urn:usf:graph:v3-execution> .
+<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:authority> "The graph is the work authority. Requirements are read from asserted quads, never from command arguments that would override them." <urn:usf:graph:v3-execution> .
+<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:optionalPredicate> "urn:usf:predicate:maximumOutputTokens" <urn:usf:graph:v3-execution> .
+<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:optionalPredicate> "urn:usf:predicate:minimumContextTokens" <urn:usf:graph:v3-execution> .
+<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:optionalPredicate> "urn:usf:predicate:requiredCapability" <urn:usf:graph:v3-execution> .
+<urn:usf:type:SemanticWorkUnit> <urn:usf:predicate:requiredPredicate> "urn:usf:predicate:prompt" <urn:usf:graph:v3-execution> .
