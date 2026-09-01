@@ -1,4 +1,3 @@
-```typescript
 // Search and Indexing Product Search Capability Module
 
 // === Constants and Types ===
@@ -27,7 +26,7 @@ export const SearchAuditEventKind = [
 ] as const;
 export type SearchAuditEventKind = typeof SearchAuditEventKind[number];
 
-export const SearchPermissionDecision = ['GRANTED', 'DENIED', 'DEGRADED'] as const;
+export const SearchPermissionDecision = ['GRANTED', 'DENIED'] as const;
 export type SearchPermissionDecision = typeof SearchPermissionDecision[number];
 
 // === Interfaces ===
@@ -38,14 +37,14 @@ export interface SearchAuditEvent {
   readonly organisationId: string;
   readonly operation: string;
   readonly timestamp: string;
-  readonly span?: string;
+  readonly span: string;
 }
 
 export interface SearchError {
   readonly kind: SearchErrorKind;
   readonly message: string;
-  readonly tenantId?: string;
-  readonly organisationId?: string;
+  readonly tenantId: string;
+  readonly organisationId: string;
 }
 
 export interface IndexedDocument {
@@ -57,7 +56,7 @@ export interface IndexedDocument {
   readonly searchVector: string;
   readonly indexName: string;
   readonly url: string;
-  readonly metadata: Record<string, unknown>;
+  readonly metadata: Record<string, string>;
   readonly permissionKey?: string;
 }
 
@@ -95,9 +94,9 @@ const SECRET_FIELD_PATTERNS = [
   'private_key', 'access_key', 'auth_token', 'session_id'
 ];
 
-function containsSecretFields(metadata: Record<string, unknown>): boolean {
+function containsSecretFields(metadata: Record<string, string>): boolean {
   const metadataKeys = Object.keys(metadata).map(k => k.toLowerCase());
-  return SECRET_FIELD_PATTERNS.some(pattern => 
+  return SECRET_FIELD_PATTERNS.some(pattern =>
     metadataKeys.some(key => key.includes(pattern))
   );
 }
@@ -106,7 +105,7 @@ function containsSecretFields(metadata: Record<string, unknown>): boolean {
 
 export function validateDocumentShape(document: unknown): document is IndexedDocument {
   if (typeof document !== 'object' || document === null) return false;
-  
+
   const doc = document as Record<string, unknown>;
   return (
     typeof doc.tenantId === 'string' &&
@@ -118,6 +117,7 @@ export function validateDocumentShape(document: unknown): document is IndexedDoc
     typeof doc.indexName === 'string' &&
     typeof doc.url === 'string' &&
     typeof doc.metadata === 'object' && doc.metadata !== null &&
+    Object.values(doc.metadata).every(v => typeof v === 'string') &&
     (doc.permissionKey === undefined || typeof doc.permissionKey === 'string')
   );
 }
@@ -126,7 +126,7 @@ export function validateUniqueness(
   documents: readonly IndexedDocument[],
   newDoc: IndexedDocument
 ): boolean {
-  return !documents.some(doc => 
+  return !documents.some(doc =>
     doc.tenantId === newDoc.tenantId &&
     doc.documentType === newDoc.documentType &&
     doc.documentId === newDoc.documentId
@@ -134,10 +134,9 @@ export function validateUniqueness(
 }
 
 export function validateQueryScope(query: SearchQuery): boolean {
-  // Query must be properly scoped to tenant and organisation
-  return typeof query.tenantId === 'string' && 
-         typeof query.organisationId === 'string' && 
-         query.tenantId.length > 0 && 
+  return typeof query.tenantId === 'string' &&
+         typeof query.organisationId === 'string' &&
+         query.tenantId.length > 0 &&
          query.organisationId.length > 0;
 }
 
@@ -157,54 +156,49 @@ export function indexDocument(
   document: unknown,
   auditFn: (event: SearchAuditEvent) => SearchError | null
 ): SearchState | SearchError {
-  // Validate document shape
   if (!validateDocumentShape(document)) {
-    return { 
-      kind: 'DOCUMENT_VALIDATION_FAILURE', 
+    return {
+      kind: 'DOCUMENT_VALIDATION_FAILURE',
       message: 'Invalid document shape',
-      tenantId: undefined,
-      organisationId: undefined
+      tenantId: '',
+      organisationId: ''
     };
   }
 
-  // Check for secret fields
   if (containsSecretFields(document.metadata)) {
-    return { 
-      kind: 'SECRET_FIELD_DETECTED', 
+    return {
+      kind: 'SECRET_FIELD_DETECTED',
       message: 'Document metadata contains secret fields',
       tenantId: document.tenantId,
       organisationId: document.organisationId
     };
   }
 
-  // Check uniqueness constraint
   if (!validateUniqueness(state.documents, document)) {
-    return { 
-      kind: 'UNIQUENESS_VIOLATION', 
+    return {
+      kind: 'UNIQUENESS_VIOLATION',
       message: 'Document with tenant/type/id already exists',
       tenantId: document.tenantId,
       organisationId: document.organisationId
     };
   }
 
-  // Check readiness before mutation
   if (state.readiness !== 'READY') {
-    return { 
-      kind: 'INDEX_MUTATION_DISABLED', 
+    return {
+      kind: 'INDEX_MUTATION_DISABLED',
       message: 'Search engine not ready for mutations',
       tenantId: document.tenantId,
       organisationId: document.organisationId
     };
   }
 
-  // Audit before change
   const auditEvent: SearchAuditEvent = {
     kind: 'AUDIT_BEFORE_INDEX',
     tenantId: document.tenantId,
     organisationId: document.organisationId,
     operation: 'index_document',
     timestamp: new Date().toISOString(),
-    span: 'index'
+    span: 'route/use-case/provider'
   };
 
   const auditError = auditSearchOperation(auditEvent, auditFn);
@@ -212,7 +206,6 @@ export function indexDocument(
     return auditError;
   }
 
-  // Perform mutation
   const newDocuments = [...state.documents, document];
   return {
     ...state,
@@ -226,12 +219,11 @@ export function performSearch(
   state: SearchState,
   query: SearchQuery
 ): { readonly results: SearchResult[]; readonly error: SearchError | null } {
-  // Validate query scope
   if (!validateQueryScope(query)) {
     return {
       results: [],
-      error: { 
-        kind: 'CROSS_TENANT_QUERY_REJECTED', 
+      error: {
+        kind: 'CROSS_TENANT_QUERY_REJECTED',
         message: 'Query must be properly scoped to tenant and organisation',
         tenantId: query.tenantId,
         organisationId: query.organisationId
@@ -239,12 +231,11 @@ export function performSearch(
     };
   }
 
-  // Check readiness
   if (state.readiness === 'BLOCKED') {
     return {
       results: [],
-      error: { 
-        kind: 'SEARCH_ENGINE_UNAVAILABLE', 
+      error: {
+        kind: 'SEARCH_ENGINE_UNAVAILABLE',
         message: 'Search engine is blocked',
         tenantId: query.tenantId,
         organisationId: query.organisationId
@@ -252,15 +243,13 @@ export function performSearch(
     };
   }
 
-  // Filter documents by tenant isolation
-  const tenantDocs = state.documents.filter(doc => 
-    doc.tenantId === query.tenantId && 
+  const tenantDocs = state.documents.filter(doc =>
+    doc.tenantId === query.tenantId &&
     doc.organisationId === query.organisationId
   );
 
-  // Apply permission key gating
   const results: SearchResult[] = tenantDocs.map(doc => {
-    if (query.permissionKey && doc.permissionKey && doc.permissionKey !== query.permissionKey) {
+    if (query.permissionKey !== undefined && doc.permissionKey !== query.permissionKey) {
       return { document: doc, decision: 'DENIED' };
     }
     return { document: doc, decision: 'GRANTED' };
@@ -276,7 +265,111 @@ export function reindexTenant(
   documents: readonly unknown[],
   auditFn: (event: SearchAuditEvent) => SearchError | null
 ): SearchState | SearchError {
-  // Check readiness before mutation
   if (state.readiness !== 'READY') {
-    return { 
+    return {
       kind: 'INDEX_MUTATION_DISABLED',
+      message: 'Search engine not ready for mutations',
+      tenantId,
+      organisationId
+    };
+  }
+
+  const validatedDocs: IndexedDocument[] = [];
+  for (const doc of documents) {
+    if (!validateDocumentShape(doc)) {
+      return {
+        kind: 'DOCUMENT_VALIDATION_FAILURE',
+        message: 'Invalid document shape during reindex',
+        tenantId,
+        organisationId
+      };
+    }
+    if (containsSecretFields(doc.metadata)) {
+      return {
+        kind: 'SECRET_FIELD_DETECTED',
+        message: 'Document metadata contains secret fields during reindex',
+        tenantId,
+        organisationId
+      };
+    }
+    validatedDocs.push(doc);
+  }
+
+  const auditEvent: SearchAuditEvent = {
+    kind: 'AUDIT_BEFORE_REINDEX',
+    tenantId,
+    organisationId,
+    operation: 'reindex_tenant',
+    timestamp: new Date().toISOString(),
+    span: 'route/use-case/provider'
+  };
+
+  const auditError = auditSearchOperation(auditEvent, auditFn);
+  if (auditError !== null) {
+    return auditError;
+  }
+
+  const newDocuments = state.documents.filter(doc =>
+    !(doc.tenantId === tenantId && doc.organisationId === organisationId)
+  );
+  newDocuments.push(...validatedDocs);
+
+  return {
+    ...state,
+    documents: newDocuments,
+    lastError: null,
+    lastAudit: auditEvent
+  };
+}
+
+export function probeReadiness(
+  state: SearchState,
+  engineStatus: SearchReadiness
+): SearchState {
+  const probe: SearchEngineProbe = {
+    status: engineStatus,
+    timestamp: new Date().toISOString()
+  };
+
+  return {
+    ...state,
+    readiness: engineStatus,
+    probeHistory: [...state.probeHistory, probe]
+  };
+}
+
+export function checkSearchIsolation(
+  state: SearchState,
+  query: SearchQuery
+): { readonly isolated: boolean; readonly error: SearchError | null } {
+  const result = performSearch(state, query);
+  if (result.error !== null) {
+    return { isolated: false, error: result.error };
+  }
+
+  const hasOtherTenantDocs = state.documents.some(doc =>
+    doc.tenantId !== query.tenantId || doc.organisationId !== query.organisationId
+  );
+
+  if (hasOtherTenantDocs && result.results.length > 0) {
+    return {
+      isolated: false,
+      error: {
+        kind: 'TENANT_ISOLATION_VIOLATION',
+        message: 'Search returned documents from other tenants',
+        tenantId: query.tenantId,
+        organisationId: query.organisationId
+      }
+    };
+  }
+
+  return { isolated: true, error: null };
+}
+
+export const initialState: SearchState = {
+  readiness: 'BLOCKED',
+  documents: [],
+  lastError: null,
+  lastAudit: null,
+  probeHistory: []
+};

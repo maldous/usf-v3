@@ -55,12 +55,14 @@ test("providerenvironmentclassificationerrormodel", () => {
   assert.strictEqual(error.message, "test degraded");
 
   const state: capability.ProviderClassificationState = {
-    classifications: [],
-    lastError: error,
+    classifications: [
+      { provider: "p1", mode: "hermetic-mock", environment: "live" } as const,
+    ],
+    lastError: null,
   };
   const { readiness, error: readinessError } = capability.checkReadiness(state);
   assert.strictEqual(readiness, "DEGRADED");
-  assert.deepStrictEqual(readinessError, error);
+  assert.strictEqual(readinessError?.kind, "VALIDATION_FAILED");
 });
 
 test("providerenvironmentclassificationpermissions", () => {

@@ -15,6 +15,7 @@ export const RateLimitErrorKind = [
   'TENANT_INVALID',
   'CACHE_UNAVAILABLE',
   'INVALID_POLICY',
+  'PERMISSION_DENIED',
 ] as const;
 export type RateLimitErrorKind = typeof RateLimitErrorKind[number];
 
@@ -157,12 +158,12 @@ export function updatePolicy(
   permissionFn: (required: RateLimitPermission, operatorId: string) => boolean,
   operatorId: string,
 ): RateLimitState | RateLimitError {
-  if (!permissionFn('PLATFORM_RATE_LIMIT_WRITE', operatorId)) {
-    return { kind: 'AUDIT_FAILURE', message: 'Operator permission denied for policy mutation' };
-  }
-
   if (!validateTenantId(tenantId)) {
     return { kind: 'TENANT_INVALID', message: 'Invalid tenant identifier' };
+  }
+
+  if (!permissionFn('PLATFORM_RATE_LIMIT_WRITE', operatorId)) {
+    return { kind: 'PERMISSION_DENIED', message: 'Operator permission denied for policy mutation' };
   }
 
   const auditEvent = createAuditEvent(tenantId, policyKey, policy, operatorId);
@@ -227,13 +228,17 @@ export function readPolicy(
   operatorId: string,
   isOperator: boolean,
 ): RateLimitPolicy | RateLimitError {
+  if (!validateTenantId(tenantId)) {
+    return { kind: 'TENANT_INVALID', message: 'Invalid tenant identifier' };
+  }
+
   if (isOperator) {
     if (!permissionFn('PLATFORM_RATE_LIMIT_READ', operatorId)) {
-      return { kind: 'AUDIT_FAILURE', message: 'Operator permission denied' };
+      return { kind: 'PERMISSION_DENIED', message: 'Operator permission denied' };
     }
   } else {
     if (!permissionFn('TENANT_DEVELOPER_READ', operatorId)) {
-      return { kind: 'AUDIT_FAILURE', message: 'Tenant permission denied' };
+      return { kind: 'PERMISSION_DENIED', message: 'Tenant permission denied' };
     }
   }
 
@@ -255,13 +260,17 @@ export function readRateLimitSummary(
   operatorId: string,
   isOperator: boolean,
 ): { readonly policies: readonly RateLimitPolicy[] } | RateLimitError {
+  if (!validateTenantId(tenantId)) {
+    return { kind: 'TENANT_INVALID', message: 'Invalid tenant identifier' };
+  }
+
   if (isOperator) {
     if (!permissionFn('PLATFORM_RATE_LIMIT_READ', operatorId)) {
-      return { kind: 'AUDIT_FAILURE', message: 'Operator permission denied' };
+      return { kind: 'PERMISSION_DENIED', message: 'Operator permission denied' };
     }
   } else {
     if (!permissionFn('TENANT_DEVELOPER_READ', operatorId)) {
-      return { kind: 'AUDIT_FAILURE', message: 'Tenant permission denied' };
+      return { kind: 'PERMISSION_DENIED', message: 'Tenant permission denied' };
     }
   }
 
@@ -396,6 +405,11 @@ export function evaluateRateLimit(
 
   if (cacheAvailable) {
     cacheAdapter.setCounter(updatedCounter);
+    relationalAdapter.setCounter(updatedCounter);
+    return {
+      decision: exceeded ? 'DENIED_LIMIT_EXCEEDED' : 'ALLOWED',
+      error: exceeded ? { kind: 'LIMIT_EXCEEDED', message: 'Rate limit exceeded' } : null,
+    };
   } else {
     relationalAdapter.setCounter(updatedCounter);
     return {
@@ -403,13 +417,6 @@ export function evaluateRateLimit(
       error: { kind: 'CACHE_UNAVAILABLE', message: 'Cache unavailable, using relational' },
     };
   }
-
-  relationalAdapter.setCounter(updatedCounter);
-
-  return {
-    decision: exceeded ? 'DENIED_LIMIT_EXCEEDED' : 'ALLOWED',
-    error: exceeded ? { kind: 'LIMIT_EXCEEDED', message: 'Rate limit exceeded' } : null,
-  };
 }
 
 export function assertRateLimit(
@@ -492,10 +499,6 @@ export function checkReadiness(
     return 'DEGRADED';
   }
 
-  if (cacheReady && !relationalReady) {
-    return 'DEGRADED';
-  }
-
   return 'UNAVAILABLE';
 }
 
@@ -542,13 +545,17 @@ export function getRateLimitSummary(
   operatorId: string,
   isOperator: boolean,
 ): { readonly policies: readonly RateLimitPolicy[]; readonly counters: readonly RateLimitCounter[] } | RateLimitError {
+  if (!validateTenantId(tenantId)) {
+    return { kind: 'TENANT_INVALID', message: 'Invalid tenant identifier' };
+  }
+
   if (isOperator) {
     if (!permissionFn('PLATFORM_RATE_LIMIT_READ', operatorId)) {
-      return { kind: 'AUDIT_FAILURE', message: 'Operator permission denied' };
+      return { kind: 'PERMISSION_DENIED', message: 'Operator permission denied' };
     }
   } else {
     if (!permissionFn('TENANT_DEVELOPER_READ', operatorId)) {
-      return { kind: 'AUDIT_FAILURE', message: 'Tenant permission denied' };
+      return { kind: 'PERMISSION_DENIED', message: 'Tenant permission denied' };
     }
   }
 

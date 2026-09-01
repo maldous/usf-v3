@@ -92,10 +92,10 @@ export function validateClassificationEntry(
     };
   }
 
-  if (entry.mode === 'hermetic-mock' && (entry.environment === 'live' || entry.environment === 'external')) {
+  if (entry.mode === 'hermetic-mock' && entry.environment === 'live') {
     return {
       kind: 'VALIDATION_FAILED',
-      message: `hermetic-mock cannot be used with environment '${entry.environment}' for provider '${entry.provider}'.`,
+      message: `hermetic-mock cannot be used with live environment for provider '${entry.provider}'.`,
     };
   }
 
@@ -103,6 +103,13 @@ export function validateClassificationEntry(
     return {
       kind: 'VALIDATION_FAILED',
       message: `production-shaped cannot be used with live environment for provider '${entry.provider}'.`,
+    };
+  }
+
+  if (entry.mode === 'production-live' && entry.environment !== 'live') {
+    return {
+      kind: 'VALIDATION_FAILED',
+      message: `production-live must be used with live environment for provider '${entry.provider}'.`,
     };
   }
 
@@ -160,22 +167,16 @@ export function setProviderClassification(
   mode: ProviderMode,
   environment: Environment,
   auditFn: (event: ClassificationAuditEvent) => ClassificationError | null,
-): ProviderClassificationState | ClassificationError {
+): { readonly state: ProviderClassificationState } | ClassificationError {
   const auditError = auditClassificationChange(provider, mode, environment, auditFn);
   if (auditError !== null) {
-    return {
-      ...state,
-      lastError: auditError,
-    } as ProviderClassificationState | ClassificationError;
+    return auditError;
   }
 
   const newEntry: ProviderClassification = { provider, mode, environment };
   const entryError = validateClassificationEntry(newEntry);
   if (entryError !== null) {
-    return {
-      ...state,
-      lastError: entryError,
-    } as ProviderClassificationState | ClassificationError;
+    return entryError;
   }
 
   const filtered = state.classifications.filter((c) => c.provider !== provider);
@@ -183,15 +184,14 @@ export function setProviderClassification(
 
   const matrixError = validateClassificationMatrix(newClassifications);
   if (matrixError !== null) {
-    return {
-      ...state,
-      lastError: matrixError,
-    } as ProviderClassificationState | ClassificationError;
+    return matrixError;
   }
 
   return {
-    classifications: newClassifications,
-    lastError: null,
+    state: {
+      classifications: newClassifications,
+      lastError: null,
+    }
   };
 }
 

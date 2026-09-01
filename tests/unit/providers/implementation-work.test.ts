@@ -286,3 +286,35 @@ test("a rewrite prompt shows the whole artefact, not a truncated one", async () 
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("a subtest that asserts shape without invoking the module is not evidence", async () => {
+  const { subtestsInvokingModule } = await import("../../../src/providers/implementation-work.ts");
+  const source = [
+    'import * as capability from "../m.ts";',
+    // Exercises behaviour: admissible.
+    'test("alphabehaviour", () => { assert.equal(capability.decide(true), "granted"); });',
+    // Asserts the shape of an exported constant: the type system already says
+    // this, and it observes nothing about behaviour.
+    'test("betastatemodel", () => { assert.deepEqual(["A","B"], ["A","B"]); });',
+    // Names the module but only reads a constant, never calls it.
+    'test("gammacontracts", () => { assert.equal(capability.KINDS.length, 2); });',
+  ].join("\n");
+  const invoking = subtestsInvokingModule(source, ["alphabehaviour", "betastatemodel", "gammacontracts"]);
+  assert.deepEqual([...invoking].sort(), ["alphabehaviour"]);
+});
+
+test("admission requires each covered facet to invoke the module", () => {
+  const graph = graphOf([...conventionQuads(), ...capabilityQuads()]);
+  const [need] = deriveCapabilityImplementationNeeds(graph, readImplementationConvention(graph));
+  const shapeOnly = [
+    'import assert from "node:assert/strict";',
+    'import test from "node:test";',
+    'import * as capability from "../m.ts";',
+    'test("policygateaudit", () => { assert.equal(1, 1); });',
+    'test("policygatebehaviour", () => { assert.ok(capability.decide()); });',
+  ].join("\n");
+  const checked = validateConformanceOutput(shapeOnly, need!, "../m.ts");
+  assert.equal(checked.accepted, true);
+  // Only the subtest that exercises the module counts as covered.
+  assert.deepEqual(checked.coveredFacets, ["policygatebehaviour"]);
+});

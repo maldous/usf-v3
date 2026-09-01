@@ -34,7 +34,30 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
   assert.strictEqual(state.auditLog[0].tenantId, 'tenant_1');
   assert.strictEqual(state.auditLog[0].migrationFile, '001_init.sql');
   assert.strictEqual(state.auditLog[0].checksum, migrationFile.checksum);
-  assert.deepStrictEqual(state.auditLog[0].details, { orderIndex: 0 });
+  assert.deepStrictEqual(state.auditLog[0].details, {
+    orderIndex: 0,
+    decisionReferenceComment: 'Initial schema',
+  });
+
+  const stateChangingResult = capability.auditStateChangingAccess(
+    state,
+    'tenant_1',
+    'mutation',
+    auditFn
+  );
+  assert.ok(!('kind' in stateChangingResult && 'message' in stateChangingResult));
+  const stateChangingState = stateChangingResult as capability.RelationalStorageAndMigrationsAndRlsState;
+  assert.strictEqual(stateChangingState.auditLog.length, 2);
+  assert.strictEqual(stateChangingState.auditLog[1].kind, 'STATE_CHANGING_ACCESS');
+  assert.strictEqual(stateChangingState.auditLog[1].tenantId, 'tenant_1');
+  assert.deepStrictEqual(stateChangingState.auditLog[1].details, {
+    operationType: 'mutation',
+    route: 'app_role',
+    useCase: 'mutation',
+    providerSpan: 'disconnected',
+    tenantBoundaryPreserved: true,
+    dataSubjectEvidencePreserved: true,
+  });
 });
 
 test("relationalstorageandmigrationsandrlscontracts", () => {
@@ -62,6 +85,10 @@ test("relationalstorageandmigrationsandrlscontracts", () => {
   assert.ok(tableSql.includes('ALTER TABLE test_table ENABLE ROW LEVEL SECURITY'));
   assert.ok(tableSql.includes('ALTER TABLE test_table FORCE ROW LEVEL SECURITY'));
   assert.ok(tableSql.includes('CREATE POLICY tenant_isolation_policy ON test_table USING (' + rlsPredicate + ')'));
+
+  const port = capability.createRepositoryPort('test_context', ['read', 'write']);
+  assert.strictEqual(port.context, 'test_context');
+  assert.deepStrictEqual(port.operations, ['read', 'write']);
 });
 
 test("relationalstorageandmigrationsandrlserrormodel", () => {
@@ -109,6 +136,14 @@ test("relationalstorageandmigrationsandrlserrormodel", () => {
   assert.ok('kind' in providerError && 'message' in providerError);
   const providerErrorTyped = providerError as capability.RelationalStorageAndMigrationsAndRlsError;
   assert.strictEqual(providerErrorTyped.kind, 'PROVIDER_UNAVAILABLE');
+
+  const missingConfigError = capability.validateMissingConfiguration(null);
+  assert.notStrictEqual(missingConfigError, null);
+  assert.strictEqual(missingConfigError?.kind, 'INVALID_CONFIGURATION');
+
+  const partialConfigError = capability.validateMissingConfiguration({ key: null });
+  assert.notStrictEqual(partialConfigError, null);
+  assert.strictEqual(partialConfigError?.kind, 'INVALID_CONFIGURATION');
 });
 
 test("relationalstorageandmigrationsandrlslifecycle", () => {
@@ -145,6 +180,8 @@ test("relationalstorageandmigrationsandrlslifecycle", () => {
   const state1 = stateAfterFirst as capability.RelationalStorageAndMigrationsAndRlsState;
   assert.strictEqual(state1.appliedMigrations.length, 1);
   assert.strictEqual(state1.appliedMigrations[0].fileName, '001_init.sql');
+  assert.strictEqual(state1.migrationLineage.length, 1);
+  assert.strictEqual(state1.migrationLineage[0], '001_init.sql:sha256:1e3d2c8e:Initial schema');
 
   const stateAfterSecond = capability.applyMigrationFile(
     state1,
@@ -157,6 +194,7 @@ test("relationalstorageandmigrationsandrlslifecycle", () => {
   const state2 = stateAfterSecond as capability.RelationalStorageAndMigrationsAndRlsState;
   assert.strictEqual(state2.appliedMigrations.length, 2);
   assert.strictEqual(state2.appliedMigrations[1].fileName, '002_add_column.sql');
+  assert.strictEqual(state2.migrationLineage.length, 2);
 
   const skipResult = capability.applyMigrationFile(
     state2,
@@ -179,6 +217,15 @@ test("relationalstorageandmigrationsandrlslifecycle", () => {
   assert.ok(!('kind' in chainResult && 'message' in chainResult));
   const chainState = chainResult as capability.RelationalStorageAndMigrationsAndRlsState;
   assert.strictEqual(chainState.appliedMigrations.length, 2);
+  assert.strictEqual(chainState.migrationLineage.length, 2);
+
+  const checksumGateResult = capability.executeChecksumGates(
+    state2,
+    [migration1, migration2],
+    connectionConfig,
+    auditFn
+  );
+  assert.ok(!('kind' in checksumGateResult && 'message' in checksumGateResult));
 });
 
 test("relationalstorageandmigrationsandrlspermissions", () => {
@@ -301,6 +348,24 @@ test("relationalstorageandmigrationsandrlsproof", () => {
   };
   const bypassProof = capability.createTenantIsolationProof(state, 1, bypassContext);
   assert.strictEqual(bypassProof, false);
+
+  const proofResult = capability.proveCrossTenantIsolation(
+    state,
+    'tenant_2',
+    0,
+    auditFn
+  );
+  assert.ok(!('kind' in proofResult && 'message' in proofResult));
+  const proofState = proofResult as capability.RelationalStorageAndMigrationsAndRlsState;
+  assert.strictEqual(proofState.crossTenantIsolationProven, true);
+
+  const liveProof = capability.runLiveIsolationProof(
+    state,
+    foreignTenantContext,
+    auditFn
+  );
+  assert.strictEqual(liveProof.proofPassed, true);
+  assert.strictEqual(liveProof.error, null);
 });
 
 test("relationalstorageandmigrationsandrlsreadinessmodel", () => {
@@ -308,7 +373,7 @@ test("relationalstorageandmigrationsandrlsreadinessmodel", () => {
   const readiness = capability.checkReadiness(initial);
   assert.strictEqual(readiness.readiness, 'NOT_READY');
   assert.notStrictEqual(readiness.error, null);
-  assert.strictEqual(readiness.error?.kind, 'PROVIDER_UNAVAILABLE');
+  assert.strictEqual(readiness.error?.kind, 'READINESS_UNAVAILABLE');
 
   const connectedState: capability.RelationalStorageAndMigrationsAndRlsState = {
     ...initial,
@@ -317,7 +382,7 @@ test("relationalstorageandmigrationsandrlsreadinessmodel", () => {
   };
   const connectedReadiness = capability.checkReadiness(connectedState);
   assert.strictEqual(connectedReadiness.readiness, 'NOT_READY');
-  assert.strictEqual(connectedReadiness.error?.kind, 'INVALID_CONFIGURATION');
+  assert.strictEqual(connectedReadiness.error?.kind, 'READINESS_UNAVAILABLE');
 
   const migratedState: capability.RelationalStorageAndMigrationsAndRlsState = {
     ...connectedState,
@@ -334,4 +399,20 @@ test("relationalstorageandmigrationsandrlsreadinessmodel", () => {
   const readyReadiness = capability.checkReadiness(readyState);
   assert.strictEqual(readyReadiness.readiness, 'READY');
   assert.strictEqual(readyReadiness.error, null);
+
+  const degradedState: capability.RelationalStorageAndMigrationsAndRlsState = {
+    ...initial,
+    substrateAvailable: false,
+  };
+  const degradedReadiness = capability.checkReadiness(degradedState);
+  assert.strictEqual(degradedReadiness.readiness, 'DEGRADED');
+  assert.strictEqual(degradedReadiness.error?.kind, 'DEGRADED');
+
+  const promotionBlock = capability.blockPromotionOnUnavailability(readyState);
+  assert.strictEqual(promotionBlock.blocked, false);
+  assert.strictEqual(promotionBlock.reason, null);
+
+  const unreadyPromotionBlock = capability.blockPromotionOnUnavailability(initial);
+  assert.strictEqual(unreadyPromotionBlock.blocked, true);
+  assert.notStrictEqual(unreadyPromotionBlock.reason, null);
 });

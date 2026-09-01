@@ -204,17 +204,16 @@ function auditDecisionChange(
   capabilityId: string,
   version: number,
   authority: string,
-  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null
-): BuildVersusComposeError | null {
-  const event: BuildVersusComposeAuditEvent = {
+  timestamp: string
+): BuildVersusComposeAuditEvent {
+  return {
     kind,
     decisionId,
     capabilityId,
     version,
     authority,
-    timestamp: new Date().toISOString(),
+    timestamp,
   };
-  return auditFn(event);
 }
 
 function generateDecisionId(capabilityId: string, version: number): string {
@@ -246,25 +245,20 @@ export function createDecision(
 
   const version = getNextVersion(state.decisionRecords, capabilityId);
   const id = generateDecisionId(capabilityId, version);
+  const timestamp = new Date().toISOString();
   const record: DecisionRecord = { id, capabilityId, decision, justification, version, authority, supersededBy: null };
+  const event = auditDecisionChange('DECISION_CREATED', id, capabilityId, version, authority, timestamp);
 
-  const auditError = auditDecisionChange('DECISION_CREATED', id, capabilityId, version, authority, auditFn);
+  const auditError = auditFn(event);
   if (auditError !== null) {
     return auditError;
   }
 
-  const newState = {
+  const newState: BuildVersusComposeState = {
     ...state,
     decisionRecords: [...state.decisionRecords, record],
     lastError: null,
-    auditTrail: [...state.auditTrail, {
-      kind: 'DECISION_CREATED',
-      decisionId: id,
-      capabilityId,
-      version,
-      authority,
-      timestamp: new Date().toISOString()
-    }],
+    auditTrail: [...state.auditTrail, event],
   };
 
   return runProof(newState);
@@ -291,6 +285,7 @@ export function reviseDecision(
 
   const newVersion = activeRecord.version + 1;
   const newId = generateDecisionId(capabilityId, newVersion);
+  const timestamp = new Date().toISOString();
   const newRecord: DecisionRecord = {
     id: newId,
     capabilityId,
@@ -300,27 +295,21 @@ export function reviseDecision(
     authority,
     supersededBy: activeRecord.id
   };
+  const event = auditDecisionChange('DECISION_REVISED', newId, capabilityId, newVersion, authority, timestamp);
 
-  const auditError = auditDecisionChange('DECISION_REVISED', newId, capabilityId, newVersion, authority, auditFn);
+  const auditError = auditFn(event);
   if (auditError !== null) {
     return auditError;
   }
 
-  const newState = {
+  const newState: BuildVersusComposeState = {
     ...state,
     decisionRecords: [
       ...state.decisionRecords.filter(r => r.id !== activeRecord.id),
       newRecord
     ],
     lastError: null,
-    auditTrail: [...state.auditTrail, {
-      kind: 'DECISION_REVISED',
-      decisionId: newId,
-      capabilityId,
-      version: newVersion,
-      authority,
-      timestamp: new Date().toISOString()
-    }],
+    auditTrail: [...state.auditTrail, event],
   };
 
   return runProof(newState);
@@ -342,6 +331,7 @@ export function supersedeDecision(
 
   const newVersion = activeRecord.version + 1;
   const newId = generateDecisionId(capabilityId, newVersion);
+  const timestamp = new Date().toISOString();
   const newRecord: DecisionRecord = {
     id: newId,
     capabilityId,
@@ -351,27 +341,21 @@ export function supersedeDecision(
     authority,
     supersededBy: activeRecord.id
   };
+  const event = auditDecisionChange('DECISION_SUPERSEDED', newId, capabilityId, newVersion, authority, timestamp);
 
-  const auditError = auditDecisionChange('DECISION_SUPERSEDED', newId, capabilityId, newVersion, authority, auditFn);
+  const auditError = auditFn(event);
   if (auditError !== null) {
     return auditError;
   }
 
-  const newState = {
+  const newState: BuildVersusComposeState = {
     ...state,
     decisionRecords: [
       ...state.decisionRecords.filter(r => r.id !== activeRecord.id),
       newRecord
     ],
     lastError: null,
-    auditTrail: [...state.auditTrail, {
-      kind: 'DECISION_SUPERSEDED',
-      decisionId: newId,
-      capabilityId,
-      version: newVersion,
-      authority,
-      timestamp: new Date().toISOString()
-    }],
+    auditTrail: [...state.auditTrail, event],
   };
 
   return runProof(newState);
@@ -395,18 +379,19 @@ export function rollbackDecision(
     return createError('AUTHORITY_VIOLATION', `Authority ${authority} not authorized`);
   }
 
-  const newState = {
+  const timestamp = new Date().toISOString();
+  const event = auditDecisionChange('DECISION_REVISED', activeRecord.id, capabilityId, activeRecord.version, authority, timestamp);
+
+  const auditError = auditFn(event);
+  if (auditError !== null) {
+    return auditError;
+  }
+
+  const newState: BuildVersusComposeState = {
     ...state,
-    decisionRecords: state.decisionRecords.map(r => r.id === supersededRecord.id ? activeRecord : r),
+    decisionRecords: state.decisionRecords.map(r => r.id === supersededRecord.id ? { ...activeRecord, supersededBy: null } : r),
     lastError: null,
-    auditTrail: [...state.auditTrail, {
-      kind: 'DECISION_REVISED',
-      decisionId: supersededRecord.id,
-      capabilityId,
-      version: supersededRecord.version,
-      authority,
-      timestamp: new Date().toISOString()
-    }],
+    auditTrail: [...state.auditTrail, event],
   };
 
   return runProof(newState);
@@ -418,24 +403,20 @@ export function initializeFramework(
   authorityOrder: readonly string[],
   auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null
 ): BuildVersusComposeState | BuildVersusComposeError {
-  const auditError = auditDecisionChange('DECISION_CREATED', 'framework-init', 'framework', 1, 'platform', auditFn);
+  const timestamp = new Date().toISOString();
+  const event = auditDecisionChange('DECISION_CREATED', 'framework-init', 'framework', 1, 'platform', timestamp);
+
+  const auditError = auditFn(event);
   if (auditError !== null) {
     return auditError;
   }
 
-  const newState = {
+  const newState: BuildVersusComposeState = {
     ...state,
     inScopeCapabilities,
     authorityOrder,
     lastError: null,
-    auditTrail: [...state.auditTrail, {
-      kind: 'DECISION_CREATED',
-      decisionId: 'framework-init',
-      capabilityId: 'framework',
-      version: 1,
-      authority: 'platform',
-      timestamp: new Date().toISOString()
-    }],
+    auditTrail: [...state.auditTrail, event],
   };
 
   return runProof(newState);

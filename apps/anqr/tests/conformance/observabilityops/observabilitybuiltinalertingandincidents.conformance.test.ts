@@ -143,8 +143,8 @@ test("observabilitybuiltinalertingandincidentserrormodel", () => {
   assert.strictEqual(errorState.readiness, "DEGRADED_SIGNAL_INGESTION");
 
   const illegalTransitionResult = capability.validateIncidentTransition(
-    "RESOLVED",
-    "OPEN"
+    "RESOLVED" as capability.ObservabilityBuiltInAlertingAndIncidentsIncidentState,
+    "OPEN" as capability.ObservabilityBuiltInAlertingAndIncidentsIncidentState
   );
   assert.notStrictEqual(illegalTransitionResult, null);
   assert.strictEqual(illegalTransitionResult?.kind, "ILLEGAL_INCIDENT_TRANSITION");
@@ -317,6 +317,8 @@ test("observabilitybuiltinalertingandincidentsstatemodel", () => {
   const stateWithSignal = capability.addMetricSignal(capability.initialState, signal);
   assert.strictEqual(stateWithSignal.metricSignals.length, 1);
   assert.strictEqual(stateWithSignal.metricSignals[0].name, "test-metric");
+  assert.strictEqual(stateWithSignal.metricSignals[0].value, 10);
+  assert.strictEqual(stateWithSignal.metricSignals[0].tenantId, "t1");
 
   const rule: capability.ObservabilityBuiltInAlertingAndIncidentsAlertRule = {
     id: "rule-1",
@@ -337,14 +339,22 @@ test("observabilitybuiltinalertingandincidentsstatemodel", () => {
   ) as capability.ObservabilityBuiltInAlertingAndIncidentsState;
   assert.strictEqual(stateWithRule.alertRules.length, 1);
   assert.strictEqual(stateWithRule.alertRules[0].comparator, "GT");
+  assert.strictEqual(stateWithRule.alertRules[0].threshold, 10);
+  assert.strictEqual(stateWithRule.alertRules[0].severity, "HIGH");
+  assert.strictEqual(stateWithRule.alertRules[0].tenantId, "t1");
 
   const evaluation = capability.evaluateAlertRules(stateWithRule, "2024-01-01T00:01:00Z");
   assert.strictEqual(evaluation.newAlerts.length, 1);
   assert.strictEqual(evaluation.newAlerts[0].state, "FIRED");
+  assert.strictEqual(evaluation.newAlerts[0].ruleId, "rule-1");
+  assert.strictEqual(evaluation.newAlerts[0].tenantId, "t1");
   assert.strictEqual(evaluation.updatedIncidents.length, 1);
   assert.strictEqual(evaluation.updatedIncidents[0].state, "OPEN");
+  assert.strictEqual(evaluation.updatedIncidents[0].alertId, "rule-1");
+  assert.strictEqual(evaluation.updatedIncidents[0].tenantId, "t1");
   assert.strictEqual(evaluation.newNotifications.length, 1);
   assert.strictEqual(evaluation.newNotifications[0].status, "SENT");
+  assert.strictEqual(evaluation.newNotifications[0].tenantId, "t1");
 });
 
 test("observabilitybuiltinalertingandincidentsvalidation", () => {
@@ -401,8 +411,8 @@ test("observabilitybuiltinalertingandincidentsvalidation", () => {
   assert.strictEqual(nameValidation?.kind, "INVALID_RULE_MUTATION");
 
   const illegalTransition = capability.validateIncidentTransition(
-    "RESOLVED",
-    "OPEN"
+    "RESOLVED" as capability.ObservabilityBuiltInAlertingAndIncidentsIncidentState,
+    "OPEN" as capability.ObservabilityBuiltInAlertingAndIncidentsIncidentState
   );
   assert.notStrictEqual(illegalTransition, null);
   assert.strictEqual(illegalTransition?.kind, "ILLEGAL_INCIDENT_TRANSITION");

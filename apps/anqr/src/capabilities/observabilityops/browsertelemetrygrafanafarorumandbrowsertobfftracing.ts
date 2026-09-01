@@ -17,6 +17,7 @@ export const BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind = [
   'TRACE_CONTEXT_INVALID',
   'SHAPE_VALIDATION_FAILED',
   'INGESTION_DENIED',
+  'ALERT_THRESHOLD_EXCEEDED',
 ] as const;
 export type BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind =
   typeof BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind[number];
@@ -27,6 +28,50 @@ export const BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEventKind 
 ] as const;
 export type BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEventKind =
   typeof BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEventKind[number];
+
+export const OBSERVABILITY_VOCABULARY = [
+  'http.request.method',
+  'http.response.status_code',
+  'http.route',
+  'url.full',
+  'url.path',
+  'server.address',
+  'server.port',
+  'client.address',
+  'user_agent.original',
+  'browser.to_bff.span',
+  'browser.to_bff.span.kind',
+  'bff.api.span',
+  'bff.api.span.kind',
+  'collector.receiver.span',
+  'collector.export.span',
+  'telemetry.rum.resource',
+  'telemetry.rum.session',
+  'telemetry.rum.view',
+  'telemetry.rum.action',
+  'telemetry.error.count',
+  'telemetry.pipeline.healthy',
+  'telemetry.audit.event',
+  'telemetry.readiness.state',
+  'trace.context.trace_id',
+  'trace.context.span_id',
+  'trace.context.trace_flags',
+  'enduser.id',
+  'tenant.id',
+  'request.id',
+] as const;
+export type ObservabilityVocabulary = typeof OBSERVABILITY_VOCABULARY[number];
+
+export const OBSERVABILITY_SPAN_NAMES = [
+  'browser.to_bff.request',
+  'bff.api.handler',
+  'collector.receiver.ingest',
+  'collector.export.tempo',
+  'collector.export.loki',
+] as const;
+export type ObservabilitySpanName = typeof OBSERVABILITY_SPAN_NAMES[number];
+
+export const ALERT_THRESHOLD_DEFAULT = 5;
 
 export interface BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError {
   readonly kind: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingErrorKind;
@@ -51,8 +96,11 @@ export interface TraceContext {
 
 export interface BrowserTelemetryPayload {
   readonly context: TraceContext;
-  readonly attributes: readonly { readonly key: string; readonly value: string | number | boolean }[];
-  readonly spanName: string;
+  readonly attributes: readonly {
+    readonly key: ObservabilityVocabulary | string;
+    readonly value: string | number | boolean;
+  }[];
+  readonly spanName: ObservabilitySpanName | string;
   readonly timestamp: string;
 }
 
@@ -68,6 +116,8 @@ export interface BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState {
   readonly readiness: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingReadiness;
   readonly errorCount: number;
   readonly lastError: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null;
+  readonly alertThreshold: number;
+  readonly alertActive: boolean;
 }
 
 export const initialState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
@@ -75,7 +125,17 @@ export const initialState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingS
   readiness: 'NOT_READY',
   errorCount: 0,
   lastError: null,
+  alertThreshold: ALERT_THRESHOLD_DEFAULT,
+  alertActive: false,
 };
+
+export function isObservabilityVocabulary(name: string): boolean {
+  return (OBSERVABILITY_VOCABULARY as readonly string[]).includes(name);
+}
+
+export function isObservabilitySpanName(name: string): boolean {
+  return (OBSERVABILITY_SPAN_NAMES as readonly string[]).includes(name);
+}
 
 export function validateTelemetryPayload(
   payload: unknown,
@@ -98,10 +158,24 @@ export function validateTelemetryPayload(
   }
 
   const p = payload as BrowserTelemetryPayload;
-  if (!p.context || typeof p.context.traceId !== 'string' || p.context.traceId.length === 0) {
+  if (
+    !p.context ||
+    typeof p.context.traceId !== 'string' ||
+    p.context.traceId.length === 0
+  ) {
     return {
       isValid: false,
       error: { kind: 'TRACE_CONTEXT_MISSING', message: 'Missing or empty traceId' },
+    };
+  }
+
+  if (
+    typeof p.context.spanId !== 'string' ||
+    p.context.spanId.length === 0
+  ) {
+    return {
+      isValid: false,
+      error: { kind: 'TRACE_CONTEXT_MISSING', message: 'Missing or empty spanId' },
     };
   }
 
@@ -112,6 +186,34 @@ export function validateTelemetryPayload(
     };
   }
 
+  if (typeof p.timestamp !== 'string' || p.timestamp.length === 0) {
+    return {
+      isValid: false,
+      error: { kind: 'SHAPE_VALIDATION_FAILED', message: 'Missing or invalid timestamp' },
+    };
+  }
+
+  if (!Array.isArray(p.attributes)) {
+    return {
+      isValid: false,
+      error: { kind: 'SHAPE_VALIDATION_FAILED', message: 'Attributes must be an array' },
+    };
+  }
+
+  for (const attr of p.attributes) {
+    if (
+      typeof attr !== 'object' ||
+      attr === null ||
+      typeof attr.key !== 'string' ||
+      attr.key.length === 0
+    ) {
+      return {
+        isValid: false,
+        error: { kind: 'SHAPE_VALIDATION_FAILED', message: 'Invalid attribute entry' },
+      };
+    }
+  }
+
   return { isValid: true, error: null };
 }
 
@@ -119,7 +221,9 @@ export function auditTelemetryChange(
   requestId: string,
   traceId: string,
   description: string,
-  auditFn: (event: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent) => BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null,
+  auditFn: (
+    event: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent,
+  ) => BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null,
 ): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null {
   const event: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent = {
     kind: 'CONFIG_CHANGE',
@@ -136,9 +240,16 @@ export function updateTelemetryConfig(
   newConfig: TelemetryConfiguration,
   requestId: string,
   traceId: string,
-  auditFn: (event: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent) => BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null,
+  auditFn: (
+    event: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingAuditEvent,
+  ) => BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null,
 ): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState | BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError {
-  const auditError = auditTelemetryChange(requestId, traceId, 'Update Telemetry Configuration', auditFn);
+  const auditError = auditTelemetryChange(
+    requestId,
+    traceId,
+    'Update Telemetry Configuration',
+    auditFn,
+  );
   if (auditError !== null) {
     return auditError;
   }
@@ -149,6 +260,7 @@ export function updateTelemetryConfig(
     readiness: 'READY',
     errorCount: 0,
     lastError: null,
+    alertActive: false,
   };
 }
 
@@ -157,24 +269,36 @@ export function processTelemetryIngress(
   payload: unknown,
   pipelineHealthy: boolean,
 ): {
+  readonly outcome: 'SUCCESS' | 'FAILURE';
   readonly newState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState;
-  readonly result: 'SUCCESS' | 'FAILURE';
   readonly error: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null;
 } {
   if (!state.config || !state.config.enabled) {
+    const err: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError = {
+      kind: 'CONFIG_MISSING',
+      message: 'Telemetry is not configured or enabled',
+    };
     return {
-      newState: state,
-      result: 'FAILURE',
-      error: { kind: 'CONFIG_MISSING', message: 'Telemetry is not configured or enabled' },
+      outcome: 'FAILURE',
+      newState: {
+        ...state,
+        errorCount: state.errorCount + 1,
+        lastError: err,
+      },
+      error: err,
     };
   }
 
   const validation = validateTelemetryPayload(payload);
   if (!validation.isValid) {
-    const err = validation.error!;
+    const err = validation.error as BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
     return {
-      newState: { ...state, errorCount: state.errorCount + 1, lastError: err },
-      result: 'FAILURE',
+      outcome: 'FAILURE',
+      newState: {
+        ...state,
+        errorCount: state.errorCount + 1,
+        lastError: err,
+      },
       error: err,
     };
   }
@@ -185,15 +309,24 @@ export function processTelemetryIngress(
       message: 'Telemetry pipeline is unhealthy',
     };
     return {
-      newState: { ...state, errorCount: state.errorCount + 1, lastError: err },
-      result: 'FAILURE',
+      outcome: 'FAILURE',
+      newState: {
+        ...state,
+        errorCount: state.errorCount + 1,
+        lastError: err,
+      },
       error: err,
     };
   }
 
   return {
-    newState: { ...state, errorCount: 0, lastError: null },
-    result: 'SUCCESS',
+    outcome: 'SUCCESS',
+    newState: {
+      ...state,
+      errorCount: 0,
+      lastError: null,
+      alertActive: false,
+    },
     error: null,
   };
 }
@@ -204,7 +337,13 @@ export function evaluateReadiness(
   collectorOnline: boolean,
   backendOnline: boolean,
 ): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingReadiness {
-  if (!state.config || !receiverOnline || !collectorOnline || !backendOnline) {
+  if (
+    !state.config ||
+    !state.config.enabled ||
+    !receiverOnline ||
+    !collectorOnline ||
+    !backendOnline
+  ) {
     return 'DEGRADED';
   }
   return 'READY';
@@ -220,5 +359,69 @@ export function verifyProof(
   return {
     proofVerified: isHermetic,
     lineage: `traceId=${traceId};joined=${joined}`,
+  };
+}
+
+export function recordTypedError(
+  state: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState,
+  error: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError,
+): {
+  readonly newState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState;
+  readonly alertRaised: boolean;
+  readonly alertError: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null;
+} {
+  const nextCount = state.errorCount + 1;
+  const thresholdExceeded = nextCount >= state.alertThreshold;
+  const newState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
+    ...state,
+    errorCount: nextCount,
+    lastError: error,
+    alertActive: thresholdExceeded,
+  };
+
+  if (!thresholdExceeded) {
+    return { newState, alertRaised: false, alertError: null };
+  }
+
+  const alertError: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError = {
+    kind: 'ALERT_THRESHOLD_EXCEEDED',
+    message: `Typed error threshold (${state.alertThreshold}) exceeded for kind=${error.kind}`,
+    traceId: error.traceId,
+    spanId: error.spanId,
+  };
+
+  return { newState, alertRaised: true, alertError };
+}
+
+export function ingestTelemetryWithAlert(
+  state: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState,
+  payload: unknown,
+  pipelineHealthy: boolean,
+): {
+  readonly outcome: 'SUCCESS' | 'FAILURE';
+  readonly newState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState;
+  readonly error: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null;
+  readonly alertRaised: boolean;
+  readonly alertError: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError | null;
+} {
+  const result = processTelemetryIngress(state, payload, pipelineHealthy);
+  if (result.outcome === 'SUCCESS') {
+    return {
+      outcome: 'SUCCESS',
+      newState: result.newState,
+      error: null,
+      alertRaised: false,
+      alertError: null,
+    };
+  }
+
+  const err = result.error as BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
+  const alertResult = recordTypedError(result.newState, err);
+  return {
+    outcome: 'FAILURE',
+    newState: alertResult.newState,
+    error: err,
+    alertRaised: alertResult.alertRaised,
+    alertError: alertResult.alertError,
   };
 }

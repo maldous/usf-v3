@@ -10,6 +10,8 @@ test("rbacrolesandpermissionsauditmodel", () => {
     assert.equal(event.organisationId, "org1");
     assert.equal(event.previousRole, "MEMBER");
     assert.equal(event.newRole, "MANAGER");
+    assert.equal(event.previousStatus, null);
+    assert.equal(event.newStatus, null);
     return null;
   };
 
@@ -31,9 +33,14 @@ test("rbacrolesandpermissionsauditmodel", () => {
     "MANAGER",
     auditFn,
   );
-  assert.deepEqual(result, { outcome: "SUCCESS" });
+  assert.equal(result.outcome, "SUCCESS");
+  if (result.outcome === "SUCCESS") {
+    assert.deepEqual(result.state.members[0].role, "MANAGER");
+  } else {
+    assert.fail("Expected success outcome");
+  }
 
-  const auditErrorFn = (): capability.RbacRolesAndPermissionsError | null => ({
+  const auditErrorFn = (_event: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => ({
     kind: "AUDIT_FAILURE",
     message: "Audit failed",
   });
@@ -45,7 +52,12 @@ test("rbacrolesandpermissionsauditmodel", () => {
     "MANAGER",
     auditErrorFn,
   );
-  assert.deepEqual(errorResult, { kind: "AUDIT_FAILURE", message: "Audit failed" });
+  assert.equal(errorResult.outcome, "UNPROCESSABLE_ENTITY");
+  if (errorResult.outcome !== "SUCCESS") {
+    assert.deepEqual(errorResult.error, { kind: "AUDIT_FAILURE", message: "Audit failed" });
+  } else {
+    assert.fail("Expected error outcome");
+  }
 });
 
 test("rbacrolesandpermissionscontracts", () => {
@@ -104,6 +116,14 @@ test("rbacrolesandpermissionserrormodel", () => {
     null,
   );
   assert.deepEqual(lastAdminError, { kind: "LAST_ADMIN_VIOLATION", message: "Cannot remove last TENANT_ADMIN" });
+
+  const permissionDeniedError = capability.enforcePermission(
+    state,
+    "user1",
+    "org1",
+    "tenant.admin.access",
+  );
+  assert.deepEqual(permissionDeniedError, { kind: "PERMISSION_DENIED", message: "Permission denied: tenant.admin.access" });
 });
 
 test("rbacrolesandpermissionslifecycle", () => {
@@ -132,13 +152,14 @@ test("rbacrolesandpermissionslifecycle", () => {
   assert.deepEqual(permissionsBefore, ["tenant.members.read"] as const);
 
   const auditFn = () => null;
-  capability.updateMemberRole(stateWithMember, "user1", "org1", "MANAGER", auditFn);
-  const permissionsAfter = capability.getMemberPermissions(
-    { ...stateWithMember, members: [{ ...member, role: "MANAGER" }] },
-    "user1",
-    "org1",
-  );
-  assert.deepEqual(permissionsAfter, ["tenant.members.read", "tenant.groups.read", "tenant.suborgs.read"] as const);
+  const result = capability.updateMemberRole(stateWithMember, "user1", "org1", "MANAGER", auditFn);
+  assert.equal(result.outcome, "SUCCESS");
+  if (result.outcome === "SUCCESS") {
+    const permissionsAfter = capability.getMemberPermissions(result.state, "user1", "org1");
+    assert.deepEqual(permissionsAfter, ["tenant.members.read", "tenant.groups.read", "tenant.suborgs.read"] as const);
+  } else {
+    assert.fail("Expected success outcome");
+  }
 });
 
 test("rbacrolesandpermissionspermissions", () => {
@@ -157,7 +178,7 @@ test("rbacrolesandpermissionspermissions", () => {
   assert.ok(capability.checkPermission(stateWithMember, "user1", "org1", "tenant.admin.access"));
   assert.ok(!capability.checkPermission(stateWithMember, "user1", "org1", "platform.admin.access"));
   assert.ok(capability.checkPermission(stateWithMember, "user1", "org1", "tenant.members.write"));
-  assert.ok(!capability.checkPermission(stateWithMember, "user1", "org1", "tenant.members.write" as capability.RbacRolesAndPermissionsPermission, "org2"));
+  assert.ok(!capability.checkPermission(stateWithMember, "user1", "org2", "tenant.members.write"));
 });
 
 test("rbacrolesandpermissionsproof", () => {
@@ -191,6 +212,16 @@ test("rbacrolesandpermissionsreadinessmodel", () => {
     "tenant.suborgs.read",
     "tenant.suborgs.write",
   ] as const);
+
+  const degradedState = capability.setReadiness(capability.initialState, "DEGRADED");
+  assert.equal(degradedState.readiness, "DEGRADED");
+  const result = capability.updateMemberRole(degradedState, "user1", "org1", "MEMBER", () => null);
+  assert.equal(result.outcome, "UNPROCESSABLE_ENTITY");
+  if (result.outcome !== "SUCCESS") {
+    assert.deepEqual(result.error, { kind: "DEGRADED_MODE", message: "Mutation disabled in degraded mode" });
+  } else {
+    assert.fail("Expected error outcome");
+  }
 });
 
 test("rbacrolesandpermissionsstatemodel", () => {

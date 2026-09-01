@@ -34,6 +34,17 @@ test("brandingandthemingauditmodel", () => {
   assert.equal(auditEvents[0].previousValue, null);
   assert.deepEqual(auditEvents[0].newValue, { applicationName: 'NewApp', themeSelection: 'dark' });
   assert.equal(createResult.kind, 'SUCCESS');
+
+  // Test delete audit
+  const deleteResult = capability.deleteBrandingDefinition(
+    'tenant2',
+    { tenantId: 'tenant2', permissions: ['configuration:read', 'configuration:write'] },
+    createResult.newState,
+    audit
+  );
+  assert.equal(auditEvents.length, 2);
+  assert.equal(auditEvents[1].action, 'value-cleared');
+  assert.equal(deleteResult.kind, 'SUCCESS');
 });
 
 test("brandingandthemingcontracts", () => {
@@ -54,7 +65,27 @@ test("brandingandthemingcontracts", () => {
     { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
     state
   );
-  assert.deepEqual(listResult, [{ applicationName: 'TestApp', themeSelection: 'dark' as const }]);
+  assert.ok(Array.isArray(listResult));
+  assert.equal(listResult.length, 1);
+  assert.equal(listResult[0].applicationName, 'TestApp');
+  assert.equal(listResult[0].themeSelection, 'dark');
+
+  const patchResult = capability.patchBrandingDefinition(
+    'tenant1',
+    { applicationName: 'UpdatedApp' },
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
+    state,
+    () => null
+  );
+  assert.equal(patchResult.kind, 'SUCCESS');
+
+  const deleteResult = capability.deleteBrandingDefinition(
+    'tenant1',
+    { tenantId: 'tenant1', permissions: ['configuration:read', 'configuration:write'] },
+    state,
+    () => null
+  );
+  assert.equal(deleteResult.kind, 'SUCCESS');
 });
 
 test("brandingandthemingerrormodel", () => {
@@ -81,6 +112,16 @@ test("brandingandthemingerrormodel", () => {
   );
   assert.equal(invalidPermission.kind, 'ERROR');
   assert.equal(invalidPermission.error.kind, 'FORBIDDEN');
+
+  const unknownKey = capability.patchBrandingDefinition(
+    'nonexistent',
+    { applicationName: 'App' },
+    { tenantId: 'nonexistent', permissions: ['configuration:read', 'configuration:write'] },
+    state,
+    () => null
+  );
+  assert.equal(unknownKey.kind, 'ERROR');
+  assert.equal(unknownKey.error.kind, 'UNKNOWN_KEY');
 });
 
 test("brandingandtheminglifecycle", () => {
@@ -145,6 +186,18 @@ test("brandingandthemingpermissions", () => {
   );
   assert.equal(deniedResult.kind, 'ERROR');
   assert.equal(deniedResult.error.kind, 'FORBIDDEN');
+
+  // Missing permissions should fail
+  const noPermToken = { tenantId: 'tenant1', permissions: [] };
+  const noPermResult = capability.createBrandingDefinition(
+    'tenant1',
+    { applicationName: 'App', themeSelection: 'light' as const },
+    noPermToken,
+    state,
+    () => null
+  );
+  assert.equal(noPermResult.kind, 'ERROR');
+  assert.equal(noPermResult.error.kind, 'FORBIDDEN');
 });
 
 test("brandingandthemingproof", () => {

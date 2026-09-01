@@ -123,6 +123,11 @@ test("abacpolicydecisionpointlifecycle", () => {
     };
     const staticResult = capability.evaluateRequestWithFallback(staticState, { authLevel: 'p1' }, 'r1', 's1', true);
     assert.equal(staticResult.decision, 'GRANTED');
+
+    // Server unavailable -> SERVER_UNAVAILABLE
+    const serverUnavailableResult = capability.evaluateRequest(state, { authLevel: 'p1' }, 'r1', 's1', false);
+    assert.equal(serverUnavailableResult.decision, 'SERVER_UNAVAILABLE');
+    assert.equal(serverUnavailableResult.error, null);
 });
 
 test("abacpolicydecisionpointpermissions", () => {
@@ -168,27 +173,37 @@ test("abacpolicydecisionpointproof", () => {
 });
 
 test("abacpolicydecisionpointreadinessmodel", () => {
-    const state: capability.AbacPolicyDecisionPointState = {
+    const notReadyState: capability.AbacPolicyDecisionPointState = {
         routeGuards: [],
         resourcePolicies: [],
         lastDecision: null,
         lastError: null,
         readiness: 'NOT_READY',
     };
-    const unregistered = capability.evaluateRequest(state, { authLevel: 'p1' }, 'r1', 's1', true);
+    const readinessNotReady = capability.computeReadiness(notReadyState);
+    assert.equal(readinessNotReady, 'NOT_READY');
+
+    const readyState: capability.AbacPolicyDecisionPointState = {
+        routeGuards: [],
+        resourcePolicies: [],
+        lastDecision: null,
+        lastError: null,
+        readiness: 'READY',
+    };
+    const readinessReady = capability.computeReadiness(readyState);
+    assert.equal(readinessReady, 'READY');
+
+    const unregistered = capability.evaluateRequest(notReadyState, { authLevel: 'p1' }, 'r1', 's1', true);
     assert.equal(unregistered.decision, 'RESOURCE_NOT_REGISTERED');
     assert.equal(unregistered.error, null);
 
-    const fallbackResult = capability.evaluateRequestWithFallback(state, { authLevel: 'p1' }, 'r1', 's1', true);
-    assert.equal(fallbackResult.decision, 'POLICY_DENIED');
-    assert.equal(fallbackResult.error?.kind, 'POLICY_DENIED');
-
-    const serverUnavailable = capability.evaluateRequest(state, { authLevel: 'p1' }, 'r1', 's1', false);
+    const serverUnavailable = capability.evaluateRequest(notReadyState, { authLevel: 'p1' }, 'r1', 's1', false);
     assert.equal(serverUnavailable.decision, 'SERVER_UNAVAILABLE');
     assert.equal(serverUnavailable.error, null);
 
-    const readiness = capability.computeReadiness(state);
-    assert.equal(readiness, 'NOT_READY');
+    const fallbackResult = capability.evaluateRequestWithFallback(notReadyState, { authLevel: 'p1' }, 'r1', 's1', true);
+    assert.equal(fallbackResult.decision, 'POLICY_DENIED');
+    assert.equal(fallbackResult.error?.kind, 'POLICY_DENIED');
 });
 
 test("abacpolicydecisionpointstatemodel", () => {

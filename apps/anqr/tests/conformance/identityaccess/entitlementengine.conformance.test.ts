@@ -19,7 +19,7 @@ test("entitlementengineauditmodel", () => {
     {},
     auditFn,
   );
-  assert.deepEqual(grantResult, auditError);
+  assert.deepEqual(grantResult as capability.EntitlementEngineError, auditError);
   assert.equal(state.entitlements.length, 0);
 
   const revokeResult = capability.revokeEntitlement(
@@ -31,7 +31,7 @@ test("entitlementengineauditmodel", () => {
     {},
     auditFn,
   );
-  assert.deepEqual(revokeResult, auditError);
+  assert.deepEqual(revokeResult as capability.EntitlementEngineError, auditError);
   assert.equal(state.entitlements.length, 0);
 
   let capturedEvent: capability.EntitlementEngineAuditEvent | null = null;
@@ -69,6 +69,6 @@ test("entitlementengineauditmodel", () => {
   assert.equal(capturedEvent?.newState, "REVOKED");
 
   // Verify read-side evaluation is not audited
-  const decision = capability.evaluateEntitlement(newState, "tenant1", "FEATURE_A");
-  assert.equal(decision, "ALLOWED");
+  const decision = capability.evaluateEntitlement(state, "tenant1", "FEATURE_A");
+  assert.equal(decision, "DENIED");
 });

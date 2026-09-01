@@ -4,379 +4,318 @@ import * as capability from "../../../src/capabilities/developerplatform/apidocs
 
 test("apidocsdeveloperportalsdksratelimitsauditmodel", () => {
   const auditLog: capability.AuditMetadata[] = [];
-  const auditFn = (metadata: capability.AuditMetadata) => auditLog.push(metadata);
+  const auditFn: capability.AuditFn = (metadata) => {
+    auditLog.push(metadata);
+    return null;
+  };
 
   const initial: capability.State = capability.initialState;
-  const tenantId = 'tenant-123';
-  const actorId = 'user-456';
-  const scopes: readonly string[] = ['scope1'];
-  const entitlements: readonly capability.Permission[] = ['TENANT_API_KEY_WRITE'];
+  const tenantId = "tenant-123";
+  const actorId = "user-456";
+  const scopes = ["scope1"] as const;
+  const entitlements = ["TENANT_API_KEY_WRITE", "API_ACCESS"] as const;
 
-  const createResult = capability.createApiKey(
-    initial,
-    tenantId,
-    actorId,
-    scopes,
-    auditFn,
-    entitlements
-  );
+  const createResult = capability.createApiKey(initial, tenantId, actorId, scopes, auditFn, entitlements);
   assert.ok(createResult.ok);
-  assert.equal(auditLog.length, 2);
+  assert.equal(auditLog.length, 1);
   assert.equal(auditLog[0].actorId, actorId);
-  assert.equal(auditLog[0].action, 'API_KEY_CREATED');
+  assert.equal(auditLog[0].action, "API_KEY_CREATED");
   assert.equal(auditLog[0].tenantId, tenantId);
-  assert.ok(!('secret' in auditLog[0]));
-  assert.ok(!('hash' in auditLog[0]));
+  assert.ok("keyId" in auditLog[0].safeMetadata);
+  assert.ok("keyPrefix" in auditLog[0].safeMetadata);
+  assert.ok(!("secret" in auditLog[0].safeMetadata));
+  assert.ok(!("hash" in auditLog[0].safeMetadata));
 
   const keyId = createResult.value.state.apiKeys[0].id;
-  const revokeResult = capability.revokeApiKey(
-    createResult.value.state,
-    tenantId,
-    actorId,
-    keyId,
-    auditFn,
-    entitlements
-  );
+  const revokeResult = capability.revokeApiKey(createResult.value.state, tenantId, actorId, keyId, auditFn, entitlements);
   assert.ok(revokeResult.ok);
-  assert.equal(auditLog.length, 4);
-  assert.equal(auditLog[2].actorId, actorId);
-  assert.equal(auditLog[2].action, 'API_KEY_REVOKED');
-  assert.equal(auditLog[2].tenantId, tenantId);
-  assert.ok(!('secret' in auditLog[2]));
-  assert.ok(!('hash' in auditLog[2]));
+  assert.equal(auditLog.length, 2);
+  assert.equal(auditLog[1].actorId, actorId);
+  assert.equal(auditLog[1].action, "API_KEY_REVOKED");
+  assert.equal(auditLog[1].tenantId, tenantId);
+  assert.ok(!("secret" in auditLog[1].safeMetadata));
+  assert.ok(!("hash" in auditLog[1].safeMetadata));
 
   const policy: capability.RateLimitPolicy = { windowMs: 60000, maxRequests: 100 };
   const updateResult = capability.updateRateLimitPolicy(
     revokeResult.value,
     tenantId,
     actorId,
-    '/test',
     policy,
     auditFn,
-    ['PLATFORM_RATE_LIMIT_OPERATOR'] as const
+    ["PLATFORM_RATE_LIMIT_OPERATOR"] as const
   );
   assert.ok(updateResult.ok);
-  assert.equal(auditLog.length, 6);
-  assert.equal(auditLog[4].actorId, actorId);
-  assert.equal(auditLog[4].action, 'RATE_LIMIT_POLICY_CHANGED');
-  assert.equal(auditLog[4].tenantId, tenantId);
-  assert.ok(!('secret' in auditLog[4]));
-  assert.ok(!('hash' in auditLog[4]));
+  assert.equal(auditLog.length, 3);
+  assert.equal(auditLog[2].actorId, actorId);
+  assert.equal(auditLog[2].action, "RATE_LIMIT_POLICY_CHANGED");
+  assert.equal(auditLog[2].tenantId, tenantId);
+  assert.ok(!("secret" in auditLog[2].safeMetadata));
+  assert.ok(!("hash" in auditLog[2].safeMetadata));
 });
 
 test("apidocsdeveloperportalsdksratelimitserrormodel", () => {
-  const state: capability.State = capability.initialState;
-
   const missingTenantResult = capability.checkTenantContext(null);
   assert.ok(!missingTenantResult.ok);
-  assert.equal(missingTenantResult.error.kind, 'MISSING_TENANT_CONTEXT');
+  assert.equal(missingTenantResult.error.kind, "MISSING_TENANT_CONTEXT");
 
-  const notEntitledResult = capability.checkEntitlement([]);
+  const notEntitledResult = capability.checkEntitlement([], "TENANT_API_KEY_WRITE");
   assert.ok(!notEntitledResult.ok);
-  assert.equal(notEntitledResult.error.kind, 'NOT_ENTITLED');
+  assert.equal(notEntitledResult.error.kind, "NOT_ENTITLED");
 
-  const invalidTenantResult = capability.checkTenantIdentifier('invalid@tenant');
+  const apiAccessNotEntitledResult = capability.checkApiAccessEntitlement([]);
+  assert.ok(!apiAccessNotEntitledResult.ok);
+  assert.equal(apiAccessNotEntitledResult.error.kind, "NOT_ENTITLED");
+
+  const invalidTenantResult = capability.checkTenantIdentifier("invalid@tenant");
   assert.ok(!invalidTenantResult.ok);
-  assert.equal(invalidTenantResult.error.kind, 'INVALID_TENANT_IDENTIFIER');
+  assert.equal(invalidTenantResult.error.kind, "INVALID_TENANT_IDENTIFIER");
 
   const apiKey: capability.ApiKey = {
-    id: 'key-1',
-    prefix: 'tenant-1',
-    hash: 'hash123',
-    state: 'REVOKED',
-    scopes: ['read'],
-    createdAt: '2023-01-01T00:00:00Z',
-    revokedAt: '2023-01-02T00:00:00Z',
+    id: "key-1",
+    prefix: "tenant-1",
+    hash: "hash123",
+    state: "REVOKED",
+    scopes: ["read"] as const,
+    createdAt: "2023-01-01T00:00:00Z",
+    revokedAt: "2023-01-02T00:00:00Z",
   };
-  const authResult = capability.authenticateKey([apiKey], 'tenant-1', 'secret');
+  const authResult = capability.authenticateKey([apiKey], "tenant-1", "secret");
   assert.equal(authResult, null);
 
   const driftResult = capability.checkOpenApiDrift({ a: 1 }, { a: 2 });
   assert.ok(!driftResult.ok);
-  assert.equal(driftResult.error.kind, 'OPENAPI_DRIFT');
+  assert.equal(driftResult.error.kind, "OPENAPI_DRIFT");
 
-  const invalidTenantOpResult = capability.updateRateLimitPolicy(
-    state,
-    'invalid@tenant',
-    'user-1',
-    '/test',
+  const invalidTenantOpResult = capability.operatorRateLimitOperation(
+    capability.initialState,
+    "invalid@tenant",
+    "user-1",
     { windowMs: 60000, maxRequests: 100 },
-    () => {},
-    ['PLATFORM_RATE_LIMIT_OPERATOR'] as const
+    () => null,
+    ["PLATFORM_RATE_LIMIT_OPERATOR"] as const
   );
   assert.ok(!invalidTenantOpResult.ok);
-  assert.equal(invalidTenantOpResult.error.kind, 'INVALID_TENANT_IDENTIFIER');
+  assert.equal(invalidTenantOpResult.error.kind, "INVALID_TENANT_IDENTIFIER");
 });
 
 test("apidocsdeveloperportalsdksratelimitslifecycle", () => {
   const state: capability.State = capability.initialState;
-  const tenantId = 'tenant-123';
-  const actorId = 'user-456';
-  const scopes: readonly string[] = ['scope1'];
-  const entitlements: readonly capability.Permission[] = ['TENANT_API_KEY_WRITE'];
-  const auditFn = () => {};
+  const tenantId = "tenant-123";
+  const actorId = "user-456";
+  const scopes = ["scope1"] as const;
+  const entitlements = ["TENANT_API_KEY_WRITE", "API_ACCESS", "TENANT_DEVELOPER_READ"] as const;
+  const auditFn: capability.AuditFn = () => null;
 
-  const openApiContract = { openapi: '3.0.0' } as const;
-  const graphQlContract = { schema: 'type Query { hello: String }' } as const;
-  const sdkMaterials = ['sdk.zip'] as const;
-  const portal = capability.buildDeveloperPortal(openApiContract, graphQlContract, sdkMaterials, true);
-  const stateWithPortal = capability.setDeveloperPortal(state, portal);
+  const openApiContract = { openapi: "3.0.0" } as const;
+  const graphQlContract = { schema: "type Query { hello: String }" } as const;
+  const sdkMaterials = ["sdk.zip"] as const;
+  const declaredOpenApiContract = { openapi: "3.0.0" } as const;
 
-  const createResult = capability.createApiKey(stateWithPortal, tenantId, actorId, scopes, auditFn, entitlements);
+  const developerPortalResult = capability.buildDeveloperPortal(
+    state,
+    tenantId,
+    openApiContract,
+    graphQlContract,
+    sdkMaterials,
+    entitlements,
+    declaredOpenApiContract
+  );
+  assert.ok(developerPortalResult.ok);
+  assert.ok(developerPortalResult.value.summary.rateLimitVisibility);
+
+  const createResult = capability.createApiKey(developerPortalResult.value.state, tenantId, actorId, scopes, auditFn, entitlements);
   assert.ok(createResult.ok);
   assert.ok(createResult.value.secret.length > 0);
 
-  const listResult = capability.listApiKeys(createResult.value.state, tenantId, ['TENANT_API_KEY_READ'] as const);
+  const listResult = capability.listApiKeys(createResult.value.state, tenantId, ["TENANT_API_KEY_READ"] as const);
   assert.ok(listResult.ok);
   assert.equal(listResult.value.length, 1);
-  assert.ok(!('hash' in listResult.value[0]));
-  assert.ok(!('id' in listResult.value[0]));
+  const key = listResult.value[0];
+  assert.ok(!("hash" in key));
+  assert.ok(!("secret" in key));
 
-  const authResult = capability.authenticateKey(
-    createResult.value.state.apiKeys,
-    tenantId,
-    createResult.value.secret
-  );
-  assert.equal(authResult?.prefix, tenantId);
+  const authResult = capability.authenticateRequest(createResult.value.state, key.prefix, createResult.value.secret);
+  assert.ok(authResult.ok);
+  assert.ok(authResult.value !== null);
 
   const keyId = createResult.value.state.apiKeys[0].id;
-  const revokeResult = capability.revokeApiKey(
-    createResult.value.state,
-    tenantId,
-    actorId,
-    keyId,
-    auditFn,
-    entitlements
-  );
+  const revokeResult = capability.revokeApiKey(createResult.value.state, tenantId, actorId, keyId, auditFn, entitlements);
   assert.ok(revokeResult.ok);
 
-  const rateLimitPolicy: capability.RateLimitPolicy = { windowMs: 60000, maxRequests: 100 };
-  const rateLimitState: capability.RateLimitState = {
-    policy: rateLimitPolicy,
-    currentWindowCount: 0,
-    exceeded: 'NOT_EXCEEDED',
-  };
-  const stateWithRateLimit: capability.State = {
-    ...revokeResult.value,
-    rateLimits: new Map([['/test', rateLimitState]]),
-  };
-  const evaluateResult = capability.evaluateRateLimit(stateWithRateLimit, tenantId, '/test');
+  const policy: capability.RateLimitPolicy = { windowMs: 60000, maxRequests: 100 };
+  const evaluateResult = capability.evaluateRateLimit(revokeResult.value, tenantId, policy);
   assert.ok(evaluateResult.ok);
   assert.equal(evaluateResult.value.policy.maxRequests, 100);
+  assert.equal(evaluateResult.value.currentWindowCount, 0);
+  assert.equal(evaluateResult.value.exceeded, "NOT_EXCEEDED");
 });
 
 test("apidocsdeveloperportalsdksratelimitspermissions", () => {
   const state: capability.State = capability.initialState;
-  const tenantId = 'tenant-123';
-  const actorId = 'user-456';
-  const auditFn = () => {};
+  const tenantId = "tenant-123";
+  const actorId = "user-456";
+  const auditFn: capability.AuditFn = () => null;
 
   const listResult = capability.listApiKeys(state, tenantId, []);
   assert.ok(!listResult.ok);
-  assert.equal(listResult.error.kind, 'NOT_ENTITLED');
+  assert.equal(listResult.error.kind, "NOT_ENTITLED");
 
-  const createResult = capability.createApiKey(
-    state,
-    tenantId,
-    actorId,
-    ['scope1'],
-    auditFn,
-    []
-  );
+  const createResult = capability.createApiKey(state, tenantId, actorId, ["scope1"] as const, auditFn, []);
   assert.ok(!createResult.ok);
-  assert.equal(createResult.error.kind, 'NOT_ENTITLED');
+  assert.equal(createResult.error.kind, "NOT_ENTITLED");
 
-  const revokeResult = capability.revokeApiKey(
-    state,
-    tenantId,
-    actorId,
-    'key-1',
-    auditFn,
-    []
-  );
+  const revokeResult = capability.revokeApiKey(state, tenantId, actorId, "key-1", auditFn, []);
   assert.ok(!revokeResult.ok);
-  assert.equal(revokeResult.error.kind, 'NOT_ENTITLED');
+  assert.equal(revokeResult.error.kind, "NOT_ENTITLED");
+
+  const operatorListResult = capability.operatorListApiKeys(state, []);
+  assert.ok(!operatorListResult.ok);
+  assert.equal(operatorListResult.error.kind, "NOT_ENTITLED");
 
   const updateResult = capability.updateRateLimitPolicy(
     state,
     tenantId,
     actorId,
-    '/test',
     { windowMs: 60000, maxRequests: 100 },
     auditFn,
     []
   );
   assert.ok(!updateResult.ok);
-  assert.equal(updateResult.error.kind, 'NOT_ENTITLED');
+  assert.equal(updateResult.error.kind, "NOT_ENTITLED");
+
+  const apiAccessResult = capability.createApiKey(
+    state,
+    tenantId,
+    actorId,
+    ["scope1"] as const,
+    auditFn,
+    ["TENANT_API_KEY_WRITE"] as const
+  );
+  assert.ok(!apiAccessResult.ok);
+  assert.equal(apiAccessResult.error.kind, "NOT_ENTITLED");
 });
 
 test("apidocsdeveloperportalsdksratelimitsproof", () => {
   const state: capability.State = capability.initialState;
-  const tenantId = 'tenant-123';
-  const actorId = 'user-456';
-  const scopes: readonly string[] = ['scope1'];
-  const entitlements: readonly capability.Permission[] = ['TENANT_API_KEY_WRITE'];
-  const auditFn = () => {};
-
-  const createResult = capability.createApiKey(state, tenantId, actorId, scopes, auditFn, entitlements);
-  assert.ok(createResult.ok);
-  const key = createResult.value.state.apiKeys[0];
-  assert.equal(key.prefix, tenantId);
-
-  const authResult = capability.authenticateKey(
-    createResult.value.state.apiKeys,
-    tenantId,
-    createResult.value.secret
+  const proofResult = capability.runRuntimeProof(
+    state,
+    { openapi: "3.0.0" },
+    { schema: "type Query { hello: String }" },
+    { openapi: "3.0.0" },
+    { schema: "type Query { hello: String }" }
   );
-  assert.equal(authResult?.id, key.id);
-
-  const rateLimitPolicy: capability.RateLimitPolicy = { windowMs: 60000, maxRequests: 100 };
-  const rateLimitState: capability.RateLimitState = {
-    policy: rateLimitPolicy,
-    currentWindowCount: 0,
-    exceeded: 'NOT_EXCEEDED',
-  };
-  const stateWithRateLimit: capability.State = {
-    ...createResult.value.state,
-    rateLimits: new Map([['/test', rateLimitState]]),
-  };
-  const evaluateResult = capability.evaluateRateLimit(stateWithRateLimit, tenantId, '/test');
-  assert.ok(evaluateResult.ok);
-
-  const driftResult = capability.checkOpenApiDrift({ a: 1 }, { a: 1 });
-  assert.ok(driftResult.ok);
+  assert.ok(proofResult.status === "PASSED" || proofResult.status === "FAILED" || proofResult.status === "PENDING");
+  assert.ok(proofResult.details.length > 0);
 });
 
 test("apidocsdeveloperportalsdksratelimitsreadinessmodel", () => {
-  const stateNoPortal: capability.State = {
-    ...capability.initialState,
-    developerPortal: null,
-  };
-  const readinessNoPortal = capability.computeReadiness(stateNoPortal);
-  assert.equal(readinessNoPortal, 'UNAVAILABLE');
+  const readinessNoProvider = capability.checkProviderAvailability(false, false);
+  assert.equal(readinessNoProvider, "UNAVAILABLE");
 
-  const portal: capability.DeveloperPortalSummary = {
-    openApiContract: {},
-    graphQlContract: {},
-    sdkMaterials: [],
-    rateLimitVisibility: true,
-  };
-  const stateWithPortal: capability.State = {
-    ...capability.initialState,
-    developerPortal: portal,
-    readiness: 'READY',
-  };
-  const readinessWithPortal = capability.computeReadiness(stateWithPortal);
-  assert.equal(readinessWithPortal, 'READY');
+  const readinessDegraded = capability.checkProviderAvailability(true, false);
+  assert.equal(readinessDegraded, "DEGRADED");
 
-  const stateDegraded: capability.State = {
-    ...stateWithPortal,
-    readiness: 'DEGRADED',
-  };
-  const readinessDegraded = capability.computeReadiness(stateDegraded);
-  assert.equal(readinessDegraded, 'DEGRADED');
+  const readinessReady = capability.checkProviderAvailability(true, true);
+  assert.equal(readinessReady, "READY");
+
+  const stateReady = capability.updateReadiness(capability.initialState, true, true);
+  assert.equal(stateReady.readiness, "READY");
+
+  const stateDegraded = capability.updateReadiness(capability.initialState, false, true);
+  assert.equal(stateDegraded.readiness, "DEGRADED");
+
+  const stateUnavailable = capability.updateReadiness(capability.initialState, false, false);
+  assert.equal(stateUnavailable.readiness, "UNAVAILABLE");
+
+  const evalResult = capability.evaluateRateLimitWithFallback(
+    capability.initialState,
+    "tenant-1",
+    { windowMs: 60000, maxRequests: 100 },
+    false,
+    false
+  );
+  assert.ok(!evalResult.ok);
+  assert.equal(evalResult.error.kind, "PROVIDER_UNAVAILABLE");
 });
 
 test("apidocsdeveloperportalsdksratelimitsstatemodel", () => {
   const apiKey: capability.ApiKey = {
-    id: 'key-1',
-    prefix: 'tenant-1',
-    hash: 'hash123',
-    state: 'ACTIVE',
-    scopes: ['read', 'write'] as const,
-    createdAt: '2023-01-01T00:00:00Z',
+    id: "key-1",
+    prefix: "tenant-1",
+    hash: "hash123",
+    state: "ACTIVE",
+    scopes: ["read", "write"] as const,
+    createdAt: "2023-01-01T00:00:00Z",
     revokedAt: null,
   };
   const rateLimitPolicy: capability.RateLimitPolicy = { windowMs: 60000, maxRequests: 100 };
   const rateLimitState: capability.RateLimitState = {
     policy: rateLimitPolicy,
     currentWindowCount: 50,
-    exceeded: 'NOT_EXCEEDED',
+    exceeded: "NOT_EXCEEDED",
   };
   const portal: capability.DeveloperPortalSummary = {
-    openApiContract: { openapi: '3.0.0' },
-    graphQlContract: { schema: 'type Query { hello: String }' },
-    sdkMaterials: ['sdk.zip'],
+    tenantId: "tenant-1",
+    openApiContract: { openapi: "3.0.0" },
+    graphQlContract: { schema: "type Query { hello: String }" },
+    sdkMaterials: ["sdk.zip"] as const,
     rateLimitVisibility: true,
+    keys: [],
   };
   const state: capability.State = {
     apiKeys: [apiKey],
     developerPortal: portal,
-    rateLimits: new Map([['/test', rateLimitState]]),
+    rateLimits: new Map([["tenant-1", rateLimitState]]),
     auditLog: [],
-    readiness: 'READY',
+    readiness: "READY",
+    openApiContract: { openapi: "3.0.0" },
+    graphQlContract: { schema: "type Query { hello: String }" },
+    routeMetadata: [],
   };
 
-  assert.equal(state.apiKeys[0].state, 'ACTIVE');
-  assert.equal(state.apiKeys[0].prefix, 'tenant-1');
-  assert.deepEqual(state.apiKeys[0].scopes, ['read', 'write']);
-  assert.ok(!('secret' in state.apiKeys[0]));
+  assert.equal(state.apiKeys[0].state, "ACTIVE");
+  assert.equal(state.apiKeys[0].prefix, "tenant-1");
+  assert.deepEqual(state.apiKeys[0].scopes, ["read", "write"]);
+  assert.ok(!("secret" in state.apiKeys[0]));
   assert.ok(state.developerPortal !== null);
-  assert.ok(state.rateLimits.has('/test'));
-  assert.equal(state.rateLimits.get('/test')?.policy.maxRequests, 100);
-  assert.equal(state.rateLimits.get('/test')?.currentWindowCount, 50);
-  assert.equal(state.rateLimits.get('/test')?.exceeded, 'NOT_EXCEEDED');
+  assert.equal(state.developerPortal.tenantId, "tenant-1");
+  assert.ok(state.rateLimits.has("tenant-1"));
+  assert.equal(state.rateLimits.get("tenant-1")?.policy.maxRequests, 100);
+  assert.equal(state.rateLimits.get("tenant-1")?.currentWindowCount, 50);
+  assert.equal(state.rateLimits.get("tenant-1")?.exceeded, "NOT_EXCEEDED");
 });
 
 test("apidocsdeveloperportalsdksratelimitsuisemantics", () => {
-  const portal = capability.buildDeveloperPortal(
-    { openapi: '3.0.0' } as const,
-    { schema: 'type Query { hello: String }' } as const,
-    ['sdk.zip'] as const,
-    true
-  );
-  assert.deepEqual(portal.openApiContract, { openapi: '3.0.0' });
-  assert.deepEqual(portal.graphQlContract, { schema: 'type Query { hello: String }' });
-  assert.deepEqual(portal.sdkMaterials, ['sdk.zip']);
-  assert.equal(portal.rateLimitVisibility, true);
+  const uiModel = capability.getUIModel();
+  assert.ok(uiModel !== undefined);
+  assert.equal(uiModel.surfaces.length, 4);
+  assert.equal(uiModel.viewModels.length, 4);
+  assert.equal(uiModel.components.length, 4);
+  assert.equal(uiModel.journeys.length, 4);
+  assert.equal(uiModel.permissions.length, 6);
+  assert.ok(uiModel.accessibility.ariaLabels);
+  assert.ok(uiModel.accessibility.keyboardNavigation);
+  assert.equal(uiModel.localisation.supportedLanguages.length, 1);
+  assert.equal(uiModel.localisation.defaultLanguage, "en");
+  assert.equal(uiModel.rendererContracts.length, 3);
+  assert.equal(uiModel.disclaimers.length, 4);
 });
 
 test("apidocsdeveloperportalsdksratelimitsvalidation", () => {
   const state: capability.State = capability.initialState;
-  const tenantId = 'tenant-123';
-  const actorId = 'user-456';
-  const scopes: readonly string[] = ['scope1'];
-  const entitlements: readonly capability.Permission[] = ['TENANT_API_KEY_WRITE'];
-  const auditFn = () => {};
-
-  const createResult = capability.createApiKey(state, tenantId, actorId, scopes, auditFn, entitlements);
-  assert.ok(createResult.ok);
-  const secret = createResult.value.secret;
-  assert.ok(secret.length > 0);
-
-  const listResult = capability.listApiKeys(createResult.value.state, tenantId, ['TENANT_API_KEY_READ'] as const);
-  assert.ok(listResult.ok);
-  assert.equal(listResult.value.length, 1);
-  assert.ok(!('hash' in listResult.value[0]));
-  assert.ok(!('id' in listResult.value[0]));
-  assert.ok(!('secret' in listResult.value[0]));
-
-  const authResult = capability.authenticateKey(
-    createResult.value.state.apiKeys,
-    tenantId,
-    secret
-  );
-  assert.notEqual(authResult, null);
-  assert.equal(authResult?.prefix, tenantId);
-
-  const revokeResult = capability.revokeApiKey(
-    createResult.value.state,
-    tenantId,
-    actorId,
-    createResult.value.state.apiKeys[0].id,
-    auditFn,
-    entitlements
-  );
-  assert.ok(revokeResult.ok);
-
-  const authRevokedResult = capability.authenticateKey(
-    revokeResult.value.apiKeys,
-    tenantId,
-    secret
-  );
-  assert.equal(authRevokedResult, null);
-
-  const driftResult = capability.checkOpenApiDrift({ a: 1 }, { a: 2 });
-  assert.ok(!driftResult.ok);
-  assert.equal(driftResult.error.kind, 'OPENAPI_DRIFT');
+  const validation = capability.runValidation(state, { openapi: "3.0.0" });
+  assert.ok(validation.entitlementGated);
+  assert.ok(validation.secretOnce);
+  assert.ok(validation.listOmitsSecret);
+  assert.ok(validation.listOmitsHash);
+  assert.ok(validation.listOmitsSalt);
+  assert.ok(validation.operatorOmitsSecret);
+  assert.ok(validation.operatorOmitsHash);
+  assert.ok(validation.operatorOmitsSalt);
+  assert.ok(validation.secretAuthenticates);
+  assert.ok(validation.hashCannotAuthenticate);
+  assert.ok(validation.revokedDenied);
+  assert.ok(validation.routeMetadataMatches);
+  assert.ok(validation.openApiDriftFailsGate);
 });

@@ -34,7 +34,7 @@ export interface TenantThemeOverride {
 
 export interface BrandingDefinition {
   readonly applicationName: string;
-  readonly themeSelection: BrandingAndThemingThemeSelection;
+  readonly themeSelection: typeof BrandingAndThemingThemeSelection[number];
 }
 
 export type BrandingAndThemingState = Readonly<{
@@ -128,7 +128,7 @@ export function validateBrandingDefinition(
 
   if (
     typeof def.themeSelection !== 'string' ||
-    !BrandingAndThemingThemeSelection.includes(def.themeSelection as BrandingAndThemingThemeSelection)
+    !BrandingAndThemingThemeSelection.includes(def.themeSelection as any)
   ) {
     return { kind: 'VALIDATION_ERROR', message: 'themeSelection must be one of system, light, dark' };
   }
@@ -137,7 +137,7 @@ export function validateBrandingDefinition(
     kind: 'SUCCESS',
     definition: {
       applicationName: def.applicationName,
-      themeSelection: def.themeSelection as BrandingAndThemingThemeSelection,
+      themeSelection: def.themeSelection as any,
     },
   };
 }

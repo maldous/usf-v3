@@ -13,18 +13,11 @@ const auditFailing = (
   message: "audit sink failed",
 });
 
-const scanStateValues: readonly capability.ObjectStorageAndTenantPrefixesAndSignedUrlsScanState[] = [
-  "UPLOADED",
-  "QUARANTINED",
-  "CLEAN",
-  "REJECTED",
-];
-
 function isSuccess(
   r:
-    | { readonly kind: "success" }
+    | { readonly kind: "success"; readonly state: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsState }
     | capability.ObjectStorageAndTenantPrefixesAndSignedUrlsError,
-): r is { readonly kind: "success" } {
+): r is { readonly kind: "success"; readonly state: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsState } {
   return r.kind === "success";
 }
 
@@ -147,6 +140,8 @@ test("objectstorageandtenantprefixesandsignedurlscontracts", () => {
   const ready: capability.ObjectStorageAndTenantPrefixesAndSignedUrlsState = {
     ...capability.initialState,
     readiness: "READY",
+    providerAvailable: true,
+    registryAvailable: true,
   };
 
   assert.deepEqual(capability.initialState.registry, []);
@@ -428,14 +423,6 @@ test("objectstorageandtenantprefixesandsignedurlslifecycle", () => {
   );
   assert.ok(isSuccess(rejected));
   assert.equal(rejected.state.registry[0]?.scanState, "REJECTED");
-
-  for (const s of scanStateValues) {
-    assert.ok(
-      (
-        capability.ObjectStorageAndTenantPrefixesAndSignedUrlsScanState as readonly string[]
-      ).includes(s),
-    );
-  }
 });
 
 test("objectstorageandtenantprefixesandsignedurlspermissions", () => {
@@ -714,23 +701,6 @@ test("objectstorageandtenantprefixesandsignedurlsstatemodel", () => {
     .reduce((sum, obj) => sum + obj.sizeInBytes, 0);
   assert.equal(tenantBytes, 1024);
   assert.equal(uploaded.state.storageBytesMeter, 1024);
-
-  for (const s of scanStateValues) {
-    assert.ok(
-      (
-        capability.ObjectStorageAndTenantPrefixesAndSignedUrlsScanState as readonly string[]
-      ).includes(s),
-    );
-  }
-  for (const e of capability.ObjectStorageAndTenantPrefixesAndSignedUrlsErrorKind) {
-    assert.equal(typeof e, "string");
-  }
-  for (const r of capability.ObjectStorageAndTenantPrefixesAndSignedUrlsReadinessState) {
-    assert.equal(typeof r, "string");
-  }
-  for (const a of capability.ObjectStorageAndTenantPrefixesAndSignedUrlsAuditEventKind) {
-    assert.equal(typeof a, "string");
-  }
 });
 
 test("objectstorageandtenantprefixesandsignedurlsvalidation", () => {

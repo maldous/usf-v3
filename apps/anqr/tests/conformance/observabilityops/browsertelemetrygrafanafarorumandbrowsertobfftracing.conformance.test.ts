@@ -22,7 +22,9 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingauditmodel", () => {
   const state = capability.initialState;
   const result = capability.updateTelemetryConfig(state, config, requestId, traceId, auditFn);
   assert.ok(!("kind" in result));
-  assert.strictEqual((result as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState).config, config);
+  const newState = result as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState;
+  assert.strictEqual(newState.config, config);
+  assert.strictEqual(newState.readiness, "READY");
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingcontracts", () => {
@@ -36,8 +38,8 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingcontracts", () => {
   const spanId = "E19A3088306943A38E560C0000000001";
   const payload: capability.BrowserTelemetryPayload = {
     context: { traceId, spanId },
-    attributes: [{ key: "tenant", value: "acme" }],
-    spanName: "browser-to-bff-tracing-proof",
+    attributes: [{ key: "http.request.method" as capability.ObservabilityVocabulary, value: "GET" }],
+    spanName: "browser.to_bff.request" as capability.ObservabilitySpanName,
     timestamp: new Date().toISOString(),
   };
   const state: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
@@ -45,25 +47,23 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingcontracts", () => {
     readiness: "READY",
     errorCount: 0,
     lastError: null,
+    alertThreshold: 5,
+    alertActive: false,
   };
   const result = capability.processTelemetryIngress(state, payload, true);
-  assert.strictEqual(result.result, "SUCCESS");
+  assert.strictEqual(result.outcome, "SUCCESS");
   assert.strictEqual(result.error, null);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingerrormodel", () => {
-  const invalidPayload = { context: { traceId: "", spanId: "" }, attributes: [], spanName: "", timestamp: "" };
-  const validation = capability.validateTelemetryPayload(invalidPayload);
-  assert.strictEqual(validation.isValid, false);
-  assert.notStrictEqual(validation.error, null);
-  assert.strictEqual(validation.error!.kind, "TRACE_CONTEXT_MISSING");
-
   const state = capability.initialState;
-  const result = capability.processTelemetryIngress(state, invalidPayload, true);
-  assert.strictEqual(result.result, "FAILURE");
+  const invalidPayload = { context: { traceId: "", spanId: "" }, attributes: [], spanName: "", timestamp: "" };
+  const result = capability.ingestTelemetryWithAlert(state, invalidPayload, true);
+  assert.strictEqual(result.outcome, "FAILURE");
   assert.notStrictEqual(result.error, null);
+  assert.strictEqual(result.error!.kind, "SHAPE_VALIDATION_FAILED");
   assert.strictEqual(result.newState.errorCount, 1);
-  assert.strictEqual(result.newState.lastError, validation.error);
+  assert.strictEqual(result.alertRaised, false);
 
   const config: capability.TelemetryConfiguration = {
     receiverEndpoint: "https://rum.example.com",
@@ -76,10 +76,15 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingerrormodel", () => {
     readiness: "READY",
     errorCount: 0,
     lastError: null,
+    alertThreshold: 1,
+    alertActive: false,
   };
-  const disabledResult = capability.processTelemetryIngress(stateWithDisabledConfig, invalidPayload, true);
-  assert.strictEqual(disabledResult.result, "FAILURE");
+  const disabledResult = capability.ingestTelemetryWithAlert(stateWithDisabledConfig, invalidPayload, true);
+  assert.strictEqual(disabledResult.outcome, "FAILURE");
   assert.strictEqual(disabledResult.error!.kind, "CONFIG_MISSING");
+  assert.strictEqual(disabledResult.newState.errorCount, 1);
+  assert.strictEqual(disabledResult.alertRaised, true);
+  assert.strictEqual(disabledResult.alertError!.kind, "ALERT_THRESHOLD_EXCEEDED");
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle", () => {
@@ -93,8 +98,8 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle", () => {
   const spanId = "E19A3088306943A38E560C0000000001";
   const payload: capability.BrowserTelemetryPayload = {
     context: { traceId, spanId },
-    attributes: [{ key: "tenant", value: "acme" }],
-    spanName: "browser-to-bff-tracing-proof",
+    attributes: [{ key: "http.request.method" as capability.ObservabilityVocabulary, value: "GET" }],
+    spanName: "browser.to_bff.request" as capability.ObservabilitySpanName,
     timestamp: new Date().toISOString(),
   };
   const state: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
@@ -102,9 +107,11 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle", () => {
     readiness: "READY",
     errorCount: 0,
     lastError: null,
+    alertThreshold: 5,
+    alertActive: false,
   };
   const result = capability.processTelemetryIngress(state, payload, true);
-  assert.strictEqual(result.result, "SUCCESS");
+  assert.strictEqual(result.outcome, "SUCCESS");
   assert.strictEqual(result.newState.errorCount, 0);
   assert.strictEqual(result.newState.lastError, null);
 });
@@ -117,7 +124,7 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingpermissions", () => {
 
   const state = capability.initialState;
   const result = capability.processTelemetryIngress(state, invalidPayload, true);
-  assert.strictEqual(result.result, "FAILURE");
+  assert.strictEqual(result.outcome, "FAILURE");
   assert.notStrictEqual(result.error, null);
 });
 
@@ -143,6 +150,8 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingreadinessmodel", () =>
     readiness: "READY",
     errorCount: 0,
     lastError: null,
+    alertThreshold: 5,
+    alertActive: false,
   };
   assert.strictEqual(capability.evaluateReadiness(state, true, true, true), "READY");
   assert.strictEqual(capability.evaluateReadiness(state, false, true, true), "DEGRADED");
@@ -152,8 +161,8 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingreadinessmodel", () =>
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingvalidation", () => {
   const validPayload: capability.BrowserTelemetryPayload = {
     context: { traceId: "5B8EFFF798038103D269B633813FC60C", spanId: "E19A3088306943A38E560C0000000001" },
-    attributes: [{ key: "tenant", value: "acme" }],
-    spanName: "browser-to-bff-tracing-proof",
+    attributes: [{ key: "http.request.method" as capability.ObservabilityVocabulary, value: "GET" }],
+    spanName: "browser.to_bff.request" as capability.ObservabilitySpanName,
     timestamp: new Date().toISOString(),
   };
   const validation = capability.validateTelemetryPayload(validPayload);

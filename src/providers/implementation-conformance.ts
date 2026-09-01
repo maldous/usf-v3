@@ -4,7 +4,7 @@ import { relative, resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { confinedNodeTestLaunch } from "../commands/check.ts";
 import type { ConformanceEvidenceEntry } from "./facet-evaluation.ts";
-import type { CapabilityImplementationNeed } from "./implementation-work.ts";
+import { classifySubtests, type CapabilityImplementationNeed } from "./implementation-work.ts";
 
 /**
  * Behavioural evidence for implementation-conformance requirements.
@@ -25,6 +25,8 @@ export interface FacetConformanceOutcome {
   readonly facetName: string;
   readonly executed: boolean;
   readonly passed: boolean;
+  /** The subtest exercises the module rather than asserting its shape. */
+  readonly admissible: boolean;
   readonly detail: string | null;
 }
 
@@ -179,7 +181,8 @@ export async function runCapabilityConformance(
     typecheck: Object.freeze({ ran: false, clean: false, detail: null }),
     reportedPassCount: 0, reportedFailCount: 0,
     outcomes: Object.freeze(need.requirements.map((requirement) => Object.freeze({
-      facet: requirement.facet, facetName: requirement.canonicalName, executed: false, passed: false, detail: refusal,
+      facet: requirement.facet, facetName: requirement.canonicalName, executed: false, passed: false,
+      admissible: true, detail: refusal,
     }))),
     refusal,
   });
@@ -229,6 +232,7 @@ export async function runCapabilityConformance(
     return Object.freeze({ ...refused("the confined test process could not be launched"), typecheck: compiled, confined: true });
   }
   const parsed = parseSpecOutcomes(result.output);
+  const subtests = classifySubtests(testBytes, need.requirements.map((entry) => entry.canonicalName));
   return Object.freeze({
     ...base,
     outcomeClass: "observed" as const,
@@ -242,6 +246,14 @@ export async function runCapabilityConformance(
     reportedFailCount: parsed.failCount,
     outcomes: Object.freeze(need.requirements.map((requirement) => {
       const name = requirement.canonicalName;
+      // A subtest that never calls the module proves nothing about behaviour,
+      // whatever the runner reported for it.
+      if (subtests.named.has(name) && !subtests.invoking.has(name)) {
+        return Object.freeze({
+          facet: requirement.facet, facetName: name, executed: false, passed: false, admissible: false,
+          detail: `the subtest for this requirement in ${need.conformancePath} asserts exported shape without invoking the module, so it observes no behaviour`,
+        });
+      }
       // Attribution is by containment, because a reporter name may carry
       // decoration the model added. A canonical facet name is long and unique,
       // so a name matching two requirements is refused rather than guessed.
@@ -257,6 +269,7 @@ export async function runCapabilityConformance(
         facetName: name,
         executed: passed || failed,
         passed,
+        admissible: true,
         detail: passed ? null
           : failed ? "the subtest for this requirement executed and failed"
           : "the conformance test declares no subtest named for this requirement, so nothing was observed",
@@ -342,11 +355,16 @@ export async function loadConformanceEvidence(
     if (blocked && record.modulePathDigest.length === 0) continue;
     for (const outcome of record.outcomes ?? []) {
       if (typeof outcome.facet !== "string") continue;
-      if (!blocked && !outcome.executed) continue;
+      // A subtest that observes no behaviour is work outstanding, not silence.
+      const inadmissible = outcome.admissible === false;
+      if (!blocked && !inadmissible && !outcome.executed) continue;
       const candidate: ConformanceEvidenceEntry = Object.freeze({
-        executed: !blocked, passed: !blocked && outcome.passed === true, stale, blocked,
+        executed: !blocked && !inadmissible,
+        passed: !blocked && !inadmissible && outcome.passed === true,
+        stale, blocked: blocked || inadmissible,
         evidence: `${record.conformancePath}@${record.conformancePathDigest.slice(0, 19)} subtest ${outcome.facetName}`,
-        detail: blocked
+        detail: inadmissible ? outcome.detail
+          : blocked
           ? `${record.refusal ?? "the behavioural check could not execute"}${record.typecheck.detail === null ? "" : `: ${record.typecheck.detail.slice(0, 900)}`}`
           : outcome.detail,
       });

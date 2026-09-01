@@ -452,6 +452,53 @@ export function deriveConformancePrompt(
   ].filter((line) => line.length > 0).join("\n");
 }
 
+/**
+ * Facet names whose subtest actually invokes the module under test.
+ *
+ * Importing the module is not enough. A subtest that only asserts the shape of
+ * an exported constant establishes that the constant is declared, which the
+ * type system already guarantees, and says nothing about the behaviour the
+ * requirement asserts. This is the single rule both admission and evidence
+ * apply, so a test that would be refused if written today cannot keep standing
+ * as evidence because it was written yesterday.
+ */
+export function subtestsInvokingModule(
+  content: string,
+  facetNames: readonly string[],
+): ReadonlySet<string> {
+  return classifySubtests(content, facetNames).invoking;
+}
+
+/**
+ * A facet with no subtest at all is unobserved; a facet whose subtest exists
+ * but never calls the module is inadmissible. They are different states and
+ * only the second is a defect in the test.
+ */
+export function classifySubtests(
+  content: string,
+  facetNames: readonly string[],
+): Readonly<{ named: ReadonlySet<string>; invoking: ReadonlySet<string> }> {
+  const named = new Set<string>();
+  const invoking = new Set<string>();
+  for (const name of facetNames) {
+    const opening = new RegExp(`test\\(\\s*["'\`][^"'\`]*${name}[^"'\`]*["'\`]\\s*,`, "u").exec(content);
+    if (opening === null) continue;
+    named.add(name);
+    // Walk the subtest body by brace depth from its opening brace.
+    const start = content.indexOf("{", opening.index + opening[0].length);
+    if (start < 0) continue;
+    let depth = 1;
+    let index = start + 1;
+    while (index < content.length && depth > 0) {
+      if (content[index] === "{") depth += 1;
+      else if (content[index] === "}") depth -= 1;
+      index += 1;
+    }
+    if (/\bcapability\s*\.\s*\w+\s*[(<]/u.test(content.slice(start, index))) invoking.add(name);
+  }
+  return Object.freeze({ named, invoking });
+}
+
 export interface ImplementationOutputCheck {
   readonly accepted: boolean;
   readonly code: string;
@@ -537,17 +584,12 @@ export function validateConformanceOutput(
   if (/\b(?:mock|stub)\b\s*\.\s*(?:method|fn|module)/u.test(content) || /\bmock\.module\b/u.test(content)) {
     return refuse("module-stubbed", "a stubbed module cannot evidence the behaviour of the real module");
   }
-  const covered: string[] = [];
-  for (const requirement of need.requirements) {
-    // The subtest name is the evidence key. It must appear inside a quoted
-    // name; a model that decorates it stays attributable, one that renames it
-    // does not.
-    if (new RegExp(`["'\`][^"'\`]*${requirement.canonicalName}[^"'\`]*["'\`]`, "u").test(content)) {
-      covered.push(requirement.canonicalName);
-    }
-  }
+  // The subtest name is the evidence key and its body must exercise the module.
+  const invoking = subtestsInvokingModule(content, need.requirements.map((entry) => entry.canonicalName));
+  const covered = [...invoking];
   if (covered.length === 0) {
-    return refuse("no-facet-subtest", "the test declares no subtest named for any outstanding requirement");
+    return refuse("no-facet-subtest",
+      "the test declares no subtest that is named for an outstanding requirement and invokes the module");
   }
   if (!/\bassert\b/u.test(content)) return refuse("no-assertion", "the test makes no assertion");
   return Object.freeze({
