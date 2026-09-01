@@ -235,33 +235,27 @@ export function revokeEntitlement(
     (e) => e.organisationId === tenantId && e.entitlementKey === entitlementKey,
   );
 
-  if (existingIndex < 0) {
-    return {
-      ...state,
-      entitlements: [
-        ...state.entitlements,
-        {
-          organisationId: tenantId,
-          entitlementKey,
-          state: 'REVOKED',
-          source,
-          metadata,
-          updatedAt: new Date().toISOString(),
-          updatedBy: operatorId,
-        },
-      ],
-    };
-  }
-
   const newEntitlements = [...state.entitlements];
-  newEntitlements[existingIndex] = {
-    ...newEntitlements[existingIndex],
-    state: 'REVOKED',
-    source,
-    metadata,
-    updatedAt: new Date().toISOString(),
-    updatedBy: operatorId,
-  };
+  if (existingIndex >= 0) {
+    newEntitlements[existingIndex] = {
+      ...newEntitlements[existingIndex],
+      state: 'REVOKED',
+      source,
+      metadata,
+      updatedAt: new Date().toISOString(),
+      updatedBy: operatorId,
+    };
+  } else {
+    newEntitlements.push({
+      organisationId: tenantId,
+      entitlementKey,
+      state: 'REVOKED',
+      source,
+      metadata,
+      updatedAt: new Date().toISOString(),
+      updatedBy: operatorId,
+    });
+  }
 
   return { ...state, entitlements: newEntitlements };
 }

@@ -215,7 +215,8 @@ test("a model that cannot emit text is not a candidate for text work", () => {
     providerRoute: "groq", name: "G", adapter: { package: "@ai-sdk/groq", installedVersion: "1" },
     credentialNames: ["GROQ_API_KEY"],
     models: [withModalities("text-model", ["text"]), withModalities("audio-model", ["audio"]),
-      withModalities("undeclared-model", null)],
+      // A music model declares text among its outputs and returns lyrics.
+      withModalities("song-model", ["audio", "text"]), withModalities("undeclared-model", null)],
   }];
   const universe = deriveRouteUniverse({
     ...input({ snapshot: snapshot(providers), authorizations: [] }),

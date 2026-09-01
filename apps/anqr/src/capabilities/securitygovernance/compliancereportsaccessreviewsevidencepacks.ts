@@ -72,7 +72,7 @@ export interface ComplianceReportState {
   readonly report: ComplianceReport | null;
 }
 
-// Generated compliance report (read‑only)
+// Generated compliance report (read-only)
 export interface ComplianceReport {
   readonly organisationId: string;
   readonly generatedAt: string;
@@ -124,7 +124,7 @@ export function registerRoute(
 }
 
 // ---------------------------------------------------------------------------
-// Permission & route checks (fail‑closed)
+// Permission & route checks (fail-closed)
 // ---------------------------------------------------------------------------
 export function isRouteRegistered(
   state: ComplianceReportState,
@@ -167,24 +167,24 @@ export function checkPermissions(
 }
 
 // ---------------------------------------------------------------------------
-// Foundation source validation (fail‑closed)
+// Foundation source validation (fail-closed)
 // ---------------------------------------------------------------------------
 export function validateFoundationSources(
   sources: FoundationSources,
 ): ComplianceReportError | null {
-  if (!sources.metrics?.healthy) {
+  if (!sources.metrics.healthy) {
     return { kind: 'UNHEALTHY_METRICS_SOURCE', message: 'Metrics source is unhealthy or missing' };
   }
-  if (!sources.incidents?.healthy) {
+  if (!sources.incidents.healthy) {
     return { kind: 'UNHEALTHY_INCIDENTS_SOURCE', message: 'Incidents source is unhealthy or missing' };
   }
-  if (!sources.legalHolds?.healthy) {
+  if (!sources.legalHolds.healthy) {
     return { kind: 'UNHEALTHY_LEGAL_HOLDS_SOURCE', message: 'Legal holds source is unhealthy or missing' };
   }
-  if (!sources.retention?.healthy) {
+  if (!sources.retention.healthy) {
     return { kind: 'UNHEALTHY_RETENTION_SOURCE', message: 'Retention source is unhealthy or missing' };
   }
-  if (!sources.storage?.healthy) {
+  if (!sources.storage.healthy) {
     return { kind: 'UNHEALTHY_STORAGE_SOURCE', message: 'Storage source is unhealthy or missing' };
   }
   return null;
@@ -206,8 +206,6 @@ export function determineReadiness(
   resource: string,
   scope: string,
 ): boolean {
-  // All foundation sources must be healthy and storage must be configured & isolated.
-  // Additionally, the route must be registered for the operator/admin use case.
   return (
     sources.metrics.healthy &&
     sources.incidents.healthy &&
@@ -221,7 +219,7 @@ export function determineReadiness(
 }
 
 // ---------------------------------------------------------------------------
-// Report composition (pure, read‑only)
+// Report composition (pure, read-only)
 // ---------------------------------------------------------------------------
 export function composeReport(
   organisationId: string,
@@ -246,6 +244,62 @@ export function composeReport(
 }
 
 // ---------------------------------------------------------------------------
-// State mutation helpers (order observable, fail‑closed)
+// State mutation helpers (order observable, fail-closed)
 // ---------------------------------------------------------------------------
 export function setFoundationSources(
+  state: ComplianceReportState,
+  sources: FoundationSources,
+): ComplianceReportState | ComplianceReportError {
+  const validationError = validateFoundationSources(sources);
+  if (validationError !== null) {
+    return validationError;
+  }
+  return {
+    ...state,
+    foundationSources: sources,
+  };
+}
+
+export function generateReport(
+  state: ComplianceReportState,
+  organisationId: string,
+  resource: string,
+  scope: string,
+): ComplianceReportState | ComplianceReportError {
+  if (state.foundationSources === null) {
+    return { kind: 'MISSING_FOUNDATION_SOURCES', message: 'Foundation sources not set' };
+  }
+
+  const permissionError = checkPermissions(state, resource, scope, 'operator', { authLevel: 'operator' });
+  if (permissionError !== null) {
+    return permissionError;
+  }
+
+  const report = composeReport(organisationId, state.foundationSources, state, resource, scope);
+  return {
+    ...state,
+    report,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Proof helpers (hermetic runtime lineage)
+// ---------------------------------------------------------------------------
+export function validateReportComposition(
+  report: ComplianceReport,
+  sources: FoundationSources,
+  organisationId: string,
+  resource: string,
+  scope: string,
+  state: ComplianceReportState,
+): boolean {
+  if (report.organisationId !== organisationId) return false;
+  if (report.metricsSignals !== sources.metrics.data) return false;
+  if (report.openIncidentCount !== sources.incidents.openCount) return false;
+  if (report.legalHoldCount !== sources.legalHolds.holdCount) return false;
+  if (report.retentionPolicyCount !== sources.retention.policyCount) return false;
+  if (report.storageReadiness.configured !== sources.storage.configured) return false;
+  if (report.storageReadiness.isolation !== sources.storage.isolation) return false;
+  if (report.ready !== determineReadiness(sources, state, resource, scope)) return false;
+  return true;
+}

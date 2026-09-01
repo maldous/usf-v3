@@ -234,11 +234,15 @@ export function authorDecision(
 }
 
 export function reviseDecision(
-  currentProof: ProofDocument,
+  currentProof: ProofDocument | null,
   capabilityId: string,
   newDecision: BuildVersusComposeDecision,
   newJustification: DecisionJustification,
 ): ProofDocument | BuildVersusComposeError {
+  if (currentProof === null) {
+    return { kind: 'DEPENDENCY_UNAVAILABLE', message: 'No proof document available for revision' };
+  }
+
   const existingRecord = currentProof.decisionRecords.find(
     (r) => r.capabilityId === capabilityId,
   );
@@ -258,10 +262,14 @@ export function reviseDecision(
 }
 
 export function supersedeDecision(
-  currentProof: ProofDocument,
+  currentProof: ProofDocument | null,
   capabilityId: string,
   newRecord: DecisionRecord,
 ): ProofDocument | BuildVersusComposeError {
+  if (currentProof === null) {
+    return { kind: 'DEPENDENCY_UNAVAILABLE', message: 'No proof document available for superseding' };
+  }
+
   const existingRecord = currentProof.decisionRecords.find(
     (r) => r.capabilityId === capabilityId,
   );
@@ -293,9 +301,13 @@ export function supersedeDecision(
 }
 
 export function rollbackDecision(
-  currentProof: ProofDocument,
+  currentProof: ProofDocument | null,
   capabilityId: string,
 ): ProofDocument | BuildVersusComposeError {
+  if (currentProof === null) {
+    return { kind: 'DEPENDENCY_UNAVAILABLE', message: 'No proof document available for rollback' };
+  }
+
   const existingRecord = currentProof.decisionRecords.find(
     (r) => r.capabilityId === capabilityId,
   );
@@ -353,6 +365,7 @@ export function runBuildVersusComposeFramework(
     readonly justification?: DecisionJustification;
     readonly newRecord?: DecisionRecord;
   },
+  auditFn: (record: DecisionRecord) => BuildVersusComposeError | null,
 ): BuildVersusComposeState {
   if (state.proofDocument === null && action.type !== 'AUTHOR') {
     return {
@@ -372,6 +385,10 @@ export function runBuildVersusComposeFramework(
       if (action.newRecord === undefined) {
         newError = { kind: 'DECISION_INCOMPLETE', message: 'New record is required for AUTHOR action' };
         break;
+      }
+      const auditError = auditFn(action.newRecord);
+      if (auditError !== null) {
+        return { ...state, lastError: auditError };
       }
       const authorResult = authorDecision(state.proofDocument, action.newRecord);
       if ('kind' in authorResult) {
@@ -412,8 +429,6 @@ export function runBuildVersusComposeFramework(
         newProof = rollbackResult;
       }
       break;
-    default:
-      newError = { kind: 'PROOF_INCONSISTENT', message: `Unknown action type: ${(action as { type: string }).type}` };
   }
 
   return {

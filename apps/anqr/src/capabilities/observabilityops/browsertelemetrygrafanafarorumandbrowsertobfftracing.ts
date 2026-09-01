@@ -171,7 +171,7 @@ export function validateBrowserTelemetryPayload(
 
   const typedPayload = payload as Record<string, unknown>;
   const traceContextResult = validateTraceContext(typedPayload.traceContext);
-  if ('kind' in traceContextResult) {
+  if ('kind' in traceContextResult && 'message' in traceContextResult) {
     return traceContextResult;
   }
 
@@ -243,29 +243,35 @@ export function processBrowserTelemetry(
   requestId: string,
 ): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState {
   const validatedPayload = validateBrowserTelemetryPayload(payload, config);
-  if ('kind' in validatedPayload) {
+  if ('kind' in validatedPayload && 'message' in validatedPayload) {
+    const error = validatedPayload as BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
     return {
       ...state,
       readiness: 'DEGRADED',
-      lastError: validatedPayload,
+      lastError: error,
       lastProcessedPayload: null,
     };
   }
 
+  const validated = validatedPayload as BrowserTelemetryPayload;
   const auditEvent = recordAuditEvent(
     'CONTRACT_CHANGE',
-    validatedPayload.traceContext.traceId,
-    validatedPayload.traceContext.spanId,
+    validated.traceContext.traceId,
+    validated.traceContext.spanId,
     requestId,
-    { payloadName: validatedPayload.name },
+    { payloadName: validated.name },
   );
 
   return {
     ...state,
-    readiness: 'READY',
+    readiness: computeReadiness({
+      ...state,
+      lastError: null,
+      lastProcessedPayload: validated,
+    }),
     lastError: null,
     lastAuditEvents: [...state.lastAuditEvents, auditEvent],
-    lastProcessedPayload: validatedPayload,
+    lastProcessedPayload: validated,
   };
 }
 
@@ -277,11 +283,12 @@ export function updateConfig(
   spanId: string,
 ): BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState {
   const validatedConfig = validateConfig(newConfig);
-  if ('kind' in validatedConfig) {
+  if ('kind' in validatedConfig && 'message' in validatedConfig) {
+    const error = validatedConfig as BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
     return {
       ...state,
       readiness: 'DEGRADED',
-      lastError: validatedConfig,
+      lastError: error,
     };
   }
 
@@ -319,8 +326,8 @@ export function generateEndToEndProof(
   };
 
   const validationResult = validateBrowserTelemetryPayload(proofPayload, config);
-  if ('kind' in validationResult) {
-    return validationResult;
+  if ('kind' in validationResult && 'message' in validationResult) {
+    return validationResult as BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
   }
 
   return { kind: 'SUCCESS', traceId, spanId };

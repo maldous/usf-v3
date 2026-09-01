@@ -102,34 +102,33 @@ export function evaluateRequest(
   token: unknown,
   resource: string,
   scope: string,
+  serverAvailable: boolean,
 ): {
   readonly decision: AbacPolicyDecisionPointDecision;
   readonly error: AbacPolicyDecisionPointError | null;
 } {
   if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
     return {
-      decision: 'RESOURCE_NOT_REGISTERED',
+      decision: 'POLICY_DENIED',
       error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token' },
+    };
+  }
+
+  if (!serverAvailable) {
+    return {
+      decision: 'SERVER_UNAVAILABLE',
+      error: null,
     };
   }
 
   const routeGuard = state.routeGuards.find(
     (rg) => rg.resource === resource && rg.scope === scope,
   );
+
   if (routeGuard === undefined) {
     return {
       decision: 'RESOURCE_NOT_REGISTERED',
-      error: { kind: 'POLICY_DENIED', message: 'Resource not registered' },
-    };
-  }
-
-  const resourcePolicy = state.resourcePolicies.find(
-    (rp) => rp.resource === resource,
-  );
-  if (resourcePolicy === undefined) {
-    return {
-      decision: 'RESOURCE_NOT_REGISTERED',
-      error: { kind: 'POLICY_DENIED', message: 'Resource policy not found' },
+      error: null,
     };
   }
 
@@ -141,9 +140,20 @@ export function evaluateRequest(
     };
   }
 
+  const resourcePolicy = state.resourcePolicies.find(
+    (rp) => rp.resource === resource,
+  );
+
+  if (resourcePolicy !== undefined) {
+    return {
+      decision: 'GRANTED',
+      error: null,
+    };
+  }
+
   return {
-    decision: 'GRANTED',
-    error: null,
+    decision: 'POLICY_DENIED',
+    error: { kind: 'POLICY_DENIED', message: 'No policy matching resource' },
   };
 }
 
@@ -152,30 +162,41 @@ export function evaluateRequestWithFallback(
   token: unknown,
   resource: string,
   scope: string,
+  serverAvailable: boolean,
 ): {
   readonly decision: AbacPolicyDecisionPointDecision;
   readonly error: AbacPolicyDecisionPointError | null;
 } {
-  const directResult = evaluateRequest(state, token, resource, scope);
+  const directResult = evaluateRequest(state, token, resource, scope, serverAvailable);
+  
   if (directResult.decision === 'GRANTED') {
     return directResult;
   }
 
-  if (directResult.decision === 'RESOURCE_NOT_REGISTERED') {
+  if (directResult.decision === 'INSUFFICIENT_AUTH_LEVEL') {
+    return directResult;
+  }
+
+  if (directResult.decision === 'POLICY_DENIED' || 
+      directResult.decision === 'RESOURCE_NOT_REGISTERED' || 
+      directResult.decision === 'SERVER_UNAVAILABLE') {
+      
     const staticFallback = state.routeGuards.find(
-      (rg) => rg.resource === resource && rg.scope === scope && rg.requiredPermission === '',
+      (rg) => rg.resource === resource && rg.scope === scope && rg.requiredPermission === ''
     );
+
     if (staticFallback !== undefined) {
       return {
         decision: 'GRANTED',
         error: null,
       };
     }
-    return {
-      decision: 'POLICY_DENIED',
-      error: { kind: 'POLICY_DENIED', message: 'Static fallback denied' },
-    };
   }
 
-  return directResult;
+  return directResult.decision === 'SERVER_UNAVAILABLE' 
+    ? directResult 
+    : {
+        decision: 'POLICY_DENIED',
+        error: { kind: 'POLICY_DENIED', message: 'Fail-closed: No permission found' },
+      };
 }

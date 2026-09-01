@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 export const AuthenticationPlatformAuditEventKind = [
   'LOGIN_INITIATED',
   'SESSION_CREATED',
@@ -10,6 +12,7 @@ export const AuthenticationPlatformAuditEventKind = [
   'LOCKOUT_POLICY_UPDATED',
   'SESSION_POLICY_UPDATED',
   'CLAIM_MAPPING_UPDATED',
+  'AUDIT_BEFORE_CHANGE',
 ] as const;
 export type AuthenticationPlatformAuditEventKind = typeof AuthenticationPlatformAuditEventKind[number];
 
@@ -39,6 +42,7 @@ export const AuthenticationPlatformErrorKind = [
   'INVALID_SESSION_LIFESPAN',
   'DANGEROUS_CLAIM_NAME',
   'INVALID_REALM_ROLE',
+  'AUDIT_VIOLATION',
 ] as const;
 export type AuthenticationPlatformErrorKind = typeof AuthenticationPlatformErrorKind[number];
 
@@ -203,13 +207,13 @@ export function destroySession(
 
   try {
     auditFn({
-      kind: 'SESSION_DESTROYED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
       alias: undefined,
       operation: 'destroySession',
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during session destruction' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during session destruction' };
   }
 
   const newSessions = new Map(state.sessions);
@@ -307,9 +311,8 @@ export function resolvePermissionBundle(
 
 export function createProvider(
   state: AuthenticationPlatformState,
-  provider: Omit<AuthenticationPlatformProvider, 'maskedSecret'> & { readonly secret: string },
+  provider: Omit<AuthenticationPlatformProvider, 'maskedSecret' | 'discoveryValidation'> & { readonly secret: string },
   auditFn: (event: AuthenticationPlatformAuditEvent) => void,
-  tenantId: string,
 ): AuthenticationPlatformState | AuthenticationPlatformError {
   const aliasValidation = validateProviderAlias(provider.alias, Array.from(state.providers.keys()));
   if (aliasValidation !== null) return aliasValidation;
@@ -325,7 +328,7 @@ export function createProvider(
 
   try {
     auditFn({
-      kind: 'PROVIDER_CREATED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
       alias: provider.alias,
       operation: 'createProvider',
@@ -333,11 +336,15 @@ export function createProvider(
       secretChanged: true,
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during provider creation' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during provider creation' };
   }
 
   const newProvider: AuthenticationPlatformProvider = {
-    ...provider,
+    alias: provider.alias,
+    enabled: provider.enabled,
+    issuer: provider.issuer,
+    jwksUri: provider.jwksUri,
+    scopes: provider.scopes,
     maskedSecret: '***REDACTED***',
     discoveryValidation,
   };
@@ -365,7 +372,7 @@ export function createProvider(
 export function updateProvider(
   state: AuthenticationPlatformState,
   alias: string,
-  updates: Partial<Omit<AuthenticationPlatformProvider, 'maskedSecret'>> & { readonly secret?: string },
+  updates: Partial<Omit<AuthenticationPlatformProvider, 'maskedSecret' | 'discoveryValidation'>> & { readonly secret?: string },
   auditFn: (event: AuthenticationPlatformAuditEvent) => void,
 ): AuthenticationPlatformState | AuthenticationPlatformError {
   const existingProvider = state.providers.get(alias);
@@ -373,13 +380,9 @@ export function updateProvider(
     return { kind: 'NOT_FOUND', message: 'Provider not found' };
   }
 
-  const changedFields: string[] = [];
-  const secretChanged = updates.secret !== undefined;
-
-  if (updates.alias !== undefined) {
+  if (updates.alias !== undefined && updates.alias !== alias) {
     const aliasValidation = validateProviderAlias(updates.alias, Array.from(state.providers.keys()).filter(a => a !== alias));
     if (aliasValidation !== null) return aliasValidation;
-    changedFields.push('alias');
   }
 
   if (updates.issuer !== undefined || updates.jwksUri !== undefined) {
@@ -387,16 +390,21 @@ export function updateProvider(
     const jwksUri = updates.jwksUri ?? existingProvider.jwksUri;
     const urlValidation = validateOidcUrls(issuer, jwksUri);
     if (urlValidation !== null) return urlValidation;
-    if (updates.issuer !== undefined) changedFields.push('issuer');
-    if (updates.jwksUri !== undefined) changedFields.push('jwksUri');
   }
 
+  const changedFields: string[] = [];
+  const secretChanged = updates.secret !== undefined;
+
+  if (updates.alias !== undefined) changedFields.push('alias');
   if (updates.enabled !== undefined) changedFields.push('enabled');
+  if (updates.issuer !== undefined) changedFields.push('issuer');
+  if (updates.jwksUri !== undefined) changedFields.push('jwksUri');
   if (updates.scopes !== undefined) changedFields.push('scopes');
+  if (secretChanged) changedFields.push('secret');
 
   try {
     auditFn({
-      kind: 'PROVIDER_UPDATED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
       alias,
       operation: 'updateProvider',
@@ -404,23 +412,21 @@ export function updateProvider(
       secretChanged,
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during provider update' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during provider update' };
   }
 
-  const updatedProvider: AuthenticationPlatformProvider = {
-    ...existingProvider,
-    ...updates,
+  const newProvider: AuthenticationPlatformProvider = {
     alias: updates.alias ?? existingProvider.alias,
+    enabled: updates.enabled ?? existingProvider.enabled,
+    issuer: updates.issuer ?? existingProvider.issuer,
+    jwksUri: updates.jwksUri ?? existingProvider.jwksUri,
+    scopes: updates.scopes ?? existingProvider.scopes,
     maskedSecret: secretChanged ? '***REDACTED***' : existingProvider.maskedSecret,
+    discoveryValidation: existingProvider.discoveryValidation,
   };
 
   const newProviders = new Map(state.providers);
-  if (updates.alias !== undefined) {
-    newProviders.delete(alias);
-    newProviders.set(updates.alias, updatedProvider);
-  } else {
-    newProviders.set(alias, updatedProvider);
-  }
+  newProviders.set(alias, newProvider);
 
   return {
     ...state,
@@ -451,7 +457,7 @@ export function deleteProvider(
 
   try {
     auditFn({
-      kind: 'PROVIDER_DELETED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
       alias,
       operation: 'deleteProvider',
@@ -459,7 +465,7 @@ export function deleteProvider(
       secretChanged: false,
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during provider deletion' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during provider deletion' };
   }
 
   const newProviders = new Map(state.providers);
@@ -475,8 +481,6 @@ export function deleteProvider(
         timestamp: new Date().toISOString(),
         alias,
         operation: 'deleteProvider',
-        changedFields: ['alias'],
-        secretChanged: false,
       },
     ],
   };
@@ -487,14 +491,14 @@ export function testProviderConnection(
   alias: string,
   auditFn: (event: AuthenticationPlatformAuditEvent) => void,
 ): AuthenticationPlatformState | AuthenticationPlatformError {
-  const provider = state.providers.get(alias);
-  if (!provider) {
+  const existingProvider = state.providers.get(alias);
+  if (!existingProvider) {
     return { kind: 'NOT_FOUND', message: 'Provider not found' };
   }
 
   try {
     auditFn({
-      kind: 'PROVIDER_TESTED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
       alias,
       operation: 'testProviderConnection',
@@ -502,7 +506,7 @@ export function testProviderConnection(
       secretChanged: false,
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during provider test' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during provider test' };
   }
 
   return {
@@ -514,8 +518,6 @@ export function testProviderConnection(
         timestamp: new Date().toISOString(),
         alias,
         operation: 'testProviderConnection',
-        changedFields: [],
-        secretChanged: false,
       },
     ],
   };
@@ -527,8 +529,8 @@ export function updateMfaPolicy(
   mfaMode: AuthenticationPlatformMfaMode,
   auditFn: (event: AuthenticationPlatformAuditEvent) => void,
 ): AuthenticationPlatformState | AuthenticationPlatformError {
-  const mfaValidation = validateMfaMode(mfaMode);
-  if ('kind' in mfaValidation) return mfaValidation;
+  const validation = validateMfaMode(mfaMode);
+  if (typeof validation !== 'string') return validation;
 
   const existingPolicy = state.policies.get(tenantId) ?? {
     mfaMode: 'NONE',
@@ -538,24 +540,24 @@ export function updateMfaPolicy(
 
   try {
     auditFn({
-      kind: 'MFA_POLICY_UPDATED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
-      alias: undefined,
+      alias: tenantId,
       operation: 'updateMfaPolicy',
       changedFields: ['mfaMode'],
       secretChanged: false,
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during MFA policy update' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during MFA policy update' };
   }
 
-  const updatedPolicy: AuthenticationPlatformPolicy = {
+  const newPolicy: AuthenticationPlatformPolicy = {
     ...existingPolicy,
-    mfaMode,
+    mfaMode: validation,
   };
 
   const newPolicies = new Map(state.policies);
-  newPolicies.set(tenantId, updatedPolicy);
+  newPolicies.set(tenantId, newPolicy);
 
   return {
     ...state,
@@ -565,10 +567,9 @@ export function updateMfaPolicy(
       {
         kind: 'MFA_POLICY_UPDATED',
         timestamp: new Date().toISOString(),
-        alias: undefined,
+        alias: tenantId,
         operation: 'updateMfaPolicy',
         changedFields: ['mfaMode'],
-        secretChanged: false,
       },
     ],
   };
@@ -580,8 +581,8 @@ export function updateLockoutPolicy(
   lockoutThreshold: number,
   auditFn: (event: AuthenticationPlatformAuditEvent) => void,
 ): AuthenticationPlatformState | AuthenticationPlatformError {
-  const thresholdValidation = validateLockoutThreshold(lockoutThreshold);
-  if ('kind' in thresholdValidation) return thresholdValidation;
+  const validation = validateLockoutThreshold(lockoutThreshold);
+  if (typeof validation !== 'number') return validation;
 
   const existingPolicy = state.policies.get(tenantId) ?? {
     mfaMode: 'NONE',
@@ -591,24 +592,24 @@ export function updateLockoutPolicy(
 
   try {
     auditFn({
-      kind: 'LOCKOUT_POLICY_UPDATED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
-      alias: undefined,
+      alias: tenantId,
       operation: 'updateLockoutPolicy',
       changedFields: ['lockoutThreshold'],
       secretChanged: false,
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during lockout policy update' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during lockout policy update' };
   }
 
-  const updatedPolicy: AuthenticationPlatformPolicy = {
+  const newPolicy: AuthenticationPlatformPolicy = {
     ...existingPolicy,
-    lockoutThreshold,
+    lockoutThreshold: validation,
   };
 
   const newPolicies = new Map(state.policies);
-  newPolicies.set(tenantId, updatedPolicy);
+  newPolicies.set(tenantId, newPolicy);
 
   return {
     ...state,
@@ -618,10 +619,9 @@ export function updateLockoutPolicy(
       {
         kind: 'LOCKOUT_POLICY_UPDATED',
         timestamp: new Date().toISOString(),
-        alias: undefined,
+        alias: tenantId,
         operation: 'updateLockoutPolicy',
         changedFields: ['lockoutThreshold'],
-        secretChanged: false,
       },
     ],
   };
@@ -633,8 +633,8 @@ export function updateSessionPolicy(
   sessionLifespanSeconds: number,
   auditFn: (event: AuthenticationPlatformAuditEvent) => void,
 ): AuthenticationPlatformState | AuthenticationPlatformError {
-  const lifespanValidation = validateSessionLifespan(sessionLifespanSeconds);
-  if ('kind' in lifespanValidation) return lifespanValidation;
+  const validation = validateSessionLifespan(sessionLifespanSeconds);
+  if (typeof validation !== 'number') return validation;
 
   const existingPolicy = state.policies.get(tenantId) ?? {
     mfaMode: 'NONE',
@@ -644,24 +644,24 @@ export function updateSessionPolicy(
 
   try {
     auditFn({
-      kind: 'SESSION_POLICY_UPDATED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
-      alias: undefined,
+      alias: tenantId,
       operation: 'updateSessionPolicy',
       changedFields: ['sessionLifespanSeconds'],
       secretChanged: false,
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during session policy update' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during session policy update' };
   }
 
-  const updatedPolicy: AuthenticationPlatformPolicy = {
+  const newPolicy: AuthenticationPlatformPolicy = {
     ...existingPolicy,
-    sessionLifespanSeconds,
+    sessionLifespanSeconds: validation,
   };
 
   const newPolicies = new Map(state.policies);
-  newPolicies.set(tenantId, updatedPolicy);
+  newPolicies.set(tenantId, newPolicy);
 
   return {
     ...state,
@@ -671,10 +671,9 @@ export function updateSessionPolicy(
       {
         kind: 'SESSION_POLICY_UPDATED',
         timestamp: new Date().toISOString(),
-        alias: undefined,
+        alias: tenantId,
         operation: 'updateSessionPolicy',
         changedFields: ['sessionLifespanSeconds'],
-        secretChanged: false,
       },
     ],
   };
@@ -693,15 +692,15 @@ export function updateClaimMappings(
 
   try {
     auditFn({
-      kind: 'CLAIM_MAPPING_UPDATED',
+      kind: 'AUDIT_BEFORE_CHANGE',
       timestamp: new Date().toISOString(),
-      alias: undefined,
+      alias: tenantId,
       operation: 'updateClaimMappings',
       changedFields: ['claimMappings'],
       secretChanged: false,
     });
   } catch (e) {
-    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during claim mapping update' } as AuthenticationPlatformError;
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during claim mappings update' };
   }
 
   const newClaimMappings = new Map(state.claimMappings);
@@ -715,80 +714,123 @@ export function updateClaimMappings(
       {
         kind: 'CLAIM_MAPPING_UPDATED',
         timestamp: new Date().toISOString(),
-        alias: undefined,
+        alias: tenantId,
         operation: 'updateClaimMappings',
         changedFields: ['claimMappings'],
-        secretChanged: false,
       },
     ],
   };
 }
 
-export function computeReadiness(
+export function checkReadiness(
   state: AuthenticationPlatformState,
-  tenantCredential: { readonly valid: boolean; readonly kind?: AuthenticationPlatformErrorKind } | null,
+  tenantId: string,
+  credential: unknown,
 ): AuthenticationPlatformReadiness {
-  if (tenantCredential === null) {
+  if (credential === null || typeof credential !== 'object') {
     return 'MISSING_CREDENTIAL';
   }
-  if (!tenantCredential.valid) {
-    return tenantCredential.kind === 'FORBIDDEN_REALM_OPERATION'
-      ? 'FORBIDDEN_REALM_OPERATION'
-      : tenantCredential.kind === 'REALM_UNREACHABLE'
-        ? 'REALM_UNREACHABLE'
-        : 'INVALID_CREDENTIAL';
+
+  const tenantCredential = credential as { readonly tenantId?: string; readonly valid?: boolean };
+  if (tenantCredential.tenantId !== tenantId) {
+    return 'FORBIDDEN_REALM_OPERATION';
   }
+
+  if (!tenantCredential.valid) {
+    return 'INVALID_CREDENTIAL';
+  }
+
   return 'READY';
 }
 
 export function loginInitiation(
-  returnTo: string,
   state: AuthenticationPlatformState,
-): { readonly codeVerifier: string; readonly codeChallenge: string; readonly stateParam: string } | AuthenticationPlatformError {
+  returnTo: string,
+  auditFn: (event: AuthenticationPlatformAuditEvent) => void,
+): { readonly returnTo: string; readonly codeVerifier: string; readonly codeChallenge: string; readonly state: string } | AuthenticationPlatformError {
   const returnToValidation = validateReturnTo(returnTo);
   if (returnToValidation !== null) return returnToValidation;
+
+  try {
+    auditFn({
+      kind: 'LOGIN_INITIATED',
+      timestamp: new Date().toISOString(),
+      operation: 'loginInitiation',
+    });
+  } catch (e) {
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during login initiation' };
+  }
 
   const { codeVerifier, codeChallenge } = generatePkceChallenge();
   const stateParam = crypto.randomUUID();
 
   return {
+    returnTo,
     codeVerifier,
     codeChallenge,
-    stateParam,
+    state: stateParam,
   };
 }
 
-export function callbackValidation(
+export function callbackHandling(
   state: AuthenticationPlatformState,
+  providerAlias: string,
   code: string,
   stateParam: string,
   nonce: string,
-  providerAlias: string,
+  auditFn: (event: AuthenticationPlatformAuditEvent) => void,
 ): AuthenticationPlatformSession | AuthenticationPlatformError {
-  if (typeof code !== 'string' || code.trim() === '') {
-    return { kind: 'INVALID_CODE', message: 'Authorization code is missing or invalid' };
-  }
-  if (typeof stateParam !== 'string' || stateParam.trim() === '') {
-    return { kind: 'INVALID_STATE', message: 'State parameter is missing or invalid' };
-  }
-  if (typeof nonce !== 'string' || nonce.trim() === '') {
-    return { kind: 'INVALID_NONCE', message: 'Nonce is missing or invalid' };
-  }
-
   const provider = state.providers.get(providerAlias);
   if (!provider) {
     return { kind: 'NOT_FOUND', message: 'Provider not found' };
   }
 
+  if (!provider.enabled) {
+    return { kind: 'PROVIDER_DEGRADED', message: 'Provider is disabled' };
+  }
+
+  if (!provider.discoveryValidation.issuerValid || !provider.discoveryValidation.jwksValid) {
+    return { kind: 'DISCOVERY_INVALID', message: 'Provider discovery validation failed' };
+  }
+
+  try {
+    auditFn({
+      kind: 'AUDIT_BEFORE_CHANGE',
+      timestamp: new Date().toISOString(),
+      alias: providerAlias,
+      operation: 'callbackHandling',
+    });
+  } catch (e) {
+    return { kind: 'AUDIT_VIOLATION', message: 'Audit failure during callback handling' };
+  }
+
   const session = createSession(
-    'user-' + crypto.randomUUID(),
-    'tenant-' + crypto.randomUUID(),
+    crypto.randomUUID(),
     null,
-    ['user'],
+    null,
+    [],
     'Test User',
     new Date(Date.now() + 3600000).toISOString(),
-    ['read:data'],
+    [],
+    'AUTHENTICATED'
   );
+
+  const newSessions = new Map(state.sessions);
+  newSessions.set(session.id, session);
+
+  const newState: AuthenticationPlatformState = {
+    ...state,
+    sessions: newSessions,
+    auditLog: [
+      ...state.auditLog,
+      {
+        kind: 'SESSION_CREATED',
+        timestamp: new Date().toISOString(),
+        alias: providerAlias,
+        operation: 'callbackHandling',
+      },
+    ],
+  };
 
   return session;
 }
@@ -796,46 +838,46 @@ export function callbackValidation(
 export function forwardAuthCheck(
   state: AuthenticationPlatformState,
   sessionId: string,
-): AuthenticationPlatformSession | AuthenticationPlatformError {
-  return lookupSession(state, sessionId);
+): { readonly authenticated: boolean; readonly session: AuthenticationPlatformSession | null } {
+  const sessionResult = lookupSession(state, sessionId);
+  if ('kind' in sessionResult && sessionResult.kind === 'UNAUTHENTICATED') {
+    return { authenticated: false, session: null };
+  }
+  return { authenticated: true, session: sessionResult };
 }
 
 export function listProviders(
   state: AuthenticationPlatformState,
   tenantId: string,
 ): readonly AuthenticationPlatformProvider[] | AuthenticationPlatformError {
-  return Array.from(state.providers.values());
+  const tenantProviders = Array.from(state.providers.values())
+    .filter(provider => provider.alias.startsWith(`${tenantId}:`));
+
+  return tenantProviders.map(provider => ({
+    ...provider,
+    maskedSecret: '***REDACTED***',
+  }));
 }
 
 export function getProvider(
   state: AuthenticationPlatformState,
+  tenantId: string,
   alias: string,
 ): AuthenticationPlatformProvider | AuthenticationPlatformError {
-  const provider = state.providers.get(alias);
+  const provider = state.providers.get(`${tenantId}:${alias}`);
   if (!provider) {
     return { kind: 'NOT_FOUND', message: 'Provider not found' };
   }
-  return provider;
+  return { ...provider, maskedSecret: '***REDACTED***' };
 }
 
-export function getPolicy(
-  state: AuthenticationPlatformState,
+export function checkAdminPermission(
   tenantId: string,
-): AuthenticationPlatformPolicy | AuthenticationPlatformError {
-  const policy = state.policies.get(tenantId);
-  if (!policy) {
-    return { kind: 'NOT_FOUND', message: 'Policy not found' };
-  }
-  return policy;
-}
-
-export function getClaimMappings(
-  state: AuthenticationPlatformState,
-  tenantId: string,
-): readonly AuthenticationPlatformClaimMapping[] | AuthenticationPlatformError {
-  const mappings = state.claimMappings.get(tenantId);
-  if (!mappings) {
-    return { kind: 'NOT_FOUND', message: 'Claim mappings not found' };
-  }
-  return mappings;
+  permissionBundle: readonly string[],
+  requiredPermission: 'readAuthSettings' | 'writeAuthSettings',
+): boolean {
+  const required = requiredPermission === 'readAuthSettings'
+    ? `tenant:${tenantId}:read-auth-settings`
+    : `tenant:${tenantId}:write-auth-settings`;
+  return permissionBundle.includes(required);
 }

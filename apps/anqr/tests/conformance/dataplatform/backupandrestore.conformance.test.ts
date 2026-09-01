@@ -72,10 +72,12 @@ test("backupandrestoreproof", () => {
     stageDataPreservation: true,
   };
   const auditFn = (_: capability.BackupArtifact): capability.BackupAndRestoreError | null => null;
-  const state = capability.runBackupProof(capability.initialState, "DEVELOPMENT", config, auditFn);
-  assert.equal(state.lastOperation, "BACKUP");
-  assert.equal(state.lastBackupProof?.verdict, "SUCCESS");
-  assert.equal(state.lastError, null);
+  const result = capability.produceBackup("DEVELOPMENT", config, auditFn);
+  assert.ok(!("kind" in result));
+  assert.ok(result.result);
+  assert.equal(result.result.compressed, true);
+  assert.match(result.result.name, /^backup_\d+$/);
+  assert.ok(result.result.timestamp);
 });
 
 test("backupandrestorereadinessmodel", () => {

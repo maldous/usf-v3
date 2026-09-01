@@ -58,25 +58,17 @@ export const initialState: BackupAndRestoreState = {
   lastOperation: null,
 };
 
-/**
- * Validates that the operation is allowed in the given environment.
- * For BACKUP, an explicit allowEnvironmentOverride may be supplied to
- * permit execution in non‑DEV/TEST environments, but the override must
- * match the requested environment.
- * For RESTORE, only DEV/TEST are permitted; no override is accepted.
- */
 export function validateEnvironmentGuard(
   environment: string,
   config: BackupAndRestoreConfig,
   operation: BackupAndRestoreOperation,
 ): BackupAndRestoreError | null {
-  const validEnvs = BackupAndRestoreEnvironment as readonly string[];
-  const isValidEnv = validEnvs.includes(environment);
+  const validEnvs = BackupAndRestoreEnvironment;
+  const isValidEnv = validEnvs.includes(environment as BackupAndRestoreEnvironment);
   if (operation === 'BACKUP') {
     if (isValidEnv) {
       return null;
     }
-    // Non‑dev/test: require explicit override that names the target environment
     if (config.allowEnvironmentOverride === undefined) {
       return {
         kind: 'ENVIRONMENT_GUARD_VIOLATION',
@@ -89,16 +81,9 @@ export function validateEnvironmentGuard(
         message: `Backup refused: override environment ${config.allowEnvironmentOverride} does not match requested ${environment}`,
       };
     }
-    if (!validEnvs.includes(config.allowEnvironmentOverride)) {
-      return {
-        kind: 'ENVIRONMENT_GUARD_VIOLATION',
-        message: `Backup refused: override environment ${config.allowEnvironmentOverride} is invalid`,
-      };
-    }
     return null;
   }
 
-  // RESTORE path – only DEV/TEST, no override
   if (!isValidEnv) {
     return {
       kind: 'ENVIRONMENT_GUARD_VIOLATION',
@@ -108,9 +93,6 @@ export function validateEnvironmentGuard(
   return null;
 }
 
-/**
- * Validates that the confirmation token for a restore matches the environment.
- */
 export function validateRestoreConfirmation(
   environment: BackupAndRestoreEnvironment,
   config: BackupAndRestoreConfig,
@@ -130,9 +112,6 @@ export function validateRestoreConfirmation(
   return null;
 }
 
-/**
- * Validates stage‑level settings that control destructive operations.
- */
 export function validateStageSettings(
   config: BackupAndRestoreConfig,
   operation: BackupAndRestoreOperation,
@@ -152,9 +131,6 @@ export function validateStageSettings(
   return null;
 }
 
-/**
- * Validates that tooling required for backup/restore is available.
- */
 export function validateToolingAvailable(
   config: BackupAndRestoreConfig,
 ): BackupAndRestoreError | null {
@@ -167,11 +143,6 @@ export function validateToolingAvailable(
   return null;
 }
 
-/**
- * Produces a backup artifact after all guards and audit succeed.
- * The audit function receives the artifact metadata; if it returns an error,
- * the backup is aborted and no artifact is produced.
- */
 export function produceBackup(
   environment: string,
   config: BackupAndRestoreConfig,
@@ -198,11 +169,6 @@ export function produceBackup(
   return { result: artifact };
 }
 
-/**
- * Restores a previously produced backup artifact.
- * All guards (environment, confirmation token, stage settings, tooling) must pass
- * before the audit function is invoked. No mutation occurs on failure.
- */
 export function restoreBackup(
   environment: BackupAndRestoreEnvironment,
   targetDatabase: string,
@@ -231,16 +197,9 @@ export function restoreBackup(
   const auditError = auditFn(artifact);
   if (auditError) return auditError;
 
-  // In a real system the targetDatabase would be overwritten here.
-  // This pure model returns the artifact to signal success.
   return { result: artifact };
 }
 
-/**
- * Computes readiness based on current state and configuration.
- * Backup readiness is READY only when a successful backup proof exists.
- * Tooling unavailability degrades readiness; otherwise NOT_READY.
- */
 export function computeReadiness(
   state: BackupAndRestoreState,
   config: BackupAndRestoreConfig,
@@ -250,3 +209,6 @@ export function computeReadiness(
   }
   if (state.lastBackupProof?.verdict === 'SUCCESS') {
     return 'READY';
+  }
+  return 'NOT_READY';
+}

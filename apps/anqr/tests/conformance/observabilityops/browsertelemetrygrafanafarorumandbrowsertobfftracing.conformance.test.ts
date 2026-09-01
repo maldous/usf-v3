@@ -25,12 +25,12 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingauditmodel", () => {
     traceId,
     spanId,
   );
-  assert.deepEqual(updatedState.lastAuditEvents.length, 1);
+  assert.strictEqual(updatedState.lastAuditEvents.length, 1);
   const auditEvent = updatedState.lastAuditEvents[0];
-  assert.equal(auditEvent.action, "CONFIG_CHANGE");
-  assert.equal(auditEvent.traceId, traceId);
-  assert.equal(auditEvent.spanId, spanId);
-  assert.equal(auditEvent.requestId, requestId);
+  assert.strictEqual(auditEvent.action, "CONFIG_CHANGE");
+  assert.strictEqual(auditEvent.traceId, traceId);
+  assert.strictEqual(auditEvent.spanId, spanId);
+  assert.strictEqual(auditEvent.requestId, requestId);
 
   const payload: capability.BrowserTelemetryPayload = {
     traceContext: { traceId, spanId },
@@ -45,12 +45,12 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingauditmodel", () => {
     payload,
     requestId,
   );
-  assert.equal(processedState.lastAuditEvents.length, 2);
+  assert.strictEqual(processedState.lastAuditEvents.length, 2);
   const contractAudit = processedState.lastAuditEvents[1];
-  assert.equal(contractAudit.action, "CONTRACT_CHANGE");
-  assert.equal(contractAudit.traceId, traceId);
-  assert.equal(contractAudit.spanId, spanId);
-  assert.equal(contractAudit.requestId, requestId);
+  assert.strictEqual(contractAudit.action, "CONTRACT_CHANGE");
+  assert.strictEqual(contractAudit.traceId, traceId);
+  assert.strictEqual(contractAudit.spanId, spanId);
+  assert.strictEqual(contractAudit.requestId, requestId);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingcontracts", () => {
@@ -65,22 +65,20 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingcontracts", () => {
     allowedSpanNames: ["browser-to-bff-tracing-proof"],
   };
   const validatedConfig = capability.validateConfig(config);
-  assert.equal("receiver" in validatedConfig, true);
-  assert.equal("collector" in validatedConfig, true);
-  assert.equal("backends" in validatedConfig, true);
-  assert.deepEqual(validatedConfig.receiver.endpoint, "https://rum.example.com");
-  assert.deepEqual(validatedConfig.collector.endpoint, "https://collector.example.com");
-  assert.deepEqual(validatedConfig.backends.trace.endpoint, "https://tempo.example.com");
-  assert.deepEqual(validatedConfig.backends.log.endpoint, "https://loki.example.com");
+  if ("kind" in validatedConfig) throw new Error("Config should be valid");
+  assert.strictEqual(validatedConfig.receiver.endpoint, "https://rum.example.com");
+  assert.strictEqual(validatedConfig.collector.endpoint, "https://collector.example.com");
+  assert.strictEqual(validatedConfig.backends.trace.endpoint, "https://tempo.example.com");
+  assert.strictEqual(validatedConfig.backends.log.endpoint, "https://loki.example.com");
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingerrormodel", () => {
   const invalidConfig = { receiver: null };
   const error = capability.validateConfig(invalidConfig);
-  assert.equal("kind" in error, true);
+  assert.ok("kind" in error);
   const typedError = error as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.equal(typedError.kind, "CONFIG_INVALID");
-  assert.equal(typeof typedError.message, "string");
+  assert.strictEqual(typedError.kind, "CONFIG_INVALID");
+  assert.strictEqual(typeof typedError.message, "string");
 
   const stateWithError = capability.updateConfig(
     capability.initialState,
@@ -89,8 +87,8 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingerrormodel", () => {
     "trace-1",
     "span-1",
   );
-  assert.equal(stateWithError.readiness, "DEGRADED");
-  assert.notEqual(stateWithError.lastError, null);
+  assert.strictEqual(stateWithError.readiness, "DEGRADED");
+  assert.notStrictEqual(stateWithError.lastError, null);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle", () => {
@@ -119,17 +117,17 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracinglifecycle", () => {
     payload,
     "req-1",
   );
-  assert.equal(state.readiness, "READY");
-  assert.equal(state.lastProcessedPayload?.traceContext.traceId, traceId);
-  assert.equal(state.lastProcessedPayload?.traceContext.spanId, spanId);
+  assert.strictEqual(state.readiness, "READY");
+  assert.strictEqual(state.lastProcessedPayload?.traceContext.traceId, traceId);
+  assert.strictEqual(state.lastProcessedPayload?.traceContext.spanId, spanId);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingpermissions", () => {
   const invalidConfig = { receiver: { endpoint: "", headers: {} } };
   const error = capability.validateConfig(invalidConfig);
-  assert.equal("kind" in error, true);
+  assert.ok("kind" in error);
   const typedError = error as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.equal(typedError.kind, "CONFIG_INVALID");
+  assert.strictEqual(typedError.kind, "CONFIG_INVALID");
 
   const invalidPayload = { traceContext: {}, name: "", kind: 0, startTimeUnixNano: "", attributes: {} };
   const config: capability.BrowserTelemetryConfig = {
@@ -143,7 +141,7 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingpermissions", () => {
     allowedSpanNames: ["allowed-span"],
   };
   const validation = capability.validateBrowserTelemetryPayload(invalidPayload, config);
-  assert.equal("kind" in validation, true);
+  assert.ok("kind" in validation);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingproof", () => {
@@ -172,21 +170,21 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingproof", () => {
     "req-1",
   );
   const proof = capability.generateEndToEndProof(state, config, traceId, spanId, "req-2");
-  assert.equal("kind" in proof && proof.kind === "SUCCESS", true);
+  assert.ok("kind" in proof && proof.kind === "SUCCESS");
   const successProof = proof as { readonly kind: "SUCCESS"; readonly traceId: string; readonly spanId: string };
-  assert.equal(successProof.traceId, traceId);
-  assert.equal(successProof.spanId, spanId);
+  assert.strictEqual(successProof.traceId, traceId);
+  assert.strictEqual(successProof.spanId, spanId);
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingreadinessmodel", () => {
-  assert.equal(capability.initialState.readiness, "NOT_READY");
+  assert.strictEqual(capability.initialState.readiness, "NOT_READY");
   const degradedState: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
     readiness: "DEGRADED",
     lastError: { kind: "CONFIG_MISSING", message: "missing" },
     lastAuditEvents: [],
     lastProcessedPayload: null,
   };
-  assert.equal(capability.computeReadiness(degradedState), "DEGRADED");
+  assert.strictEqual(capability.computeReadiness(degradedState), "DEGRADED");
   const readyState: capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingState = {
     readiness: "READY",
     lastError: null,
@@ -199,7 +197,7 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingreadinessmodel", () =>
       attributes: {},
     },
   };
-  assert.equal(capability.computeReadiness(readyState), "READY");
+  assert.strictEqual(capability.computeReadiness(readyState), "READY");
 });
 
 test("browsertelemetrygrafanafarorumandbrowsertobfftracingvalidation", () => {
@@ -215,9 +213,9 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingvalidation", () => {
   };
   const invalidTraceContext = { traceId: "", spanId: "1" };
   const traceError = capability.validateTraceContext(invalidTraceContext);
-  assert.equal("kind" in traceError, true);
+  assert.ok("kind" in traceError);
   const typedTraceError = traceError as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.equal(typedTraceError.kind, "TRACE_CONTEXT_INVALID");
+  assert.strictEqual(typedTraceError.kind, "TRACE_CONTEXT_INVALID");
 
   const invalidPayload = {
     traceContext: { traceId: "1", spanId: "2" },
@@ -227,7 +225,7 @@ test("browsertelemetrygrafanafarorumandbrowsertobfftracingvalidation", () => {
     attributes: { tenant: "acme" },
   };
   const payloadError = capability.validateBrowserTelemetryPayload(invalidPayload, config);
-  assert.equal("kind" in payloadError, true);
+  assert.ok("kind" in payloadError);
   const typedPayloadError = payloadError as capability.BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingError;
-  assert.equal(typedPayloadError.kind, "SHAPE_VALIDATION_FAILED");
+  assert.strictEqual(typedPayloadError.kind, "SHAPE_VALIDATION_FAILED");
 });

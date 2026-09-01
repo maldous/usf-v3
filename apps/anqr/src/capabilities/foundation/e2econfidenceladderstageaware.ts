@@ -65,30 +65,24 @@ export const initialState: E2eConfidenceLadderState = {
   auditRecords: [],
 };
 
-export function validateConfig(
-  config: unknown,
-): E2eConfidenceLadderConfig | E2eConfidenceLadderError {
+function isE2eConfidenceLadderConfig(config: unknown): config is E2eConfidenceLadderConfig {
   if (
     config === null ||
     typeof config !== 'object' ||
-    !('stages' in config) ||
-    !Array.isArray((config as { stages: unknown }).stages)
+    !('stages' in config)
   ) {
-    return {
-      kind: 'INVALID_CONFIGURATION',
-      message: 'Configuration must be an object with a stages array',
-    };
+    return false;
   }
 
   const stages = (config as { stages: unknown }).stages;
-  if (stages.length === 0) {
-    return {
-      kind: 'INVALID_CONFIGURATION',
-      message: 'At least one stage must be defined',
-    };
+  if (
+    !Array.isArray(stages) ||
+    stages.length === 0
+  ) {
+    return false;
   }
 
-  for (const stage of stages as Array<unknown>) {
+  for (const stage of stages) {
     if (
       stage === null ||
       typeof stage !== 'object' ||
@@ -97,19 +91,23 @@ export function validateConfig(
       !E2eConfidenceLadderStage.includes((stage as { name: string }).name as E2eConfidenceLadderStage) ||
       typeof (stage as { confidenceThreshold: unknown }).confidenceThreshold !== 'number'
     ) {
-      return {
-        kind: 'INVALID_CONFIGURATION',
-        message: 'Each stage must have a valid name and numeric confidenceThreshold',
-      };
+      return false;
     }
   }
 
-  return {
-    stages: stages as Array<{
-      readonly name: E2eConfidenceLadderStage;
-      readonly confidenceThreshold: number;
-    }>,
-  };
+  return true;
+}
+
+export function validateConfig(
+  config: unknown,
+): E2eConfidenceLadderConfig | E2eConfidenceLadderError {
+  if (!isE2eConfidenceLadderConfig(config)) {
+    return {
+      kind: 'INVALID_CONFIGURATION',
+      message: 'Configuration must be an object with a non-empty stages array where each stage has a valid name and numeric confidenceThreshold',
+    };
+  }
+  return config;
 }
 
 export function verifyStageResult(
@@ -157,6 +155,14 @@ export function verifyLadder(
       };
     }
 
+    if (stageResult.verdict === 'UNKNOWN' || stageResult.verdict === 'DEGRADED') {
+      return {
+        kind: 'STALE_STAGE_EVIDENCE',
+        message: `Stale or degraded evidence for stage ${stageConfig.name}`,
+        stage: stageConfig.name,
+      };
+    }
+
     if (!verifyStageResult(stageConfig.name, stageResult, state.config)) {
       return {
         kind: 'VERIFICATION_ERROR',
@@ -193,6 +199,7 @@ export function setStageResult(
   state: E2eConfidenceLadderState,
   stage: E2eConfidenceLadderStage,
   verdict: E2eConfidenceLadderVerdict,
+  auditFn: (record: E2eConfidenceLadderAuditRecord) => E2eConfidenceLadderError | null,
 ): E2eConfidenceLadderState | E2eConfidenceLadderError {
   if (state.config === null) {
     return {
@@ -203,15 +210,27 @@ export function setStageResult(
 
   const existingIndex = state.stageResults.findIndex((sr) => sr.stage === stage);
   const newStageResults = [...state.stageResults];
+  const timestamp = new Date().toISOString();
   if (existingIndex >= 0) {
-    newStageResults[existingIndex] = { stage, verdict, timestamp: new Date().toISOString() };
+    newStageResults[existingIndex] = { stage, verdict, timestamp };
   } else {
-    newStageResults.push({ stage, verdict, timestamp: new Date().toISOString() });
+    newStageResults.push({ stage, verdict, timestamp });
   }
 
   const verificationResult = verifyLadder({ ...state, stageResults: newStageResults });
   if ('kind' in verificationResult) {
     return verificationResult;
+  }
+
+  const newAuditRecord: E2eConfidenceLadderAuditRecord = {
+    stage,
+    verdict,
+    aggregatedVerdict: verificationResult.verdict,
+    timestamp,
+  };
+  const auditError = auditFn(newAuditRecord);
+  if (auditError !== null) {
+    return auditError;
   }
 
   const newState = {
@@ -227,7 +246,7 @@ export function setStageResult(
 export function checkPromotionReadiness(
   state: E2eConfidenceLadderState,
   targetStage: E2eConfidenceLadderStage,
-): { readonly ready: boolean } | E2eConfidenceLadderError {
+): { readonly ready: boolean; readonly verdict: E2eConfidenceLadderVerdict } | E2eConfidenceLadderError {
   if (state.config === null) {
     return {
       kind: 'INVALID_CONFIGURATION',
@@ -235,8 +254,8 @@ export function checkPromotionReadiness(
     };
   }
 
-  const targetStageConfig = state.config.stages.find((s) => s.name === targetStage);
-  if (targetStageConfig === undefined) {
+  const targetStageIndex = state.config.stages.findIndex((s) => s.name === targetStage);
+  if (targetStageIndex === -1) {
     return {
       kind: 'MISSING_STAGE_EVIDENCE',
       message: `Target stage ${targetStage} not found in configuration`,
@@ -244,19 +263,24 @@ export function checkPromotionReadiness(
     };
   }
 
-  const currentStageIndex = state.config.stages.findIndex((s) => s.name === targetStage);
-  if (currentStageIndex === -1) {
-    return {
-      kind: 'MISSING_STAGE_EVIDENCE',
-      message: `Current stage ${targetStage} not found in configuration`,
-      stage: targetStage,
-    };
-  }
-
-  for (let i = 0; i <= currentStageIndex; i += 1) {
+  for (let i = 0; i <= targetStageIndex; i += 1) {
     const stageConfig = state.config.stages[i];
     const stageResult = state.stageResults.find((sr) => sr.stage === stageConfig.name);
-    if (stageResult === undefined || stageResult.verdict !== 'PASSED') {
+    if (stageResult === undefined) {
+      return {
+        kind: 'MISSING_STAGE_EVIDENCE',
+        message: `Missing evidence for stage ${stageConfig.name}`,
+        stage: stageConfig.name,
+      };
+    }
+    if (stageResult.verdict === 'UNKNOWN' || stageResult.verdict === 'DEGRADED') {
+      return {
+        kind: 'STALE_STAGE_EVIDENCE',
+        message: `Stale or degraded evidence for stage ${stageConfig.name}`,
+        stage: stageConfig.name,
+      };
+    }
+    if (!verifyStageResult(stageConfig.name, stageResult, state.config)) {
       return {
         kind: 'VERIFICATION_ERROR',
         message: `Stage ${stageConfig.name} not passed`,
@@ -265,5 +289,6 @@ export function checkPromotionReadiness(
     }
   }
 
-  return { ready: true };
+  const aggregatedVerdict = aggregateConfidence(state.stageResults, state.config);
+  return { ready: true, verdict: aggregatedVerdict };
 }

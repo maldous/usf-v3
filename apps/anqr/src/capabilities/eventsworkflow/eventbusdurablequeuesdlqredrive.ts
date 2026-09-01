@@ -85,8 +85,8 @@ export interface PublishRequest {
 }
 
 export interface PublishResult {
-  readonly event?: PlatformEvent;
-  readonly error?: CapabilityError;
+  readonly event: PlatformEvent | null;
+  readonly error: CapabilityError | null;
 }
 
 export interface RedriveRequest {
@@ -95,8 +95,8 @@ export interface RedriveRequest {
 }
 
 export interface RedriveResult {
-  readonly event?: PlatformEvent;
-  readonly error?: CapabilityError;
+  readonly event: PlatformEvent | null;
+  readonly error: CapabilityError | null;
 }
 
 export interface ListRequest {
@@ -105,8 +105,8 @@ export interface ListRequest {
 }
 
 export interface ListResult {
-  readonly events?: readonly PlatformEvent[];
-  readonly error?: CapabilityError;
+  readonly events: readonly PlatformEvent[] | null;
+  readonly error: CapabilityError | null;
 }
 
 export interface HeartbeatRequest {
@@ -116,8 +116,8 @@ export interface HeartbeatRequest {
 }
 
 export interface HeartbeatResult {
-  readonly heartbeat?: WorkerHeartbeat;
-  readonly error?: CapabilityError;
+  readonly heartbeat: WorkerHeartbeat | null;
+  readonly error: CapabilityError | null;
 }
 
 export interface ReadinessResult {
@@ -240,15 +240,15 @@ function summarisePayload(payload: Record<string, unknown>): string {
 export function publishEvent(
   state: CapabilityState,
   request: PublishRequest,
-  auditFn?: (record: RedriveAuditRecord) => CapabilityError | null
 ): PublishResult {
   const orgError = validateOrganisationId(request.organisationId);
   if (orgError !== null) {
-    return { error: orgError };
+    return { event: null, error: orgError };
   }
 
   if (!state.postgresAvailable) {
     return {
+      event: null,
       error: {
         kind: 'POSTGRES_UNAVAILABLE',
         message: 'Postgres substrate unavailable',
@@ -260,6 +260,7 @@ export function publishEvent(
   const secret = detectSecretFields(request.payload);
   if (secret !== null) {
     return {
+      event: null,
       error: {
         kind: 'SECRET_PAYLOAD',
         message: secret.reason,
@@ -276,7 +277,7 @@ export function publishEvent(
     request.idempotencyKey
   );
   if (duplicate !== undefined) {
-    return { event: duplicate };
+    return { event: duplicate, error: null };
   }
 
   const now = new Date().toISOString();
@@ -306,9 +307,15 @@ export function publishEvent(
 export function applyPublish(
   state: CapabilityState,
   result: PublishResult
-): CapabilityState {
-  if (result.error !== null || result.event === undefined) {
-    return state;
+): CapabilityState | CapabilityError {
+  if (result.error !== null) {
+    return result.error;
+  }
+  if (result.event === null) {
+    return {
+      kind: 'DUPLICATE_EVENT',
+      message: 'No event to publish',
+    };
   }
   return {
     ...state,
@@ -325,16 +332,17 @@ export function redriveEvent(
 ): RedriveResult {
   const orgError = validateOrganisationId(request.organisationId);
   if (orgError !== null) {
-    return { error: orgError };
+    return { event: null, error: orgError };
   }
 
   const idError = validateEventId(request.eventId);
   if (idError !== null) {
-    return { error: idError };
+    return { event: null, error: idError };
   }
 
   if (!state.postgresAvailable) {
     return {
+      event: null,
       error: {
         kind: 'POSTGRES_UNAVAILABLE',
         message: 'Postgres substrate unavailable',
@@ -350,6 +358,7 @@ export function redriveEvent(
   );
   if (existing === undefined) {
     return {
+      event: null,
       error: {
         kind: 'EVENT_NOT_FOUND',
         message: 'Event not found',
@@ -360,6 +369,7 @@ export function redriveEvent(
 
   if (existing.status !== 'dead_letter') {
     return {
+      event: null,
       error: {
         kind: 'INVALID_STATUS',
         message: `Cannot redrive event in status: ${existing.status}`,
@@ -379,7 +389,7 @@ export function redriveEvent(
 
   const auditError = auditFn(auditRecord);
   if (auditError !== null) {
-    return { error: auditError };
+    return { event: null, error: auditError };
   }
 
   // Create fresh pending event with new idempotency key
@@ -410,9 +420,15 @@ export function redriveEvent(
 export function applyRedrive(
   state: CapabilityState,
   result: RedriveResult
-): CapabilityState {
-  if (result.error !== null || result.event === undefined) {
-    return state;
+): CapabilityState | CapabilityError {
+  if (result.error !== null) {
+    return result.error;
+  }
+  if (result.event === null) {
+    return {
+      kind: 'EVENT_NOT_FOUND',
+      message: 'No event to redrive',
+    };
   }
   return {
     ...state,
@@ -428,11 +444,12 @@ export function listEvents(
 ): ListResult {
   const orgError = validateOrganisationId(request.organisationId);
   if (orgError !== null) {
-    return { error: orgError };
+    return { events: null, error: orgError };
   }
 
   if (!checkPermission(request.token, Permission.EVENTS_READ)) {
     return {
+      events: null,
       error: {
         kind: 'PERMISSION_DENIED',
         message: 'Missing platform.events.read permission',
@@ -456,11 +473,12 @@ export function listDeadLetterEvents(
 ): ListResult {
   const orgError = validateOrganisationId(request.organisationId);
   if (orgError !== null) {
-    return { error: orgError };
+    return { events: null, error: orgError };
   }
 
   if (!checkPermission(request.token, Permission.EVENTS_READ)) {
     return {
+      events: null,
       error: {
         kind: 'PERMISSION_DENIED',
         message: 'Missing platform.events.read permission',
@@ -470,60 +488,26 @@ export function listDeadLetterEvents(
   }
 
   const filtered = state.events.filter(
-    (e) =>
-      e.organisationId === request.organisationId && e.status === 'dead_letter'
+    (e) => e.organisationId === request.organisationId && e.status === 'dead_letter'
   );
 
   return { events: filtered, error: null };
 }
 
-// === List Workers ===
+// === Worker Heartbeat ===
 
-export function listWorkers(
-  state: CapabilityState,
-  request: ListRequest
-): ListResult {
-  const orgError = validateOrganisationId(request.organisationId);
-  if (orgError !== null) {
-    return { error: orgError };
-  }
-
-  if (!checkPermission(request.token, Permission.WORKERS_READ)) {
-    return {
-      error: {
-        kind: 'PERMISSION_DENIED',
-        message: 'Missing platform.workers.read permission',
-        organisationId: request.organisationId,
-      },
-    };
-  }
-
-  // Workers are derived from heartbeats
-  const workerIds = new Set(
-    state.heartbeats
-      .filter((h) => h.organisationId === request.organisationId)
-      .map((h) => h.workerId)
-  );
-
-  return {
-    events: [],
-    error: null,
-  };
-}
-
-// === Report Heartbeat ===
-
-export function reportHeartbeat(
+export function recordHeartbeat(
   state: CapabilityState,
   request: HeartbeatRequest
 ): HeartbeatResult {
   const orgError = validateOrganisationId(request.organisationId);
   if (orgError !== null) {
-    return { error: orgError };
+    return { heartbeat: null, error: orgError };
   }
 
   if (!state.postgresAvailable) {
     return {
+      heartbeat: null,
       error: {
         kind: 'POSTGRES_UNAVAILABLE',
         message: 'Postgres substrate unavailable',
@@ -543,182 +527,374 @@ export function reportHeartbeat(
   return { heartbeat, error: null };
 }
 
+// === Apply Heartbeat (state mutation) ===
+
 export function applyHeartbeat(
   state: CapabilityState,
   result: HeartbeatResult
-): CapabilityState {
-  if (result.error !== null || result.heartbeat === undefined) {
-    return state;
+): CapabilityState | CapabilityError {
+  if (result.error !== null) {
+    return result.error;
   }
-
-  const existing = state.heartbeats.find(
-    (h) =>
-      h.workerId === result.heartbeat!.workerId &&
-      h.organisationId === result.heartbeat!.organisationId
-  );
-
-  let newHeartbeats: readonly WorkerHeartbeat[];
-  if (existing !== undefined) {
-    newHeartbeats = state.heartbeats.map((h) =>
-      h === existing ? result.heartbeat! : h
-    );
-  } else {
-    newHeartbeats = [...state.heartbeats, result.heartbeat];
-  }
-
-  return {
-    ...state,
-    heartbeats: newHeartbeats,
-  };
-}
-
-// === Process Event (worker claim) ===
-
-export function processEvent(
-  state: CapabilityState,
-  eventId: string,
-  organisationId: string,
-  handler: (payload: Record<string, unknown>) => { success: boolean; error?: string }
-): CapabilityState {
-  const event = findEvent(state.events, organisationId, eventId);
-  if (event === undefined || event.status !== 'pending') {
-    return state;
-  }
-
-  const now = new Date().toISOString();
-  const processingEvent: PlatformEvent = {
-    ...event,
-    status: 'processing',
-    updatedAt: now,
-  };
-
-  const handlerResult = handler(event.payload);
-  let finalEvent: PlatformEvent;
-
-  if (handlerResult.success) {
-    finalEvent = {
-      ...processingEvent,
-      status: 'processed',
-      updatedAt: now,
+  if (result.heartbeat === null) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: 'No heartbeat to record',
     };
-  } else {
-    const newAttempts = event.attempts + 1;
-    if (newAttempts >= event.maxAttempts) {
-      finalEvent = {
-        ...processingEvent,
-        status: 'dead_letter',
-        attempts: newAttempts,
-        lastError: handlerResult.error ?? 'Handler exhausted',
-        updatedAt: now,
-      };
-    } else {
-      finalEvent = {
-        ...processingEvent,
-        attempts: newAttempts,
-        lastError: handlerResult.error ?? null,
-        updatedAt: now,
-      };
-    }
   }
-
   return {
     ...state,
-    events: state.events.map((e) => (e.id === event.id ? finalEvent : e)),
+    heartbeats: [...state.heartbeats, result.heartbeat],
   };
 }
 
-// === Readiness Check ===
+// === Readiness ===
 
-export function checkReadiness(state: CapabilityState): ReadinessResult {
-  const eventQueueVisible = state.postgresAvailable;
-  const deadLetterQueueVisible = state.postgresAvailable;
+export function checkReadiness(
+  state: CapabilityState,
+  token: { readonly permissions: readonly string[] }
+): ReadinessResult {
+  const eventQueueVisible = checkPermission(token, Permission.EVENTS_READ);
+  const deadLetterQueueVisible = checkPermission(token, Permission.EVENTS_READ);
+  const workerHeartbeatLiveness: WorkerLiveness =
+    state.heartbeats.length > 0
+      ? state.heartbeats[state.heartbeats.length - 1].liveness
+      : 'stopped';
   const mutationPathsEnabled = state.postgresAvailable;
-
-  let liveness: WorkerLiveness = 'stopped';
-  const now = Date.now();
-  const recentHeartbeats = state.heartbeats.filter((h) => {
-    const lastSeen = new Date(h.lastSeen).getTime();
-    return now - lastSeen < 30000; // 30 seconds
-  });
-
-  if (recentHeartbeats.length > 0) {
-    liveness = 'alive';
-  } else {
-    const staleHeartbeats = state.heartbeats.filter((h) => {
-      const lastSeen = new Date(h.lastSeen).getTime();
-      return now - lastSeen < 300000; // 5 minutes
-    });
-    if (staleHeartbeats.length > 0) {
-      liveness = 'stale';
-    }
-  }
 
   return {
     eventQueueVisible,
     deadLetterQueueVisible,
-    workerHeartbeatLiveness: liveness,
+    workerHeartbeatLiveness,
     postgresAvailable: state.postgresAvailable,
     mutationPathsEnabled,
   };
 }
 
-// === Set Postgres Availability (for testing) ===
+// === Process Event (worker processing) ===
 
-export function setPostgresAvailable(
+export interface ProcessRequest {
+  readonly organisationId: string;
+  readonly eventId: string;
+  readonly workerId: string;
+}
+
+export interface ProcessResult {
+  readonly updatedEvent: PlatformEvent | null;
+  readonly error: CapabilityError | null;
+}
+
+export function processEvent(
   state: CapabilityState,
-  available: boolean
-): CapabilityState {
+  request: ProcessRequest
+): ProcessResult {
+  const orgError = validateOrganisationId(request.organisationId);
+  if (orgError !== null) {
+    return { updatedEvent: null, error: orgError };
+  }
+
+  const idError = validateEventId(request.eventId);
+  if (idError !== null) {
+    return { updatedEvent: null, error: idError };
+  }
+
+  if (!state.postgresAvailable) {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'POSTGRES_UNAVAILABLE',
+        message: 'Postgres substrate unavailable',
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  const existing = findEvent(
+    state.events,
+    request.organisationId,
+    request.eventId
+  );
+  if (existing === undefined) {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'EVENT_NOT_FOUND',
+        message: 'Event not found',
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  if (existing.status !== 'pending') {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'INVALID_STATUS',
+        message: `Cannot process event in status: ${existing.status}`,
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  const now = new Date().toISOString();
+  const updatedEvent: PlatformEvent = {
+    ...existing,
+    status: 'processing',
+    attempts: existing.attempts + 1,
+    updatedAt: now,
+  };
+
+  return {
+    updatedEvent,
+    error: null,
+  };
+}
+
+// === Apply Process (state mutation) ===
+
+export function applyProcess(
+  state: CapabilityState,
+  result: ProcessResult
+): CapabilityState | CapabilityError {
+  if (result.error !== null) {
+    return result.error;
+  }
+  if (result.updatedEvent === null) {
+    return {
+      kind: 'EVENT_NOT_FOUND',
+      message: 'No event to process',
+    };
+  }
+
+  const updatedEvents = state.events.map((e) =>
+    e.id === result.updatedEvent.id && e.organisationId === result.updatedEvent.organisationId
+      ? result.updatedEvent
+      : e
+  );
+
   return {
     ...state,
-    postgresAvailable: available,
+    events: updatedEvents,
   };
 }
 
-// === Audit Function ===
+// === Fail Event (worker failure) ===
 
-export function createAuditFunction(
-  state: CapabilityState
-): (record: RedriveAuditRecord) => CapabilityError | null {
-  return (record: RedriveAuditRecord): CapabilityError | null => {
-    // Audit write must precede state mutation
-    // In real implementation, this would write to audit log
-    // For pure function testing, we validate the record
-    if (record.eventId === '' || record.organisationId === '') {
-      return {
-        kind: 'AUDIT_FAILURE',
-        message: 'Invalid audit record',
-      };
-    }
-    return null;
-  };
+export interface FailRequest {
+  readonly organisationId: string;
+  readonly eventId: string;
+  readonly errorMessage: string;
 }
 
-// === Validate Payload Contract ===
+export interface FailResult {
+  readonly updatedEvent: PlatformEvent | null;
+  readonly error: CapabilityError | null;
+}
 
-export function validatePayloadContract(
-  eventType: string,
-  payload: Record<string, unknown>
-): CapabilityError | null {
-  switch (eventType) {
-    case 'tenant.config.changed':
-      if (!('key' in payload)) {
-        return {
-          kind: 'SECRET_PAYLOAD',
-          message: 'Missing required field: key',
-        };
-      }
-      break;
-    case 'report.run':
-      if (!('reportId' in payload)) {
-        return {
-          kind: 'SECRET_PAYLOAD',
-          message: 'Missing required field: reportId',
-        };
-      }
-      break;
-    default:
-      // Generic event-bus path allows any payload (test fixtures excluded)
-      break;
+export function failEvent(
+  state: CapabilityState,
+  request: FailRequest
+): FailResult {
+  const orgError = validateOrganisationId(request.organisationId);
+  if (orgError !== null) {
+    return { updatedEvent: null, error: orgError };
   }
-  return null;
+
+  const idError = validateEventId(request.eventId);
+  if (idError !== null) {
+    return { updatedEvent: null, error: idError };
+  }
+
+  if (!state.postgresAvailable) {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'POSTGRES_UNAVAILABLE',
+        message: 'Postgres substrate unavailable',
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  const existing = findEvent(
+    state.events,
+    request.organisationId,
+    request.eventId
+  );
+  if (existing === undefined) {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'EVENT_NOT_FOUND',
+        message: 'Event not found',
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  if (existing.status !== 'processing') {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'INVALID_STATUS',
+        message: `Cannot fail event in status: ${existing.status}`,
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  const now = new Date().toISOString();
+  const attempts = existing.attempts + 1;
+  const maxAttempts = existing.maxAttempts;
+
+  if (attempts >= maxAttempts) {
+    const updatedEvent: PlatformEvent = {
+      ...existing,
+      status: 'dead_letter',
+      attempts,
+      lastError: request.errorMessage,
+      updatedAt: now,
+    };
+    return { updatedEvent, error: null };
+  }
+
+  const updatedEvent: PlatformEvent = {
+    ...existing,
+    status: 'pending',
+    attempts,
+    lastError: request.errorMessage,
+    updatedAt: now,
+  };
+
+  return { updatedEvent, error: null };
+}
+
+// === Apply Fail (state mutation) ===
+
+export function applyFail(
+  state: CapabilityState,
+  result: FailResult
+): CapabilityState | CapabilityError {
+  if (result.error !== null) {
+    return result.error;
+  }
+  if (result.updatedEvent === null) {
+    return {
+      kind: 'EVENT_NOT_FOUND',
+      message: 'No event to fail',
+    };
+  }
+
+  const updatedEvents = state.events.map((e) =>
+    e.id === result.updatedEvent.id && e.organisationId === result.updatedEvent.organisationId
+      ? result.updatedEvent
+      : e
+  );
+
+  return {
+    ...state,
+    events: updatedEvents,
+  };
+}
+
+// === Complete Event (worker success) ===
+
+export interface CompleteRequest {
+  readonly organisationId: string;
+  readonly eventId: string;
+}
+
+export interface CompleteResult {
+  readonly updatedEvent: PlatformEvent | null;
+  readonly error: CapabilityError | null;
+}
+
+export function completeEvent(
+  state: CapabilityState,
+  request: CompleteRequest
+): CompleteResult {
+  const orgError = validateOrganisationId(request.organisationId);
+  if (orgError !== null) {
+    return { updatedEvent: null, error: orgError };
+  }
+
+  const idError = validateEventId(request.eventId);
+  if (idError !== null) {
+    return { updatedEvent: null, error: idError };
+  }
+
+  if (!state.postgresAvailable) {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'POSTGRES_UNAVAILABLE',
+        message: 'Postgres substrate unavailable',
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  const existing = findEvent(
+    state.events,
+    request.organisationId,
+    request.eventId
+  );
+  if (existing === undefined) {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'EVENT_NOT_FOUND',
+        message: 'Event not found',
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  if (existing.status !== 'processing') {
+    return {
+      updatedEvent: null,
+      error: {
+        kind: 'INVALID_STATUS',
+        message: `Cannot complete event in status: ${existing.status}`,
+        organisationId: request.organisationId,
+      },
+    };
+  }
+
+  const now = new Date().toISOString();
+  const updatedEvent: PlatformEvent = {
+    ...existing,
+    status: 'processed',
+    updatedAt: now,
+  };
+
+  return { updatedEvent, error: null };
+}
+
+// === Apply Complete (state mutation) ===
+
+export function applyComplete(
+  state: CapabilityState,
+  result: CompleteResult
+): CapabilityState | CapabilityError {
+  if (result.error !== null) {
+    return result.error;
+  }
+  if (result.updatedEvent === null) {
+    return {
+      kind: 'EVENT_NOT_FOUND',
+      message: 'No event to complete',
+    };
+  }
+
+  const updatedEvents = state.events.map((e) =>
+    e.id === result.updatedEvent.id && e.organisationId === result.updatedEvent.organisationId
+      ? result.updatedEvent
+      : e
+  );
+
+  return {
+    ...state,
+    events: updatedEvents,
+  };
 }

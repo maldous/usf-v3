@@ -5,11 +5,11 @@ import * as capability from "../../../src/capabilities/configuration/configurati
 const sampleDef: capability.ConfigurationDefinition = {
   key: "featureX",
   category: "features",
-  valueType: "BOOLEAN",
+  valueType: "BOOLEAN" as const,
   allowedValues: null,
   defaultValue: false,
   tenantOverridable: true,
-  lifecycle: "ACTIVE",
+  lifecycle: "ACTIVE" as const,
   requiredReadPermission: "read-featureX",
   requiredWritePermission: "write-featureX",
   isFeatureFlag: true,
@@ -18,11 +18,11 @@ const sampleDef: capability.ConfigurationDefinition = {
 const enumDef: capability.ConfigurationDefinition = {
   key: "color",
   category: "ui",
-  valueType: "ENUM",
-  allowedValues: ["red", "green", "blue"],
+  valueType: "ENUM" as const,
+  allowedValues: ["red", "green", "blue"] as const,
   defaultValue: "red",
   tenantOverridable: true,
-  lifecycle: "ACTIVE",
+  lifecycle: "ACTIVE" as const,
   requiredReadPermission: "read-color",
   requiredWritePermission: "write-color",
   isFeatureFlag: false,
@@ -31,11 +31,11 @@ const enumDef: capability.ConfigurationDefinition = {
 const nonOverDef: capability.ConfigurationDefinition = {
   key: "systemMode",
   category: "system",
-  valueType: "STRING",
+  valueType: "STRING" as const,
   allowedValues: null,
   defaultValue: "auto",
   tenantOverridable: false,
-  lifecycle: "ACTIVE",
+  lifecycle: "ACTIVE" as const,
   requiredReadPermission: "read-systemMode",
   requiredWritePermission: "write-systemMode",
   isFeatureFlag: false,
@@ -156,7 +156,6 @@ test("configurationregistryandhistoryerrormodel", () => {
   };
   const auditFn = () => null;
 
-  // missing value
   const missing = capability.patchConfiguration(
     state,
     "tenant1",
@@ -167,7 +166,6 @@ test("configurationregistryandhistoryerrormodel", () => {
   );
   assert.ok("kind" in missing && missing.kind === "VALIDATION_ERROR");
 
-  // unknown key
   const unknown = capability.patchConfiguration(
     state,
     "tenant1",
@@ -178,8 +176,278 @@ test("configurationregistryandhistoryerrormodel", () => {
   );
   assert.ok("kind" in unknown && unknown.kind === "NOT_FOUND");
 
-  // non-overridable definition
   const nonOver = capability.patchConfiguration(
     state,
     "tenant1",
-    "systemMode
+    "systemMode",
+    "manual",
+    "write-systemMode",
+    auditFn,
+  );
+  assert.ok("kind" in nonOver && nonOver.kind === "UNPROCESSABLE_ENTITY");
+
+  const forbidden = capability.patchConfiguration(
+    state,
+    "tenant1",
+    "featureX",
+    true,
+    "wrong-permission",
+    auditFn,
+  );
+  assert.ok("kind" in forbidden && forbidden.kind === "FORBIDDEN");
+
+  const noTenant = capability.listConfigurations(state, null, null, "read-featureX");
+  assert.strictEqual(noTenant.outcome, "BAD_REQUEST");
+  assert.ok(noTenant.error && noTenant.error.kind === "BAD_REQUEST");
+
+  const storeUnreachable: capability.ConfigurationRegistryAndHistoryState = {
+    ...state,
+    storeReachable: false,
+  };
+  const unreachable = capability.listConfigurations(storeUnreachable, "tenant1", null, "read-featureX");
+  assert.strictEqual(unreachable.outcome, "BAD_REQUEST");
+  assert.ok(unreachable.error && unreachable.error.kind === "STORE_UNAVAILABLE");
+});
+
+test("configurationregistryandhistorylifecycle", () => {
+  const activeDef: capability.ConfigurationDefinition = {
+    ...sampleDef,
+    lifecycle: "ACTIVE" as const,
+  };
+  const deprecatedDef: capability.ConfigurationDefinition = {
+    ...sampleDef,
+    key: "oldFeature",
+    lifecycle: "DEPRECATED" as const,
+  };
+  const internalDef: capability.ConfigurationDefinition = {
+    ...sampleDef,
+    key: "internalFeature",
+    lifecycle: "INTERNAL" as const,
+  };
+
+  const state: capability.ConfigurationRegistryAndHistoryState = {
+    ...capability.initialState,
+    definitions: [activeDef, deprecatedDef, internalDef],
+    storeReachable: true,
+  };
+
+  const auditFn = () => null;
+  const patched = capability.patchConfiguration(
+    state,
+    "tenant1",
+    "featureX",
+    true,
+    "write-featureX",
+    auditFn,
+  );
+  assert.ok("tenantOverrides" in patched);
+  assert.strictEqual(patched.lastAuditEvent?.kind, "CONFIGURATION_CHANGE");
+
+  const deleted = capability.deleteConfiguration(
+    patched,
+    "tenant1",
+    "featureX",
+    "write-featureX",
+    auditFn,
+  );
+  assert.ok("tenantOverrides" in deleted);
+  assert.strictEqual(deleted.lastAuditEvent?.kind, "CONFIGURATION_CLEARED");
+
+  const resolved = capability.resolveEffectiveValue(
+    state,
+    "tenant1",
+    "featureX",
+    "read-featureX",
+  );
+  assert.strictEqual(resolved.entry?.source, "PLATFORM_DEFAULT");
+  assert.strictEqual(resolved.entry?.effectiveValue, false);
+});
+
+test("configurationregistryandhistorypermissions", () => {
+  const state: capability.ConfigurationRegistryAndHistoryState = {
+    ...capability.initialState,
+    definitions: [sampleDef, enumDef],
+    storeReachable: true,
+  };
+  const auditFn = () => null;
+
+  const wrongReadPerm = capability.listConfigurations(state, "tenant1", null, "wrong-perm");
+  assert.strictEqual(wrongReadPerm.result.length, 0);
+
+  const wrongWritePerm = capability.patchConfiguration(
+    state,
+    "tenant1",
+    "featureX",
+    true,
+    "wrong-perm",
+    auditFn,
+  );
+  assert.ok("kind" in wrongWritePerm && wrongWritePerm.kind === "FORBIDDEN");
+
+  const wrongDeletePerm = capability.deleteConfiguration(
+    state,
+    "tenant1",
+    "featureX",
+    "wrong-perm",
+    auditFn,
+  );
+  assert.ok("kind" in wrongDeletePerm && wrongDeletePerm.kind === "FORBIDDEN");
+
+  const readResult = capability.resolveEffectiveValue(
+    state,
+    "tenant1",
+    "featureX",
+    "read-featureX",
+  );
+  assert.strictEqual(readResult.entry?.definition.key, "featureX");
+
+  const wrongReadPermResolve = capability.resolveEffectiveValue(
+    state,
+    "tenant1",
+    "featureX",
+    "wrong-perm",
+  );
+  assert.strictEqual(wrongReadPermResolve.outcome, "FORBIDDEN");
+});
+
+test("configurationregistryandhistoryproof", () => {
+  const state: capability.ConfigurationRegistryAndHistoryState = {
+    ...capability.initialState,
+    definitions: [sampleDef],
+    storeReachable: true,
+  };
+  const auditFn = () => null;
+
+  const patched = capability.patchConfiguration(
+    state,
+    "tenant1",
+    "featureX",
+    true,
+    "write-featureX",
+    auditFn,
+  );
+  assert.ok("tenantOverrides" in patched);
+  assert.strictEqual(patched.lastAuditEvent?.kind, "CONFIGURATION_CHANGE");
+
+  const resolved = capability.resolveEffectiveValue(
+    patched,
+    "tenant1",
+    "featureX",
+    "read-featureX",
+  );
+  assert.strictEqual(resolved.entry?.source, "TENANT_OVERRIDE");
+  assert.strictEqual(resolved.entry?.effectiveValue, true);
+
+  const validationError = capability.validateDefinition(
+    state.definitions,
+    "featureX",
+    "not-a-boolean",
+  );
+  assert.ok(validationError && validationError.kind === "VALIDATION_ERROR");
+});
+
+test("configurationregistryandhistoryreadinessmodel", () => {
+  const unreachableState: capability.ConfigurationRegistryAndHistoryState = {
+    ...capability.initialState,
+    definitions: [sampleDef],
+    storeReachable: false,
+  };
+
+  const listResult = capability.listConfigurations(
+    unreachableState,
+    "tenant1",
+    null,
+    "read-featureX",
+  );
+  assert.strictEqual(listResult.outcome, "BAD_REQUEST");
+  assert.ok(listResult.error && listResult.error.kind === "STORE_UNAVAILABLE");
+
+  const patchResult = capability.patchConfiguration(
+    unreachableState,
+    "tenant1",
+    "featureX",
+    true,
+    "write-featureX",
+    () => null,
+  );
+  assert.ok("kind" in patchResult && patchResult.kind === "STORE_UNAVAILABLE");
+
+  const reachableState: capability.ConfigurationRegistryAndHistoryState = {
+    ...unreachableState,
+    storeReachable: true,
+  };
+  const listReachable = capability.listConfigurations(
+    reachableState,
+    "tenant1",
+    null,
+    "read-featureX",
+  );
+  assert.strictEqual(listReachable.outcome, "NO_CONTENT");
+  assert.strictEqual(listReachable.error, null);
+});
+
+test("configurationregistryandhistorystatemodel", () => {
+  const state: capability.ConfigurationRegistryAndHistoryState = {
+    ...capability.initialState,
+    definitions: [sampleDef, enumDef],
+    tenantOverrides: [
+      { tenantId: "tenant1", key: "featureX", value: true },
+      { tenantId: "tenant2", key: "color", value: "blue" },
+    ],
+    storeReachable: true,
+  };
+
+  assert.strictEqual(state.definitions.length, 2);
+  assert.strictEqual(state.tenantOverrides.length, 2);
+
+  const resolvedDefault = capability.resolveEffectiveValue(
+    state,
+    "tenant3",
+    "featureX",
+    "read-featureX",
+  );
+  assert.strictEqual(resolvedDefault.entry?.source, "PLATFORM_DEFAULT");
+  assert.strictEqual(resolvedDefault.entry?.effectiveValue, false);
+
+  const resolvedOverride = capability.resolveEffectiveValue(
+    state,
+    "tenant1",
+    "featureX",
+    "read-featureX",
+  );
+  assert.strictEqual(resolvedOverride.entry?.source, "TENANT_OVERRIDE");
+  assert.strictEqual(resolvedOverride.entry?.effectiveValue, true);
+});
+
+test("configurationregistryandhistoryvalidation", () => {
+  const state: capability.ConfigurationRegistryAndHistoryState = {
+    ...capability.initialState,
+    definitions: [sampleDef, enumDef, nonOverDef],
+    storeReachable: true,
+  };
+  const auditFn = () => null;
+
+  const unknownKey = capability.validateDefinition(state.definitions, "unknown", true);
+  assert.ok(unknownKey && unknownKey.kind === "NOT_FOUND");
+
+  const nonOverridable = capability.validateDefinition(state.definitions, "systemMode", "manual");
+  assert.ok(nonOverridable && nonOverridable.kind === "UNPROCESSABLE_ENTITY");
+
+  const missingValue = capability.validateDefinition(state.definitions, "featureX", null);
+  assert.ok(missingValue && missingValue.kind === "VALIDATION_ERROR");
+
+  const invalidEnum = capability.validateDefinition(state.definitions, "color", "yellow");
+  assert.ok(invalidEnum && invalidEnum.kind === "VALIDATION_ERROR");
+
+  const invalidBoolean = capability.validateDefinition(state.definitions, "featureX", "true");
+  assert.ok(invalidBoolean && invalidBoolean.kind === "VALIDATION_ERROR");
+
+  const invalidString = capability.validateDefinition(state.definitions, "systemMode", 123);
+  assert.ok(invalidString && invalidString.kind === "VALIDATION_ERROR");
+
+  const validBoolean = capability.validateDefinition(state.definitions, "featureX", true);
+  assert.strictEqual(validBoolean, null);
+
+  const validEnum = capability.validateDefinition(state.definitions, "color", "green");
+  assert.strictEqual(validEnum, null);
+});

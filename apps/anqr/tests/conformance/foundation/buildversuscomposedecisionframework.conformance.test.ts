@@ -15,6 +15,7 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
   );
   const proof1 = capability.authorDecision(null, record1);
   assert.ok(!("kind" in proof1), "authorDecision should succeed for initial record");
+  if ("kind" in proof1) throw new Error("Unexpected error");
 
   const record2 = capability.createDecisionRecord(
     "cap1",
@@ -24,6 +25,7 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
   );
   const proof2 = capability.authorDecision(proof1, record2);
   assert.ok(!("kind" in proof2), "authorDecision should succeed for versioned update");
+  if ("kind" in proof2) throw new Error("Unexpected error");
 
   const decisionRecords = proof2.decisionRecords;
   assert.strictEqual(decisionRecords.length, 2, "Audit trail should contain both versions");
@@ -50,13 +52,13 @@ test("buildversuscomposedecisionframeworkerrormodel", () => {
   const action = {
     type: "REVISE" as const,
     capabilityId: "cap1",
-    newDecision: "BUILD" as const,
+    newDecision: "BUILD",
     newJustification: {
       criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
       rationale: "test",
     },
   };
-  const newState = capability.runBuildVersusComposeFramework(state, action);
+  const newState = capability.runBuildVersusComposeFramework(state, action, () => null);
   assert.ok(newState.lastError !== null, "Framework should fail closed with error");
   assert.strictEqual(
     newState.lastError?.kind,
@@ -73,6 +75,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
   const record1 = capability.createDecisionRecord("cap1", "BUILD", justification, 1);
   let proof = capability.authorDecision(null, record1);
   assert.ok(!("kind" in proof), "Initial author should succeed");
+  if ("kind" in proof) throw new Error("Unexpected error");
 
   const revisedProof = capability.reviseDecision(
     proof,
@@ -81,6 +84,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
     { ...justification, rationale: "Revised rationale" },
   );
   assert.ok(!("kind" in revisedProof), "Revise should succeed");
+  if ("kind" in revisedProof) throw new Error("Unexpected error");
   assert.strictEqual(revisedProof.decisionRecords[0].decision, "COMPOSE", "Decision should be updated");
 
   const supersededRecord = capability.createDecisionRecord(
@@ -91,6 +95,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
   );
   const supersededProof = capability.supersedeDecision(proof, "cap1", supersededRecord);
   assert.ok(!("kind" in supersededProof), "Supersede should succeed");
+  if ("kind" in supersededProof) throw new Error("Unexpected error");
   assert.strictEqual(
     supersededProof.decisionRecords.find((r) => r.version === 2)?.decision,
     "ADAPTER",
@@ -99,6 +104,7 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
 
   const rollbackProof = capability.rollbackDecision(supersededProof, "cap1");
   assert.ok(!("kind" in rollbackProof), "Rollback should succeed");
+  if ("kind" in rollbackProof) throw new Error("Unexpected error");
   assert.strictEqual(
     rollbackProof.decisionRecords.length,
     1,
@@ -114,10 +120,12 @@ test("buildversuscomposedecisionframeworkpermissions", () => {
   const record = capability.createDecisionRecord("cap1", "BUILD", justification, 1);
   const proof = capability.authorDecision(null, record);
   assert.ok(!("kind" in proof), "Authoring should succeed without tenant-scoped permissions");
+  if ("kind" in proof) throw new Error("Unexpected error");
 
   const authorityOrder = ["cap1", "cap2"] as const;
   const validatedProof = capability.validateProofDocument(proof, authorityOrder);
   assert.ok(!("kind" in validatedProof), "Validation should pass with correct authority order");
+  if ("kind" in validatedProof) throw new Error("Unexpected error");
 
   const invalidAuthorityProof = capability.validateProofDocument(proof, ["cap2"]);
   assert.ok("kind" in invalidAuthorityProof, "Validation should fail with incorrect authority order");
@@ -135,11 +143,13 @@ test("buildversuscomposedecisionframeworkproof", () => {
   };
   const record1 = capability.createDecisionRecord("cap1", "BUILD", justification, 1);
   const record2 = capability.createDecisionRecord("cap2", "COMPOSE", justification, 1);
-  const proof = capability.authorDecision(
-    capability.authorDecision(null, record1),
-    record2,
-  );
+  const proof1 = capability.authorDecision(null, record1);
+  assert.ok(!("kind" in proof1), "First author should succeed");
+  if ("kind" in proof1) throw new Error("Unexpected error");
+
+  const proof = capability.authorDecision(proof1, record2);
   assert.ok(!("kind" in proof), "Proof document should be created");
+  if ("kind" in proof) throw new Error("Unexpected error");
 
   const consistency = capability.checkConsistency(proof);
   assert.strictEqual(consistency, true, "Proof should be consistent");
@@ -155,7 +165,7 @@ test("buildversuscomposedecisionframeworkproof", () => {
 
 test("buildversuscomposedecisionframeworkreadinessmodel", () => {
   const stateReady: capability.BuildVersusComposeState = {
-    readiness: "READY" as const,
+    readiness: "READY",
     proofDocument: {
       decisionRecords: [],
       consistencyCheck: true,
@@ -167,7 +177,7 @@ test("buildversuscomposedecisionframeworkreadinessmodel", () => {
   assert.strictEqual(readinessReady, "READY", "Readiness should be READY with consistent proof and no error");
 
   const stateNotReady: capability.BuildVersusComposeState = {
-    readiness: "NOT_READY" as const,
+    readiness: "NOT_READY",
     proofDocument: null,
     lastError: null,
   };
@@ -175,7 +185,7 @@ test("buildversuscomposedecisionframeworkreadinessmodel", () => {
   assert.strictEqual(readinessNotReady, "NOT_READY", "Readiness should be NOT_READY without proof");
 
   const stateError: capability.BuildVersusComposeState = {
-    readiness: "NOT_READY" as const,
+    readiness: "NOT_READY",
     proofDocument: {
       decisionRecords: [],
       consistencyCheck: true,
@@ -195,9 +205,10 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
   const validRecord = capability.createDecisionRecord("cap1", "BUILD", validJustification, 1);
   const validatedRecord = capability.validateDecision(validRecord);
   assert.ok(!("kind" in validatedRecord), "Valid decision should pass validation");
+  if ("kind" in validatedRecord) throw new Error("Unexpected error");
 
   const invalidJustification = {
-    criteria: { COST: "low", CONTROL: "high" },
+    criteria: { COST: "low", CONTROL: "high", READINESS: "" },
     rationale: "Missing READINESS",
   };
   const invalidRecord = { ...validRecord, justification: invalidJustification };
@@ -216,6 +227,7 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
   };
   const validatedProof = capability.validateProofDocument(proof, ["cap1"]);
   assert.ok(!("kind" in validatedProof), "Valid proof document should pass validation");
+  if ("kind" in validatedProof) throw new Error("Unexpected error");
 
   const invalidProof = { ...proof, authorityOrder: ["cap2"] };
   const validatedInvalidProof = capability.validateProofDocument(invalidProof, ["cap1"]);

@@ -8,6 +8,7 @@ export const CodeQualityAndSecretAndDependencyScanningErrorKind = [
   'STATIC_ANALYSIS_ERROR',
   'SBOM_MISSING',
   'SBOM_STALE',
+  'SBOM_STALE',
   'SBOM_POLICY_VIOLATION',
   'CODE_SCANNING_MISSING',
   'CODE_SCANNING_INVALID_CONFIG',
@@ -58,6 +59,7 @@ export interface CodeQualityAndSecretAndDependencyScanningState {
   readonly codeScanningConfig: CodeScanningConfig | null;
   readonly securityRoute: SecurityRoute | null;
   readonly lastError: CodeQualityAndSecretAndDependencyScanningError | null;
+  readonly securityConsoleReady: boolean;
 }
 
 export const initialState: CodeQualityAndSecretAndDependencyScanningState = {
@@ -69,6 +71,7 @@ export const initialState: CodeQualityAndSecretAndDependencyScanningState = {
   codeScanningConfig: null,
   securityRoute: null,
   lastError: null,
+  securityConsoleReady: false,
 };
 
 export function validateStaticAnalysisRules(
@@ -82,8 +85,10 @@ export function validateStaticAnalysisRules(
     if (
       rule === null ||
       typeof rule !== 'object' ||
+      !('id' in rule) ||
       typeof rule.id !== 'string' ||
-      !['HIGH', 'MEDIUM', 'LOW'].includes(rule.severity)
+      !('severity' in rule) ||
+      !['HIGH', 'MEDIUM', 'LOW'].includes(rule.severity as string)
     ) {
       return { kind: 'STATIC_ANALYSIS_ERROR', message: 'Invalid static analysis rule structure' };
     }
@@ -98,14 +103,21 @@ export function validateSBOM(
   if (
     sbom === null ||
     typeof sbom !== 'object' ||
+    !('baseline' in sbom) ||
     typeof sbom.baseline !== 'string' ||
+    !('lockHash' in sbom) ||
     typeof sbom.lockHash !== 'string' ||
+    !('timestamp' in sbom) ||
     typeof sbom.timestamp !== 'string'
   ) {
     return { kind: 'SBOM_MISSING', message: 'SBOM document is missing or invalid' };
   }
 
-  return sbom as SBOMDocument;
+  return {
+    baseline: sbom.baseline,
+    lockHash: sbom.lockHash,
+    timestamp: sbom.timestamp,
+  };
 }
 
 export function validateSBOMPolicy(
@@ -114,14 +126,21 @@ export function validateSBOMPolicy(
   if (
     policy === null ||
     typeof policy !== 'object' ||
+    !('allowedLicenses' in policy) ||
     !Array.isArray(policy.allowedLicenses) ||
+    !('forbiddenLicenses' in policy) ||
     !Array.isArray(policy.forbiddenLicenses) ||
+    !('securityRequirements' in policy) ||
     !Array.isArray(policy.securityRequirements)
   ) {
     return { kind: 'SBOM_POLICY_VIOLATION', message: 'SBOM policy is missing or invalid' };
   }
 
-  return policy as SBOMPolicy;
+  return {
+    allowedLicenses: policy.allowedLicenses,
+    forbiddenLicenses: policy.forbiddenLicenses,
+    securityRequirements: policy.securityRequirements,
+  };
 }
 
 export function validateCodeScanningConfig(
@@ -130,15 +149,24 @@ export function validateCodeScanningConfig(
   if (
     config === null ||
     typeof config !== 'object' ||
+    !('binaryPath' in config) ||
     typeof config.binaryPath !== 'string' ||
+    !('configPath' in config) ||
     typeof config.configPath !== 'string' ||
+    !('databasePath' in config) ||
     typeof config.databasePath !== 'string' ||
+    !('authoritative' in config) ||
     typeof config.authoritative !== 'boolean'
   ) {
     return { kind: 'CODE_SCANNING_INVALID_CONFIG', message: 'Code scanning configuration is invalid' };
   }
 
-  return config as CodeScanningConfig;
+  return {
+    binaryPath: config.binaryPath,
+    configPath: config.configPath,
+    databasePath: config.databasePath,
+    authoritative: config.authoritative,
+  };
 }
 
 export function validateSecurityRoute(
@@ -147,13 +175,18 @@ export function validateSecurityRoute(
   if (
     route === null ||
     typeof route !== 'object' ||
+    !('path' in route) ||
     typeof route.path !== 'string' ||
+    !('registered' in route) ||
     typeof route.registered !== 'boolean'
   ) {
     return { kind: 'ROUTE_MISSING', message: 'Security route is missing or invalid' };
   }
 
-  return route as SecurityRoute;
+  return {
+    path: route.path,
+    registered: route.registered,
+  };
 }
 
 export function runStaticAnalysisGate(
@@ -210,7 +243,8 @@ export function computeReadiness(
     state.lastError === null &&
     state.sbomDocument !== null &&
     state.codeScanningConfig !== null &&
-    state.securityRoute !== null
+    state.securityRoute !== null &&
+    state.securityRoute.registered
   ) {
     return 'READY';
   }
@@ -282,6 +316,11 @@ export function runCodeQualityAndSecretAndDependencyScanningGate(
   if (staticAnalysisVerdict === 'FAIL') {
     return {
       ...state,
+      staticAnalysisRules: validatedRules,
+      sbomDocument: validatedSBOM,
+      sbomPolicy: validatedPolicy,
+      codeScanningConfig: validatedConfig,
+      securityRoute: validatedRoute,
       lastVerdict: 'FAIL',
       lastError: { kind: 'STATIC_ANALYSIS_ERROR', message: 'Static analysis findings detected' },
       readiness: 'NOT_READY',
@@ -291,6 +330,11 @@ export function runCodeQualityAndSecretAndDependencyScanningGate(
   if (!verifySBOMFreshness(validatedSBOM, currentTimestamp)) {
     return {
       ...state,
+      staticAnalysisRules: validatedRules,
+      sbomDocument: validatedSBOM,
+      sbomPolicy: validatedPolicy,
+      codeScanningConfig: validatedConfig,
+      securityRoute: validatedRoute,
       lastVerdict: 'FAIL',
       lastError: { kind: 'SBOM_STALE', message: 'SBOM is stale' },
       readiness: 'NOT_READY',
@@ -301,6 +345,11 @@ export function runCodeQualityAndSecretAndDependencyScanningGate(
   if (policyError !== null) {
     return {
       ...state,
+      staticAnalysisRules: validatedRules,
+      sbomDocument: validatedSBOM,
+      sbomPolicy: validatedPolicy,
+      codeScanningConfig: validatedConfig,
+      securityRoute: validatedRoute,
       lastVerdict: 'FAIL',
       lastError: policyError,
       readiness: 'NOT_READY',
@@ -311,13 +360,18 @@ export function runCodeQualityAndSecretAndDependencyScanningGate(
   if (scanningError !== null) {
     return {
       ...state,
+      staticAnalysisRules: validatedRules,
+      sbomDocument: validatedSBOM,
+      sbomPolicy: validatedPolicy,
+      codeScanningConfig: validatedConfig,
+      securityRoute: validatedRoute,
       lastVerdict: 'FAIL',
       lastError: scanningError,
       readiness: 'NOT_READY',
     };
   }
 
-  return {
+  const finalState = {
     ...state,
     staticAnalysisRules: validatedRules,
     sbomDocument: validatedSBOM,
@@ -326,15 +380,10 @@ export function runCodeQualityAndSecretAndDependencyScanningGate(
     securityRoute: validatedRoute,
     lastVerdict: 'PASS',
     lastError: null,
-    readiness: computeReadiness({
-      ...state,
-      staticAnalysisRules: validatedRules,
-      sbomDocument: validatedSBOM,
-      sbomPolicy: validatedPolicy,
-      codeScanningConfig: validatedConfig,
-      securityRoute: validatedRoute,
-      lastVerdict: 'PASS',
-      lastError: null,
-    }),
+  };
+
+  return {
+    ...finalState,
+    readiness: computeReadiness(finalState),
   };
 }

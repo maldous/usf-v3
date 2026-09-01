@@ -102,7 +102,7 @@ export function grantDelegation(
   scope: string,
   expiryTimestamp: string | null,
   auditFn: (event: DelegatedAdministrationRolesAuditEvent) => DelegatedAdministrationRolesError | null,
-): { readonly outcome: DelegatedAdministrationRolesOutcome } | DelegatedAdministrationRolesError {
+): { readonly outcome: DelegatedAdministrationRolesOutcome; readonly state: DelegatedAdministrationRolesState } | DelegatedAdministrationRolesError {
   if (!context.callerRoles.includes('system-admin') && !context.callerRoles.includes('tenant-admin')) {
     return { kind: 'STATIC_PERMISSION_DENIED', message: 'Caller lacks permission to grant delegation' };
   }
@@ -148,8 +148,10 @@ export function grantDelegation(
 
   return {
     outcome: 'OK',
-    ...state,
-    delegations: [...state.delegations, newDelegation],
+    state: {
+      ...state,
+      delegations: [...state.delegations, newDelegation],
+    },
   };
 }
 
@@ -178,7 +180,7 @@ export function revokeDelegation(
   context: DelegatedAdministrationRolesContext,
   delegationId: string,
   auditFn: (event: DelegatedAdministrationRolesAuditEvent) => DelegatedAdministrationRolesError | null,
-): { readonly outcome: DelegatedAdministrationRolesOutcome } | DelegatedAdministrationRolesError {
+): { readonly outcome: DelegatedAdministrationRolesOutcome; readonly state: DelegatedAdministrationRolesState } | DelegatedAdministrationRolesError {
   if (!context.callerRoles.includes('system-admin')) {
     return { kind: 'STATIC_PERMISSION_DENIED', message: 'Caller lacks permission to revoke delegation' };
   }
@@ -222,7 +224,7 @@ export function revokeDelegation(
     return auditError;
   }
 
-  return { outcome: 'OK', ...newState };
+  return { outcome: 'OK', state: newState };
 }
 
 export function emitAuditList(
@@ -246,28 +248,27 @@ export function listDelegations(
   context: DelegatedAdministrationRolesContext,
   auditFn: (event: DelegatedAdministrationRolesAuditEvent) => DelegatedAdministrationRolesError | null,
 ): { readonly outcome: DelegatedAdministrationRolesOutcome; readonly delegations: readonly DelegatedAdministrationRolesDelegation[] } | DelegatedAdministrationRolesError {
-  if (!context.callerRoles.includes('system-admin') && !context.callerRoles.includes('tenant-admin')) {
-    if (context.callerRoles.length === 0) {
-      return { kind: 'STATIC_PERMISSION_DENIED', message: 'Caller lacks permission to list delegations' };
-    }
-    const callerDelegations = state.delegations.filter(
-      (d) => d.organisationId === context.organisationId && d.granteeId === context.callerId && isDelegationActive(d),
-    );
-    const auditError = emitAuditList(context.organisationId, auditFn);
-    if (auditError !== null) {
-      return auditError;
-    }
-    return { outcome: 'OK', delegations: callerDelegations };
+  if (!context.callerRoles.includes('PLATFORM_DELEGATION_READ') && !context.callerRoles.includes('system-admin') && !context.callerRoles.includes('tenant-admin')) {
+    return { kind: 'STATIC_PERMISSION_DENIED', message: 'Caller lacks permission to list delegations' };
   }
 
-  const organisationDelegations = state.delegations.filter(
-    (d) => d.organisationId === context.organisationId,
-  );
+  let delegations: readonly DelegatedAdministrationRolesDelegation[];
+  if (context.callerRoles.includes('system-admin') || context.callerRoles.includes('tenant-admin')) {
+    delegations = state.delegations.filter(
+      (d) => d.organisationId === context.organisationId,
+    );
+  } else {
+    delegations = state.delegations.filter(
+      (d) => d.organisationId === context.organisationId && d.granteeId === context.callerId && isDelegationActive(d),
+    );
+  }
+
   const auditError = emitAuditList(context.organisationId, auditFn);
   if (auditError !== null) {
     return auditError;
   }
-  return { outcome: 'OK', delegations: organisationDelegations };
+
+  return { outcome: 'OK', delegations };
 }
 
 export function getDelegation(

@@ -1,4 +1,5 @@
 export const EndUserProfileAndPreferencesSelfServiceAuditEventKind = [
+  'AUDIT_BEFORE_CHANGE',
   'PROFILE_UPDATED',
   'PREFERENCE_UPDATED',
   'NOTIFICATION_TESTED',
@@ -167,19 +168,31 @@ export function validateNotificationPayload(
   payload: unknown,
 ): EndUserProfileAndPreferencesSelfServiceError | null {
   const payloadStr = JSON.stringify(payload);
-  if (payloadStr.includes('secret') || payloadStr.includes('password') || payloadStr.includes('token')) {
+  if (payloadStr && (payloadStr.includes('secret') || payloadStr.includes('password') || payloadStr.includes('token'))) {
     return { kind: 'NOT_NOTIFIABLE', message: 'Payload contains secret-bearing columns' };
   }
   return null;
 }
 
-export function emitAuditEvent(
-  kind: EndUserProfileAndPreferencesSelfServiceAuditEventKind,
+export function emitAuditBeforeChange(
+  kind: Exclude<EndUserProfileAndPreferencesSelfServiceAuditEventKind, 'AUDIT_BEFORE_CHANGE'>,
   userId: string,
   tenantId: string,
   payload: unknown,
   auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
 ): EndUserProfileAndPreferencesSelfServiceError | null {
+  const beforeChangeEvent: EndUserProfileAndPreferencesSelfServiceAuditEvent = {
+    kind: 'AUDIT_BEFORE_CHANGE',
+    userId,
+    tenantId,
+    timestamp: new Date().toISOString(),
+    payload,
+  };
+  const beforeChangeError = auditFn(beforeChangeEvent);
+  if (beforeChangeError !== null) {
+    return beforeChangeError;
+  }
+
   const event: EndUserProfileAndPreferencesSelfServiceAuditEvent = {
     kind,
     userId,
@@ -192,11 +205,11 @@ export function emitAuditEvent(
 
 export function readProfile(
   state: EndUserProfileAndPreferencesSelfServiceState,
-  userId: string,
-  tenantId: string,
+  authenticatedUserId: string,
+  authenticatedTenantId: string,
 ): { readonly result: 'success'; readonly profile: EndUserProfileAndPreferencesSelfServiceProfile } |
   { readonly result: 'error'; readonly error: EndUserProfileAndPreferencesSelfServiceError } {
-  if (state.tenantId !== tenantId || state.userId !== userId) {
+  if (state.tenantId !== authenticatedTenantId || state.userId !== authenticatedUserId) {
     return {
       result: 'error',
       error: { kind: 'NO_TENANT', message: 'Tenant or user mismatch' },
@@ -211,11 +224,11 @@ export function readProfile(
 
 export function readPreferences(
   state: EndUserProfileAndPreferencesSelfServiceState,
-  userId: string,
-  tenantId: string,
+  authenticatedUserId: string,
+  authenticatedTenantId: string,
 ): { readonly result: 'success'; readonly preferences: readonly EndUserProfileAndPreferencesSelfServicePreference[] } |
   { readonly result: 'error'; readonly error: EndUserProfileAndPreferencesSelfServiceError } {
-  if (state.tenantId !== tenantId || state.userId !== userId) {
+  if (state.tenantId !== authenticatedTenantId || state.userId !== authenticatedUserId) {
     return {
       result: 'error',
       error: { kind: 'NO_TENANT', message: 'Tenant or user mismatch' },
@@ -230,12 +243,12 @@ export function readPreferences(
 
 export function updateProfile(
   state: EndUserProfileAndPreferencesSelfServiceState,
-  userId: string,
-  tenantId: string,
+  authenticatedUserId: string,
+  authenticatedTenantId: string,
   profile: unknown,
   auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
 ): EndUserProfileAndPreferencesSelfServiceState | EndUserProfileAndPreferencesSelfServiceError {
-  if (state.tenantId !== tenantId || state.userId !== userId) {
+  if (state.tenantId !== authenticatedTenantId || state.userId !== authenticatedUserId) {
     return { kind: 'NO_TENANT', message: 'Tenant or user mismatch' };
   }
 
@@ -248,10 +261,10 @@ export function updateProfile(
     return validation.error;
   }
 
-  const auditError = emitAuditEvent(
+  const auditError = emitAuditBeforeChange(
     'PROFILE_UPDATED',
-    userId,
-    tenantId,
+    authenticatedUserId,
+    authenticatedTenantId,
     profile,
     auditFn,
   );
@@ -267,12 +280,12 @@ export function updateProfile(
 
 export function updatePreference(
   state: EndUserProfileAndPreferencesSelfServiceState,
-  userId: string,
-  tenantId: string,
+  authenticatedUserId: string,
+  authenticatedTenantId: string,
   preference: unknown,
   auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
 ): EndUserProfileAndPreferencesSelfServiceState | EndUserProfileAndPreferencesSelfServiceError {
-  if (state.tenantId !== tenantId || state.userId !== userId) {
+  if (state.tenantId !== authenticatedTenantId || state.userId !== authenticatedUserId) {
     return { kind: 'NO_TENANT', message: 'Tenant or user mismatch' };
   }
 
@@ -285,10 +298,10 @@ export function updatePreference(
     return validation.error;
   }
 
-  const auditError = emitAuditEvent(
+  const auditError = emitAuditBeforeChange(
     'PREFERENCE_UPDATED',
-    userId,
-    tenantId,
+    authenticatedUserId,
+    authenticatedTenantId,
     preference,
     auditFn,
   );
@@ -313,25 +326,20 @@ export function updatePreference(
 }
 
 export function testNotification(
-  state: EndUserProfileAndPreferencesSelfServiceState,
-  userId: string,
-  tenantId: string,
+  authenticatedUserId: string,
+  authenticatedTenantId: string,
   payload: unknown,
   auditFn: (event: EndUserProfileAndPreferencesSelfServiceAuditEvent) => EndUserProfileAndPreferencesSelfServiceError | null,
 ): { readonly result: 'success' } | EndUserProfileAndPreferencesSelfServiceError {
-  if (state.tenantId !== tenantId || state.userId !== userId) {
-    return { kind: 'NO_TENANT', message: 'Tenant or user mismatch' };
-  }
-
   const secretError = validateNotificationPayload(payload);
   if (secretError !== null) {
     return secretError;
   }
 
-  const auditError = emitAuditEvent(
+  const auditError = emitAuditBeforeChange(
     'NOTIFICATION_TESTED',
-    userId,
-    tenantId,
+    authenticatedUserId,
+    authenticatedTenantId,
     payload,
     auditFn,
   );
@@ -365,3 +373,14 @@ export function dispatchNotifications(
     dispatchLogs: [...state.dispatchLogs, ...newDispatchLogs],
   };
 }
+
+export const EndUserProfileAndPreferencesSelfServiceUISemantics = {
+  surfaces: ['profile-edit', 'preference-manage', 'notification-test'],
+  viewModels: ['profile-form', 'preference-list', 'test-result'],
+  components: ['text-input', 'toggle-switch', 'status-badge'],
+  journeys: ['update-profile', 'update-preferences', 'test-notification'],
+  permissions: ['SELF_READ', 'SELF_UPDATE'],
+  accessibility: 'WCAG-2.1-AA',
+  localisation: 'i18next',
+  rendererContracts: ['web-dom', 'mobile-native'],
+};

@@ -92,6 +92,19 @@ export function registerEnvironment(
     manifest,
     auditFn,
   );
+
+  const baseState: EnvironmentRegistryAndBootstrapState = {
+    ...state,
+    lastAuditEvent: {
+      kind: 'AUDIT_BEFORE_REGISTRATION',
+      environment: manifest.name,
+      operator,
+      manifest,
+      timestamp: new Date().toISOString(),
+    },
+    lastError: auditError,
+  };
+
   if (auditError !== null) {
     return auditError;
   }
@@ -112,17 +125,10 @@ export function registerEnvironment(
   }
 
   return {
-    ...state,
+    ...baseState,
     environments: [...state.environments, manifest],
-    lastAuditEvent: {
-      kind: 'AUDIT_BEFORE_REGISTRATION',
-      environment: manifest.name,
-      operator,
-      manifest,
-      timestamp: new Date().toISOString(),
-    },
     lastError: null,
-    readiness: 'READY',
+    readiness: state.readiness,
     pendingProofs: state.pendingProofs.filter((proof) => proof !== 'proof:environment-registry'),
   };
 }
@@ -142,6 +148,19 @@ export function bootstrapEnvironment(
     null,
     auditFn,
   );
+
+  const baseState: EnvironmentRegistryAndBootstrapState = {
+    ...state,
+    lastAuditEvent: {
+      kind: 'AUDIT_BEFORE_BOOTSTRAP',
+      environment,
+      operator,
+      manifest: null,
+      timestamp: new Date().toISOString(),
+    },
+    lastError: auditError,
+  };
+
   if (auditError !== null) {
     return auditError;
   }
@@ -188,17 +207,10 @@ export function bootstrapEnvironment(
   }
 
   return {
-    ...state,
+    ...baseState,
     generatedConfigs: newGeneratedConfigs,
-    lastAuditEvent: {
-      kind: 'AUDIT_BEFORE_BOOTSTRAP',
-      environment,
-      operator,
-      manifest: null,
-      timestamp: new Date().toISOString(),
-    },
     lastError: null,
-    readiness: 'READY',
+    readiness: state.readiness,
     pendingProofs: state.pendingProofs.filter((proof) => proof !== 'proof:environment-admin-bootstrap'),
   };
 }
@@ -206,32 +218,29 @@ export function bootstrapEnvironment(
 export function getEnvironmentConfig(
   state: EnvironmentRegistryAndBootstrapState,
   environment: string,
-): GeneratedEnvironmentConfig | EnvironmentRegistryAndBootstrapError {
+): GeneratedEnvironmentConfig | null {
   const config = state.generatedConfigs.find((c) => c.environment === environment);
-  if (config === undefined) {
-    return {
-      kind: 'MISSING_CONFIGURATION',
-      message: `No generated config for environment ${environment}`,
-    };
-  }
-  return config;
+  return config ?? null;
 }
 
 export function runProofs(
   state: EnvironmentRegistryAndBootstrapState,
 ): EnvironmentRegistryAndBootstrapState {
-  if (state.pendingProofs.length === 0) {
-    return { ...state, readiness: 'READY' };
-  }
+  const newPendingProofs = state.pendingProofs.filter((proof) => {
+    switch (proof) {
+      case 'proof:environment-registry':
+        return state.environments.length === 0;
+      case 'proof:environment-admin-bootstrap':
+        return state.generatedConfigs.length === 0;
+      case 'proof:environment-operations':
+        return state.environments.length === 0 || state.generatedConfigs.length === 0;
+      default:
+        return true;
+    }
+  });
 
   return {
     ...state,
-    readiness: state.pendingProofs.includes('proof:environment-operations') ? 'DEGRADED' : 'READY',
+    pendingProofs: newPendingProofs,
   };
-}
-
-export function getReadiness(
-  state: EnvironmentRegistryAndBootstrapState,
-): EnvironmentRegistryAndBootstrapReadinessSignal {
-  return state.readiness;
 }

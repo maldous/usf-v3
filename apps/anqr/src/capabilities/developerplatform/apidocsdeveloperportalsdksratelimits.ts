@@ -30,6 +30,7 @@ export interface AuditMetadata {
   readonly actorId: string;
   readonly timestamp: string;
   readonly action: string;
+  readonly tenantId: string;
 }
 
 export interface ApiKey {
@@ -115,7 +116,8 @@ export function checkOpenApiDrift(declaredContract: unknown, liveContract: unkno
 export function authenticateKey(apiKeys: readonly ApiKey[], keyPrefix: string, secret: string): ApiKey | null {
   const key = apiKeys.find(k => k.prefix === keyPrefix);
   if (!key || key.state === 'REVOKED') return null;
-  return key;
+  const hash = require('crypto').createHash('sha256').update(secret).digest('hex');
+  return key.hash === hash ? key : null;
 }
 
 export function generateApiKey(prefix: string, scopes: readonly string[]): { readonly secret: string; readonly hash: string } {
@@ -130,11 +132,12 @@ export function createApiKey(
   actorId: string,
   scopes: readonly string[],
   auditFn: (metadata: AuditMetadata) => void,
+  entitlements: readonly Permission[],
 ): Result<{ readonly state: State; readonly secret: string }> {
   const tenantCheck = checkTenantContext(tenantId);
   if (!tenantCheck.ok) return tenantCheck as Result<never>;
 
-  const entitlementCheck = checkEntitlement([...state.apiKeys.map(k => 'TENANT_API_KEY_WRITE' as Permission)]);
+  const entitlementCheck = checkEntitlement(entitlements);
   if (!entitlementCheck.ok) return entitlementCheck as Result<never>;
 
   const tenantIdCheck = checkTenantIdentifier(tenantId);
@@ -151,16 +154,23 @@ export function createApiKey(
     revokedAt: null,
   };
 
-  const newState: State = {
-    ...state,
-    apiKeys: [...state.apiKeys, newKey],
-  };
-
   auditFn({
     actorId,
     timestamp: new Date().toISOString(),
     action: 'API_KEY_CREATED',
+    tenantId,
   });
+
+  const newState: State = {
+    ...state,
+    apiKeys: [...state.apiKeys, newKey],
+    auditLog: [...state.auditLog, {
+      actorId,
+      timestamp: new Date().toISOString(),
+      action: 'API_KEY_CREATED',
+      tenantId,
+    }],
+  };
 
   return { ok: true, value: { state: newState, secret } };
 }
@@ -171,11 +181,12 @@ export function revokeApiKey(
   actorId: string,
   keyId: string,
   auditFn: (metadata: AuditMetadata) => void,
+  entitlements: readonly Permission[],
 ): Result<State> {
   const tenantCheck = checkTenantContext(tenantId);
   if (!tenantCheck.ok) return tenantCheck as Result<never>;
 
-  const entitlementCheck = checkEntitlement([...state.apiKeys.map(k => 'TENANT_API_KEY_WRITE' as Permission)]);
+  const entitlementCheck = checkEntitlement(entitlements);
   if (!entitlementCheck.ok) return entitlementCheck as Result<never>;
 
   const keyIndex = state.apiKeys.findIndex(k => k.id === keyId);
@@ -187,6 +198,13 @@ export function revokeApiKey(
   if (key.state === 'REVOKED') {
     return { ok: false, error: { kind: 'REVOKED_OR_INVALID_KEY', message: 'Key already revoked' } };
   }
+
+  auditFn({
+    actorId,
+    timestamp: new Date().toISOString(),
+    action: 'API_KEY_REVOKED',
+    tenantId,
+  });
 
   const newKey: ApiKey = {
     ...key,
@@ -201,27 +219,28 @@ export function revokeApiKey(
       newKey,
       ...state.apiKeys.slice(keyIndex + 1),
     ],
+    auditLog: [...state.auditLog, {
+      actorId,
+      timestamp: new Date().toISOString(),
+      action: 'API_KEY_REVOKED',
+      tenantId,
+    }],
   };
-
-  auditFn({
-    actorId,
-    timestamp: new Date().toISOString(),
-    action: 'API_KEY_REVOKED',
-  });
 
   return { ok: true, value: newState };
 }
 
-export function listApiKeys(state: State, tenantId: string): Result<readonly Omit<ApiKey, 'hash'>[]> {
+export function listApiKeys(state: State, tenantId: string, entitlements: readonly Permission[]): Result<readonly Omit<ApiKey, 'hash' | 'id'>[]> {
   const tenantCheck = checkTenantContext(tenantId);
   if (!tenantCheck.ok) return tenantCheck as Result<never>;
 
-  const entitlementCheck = checkEntitlement([...state.apiKeys.map(k => 'TENANT_API_KEY_READ' as Permission)]);
-  if (!entitlementCheck.ok) return entitlementCheck as Result<never>;
+  if (!entitlements.includes('TENANT_API_KEY_READ')) {
+    return { ok: false, error: { kind: 'NOT_ENTITLED', message: 'Missing TENANT_API_KEY_READ permission' } };
+  }
 
   const keys = state.apiKeys
     .filter(k => k.prefix === tenantId)
-    .map(({ hash, ...rest }) => rest);
+    .map(({ hash, id, ...rest }) => rest);
   return { ok: true, value: keys };
 }
 
@@ -266,15 +285,24 @@ export function updateRateLimitPolicy(
   route: string,
   policy: RateLimitPolicy,
   auditFn: (metadata: AuditMetadata) => void,
+  entitlements: readonly Permission[],
 ): Result<State> {
   const tenantCheck = checkTenantContext(tenantId);
   if (!tenantCheck.ok) return tenantCheck as Result<never>;
 
-  const entitlementCheck = checkEntitlement(['PLATFORM_RATE_LIMIT_OPERATOR' as Permission]);
-  if (!entitlementCheck.ok) return entitlementCheck as Result<never>;
+  if (!entitlements.includes('PLATFORM_RATE_LIMIT_OPERATOR')) {
+    return { ok: false, error: { kind: 'NOT_ENTITLED', message: 'Missing PLATFORM_RATE_LIMIT_OPERATOR permission' } };
+  }
 
   const tenantIdCheck = checkTenantIdentifier(tenantId);
   if (!tenantIdCheck.ok) return tenantIdCheck as Result<never>;
+
+  auditFn({
+    actorId,
+    timestamp: new Date().toISOString(),
+    action: 'RATE_LIMIT_POLICY_CHANGED',
+    tenantId,
+  });
 
   const newRateLimit: RateLimitState = {
     policy,
@@ -288,13 +316,13 @@ export function updateRateLimitPolicy(
   const newState: State = {
     ...state,
     rateLimits: newRateLimits,
+    auditLog: [...state.auditLog, {
+      actorId,
+      timestamp: new Date().toISOString(),
+      action: 'RATE_LIMIT_POLICY_CHANGED',
+      tenantId,
+    }],
   };
-
-  auditFn({
-    actorId,
-    timestamp: new Date().toISOString(),
-    action: 'RATE_LIMIT_POLICY_CHANGED',
-  });
 
   return { ok: true, value: newState };
 }
@@ -323,4 +351,64 @@ export function computeReadiness(state: State): Readiness {
   if (state.developerPortal === null) return 'UNAVAILABLE';
   if (state.readiness === 'DEGRADED') return 'DEGRADED';
   return 'READY';
+}
+
+export function validateApiKeyCreation(
+  state: State,
+  tenantId: string,
+  actorId: string,
+  scopes: readonly string[],
+  entitlements: readonly Permission[],
+): Result<{ readonly secret: string; readonly state: State }> {
+  const tenantCheck = checkTenantContext(tenantId);
+  if (!tenantCheck.ok) return tenantCheck as Result<never>;
+
+  const entitlementCheck = checkEntitlement(entitlements);
+  if (!entitlementCheck.ok) return entitlementCheck as Result<never>;
+
+  const tenantIdCheck = checkTenantIdentifier(tenantId);
+  if (!tenantIdCheck.ok) return tenantIdCheck as Result<never>;
+
+  const { secret, hash } = generateApiKey(tenantId, scopes);
+  const newKey: ApiKey = {
+    id: require('crypto').randomUUID(),
+    prefix: tenantId,
+    hash,
+    state: 'ACTIVE',
+    scopes,
+    createdAt: new Date().toISOString(),
+    revokedAt: null,
+  };
+
+  const newState: State = {
+    ...state,
+    apiKeys: [...state.apiKeys, newKey],
+  };
+
+  return { ok: true, value: { secret, state: newState } };
+}
+
+export function validateApiKeyAuthentication(
+  state: State,
+  keyPrefix: string,
+  secret: string,
+): Result<ApiKey> {
+  const key = authenticateKey(state.apiKeys, keyPrefix, secret);
+  if (!key) {
+    return { ok: false, error: { kind: 'REVOKED_OR_INVALID_KEY', message: 'Invalid or revoked key' } };
+  }
+  return { ok: true, value: key };
+}
+
+export function validateRateLimitPolicy(
+  state: State,
+  route: string,
+  policy: RateLimitPolicy,
+): Result<RateLimitState> {
+  const newRateLimit: RateLimitState = {
+    policy,
+    currentWindowCount: 0,
+    exceeded: 'NOT_EXCEEDED',
+  };
+  return { ok: true, value: newRateLimit };
 }

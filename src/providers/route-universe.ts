@@ -119,12 +119,15 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
     if (entry.state !== "ROUTABLE" && entry.state !== "AVAILABLE") continue;
     const provider = input.snapshot.providers.find((item) => item.providerRoute === entry.provider);
     const model = provider?.models.find((item) => item.route.model === entry.model);
-    // A model that does not emit text cannot answer a text work unit. The
-    // catalogue carries image, audio and video routes, and one of them refusing
-    // an "invalid argument" is an attempt spent learning what the catalogue
-    // already said. An undeclared modality is not treated as a disqualification.
+    // A generative model must emit text and nothing else to answer a text work
+    // unit. Requiring only that text be *among* its outputs is not enough: a
+    // music model declares ["audio", "text"], was selected for a code unit, and
+    // returned song lyrics with timestamps -- which then failed admission as
+    // "no export", spending both a dispatch and a diagnosis. An undeclared
+    // modality is still not a disqualification.
     const outputModalities = model?.modalities?.output ?? null;
-    if (outputModalities !== null && outputModalities.length > 0 && !outputModalities.includes("text")) continue;
+    if (outputModalities !== null && outputModalities.length > 0
+      && outputModalities.some((modality) => modality !== "text")) continue;
     candidates.push(Object.freeze({
       candidateId: `${entry.transport ?? "unknown"}:${entry.provider}:${entry.model}`,
       transport: entry.transport ?? "vercel-ai-sdk",
