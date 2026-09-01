@@ -219,3 +219,67 @@ configuration. A repeated learning may become an isolated skill candidate,
 but it cannot activate itself or silently change the profile against which a
 provider was qualified. Likewise, Hermes may propose compatible integration
 cohorts but cannot turn prompts, triples or chain stages into commit boundaries.
+
+## Conventions carried into the V3 execution authority
+
+Classified at the V3 authority transition. The Gate 0 sections above already
+covered semantic-first authority; these are the operational conventions the
+execution path now owns.
+
+### RETAIN AS V3 INVARIANT
+
+- Blank-node-free IRI/literal N-Quads in one explicitly named graph, parsed by
+  the single narrow `parseStrictNQuads` profile. Semantic work graphs use the
+  same contract as authority graphs.
+- Canonical digesting: `sha256-usf-canonical-json-v1` for records,
+  `canonicalQuadDigest` for quad sets. Provenance is asserted by digest, never
+  by narration, so any claim can be recomputed.
+- Graph directory and manifest conventions: `graph/*.nq` sources composed
+  through importing manifests under `graph/manifests/`, each source naming its
+  exact graph IRI, role and validation profile.
+- IRI conventions: `urn:usf:<kind>:<name>[:<version>]`, versioned where the
+  resource carries authority.
+- Schema location convention: `schemas/*.schema.json`, one file per record.
+- Generated-versus-authored separation: authored tracked state under `config/`,
+  `graph/`, `schemas/`, `src/`; generated and operational state under ignored
+  `.usf/`, never committed.
+- Credential containment: one owner-only mode-0600 repository-local file, read
+  through an explicit `--env-file`, name-allowlisted, never inherited from the
+  ambient environment and never digested into any record.
+- Confinement expectations: bounded input sizes, `O_NOFOLLOW`, same-file
+  identity checks across open and read, refusal of symlinks and of paths that
+  resolve outside the repository.
+- Operator-facing conventions: one JSON object per command on stdout, a
+  `schema` IRI on every record, an explicit `nonClaims` array stating what the
+  record does not assert, and a stable exit-code vocabulary.
+- Fail-closed ordering: authority and currentness are checked before any
+  external contact, and an absent fact is never read as permission.
+- Scratch convention: ephemeral state in the process TMPDIR, removed on exit.
+
+### REIMPLEMENTED SIMPLY
+
+- Provider economics. The V2 lane demanded a provider-owned account-tier
+  endpoint. V3 keeps the fail-closed intent and drops the unsatisfiable
+  mechanism: explicit operator authorization plus catalogue price evidence,
+  evaluated per transport-and-provider pair.
+- Route qualification. Replaced by the six-state readiness ladder over the
+  whole catalogue, which classifies every model deterministically instead of
+  qualifying a configured shortlist.
+- Model catalogue. A normalized models.dev projection replaces any bespoke
+  catalogue modelling; USF binds only what it needs for semantic decisions.
+- Parallel execution evidence. Peak concurrency and speedup are derived from
+  actual start and end instants rather than asserted.
+
+### HISTORICAL ONLY
+
+- `docs/historical-inventory.md` and the ANQR provenance under
+  `evidence/historical-carriers/`. Orientation, not runtime dependency.
+- The v1 account-tier receipt records and the receipt-v2 activation schemas.
+  Retained as history; not consulted by the execution path.
+
+### DELETED FROM ACTIVE PATH
+
+- Universal provider-owned account-source endpoints as an eligibility
+  precondition.
+- OpenRouter-specific mapping identity treated as a universal rule.
+- Any requirement that a Git commit act as a semantic execution event.

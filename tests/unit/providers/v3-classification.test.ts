@@ -197,7 +197,7 @@ test("diversification interleaves providers so one quota cannot absorb every uni
   const candidates = [
     { candidateId: "a1", provider: "alpha" }, { candidateId: "a2", provider: "alpha" },
     { candidateId: "b1", provider: "beta" }, { candidateId: "c1", provider: "gamma" },
-  ] as Parameters<typeof diversifyCandidates>[0];
+  ] as unknown as Parameters<typeof diversifyCandidates>[0];
   const first = diversifyCandidates(candidates, 0).map((entry) => entry.provider);
   assert.deepEqual(first, ["alpha", "beta", "gamma", "alpha"]);
   // A different unit ordinal starts on a different provider.
