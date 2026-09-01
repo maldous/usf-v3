@@ -4,9 +4,9 @@
  "producedAt": "2026-09-01",
  "purpose": "Proof that the semantic knowledge accumulated in V1 and V2 is represented in V3, deliberately superseded, or classified obsolete with a reason. Answers: what happened to concept X?",
  "sources": {
-  "v1": "/home/user/src/bak/usf (graph/, 281 ontology classes, 156 graph files)",
-  "v2": "/home/user/src/bak/v2/usf (semantic-model/, 495 classes, 1616 properties, 60449 lines RDF, 98 integrity branches, 721 SHACL messages)",
-  "v3": "/home/user/src/usf-v3 (12 graph sources, 13580 quads, 144 types, 897 predicates)"
+  "v1": "V1 historical checkout: graph/ with 281 ontology classes across 156 graph files. Absolute location is recorded only in docs/historical-inventory.md, which is the single tracked file permitted to name a historical path.",
+  "v2": "V2 historical checkout: semantic-model/ with 495 ontology classes, 1616 properties, 60449 lines of Turtle/TriG, 98 SPARQL integrity branches, 721 SHACL constraint messages, and documentation/correction-and-invariant-record.md carrying its own distilled C1-C16 invariants.",
+  "v3": "This repository: 12 graph sources, 13580 quads, 144 declared types, 897 declared predicates."
  },
  "dispositionVocabulary": {
   "RETAIN": "Invariant and its enforcement both carry forward.",
