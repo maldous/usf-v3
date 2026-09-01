@@ -259,21 +259,26 @@ export function deriveImplementationWorkUnits(
         repairs: none, repairRound: 0,
       }));
     }
+    const outstanding = repairs.get(need.capability);
     if (!conformanceLanded) {
+      // A module that does not hold up is not a surface to write a test
+      // against: the test would describe code that cannot run.
+      const bindable = moduleLanded && (outstanding === undefined || outstanding.failing.length === 0);
       units.push(Object.freeze({
         unit: unitIdentifier("conformance", need), stage: "conformance" as const, need,
         targetPath: need.conformancePath,
-        requiresUnit: moduleLanded ? null : unitIdentifier("implementation", need),
-        ready: moduleLanded,
-        readyReason: moduleLanded
-          ? "The implementation module exists, so its exported surface is concrete and a behavioural test can bind to it."
-          : "A behavioural test requires the concrete exported surface of the implementation module, which does not exist yet.",
+        requiresUnit: bindable ? null : unitIdentifier("implementation", need),
+        ready: bindable,
+        readyReason: bindable
+          ? "The implementation module exists and holds up, so its exported surface is concrete and a behavioural test can bind to it."
+          : moduleLanded
+            ? "The implementation module exists but does not hold up, so there is no stable surface to write a behavioural test against yet."
+            : "A behavioural test requires the concrete exported surface of the implementation module, which does not exist yet.",
         repairs: none, repairRound: 0,
       }));
-      continue;
+      if (!moduleLanded) continue;
     }
-    if (!moduleLanded) continue;
-    const repair = repairs.get(need.capability);
+    const repair = outstanding;
     if (repair === undefined || repair.failing.length === 0 || repair.round > maximumRepairRounds) continue;
     // Rounds alternate, because a behavioural check that keeps failing is as
     // likely to be a wrong test as wrong code and alternating finds out without

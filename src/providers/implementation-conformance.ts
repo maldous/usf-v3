@@ -175,6 +175,17 @@ export async function runCapabilityConformance(
   });
 
   if (moduleBytes === undefined) return refused("the implementation module does not exist");
+
+  // The module is compiled on its own as soon as it exists. A module that does
+  // not compile is a fact worth recording before a test is ever written against
+  // it: writing one would spend a dispatch describing code that cannot run.
+  const moduleOnly = await typecheck(repositoryRoot, [need.modulePath]);
+  if (!moduleOnly.clean) {
+    return Object.freeze({
+      ...refused("the implementation module does not typecheck, so no behaviour can be observed"),
+      typecheck: moduleOnly,
+    });
+  }
   if (testBytes === undefined) return refused("the conformance test does not exist");
 
   const compiled = await typecheck(repositoryRoot, [need.modulePath, need.conformancePath]);
@@ -275,13 +286,16 @@ export async function loadConformanceEvidence(
     let record: ConformanceRun;
     try { record = JSON.parse(bytes) as ConformanceRun; } catch { continue; }
     if (record.schema !== "urn:usf:implementation-conformance-evidence:1") continue;
+    // A module-only observation binds no test, so only the module decides
+    // whether it still describes current bytes.
     const stale = await digestOf(record.modulePath) !== record.modulePathDigest
-      || await digestOf(record.conformancePath) !== record.conformancePathDigest;
+      || (record.conformancePathDigest.length > 0
+        && await digestOf(record.conformancePath) !== record.conformancePathDigest);
     // A run that could not execute is retained as a blocked observation. It
     // satisfies nothing, but it is the difference between "this capability is
     // waiting for work" and "this capability is silently stuck".
     const blocked = !record.executed || !record.confined || record.typecheck.clean !== true;
-    if (blocked && (record.modulePathDigest.length === 0 || record.conformancePathDigest.length === 0)) continue;
+    if (blocked && record.modulePathDigest.length === 0) continue;
     for (const outcome of record.outcomes ?? []) {
       if (typeof outcome.facet !== "string") continue;
       if (!blocked && !outcome.executed) continue;

@@ -165,8 +165,10 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   // module and test both exist but whose behaviour has not been observed under
   // the current bytes is a check waiting to run.
   const evidenceBefore = await loadConformanceEvidence(repositoryRoot);
+  // A module alone is enough to check: compiling it is the cheapest way to
+  // learn whether a test written against it could ever run.
   const awaitingCheck = needs.filter((need) =>
-    present.has(need.modulePath) && present.has(need.conformancePath)
+    present.has(need.modulePath)
     && need.requirements.some((requirement) => {
       const entry = evidenceBefore.get(requirement.facet);
       return entry === undefined || entry.stale;
