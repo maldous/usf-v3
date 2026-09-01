@@ -356,7 +356,7 @@ test("notificationdeliveryandpreferencesandchannelsreadinessmodel", () => {
   const prepped = withPreference as capability.NotificationDeliveryAndPreferencesAndChannelsState;
 
   const sendResult = capability.dispatchNotification(
-    degraded,
+    prepped,
     "tenant1",
     "user1",
     "EMAIL" as const,
@@ -365,18 +365,27 @@ test("notificationdeliveryandpreferencesandchannelsreadinessmodel", () => {
   );
   assert(!("kind" in sendResult));
   const sendState = sendResult as capability.NotificationDeliveryAndPreferencesAndChannelsState;
-  assert.strictEqual(sendState.notificationLogs[0].status, "FAILED");
-  assert(sendState.lastError !== null);
+  assert.strictEqual(sendState.notificationLogs[0].status, "SENT");
+  assert.strictEqual(sendState.lastError, null);
 
+  const degradedState = capability.setTransportReadiness(
+    prepped,
+    "EMAIL" as const,
+    "DEGRADED",
+  );
   const sendOnDegraded = capability.dispatchNotification(
-    degraded,
+    degradedState,
     "tenant1",
     "user1",
-    "WEBHOOK" as const,
-    "SYSTEM" as const,
+    "EMAIL" as const,
+    "WORKFLOW" as const,
     auditFn,
   );
   assert(!("kind" in sendOnDegraded));
+  const degradedSendState = sendOnDegraded as capability.NotificationDeliveryAndPreferencesAndChannelsState;
+  assert.strictEqual(degradedSendState.notificationLogs[0].status, "FAILED");
+  assert(degradedSendState.lastError !== null);
+  assert.strictEqual(degradedSendState.lastError.kind, "READINESS_UNAVAILABLE");
 });
 
 test("notificationdeliveryandpreferencesandchannelsstatemodel", () => {

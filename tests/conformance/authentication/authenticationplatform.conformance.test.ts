@@ -23,7 +23,7 @@ test("authenticationplatformauditmodel", () => {
     new Date(Date.now() + 3600000).toISOString(),
     auditFn
   );
-  assert.ok(!("kind" in sessionResult), "createSession should succeed");
+  if ("kind" in sessionResult) throw new Error("Unexpected error");
   assert.equal(auditEvents.length, 1);
   assert.equal(auditEvents[0].kind, "SESSION_CREATED");
   assert.equal(auditEvents[0].operation, "createSession");
@@ -31,7 +31,7 @@ test("authenticationplatformauditmodel", () => {
 
   // Test session destruction audit
   const destroyResult = capability.destroySession(state, sessionResult.session.id, auditFn);
-  assert.ok(!("kind" in destroyResult), "destroySession should succeed");
+  if ("kind" in destroyResult) throw new Error("Unexpected error");
   assert.equal(auditEvents.length, 2);
   assert.equal(auditEvents[1].kind, "SESSION_DESTROYED");
   assert.equal(auditEvents[1].operation, "destroySession");
@@ -48,11 +48,11 @@ test("authenticationplatformauditmodel", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"],
+    ["openid"] as const,
     "***REDACTED***",
     auditFn
   );
-  assert.ok(!("kind" in providerResult), "createProvider should succeed");
+  if ("kind" in providerResult) throw new Error("Unexpected error");
   assert.equal(auditEvents.length, 3);
   assert.equal(auditEvents[2].kind, "AUDIT_BEFORE_CHANGE");
   assert.equal(auditEvents[2].alias, "test-provider");
@@ -68,7 +68,7 @@ test("authenticationplatformauditmodel", () => {
     "test-provider-2",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"],
+    ["openid"] as const,
     "***REDACTED***",
     failingAuditFn
   );
@@ -93,7 +93,7 @@ test("authenticationplatformcontracts", () => {
     new Date(Date.now() + 3600000).toISOString(),
     auditFn
   );
-  assert.ok(!("kind" in sessionResult));
+  if ("kind" in sessionResult) throw new Error("Unexpected error");
   assert.equal(sessionResult.session.userId, "user1");
   assert.deepStrictEqual(sessionResult.session.roles, ["role1"]);
   assert.deepStrictEqual(sessionResult.session.permissionBundle, ["tenant:tenant1:role1"]);
@@ -101,12 +101,12 @@ test("authenticationplatformcontracts", () => {
 
   // Test session lookup
   const lookupResult = capability.lookupSession(state, sessionResult.session.id);
-  assert.ok(!("kind" in lookupResult));
+  if ("kind" in lookupResult) throw new Error("Unexpected error");
   assert.equal(lookupResult.userId, "user1");
 
   // Test provider enumeration
   const providers = capability.listProviders(state, "tenant1");
-  assert.ok(!("kind" in providers));
+  if ("kind" in providers) throw new Error("Unexpected error");
   assert.equal(providers.length, 0);
 
   // Test PKCE generation
@@ -131,16 +131,16 @@ test("authenticationplatformcontracts", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"],
+    ["openid"] as const,
     "***REDACTED***",
     auditFn
   );
-  assert.ok(!("kind" in createResult));
+  if ("kind" in createResult) throw new Error("Unexpected error");
   assert.equal(createResult.result, "NO_CONTENT");
   state = createResult.state;
 
   const getResult = capability.getProvider(state, "test-provider");
-  assert.ok(!("kind" in getResult));
+  if ("kind" in getResult) throw new Error("Unexpected error");
   assert.equal(getResult.issuer, "https://issuer.example.com");
   assert.equal(getResult.maskedSecret, "***REDACTED***");
 
@@ -151,12 +151,12 @@ test("authenticationplatformcontracts", () => {
     sessionLifespanSeconds: 3600,
   };
   const writePolicyResult = capability.writePolicy(state, "tenant1", policy, auditFn);
-  assert.ok(!("kind" in writePolicyResult));
+  if ("kind" in writePolicyResult) throw new Error("Unexpected error");
   assert.equal(writePolicyResult.result, "NO_CONTENT");
   state = writePolicyResult.state;
 
   const readPolicyResult = capability.readPolicy(state, "tenant1");
-  assert.ok(!("kind" in readPolicyResult));
+  if ("kind" in readPolicyResult) throw new Error("Unexpected error");
   assert.equal(readPolicyResult.mfaMode, "REQUIRED_TOTP");
 
   // Test claim mappings
@@ -164,12 +164,12 @@ test("authenticationplatformcontracts", () => {
     { claimName: "role", roleName: "admin" }
   ];
   const writeMappingsResult = capability.writeClaimMappings(state, "tenant1", mappings, auditFn);
-  assert.ok(!("kind" in writeMappingsResult));
+  if ("kind" in writeMappingsResult) throw new Error("Unexpected error");
   assert.equal(writeMappingsResult.result, "NO_CONTENT");
   state = writeMappingsResult.state;
 
   const readMappingsResult = capability.readClaimMappings(state, "tenant1");
-  assert.ok(!("kind" in readMappingsResult));
+  if ("kind" in readMappingsResult) throw new Error("Unexpected error");
   assert.equal(readMappingsResult.length, 1);
   assert.equal(readMappingsResult[0].claimName, "role");
 });
@@ -180,6 +180,7 @@ test("authenticationplatformerrormodel", () => {
   // Test unauthenticated session lookup
   const lookupResult = capability.lookupSession(state, "nonexistent");
   assert.ok("kind" in lookupResult);
+  if (!("kind" in lookupResult)) throw new Error("Expected error");
   assert.equal(lookupResult.kind, "UNAUTHENTICATED");
 
   // Test session store unavailable
@@ -190,39 +191,48 @@ test("authenticationplatformerrormodel", () => {
   };
   const unavailableLookup = capability.lookupSession(unavailableState, "any");
   assert.ok("kind" in unavailableLookup);
+  if (!("kind" in unavailableLookup)) throw new Error("Expected error");
   assert.equal(unavailableLookup.kind, "SESSION_LOOKUP_FAILURE");
 
   // Test validation errors
   const invalidReturnTo = capability.validateReturnTo("http://evil.com");
   assert.notStrictEqual(invalidReturnTo, null);
+  if (invalidReturnTo === null) throw new Error("Expected error");
   assert.equal(invalidReturnTo.kind, "INVALID_RETURN_TO");
 
   const reservedAlias = capability.validateProviderAlias("existing", ["existing"]);
   assert.notStrictEqual(reservedAlias, null);
+  if (reservedAlias === null) throw new Error("Expected error");
   assert.equal(reservedAlias.kind, "RESERVED_ALIAS");
 
   const unsafeUrls = capability.validateOidcUrls("http://insecure.com", "http://insecure.com/jwks");
   assert.notStrictEqual(unsafeUrls, null);
+  if (unsafeUrls === null) throw new Error("Expected error");
   assert.equal(unsafeUrls.kind, "UNSAFE_SCHEME");
 
   const invalidMfaMode = capability.validateMfaMode("INVALID" as capability.AuthenticationPlatformMfaMode);
   assert.notStrictEqual(invalidMfaMode, null);
+  if (invalidMfaMode === null) throw new Error("Expected error");
   assert.equal(invalidMfaMode.kind, "INVALID_MFA_MODE");
 
   const invalidThreshold = capability.validateLockoutThreshold(-1);
   assert.notStrictEqual(invalidThreshold, null);
+  if (invalidThreshold === null) throw new Error("Expected error");
   assert.equal(invalidThreshold.kind, "INVALID_LOCKOUT_THRESHOLD");
 
   const invalidLifespan = capability.validateSessionLifespan(0);
   assert.notStrictEqual(invalidLifespan, null);
+  if (invalidLifespan === null) throw new Error("Expected error");
   assert.equal(invalidLifespan.kind, "INVALID_SESSION_LIFESPAN");
 
   const invalidClaimName = capability.validateClaimName("invalid claim!");
   assert.notStrictEqual(invalidClaimName, null);
+  if (invalidClaimName === null) throw new Error("Expected error");
   assert.equal(invalidClaimName.kind, "DANGEROUS_CLAIM_NAME");
 
   const invalidRealmRole = capability.validateRealmRole("invalid", ["admin", "user"]);
   assert.notStrictEqual(invalidRealmRole, null);
+  if (invalidRealmRole === null) throw new Error("Expected error");
   assert.equal(invalidRealmRole.kind, "INVALID_REALM_ROLE");
 
   // Test callback with provider error
@@ -235,6 +245,7 @@ test("authenticationplatformerrormodel", () => {
     () => null
   );
   assert.ok("kind" in callbackResult);
+  if (!("kind" in callbackResult)) throw new Error("Expected error");
   assert.equal(callbackResult.kind, "PROVIDER_ERROR_CALLBACK");
 });
 
@@ -259,17 +270,18 @@ test("authenticationplatformlifecycle", () => {
     new Date(Date.now() + 3600000).toISOString(),
     auditFn
   );
-  assert.ok(!("kind" in sessionResult));
+  if ("kind" in sessionResult) throw new Error("Unexpected error");
   assert.equal(sessionResult.session.state, "AUTHENTICATED");
   state = sessionResult.state;
 
   const destroyResult = capability.destroySession(state, sessionResult.session.id, auditFn);
-  assert.ok(!("kind" in destroyResult));
+  if ("kind" in destroyResult) throw new Error("Unexpected error");
   assert.equal(destroyResult.result, "NO_CONTENT");
   state = destroyResult.state;
 
   const lookupAfterDestroy = capability.lookupSession(state, sessionResult.session.id);
   assert.ok("kind" in lookupAfterDestroy);
+  if (!("kind" in lookupAfterDestroy)) throw new Error("Expected error");
   assert.equal(lookupAfterDestroy.kind, "UNAUTHENTICATED");
 
   // Test provider lifecycle
@@ -279,15 +291,15 @@ test("authenticationplatformlifecycle", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"],
+    ["openid"] as const,
     "***REDACTED***",
     auditFn
   );
-  assert.ok(!("kind" in createResult));
+  if ("kind" in createResult) throw new Error("Unexpected error");
   state = createResult.state;
 
   const preAuthResult = capability.initiateLogin(state, "/valid-path", "test-provider", auditFn);
-  assert.ok(!("kind" in preAuthResult));
+  if ("kind" in preAuthResult) throw new Error("Unexpected error");
   assert.equal(preAuthResult.preAuth.providerAlias, "test-provider");
 
   const updateResult = capability.updateProvider(
@@ -297,11 +309,11 @@ test("authenticationplatformlifecycle", () => {
     { enabled: false },
     auditFn
   );
-  assert.ok(!("kind" in updateResult));
+  if ("kind" in updateResult) throw new Error("Unexpected error");
   state = updateResult.state;
 
   const deleteResult = capability.deleteProvider(state, "tenant1", "test-provider", auditFn);
-  assert.ok(!("kind" in deleteResult));
+  if ("kind" in deleteResult) throw new Error("Unexpected error");
   state = deleteResult.state;
 
   // Test policy lifecycle
@@ -311,11 +323,11 @@ test("authenticationplatformlifecycle", () => {
     sessionLifespanSeconds: 3600,
   };
   const writePolicyResult = capability.writePolicy(state, "tenant1", policy, auditFn);
-  assert.ok(!("kind" in writePolicyResult));
+  if ("kind" in writePolicyResult) throw new Error("Unexpected error");
   state = writePolicyResult.state;
 
   const readPolicyResult = capability.readPolicy(state, "tenant1");
-  assert.ok(!("kind" in readPolicyResult));
+  if ("kind" in readPolicyResult) throw new Error("Unexpected error");
   assert.equal(readPolicyResult.mfaMode, "REQUIRED_TOTP");
 
   // Test claim mappings lifecycle
@@ -323,11 +335,11 @@ test("authenticationplatformlifecycle", () => {
     { claimName: "role", roleName: "admin" }
   ];
   const writeMappingsResult = capability.writeClaimMappings(state, "tenant1", mappings, auditFn);
-  assert.ok(!("kind" in writeMappingsResult));
+  if ("kind" in writeMappingsResult) throw new Error("Unexpected error");
   state = writeMappingsResult.state;
 
   const readMappingsResult = capability.readClaimMappings(state, "tenant1");
-  assert.ok(!("kind" in readMappingsResult));
+  if ("kind" in readMappingsResult) throw new Error("Unexpected error");
   assert.equal(readMappingsResult.length, 1);
 });
 
@@ -336,12 +348,12 @@ test("authenticationplatformpermissions", () => {
 
   // Test tenant context resolution
   const tenantContext = capability.resolveTenantContext(state, "tenant1");
-  assert.ok(!("kind" in tenantContext));
+  if ("kind" in tenantContext) throw new Error("Unexpected error");
   assert.equal(tenantContext.tenantId, "tenant1");
   assert.deepStrictEqual(tenantContext.tenantRoles, []);
 
   const nullTenantContext = capability.resolveTenantContext(state, null);
-  assert.ok(!("kind" in nullTenantContext));
+  if ("kind" in nullTenantContext) throw new Error("Unexpected error");
   assert.equal(nullTenantContext.tenantId, "");
 
   // Test policy operations with tenant context
@@ -351,13 +363,13 @@ test("authenticationplatformpermissions", () => {
     sessionLifespanSeconds: 3600,
   };
   const writeResult = capability.writePolicy(state, "tenant1", policy, () => null);
-  assert.ok(!("kind" in writeResult));
+  if ("kind" in writeResult) throw new Error("Unexpected error");
   assert.equal(writeResult.result, "NO_CONTENT");
   state = writeResult.state;
 
   const readState = { ...state, policies: new Map(state.policies).set("tenant1", policy) };
   const readResult = capability.readPolicy(readState, "tenant1");
-  assert.ok(!("kind" in readResult));
+  if ("kind" in readResult) throw new Error("Unexpected error");
   assert.equal(readResult.mfaMode, "REQUIRED_TOTP");
 
   // Test provider operations with tenant context
@@ -367,15 +379,15 @@ test("authenticationplatformpermissions", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"],
+    ["openid"] as const,
     "***REDACTED***",
     () => null
   );
-  assert.ok(!("kind" in createResult));
+  if ("kind" in createResult) throw new Error("Unexpected error");
   state = createResult.state;
 
   const listResult = capability.listProviders(state, "tenant1");
-  assert.ok(!("kind" in listResult));
+  if ("kind" in listResult) throw new Error("Unexpected error");
   assert.equal(listResult.length, 1);
 
   // Test claim mappings with tenant context
@@ -383,11 +395,11 @@ test("authenticationplatformpermissions", () => {
     { claimName: "role", roleName: "admin" }
   ];
   const writeMappingsResult = capability.writeClaimMappings(state, "tenant1", mappings, () => null);
-  assert.ok(!("kind" in writeMappingsResult));
+  if ("kind" in writeMappingsResult) throw new Error("Unexpected error");
   state = writeMappingsResult.state;
 
   const readMappingsResult = capability.readClaimMappings(state, "tenant1");
-  assert.ok(!("kind" in readMappingsResult));
+  if ("kind" in readMappingsResult) throw new Error("Unexpected error");
   assert.equal(readMappingsResult.length, 1);
 
   // Test callback URL derivation
@@ -411,7 +423,7 @@ test("authenticationplatformproof", () => {
     new Date(Date.now() + 3600000).toISOString(),
     auditFn
   );
-  assert.ok(!("kind" in sessionResult));
+  if ("kind" in sessionResult) throw new Error("Unexpected error");
   assert.equal(sessionResult.session.state, "AUTHENTICATED");
   state = sessionResult.state;
 
@@ -444,15 +456,15 @@ test("authenticationplatformproof", () => {
     "test-provider",
     "https://issuer.example.com",
     "https://issuer.example.com/.well-known/jwks.json",
-    ["openid"],
+    ["openid"] as const,
     "***REDACTED***",
     auditFn
   );
-  assert.ok(!("kind" in createResult));
+  if ("kind" in createResult) throw new Error("Unexpected error");
   state = createResult.state;
 
   const getResult = capability.getProvider(state, "test-provider");
-  assert.ok(!("kind" in getResult));
+  if ("kind" in getResult) throw new Error("Unexpected error");
   assert.equal(getResult.issuer, "https://issuer.example.com");
 
   const updateResult = capability.updateProvider(
@@ -462,11 +474,11 @@ test("authenticationplatformproof", () => {
     { maskedSecret: "***NEW_REDACTED***" },
     auditFn
   );
-  assert.ok(!("kind" in updateResult));
+  if ("kind" in updateResult) throw new Error("Unexpected error");
   state = updateResult.state;
 
   const updatedProvider = capability.getProvider(state, "test-provider");
-  assert.ok(!("kind" in updatedProvider));
+  if ("kind" in updatedProvider) throw new Error("Unexpected error");
   assert.equal(updatedProvider.maskedSecret, "***NEW_REDACTED***");
 
   // Test policy round-trip
@@ -476,11 +488,11 @@ test("authenticationplatformproof", () => {
     sessionLifespanSeconds: 3600,
   };
   const writePolicyResult = capability.writePolicy(state, "tenant1", policy, auditFn);
-  assert.ok(!("kind" in writePolicyResult));
+  if ("kind" in writePolicyResult) throw new Error("Unexpected error");
   state = writePolicyResult.state;
 
   const readPolicyResult = capability.readPolicy(state, "tenant1");
-  assert.ok(!("kind" in readPolicyResult));
+  if ("kind" in readPolicyResult) throw new Error("Unexpected error");
   assert.equal(readPolicyResult.mfaMode, "REQUIRED_TOTP");
   assert.equal(readPolicyResult.lockoutThreshold, 5);
   assert.equal(readPolicyResult.sessionLifespanSeconds, 3600);
@@ -550,7 +562,7 @@ test("authenticationplatformstatemodel", () => {
     new Date(Date.now() + 3600000).toISOString(),
     auditFn
   );
-  assert.ok(!("kind" in sessionResult));
+  if ("kind" in sessionResult) throw new Error("Unexpected error");
   const session = sessionResult.session;
   assert.equal(session.state, "AUTHENTICATED");
   assert.equal(session.userId, "user1");
@@ -569,7 +581,7 @@ test("authenticationplatformstatemodel", () => {
     enabled: true,
     issuer: "https://issuer.example.com",
     jwksUri: "https://issuer.example.com/.well-known/jwks.json",
-    scopes: ["openid", "profile"],
+    scopes: ["openid", "profile"] as const,
     maskedSecret: "***REDACTED***",
     discoveryValidation: {
       issuerValid: true,
@@ -638,6 +650,7 @@ test("authenticationplatformvalidation", () => {
 
   const invalidReturnTo = capability.validateReturnTo("http://evil.com");
   assert.notStrictEqual(invalidReturnTo, null);
+  if (invalidReturnTo === null) throw new Error("Expected error");
   assert.equal(invalidReturnTo.kind, "INVALID_RETURN_TO");
 
   // Test MFA mode validation
@@ -646,6 +659,7 @@ test("authenticationplatformvalidation", () => {
 
   const invalidMfaMode = capability.validateMfaMode("INVALID" as capability.AuthenticationPlatformMfaMode);
   assert.notStrictEqual(invalidMfaMode, null);
+  if (invalidMfaMode === null) throw new Error("Expected error");
   assert.equal(invalidMfaMode.kind, "INVALID_MFA_MODE");
 
   // Test lockout threshold validation
@@ -654,6 +668,7 @@ test("authenticationplatformvalidation", () => {
 
   const invalidThreshold = capability.validateLockoutThreshold(-1);
   assert.notStrictEqual(invalidThreshold, null);
+  if (invalidThreshold === null) throw new Error("Expected error");
   assert.equal(invalidThreshold.kind, "INVALID_LOCKOUT_THRESHOLD");
 
   // Test session lifespan validation
@@ -662,6 +677,7 @@ test("authenticationplatformvalidation", () => {
 
   const invalidLifespan = capability.validateSessionLifespan(0);
   assert.notStrictEqual(invalidLifespan, null);
+  if (invalidLifespan === null) throw new Error("Expected error");
   assert.equal(invalidLifespan.kind, "INVALID_SESSION_LIFESPAN");
 
   // Test claim name validation
@@ -670,6 +686,7 @@ test("authenticationplatformvalidation", () => {
 
   const invalidClaimName = capability.validateClaimName("invalid claim!");
   assert.notStrictEqual(invalidClaimName, null);
+  if (invalidClaimName === null) throw new Error("Expected error");
   assert.equal(invalidClaimName.kind, "DANGEROUS_CLAIM_NAME");
 
   // Test realm role validation
@@ -678,6 +695,7 @@ test("authenticationplatformvalidation", () => {
 
   const invalidRealmRole = capability.validateRealmRole("invalid", ["admin", "user"]);
   assert.notStrictEqual(invalidRealmRole, null);
+  if (invalidRealmRole === null) throw new Error("Expected error");
   assert.equal(invalidRealmRole.kind, "INVALID_REALM_ROLE");
 
   // Test OIDC URL validation
@@ -692,6 +710,7 @@ test("authenticationplatformvalidation", () => {
     "http://insecure.com/jwks"
   );
   assert.notStrictEqual(invalidUrls, null);
+  if (invalidUrls === null) throw new Error("Expected error");
   assert.equal(invalidUrls.kind, "UNSAFE_SCHEME");
 
   // Test localhost URLs are allowed with HTTP
@@ -707,9 +726,11 @@ test("authenticationplatformvalidation", () => {
 
   const invalidAlias = capability.validateProviderAlias("", ["existing"]);
   assert.notStrictEqual(invalidAlias, null);
+  if (invalidAlias === null) throw new Error("Expected error");
   assert.equal(invalidAlias.kind, "VALIDATION_ERROR");
 
   const reservedAlias = capability.validateProviderAlias("existing", ["existing"]);
   assert.notStrictEqual(reservedAlias, null);
+  if (reservedAlias === null) throw new Error("Expected error");
   assert.equal(reservedAlias.kind, "RESERVED_ALIAS");
 });

@@ -217,7 +217,7 @@ export function listBrandingDefinitions(
   tenantId: string,
   token: unknown,
   state: BrandingAndThemingState,
-): readonly BrandingDefinition[] | BrandingAndThemingError {
+): BrandingDefinition[] | BrandingAndThemingError {
   const permissionCheck = checkBrandingPermission(tenantId, token);
   if (permissionCheck.kind === 'DENIED') {
     return permissionCheck.error;
@@ -249,7 +249,7 @@ export function createBrandingDefinition(
     return {
       kind: 'ERROR',
       error: {
-        kind: 'FORBIDDEN',
+        kind: 'NON_OVERRIDABLE',
         message: 'Branding definition already exists for tenant',
       },
     };

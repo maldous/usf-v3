@@ -87,7 +87,7 @@ test("servicecatalogandproviderintegrationmodellifecycle", () => {
 
   const auditFn = (_event: capability.AuditEvent): capability.TypedError | null => null;
   const result = capability.registerService(initialState, service, auditFn);
-  assert.ok(!capability.isTypedError(result as capability.TypedError | capability.ServiceCatalogModel));
+  assert.ok(!result);
   const modelResult = result as capability.ServiceCatalogModel;
   assert.strictEqual(modelResult.lastDecision, 'GRANTED');
   assert.strictEqual(modelResult.resources.size, 1);

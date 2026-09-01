@@ -52,6 +52,11 @@ export interface AbacPolicyDecisionPointState {
   readonly readiness: AbacPolicyDecisionPointReadiness;
 }
 
+export interface AbacPolicyDecisionPointEvaluationResult {
+  readonly decision: AbacPolicyDecisionPointDecision;
+  readonly error: AbacPolicyDecisionPointError | null;
+}
+
 export const initialState: AbacPolicyDecisionPointState = {
   routeGuards: [],
   resourcePolicies: [],
@@ -110,22 +115,17 @@ export function evaluateRequest(
   resource: string,
   scope: string,
   serverAvailable: boolean,
-): {
-  readonly decision: AbacPolicyDecisionPointDecision;
-  readonly error: AbacPolicyDecisionPointError | null;
-} {
+): AbacPolicyDecisionPointEvaluationResult {
   const routeGuard = state.routeGuards.find(
     (rg) => rg.resource === resource && rg.scope === scope,
   );
 
-  if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
+  if (!serverAvailable) {
     return {
-      decision: 'RESOURCE_NOT_REGISTERED',
-      error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token' },
+      decision: 'SERVER_UNAVAILABLE',
+      error: null,
     };
   }
-
-  const tokenObj = token as { readonly authLevel: string };
 
   if (routeGuard === undefined) {
     return {
@@ -134,12 +134,14 @@ export function evaluateRequest(
     };
   }
 
-  if (!serverAvailable) {
+  if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
     return {
-      decision: 'SERVER_UNAVAILABLE',
-      error: null,
+      decision: 'INSUFFICIENT_AUTH_LEVEL',
+      error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token' },
     };
   }
+
+  const tokenObj = token as { readonly authLevel: string };
 
   if (tokenObj.authLevel !== routeGuard.requiredPermission) {
     return {
@@ -171,35 +173,36 @@ export function evaluateRequestWithFallback(
   resource: string,
   scope: string,
   serverAvailable: boolean,
-): {
-  readonly decision: AbacPolicyDecisionPointDecision;
-  readonly error: AbacPolicyDecisionPointError | null;
-} {
-  const directResult = evaluateRequest(state, token, resource, scope, serverAvailable);
-
-  if (directResult.decision === 'GRANTED') {
-    return directResult;
-  }
-
-  if (directResult.decision === 'INSUFFICIENT_AUTH_LEVEL') {
-    return directResult;
-  }
-
-  const staticFallback = state.routeGuards.find(
+): AbacPolicyDecisionPointEvaluationResult {
+  const routeGuard = state.routeGuards.find(
     (rg) => rg.resource === resource && rg.scope === scope,
   );
 
-  if (staticFallback !== undefined && staticFallback.requiredPermission === '') {
+  if (serverAvailable) {
+    const directResult = evaluateRequest(state, token, resource, scope, serverAvailable);
+    if (directResult.decision === 'GRANTED' || directResult.decision === 'INSUFFICIENT_AUTH_LEVEL') {
+      return directResult;
+    }
+  }
+
+  if (routeGuard === undefined) {
+    return {
+      decision: 'RESOURCE_NOT_REGISTERED',
+      error: null,
+    };
+  }
+
+  if (routeGuard.requiredPermission === '') {
     return {
       decision: 'GRANTED',
       error: null,
     };
   }
 
-  if (directResult.decision === 'SERVER_UNAVAILABLE' || directResult.decision === 'RESOURCE_NOT_REGISTERED') {
+  if (!serverAvailable) {
     return {
-      decision: directResult.decision,
-      error: directResult.error,
+      decision: 'SERVER_UNAVAILABLE',
+      error: null,
     };
   }
 
@@ -216,30 +219,15 @@ export function evaluateLifecycle(
   token: unknown,
   scope: string,
   serverAvailable: boolean,
-): {
-  readonly decision: AbacPolicyDecisionPointDecision;
-  readonly error: AbacPolicyDecisionPointError | null;
-} {
+): AbacPolicyDecisionPointEvaluationResult {
   if (action === 'read') {
-    const resourcePolicy = state.resourcePolicies.find(
-      (rp) => rp.resource === resource,
-    );
-    if (resourcePolicy !== undefined) {
-      return {
-        decision: 'GRANTED',
-        error: null,
-      };
-    }
-    return {
-      decision: 'RESOURCE_NOT_REGISTERED',
-      error: null,
-    };
+    return evaluateRequestWithFallback(state, token, resource, scope, serverAvailable);
   }
 
   if (action === 'write') {
     if (token === null || typeof token !== 'object' || !('authLevel' in token)) {
       return {
-        decision: 'POLICY_DENIED',
+        decision: 'INSUFFICIENT_AUTH_LEVEL',
         error: { kind: 'AUTHENTICATION_REQUIRED', message: 'Missing expected token' },
       };
     }
@@ -298,6 +286,9 @@ export function computeReadiness(
 ): AbacPolicyDecisionPointReadiness {
   if (state.readiness === 'READY') {
     return 'READY';
+  }
+  if (state.readiness === 'DEGRADED') {
+    return 'DEGRADED';
   }
   if (
     state.lastDecision === 'SERVER_UNAVAILABLE' ||

@@ -124,6 +124,21 @@
 <urn:usf:artefact-class:test-module> <urn:usf:predicate:note> "Suite directory per tier: unit/, contract/, integration/, adversarial/, scale/." <urn:usf:graph:v3-convention> .
 <urn:usf:artefact-class:test-module> <urn:usf:predicate:persistence> "tracked" <urn:usf:graph:v3-convention> .
 <urn:usf:artefact-class:test-module> <urn:usf:predicate:type> <urn:usf:type:ArtefactClass> <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:authorityEffect> "Writes the declared paths into an authenticated product repository root outside USF, under exactly the prefixes that repository declares. USF's own prefixes do not apply and are never combined with them." <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:commandPath> "transact --repository" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:contactClass> "none" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:errorSchema> "urn:usf:cli-error:1" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:outputSchema> "urn:usf:semantic-transaction:1" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:refusalClass> "PRODUCT_REPOSITORY_LAYOUT_INCOMPLETE" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:refusalClass> "PRODUCT_REPOSITORY_ROOT_UNSAFE" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:refusalClass> "PRODUCT_REPOSITORY_UNMAPPED" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:refusalClass> "TRANSACT_REPOSITORY_UNAUTHORIZED" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:refusalClass> "TRANSACT_REPOSITORY_UNKNOWN" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:synopsis> "usf transact --proposal PATH --repository IRI --manifest PATH" <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:v3-convention> .
+<urn:usf:command:transact-repository:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-convention> .
 <urn:usf:convention:iri-naming:1> <urn:usf:predicate:canonicalForm> "urn:usf:<kind>:<name>[:<version>]" <urn:usf:graph:v3-convention> .
 <urn:usf:convention:iri-naming:1> <urn:usf:predicate:enforcedBy> <urn:usf:integrity-suite:corpus:1> <urn:usf:graph:v3-convention> .
 <urn:usf:convention:iri-naming:1> <urn:usf:predicate:example> "urn:usf:execution-transport:vercel-ai-sdk" <urn:usf:graph:v3-convention> .

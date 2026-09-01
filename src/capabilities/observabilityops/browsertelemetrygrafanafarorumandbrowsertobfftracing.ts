@@ -97,10 +97,10 @@ export interface TraceContext {
 export interface BrowserTelemetryPayload {
   readonly context: TraceContext;
   readonly attributes: readonly {
-    readonly key: ObservabilityVocabulary | string;
+    readonly key: ObservabilityVocabulary;
     readonly value: string | number | boolean;
   }[];
-  readonly spanName: ObservabilitySpanName | string;
+  readonly spanName: ObservabilitySpanName;
   readonly timestamp: string;
 }
 
@@ -129,11 +129,11 @@ export const initialState: BrowserTelemetryGrafanaFarorumAndBrowserToBffTracingS
   alertActive: false,
 };
 
-export function isObservabilityVocabulary(name: string): boolean {
+export function isObservabilityVocabulary(name: string): name is ObservabilityVocabulary {
   return (OBSERVABILITY_VOCABULARY as readonly string[]).includes(name);
 }
 
-export function isObservabilitySpanName(name: string): boolean {
+export function isObservabilitySpanName(name: string): name is ObservabilitySpanName {
   return (OBSERVABILITY_SPAN_NAMES as readonly string[]).includes(name);
 }
 
@@ -157,29 +157,24 @@ export function validateTelemetryPayload(
     };
   }
 
-  const p = payload as BrowserTelemetryPayload;
+  const p = payload as Record<string, unknown>;
   if (
-    !p.context ||
+    typeof p.context !== 'object' ||
+    p.context === null ||
+    !('traceId' in p.context) ||
+    !('spanId' in p.context) ||
     typeof p.context.traceId !== 'string' ||
-    p.context.traceId.length === 0
-  ) {
-    return {
-      isValid: false,
-      error: { kind: 'TRACE_CONTEXT_MISSING', message: 'Missing or empty traceId' },
-    };
-  }
-
-  if (
+    p.context.traceId.length === 0 ||
     typeof p.context.spanId !== 'string' ||
     p.context.spanId.length === 0
   ) {
     return {
       isValid: false,
-      error: { kind: 'TRACE_CONTEXT_MISSING', message: 'Missing or empty spanId' },
+      error: { kind: 'TRACE_CONTEXT_MISSING', message: 'Missing or empty traceId or spanId' },
     };
   }
 
-  if (typeof p.spanName !== 'string' || p.spanName.length === 0) {
+  if (typeof p.spanName !== 'string' || p.spanName.length === 0 || !isObservabilitySpanName(p.spanName)) {
     return {
       isValid: false,
       error: { kind: 'TRACE_CONTEXT_INVALID', message: 'Invalid span name' },
@@ -200,12 +195,15 @@ export function validateTelemetryPayload(
     };
   }
 
-  for (const attr of p.attributes) {
+  for (const attr of p.attributes as Array<Record<string, unknown>>) {
     if (
       typeof attr !== 'object' ||
       attr === null ||
+      !('key' in attr) ||
+      !('value' in attr) ||
       typeof attr.key !== 'string' ||
-      attr.key.length === 0
+      attr.key.length === 0 ||
+      !isObservabilityVocabulary(attr.key)
     ) {
       return {
         isValid: false,

@@ -58,6 +58,26 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
     tenantBoundaryPreserved: true,
     dataSubjectEvidencePreserved: true,
   });
+
+  const restoreState: capability.RelationalStorageAndMigrationsAndRlsState = {
+    ...state,
+    migrationLineage: ['001_init.sql:sha256:1e3d2c8e:Initial schema'],
+  };
+  const targetState: capability.RelationalStorageAndMigrationsAndRlsState = {
+    ...state,
+    migrationLineage: ['001_init.sql:sha256:1e3d2c8e:Initial schema'],
+  };
+  const restoreResult = capability.guardRestore(restoreState, targetState, auditFn);
+  assert.ok(!('kind' in restoreResult && 'message' in restoreResult));
+  const restoreStateResult = restoreResult as capability.RelationalStorageAndMigrationsAndRlsState;
+  assert.strictEqual(restoreStateResult.auditLog.length, 3);
+  assert.strictEqual(restoreStateResult.auditLog[2].kind, 'RESTORE_GUARD_CHECKED');
+  assert.deepStrictEqual(restoreStateResult.auditLog[2].details, {
+    currentLineage: '001_init.sql:sha256:1e3d2c8e:Initial schema',
+    targetLineage: '001_init.sql:sha256:1e3d2c8e:Initial schema',
+    tenantBoundaryPreserved: true,
+    dataSubjectEvidencePreserved: true,
+  });
 });
 
 test("relationalstorageandmigrationsandrlscontracts", () => {
@@ -144,6 +164,12 @@ test("relationalstorageandmigrationsandrlserrormodel", () => {
   const partialConfigError = capability.validateMissingConfiguration({ key: null });
   assert.notStrictEqual(partialConfigError, null);
   assert.strictEqual(partialConfigError?.kind, 'INVALID_CONFIGURATION');
+
+  const degradedMode = capability.determineDegradedMode(substrateUnavailableState);
+  assert.strictEqual(degradedMode.isDegraded, true);
+  assert.strictEqual(degradedMode.canMutate, false);
+  assert.strictEqual(degradedMode.canRead, false);
+  assert.strictEqual(degradedMode.error?.kind, 'DEGRADED');
 });
 
 test("relationalstorageandmigrationsandrlslifecycle", () => {
@@ -181,7 +207,8 @@ test("relationalstorageandmigrationsandrlslifecycle", () => {
   assert.strictEqual(state1.appliedMigrations.length, 1);
   assert.strictEqual(state1.appliedMigrations[0].fileName, '001_init.sql');
   assert.strictEqual(state1.migrationLineage.length, 1);
-  assert.strictEqual(state1.migrationLineage[0], '001_init.sql:sha256:1e3d2c8e:Initial schema');
+  assert.ok(state1.migrationLineage[0].includes('001_init.sql:sha256:'));
+  assert.ok(state1.migrationLineage[0].includes(':Initial schema'));
 
   const stateAfterSecond = capability.applyMigrationFile(
     state1,
@@ -366,6 +393,10 @@ test("relationalstorageandmigrationsandrlsproof", () => {
   );
   assert.strictEqual(liveProof.proofPassed, true);
   assert.strictEqual(liveProof.error, null);
+
+  const migratedStateGate = capability.verifyMigratedStateGate(state, 1);
+  assert.strictEqual(migratedStateGate.passed, true);
+  assert.strictEqual(migratedStateGate.error, null);
 });
 
 test("relationalstorageandmigrationsandrlsreadinessmodel", () => {
@@ -415,4 +446,9 @@ test("relationalstorageandmigrationsandrlsreadinessmodel", () => {
   const unreadyPromotionBlock = capability.blockPromotionOnUnavailability(initial);
   assert.strictEqual(unreadyPromotionBlock.blocked, true);
   assert.notStrictEqual(unreadyPromotionBlock.reason, null);
+
+  const degradedMode = capability.determineDegradedMode(degradedState);
+  assert.strictEqual(degradedMode.isDegraded, true);
+  assert.strictEqual(degradedMode.canMutate, false);
+  assert.strictEqual(degradedMode.canRead, false);
 });

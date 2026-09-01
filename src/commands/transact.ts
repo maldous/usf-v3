@@ -119,7 +119,9 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
     if (option === "--dry-run") { dryRun = true; continue; }
-    if (option !== "--proposal" || values.has(option)) invalid(`Unknown or repeated option: ${option}`);
+    if (!["--proposal", "--repository", "--manifest"].includes(option) || values.has(option)) {
+      invalid(`Unknown or repeated option: ${option}`);
+    }
     const value = args[++index];
     if (value === undefined || value.startsWith("--")) invalid("Missing value for --proposal.");
     values.set(option, value);
@@ -146,9 +148,40 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
   // Read the authority that governs this transaction from the current corpus.
   const currentGraph = loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json");
   const runtimeAuthority = readRuntimeAuthority(currentGraph.quads);
-  const authorizedPathPrefixes = runtimeAuthority.authorizedPathPrefixes.length > 0
+
+  // A transaction may target a declared product repository instead of USF
+  // itself. USF is the foundation; a product is realised into its own
+  // repository, and writing there must not mean weakening the containment that
+  // keeps USF from writing anywhere else. So the write root moves to the
+  // authenticated product root and the product's own prefixes replace USF's --
+  // they are never combined, because USF's prefixes describe USF's layout and
+  // say nothing about a product's.
+  const repositoryIri = values.get("--repository");
+  let writeRoot = canonicalRoot;
+  let targetRepository: string | null = null;
+  let authorizedPathPrefixes = runtimeAuthority.authorizedPathPrefixes.length > 0
     ? runtimeAuthority.authorizedPathPrefixes
     : fallbackAuthorizedPathPrefixes;
+  if (repositoryIri !== undefined) {
+    const productManifest = values.get("--manifest");
+    if (productManifest === undefined) invalid("A repository-targeted transaction requires --manifest declaring it.");
+    const { authenticateProductRepositoryRoot, readProductRepositories } =
+      await import("../core/product-repository.ts");
+    const declared = readProductRepositories(loadSemanticGraph(repositoryRoot, productManifest))
+      .find((entry) => entry.repository === repositoryIri);
+    if (declared === undefined) {
+      throw new UsfError("TRANSACT_REPOSITORY_UNKNOWN", exitCodes.INVALID_INPUT,
+        "The manifest declares no such product repository.", { repository: repositoryIri });
+    }
+    if (declared.authorizedPathPrefixes.length === 0) {
+      throw new UsfError("TRANSACT_REPOSITORY_UNAUTHORIZED", exitCodes.CONTAINMENT_REFUSAL,
+        "A product repository must declare the prefixes it permits before anything may be written into it.",
+        { repository: repositoryIri });
+    }
+    writeRoot = await authenticateProductRepositoryRoot(repositoryRoot, declared);
+    authorizedPathPrefixes = declared.authorizedPathPrefixes;
+    targetRepository = declared.repository;
+  }
 
   const derivedPaths = Object.freeze([...new Set(proposal.operations.map((operation) => operation.path))].sort());
   const undeclared = derivedPaths.filter((path) => !proposal.declaredAffectedPaths.includes(path));
@@ -168,8 +201,8 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
 
   const preimages: Array<Readonly<{ path: string; digest: string | null; bytes: string | null }>> = [];
   for (const path of derivedPaths) {
-    const absolute = resolve(canonicalRoot, path);
-    if (!contained(canonicalRoot, absolute)) {
+    const absolute = resolve(writeRoot, path);
+    if (!contained(writeRoot, absolute)) {
       throw new UsfError("TRANSACT_PATH_REFUSED", exitCodes.CONTAINMENT_REFUSAL, "An operation path escapes the repository.", { path });
     }
     const bytes = await readFile(absolute, "utf8").catch(() => null);
@@ -288,6 +321,7 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
       authorizedPathPrefixes,
     }),
     applied: !dryRun,
+    targetRepository,
   });
   const transactionDigest = canonicalDigest(transaction);
 
@@ -309,14 +343,14 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
     }
     // Re-prove every preimage immediately before the first mutation.
     for (const entry of preimages) {
-      const current = await fileDigest(resolve(canonicalRoot, entry.path));
+      const current = await fileDigest(resolve(writeRoot, entry.path));
       if (current !== entry.digest) {
         throw new UsfError("TRANSACT_STALE_PREIMAGE", exitCodes.CURRENTNESS_FAILURE,
           "A path changed between validation and application.", { path: entry.path });
       }
     }
     for (const entry of staged) {
-      const target = resolve(canonicalRoot, entry.path);
+      const target = resolve(writeRoot, entry.path);
       // A realized artefact may be the first file in its canonical directory.
       // The directory is part of the declared path, not a separate effect.
       await mkdir(dirname(target), { recursive: true, mode: 0o755 });
@@ -325,7 +359,7 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
   } catch (error) {
     // Restore every captured preimage so a partial application cannot survive.
     for (const entry of preimages) {
-      const absolute = resolve(canonicalRoot, entry.path);
+      const absolute = resolve(writeRoot, entry.path);
       if (entry.bytes === null) await rm(absolute, { force: true });
       else await writeFile(absolute, entry.bytes, { mode: 0o644 });
     }

@@ -7,7 +7,7 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Initial decision",
   };
-  const auditFn = (): capability.BuildVersusComposeError | null => null;
+  const auditFn = (_event: capability.BuildVersusComposeAuditEvent): capability.BuildVersusComposeError | null => null;
   const state0 = capability.initialState;
   const state1 = capability.createDecision(
     state0,
@@ -15,7 +15,8 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
     "BUILD",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:00:00Z"
   );
   assert.ok(!("kind" in state1), "createDecision should succeed");
   if ("kind" in state1) throw new Error("Unexpected error");
@@ -29,7 +30,8 @@ test("buildversuscomposedecisionframeworkauditmodel", () => {
     "COMPOSE",
     { ...justification, rationale: "Revised decision" },
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:01:00Z"
   );
   assert.ok(!("kind" in state2), "reviseDecision should succeed");
   if ("kind" in state2) throw new Error("Unexpected error");
@@ -43,7 +45,7 @@ test("buildversuscomposedecisionframeworkerrormodel", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Test decision",
   };
-  const auditFn = (): capability.BuildVersusComposeError | null => null;
+  const auditFn = (_event: capability.BuildVersusComposeAuditEvent): capability.BuildVersusComposeError | null => null;
   const state0 = capability.initialState;
   const error1 = capability.createDecision(
     state0,
@@ -51,12 +53,13 @@ test("buildversuscomposedecisionframeworkerrormodel", () => {
     "BUILD",
     { criteria: { COST: "", CONTROL: "high", READINESS: "immediate" }, rationale: "Invalid" } as capability.DecisionJustification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:00:00Z"
   );
   assert.ok("kind" in error1, "Invalid justification should return error");
   assert.strictEqual(error1.kind, "JUSTIFICATION_MISSING", "Error kind should be JUSTIFICATION_MISSING");
 
-  const state1 = capability.createDecision(state0, "cap1", "BUILD", justification, "architect", auditFn);
+  const state1 = capability.createDecision(state0, "cap1", "BUILD", justification, "architect", auditFn, "2023-01-01T00:00:00Z");
   assert.ok(!("kind" in state1), "Valid decision should succeed");
   if ("kind" in state1) throw new Error("Unexpected error");
   const error2 = capability.createDecision(
@@ -65,12 +68,13 @@ test("buildversuscomposedecisionframeworkerrormodel", () => {
     "COMPOSE",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:01:00Z"
   );
   assert.ok("kind" in error2, "Duplicate active decision should return error");
   assert.strictEqual(error2.kind, "CONTRADICTION_DETECTED", "Error kind should be CONTRADICTION_DETECTED");
 
-  const state2 = capability.initializeFramework(state0, ["cap1"], ["architect"], auditFn);
+  const state2 = capability.initializeFramework(state0, ["cap1"], ["architect"], auditFn, "2023-01-01T00:00:00Z");
   assert.ok(!("kind" in state2), "Initialization should succeed");
   if ("kind" in state2) throw new Error("Unexpected error");
   const error3 = capability.validateFramework(state2);
@@ -83,9 +87,9 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Initial decision",
   };
-  const auditFn = (): capability.BuildVersusComposeError | null => null;
+  const auditFn = (_event: capability.BuildVersusComposeAuditEvent): capability.BuildVersusComposeError | null => null;
   const state0 = capability.initialState;
-  const state1 = capability.initializeFramework(state0, ["cap1"], ["architect"], auditFn);
+  const state1 = capability.initializeFramework(state0, ["cap1"], ["architect"], auditFn, "2023-01-01T00:00:00Z");
   assert.ok(!("kind" in state1), "Initialization should succeed");
   if ("kind" in state1) throw new Error("Unexpected error");
 
@@ -95,7 +99,8 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
     "BUILD",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:01:00Z"
   );
   assert.ok(!("kind" in state2), "Create decision should succeed");
   if ("kind" in state2) throw new Error("Unexpected error");
@@ -109,7 +114,8 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
     "COMPOSE",
     { ...justification, rationale: "Revised rationale" },
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:02:00Z"
   );
   assert.ok(!("kind" in state3), "Revise decision should succeed");
   if ("kind" in state3) throw new Error("Unexpected error");
@@ -121,13 +127,13 @@ test("buildversuscomposedecisionframeworklifecycle", () => {
   );
   assert.strictEqual(state3.proofDocument?.proofRun, true, "Proof should be re-run after revision");
 
-  const state4 = capability.supersedeDecision(state3, "cap1", "architect", auditFn);
+  const state4 = capability.supersedeDecision(state3, "cap1", "architect", auditFn, "2023-01-01T00:03:00Z");
   assert.ok(!("kind" in state4), "Supersede decision should succeed");
   if ("kind" in state4) throw new Error("Unexpected error");
   assert.strictEqual(state4.decisionRecords.length, 3, "Should have three decision records after supersede");
   assert.strictEqual(state4.proofDocument?.proofRun, true, "Proof should be re-run after supersede");
 
-  const state5 = capability.rollbackDecision(state4, "cap1", "architect", auditFn);
+  const state5 = capability.rollbackDecision(state4, "cap1", "architect", auditFn, "2023-01-01T00:04:00Z");
   assert.ok(!("kind" in state5), "Rollback decision should succeed");
   if ("kind" in state5) throw new Error("Unexpected error");
   assert.strictEqual(
@@ -148,9 +154,9 @@ test("buildversuscomposedecisionframeworkpermissions", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Test decision",
   };
-  const auditFn = (): capability.BuildVersusComposeError | null => null;
+  const auditFn = (_event: capability.BuildVersusComposeAuditEvent): capability.BuildVersusComposeError | null => null;
   const state0 = capability.initialState;
-  const state1 = capability.initializeFramework(state0, ["cap1"], ["architect", "reviewer"], auditFn);
+  const state1 = capability.initializeFramework(state0, ["cap1"], ["architect", "reviewer"], auditFn, "2023-01-01T00:00:00Z");
   assert.ok(!("kind" in state1), "Initialization should succeed");
   if ("kind" in state1) throw new Error("Unexpected error");
 
@@ -160,7 +166,8 @@ test("buildversuscomposedecisionframeworkpermissions", () => {
     "BUILD",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:01:00Z"
   );
   assert.ok(!("kind" in state2), "Create decision with valid authority should succeed");
   if ("kind" in state2) throw new Error("Unexpected error");
@@ -171,7 +178,8 @@ test("buildversuscomposedecisionframeworkpermissions", () => {
     "COMPOSE",
     justification,
     "invalid-authority",
-    auditFn
+    auditFn,
+    "2023-01-01T00:02:00Z"
   );
   assert.ok("kind" in error, "Create decision with invalid authority should fail");
   assert.strictEqual(error.kind, "AUTHORITY_VIOLATION", "Error kind should be AUTHORITY_VIOLATION");
@@ -182,9 +190,9 @@ test("buildversuscomposedecisionframeworkproof", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Test decision",
   };
-  const auditFn = (): capability.BuildVersusComposeError | null => null;
+  const auditFn = (_event: capability.BuildVersusComposeAuditEvent): capability.BuildVersusComposeError | null => null;
   const state0 = capability.initialState;
-  const state1 = capability.initializeFramework(state0, ["cap1", "cap2"], ["architect"], auditFn);
+  const state1 = capability.initializeFramework(state0, ["cap1", "cap2"], ["architect"], auditFn, "2023-01-01T00:00:00Z");
   assert.ok(!("kind" in state1), "Initialization should succeed");
   if ("kind" in state1) throw new Error("Unexpected error");
 
@@ -194,7 +202,8 @@ test("buildversuscomposedecisionframeworkproof", () => {
     "BUILD",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:01:00Z"
   );
   assert.ok(!("kind" in state2), "Create decision should succeed");
   if ("kind" in state2) throw new Error("Unexpected error");
@@ -205,7 +214,8 @@ test("buildversuscomposedecisionframeworkproof", () => {
     "COMPOSE",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:02:00Z"
   );
   assert.ok(!("kind" in state3), "Create second decision should succeed");
   if ("kind" in state3) throw new Error("Unexpected error");
@@ -219,11 +229,11 @@ test("buildversuscomposedecisionframeworkreadinessmodel", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Test decision",
   };
-  const auditFn = (): capability.BuildVersusComposeError | null => null;
+  const auditFn = (_event: capability.BuildVersusComposeAuditEvent): capability.BuildVersusComposeError | null => null;
   const state0 = capability.initialState;
   assert.strictEqual(capability.getReadiness(state0), "NOT_READY", "Initial state should be NOT_READY");
 
-  const state1 = capability.initializeFramework(state0, ["cap1"], ["architect"], auditFn);
+  const state1 = capability.initializeFramework(state0, ["cap1"], ["architect"], auditFn, "2023-01-01T00:00:00Z");
   assert.ok(!("kind" in state1), "Initialization should succeed");
   if ("kind" in state1) throw new Error("Unexpected error");
   assert.strictEqual(capability.getReadiness(state1), "NOT_READY", "State without decisions should be NOT_READY");
@@ -234,13 +244,14 @@ test("buildversuscomposedecisionframeworkreadinessmodel", () => {
     "BUILD",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:01:00Z"
   );
   assert.ok(!("kind" in state2), "Create decision should succeed");
   if ("kind" in state2) throw new Error("Unexpected error");
   assert.strictEqual(capability.getReadiness(state2), "READY", "State with all capabilities decided should be READY");
 
-  const state3 = capability.initializeFramework(state0, ["cap1", "cap2"], ["architect"], auditFn);
+  const state3 = capability.initializeFramework(state0, ["cap1", "cap2"], ["architect"], auditFn, "2023-01-01T00:02:00Z");
   assert.ok(!("kind" in state3), "Initialization should succeed");
   if ("kind" in state3) throw new Error("Unexpected error");
   const state4 = capability.createDecision(
@@ -249,7 +260,8 @@ test("buildversuscomposedecisionframeworkreadinessmodel", () => {
     "BUILD",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:03:00Z"
   );
   assert.ok(!("kind" in state4), "Create decision should succeed");
   if ("kind" in state4) throw new Error("Unexpected error");
@@ -261,9 +273,9 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
     criteria: { COST: "low", CONTROL: "high", READINESS: "immediate" },
     rationale: "Valid decision",
   };
-  const auditFn = (): capability.BuildVersusComposeError | null => null;
+  const auditFn = (_event: capability.BuildVersusComposeAuditEvent): capability.BuildVersusComposeError | null => null;
   const state0 = capability.initialState;
-  const state1 = capability.initializeFramework(state0, ["cap1"], ["architect"], auditFn);
+  const state1 = capability.initializeFramework(state0, ["cap1"], ["architect"], auditFn, "2023-01-01T00:00:00Z");
   assert.ok(!("kind" in state1), "Initialization should succeed");
   if ("kind" in state1) throw new Error("Unexpected error");
 
@@ -273,14 +285,15 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
     "BUILD",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:01:00Z"
   );
   assert.ok(!("kind" in state2), "Create decision should succeed");
   if ("kind" in state2) throw new Error("Unexpected error");
   const validation1 = capability.validateFramework(state2);
   assert.strictEqual(validation1, null, "Valid framework should pass validation");
 
-  const state3 = capability.initializeFramework(state0, ["cap1", "cap2"], ["architect"], auditFn);
+  const state3 = capability.initializeFramework(state0, ["cap1", "cap2"], ["architect"], auditFn, "2023-01-01T00:02:00Z");
   assert.ok(!("kind" in state3), "Initialization should succeed");
   if ("kind" in state3) throw new Error("Unexpected error");
   const state4 = capability.createDecision(
@@ -289,7 +302,8 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
     "BUILD",
     justification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:03:00Z"
   );
   assert.ok(!("kind" in state4), "Create decision should succeed");
   if ("kind" in state4) throw new Error("Unexpected error");
@@ -307,7 +321,8 @@ test("buildversuscomposedecisionframeworkvalidation", () => {
     "COMPOSE",
     invalidJustification,
     "architect",
-    auditFn
+    auditFn,
+    "2023-01-01T00:04:00Z"
   );
   assert.ok("kind" in error, "Invalid justification should return error");
   assert.strictEqual(error.kind, "JUSTIFICATION_MISSING", "Error kind should be JUSTIFICATION_MISSING");
