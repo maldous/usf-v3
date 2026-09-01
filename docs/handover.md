@@ -133,15 +133,18 @@ contact authority.
 
 Do not carry forward the "three packets remain" claim. Queried from registered
 semantic state at this boundary, **two** graph-declared packets remain in the
-provider profile, and they are not sufficient:
+provider profile, and they are not sufficient — and both are now blocked:
 
-1. `provider-semantic-qualification-v2` — now `dependencyReady: true` with
-   `verified-completion` authority for the first time (its predecessors
-   `provider-hidden-holdout` and `provider-invocation-boundary` are both
-   complete). Blocked only on its own construction evidence and proof. Write
-   set 4 paths, 1 missing. Permission `maximumThrough: route`. Its completion
-   validation runs eight provider unit files, so the impact audit spans more
-   than its own write set.
+1. `provider-semantic-qualification-v2` — became `dependencyReady: true` with
+   `verified-completion` authority for the first time this session (its
+   predecessors `provider-hidden-holdout` and `provider-invocation-boundary` are
+   both complete), was attempted end to end, and is **blocked by a graph closure
+   defect** its own declared validation cannot get past. Implementation
+   finished and preserved; see the dedicated section below. Permission
+   `maximumThrough: route`, which is a provider-pipeline ceiling and does **not**
+   gate the contribution chain — `provider-hidden-holdout` integrated a real
+   byte delta at `maximumThrough: check`, and neither `integrate` nor
+   `transition` reads the field.
 2. `provider-parallel-execution` — `dependencyReady: false`; depends on
    `operator-observability` (complete) and the above. Owns
    `call parallel` / `call compare`.
@@ -214,13 +217,97 @@ either a work that legitimately owns a `RegisteredCliCommand`-bearing graph
 source, or the same `CliTargetRegistrationRule` seam pattern the receipt-v2
 target already uses, with `operator-observability` as `staticRegistryOwner`.
 
+### provider-semantic-qualification-v2 is blocked by a graph closure defect
+
+It was attempted this session, all the way to a materialised candidate, and it
+cannot complete. This is evidenced, not inferred.
+
+`urn:usf:validation:provider-qualification-v2` declares an eight-file command:
+
+```
+node --test --test-isolation=none tests/unit/providers/catalogue.test.ts \
+  tests/unit/providers/config.test.ts tests/unit/providers/economics.test.ts \
+  tests/unit/providers/fake.test.ts tests/unit/providers/probe.test.ts \
+  tests/unit/providers/qualification-assets.test.ts \
+  tests/unit/providers/qualification.test.ts tests/unit/providers/routing.test.ts
+```
+
+Only three of those eight are reachable in the packet's own confined scope:
+`economics`, `qualification` and the owned `routing`. `catalogue`, `config`,
+`fake`, `probe` and `qualification-assets` are in **neither** the packet's
+490-file scoped dependency closure **nor** its write set, and **no**
+`ValidationRuntimeClosure` is declared for that validation.
+
+The mechanism is exact. `candidateScope` is
+`readSet ∪ writeSet ∪ fileDependencies` (`src/realisation/index.ts:588`), and
+this packet's `readSet` is empty, so the candidate workspace materialises 267
+files without those five. `confinedNodeTestLaunch`
+(`src/commands/check.ts:230-242`) requires every test path named by the command
+to exist in the candidate as a same-root regular non-symlink file, returns
+`null` when one does not, and the caller reports
+`CHECK_CONFINEMENT_UNAVAILABLE` (`src/commands/check.ts:619`).
+
+Observed exactly that: `usf check --candidate sha256:a2026ff1... --validation
+urn:usf:validation:provider-qualification-v2` refuses
+`CHECK_CONFINEMENT_UNAVAILABLE`. It is not an initialization, host-tool,
+currentness or retry condition: `usf doctor` reports `ok`, bwrap 0.9.0 is
+present and trusted, every ignored operational root is `0700` and owner-owned,
+and `.usf/cache` is private. `provider-hidden-holdout` succeeded under the same
+machinery precisely because its validation names one file that is inside its
+closure.
+
+Every available fix is a write to `graph/provider-pipeline.nq`: declare a
+`ValidationRuntimeClosure` for the validation carrying the five missing
+`repositoryReadFile` rows; or add them to the work's `readSet`; or narrow the
+validation command. That file is **no work's `writePath`** and is written only
+by the publication commands, so the fix is not available from inside any
+authorized write set. This is the same class of gap as the
+`RegisteredCliCommand` one below, and it is why the session stops here rather
+than editing the graph directly.
+
+**The implementation itself is finished and verified.** Three preserved
+uncommitted drafts sit in the primary working tree:
+
+| Path | SHA-256 |
+|---|---|
+| `schemas/route-qualification-receipt.schema.json` | `95d5e6be…4dd3fc04` |
+| `src/providers/routing.ts` | `fb4fbeff…840551f84` |
+| `tests/unit/providers/routing.test.ts` | `b03d8dde…19b108d9f` |
+
+They add `urn:usf:route-qualification-receipt:1` (17 fields, matching its graph
+`requiredFieldSet` exactly and in order, compiling through the narrow
+validator), `parseRouteQualificationReceipt`,
+`routeQualificationReceiptDigest`, `evaluateRouteMemberCurrentness`,
+`deriveQualificationCohort` and `evaluateWorkloadReadiness`, plus five
+table-driven tests with planted defects. The change is **purely additive**: 914
+insertions, **zero** deletions, so the five other validations that import
+`src/providers/routing.ts` are untouched. A standalone clone with these three
+files passes **228/228** and typechecks clean; the exact validation command
+passes 62/62 across all eight files in the outer lane. `src/commands/route.ts`
+was deliberately left at preimage: new CLI option surface would need
+`src/commands/help.ts`, which is not in this write set.
+
+The construction grant published for this packet during the attempt was
+**rolled back** — evidence, proof and a twice-identical verified publication all
+succeeded, but a grant whose own completion validation cannot execute unlocks
+nothing, and the eventual closure fix will move the semantic digest and stale it
+anyway. The repository is back at semantic digest
+`sha256:762de131...` with all seven completions `verified-complete`, 223/223,
+containment `pass`. A verified reference copy of the postimage also sits in the
+standalone clone `/home/user/src/usf-v3-q-ZW1ihm`.
+
+**When the closure is fixed, do not re-derive these bytes from scratch, and do
+restore all three owned paths to exact carrier preimage before deriving
+construction evidence** — the preserved drafts move the scoped dependency digest
+while dirty, exactly as they did for `provider-invocation-boundary`.
+
 ### Next safe order
 
-1. advance `provider-semantic-qualification-v2`: dependency-ready for the first
-   time, repository-contained and reversible. Note `maximumThrough: route` and
-   audit all eight validation files against the candidate postimage before
-   materialisation;
-2. then `provider-parallel-execution`;
+1. `provider-semantic-qualification-v2` is **blocked**, not next: its declared
+   validation cannot execute in its own confined scope (see above). It needs a
+   `graph/provider-pipeline.nq` write that no work owns. Its implementation is
+   done and preserved;
+2. then `provider-parallel-execution`, which is blocked behind it;
 3. the receipt-v2 registration seam is the true provider gate and is fully
    specified in `urn:usf:rule:provider-receipt-target-registration:1`. Schedule
    it deliberately as a bounded three-phase change over two complete works, not
