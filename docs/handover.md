@@ -79,6 +79,23 @@ two-minute empty answer every cycle. It is never a provider-family disablement:
 quota exhaustion defers one exact route for six hours and clears on the next
 success.
 
+### The loop is closed, with evidence
+
+`accessibilitya11ygate` is the first ANQR capability that conforms. Its path:
+
+1. eight facet statements → one implementation unit → `mistral-medium-3-5`
+   produced a 188-line module, landed at
+   `apps/anqr/src/capabilities/foundation/accessibilitya11ygate.ts`;
+2. one conformance unit → a behavioural test at
+   `apps/anqr/tests/conformance/foundation/accessibilitya11ygate.conformance.test.ts`;
+3. two bounded repair rounds, both driven by the compiler naming the test file;
+4. eight subtests executed inside the confinement, **eight passing**.
+
+The facet evaluator then moved the corpus from **27 to 35 SATISFIED**, with
+`capabilitiesFullySatisfied 1`. Every one of those eight verdicts names the
+behavioural outcome that produced it. None was authored, and no realized
+artefact contributed to any of them.
+
 ### Observed provider reality
 
 Real dispatch on this host, recorded in `.usf/graph-executions/`:
