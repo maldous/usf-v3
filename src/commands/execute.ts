@@ -5,7 +5,7 @@ import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { type RoutingRequirement } from "../providers/classification.ts";
 import { deriveRouteUniverse, type ExecutionCandidate } from "../providers/route-universe.ts";
-import { observeTransportCapability } from "../providers/transports.ts";
+import { localAgentTransportIds, observeTransportCapability } from "../providers/transports.ts";
 import { CredentialEnvError, loadCredentialEnvFile } from "../providers/config.ts";
 import {
   parseExecutionEconomicAuthorizations, type EffectiveCostPolicy,
@@ -198,7 +198,7 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
   // One candidate universe, identical to the one graph execution routes over:
   // the whole classified catalogue plus every admitted local agent transport.
   const localAgentCapabilities = Object.freeze(await Promise.all(
-    (["antigravity-cli", "claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
+    localAgentTransportIds.map((transport) => observeTransportCapability(transport, {
       repositoryRoot, homeDirectory: homedir(), observedAt,
       suppliedCredentialNames, requiredCredentialName: null, adapterInstalled: false,
     })),

@@ -657,3 +657,24 @@ test("economics buckets and list cursors bind their exact context", () => {
     { ...context, providerFilter: "groq" },
   ]) assert.equal(economicsListCursorMatches(cursor, moved), false);
 });
+
+test("every declared execution transport can carry an authorization", async () => {
+  const { parseExecutionEconomicAuthorizations } = await import("../../../src/providers/execution-economics.ts");
+  const { executionTransportIds } = await import("../../../src/providers/transports.ts");
+  // A restated allowlist in this parser silently dropped antigravity-cli from
+  // the moment that transport was added: the type union gained it, the parser
+  // did not, and an authenticated, authorised transport simply never appeared
+  // in the pool. Nothing here may restate the set.
+  const authorizations = executionTransportIds.map((transport) => ({
+    transport, provider: transport, entitlement: "subscription-included",
+    basis: "operator-declared", maximumPaidCostUsd: 0,
+    evidence: "declared", sourceDocumentation: "https://example.invalid",
+  }));
+  const parsed = parseExecutionEconomicAuthorizations({ authorizations });
+  assert.deepEqual(parsed.map((entry) => entry.transport).sort(), [...executionTransportIds].sort());
+
+  // An unknown transport is still refused rather than admitted.
+  assert.equal(parseExecutionEconomicAuthorizations({
+    authorizations: [{ ...authorizations[0]!, transport: "invented-transport" }],
+  }).length, 0);
+});

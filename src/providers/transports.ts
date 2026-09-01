@@ -14,7 +14,23 @@ const runFile = promisify(execFile);
  * agent CLI is already authenticated as the operator. Nothing here requires a
  * provider to publish a machine-readable account-tier endpoint.
  */
-export type ExecutionTransportId = "vercel-ai-sdk" | "claude-cli" | "codex-cli" | "antigravity-cli";
+/**
+ * The closed set of execution transports.
+ *
+ * Exported as a value so no consumer restates it. A parser that restated it
+ * fell behind when antigravity-cli was added and dropped its authorization
+ * silently, which presented as the transport simply never being chosen.
+ */
+export const executionTransportIds = ["vercel-ai-sdk", "claude-cli", "codex-cli", "antigravity-cli"] as const;
+export type ExecutionTransportId = (typeof executionTransportIds)[number];
+
+/**
+ * Host-agent transports: every transport that is not the API-adapter one.
+ * Derived rather than restated, so adding a transport reaches every consumer.
+ */
+export const localAgentTransportIds = Object.freeze(
+  executionTransportIds.filter((id) => id !== "vercel-ai-sdk"),
+) as readonly Exclude<ExecutionTransportId, "vercel-ai-sdk">[];
 
 export type TransportAuthenticationKind =
   | "owner-private-credential-file"

@@ -7,11 +7,11 @@ test("productcatalogplanspricesauditmodel", () => {
   const result = capability.createProduct(
     capability.initialState,
     operatorId,
-    { name: "Test Product", description: "Test Description" } as const,
+    { name: "Test Product", description: "Test Description" },
     () => null,
     ["PLATFORM_BILLING_ADMIN"] as const
   );
-  assert.ok(!("kind" in result));
+  if ("kind" in result) throw new Error("Unexpected error");
   assert.ok(result.lastAuditEvent);
   assert.equal(result.lastAuditEvent.kind, "CATALOG_CHANGED");
   assert.equal(result.lastAuditEvent.operatorId, operatorId);
@@ -47,7 +47,7 @@ test("productcatalogplanspricescontracts", () => {
   assert.equal(filteredPrices[0].planId, "pl1");
 
   const tenantCatalog = capability.getTenantCatalog(state, ["TENANT_BILLING_READ"] as const);
-  assert.ok(!("kind" in tenantCatalog));
+  if ("kind" in tenantCatalog) throw new Error("Unexpected error");
   assert.equal(tenantCatalog.products.length, 1);
   assert.equal(tenantCatalog.plans.length, 1);
   assert.equal(tenantCatalog.prices.length, 1);
@@ -56,20 +56,20 @@ test("productcatalogplanspricescontracts", () => {
 test("productcatalogplanspriceserrormodel", () => {
   const state = capability.initialState;
 
-  const invalidRequest = { name: "", description: "Test" } as const;
+  const invalidRequest = { name: "", description: "Test" };
   const validationResult = capability.createProduct(state, "operator-1", invalidRequest, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
   assert.equal(validationResult.kind, "VALIDATION_ERROR");
 
-  const permissionDeniedResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" } as const, () => null, [] as const);
+  const permissionDeniedResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" }, () => null, []);
   assert.equal(permissionDeniedResult.kind, "PERMISSION_DENIED");
 
   const readinessState: capability.ProductCatalogPlansPricesState = { ...state, readiness: "READ_ONLY" };
-  const readinessResult = capability.createProduct(readinessState, "operator-1", { name: "Test", description: "Test" } as const, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
+  const readinessResult = capability.createProduct(readinessState, "operator-1", { name: "Test", description: "Test" }, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
   assert.equal(readinessResult.kind, "READINESS_FAILURE");
 
-  const validRequest = { name: "Test Product", description: "Test Description" } as const;
+  const validRequest = { name: "Test Product", description: "Test Description" };
   const validResult = capability.createProduct(state, "operator-1", validRequest, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
-  assert.ok(!("kind" in validResult));
+  if ("kind" in validResult) throw new Error("Unexpected error");
   assert.equal(validResult.products.length, 1);
 });
 
@@ -77,18 +77,18 @@ test("productcatalogplanspriceslifecycle", () => {
   const operatorId = "operator-123";
   const initialState = capability.initialState;
 
-  const productResult = capability.createProduct(initialState, operatorId, { name: "Test Product", description: "Test Description" } as const, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
-  assert.ok(!("kind" in productResult));
+  const productResult = capability.createProduct(initialState, operatorId, { name: "Test Product", description: "Test Description" }, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
+  if ("kind" in productResult) throw new Error("Unexpected error");
   assert.equal(productResult.products.length, 1);
 
-  const planRequest = { productId: productResult.products[0].id, name: "Test Plan", currency: "USD", billingPeriod: "MONTHLY" } as const;
+  const planRequest = { productId: productResult.products[0].id, name: "Test Plan", currency: "USD", billingPeriod: "MONTHLY" };
   const planResult = capability.createPlan(productResult, operatorId, planRequest, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
-  assert.ok(!("kind" in planResult));
+  if ("kind" in planResult) throw new Error("Unexpected error");
   assert.equal(planResult.plans.length, 1);
 
-  const priceRequest = { planId: planResult.plans[0].id, version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" } as const;
+  const priceRequest = { planId: planResult.plans[0].id, version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" };
   const priceResult = capability.createPrice(planResult, operatorId, priceRequest, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
-  assert.ok(!("kind" in priceResult));
+  if ("kind" in priceResult) throw new Error("Unexpected error");
   assert.equal(priceResult.prices.length, 1);
 
   const filteredPlans = capability.listPlans(priceResult, productResult.products[0].id);
@@ -100,7 +100,7 @@ test("productcatalogplanspriceslifecycle", () => {
   assert.equal(filteredPrices[0].planId, planResult.plans[0].id);
 
   const tenantCatalog = capability.getTenantCatalog(priceResult, ["TENANT_BILLING_READ"] as const);
-  assert.ok(!("kind" in tenantCatalog));
+  if ("kind" in tenantCatalog) throw new Error("Unexpected error");
   assert.equal(tenantCatalog.products.length, 1);
   assert.equal(tenantCatalog.plans.length, 1);
   assert.equal(tenantCatalog.prices.length, 1);
@@ -109,18 +109,18 @@ test("productcatalogplanspriceslifecycle", () => {
 test("productcatalogplanspricespermissions", () => {
   const state = capability.initialState;
 
-  const permissionDeniedResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" } as const, () => null, [] as const);
+  const permissionDeniedResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" }, () => null, []);
   assert.equal(permissionDeniedResult.kind, "PERMISSION_DENIED");
 
-  const tenantReadDeniedResult = capability.getTenantCatalog(state, [] as const);
+  const tenantReadDeniedResult = capability.getTenantCatalog(state, []);
   assert.equal(tenantReadDeniedResult.kind, "PERMISSION_DENIED");
 
-  const validCreateResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" } as const, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
-  assert.ok(!("kind" in validCreateResult));
+  const validCreateResult = capability.createProduct(state, "operator-1", { name: "Test", description: "Test" }, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
+  if ("kind" in validCreateResult) throw new Error("Unexpected error");
   assert.equal(validCreateResult.products.length, 1);
 
   const validReadResult = capability.getTenantCatalog(state, ["TENANT_BILLING_READ"] as const);
-  assert.ok(!("kind" in validReadResult));
+  if ("kind" in validReadResult) throw new Error("Unexpected error");
 });
 
 test("productcatalogplanspricesproof", () => {
@@ -135,7 +135,7 @@ test("productcatalogplanspricesproof", () => {
   assert.deepEqual(prices, []);
 
   const tenantCatalog = capability.getTenantCatalog(state, ["TENANT_BILLING_READ"] as const);
-  assert.ok(!("kind" in tenantCatalog));
+  if ("kind" in tenantCatalog) throw new Error("Unexpected error");
   assert.deepEqual(tenantCatalog.products, []);
   assert.deepEqual(tenantCatalog.plans, []);
   assert.deepEqual(tenantCatalog.prices, []);
@@ -147,7 +147,7 @@ test("productcatalogplanspricesreadinessmodel", () => {
     readiness: "READ_ONLY",
   };
 
-  const createResult = capability.createProduct(readOnlyState, "operator-1", { name: "Test", description: "Test" } as const, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
+  const createResult = capability.createProduct(readOnlyState, "operator-1", { name: "Test", description: "Test" }, () => null, ["PLATFORM_BILLING_ADMIN"] as const);
   assert.equal(createResult.kind, "READINESS_FAILURE");
 
   const listResult = capability.listProducts(readOnlyState);
@@ -208,21 +208,21 @@ test("productcatalogplanspricesstatemodel", () => {
 });
 
 test("productcatalogplanspricesvalidation", () => {
-  const invalidProductRequest = { name: "", description: "Test" } as const;
+  const invalidProductRequest = { name: "", description: "Test" };
   const productValidation = capability.validateCreateProductRequest(invalidProductRequest);
   assert.equal(productValidation.kind, "VALIDATION_ERROR");
 
-  const invalidPlanRequest = { productId: "", name: "Test", currency: "USD", billingPeriod: "MONTHLY" } as const;
+  const invalidPlanRequest = { productId: "", name: "Test", currency: "USD", billingPeriod: "MONTHLY" };
   const planValidation = capability.validateCreatePlanRequest(invalidPlanRequest);
   assert.equal(planValidation.kind, "VALIDATION_ERROR");
 
-  const invalidPriceRequest = { planId: "", version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" } as const;
+  const invalidPriceRequest = { planId: "", version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" };
   const priceValidation = capability.validateCreatePriceRequest(invalidPriceRequest);
   assert.equal(priceValidation.kind, "VALIDATION_ERROR");
 
-  const validProductRequest = { name: "Test Product", description: "Test Description" } as const;
+  const validProductRequest = { name: "Test Product", description: "Test Description" };
   const validProduct = capability.validateCreateProductRequest(validProductRequest);
-  assert.ok(!("kind" in validProduct));
+  if ("kind" in validProduct) throw new Error("Unexpected error");
   assert.equal(validProduct.name, "Test Product");
   assert.equal(validProduct.description, "Test Description");
 
@@ -235,15 +235,15 @@ test("productcatalogplanspricesvalidation", () => {
     lastAuditEvent: null,
     lastError: null,
   };
-  const validPlanRequest = { productId: "p1", name: "Test Plan", currency: "USD", billingPeriod: "MONTHLY" } as const;
+  const validPlanRequest = { productId: "p1", name: "Test Plan", currency: "USD", billingPeriod: "MONTHLY" };
   const validPlan = capability.validateCreatePlanRequest(validPlanRequest);
-  assert.ok(!("kind" in validPlan));
+  if ("kind" in validPlan) throw new Error("Unexpected error");
 
   const planState: capability.ProductCatalogPlansPricesState = {
     ...state,
     plans: [{ id: "pl1", productId: "p1", name: "Plan 1", currency: "USD", billingPeriod: "MONTHLY", active: true, createdAt: "2023-01-01T00:00:00Z" }],
   };
-  const validPriceRequest = { planId: "pl1", version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" } as const;
+  const validPriceRequest = { planId: "pl1", version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" };
   const validPrice = capability.validateCreatePriceRequest(validPriceRequest);
-  assert.ok(!("kind" in validPrice));
+  if ("kind" in validPrice) throw new Error("Unexpected error");
 });

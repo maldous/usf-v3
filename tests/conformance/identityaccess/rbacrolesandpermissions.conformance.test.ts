@@ -33,7 +33,9 @@ test("rbacrolesandpermissionsauditmodel", () => {
     auditFn,
   );
   assert.equal(result.outcome, "SUCCESS");
-  assert.equal(result.state.members[0].role, "MANAGER");
+  if (result.outcome === "SUCCESS") {
+    assert.equal(result.state.members[0].role, "MANAGER");
+  }
 
   const failingAuditFn = (_: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => {
     return { kind: "AUDIT_FAILURE", message: "Audit failed" };
@@ -142,8 +144,10 @@ test("rbacrolesandpermissionslifecycle", () => {
   const auditFn = () => null;
   const result = capability.updateMemberRole(stateWithMember, "user1", "org1", "MANAGER", auditFn);
   assert.equal(result.outcome, "SUCCESS");
-  const permissionsAfter = capability.getMemberPermissions(result.state, "user1", "org1");
-  assert.deepEqual(permissionsAfter, ["tenant.members.read", "tenant.groups.read", "tenant.suborgs.read"] as const);
+  if (result.outcome === "SUCCESS") {
+    const permissionsAfter = capability.getMemberPermissions(result.state, "user1", "org1");
+    assert.deepEqual(permissionsAfter, ["tenant.members.read", "tenant.groups.read", "tenant.suborgs.read"] as const);
+  }
 });
 
 test("rbacrolesandpermissionspermissions", () => {

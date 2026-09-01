@@ -17,7 +17,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "PII",
+    classification: "PII" as const,
     lineage: ["source1"],
     tenantId: "tenant1",
   };
@@ -72,7 +72,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "sensitive",
+    classification: "sensitive" as const,
     lineage: ["source1"],
     tenantId: "tenant1",
   };
@@ -114,7 +114,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
   assert.strictEqual(fulfilledRequest?.evidence, "evidence1");
   assert.strictEqual(fulfilledRequest?.operatorId, "op1");
 
-  const invalidClassification = capability.validateClassification("invalid");
+  const invalidClassification = capability.validateClassification("invalid", "tenant1");
   assert.ok(isError(invalidClassification), "invalid classification must be rejected");
   assert.strictEqual(
     (invalidClassification as capability.DataGovernanceCatalogError).kind,
@@ -126,14 +126,14 @@ test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
   const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
   const initial: capability.DataGovernanceCatalogState = capability.initialState;
 
-  const invalidClassification = capability.validateClassification("invalid");
+  const invalidClassification = capability.validateClassification("invalid", "tenant1");
   assert.ok(isError(invalidClassification));
   assert.strictEqual(
     (invalidClassification as capability.DataGovernanceCatalogError).kind,
     "INVALID_CLASSIFICATION",
   );
 
-  const invalidState = capability.validateRequestState("invalid");
+  const invalidState = capability.validateRequestState("invalid", "tenant1");
   assert.ok(isError(invalidState));
   assert.strictEqual(
     (invalidState as capability.DataGovernanceCatalogError).kind,
@@ -164,7 +164,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "PII",
+    classification: "PII" as const,
     lineage: ["source1"],
     tenantId: "tenant1",
   };
@@ -198,7 +198,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprlifecycle", () => {
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "none",
+    classification: "none" as const,
     lineage: ["source1"],
     tenantId: "tenant1",
   };
@@ -258,7 +258,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprpermissions", () => {
   const entryTenant1: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "PII",
+    classification: "PII" as const,
     lineage: ["source1"],
     tenantId: "tenant1",
   };
@@ -319,10 +319,10 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
   const auditFn = (_: capability.DataGovernanceAuditEvent): null => null;
   const initial: capability.DataGovernanceCatalogState = capability.initialState;
 
-  const validClassification = capability.validateClassification("PII");
+  const validClassification = capability.validateClassification("PII", "tenant1");
   assert.strictEqual(validClassification, "PII");
 
-  const invalidClassification = capability.validateClassification("invalid");
+  const invalidClassification = capability.validateClassification("invalid", "tenant1");
   assert.ok(isError(invalidClassification));
 
   const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
@@ -370,7 +370,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel", () =>
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry1",
     datasetId: "dataset1",
-    classification: "PII",
+    classification: "PII" as const,
     lineage: ["source1"],
     tenantId: "tenant1",
   };
@@ -442,21 +442,21 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
     "sensitive",
   ];
   for (const classification of validClassifications) {
-    const result = capability.validateClassification(classification);
+    const result = capability.validateClassification(classification, "tenant1");
     assert.strictEqual(result, classification);
   }
 
-  const invalidClassification = capability.validateClassification("invalid");
+  const invalidClassification = capability.validateClassification("invalid", "tenant1");
   assert.ok(isError(invalidClassification));
   assert.strictEqual((invalidClassification as capability.DataGovernanceCatalogError).kind, "INVALID_CLASSIFICATION");
 
   const validStates: readonly capability.DataSubjectRequestState[] = ["open", "fulfilled"];
   for (const state of validStates) {
-    const result = capability.validateRequestState(state);
+    const result = capability.validateRequestState(state, "tenant1");
     assert.strictEqual(result, state);
   }
 
-  const invalidState = capability.validateRequestState("invalid");
+  const invalidState = capability.validateRequestState("invalid", "tenant1");
   assert.ok(isError(invalidState));
   assert.strictEqual((invalidState as capability.DataGovernanceCatalogError).kind, "CONFIGURATION_MISSING");
 

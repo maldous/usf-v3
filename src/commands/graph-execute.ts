@@ -14,7 +14,7 @@ import {
   deriveRouteUniverse, diversifyCandidates, type ExecutionCandidate,
 } from "../providers/route-universe.ts";
 import { readAuthoritySnapshot, snapshotDifference, type AuthoritySnapshot } from "../providers/authority-snapshot.ts";
-import { observeTransportCapability } from "../providers/transports.ts";
+import { localAgentTransportIds, observeTransportCapability } from "../providers/transports.ts";
 import type { CommandResult } from "./dispatcher.ts";
 import { languageModelFor, parseEffectiveCostPolicy } from "./execute.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
@@ -289,7 +289,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     return typeof value === "string" && value.length > 0;
   }).sort());
   const localAgentCapabilities = Object.freeze(await Promise.all(
-    (["antigravity-cli", "claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
+    localAgentTransportIds.map((transport) => observeTransportCapability(transport, {
       repositoryRoot,
       homeDirectory: homedir(),
       observedAt,
@@ -320,7 +320,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       if (await observeInstalledAdapter(repositoryRoot, adapterPackage) !== undefined) currentAdapters.push(adapterPackage);
     }
     const currentCapabilities = await Promise.all(
-      (["antigravity-cli", "claude-cli", "codex-cli"] as const).map((transport) => observeTransportCapability(transport, {
+      localAgentTransportIds.map((transport) => observeTransportCapability(transport, {
         repositoryRoot, homeDirectory: homedir(), observedAt,
         suppliedCredentialNames, requiredCredentialName: null, adapterInstalled: false,
       })),

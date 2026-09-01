@@ -1,5 +1,5 @@
 import { canonicalDigest } from "../core/canonical.ts";
-import type { ExecutionTransportId } from "./transports.ts";
+import { executionTransportIds, type ExecutionTransportId } from "./transports.ts";
 
 /**
  * V3 evaluates economics per execution transport. A transport and provider pair
@@ -107,9 +107,15 @@ export function parseExecutionEconomicAuthorizations(value: unknown): readonly E
     if (typeof transport !== "string" || typeof provider !== "string" || typeof entitlement !== "string"
       || typeof basis !== "string" || typeof evidence !== "string" || typeof sourceDocumentation !== "string"
       || typeof maximumPaidCostUsd !== "number" || !Number.isFinite(maximumPaidCostUsd)) continue;
-    if (transport !== "vercel-ai-sdk" && transport !== "claude-cli" && transport !== "codex-cli") continue;
+    // Derived from the transport type rather than restated here. A hardcoded
+    // list silently dropped every antigravity-cli authorization from the moment
+    // that transport was added: the type union gained it, this line did not, and
+    // the result was an admitted, authenticated, economically authorised
+    // transport that never produced a single attempt.
+    if (!executionTransportIds.includes(transport as ExecutionTransportId)) continue;
     parsed.push(Object.freeze({
-      transport, provider, entitlement, basis, maximumPaidCostUsd, evidence, sourceDocumentation,
+      transport: transport as ExecutionTransportId,
+      provider, entitlement, basis, maximumPaidCostUsd, evidence, sourceDocumentation,
     }));
   }
   return Object.freeze(parsed);

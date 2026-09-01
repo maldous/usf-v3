@@ -221,7 +221,7 @@ test("searchandindexingproductsearchpermissions", () => {
         indexName: "idx",
         url: "http://example.com",
         metadata: {}
-      },
+      } as capability.IndexedDocument,
       {
         tenantId: "t1",
         organisationId: "o1",
@@ -233,7 +233,7 @@ test("searchandindexingproductsearchpermissions", () => {
         url: "http://example.com/2",
         metadata: {},
         permissionKey: "secret"
-      },
+      } as capability.IndexedDocument,
       {
         tenantId: "t2",
         organisationId: "o2",
@@ -244,7 +244,7 @@ test("searchandindexingproductsearchpermissions", () => {
         indexName: "idx",
         url: "http://example.com/3",
         metadata: {}
-      }
+      } as capability.IndexedDocument
     ],
     lastError: null,
     lastAudit: null,
@@ -288,7 +288,7 @@ test("searchandindexingproductsearchproof", () => {
         indexName: "idx",
         url: "http://example.com",
         metadata: {}
-      }
+      } as capability.IndexedDocument
     ],
     lastError: null,
     lastAudit: null,
@@ -299,7 +299,7 @@ test("searchandindexingproductsearchproof", () => {
     tenantId: "t2",
     organisationId: "o2",
     query: "test"
-  });
+  } as capability.SearchQuery);
   assert.strictEqual(isolationResult.isolated, true);
   assert.strictEqual(isolationResult.error, null);
 
@@ -307,7 +307,7 @@ test("searchandindexingproductsearchproof", () => {
     tenantId: "t1",
     organisationId: "o1",
     query: "test"
-  });
+  } as capability.SearchQuery);
   assert.strictEqual(violationResult.isolated, false);
   assert.ok(violationResult.error);
   assert.strictEqual(violationResult.error.kind, "TENANT_ISOLATION_VIOLATION");
@@ -344,7 +344,7 @@ test("searchandindexingproductsearchreadinessmodel", () => {
     indexName: "idx",
     url: "http://example.com",
     metadata: {}
-  }, () => null);
+  } as capability.IndexedDocument, () => null);
   assert.ok("kind" in mutationResult);
   assert.strictEqual(mutationResult.kind, "INDEX_MUTATION_DISABLED");
 });
