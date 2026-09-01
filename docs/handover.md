@@ -1,5 +1,53 @@
 # USF V3 handover
 
+## Live continuation update — repository-path currentness restored
+
+Semantic packet `44f9e2129714d00192eaf2e60e83218bb7fab3ce`
+(`Model provider receipt activation and COW state`) is the verified GitHub
+`main`. From that clean carrier the registered USF chain restored exact current
+authority for `urn:usf:work:repository-path-scope`; no ad hoc work command was
+used.
+
+Registered construction evidence/proof publication verified and then created:
+
+- receipt
+  `evidence/construction-authority/bf20cf489424c69e7faaa37526843c1269e927319db08ce4756ab188d6f99219.json`;
+- receipt digest
+  `sha256:f1003af19e1decb6a0ba2ce0d459df14167eda0682d013b8865cbaa732e1a4d8`;
+- semantic transition
+  `sha256:a807531784f8142e3fb08cd7bc02e1145be513ca610f8e6e4f1be263d31dbde4`
+  to
+  `sha256:dd18fc092ddd39ab50bc4baa2bd92862185ed02bb5065798939d9a94cf04d97c`.
+
+`usf realise no-change` then materialised candidate
+`sha256:fa579992cdb7b352c78e653535495e38d8017ef24e437016736d3a5ec6a6d093`.
+The sole graph-selected
+`urn:usf:validation:repository-path-tests` passed in the confined registered
+check path with receipt digest
+`sha256:b44f67665aefcfa8440bc88691eedaab3a07182a4ef1577ef53cb9785cef5044`.
+Completion evidence/proof publication verified and then created:
+
+- receipt
+  `evidence/work-completion/b97abd998ba96e5e24422f8eb1b9d88c189f228e35d8a239e6a74cc9ebfe4c63.json`;
+- receipt digest
+  `sha256:2247dad7eced1fef50eb9b4aee07c1057b326ba86c0c357d3d0b4dae368fdc18`;
+- current semantic digest
+  `sha256:f734ad4a2b6a257d62a7f7d9c2c10cabd7a54b0c63ca54322d646158fbd810d5`.
+
+Fresh untruncated `usf work` read-back now reports `file-asset-index`
+dependency-ready. `operator-observability` still has no current construction
+authority or completion, so provider account-tier and provider-census remain
+dependency-unready. The next safe action is to commit/push the three authority
+paths plus this handover as one packet, then realise and complete
+operator-observability through its registered chain. No provider or inference
+endpoint was contacted,
+no credential was read, and no model, ANQR, staging, production or terminal
+proof is claimed. Independent registered bundle verification is GO; the graph
+file is
+`sha256:fe3c20abfd021658d14f80a88b05e8c9411e4121ab973482b841cad1f82c5eb2`,
+profile-scoped authority passes 1/1, containment passes and `git diff --check`
+is clean.
+
 ## Current live boundary — provider account-source semantics ready for durable commit
 
 Prepared 2026-09-01 from clean committed carrier
