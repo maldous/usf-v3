@@ -250,7 +250,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
           moduleSource: null,
           siblingModule: await siblingModule(repositoryRoot, needs, present, unit.need.modulePath),
         }), unit.repairs)
-      : deriveConformancePrompt(unit.need, moduleSource!, specifier, unit.repairs);
+      : deriveConformancePrompt(unit.need, moduleSource!, specifier, unit.repairs, existingTarget);
     // Existing source is part of identity: a changed module must not reuse a
     // test written against the surface it used to have.
     const inputDigests = [
@@ -442,9 +442,15 @@ function deriveRepairState(
       }
     }
     if (failing.length === 0) continue;
+    // A compiler that names only the conformance file has identified the wrong
+    // artefact for us; regenerating a module that compiles would waste a round.
+    const details = failing.map((entry) => entry.detail ?? "").join("\n");
+    const namesTest = details.includes(need.conformancePath);
+    const namesModule = details.includes(need.modulePath);
     state.set(need.capability, Object.freeze({
       failing: Object.freeze(failing),
       round: Math.max(1, (rounds[need.capability] ?? 0) || 1),
+      ...(namesTest && !namesModule ? { preferredStage: "conformance" as const } : {}),
     }));
   }
   return state;

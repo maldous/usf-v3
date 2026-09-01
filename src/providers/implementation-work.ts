@@ -225,6 +225,12 @@ export const maximumRepairRounds = 4;
 export interface CapabilityRepairState {
   readonly failing: readonly FailingRequirement[];
   readonly round: number;
+  /**
+   * Which side to correct first. A compiler naming only the test file is
+   * telling us which artefact is wrong, and spending a round regenerating a
+   * module that compiles would waste it.
+   */
+  readonly preferredStage?: ImplementationStage;
 }
 
 /**
@@ -269,10 +275,15 @@ export function deriveImplementationWorkUnits(
     if (!moduleLanded) continue;
     const repair = repairs.get(need.capability);
     if (repair === undefined || repair.failing.length === 0 || repair.round > maximumRepairRounds) continue;
-    // Odd rounds correct the module; even rounds correct the test. A behavioural
-    // check that keeps failing is as likely to be a wrong test as wrong code,
-    // and alternating finds out without an operator deciding which.
-    const stage = repair.round % 2 === 1 ? "implementation" as const : "conformance" as const;
+    // Rounds alternate, because a behavioural check that keeps failing is as
+    // likely to be a wrong test as wrong code and alternating finds out without
+    // an operator deciding which. Where the evidence already says which side is
+    // wrong, that side goes first.
+    // When the evidence names which artefact is wrong, correct that one every
+    // round. Alternation exists only for a behavioural failure, which does not
+    // say whether the code or the test is at fault.
+    const stage = repair.preferredStage
+      ?? (repair.round % 2 === 1 ? "implementation" as const : "conformance" as const);
     units.push(Object.freeze({
       unit: unitIdentifier(stage, need, repair.round), stage, need,
       targetPath: stage === "implementation" ? need.modulePath : need.conformancePath,
@@ -309,6 +320,22 @@ export interface InspectionContext {
   readonly siblingModule: Readonly<{ path: string; source: string }> | null;
 }
 
+/**
+ * One line per requirement, but a detail shared by every requirement -- a
+ * compiler error blocks them all at once -- is stated once. Repeating a
+ * thousand characters eight times crowds out the code the model must read.
+ */
+function summariseFailures(failing: readonly FailingRequirement[]): readonly string[] {
+  const shared = new Set(failing.map((entry) => entry.detail ?? ""));
+  if (shared.size === 1 && failing.length > 1) {
+    return Object.freeze([
+      `Requirements affected: ${failing.map((entry) => entry.facetName).join(", ")}.`,
+      `Observed: ${[...shared][0]!}`,
+    ]);
+  }
+  return Object.freeze(failing.map((entry) => `- ${entry.facetName}: ${entry.detail ?? "the behavioural subtest failed"}`));
+}
+
 function requirementBlock(need: CapabilityImplementationNeed): string {
   // The identifier is given on its own line and unadorned. A model shown
   // `[name]` copies the brackets into the subtest name, which is the evidence
@@ -338,8 +365,8 @@ export function deriveImplementationPrompt(
     `\nAn already-accepted module in this product, shown so you follow the same conventions rather than inventing new ones:\n${context.siblingModule.source}\n`;
   const repair = failing.length === 0 ? "" : [
     ``,
-    `These requirements were checked against the current module by an executing behavioural test and did not hold. Correct the module so each one does, and change nothing else:`,
-    ...failing.map((entry) => `- ${entry.facetName}: ${entry.detail ?? "the behavioural subtest failed"}`),
+    `These requirements did not hold when the current module was checked. Correct the module so each one does, and change nothing else:`,
+    ...summariseFailures(failing),
   ].join("\n");
   return [
     `Implement one capability module for the ANQR product in TypeScript.`,
@@ -359,6 +386,7 @@ export function deriveImplementationPrompt(
     `- Where a requirement is fail-closed, the default branch must deny.`,
     `- Prefer pure functions taking explicit state and returning new state. Do not use module-level mutable state, timers, the network, the filesystem or the process environment.`,
     `- Write TypeScript that compiles under strict mode with no 'any' and no non-null assertion.`,
+    `- Where a function may return either a result or an error, make the two discriminable by a literal field so a caller can narrow the union before reading a member.`,
     ``,
     existing,
     repair,
@@ -376,11 +404,13 @@ export function deriveConformancePrompt(
   moduleSource: string,
   importSpecifier: string,
   failing: readonly FailingRequirement[] = [],
+  existingTest: string | null = null,
 ): string {
   const repair = failing.length === 0 ? "" : [
     ``,
-    `A previous test for these requirements failed against this exact module. Either the module is wrong or the previous test asserted something the requirement does not state. Write the test that checks what the requirement actually states, against the surface this module actually exposes:`,
-    ...failing.map((entry) => `- ${entry.facetName}: ${entry.detail ?? "the behavioural subtest failed"}`),
+    `A previous test for these requirements did not hold against this exact module. Either it does not compile, or it asserted something the requirement does not state, or the module is wrong. Correct it so every requirement is checked against the surface this module actually exposes.`,
+    ...summariseFailures(failing),
+    ...(existingTest === null ? [] : ["", "The test as it currently stands, which you are correcting:", existingTest]),
   ].join("\n");
   return [
     `Write one Node test-runner conformance test for the ANQR capability module below.`,
@@ -401,6 +431,7 @@ export function deriveConformancePrompt(
     `- Assert the behaviour the requirement states, including its negative case where it states one: a fail-closed requirement must be checked with an input that must be denied.`,
     `- Do not stub, mock, monkey-patch or re-declare the module under test.`,
     `- Do not use timers, the network, the filesystem or the process environment.`,
+    `- Write TypeScript that compiles under strict mode. Where a value has string-literal members, annotate it with the module's exported type or use "as const" so it is not widened to string, and narrow a union result before reading a member of one branch.`,
     `- If an export the requirement needs does not exist on the module, assert the closest behaviour the module does expose rather than inventing an import.`,
     repair,
   ].filter((line) => line.length > 0).join("\n");

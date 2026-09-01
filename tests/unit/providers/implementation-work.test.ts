@@ -235,6 +235,14 @@ test("a failing behavioural check produces bounded alternating repair work, then
   assert.equal(round(1)[0]!.unit, "urn:usf:workunit:implementation-policygate-repair-1");
   assert.deepEqual(round(1)[0]!.repairs, failing);
 
+  // Where the evidence already names the wrong artefact, that side goes first.
+  const preferring = (n: number) => deriveImplementationWorkUnits(needs, landed,
+    new Map([[need.capability, Object.freeze({ failing, round: n, preferredStage: "conformance" as const })]]));
+  // Named evidence holds for every round; alternation is only for the case
+  // where nothing says which artefact is wrong.
+  assert.deepEqual(preferring(1).map((unit) => unit.stage), ["conformance"]);
+  assert.deepEqual(preferring(2).map((unit) => unit.stage), ["conformance"]);
+
   // Past the bound the capability stops consuming provider budget.
   assert.equal(round(maximumRepairRounds).length, 1);
   assert.equal(round(maximumRepairRounds + 1).length, 0);

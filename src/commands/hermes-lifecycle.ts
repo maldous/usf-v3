@@ -409,6 +409,7 @@ interface CycleProjection {
   readonly facets: Record<string, unknown> | null;
   readonly blockers: readonly Record<string, unknown>[];
   readonly providerActivity: readonly Record<string, unknown>[];
+  readonly idleCycles: number;
   readonly lastReason: string;
 }
 
@@ -464,6 +465,7 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
   process.on("SIGINT", interrupt);
 
   let cycle = 0;
+  let idleCycles = 0;
   let reason = "running";
   try {
     for (;;) {
@@ -552,6 +554,7 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
           .filter((outcome) => outcome.outcome === "accepted")
           .map((outcome) => Object.freeze({ capability: outcome.capability, transport: outcome.transport, model: outcome.actualModel }))
           .slice(0, 24)),
+        idleCycles,
         lastReason: implementation === null ? "implementation lane refused"
           : Number(implementation.readyFrontier ?? 0) === 0 ? "no ready implementation work remains"
           : Number(implementation.acceptedResults ?? 0) === 0 ? "the ready frontier produced no accepted result this cycle"
@@ -559,7 +562,15 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
       });
       await writeJson(repositoryRoot, cycleRecord, projection);
       if (signalled !== null) { reason = `signalled-${signalled}`; break; }
-      if (await pause(repositoryRoot, record.supervisorId, parsed.pauseSeconds)) { reason = "stop-requested"; break; }
+      // A cycle that changed nothing usually means every eligible route is
+      // deferred or the frontier is empty. Backing off keeps the supervisor
+      // ready without spinning; any progress returns it to the operator's pace.
+      const progressed = Number(implementation?.acceptedResults ?? 0) > 0
+        || transactions.length > 0
+        || (Array.isArray(implementation?.conformanceRuns) && implementation.conformanceRuns.length > 0);
+      idleCycles = progressed ? 0 : Math.min(idleCycles + 1, 3);
+      const waitSeconds = Math.min(maximumPauseSeconds, parsed.pauseSeconds * 2 ** idleCycles);
+      if (await pause(repositoryRoot, record.supervisorId, waitSeconds)) { reason = "stop-requested"; break; }
     }
   } catch (error) {
     reason = `failed:${error instanceof Error ? error.message.slice(0, 200) : "unknown"}`;
