@@ -293,6 +293,22 @@ function routeRank(
   return [record.successRate, 0, record.meanLatencyMs];
 }
 
+/**
+ * Which rotation group a unit belongs to.
+ *
+ * Rotating the provider order per unit maximised spread and destroyed prompt
+ * cache locality: consecutive units never revisited a model inside its cache
+ * TTL, so the byte-identical stage preamble was re-tokenised at full price
+ * every time. Rotating per small group keeps the spread -- a quota failure
+ * still cannot absorb more than one group's worth of consecutive work -- while
+ * giving each model a burst of same-prefix requests close enough together to
+ * hit its cache.
+ */
+export const dispatchBurstSize = 4;
+export function rotationGroup(ordinal: number, burstSize: number = dispatchBurstSize): number {
+  return Math.floor(Math.max(0, ordinal) / Math.max(1, burstSize));
+}
+
 export function diversifyCandidates(
   candidates: readonly ExecutionCandidate[],
   offset: number,

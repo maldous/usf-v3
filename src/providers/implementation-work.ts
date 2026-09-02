@@ -460,12 +460,14 @@ export function deriveImplementationPrompt(
     `These requirements did not hold when the current module was checked. Correct the module so each one does, and change nothing else:`,
     ...summariseFailures(failing),
   ].join("\n");
+  // Prefix-stable layout: everything up to the capability line is byte-identical
+  // for every implementation unit under one convention, so a provider's prompt
+  // cache can serve it across units on the same model. Volatile content --
+  // existing source, repair detail, the sibling example -- comes last for the
+  // same reason. Measured before this layout, cross-unit prompts diverged at
+  // line two and provider cache reads were under half a percent.
   return [
-    `Implement one capability module for the ANQR product in TypeScript.`,
-    `Capability: ${need.canonicalName}. Domain: ${need.domain}.`,
-    ``,
-    `The module must make every one of the following behavioural requirements true. They are the recovered specification of this capability and they describe behaviour, not files:`,
-    requirementBlock(need),
+    `Implement one capability module in TypeScript.`,
     ``,
     `Module contract: ${convention.outputRule}`,
     ``,
@@ -479,6 +481,11 @@ export function deriveImplementationPrompt(
     `- Prefer pure functions taking explicit state and returning new state. Do not use module-level mutable state, timers, the network, the filesystem or the process environment.`,
     `- Write TypeScript that compiles under strict mode with no 'any' and no non-null assertion.`,
     `- Where a function may return either a result or an error, make the two discriminable by a literal field so a caller can narrow the union before reading a member.`,
+    ``,
+    `Capability: ${need.canonicalName}. Domain: ${need.domain}.`,
+    ``,
+    `The module must make every one of the following behavioural requirements true. They are the recovered specification of this capability and they describe behaviour, not files:`,
+    requirementBlock(need),
     ``,
     existing,
     repair,
@@ -504,27 +511,34 @@ export function deriveConformancePrompt(
     ...summariseFailures(failing),
     ...(existingTest === null ? [] : ["", "The test as it currently stands, which you are correcting:", existingTest]),
   ].join("\n");
+  // The same prefix-stable layout as the implementation prompt: the task and
+  // rules are byte-identical across every conformance unit, the capability
+  // specifics follow, and the module source -- the largest and most volatile
+  // block -- comes last so it never breaks the shared prefix.
   return [
-    `Write one Node test-runner conformance test for the ANQR capability module below.`,
-    `Capability: ${need.canonicalName}.`,
-    ``,
-    `The module under test, exactly as it exists:`,
-    moduleSource,
-    ``,
-    `Each requirement below must be checked by exactly one top-level subtest whose name is that requirement's identifier, spelled exactly and with nothing added -- no brackets, no numbering, no description:`,
-    requirementBlock(need),
+    `Write one Node test-runner conformance test for a capability module.`,
     ``,
     `Rules you must follow exactly:`,
     `- Return only the TypeScript source of this one test file. No commentary, no code fence, no file path.`,
     `- Import assert from "node:assert/strict" and test from "node:test".`,
-    `- Import the module under test with exactly: import * as capability from "${importSpecifier}";`,
-    `- Declare one subtest per requirement as: test("<identifier>", () => { ... }); for example test("${need.requirements[0]?.canonicalName ?? "requirementidentifier"}", () => { ... });`,
+    `- Import the module under test with exactly the import line given below.`,
+    `- Declare one top-level subtest per requirement, named exactly that requirement's identifier with nothing added -- no brackets, no numbering, no description: test("<identifier>", () => { ... });`,
     `- Every subtest must call at least one export of the module under test and assert on what it returned or threw. A subtest that asserts a constant, or that reimplements the behaviour instead of calling it, is worthless and will be rejected.`,
     `- Assert the behaviour the requirement states, including its negative case where it states one: a fail-closed requirement must be checked with an input that must be denied.`,
     `- Do not stub, mock, monkey-patch or re-declare the module under test.`,
     `- Do not use timers, the network, the filesystem or the process environment.`,
     `- Write TypeScript that compiles under strict mode. Where a value has string-literal members, annotate it with the module's exported type or use "as const" so it is not widened to string, and narrow a union result before reading a member of one branch.`,
     `- If an export the requirement needs does not exist on the module, assert the closest behaviour the module does expose rather than inventing an import.`,
+    ``,
+    `Capability: ${need.canonicalName}.`,
+    `Import line: import * as capability from "${importSpecifier}";`,
+    `Example subtest declaration: test("${need.requirements[0]?.canonicalName ?? "requirementidentifier"}", () => { ... });`,
+    ``,
+    `Each requirement below must be checked by exactly one subtest named for it:`,
+    requirementBlock(need),
+    ``,
+    `The module under test, exactly as it exists:`,
+    moduleSource,
     repair,
   ].filter((line) => line.length > 0).join("\n");
 }

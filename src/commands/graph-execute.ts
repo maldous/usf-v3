@@ -11,7 +11,7 @@ import { parseExecutionEconomicAuthorizations, type EffectiveCostPolicy } from "
 import { verifyEconomicsProjection } from "../providers/economics-projection.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
 import {
-  deriveRouteUniverse, diversifyCandidates, type ExecutionCandidate,
+  deriveRouteUniverse, diversifyCandidates, rotationGroup, type ExecutionCandidate,
 } from "../providers/route-universe.ts";
 import { readAuthoritySnapshot, snapshotDifference, type AuthoritySnapshot } from "../providers/authority-snapshot.ts";
 import { localAgentTransportIds, observeTransportCapability } from "../providers/transports.ts";
@@ -384,7 +384,10 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     // Spread units across providers so one quota failure cannot collapse the
     // batch. Currently deferred routes drop to the back rather than out: if
     // every eligible route is deferred, trying one is better than refusing.
-    const spread = diversifyCandidates(universe.candidates, ordinal, productivity);
+    // Group rotation, not per-unit rotation: consecutive units in one group
+    // share a top candidate, so the prefix-stable prompt preamble lands on the
+    // same model within its cache window instead of a cold cache every unit.
+    const spread = diversifyCandidates(universe.candidates, rotationGroup(ordinal), productivity);
     const ordered = Object.freeze([
       ...spread.filter((candidate) => !deferred.has(candidate.candidateId)),
       ...spread.filter((candidate) => deferred.has(candidate.candidateId)),
