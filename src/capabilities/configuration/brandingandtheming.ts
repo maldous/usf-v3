@@ -192,15 +192,15 @@ export interface ConfigurationStorePort {
     hostOrState: string | BrandingAndThemingState,
     stateOrHost?: string | BrandingAndThemingState,
   ) => ThemeReadResult;
-  readonly readBootstrapTheme?: (
+  readonly readBootstrapTheme: (
     hostOrState: string | BrandingAndThemingState,
     stateOrHost?: string | BrandingAndThemingState,
   ) => ThemeReadResult;
-  readonly bootstrapThemeRead?: (
+  readonly bootstrapThemeRead: (
     hostOrState: string | BrandingAndThemingState,
     stateOrHost?: string | BrandingAndThemingState,
   ) => ThemeReadResult;
-  readonly readTheme?: (
+  readonly readTheme: (
     hostOrState: string | BrandingAndThemingState,
     stateOrHost?: string | BrandingAndThemingState,
   ) => ThemeReadResult;
@@ -222,26 +222,26 @@ export interface ConfigurationStorePort {
     arg3?: unknown,
     arg4?: unknown,
   ) => BrandingMutationResult;
-  readonly createBrandingDefinition?: (
+  readonly createBrandingDefinition: (
     arg1: unknown,
     arg2?: unknown,
     arg3?: unknown,
     arg4?: unknown,
     arg5?: unknown,
   ) => BrandingMutationResult;
-  readonly list?: (
+  readonly list: (
     tenantIdOrState: string | BrandingAndThemingState,
     tokenOrTenantId?: unknown,
     stateOrToken?: unknown,
   ) => BrandingListResult;
-  readonly patch?: (
+  readonly patch: (
     arg1: unknown,
     arg2?: unknown,
     arg3?: unknown,
     arg4?: unknown,
     arg5?: unknown,
   ) => BrandingMutationResult;
-  readonly delete?: (
+  readonly delete: (
     arg1: unknown,
     arg2?: unknown,
     arg3?: unknown,
@@ -749,10 +749,25 @@ export function getEffectiveTheme(
   }
 }
 
-export const readBootstrapTheme = getEffectiveTheme;
-export const bootstrapThemeRead = getEffectiveTheme;
-export const readTheme = getEffectiveTheme;
-export const getBootstrapTheme = getEffectiveTheme;
+export function readBootstrapTheme(
+  arg1: string | BrandingAndThemingState,
+  arg2?: string | BrandingAndThemingState,
+): ThemeReadResult {
+  return getEffectiveTheme(arg1, arg2);
+}
+export function bootstrapThemeRead(
+  arg1: string | BrandingAndThemingState,
+  arg2?: string | BrandingAndThemingState,
+): ThemeReadResult {
+  return getEffectiveTheme(arg1, arg2);
+}
+export function readTheme(
+  arg1: string | BrandingAndThemingState,
+  arg2?: string | BrandingAndThemingState,
+): ThemeReadResult {
+  return getEffectiveTheme(arg1, arg2);
+}
+export const getBootstrapTheme = readBootstrapTheme;
 
 export function listBrandingDefinitions(
   arg1: string | BrandingAndThemingState,
@@ -1159,9 +1174,9 @@ export const deleteDefinition = deleteBrandingDefinition;
 export function createConfigurationStoreAdapter(
   initialAdapterState: BrandingAndThemingState = initialState,
 ): ConfigurationStorePort {
-  let currentState = initialAdapterState;
+  let currentState: BrandingAndThemingState = initialAdapterState;
 
-  return {
+  const adapter: ConfigurationStorePort = {
     getEffectiveTheme: (
       hostOrState: string | BrandingAndThemingState,
       stateOrHost?: string | BrandingAndThemingState,
@@ -1288,20 +1303,10 @@ export function createConfigurationStoreAdapter(
       return result;
     },
   };
+
+  return adapter;
 }
 export const createAdapter = createConfigurationStoreAdapter;
 
-export const configurationStoreAdapter: ConfigurationStorePort = {
-  getEffectiveTheme,
-  readBootstrapTheme: getEffectiveTheme,
-  bootstrapThemeRead: getEffectiveTheme,
-  readTheme: getEffectiveTheme,
-  listBrandingDefinitions,
-  patchBrandingDefinition,
-  deleteBrandingDefinition,
-  createBrandingDefinition,
-  list: listBrandingDefinitions,
-  patch: patchBrandingDefinition,
-  delete: deleteBrandingDefinition,
-};
-export const brandingAndThemingConfigurationStoreAdapter = configurationStoreAdapter;
+export const configurationStoreAdapter: ConfigurationStorePort = createConfigurationStoreAdapter();
+export const brandingAndThemingConfigurationStoreAdapter: ConfigurationStorePort = configurationStoreAdapter;
