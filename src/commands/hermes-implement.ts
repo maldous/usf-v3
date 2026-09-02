@@ -449,7 +449,15 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       const checked = unit.stage === "implementation"
         ? validateImplementationOutput(lookup.entry.text)
         : validateConformanceOutput(lookup.entry.text, unit.need, specifier);
-      if (checked.accepted) {
+      // A cached result whose bytes are already at the target proves nothing:
+      // re-landing them cannot change anything the last check did not already
+      // observe. During repair this was worse than useless -- the failing test
+      // was "regenerated" from cache as its own identical self for ten rounds,
+      // each reported as reuse, while only the module ever actually changed.
+      const landedDigest = await preimageDigestOf(unitRoot, unit.targetPath);
+      const identicalToLanded = checked.accepted && landedDigest !== null
+        && checked.contentDigest === landedDigest;
+      if (checked.accepted && !identicalToLanded) {
         cacheHits += 1;
         await recordSemanticReuse(repositoryRoot, lookup.entry);
         accepted.push(Object.freeze({
@@ -553,7 +561,11 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
           }));
           continue;
         }
-        delete candidateFailures[unit.need.capability];
+        // Cleared only when the joint state is healthy, not here: a module that
+        // compiles alone says nothing about the pair, and clearing on this
+        // signal erased the exact context the test's repair round needed --
+        // the test then regenerated blind while the module regenerated small.
+        if (!(unit.need.capability in rounds)) delete candidateFailures[unit.need.capability];
       }
       admissionOf(record, true);
       await storeSemanticResult(repositoryRoot, identity, checked.content, evidenceDigest);
