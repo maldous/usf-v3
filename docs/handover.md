@@ -67,7 +67,59 @@ Supervisor BAU: `usf hermes start --manifest <selection> --env-file
 (tested round-trip); status reports only a cycle from the observed supervisor
 and surfaces older ones as `supersededCycle`.
 
+### Remaining work is decided here and in GOAL.md, nowhere else
+
+Two sources decide remaining work, by kind:
+
+- **Implementation work is decided by the graph.** The frontier is
+  `usf hermes implement --manifest <selection>`; this ledger never enumerates
+  unrealised capabilities, because prose copies of a frontier go stale the cycle
+  after they are written. Unsatisfied and blocked facets are read from the facet
+  evaluator, and repair is the supervisor's own loop.
+- **Programme-level remaining work is decided by GOAL.md section 25** (the
+  acceptance boundary) minus what current evidence already satisfies. The open
+  criteria as of this boundary:
+  - **25.5 concurrency**: peak live concurrent provider calls must reach
+    `min(8, C_target)` (GOAL 14.3) and never fall below two while two eligible
+    independent assignments are ready. Current operation runs at operator-chosen
+    concurrency 5; `C_observed`, `C_target` and parallel utilisation are not yet
+    derived and reported per run, so this criterion is unmeasured, not merely
+    unmet.
+  - **25.5 continuous operation**: three-plus batches, forced supervisor
+    restart, and concurrent chains have all been exercised, but not recorded as
+    one auditable acceptance run.
+  - **25.7 useful-token target**: the pre-run frozen target of at least 100 000
+    useful tokens has never been formally framed; token accounting now splits
+    kept from wasted per cycle, so "useful" is finally measurable — a target
+    must be frozen before the run that claims it.
+  - **25.3 provider removal**: "one successful provider can be removed without
+    preventing success" has not been demonstrated since the profile split.
+  - **25.8 sanitized acceptance bundle**: not yet produced; every input it needs
+    (evidence, route history, token accounting, nonclaims) now exists.
+- **Everything in the gap register below** is remaining work by definition;
+  when an entry is fixed it must leave the register in the same change.
+
+### Next safe actions
+
+1. Let the composed supervisor run; watch wasted-token share (was 63–70%, then
+   57%, then 29% in the first admission-ranked cycle) and whether any route
+   stands down as `ROUTE_OUTPUT_UNPRODUCTIVE`.
+2. On next restart the supervisor picks up the transaction-repository
+   projection fix (51f5ff3); no restart is needed for it alone.
+3. Derive and report `C_observed` / `C_target` / parallel utilisation per cycle
+   (GOAL 14.3), then decide concurrency from the measurement rather than from
+   the provider count.
+4. Freeze a useful-token target for an acceptance run (GOAL 25.7), run it, and
+   produce the sanitized acceptance bundle (GOAL 25.8) with exact claims and
+   nonclaims.
+5. When a repair round leaves a facet UNSATISFIED at the repair ceiling, read
+   the evidence record before touching the module: the failure is a product
+   behaviour statement, and the fix may belong in the facet, the module or the
+   test.
+
 ### Gap register
+
+Every entry here is remaining work; fixing one removes it in the same change.
 
 - Repair-rounds, candidate-failures, cycle and conformance-evidence records are
   unscoped by profile; safe while one supervisor runs at a time.
