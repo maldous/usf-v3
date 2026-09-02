@@ -156,6 +156,28 @@ function frozenRefusal(
  * captured from an explicit file and usage/refusal facts from the JSONL event
  * stream. Standard input is closed so the CLI never waits for more input.
  */
+
+/**
+ * A declared codex model may carry its effort as a suffix: "model@effort".
+ *
+ * Codex expresses effort as configuration, not as part of the model name, so
+ * without this the effort dimension could not be declared, measured or ranked
+ * per candidate the way antigravity's tier-named models already are. The
+ * default is low: a worker turn is bounded generation, and the operator's own
+ * config proved what inheriting a supervising effort costs -- single units at
+ * a million tokens of internal reasoning.
+ */
+export function codexModelSelection(declared: string | null): Readonly<{ model: string | null; effort: string }> {
+  if (declared === null || declared.length === 0) return Object.freeze({ model: null, effort: "low" });
+  const at = declared.lastIndexOf("@");
+  if (at <= 0) return Object.freeze({ model: declared, effort: "low" });
+  const effort = declared.slice(at + 1);
+  return Object.freeze({
+    model: declared.slice(0, at),
+    effort: ["minimal", "low", "medium", "high", "xhigh"].includes(effort) ? effort : "low",
+  });
+}
+
 export async function invokeCodexCli(
   prompt: string,
   timeoutMs: number,
@@ -176,18 +198,21 @@ export async function invokeCodexCli(
     const { stdout, timedOut } = await new Promise<{ stdout: string; timedOut: boolean }>((settle) => {
       const child = spawn(
         executable,
-        [
-          "exec", "--json", "-s", "read-only", "--skip-git-repo-check",
+        ((): readonly string[] => {
           // The operator's config.toml sets model_reasoning_effort for their own
           // interactive use -- xhigh at the time this was found -- and exec
           // inherits it, which is how single worker units burned a million
-          // tokens of internal reasoning. A worker turn is bounded generation:
-          // pin the effort low explicitly, the same lever the antigravity
-          // declarations already use through their model tier names.
-          "-c", 'model_reasoning_effort="low"',
-          ...(model === null || model.length === 0 ? [] : ["-m", model]),
-          "-o", lastMessagePath, prompt,
-        ],
+          // tokens of internal reasoning. Effort is therefore always pinned
+          // explicitly, from the declared model@effort suffix or the low
+          // default, never inherited.
+          const selection = codexModelSelection(model);
+          return [
+            "exec", "--json", "-s", "read-only", "--skip-git-repo-check",
+            "-c", `model_reasoning_effort="${selection.effort}"`,
+            ...(selection.model === null ? [] : ["-m", selection.model]),
+            "-o", lastMessagePath, prompt,
+          ];
+        })(),
         { stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
       );
       let collected = "";

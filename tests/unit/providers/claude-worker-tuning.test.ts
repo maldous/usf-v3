@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { claudeCliArguments } from "../../../src/providers/cli-transports.ts";
+import { claudeCliArguments, codexModelSelection } from "../../../src/providers/cli-transports.ts";
 
 /**
  * The Claude CLI worker invocation, tuned with knowledge of the CLI itself.
@@ -31,4 +31,16 @@ test("without a declared model no --model flag is passed, never an empty one", (
     const argv = claudeCliArguments("prompt", absent as never);
     assert.ok(!argv.includes("--model"));
   }
+});
+
+test("codex effort is declared per candidate and never inherited", () => {
+  // The operator's config sets xhigh for their own use; a worker turn that
+  // inherits it burns a million tokens of internal reasoning on one module.
+  assert.deepEqual(codexModelSelection("gpt-5.3-codex-spark"), { model: "gpt-5.3-codex-spark", effort: "low" });
+  assert.deepEqual(codexModelSelection("gpt-5.3-codex-spark@medium"), { model: "gpt-5.3-codex-spark", effort: "medium" });
+  assert.deepEqual(codexModelSelection("gpt-5.6-sol@xhigh"), { model: "gpt-5.6-sol", effort: "xhigh" });
+  // Malformed suffixes fall back to low rather than passing garbage to the CLI.
+  assert.deepEqual(codexModelSelection("model@turbo"), { model: "model", effort: "low" });
+  assert.deepEqual(codexModelSelection(null), { model: null, effort: "low" });
+  assert.deepEqual(codexModelSelection("@medium"), { model: "@medium", effort: "low" });
 });
