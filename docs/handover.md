@@ -22,9 +22,12 @@ Both denominators are fully landed (every module, every conformance test) and
 converging on executed verdicts. At writing: ANQR 36/39 capabilities fully
 satisfied (94% of facets, denominator fully assessed); Core 38/64 (88%), with a
 check backlog draining at 24 per cycle. Completion condition for the operator
-directive (task: drive defined scope to done): UNSATISFIED 0 and NOT_ASSESSED 0
-on both `graph/manifests/v3-delivery.json` and `graph/products/anqr/manifest.json`
-under `usf hermes implement --manifest <m>` evaluation. UI and other undefined
+directive (task: drive defined scope to done): UNSATISFIED, NOT_ASSESSED and
+BLOCKED all zero on both `graph/manifests/v3-delivery.json` and
+`graph/products/anqr/manifest.json` under `usf hermes implement --manifest <m>`
+evaluation. BLOCKED joined the condition when unwritten subtests became visible,
+repairable work instead of permanent silence (commit 9852142); the count it
+surfaces was previously hidden inside NOT_ASSESSED. UI and other undefined
 scope deliberately waits; it is recorded as dispositions and opportunities in
 the ANQR profile, not as pending work.
 
