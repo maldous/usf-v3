@@ -12,12 +12,14 @@ import { claudeCliArguments } from "../../../src/providers/cli-transports.ts";
  * wrong model and died at the timeout. And without --max-turns the print mode
  * may run an agentic session where one bounded generation was wanted.
  */
-test("a worker turn pins its model and is bounded to one turn", () => {
+test("a worker turn pins its model and carries only flags the binary supports", () => {
+  // --max-turns was here once, from stale knowledge of a different build; the
+  // installed CLI rejects it, which fails the whole route as a usage error.
+  // Every flag in this list is verified against the binary's own help.
   const argv = claudeCliArguments("write the module", "claude-haiku-4-5-20251001");
   assert.deepEqual([...argv], [
     "-p", "write the module",
     "--output-format", "json",
-    "--max-turns", "1",
     "--model", "claude-haiku-4-5-20251001",
   ]);
 });

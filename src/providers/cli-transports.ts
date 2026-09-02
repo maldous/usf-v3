@@ -55,10 +55,13 @@ function integerOrNull(value: unknown): number | null {
  * worker unit needs one generation, not a session.
  */
 export function claudeCliArguments(prompt: string, model: string | null): readonly string[] {
+  // No turn-bounding flag: the installed CLI's help does not list one, and a
+  // flag the binary rejects fails the whole route as a usage error. Verified
+  // against the binary, not remembered -- the first version of this function
+  // carried --max-turns from stale knowledge of a different build.
   return Object.freeze([
     "-p", prompt,
     "--output-format", "json",
-    "--max-turns", "1",
     ...(model === null || model.length === 0 ? [] : ["--model", model]),
   ]);
 }
@@ -175,6 +178,13 @@ export async function invokeCodexCli(
         executable,
         [
           "exec", "--json", "-s", "read-only", "--skip-git-repo-check",
+          // The operator's config.toml sets model_reasoning_effort for their own
+          // interactive use -- xhigh at the time this was found -- and exec
+          // inherits it, which is how single worker units burned a million
+          // tokens of internal reasoning. A worker turn is bounded generation:
+          // pin the effort low explicitly, the same lever the antigravity
+          // declarations already use through their model tier names.
+          "-c", 'model_reasoning_effort="low"',
           ...(model === null || model.length === 0 ? [] : ["-m", model]),
           "-o", lastMessagePath, prompt,
         ],
