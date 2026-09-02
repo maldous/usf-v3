@@ -107,3 +107,44 @@ test("a module that legitimately ends without a closing brace is not flagged", (
   const flat = "export const answer = 42;";
   assert.equal(looksTruncated(flat), false);
 });
+
+test("equal admission rates split on what a kept result costs", () => {
+  // Measured twice in one day: subscription hosts spent 0.66 and 1.04 million
+  // tokens per accepted unit while an API route accepted the same class of work
+  // for seventeen thousand, and rate alone ranked them level.
+  const expensive = "codex-cli:codex-cli:example-spark";
+  const frugal = "vercel-ai-sdk:example:frugal-model";
+  let records = applyRouteOutcomes({}, [
+    { candidateId: expensive, outcome: "ok", reasonCode: "INVOCATION_OK", latencyMs: 1_000 },
+    { candidateId: frugal, outcome: "ok", reasonCode: "INVOCATION_OK", latencyMs: 60_000 },
+  ], 1_000);
+  records = applyOutputAdmissions(records, [
+    { candidateId: expensive, admitted: true, totalTokens: 1_039_410 },
+    { candidateId: frugal, admitted: true, totalTokens: 17_000 },
+  ], 2_000);
+  const productivity = routeProductivity(records);
+  assert.equal(productivity.get(expensive)?.tokensPerAcceptance, 1_039_410);
+  assert.equal(productivity.get(frugal)?.tokensPerAcceptance, 17_000);
+  const ordered = diversifyCandidates([candidate(expensive), candidate(frugal)]
+    .map((c, i) => ({ ...c, provider: "shared" }) as never), 0, productivity);
+  assert.equal(ordered[0]!.candidateId, frugal,
+    "the frugal route must outrank the expensive one at equal admission rate, despite worse latency");
+});
+
+test("spend per acceptance survives the round trip and later folds", async () => {
+  const { mkdtemp, rm } = await import("node:fs/promises");
+  const { resolve } = await import("node:path");
+  const { readRouteDeferrals, writeRouteDeferrals } = await import("../../../src/providers/route-deferral.ts");
+  const root = await mkdtemp(resolve(import.meta.dirname, "../../..", ".usf/tmp/tokens-"));
+  try {
+    let records = applyOutputAdmissions(
+      applyRouteOutcomes({}, [{ candidateId: quiet, outcome: "ok", reasonCode: "INVOCATION_OK", latencyMs: 1_000 }], 1_000),
+      [{ candidateId: quiet, admitted: true, totalTokens: 20_000 }], 2_000);
+    await writeRouteDeferrals(root, records);
+    records = await readRouteDeferrals(root);
+    assert.equal(records[quiet]?.outputTokensSpent, 20_000, "spend must survive the round trip");
+    const folded = applyRouteOutcomes(records,
+      [{ candidateId: quiet, outcome: "ok", reasonCode: "INVOCATION_OK", latencyMs: 1_000 }], 3_000);
+    assert.equal(folded[quiet]?.outputTokensSpent, 20_000, "a transport fold must not erase spend");
+  } finally { await rm(root, { recursive: true, force: true }); }
+});

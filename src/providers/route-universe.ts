@@ -255,6 +255,7 @@ export interface RouteOrderingObservation {
   /** Downstream admission verdicts on what the route produced, when observed. */
   readonly outputAcceptances?: number;
   readonly outputRefusals?: number;
+  readonly tokensPerAcceptance?: number | null;
 }
 
 /**
@@ -269,9 +270,9 @@ export interface RouteOrderingObservation {
 function routeRank(
   candidate: ExecutionCandidate,
   observed: ReadonlyMap<string, RouteOrderingObservation> | undefined,
-): readonly [number, number] {
+): readonly [number, number, number] {
   const record = observed?.get(candidate.candidateId);
-  if (record === undefined) return [0.5, 0];
+  if (record === undefined) return [0.5, 0, 0];
   // Admission outranks transport. A route that answers every time while nothing
   // it produces survives admission is not productive, it is expensive -- one
   // such route absorbed 86 percent of a session's tokens with zero admissions
@@ -279,9 +280,17 @@ function routeRank(
   // Admission verdicts are rarer than transport observations, so they are used
   // whenever they exist and transport success remains the prior until then.
   const verdicts = (record.outputAcceptances ?? 0) + (record.outputRefusals ?? 0);
-  if (verdicts > 0) return [(record.outputAcceptances ?? 0) / verdicts, record.meanLatencyMs];
-  if (record.attempts === 0) return [0.5, 0];
-  return [record.successRate, record.meanLatencyMs];
+  if (verdicts > 0) {
+    // Equal admission rates split on what a kept result costs. Measured twice
+    // in one day: subscription hosts spending 0.66 and 1.04 million tokens per
+    // accepted unit ranked level with an API route accepting the same class of
+    // work for seventeen thousand, because rate is blind to spend. Latency
+    // remains the final tiebreak.
+    return [(record.outputAcceptances ?? 0) / verdicts,
+      record.tokensPerAcceptance ?? 0, record.meanLatencyMs];
+  }
+  if (record.attempts === 0) return [0.5, 0, 0];
+  return [record.successRate, 0, record.meanLatencyMs];
 }
 
 export function diversifyCandidates(
@@ -299,9 +308,10 @@ export function diversifyCandidates(
   // the order within each provider changes.
   for (const bucket of byProvider.values()) {
     bucket.sort((left, right) => {
-      const [leftRate, leftMs] = routeRank(left, observed);
-      const [rightRate, rightMs] = routeRank(right, observed);
+      const [leftRate, leftTokens, leftMs] = routeRank(left, observed);
+      const [rightRate, rightTokens, rightMs] = routeRank(right, observed);
       if (leftRate !== rightRate) return rightRate - leftRate;
+      if (leftTokens !== rightTokens) return leftTokens - rightTokens;
       if (leftMs !== rightMs) return leftMs - rightMs;
       return left.candidateId.localeCompare(right.candidateId);
     });

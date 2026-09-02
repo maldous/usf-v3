@@ -508,7 +508,12 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     const admissions: Array<Readonly<{ candidateId: string; admitted: boolean }>> = [];
     const admissionOf = (record: Record<string, unknown>, admitted: boolean): void => {
       const candidateId = record.selectedCandidateId;
-      if (typeof candidateId === "string" && candidateId.length > 0) admissions.push(Object.freeze({ candidateId, admitted }));
+      if (typeof candidateId !== "string" || candidateId.length === 0) return;
+      const totalTokens = (record.usage as Record<string, unknown> | null | undefined)?.totalTokens;
+      admissions.push(Object.freeze({
+        candidateId, admitted,
+        totalTokens: typeof totalTokens === "number" ? totalTokens : undefined,
+      }));
     };
     for (const { unit, identity } of pending) {
       const record = byUnit.get(unit.unit);

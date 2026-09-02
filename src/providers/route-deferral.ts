@@ -35,6 +35,14 @@ export interface RouteDeferral {
    */
   readonly outputAcceptances?: number;
   readonly outputRefusals?: number;
+  /**
+   * Total tokens the route has spent producing judged output. Two subscription
+   * hosts each spent six hundred thousand to a million tokens per accepted
+   * unit -- their own agentic loops re-feeding context -- where an API route
+   * accepted equivalent work for seventeen thousand. Admission rate cannot see
+   * that sixty-fold disparity; only spend per acceptance can.
+   */
+  readonly outputTokensSpent?: number;
 }
 
 /**
@@ -111,6 +119,8 @@ export async function readRouteDeferrals(repositoryRoot: string): Promise<Readon
           ? record.outputAcceptances! : 0,
         outputRefusals: Number.isInteger(record.outputRefusals) && (record.outputRefusals ?? 0) >= 0
           ? record.outputRefusals! : 0,
+        outputTokensSpent: typeof record.outputTokensSpent === "number" && Number.isFinite(record.outputTokensSpent)
+          && record.outputTokensSpent >= 0 ? record.outputTokensSpent : 0,
       });
     }
     return Object.freeze(records);
@@ -137,6 +147,8 @@ export interface ObservedRouteOutcome {
 export interface ObservedOutputAdmission {
   readonly candidateId: string;
   readonly admitted: boolean;
+  /** Tokens the producing invocation reported, whatever the verdict. */
+  readonly totalTokens?: number;
 }
 
 /**
@@ -164,6 +176,9 @@ export function applyOutputAdmissions(
     const held = next[admission.candidateId];
     const outputAcceptances = (held?.outputAcceptances ?? 0) + (admission.admitted ? 1 : 0);
     const outputRefusals = (held?.outputRefusals ?? 0) + (admission.admitted ? 0 : 1);
+    const outputTokensSpent = (held?.outputTokensSpent ?? 0)
+      + (typeof admission.totalTokens === "number" && Number.isFinite(admission.totalTokens) && admission.totalTokens > 0
+        ? admission.totalTokens : 0);
     const base: RouteDeferral = held ?? Object.freeze({
       candidateId: admission.candidateId, reasonCode: "OUTPUT_OBSERVED",
       consecutiveFailures: 0, observedAtMs: nowMs, deferUntilMs: 0,
@@ -175,6 +190,7 @@ export function applyOutputAdmissions(
       observedAtMs: nowMs,
       outputAcceptances,
       outputRefusals,
+      outputTokensSpent,
       ...(outputUnproductive && base.deferUntilMs <= nowMs
         ? { reasonCode: `ROUTE_OUTPUT_UNPRODUCTIVE:${outputRefusals}`, deferUntilMs: nowMs + 24 * hour }
         : {}),
@@ -191,6 +207,8 @@ export interface RouteProductivity {
   readonly meanLatencyMs: number;
   readonly outputAcceptances: number;
   readonly outputRefusals: number;
+  /** Spend per kept result; null until something was kept. */
+  readonly tokensPerAcceptance: number | null;
 }
 
 export function routeProductivity(
@@ -207,6 +225,8 @@ export function routeProductivity(
       meanLatencyMs: record.meanLatencyMs ?? 0,
       outputAcceptances: record.outputAcceptances ?? 0,
       outputRefusals: record.outputRefusals ?? 0,
+      tokensPerAcceptance: (record.outputAcceptances ?? 0) > 0
+        ? Math.round((record.outputTokensSpent ?? 0) / record.outputAcceptances!) : null,
     }));
   }
   return productivity;
@@ -233,7 +253,7 @@ export function applyRouteOutcomes(
   // the order.
   const history = (candidateId: string): Readonly<{
     attempts: number; successes: number; meanLatencyMs: number;
-    outputAcceptances: number; outputRefusals: number;
+    outputAcceptances: number; outputRefusals: number; outputTokensSpent: number;
   }> => {
     const held = records[candidateId];
     return {
@@ -242,6 +262,7 @@ export function applyRouteOutcomes(
       // nothing about admission, and rebuilding the record without these fields
       // is the same silent-omission defect the reader once had.
       outputAcceptances: held?.outputAcceptances ?? 0, outputRefusals: held?.outputRefusals ?? 0,
+      outputTokensSpent: held?.outputTokensSpent ?? 0,
     };
   };
   const observed = (candidateId: string, ok: boolean, latencyMs: number) => {
@@ -253,6 +274,7 @@ export function applyRouteOutcomes(
       meanLatencyMs: Math.round((prior.meanLatencyMs * prior.attempts + latencyMs) / attempts),
       outputAcceptances: prior.outputAcceptances,
       outputRefusals: prior.outputRefusals,
+      outputTokensSpent: prior.outputTokensSpent,
     };
   };
   for (const outcome of outcomes) {
