@@ -1,6 +1,88 @@
 # USF V3 handover
 
-## Current live boundary — ANQR has a product semantic denominator, and Hermes realises it into the ANQR repository
+## Current live boundary — composed realisation, admission-ranked routing, and measurable satisfaction
+
+Prepared 2026-09-02, after the profile breakthrough was consolidated. Read
+current Git and supervisor state rather than trusting any identifier here.
+
+### The three selections
+
+| manifest | selects | lands in |
+| --- | --- | --- |
+| `graph/manifests/v3-delivery.json` | 64 foundation capabilities, 553 requirements | USF |
+| `graph/products/anqr/manifest.json` | 39 ANQR capabilities, 171 requirements | the ANQR repository |
+| `graph/manifests/anqr-with-foundation.json` | 103 capabilities, 724 requirements — their exact union | each capability into the repository that owns it |
+
+Ownership is resolved from the graph (`declaresCapability` → `productRepository`),
+never from an IRI namespace or a path shape — both conventions declare the same
+path pattern, so a path cannot say which repository a result belongs in. One
+proposal is written per owning repository and the supervisor transacts each
+against its own target. Switching manifests does not stale evidence: staleness
+compares file digests against the owning repository; `authoritySnapshot` is
+recorded, never compared.
+
+### Evidence now counts
+
+`loadConformanceEvidence` resolved every record under the USF root, so product
+evidence was permanently stale and ANQR satisfaction was pinned at zero while
+real subtests passed. Records now name their `sourceRepository` and the loader
+resolves per record. Verified live: ANQR went 0 → 54+ SATISFIED within two
+cycles of the fix, with STALE returning to 0.
+
+### Routing runs on what survives admission
+
+Two measured defects, both fixed with regression tests that fail without the fix:
+
+1. **Route history was write-only.** The reader omitted `attempts`, `successes`
+   and `meanLatencyMs`, so the productivity map was always empty, ordering by
+   production never happened, and the 12-attempt ceiling could never fire.
+2. **Transport success outranked usefulness.** One host route
+   (`antigravity-cli:gpt-oss-120b-medium`) answered 43 times for 1.77M tokens —
+   86% of recent spend — with almost nothing admitted, and its perfect transport
+   record kept it first in its provider. Admission verdicts now fold back into
+   route history (never re-counting the invocation), ordering prefers admission
+   rate wherever verdicts exist, and a route that spends the ceiling producing
+   nothing admissible stands down for a day.
+
+Truncation is also named at admission: host-CLI transports report no
+finishReason, so a ceiling-cut generation reached the compiler and was reported
+hundreds of lines from its cause. A compound structural check (open brace depth
+AND text ending where no module ends) refuses it as `candidate-truncated` and
+tells the repair round to produce a smaller module. 63–70% of cycle spend was
+going to candidates that did not compile; these are the two named causes that
+were measurable.
+
+### What each cycle reports
+
+Per-cycle and cumulative token usage, split kept/wasted (usage rides on refusal
+outcomes too — a cycle that produced nothing still reports what it spent);
+per-unit tokens in `providerActivity`; the manifest and whether the artefact
+lane applies; facet satisfaction derived from the selected profile **after** the
+cycle's own conformance runs.
+
+### Operating state
+
+Supervisor BAU: `usf hermes start --manifest <selection> --env-file
+.usf/credentials/providers.env`. The child receives every operator selection
+(tested round-trip); status reports only a cycle from the observed supervisor
+and surfaces older ones as `supersededCycle`.
+
+### Gap register
+
+- Repair-rounds, candidate-failures, cycle and conformance-evidence records are
+  unscoped by profile; safe while one supervisor runs at a time.
+- `usf hermes run` unexercised against a product or composed selection.
+- `typecheckCandidateModule` compiles in USF's scratch — sound while the output
+  rule holds modules to the Node stdlib; an assumption, not a boundary.
+- "USF as needed" composition is not derivable: no Core capability references a
+  `CapabilityPort`; would need `fulfilledByCapability` edges, which restale the
+  ANQR profile closure. Operator has accepted union composition instead.
+- Payment payloads remain `experimental` pending per-standard vectors.
+- GOAL.md §7 and §12 carry 13 MUST clauses largely realised elsewhere; pruning
+  them needs a clause-by-clause check against the graph.
+
+
+## Previous boundary — ANQR has a product semantic denominator, and Hermes realises it into the ANQR repository
 
 Prepared 2026-09-02. Read current Git and remote state rather than trusting any
 identifier here.
