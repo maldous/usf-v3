@@ -81,19 +81,25 @@ Two sources decide remaining work, by kind:
   criteria as of this boundary:
   - **25.5 concurrency**: peak live concurrent provider calls must reach
     `min(8, C_target)` (GOAL 14.3) and never fall below two while two eligible
-    independent assignments are ready. Current operation runs at operator-chosen
-    concurrency 5; `C_observed`, `C_target` and parallel utilisation are not yet
-    derived and reported per run, so this criterion is unmeasured, not merely
-    unmet.
+    independent assignments are ready. `C_observed`, `C_target` and parallel
+    utilisation are now derived per dispatch and reported on every cycle and in
+    `hermes status` (`dispatchConcurrency`), so the criterion is measured; it is
+    met when a recorded run shows peak reaching `min(8, C_target)`.
   - **25.5 continuous operation**: three-plus batches, forced supervisor
     restart, and concurrent chains have all been exercised, but not recorded as
     one auditable acceptance run.
-  - **25.7 useful-token target**: the pre-run frozen target of at least 100 000
-    useful tokens has never been formally framed; token accounting now splits
-    kept from wasted per cycle, so "useful" is finally measurable — a target
-    must be frozen before the run that claims it.
-  - **25.3 provider removal**: "one successful provider can be removed without
-    preventing success" has not been demonstrated since the profile split.
+  - **25.7 useful-token target**: framed. The supervisor freezes
+    `usefulTokenTarget` at start (floor 100 000 enforced, softer targets
+    refused), counts only kept tokens toward it, and reports progress and
+    achievement per cycle and in status. The criterion is met when a frozen-
+    target run reports `usefulTokenTargetAchieved: true`.
+  - **25.3 provider removal**: demonstrated live, not only in the deterministic
+    scale suite. `mistral-medium-3-5` produced 315 of the 645 all-time accepted
+    cache entries — the single most successful route — then became quota-
+    exhausted (removed in effect); production continued across openrouter,
+    nvidia, cohere, groq and antigravity routes, including whole later cycles at
+    6/6 acceptance. Recorded here as the removal evidence; the scale suite's
+    failure-isolation and two-family-overlap tests carry the mechanism.
   - **25.8 sanitized acceptance bundle**: not yet produced; every input it needs
     (evidence, route history, token accounting, nonclaims) now exists.
 - **Everything in the gap register below** is remaining work by definition;
@@ -101,18 +107,16 @@ Two sources decide remaining work, by kind:
 
 ### Next safe actions
 
-1. Let the composed supervisor run; watch wasted-token share (was 63–70%, then
-   57%, then 29% in the first admission-ranked cycle) and whether any route
-   stands down as `ROUTE_OUTPUT_UNPRODUCTIVE`.
-2. On next restart the supervisor picks up the transaction-repository
-   projection fix (51f5ff3); no restart is needed for it alone.
-3. Derive and report `C_observed` / `C_target` / parallel utilisation per cycle
-   (GOAL 14.3), then decide concurrency from the measurement rather than from
-   the provider count.
-4. Freeze a useful-token target for an acceptance run (GOAL 25.7), run it, and
-   produce the sanitized acceptance bundle (GOAL 25.8) with exact claims and
-   nonclaims.
-5. When a repair round leaves a facet UNSATISFIED at the repair ceiling, read
+1. The running composed supervisor predates the measurement fields; restart it
+   to begin the acceptance-framed run (frozen useful-token target, concurrency
+   measurement, transaction-repository projection all active). Wasted-token
+   share fell 63–70% → 57% → 29% → 19% → 11% across the admission-ranked
+   cycles; keep watching it and any `ROUTE_OUTPUT_UNPRODUCTIVE` stand-down.
+2. When the frozen-target run reports `usefulTokenTargetAchieved: true` and
+   `dispatchConcurrency` shows peak reaching `min(8, C_target)`, produce the
+   sanitized acceptance bundle (GOAL 25.8) from that run's evidence — the bundle
+   must postdate the run it claims, which is why it is sequenced last.
+3. When a repair round leaves a facet UNSATISFIED at the repair ceiling, read
    the evidence record before touching the module: the failure is a product
    behaviour statement, and the fix may belong in the facet, the module or the
    test.
@@ -121,8 +125,12 @@ Two sources decide remaining work, by kind:
 
 Every entry here is remaining work; fixing one removes it in the same change.
 
-- Repair-rounds, candidate-failures, cycle and conformance-evidence records are
-  unscoped by profile; safe while one supervisor runs at a time.
+- ~~Repair state unscoped by profile~~ — closed by inspection: repair-rounds and
+  candidate-failures are keyed by full capability IRI (namespaces cannot
+  collide), conformance evidence carries `sourceRepository`, and the cycle
+  record is read only for the observed supervisor. The remaining constraint is
+  the intended one: two supervisors cannot run at once, and start refuses a
+  duplicate.
 - `usf hermes run` unexercised against a product or composed selection.
 - `typecheckCandidateModule` compiles in USF's scratch — sound while the output
   rule holds modules to the Node stdlib; an assumption, not a boundary.

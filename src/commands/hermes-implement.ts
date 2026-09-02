@@ -465,6 +465,8 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   }
 
   let evidenceDigest: string | null = null;
+
+  let dispatchConcurrency: Record<string, unknown> | null = null;
   if (pending.length > 0 && parsed.envFile !== null) {
     const workGraph = "urn:usf:graph:implementation-realisation";
     const quads = pending.flatMap(({ unit, prompt, outputTokens }) => [
@@ -488,6 +490,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     }));
     const result = executed.output as Record<string, unknown>;
     evidenceDigest = typeof result.evidenceDigest === "string" ? result.evidenceDigest : null;
+    dispatchConcurrency = (result.concurrency as Record<string, unknown> | undefined) ?? null;
     const records = Array.isArray(result.units) ? result.units as Record<string, unknown>[] : [];
     const byUnit = new Map(records.map((record) => [record.unit as string, record] as const));
     // Admission verdicts fold back into route history after the loop: the
@@ -636,6 +639,8 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       // passed is visible in the same cycle that produced it.
       facets: await summariseCurrentFacets(),
       tokenUsage: summariseTokenUsage(outcomes),
+      // GOAL 14.3 evidence: observed, target and utilisation for this dispatch.
+      dispatchConcurrency,
       targetRepository: convention.productRepository,
       realisationRoot: convention.productRepository === null ? "." : realisationRoot,
       dispatchedUnits: pending.length,

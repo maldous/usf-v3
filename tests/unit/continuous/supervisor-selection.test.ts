@@ -41,6 +41,7 @@ test("every operator selection is forwarded, not only the manifest", () => {
     "--pause-seconds", "90",
     "--concurrency", "3",
     "--limit", "6",
+    "--useful-token-target", "250000",
   ]);
   const forwarded = superviseArguments(parsed);
   assert.equal(optionOf(forwarded, "--manifest"), productManifest);
@@ -48,6 +49,16 @@ test("every operator selection is forwarded, not only the manifest", () => {
   assert.equal(optionOf(forwarded, "--pause-seconds"), "90");
   assert.equal(optionOf(forwarded, "--concurrency"), "3");
   assert.equal(optionOf(forwarded, "--limit"), "6");
+  assert.equal(optionOf(forwarded, "--useful-token-target"), "250000");
+});
+
+test("the useful-token target is frozen at no less than the acceptance floor", () => {
+  // GOAL 25.7: at least one hundred thousand, frozen before the run. The
+  // default is exactly the floor, and an attempt to freeze a softer target is
+  // refused rather than quietly rounded up.
+  assert.equal(parseLifecycleArguments([]).usefulTokenTarget, 100_000);
+  assert.equal(parseLifecycleArguments(["--useful-token-target", "150000"]).usefulTokenTarget, 150_000);
+  assert.throws(() => parseLifecycleArguments(["--useful-token-target", "99999"]));
 });
 
 test("the forwarded arguments parse back to the same selection", () => {

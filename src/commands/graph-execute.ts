@@ -654,11 +654,20 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     }),
     concurrency: Object.freeze({
       requested: parsed.concurrency,
+      // GOAL 14.3: the target is bounded by ready independent work and the
+      // configured cap. Per-provider concurrency ceilings are not modelled in
+      // configuration, so they cannot honestly participate in the derivation;
+      // the target states what was derivable, never what was hoped.
+      target: Math.min(parsed.concurrency, units.length),
       peakObserved: peakConcurrency,
       wallClockMs: wallMs,
       summedUnitMs: serialMs,
       // Above 1.0 only when unit executions genuinely overlapped in time.
       parallelSpeedupRatio: wallMs === 0 ? null : Number((serialMs / wallMs).toFixed(3)),
+      // Active invocation time over elapsed time at the target: 1.0 means every
+      // target slot stayed busy for the whole dispatch.
+      parallelUtilisation: wallMs === 0 || units.length === 0 ? null
+        : Number((serialMs / (wallMs * Math.min(parsed.concurrency, units.length))).toFixed(3)),
     }),
     localAgentDispositions: Object.freeze(localAgentCapabilities.map((capability) => Object.freeze({
       transport: capability.transport, usable: capability.usable, reason: capability.reason,

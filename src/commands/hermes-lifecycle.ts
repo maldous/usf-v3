@@ -40,6 +40,8 @@ export interface HermesSupervisorRecord {
   readonly process: ProcessIdentity;
   /** The profile manifest every cycle of this supervisor selects work from. */
   readonly manifest: string;
+  /** Frozen at start; achieved only by kept tokens. */
+  readonly usefulTokenTarget: number;
   readonly envFile: string;
   readonly pauseSeconds: number;
   readonly concurrency: number;
@@ -54,6 +56,8 @@ function invalid(message: string, details?: Record<string, unknown>): never {
 
 export interface LifecycleArguments {
   readonly manifest: string;
+  /** GOAL 25.7: frozen before the run, at least 100000, judged on kept tokens only. */
+  readonly usefulTokenTarget: number;
   readonly envFile: string;
   readonly pauseSeconds: number;
   readonly concurrency: number;
@@ -65,7 +69,7 @@ export function parseLifecycleArguments(args: readonly string[]): LifecycleArgum
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
-    if (!["--env-file", "--pause-seconds", "--concurrency", "--limit", "--wait-ms", "--manifest"].includes(option) || values.has(option)) {
+    if (!["--env-file", "--pause-seconds", "--concurrency", "--limit", "--wait-ms", "--manifest", "--useful-token-target"].includes(option) || values.has(option)) {
       invalid("Hermes lifecycle options must be unique and explicit.", { option });
     }
     const value = args[++index];
@@ -83,6 +87,14 @@ export function parseLifecycleArguments(args: readonly string[]): LifecycleArgum
     // the default; selecting a product manifest makes every cycle that
     // profile's cycle, and USF's own capabilities are then left alone.
     manifest: values.get("--manifest") ?? deliveryManifest,
+    // The acceptance boundary requires the target frozen before the run and at
+    // least one hundred thousand; only tokens whose results were kept count
+    // toward it, because a wasted token is not useful by definition.
+    usefulTokenTarget: ((): number => {
+      const target = bounded("--useful-token-target", 100_000, 100_000_000);
+      if (target < 100_000) invalid("--useful-token-target must be at least 100000: the acceptance floor is part of the claim, and freezing a softer target would let the run pass a test it did not sit.");
+      return target;
+    })(),
     envFile: values.get("--env-file") ?? ".usf/credentials/providers.env",
     pauseSeconds: bounded("--pause-seconds", defaultPauseSeconds, maximumPauseSeconds),
     concurrency: bounded("--concurrency", 6, 16),
@@ -159,6 +171,7 @@ function authorityIdentity(repositoryRoot: string, manifest: string = deliveryMa
 export function superviseArguments(parsed: LifecycleArguments): readonly string[] {
   return Object.freeze([
     "--manifest", parsed.manifest,
+    "--useful-token-target", String(parsed.usefulTokenTarget),
     "--env-file", parsed.envFile,
     "--pause-seconds", String(parsed.pauseSeconds),
     "--concurrency", String(parsed.concurrency),
@@ -376,6 +389,10 @@ export async function hermesLifecycleStatusCommand(repositoryRoot: string, args:
       currentCycle: cycle === null ? null : cycle.cycle ?? null,
       tokenUsage: cycle === null ? null : cycle.tokenUsage ?? null,
       cumulativeTokens: cycle === null ? null : cycle.cumulativeTokens ?? null,
+      usefulTokens: cycle === null ? null : cycle.usefulTokens ?? null,
+      usefulTokenTarget: observed.record?.usefulTokenTarget ?? null,
+      usefulTokenTargetAchieved: cycle === null ? null : cycle.usefulTokenTargetAchieved ?? null,
+      dispatchConcurrency: cycle === null ? null : cycle.dispatchConcurrency ?? null,
       lastObservedAt: cycle === null ? null : cycle.observedAt ?? null,
       lastReason: cycle === null ? "no cycle has run under a supervisor yet"
         : observed.liveness === "live" ? cycle.lastReason ?? null
@@ -459,6 +476,11 @@ interface CycleProjection {
   readonly tokenUsage: Record<string, number> | null;
   /** Cumulative across this supervisor's life; it resets when the supervisor does. */
   readonly cumulativeTokens: number;
+  readonly usefulTokens: number;
+  readonly usefulTokenTarget: number;
+  readonly usefulTokenTargetAchieved: boolean;
+  /** GOAL 14.3: observed, target and utilisation for the cycle's dispatch. */
+  readonly dispatchConcurrency: Record<string, unknown> | null;
   readonly facets: Record<string, unknown> | null;
   readonly blockers: readonly Record<string, unknown>[];
   readonly providerActivity: readonly Record<string, unknown>[];
@@ -497,6 +519,7 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
     startedAt: new Date().toISOString(),
     process: identity,
     manifest: parsed.manifest,
+    usefulTokenTarget: parsed.usefulTokenTarget,
     envFile: parsed.envFile,
     pauseSeconds: parsed.pauseSeconds,
     concurrency: parsed.concurrency,
@@ -524,6 +547,7 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
   // does, which is honest: a new process has spent nothing yet, and the ignored
   // cycle record is not an accounting ledger.
   let spentTokens = 0;
+  let usefulTokens = 0;
   let reason = "running";
   try {
     for (;;) {
@@ -597,6 +621,7 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
       }
       const cycleTokens = (implementation?.tokenUsage ?? null) as Record<string, number> | null;
       spentTokens += cycleTokens?.totalTokens ?? 0;
+      usefulTokens += cycleTokens?.acceptedTokens ?? 0;
       const projection: CycleProjection = Object.freeze({
         schema: "urn:usf:hermes-cycle-projection:1" as const,
         version: 1 as const,
@@ -644,6 +669,11 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
         // capability rather than only in the total.
         tokenUsage: cycleTokens,
         cumulativeTokens: spentTokens,
+        // The frozen target and progress against it, judged on kept tokens.
+        usefulTokens,
+        usefulTokenTarget: parsed.usefulTokenTarget,
+        usefulTokenTargetAchieved: usefulTokens >= parsed.usefulTokenTarget,
+        dispatchConcurrency: (implementation?.dispatchConcurrency ?? null) as Record<string, unknown> | null,
         providerActivity: Object.freeze(outcomes
           .filter((outcome) => outcome.outcome === "accepted")
           .map((outcome) => Object.freeze({
