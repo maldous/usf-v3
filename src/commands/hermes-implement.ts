@@ -284,19 +284,25 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   // that lane at all, so deriving it here is what lets a profile see its own
   // truth. Only executed behavioural outcomes are supplied, because every
   // product facet is evidenced by implementation conformance.
-  const facetSummary = summariseFacets(evaluateFacets(graph, Object.freeze({
-    realizedArtefacts: new Map<string, string>(),
-    runtimeComposed: false,
-    validatorOutcomes: Object.freeze([] as readonly string[]),
-    proofOutcomes: Object.freeze([] as readonly string[]),
-    conformanceOutcomes: await loadConformanceEvidence(repositoryRoot),
-  })));
+  //
+  // It must be derived from the evidence that exists when it is reported. A
+  // summary taken before this invocation's own conformance runs is a cycle
+  // behind, which reported SATISFIED 0 for a capability whose four subtests had
+  // just passed.
+  const summariseCurrentFacets = async (): Promise<ReturnType<typeof summariseFacets>> =>
+    summariseFacets(evaluateFacets(graph, Object.freeze({
+      realizedArtefacts: new Map<string, string>(),
+      runtimeComposed: false,
+      validatorOutcomes: Object.freeze([] as readonly string[]),
+      proofOutcomes: Object.freeze([] as readonly string[]),
+      conformanceOutcomes: await loadConformanceEvidence(repositoryRoot),
+    })));
 
   if (!parsed.apply) {
     return {
       output: Object.freeze({
         ...plan,
-        facets: facetSummary,
+        facets: await summariseCurrentFacets(),
         frontier: Object.freeze(ready.slice(0, 24).map((unit) => Object.freeze({
           unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName,
           targetPath: unit.targetPath, requirements: unit.need.requirements.length,
@@ -533,7 +539,9 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       ...plan,
       conformanceRuns: Object.freeze(conformanceResults),
       repairExhaustedCapabilities: Object.freeze(exhausted.map((need) => need.canonicalName)),
-      facets: facetSummary,
+      // Derived after this invocation's conformance runs, so a check that just
+      // passed is visible in the same cycle that produced it.
+      facets: await summariseCurrentFacets(),
       targetRepository: convention.productRepository,
       realisationRoot: convention.productRepository === null ? "." : realisationRoot,
       dispatchedUnits: pending.length,

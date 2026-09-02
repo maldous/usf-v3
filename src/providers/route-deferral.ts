@@ -86,6 +86,16 @@ export async function readRouteDeferrals(repositoryRoot: string): Promise<Readon
         consecutiveFailures: Number.isInteger(record.consecutiveFailures) ? record.consecutiveFailures : 1,
         observedAtMs: typeof record.observedAtMs === "number" ? record.observedAtMs : 0,
         deferUntilMs: record.deferUntilMs,
+        // Cumulative history must be read back, not only written. Reconstructing
+        // the record field by field and omitting these three made the whole
+        // productivity mechanism inert: routeProductivity skips any route with
+        // zero attempts, so the map was always empty and ordering by what a
+        // route has produced never happened. The attempt ceiling could not fire
+        // either, because attempts never exceeded one.
+        attempts: Number.isInteger(record.attempts) && (record.attempts ?? 0) >= 0 ? record.attempts! : 0,
+        successes: Number.isInteger(record.successes) && (record.successes ?? 0) >= 0 ? record.successes! : 0,
+        meanLatencyMs: typeof record.meanLatencyMs === "number" && Number.isFinite(record.meanLatencyMs)
+          && record.meanLatencyMs >= 0 ? record.meanLatencyMs : 0,
       });
     }
     return Object.freeze(records);
