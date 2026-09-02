@@ -175,16 +175,57 @@ most commonly paid-for QR feature in the market — managed dynamic destinations
 — is recorded honestly as absent, and as implying a redirect service whose
 uptime becomes a customer promise.
 
-### Gap register
+### The supervisor now operates the ANQR profile
 
-- `usf hermes start` and `run` still operate the Core manifest only;
-  `--manifest` was added to `implement`, not yet threaded through the
-  supervisor, so unattended ANQR BAU is not yet available.
+`usf hermes start --manifest graph/products/anqr/manifest.json` runs unattended
+BAU against ANQR. The supervisor record, every cycle projection and
+`hermes status` all carry the selected manifest, and `authorityIdentity` is
+derived from it — an ANQR supervisor reports
+`sha256:bb4c6805...` where a foundation one reports `sha256:30770331...`.
+
+Three consequences were handled rather than assumed:
+
+- The cycle transaction is told which repository owns the results
+  (`--repository` from the implementation lane's `targetRepository`). Without it
+  the product's paths would be written into USF itself.
+- The **artefact lane is not run** under a product profile. It realises USF's
+  own delivery artefacts and only those, so running it would spend the cycle on
+  foundation capabilities merely because they are available. It is recorded as
+  `artefactLane: not-applicable-under-a-product-profile`, not silently skipped.
+- That lane also carried the facet-satisfaction projection. Facet satisfaction
+  is a property of the selected profile, so the implementation lane now derives
+  it from the selected graph. An ANQR cycle reports its own 180 facets.
+
+### Two silent-selection defects the restart exposed
+
+Both were invisible failures that reported success, and both now have tests.
+
+1. **`hermes start` did not forward `--manifest` to the supervisor child.** The
+   parent spawns a detached child that owns the cycle. Starting on the ANQR
+   profile therefore started a *foundation* supervisor while reporting back the
+   product one that was asked for. The only visible symptom was an
+   `authorityIdentity` that happened to match the previous run; the child's own
+   command line was the evidence. The child arguments are now a named function
+   with a round-trip test through the child's own parser, because a forwarded
+   option the child would reject is not forwarding either.
+2. **`hermes status` reported a departed supervisor's cycle.** `cycle.json` is a
+   single unscoped file, so the previous supervisor's projection outlived it and
+   was reported beside the new supervisor's manifest — 670 foundation facet
+   verdicts under an ANQR supervisor that has 180. A projection is now reported
+   only when its `supervisorId` matches the observed supervisor; an earlier one
+   surfaces as `supersededCycle` so it stays visible as history.
+
+### Gap register
 - The ANQR repository has no `node_modules`; the conformance cage works because
   ANQR modules are self-contained by convention. A capability needing a runtime
   dependency would need that boundary reconsidered.
-- 38 of the 39 ready ANQR units are undispatched. Only `localenegotiation` has
-  been carried end to end.
+- `.usf/hermes/supervisor/cycle.json`, the repair-round and candidate-failure
+  records and the conformance-evidence directory are all **unscoped by profile**.
+  Status no longer misreads the cycle record, but running a foundation and a
+  product supervisor in sequence still shares repair state between them. Only one
+  supervisor may run at a time, so this is latent rather than active.
+- `usf hermes run` takes `--manifest` through the same parser but has not been
+  exercised against a product profile; only `start` has.
 - `typecheckCandidateModule` still compiles candidates in USF's scratch. That is
   sound while the output rule holds the module to the Node standard library, and
   it is an assumption rather than an enforced boundary.
