@@ -327,7 +327,20 @@ export async function hermesStopCommand(repositoryRoot: string, args: readonly s
 
 export async function hermesLifecycleStatusCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const observed = await observeSupervisor(repositoryRoot);
-  const cycle = await readJson<Record<string, unknown>>(repositoryRoot, cycleRecord);
+  const lastCycle = await readJson<Record<string, unknown>>(repositoryRoot, cycleRecord);
+  // A cycle record belongs to the supervisor that wrote it. The record is a
+  // single unscoped file, so a previous supervisor's projection outlives it and
+  // would otherwise be reported beside the current supervisor's manifest --
+  // pairing one profile's identity with another profile's facet counts. Only a
+  // projection from the observed supervisor is current enough to report.
+  const cycle = observed.record !== null && lastCycle !== null
+    && lastCycle.supervisorId === observed.record.supervisorId ? lastCycle : null;
+  const supersededCycle = lastCycle !== null && cycle === null
+    ? Object.freeze({
+      supervisorId: lastCycle.supervisorId ?? null,
+      manifest: lastCycle.manifest ?? null,
+      observedAt: lastCycle.observedAt ?? null,
+    }) : null;
   const stopRequest = await readJson<Record<string, unknown>>(repositoryRoot, stopRequestRecord);
 
   // Status contacts nothing. Both projections below are derived from current
@@ -356,6 +369,9 @@ export async function hermesLifecycleStatusCommand(repositoryRoot: string, args:
       startedAt: observed.record?.startedAt ?? null,
       stopRequested: stopRequest !== null,
       manifest: selectedManifest,
+      // Present so a projection from an earlier supervisor is visible as
+      // history rather than silently discarded or silently reported as current.
+      supersededCycle,
       authorityIdentity: observed.record?.authorityIdentity ?? authorityIdentity(repositoryRoot, selectedManifest),
       currentCycle: cycle === null ? null : cycle.cycle ?? null,
       lastObservedAt: cycle === null ? null : cycle.observedAt ?? null,
