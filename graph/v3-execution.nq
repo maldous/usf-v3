@@ -245,6 +245,7 @@
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:nonClaim> "No API credential abstraction is built around this transport; it authenticates by its own session." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:selectedModel> "claude-haiku-4-5-20251001" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:selectedModel> "claude-sonnet-5" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:selectedModelReason> "The session serves several models under one subscription and the CLI inherits the operator interactive default when none is named, which is the supervising configuration and must not be spent on worker units. Haiku is declared as the worker tier: the fastest and lightest subscription consumption for bounded code generation, keeping the heavier models for supervision. Declaring the model also gives the route a distinct candidate identity, so its history is not conflated with whatever default the operator has selected that day." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:sessionMaterial> ".claude/.credentials.json" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:transportIdentity> "claude-cli" <urn:usf:graph:v3-execution> .
@@ -256,6 +257,8 @@
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:nonClaim> "This transport does not expose its resolved underlying model identity; results record that fact rather than inventing one." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:selectedModel> "gpt-5.3-codex-spark" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:selectedModel> "gpt-5.6-sol" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:selectedModelReason> "Each declared model carries its own quota window, so a subscription with one declared model leaves the pool whenever that window exhausts. A second tier is declared per the antigravity precedent; worker invocations pin reasoning effort low explicitly, so the heavier model is a fallback quota pool, not a heavier spend." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:selectedModelReason> "The transport's default model is a separate quota from the named ones, and this account's default is exhausted while gpt-5.3-codex-spark answers. Invoking without naming a model spent every attempt against the exhausted default and recorded a usage-limit refusal for the whole transport, which read as the subscription being unavailable when only one of its models was. A work requirement may name another available model." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:sessionMaterial> ".codex/auth.json" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:transportIdentity> "codex-cli" <urn:usf:graph:v3-execution> .
