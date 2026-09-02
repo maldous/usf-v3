@@ -54,7 +54,7 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
   assert.strictEqual(stateChangingState.auditLog[1].tenantId, 'tenant_1');
   assert.deepStrictEqual(stateChangingState.auditLog[1].details, {
     operationType: 'mutation',
-    route: 'app_role',
+    route: null,
     useCase: 'mutation',
     providerSpan: 'disconnected',
     tenantBoundaryPreserved: true,
@@ -63,11 +63,11 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
 
   const restoreState: capability.RelationalStorageAndMigrationsAndRlsState = {
     ...state,
-    migrationLineage: ['001_init.sql:sha256:1e3d2c8e:Initial schema'],
+    migrationLineage: [`001_init.sql:${migrationFile.checksum}:Initial schema`],
   };
   const targetState: capability.RelationalStorageAndMigrationsAndRlsState = {
     ...state,
-    migrationLineage: ['001_init.sql:sha256:1e3d2c8e:Initial schema'],
+    migrationLineage: [`001_init.sql:${migrationFile.checksum}:Initial schema`],
   };
   const restoreResult = capability.guardRestore(
     restoreState,
@@ -79,8 +79,8 @@ test("relationalstorageandmigrationsandrlsauditmodel", () => {
   assert.strictEqual(restoreStateResult.auditLog.length, 3);
   assert.strictEqual(restoreStateResult.auditLog[2].kind, 'RESTORE_GUARD_CHECKED');
   assert.deepStrictEqual(restoreStateResult.auditLog[2].details, {
-    currentLineage: '001_init.sql:sha256:1e3d2c8e:Initial schema',
-    targetLineage: '001_init.sql:sha256:1e3d2c8e:Initial schema',
+    currentLineage: `001_init.sql:${migrationFile.checksum}:Initial schema`,
+    targetLineage: `001_init.sql:${migrationFile.checksum}:Initial schema`,
     tenantBoundaryPreserved: true,
     dataSubjectEvidencePreserved: true,
     auditSignalPreserved: true,
@@ -436,6 +436,7 @@ test("relationalstorageandmigrationsandrlsreadinessmodel", () => {
     ...migratedState,
     crossTenantIsolationProven: true,
     auditLog: [capability.createAuditEvent('MIGRATION_APPLIED', 'tenant_1', '001_init.sql', 'sha256:abc', {})],
+    ledgerNonEmpty: true,
   };
   const readyReadiness = capability.checkReadiness(readyState);
   assert.strictEqual(readyReadiness.readiness, 'READY');

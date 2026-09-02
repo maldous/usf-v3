@@ -35,33 +35,33 @@ export interface ProductCatalogPlansPricesError {
 }
 
 export interface Product {
-  readonly id: string;
+  readonly identifier: string;
   readonly name: string;
   readonly description: string;
   readonly active: boolean;
-  readonly createdAt: string;
+  readonly createdTimestamp: string;
 }
 
 export interface Plan {
-  readonly id: string;
-  readonly productId: string;
+  readonly identifier: string;
+  readonly owningProduct: string;
   readonly name: string;
   readonly currency: string;
   readonly billingPeriod: string;
   readonly active: boolean;
-  readonly createdAt: string;
+  readonly createdTimestamp: string;
 }
 
 export interface Price {
-  readonly id: string;
-  readonly planId: string;
+  readonly identifier: string;
+  readonly owningPlan: string;
   readonly version: number;
   readonly priceType: string;
   readonly unitAmount: number;
   readonly currency: string;
   readonly billingPeriod: string;
   readonly active: boolean;
-  readonly createdAt: string;
+  readonly createdTimestamp: string;
 }
 
 export interface TenantCatalog {
@@ -94,14 +94,14 @@ export interface CreateProductRequest {
 }
 
 export interface CreatePlanRequest {
-  readonly productId: string;
+  readonly owningProduct: string;
   readonly name: string;
   readonly currency: string;
   readonly billingPeriod: string;
 }
 
 export interface CreatePriceRequest {
-  readonly planId: string;
+  readonly owningPlan: string;
   readonly version: number;
   readonly priceType: string;
   readonly unitAmount: number;
@@ -134,10 +134,10 @@ export function validateCreatePlanRequest(request: unknown): ProductCatalogPlans
     return { kind: 'VALIDATION_ERROR', message: 'Request must be an object' };
   }
 
-  const { productId, name, currency, billingPeriod } = request as Record<string, unknown>;
+  const { owningProduct, name, currency, billingPeriod } = request as Record<string, unknown>;
 
-  if (typeof productId !== 'string' || productId.trim() === '') {
-    return { kind: 'VALIDATION_ERROR', message: 'Product ID must be a non-empty string' };
+  if (typeof owningProduct !== 'string' || owningProduct.trim() === '') {
+    return { kind: 'VALIDATION_ERROR', message: 'Owning product must be a non-empty string' };
   }
 
   if (typeof name !== 'string' || name.trim() === '') {
@@ -152,7 +152,7 @@ export function validateCreatePlanRequest(request: unknown): ProductCatalogPlans
     return { kind: 'VALIDATION_ERROR', message: 'Billing period must be a non-empty string' };
   }
 
-  return { productId, name, currency, billingPeriod };
+  return { owningProduct, name, currency, billingPeriod };
 }
 
 export function validateCreatePriceRequest(request: unknown): ProductCatalogPlansPricesError | CreatePriceRequest {
@@ -160,10 +160,10 @@ export function validateCreatePriceRequest(request: unknown): ProductCatalogPlan
     return { kind: 'VALIDATION_ERROR', message: 'Request must be an object' };
   }
 
-  const { planId, version, priceType, unitAmount, currency, billingPeriod } = request as Record<string, unknown>;
+  const { owningPlan, version, priceType, unitAmount, currency, billingPeriod } = request as Record<string, unknown>;
 
-  if (typeof planId !== 'string' || planId.trim() === '') {
-    return { kind: 'VALIDATION_ERROR', message: 'Plan ID must be a non-empty string' };
+  if (typeof owningPlan !== 'string' || owningPlan.trim() === '') {
+    return { kind: 'VALIDATION_ERROR', message: 'Owning plan must be a non-empty string' };
   }
 
   if (typeof version !== 'number' || version <= 0) {
@@ -186,7 +186,7 @@ export function validateCreatePriceRequest(request: unknown): ProductCatalogPlan
     return { kind: 'VALIDATION_ERROR', message: 'Billing period must be a non-empty string' };
   }
 
-  return { planId, version, priceType, unitAmount, currency, billingPeriod };
+  return { owningPlan, version, priceType, unitAmount, currency, billingPeriod };
 }
 
 export function checkPermission(
@@ -233,14 +233,14 @@ export function createProduct(
   }
 
   const newProduct: Product = {
-    id: `product-${Date.now()}`,
+    identifier: `product-${Date.now()}`,
     name: validatedRequest.name,
     description: validatedRequest.description,
     active: true,
-    createdAt: new Date().toISOString(),
+    createdTimestamp: new Date().toISOString(),
   };
 
-  const auditError = auditCatalogChange(operatorId, 'PRODUCT', newProduct.id, auditFn);
+  const auditError = auditCatalogChange(operatorId, 'PRODUCT', newProduct.identifier, auditFn);
   if (auditError !== null) {
     return auditError;
   }
@@ -252,8 +252,8 @@ export function createProduct(
       kind: 'CATALOG_CHANGED',
       operatorId,
       entityType: 'PRODUCT',
-      entityId: newProduct.id,
-      timestamp: newProduct.createdAt,
+      entityId: newProduct.identifier,
+      timestamp: newProduct.createdTimestamp,
     },
     lastError: null,
   };
@@ -279,22 +279,22 @@ export function createPlan(
     return validatedRequest;
   }
 
-  const productExists = state.products.some((p) => p.id === validatedRequest.productId);
+  const productExists = state.products.some((p) => p.identifier === validatedRequest.owningProduct);
   if (!productExists) {
-    return { kind: 'REFERENCE_NOT_FOUND', message: `Product with ID ${validatedRequest.productId} not found` };
+    return { kind: 'REFERENCE_NOT_FOUND', message: `Product with identifier ${validatedRequest.owningProduct} not found` };
   }
 
   const newPlan: Plan = {
-    id: `plan-${Date.now()}`,
-    productId: validatedRequest.productId,
+    identifier: `plan-${Date.now()}`,
+    owningProduct: validatedRequest.owningProduct,
     name: validatedRequest.name,
     currency: validatedRequest.currency,
     billingPeriod: validatedRequest.billingPeriod,
     active: true,
-    createdAt: new Date().toISOString(),
+    createdTimestamp: new Date().toISOString(),
   };
 
-  const auditError = auditCatalogChange(operatorId, 'PLAN', newPlan.id, auditFn);
+  const auditError = auditCatalogChange(operatorId, 'PLAN', newPlan.identifier, auditFn);
   if (auditError !== null) {
     return auditError;
   }
@@ -306,8 +306,8 @@ export function createPlan(
       kind: 'CATALOG_CHANGED',
       operatorId,
       entityType: 'PLAN',
-      entityId: newPlan.id,
-      timestamp: newPlan.createdAt,
+      entityId: newPlan.identifier,
+      timestamp: newPlan.createdTimestamp,
     },
     lastError: null,
   };
@@ -333,24 +333,24 @@ export function createPrice(
     return validatedRequest;
   }
 
-  const planExists = state.plans.some((p) => p.id === validatedRequest.planId);
+  const planExists = state.plans.some((p) => p.identifier === validatedRequest.owningPlan);
   if (!planExists) {
-    return { kind: 'REFERENCE_NOT_FOUND', message: `Plan with ID ${validatedRequest.planId} not found` };
+    return { kind: 'REFERENCE_NOT_FOUND', message: `Plan with identifier ${validatedRequest.owningPlan} not found` };
   }
 
   const newPrice: Price = {
-    id: `price-${Date.now()}`,
-    planId: validatedRequest.planId,
+    identifier: `price-${Date.now()}`,
+    owningPlan: validatedRequest.owningPlan,
     version: validatedRequest.version,
     priceType: validatedRequest.priceType,
     unitAmount: validatedRequest.unitAmount,
     currency: validatedRequest.currency,
     billingPeriod: validatedRequest.billingPeriod,
     active: true,
-    createdAt: new Date().toISOString(),
+    createdTimestamp: new Date().toISOString(),
   };
 
-  const auditError = auditCatalogChange(operatorId, 'PRICE', newPrice.id, auditFn);
+  const auditError = auditCatalogChange(operatorId, 'PRICE', newPrice.identifier, auditFn);
   if (auditError !== null) {
     return auditError;
   }
@@ -362,8 +362,8 @@ export function createPrice(
       kind: 'CATALOG_CHANGED',
       operatorId,
       entityType: 'PRICE',
-      entityId: newPrice.id,
-      timestamp: newPrice.createdAt,
+      entityId: newPrice.identifier,
+      timestamp: newPrice.createdTimestamp,
     },
     lastError: null,
   };
@@ -377,22 +377,22 @@ export function listProducts(
 
 export function listPlans(
   state: ProductCatalogPlansPricesState,
-  productId?: string,
+  owningProduct?: string,
 ): readonly Plan[] {
-  if (productId === undefined) {
+  if (owningProduct === undefined) {
     return state.plans;
   }
-  return state.plans.filter((p) => p.productId === productId);
+  return state.plans.filter((p) => p.owningProduct === owningProduct);
 }
 
 export function listPrices(
   state: ProductCatalogPlansPricesState,
-  planId?: string,
+  owningPlan?: string,
 ): readonly Price[] {
-  if (planId === undefined) {
+  if (owningPlan === undefined) {
     return state.prices;
   }
-  return state.prices.filter((p) => p.planId === planId);
+  return state.prices.filter((p) => p.owningPlan === owningPlan);
 }
 
 export function getTenantCatalog(

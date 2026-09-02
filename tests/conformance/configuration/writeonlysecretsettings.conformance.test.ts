@@ -143,10 +143,16 @@ test("writeonlysecretsettingsstatemodel", () => {
   const testMeta = (testRes as { success: true; data: capability.MailSenderSecretMetadata }).data;
   assert.strictEqual(testMeta.crypto.mode, "TEST_UNENCRYPTED_MARKER");
 
-  const prodRes = capability.writeMailSenderSecret(state, { tenantId: "t1", senderId: "s1", host: "h1", port: 587, password: "s3cr3t" }, prodContext, () => ({ ok: true }));
-  const prodMeta = (prodRes as { success: true; data: capability.MailSenderSecretMetadata }).data;
-  assert.strictEqual(prodMeta.crypto.mode, "ENCRYPTED");
-  assert.ok(prodMeta.crypto.ciphertextHex.length > 0);
+  const prodRes = capability.encryptSecretMaterial("s3cr3t", "a".repeat(64), "production");
+  assert.strictEqual(prodRes.ok, true);
+  const prodCrypto = prodRes.crypto;
+  assert.strictEqual(prodCrypto.mode, "ENCRYPTED");
+  assert.ok(prodCrypto.ciphertextHex.length > 0);
+
+  const writeRes = capability.writeMailSenderSecret(state, { tenantId: "t1", senderId: "s1", host: "h1", port: 587, password: "s3cr3t" }, prodContext, () => ({ ok: true }));
+  const writeMeta = (writeRes as { success: true; data: capability.MailSenderSecretMetadata }).data;
+  assert.strictEqual(writeMeta.crypto.mode, "ENCRYPTED");
+  assert.ok(writeMeta.crypto.ciphertextHex.length > 0);
 });
 
 test("writeonlysecretsettingsvalidation", () => {
@@ -154,6 +160,7 @@ test("writeonlysecretsettingsvalidation", () => {
   assert.strictEqual(capability.validateSafeUrl("https://safe.com"), true);
 
   const encRes = capability.encryptSecretMaterial("s3cr3t", "short", "production");
+  assert.strictEqual(encRes.ok, false);
   const encErr = encRes.error as capability.WriteOnlySecretSettingsError;
   assert.strictEqual(encErr.kind, "VALIDATION_FAILURE");
 

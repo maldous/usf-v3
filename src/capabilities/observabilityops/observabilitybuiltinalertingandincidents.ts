@@ -209,6 +209,44 @@ export const ObservabilityBuiltInAlertingAndIncidentsObservabilityVocabulary: Re
     'queue.depth',
   ]);
 
+function checkPermission(
+  token: unknown,
+  requiredRole: string,
+  tenantId: string,
+): ObservabilityBuiltInAlertingAndIncidentsError | null {
+  if (token === null || typeof token !== 'object') {
+    return {
+      kind: 'PERMISSION_DENIED',
+      message: 'Unauthenticated or invalid token',
+      timestamp: new Date().toISOString(),
+    };
+  }
+  const tokenRecord = token as Record<string, unknown>;
+  const roles = Array.isArray(tokenRecord.roles) ? tokenRecord.roles : [];
+  let hasRole = false;
+  for (const r of roles) {
+    if (r === requiredRole) {
+      hasRole = true;
+      break;
+    }
+  }
+  if (!hasRole) {
+    return {
+      kind: 'PERMISSION_DENIED',
+      message: `Caller lacks required role: ${requiredRole}`,
+      timestamp: new Date().toISOString(),
+    };
+  }
+  if (tokenRecord.tenantId !== tenantId) {
+    return {
+      kind: 'PERMISSION_DENIED',
+      message: `Token tenant ${tokenRecord.tenantId} does not match requested tenant ${tenantId}`,
+      timestamp: new Date().toISOString(),
+    };
+  }
+  return null;
+}
+
 export function validateAlertRuleInput(
   rule: ObservabilityBuiltInAlertingAndIncidentsAlertRule,
 ): ObservabilityBuiltInAlertingAndIncidentsError | null {
@@ -283,17 +321,6 @@ export function validateIncidentTransition(
   return null;
 }
 
-export function isAllowedTransition(
-  currentState: ObservabilityBuiltInAlertingAndIncidentsIncidentState,
-  newState: ObservabilityBuiltInAlertingAndIncidentsIncidentState,
-): boolean {
-  const allowedTransitions = legalIncidentTransitions.get(currentState);
-  if (allowedTransitions === undefined) {
-    return false;
-  }
-  return allowedTransitions.includes(newState);
-}
-
 export function auditAction(
   kind: ObservabilityBuiltInAlertingAndIncidentsAuditEventKind,
   entityId: string,
@@ -341,27 +368,26 @@ export function emitObservabilitySignal(
 export function addMetricSignal(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
   signal: ObservabilityBuiltInAlertingAndIncidentsMetricSignal,
-): ObservabilityBuiltInAlertingAndIncidentsState {
+  token: unknown,
+): ObservabilityBuiltInAlertingAndIncidentsState | ObservabilityBuiltInAlertingAndIncidentsError {
+  const authErr = checkPermission(token, 'admin', signal.tenantId);
+  if (authErr !== null) {
+    return authErr;
+  }
   if (!ObservabilityBuiltInAlertingAndIncidentsControlledNamePattern.test(signal.name)) {
     return {
-      ...state,
-      lastError: {
-        kind: 'CONFIGURATION_DRIFT',
-        message: `Metric signal name '${signal.name}' is not in the controlled observability vocabulary`,
-        timestamp: new Date().toISOString(),
-      },
+      kind: 'CONFIGURATION_DRIFT',
+      message: `Metric signal name '${signal.name}' is not in the controlled observability vocabulary`,
+      timestamp: new Date().toISOString(),
     };
   }
   if (
     !ObservabilityBuiltInAlertingAndIncidentsObservabilityVocabulary.has(signal.name)
   ) {
     return {
-      ...state,
-      lastError: {
-        kind: 'CONFIGURATION_DRIFT',
-        message: `Metric signal name '${signal.name}' is not in the controlled observability vocabulary`,
-        timestamp: new Date().toISOString(),
-      },
+      kind: 'CONFIGURATION_DRIFT',
+      message: `Metric signal name '${signal.name}' is not in the controlled observability vocabulary`,
+      timestamp: new Date().toISOString(),
     };
   }
   const next: ObservabilityBuiltInAlertingAndIncidentsState = {
@@ -384,8 +410,13 @@ export function addAlertRule(
   rule: ObservabilityBuiltInAlertingAndIncidentsAlertRule,
   requestId: string,
   traceId: string,
-  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => void,
+  token: unknown,
+  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => ObservabilityBuiltInAlertingAndIncidentsError | null,
 ): ObservabilityBuiltInAlertingAndIncidentsState | ObservabilityBuiltInAlertingAndIncidentsError {
+  const authErr = checkPermission(token, 'admin', rule.tenantId);
+  if (authErr !== null) {
+    return authErr;
+  }
   const validationError = validateAlertRuleInput(rule);
   if (validationError !== null) {
     return validationError;
@@ -399,7 +430,10 @@ export function addAlertRule(
     requestId,
     traceId,
   );
-  auditFn(auditEvent);
+  const auditErr = auditFn(auditEvent);
+  if (auditErr !== null) {
+    return auditErr;
+  }
 
   const updatedState = recordAudit(state, auditEvent);
   const withRule: ObservabilityBuiltInAlertingAndIncidentsState = {
@@ -415,8 +449,13 @@ export function updateAlertRule(
   updatedRule: ObservabilityBuiltInAlertingAndIncidentsAlertRule,
   requestId: string,
   traceId: string,
-  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => void,
+  token: unknown,
+  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => ObservabilityBuiltInAlertingAndIncidentsError | null,
 ): ObservabilityBuiltInAlertingAndIncidentsState | ObservabilityBuiltInAlertingAndIncidentsError {
+  const authErr = checkPermission(token, 'admin', updatedRule.tenantId);
+  if (authErr !== null) {
+    return authErr;
+  }
   const validationError = validateAlertRuleInput(updatedRule);
   if (validationError !== null) {
     return validationError;
@@ -431,6 +470,14 @@ export function updateAlertRule(
     };
   }
 
+  if (state.alertRules[existingRuleIndex].tenantId !== updatedRule.tenantId) {
+    return {
+      kind: 'PERMISSION_DENIED',
+      message: 'Cannot change rule tenant',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   const auditEvent = auditAction(
     'ALERT_RULE_CHANGE',
     ruleId,
@@ -439,7 +486,10 @@ export function updateAlertRule(
     requestId,
     traceId,
   );
-  auditFn(auditEvent);
+  const auditErr = auditFn(auditEvent);
+  if (auditErr !== null) {
+    return auditErr;
+  }
 
   const updatedState = recordAudit(state, auditEvent);
   const newAlertRules = [...updatedState.alertRules];
@@ -611,7 +661,8 @@ export function transitionIncident(
   newState: ObservabilityBuiltInAlertingAndIncidentsIncidentState,
   requestId: string,
   traceId: string,
-  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => void,
+  token: unknown,
+  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => ObservabilityBuiltInAlertingAndIncidentsError | null,
 ): ObservabilityBuiltInAlertingAndIncidentsState | ObservabilityBuiltInAlertingAndIncidentsError {
   const incident = state.incidents.find((i) => i.id === incidentId);
   if (incident === undefined) {
@@ -620,6 +671,11 @@ export function transitionIncident(
       message: `Incident with id ${incidentId} not found`,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  const authErr = checkPermission(token, 'admin', incident.tenantId);
+  if (authErr !== null) {
+    return authErr;
   }
 
   const validationError = validateIncidentTransition(incident.state, newState);
@@ -635,7 +691,10 @@ export function transitionIncident(
     requestId,
     traceId,
   );
-  auditFn(auditEvent);
+  const auditErr = auditFn(auditEvent);
+  if (auditErr !== null) {
+    return auditErr;
+  }
 
   const updatedState = recordAudit(state, auditEvent);
   const updatedAt = new Date().toISOString();
@@ -670,7 +729,8 @@ export function dispatchNotification(
   incidentId: string,
   requestId: string,
   traceId: string,
-  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => void,
+  token: unknown,
+  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => ObservabilityBuiltInAlertingAndIncidentsError | null,
 ): ObservabilityBuiltInAlertingAndIncidentsState | ObservabilityBuiltInAlertingAndIncidentsError {
   const incident = state.incidents.find((i) => i.id === incidentId);
   if (incident === undefined) {
@@ -679,6 +739,11 @@ export function dispatchNotification(
       message: `Incident with id ${incidentId} not found`,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  const authErr = checkPermission(token, 'admin', incident.tenantId);
+  if (authErr !== null) {
+    return authErr;
   }
 
   const existingNotification = state.notifications.find((n) => n.incidentId === incidentId);
@@ -698,7 +763,10 @@ export function dispatchNotification(
     requestId,
     traceId,
   );
-  auditFn(auditEvent);
+  const auditErr = auditFn(auditEvent);
+  if (auditErr !== null) {
+    return auditErr;
+  }
 
   const updatedState = recordAudit(state, auditEvent);
   const dispatchedAt = new Date().toISOString();
@@ -729,7 +797,8 @@ export function suppressNotification(
   incidentId: string,
   requestId: string,
   traceId: string,
-  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => void,
+  token: unknown,
+  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => ObservabilityBuiltInAlertingAndIncidentsError | null,
 ): ObservabilityBuiltInAlertingAndIncidentsState | ObservabilityBuiltInAlertingAndIncidentsError {
   const incident = state.incidents.find((i) => i.id === incidentId);
   if (incident === undefined) {
@@ -738,6 +807,11 @@ export function suppressNotification(
       message: `Incident with id ${incidentId} not found`,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  const authErr = checkPermission(token, 'admin', incident.tenantId);
+  if (authErr !== null) {
+    return authErr;
   }
 
   const existingNotification = state.notifications.find((n) => n.incidentId === incidentId);
@@ -757,7 +831,10 @@ export function suppressNotification(
     requestId,
     traceId,
   );
-  auditFn(auditEvent);
+  const auditErr = auditFn(auditEvent);
+  if (auditErr !== null) {
+    return auditErr;
+  }
 
   const updatedState = recordAudit(state, auditEvent);
   const dispatchedAt = new Date().toISOString();

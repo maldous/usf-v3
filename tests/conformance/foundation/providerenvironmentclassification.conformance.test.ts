@@ -5,37 +5,31 @@ import * as capability from "../../../src/capabilities/foundation/providerenviro
 test("providerenvironmentclassificationauditmodel", () => {
   const auditFn = (event: capability.ClassificationAuditEvent): capability.ClassificationError | null => {
     assert.strictEqual(event.kind, "CLASSIFICATION_CHANGE");
-    assert.strictEqual(event.provider, "test-provider");
+    assert.strictEqual(event.provider, "audit-test");
     assert.strictEqual(event.mode, "hermetic-mock");
     assert.strictEqual(event.environment, "test");
     assert.ok(event.timestamp);
     return null;
   };
 
-  const result = capability.auditClassificationChange(
-    "test-provider",
+  const auditResult = capability.auditClassificationChange(
+    "audit-test",
     "hermetic-mock",
     "test",
     auditFn,
   );
-  assert.strictEqual(result, null);
+  assert.strictEqual(auditResult, null);
 
-  const state: capability.ProviderClassificationState = {
+  const degradedState: capability.ProviderClassificationState = {
     classifications: [
-      { provider: "p1", mode: "production-live", environment: "live" } as const,
-      { provider: "p2", mode: "hermetic-mock", environment: "test" } as const,
+      { provider: "pX", mode: "hermetic-mock", environment: "live" } as const,
     ],
     lastError: null,
   };
 
-  const { readiness, error } = capability.checkReadiness(state);
-  assert.strictEqual(readiness, "READY");
-  assert.strictEqual(error, null);
-
-  const matrixResult = capability.getClassificationMatrix(state);
-  assert.deepStrictEqual(matrixResult.error, null);
-  assert.deepStrictEqual(matrixResult.matrix["p1"], { mode: "production-live", environment: "live" });
-  assert.deepStrictEqual(matrixResult.matrix["p2"], { mode: "hermetic-mock", environment: "test" });
+  const { readiness, error } = capability.checkReadiness(degradedState);
+  assert.strictEqual(readiness, "DEGRADED");
+  assert.strictEqual(error?.kind, "VALIDATION_FAILED");
 });
 
 test("providerenvironmentclassificationcontracts", () => {
@@ -47,109 +41,128 @@ test("providerenvironmentclassificationcontracts", () => {
     lastError: null,
   };
 
-  const matrixResult = capability.getEnvironmentClassificationMatrix(state);
-  assert.deepStrictEqual(matrixResult.error, null);
-  assert.deepStrictEqual(matrixResult.matrix["p1"], { mode: "production-live", environment: "live" });
-  assert.deepStrictEqual(matrixResult.matrix["p2"], { mode: "production-shaped", environment: "external" });
+  const result = capability.getEnvironmentClassificationMatrix(state);
+  assert.deepStrictEqual(result.error, null);
+  assert.deepStrictEqual(result.matrix["p1"], { mode: "production-live", environment: "live" });
+  assert.deepStrictEqual(result.matrix["p2"], { mode: "production-shaped", environment: "external" });
 
   const emptyState: capability.ProviderClassificationState = {
     classifications: [],
     lastError: null,
   };
-  const emptyMatrixResult = capability.getEnvironmentClassificationMatrix(emptyState);
-  assert.notStrictEqual(emptyMatrixResult.error, null);
-  assert.strictEqual(emptyMatrixResult.error?.kind, "CONFIG_MISSING");
+  const emptyResult = capability.getEnvironmentClassificationMatrix(emptyState);
+  assert.notStrictEqual(emptyResult.error, null);
+  assert.strictEqual(emptyResult.error?.kind, "CONFIG_MISSING");
 });
 
 test("providerenvironmentclassificationerrormodel", () => {
-  const state: capability.ProviderClassificationState = {
+  const invalidState: capability.ProviderClassificationState = {
     classifications: [
-      { provider: "p1", mode: "hermetic-mock", environment: "live" } as const,
+      { provider: "bad", mode: "hermetic-mock", environment: "live" } as const,
     ],
     lastError: null,
   };
 
-  const { readiness, error } = capability.checkReadiness(state);
+  const { readiness, error } = capability.checkReadiness(invalidState);
   assert.strictEqual(readiness, "DEGRADED");
   assert.strictEqual(error?.kind, "VALIDATION_FAILED");
 });
 
 test("providerenvironmentclassificationpermissions", () => {
-  const entry = { provider: "p1", mode: "hermetic-mock", environment: "live" } as const;
-  const validationError = capability.validateClassificationEntry(entry);
-  assert.notStrictEqual(validationError, null);
-  assert.strictEqual(validationError?.kind, "VALIDATION_FAILED");
+  const illegalEntry = { provider: "p1", mode: "hermetic-mock", environment: "live" } as const;
+  const err1 = capability.validateClassificationEntry(illegalEntry);
+  assert.notStrictEqual(err1, null);
+  assert.strictEqual(err1?.kind, "VALIDATION_FAILED");
 
   const prodShapedLive = { provider: "p2", mode: "production-shaped", environment: "live" } as const;
-  const prodShapedLiveError = capability.validateClassificationEntry(prodShapedLive);
-  assert.notStrictEqual(prodShapedLiveError, null);
-  assert.strictEqual(prodShapedLiveError?.kind, "VALIDATION_FAILED");
+  const err2 = capability.validateClassificationEntry(prodShapedLive);
+  assert.notStrictEqual(err2, null);
+  assert.strictEqual(err2?.kind, "VALIDATION_FAILED");
 
   const prodLiveNonLive = { provider: "p3", mode: "production-live", environment: "test" } as const;
-  const prodLiveNonLiveError = capability.validateClassificationEntry(prodLiveNonLive);
-  assert.notStrictEqual(prodLiveNonLiveError, null);
-  assert.strictEqual(prodLiveNonLiveError?.kind, "VALIDATION_FAILED");
+  const err3 = capability.validateClassificationEntry(prodLiveNonLive);
+  assert.notStrictEqual(err3, null);
+  assert.strictEqual(err3?.kind, "VALIDATION_FAILED");
 });
 
 test("providerenvironmentclassificationproof", () => {
-  const state: capability.ProviderClassificationState = {
+  // Valid proof
+  const goodState: capability.ProviderClassificationState = {
     classifications: [
-      { provider: "p1", mode: "production-live", environment: "live" } as const,
+      { provider: "good", mode: "production-live", environment: "live" } as const,
     ],
     lastError: null,
   };
+  const goodProof = capability.generateProof(goodState);
+  assert.strictEqual(goodProof.status, "VALID");
 
-  const proof = capability.generateProof(state);
-  assert.strictEqual(proof.status, "VALID");
-
+  // Pending proof (no classifications)
   const emptyState: capability.ProviderClassificationState = {
     classifications: [],
     lastError: null,
   };
-  const emptyProof = capability.generateProof(emptyState);
-  assert.strictEqual(emptyProof.status, "PENDING");
+  const pendingProof = capability.generateProof(emptyState);
+  assert.strictEqual(pendingProof.status, "PENDING");
+  assert.ok(pendingProof.details?.includes("No classifications"));
+
+  // Invalid proof (validation failure)
+  const badState: capability.ProviderClassificationState = {
+    classifications: [
+      { provider: "bad", mode: "hermetic-mock", environment: "live" } as const,
+    ],
+    lastError: null,
+  };
+  const invalidProof = capability.generateProof(badState);
+  assert.strictEqual(invalidProof.status, "INVALID");
+  assert.ok(invalidProof.details?.includes("Invalid classification"));
 });
 
 test("providerenvironmentclassificationreadinessmodel", () => {
-  const state: capability.ProviderClassificationState = {
+  const readyState: capability.ProviderClassificationState = {
     classifications: [
-      { provider: "p1", mode: "production-live", environment: "live" } as const,
+      { provider: "ready", mode: "production-live", environment: "live" } as const,
     ],
     lastError: null,
   };
+  const ready = capability.checkReadiness(readyState);
+  assert.strictEqual(ready.readiness, "READY");
+  assert.strictEqual(ready.error, null);
 
-  const { readiness, error } = capability.checkReadiness(state);
-  assert.strictEqual(readiness, "READY");
-  assert.strictEqual(error, null);
-
-  const invalidState: capability.ProviderClassificationState = {
-    classifications: [
-      { provider: "p1", mode: "hermetic-mock", environment: "live" } as const,
-    ],
+  const missingState: capability.ProviderClassificationState = {
+    classifications: [],
     lastError: null,
   };
-  const { readiness: invalidReadiness } = capability.checkReadiness(invalidState);
-  assert.strictEqual(invalidReadiness, "DEGRADED");
+  const missing = capability.checkReadiness(missingState);
+  assert.strictEqual(missing.readiness, "DEGRADED");
+  assert.strictEqual(missing.error?.kind, "CONFIG_MISSING");
 });
 
 test("providerenvironmentclassificationvalidation", () => {
-  const validEntry = { provider: "p1", mode: "production-live", environment: "live" } as const;
+  const validEntry: capability.ProviderClassification = {
+    provider: "ok",
+    mode: "production-live",
+    environment: "live",
+  } as const;
   const validError = capability.validateClassificationEntry(validEntry);
   assert.strictEqual(validError, null);
 
-  const invalidEntry = { provider: "p1", mode: "hermetic-mock", environment: "live" } as const;
+  const invalidEntry: capability.ProviderClassification = {
+    provider: "ok",
+    mode: "hermetic-mock",
+    environment: "live",
+  } as const;
   const invalidError = capability.validateClassificationEntry(invalidEntry);
   assert.notStrictEqual(invalidError, null);
   assert.strictEqual(invalidError?.kind, "VALIDATION_FAILED");
 
-  const duplicateState: capability.ProviderClassificationState = {
+  const dupState: capability.ProviderClassificationState = {
     classifications: [
-      { provider: "p1", mode: "production-live", environment: "live" } as const,
-      { provider: "p1", mode: "production-shaped", environment: "external" } as const,
+      { provider: "dup", mode: "production-live", environment: "live" } as const,
+      { provider: "dup", mode: "production-shaped", environment: "external" } as const,
     ],
     lastError: null,
   };
-  const matrixError = capability.validateClassificationMatrix(duplicateState.classifications);
-  assert.notStrictEqual(matrixError, null);
-  assert.strictEqual(matrixError?.kind, "VALIDATION_FAILED");
+  const dupError = capability.validateClassificationMatrix(dupState.classifications);
+  assert.notStrictEqual(dupError, null);
+  assert.strictEqual(dupError?.kind, "VALIDATION_FAILED");
 });

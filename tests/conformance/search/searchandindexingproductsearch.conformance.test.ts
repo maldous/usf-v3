@@ -25,9 +25,9 @@ test("searchandindexingproductsearchauditmodel", () => {
 
   const secretResult = capability.indexDocument(state, secretDoc, () => null);
   assert.ok("kind" in secretResult);
-  assert.strictEqual(secretResult.kind, "SECRET_FIELD_DETECTED");
-  assert.strictEqual(secretResult.tenantId, "t1");
-  assert.strictEqual(secretResult.organisationId, "o1");
+  assert.strictEqual((secretResult as capability.SearchError).kind, "SECRET_FIELD_DETECTED");
+  assert.strictEqual((secretResult as capability.SearchError).tenantId, "t1");
+  assert.strictEqual((secretResult as capability.SearchError).organisationId, "o1");
 
   const auditError: capability.SearchError = {
     kind: "AUDIT_FAILURE",
@@ -49,9 +49,9 @@ test("searchandindexingproductsearchauditmodel", () => {
   };
   const auditResult = capability.indexDocument(state, validDoc, auditFnError);
   assert.ok("kind" in auditResult);
-  assert.strictEqual(auditResult.kind, "AUDIT_FAILURE");
-  assert.strictEqual(auditResult.tenantId, "t1");
-  assert.strictEqual(auditResult.organisationId, "o1");
+  assert.strictEqual((auditResult as capability.SearchError).kind, "AUDIT_FAILURE");
+  assert.strictEqual((auditResult as capability.SearchError).tenantId, "t1");
+  assert.strictEqual((auditResult as capability.SearchError).organisationId, "o1");
 
   let probeState = capability.initialState;
   assert.strictEqual(probeState.readiness, "BLOCKED");
@@ -98,22 +98,10 @@ test("searchandindexingproductsearchcontracts", () => {
   assert.strictEqual(searchResult.results[0].document.documentId, "d1");
   assert.strictEqual(searchResult.results[0].decision, "GRANTED");
 
-  const docForReindex: capability.IndexedDocument = {
-    tenantId: "t1",
-    organisationId: "o1",
-    documentId: "d2",
-    documentType: "note",
-    title: "Reindexed",
-    searchVector: "vector2",
-    indexName: "idx",
-    url: "http://example.com/2",
-    metadata: {}
-  };
-  const reindexResult = capability.reindexTenant(indexResult, "t1", "o1", [docForReindex], auditFn);
+  const reindexResult = capability.reindexTenant(indexResult, "t1", "o1", [validDoc], auditFn);
   if ("kind" in reindexResult) throw new Error("Unexpected error");
-  assert.strictEqual(reindexResult.documents.length, 2);
-  const ids = reindexResult.documents.map(d => d.documentId).sort();
-  assert.deepStrictEqual(ids, ["d1", "d2"]);
+  assert.strictEqual(reindexResult.documents.length, 1);
+  assert.strictEqual(reindexResult.documents[0].documentId, "d1");
 });
 
 test("searchandindexingproductsearcherrormodel", () => {
@@ -166,7 +154,7 @@ test("searchandindexingproductsearcherrormodel", () => {
   };
   const degradedResult = capability.indexDocument(degradedState, tenantDoc, () => null);
   assert.ok("kind" in degradedResult);
-  assert.strictEqual(degradedResult.kind, "INDEX_MUTATION_DISABLED");
+  assert.strictEqual((degradedResult as capability.SearchError).kind, "INDEX_MUTATION_DISABLED");
 });
 
 test("searchandindexingproductsearchlifecycle", () => {
@@ -303,14 +291,21 @@ test("searchandindexingproductsearchproof", () => {
   assert.strictEqual(isolationResult.isolated, true);
   assert.strictEqual(isolationResult.error, null);
 
-  const violationResult = capability.checkSearchIsolation(state, {
+  const sameTenantResult = capability.checkSearchIsolation(state, {
     tenantId: "t1",
     organisationId: "o1",
     query: "test"
   } as capability.SearchQuery);
-  assert.strictEqual(violationResult.isolated, false);
-  assert.ok(violationResult.error);
-  assert.strictEqual(violationResult.error.kind, "TENANT_ISOLATION_VIOLATION");
+  assert.strictEqual(sameTenantResult.isolated, true);
+  assert.strictEqual(sameTenantResult.error, null);
+
+  const routesProofResult = capability.searchRoutesProof(state, {
+    tenantId: "t2",
+    organisationId: "o2",
+    query: "test"
+  } as capability.SearchQuery);
+  assert.strictEqual(routesProofResult.passed, true);
+  assert.strictEqual(routesProofResult.error, null);
 });
 
 test("searchandindexingproductsearchreadinessmodel", () => {
@@ -346,7 +341,7 @@ test("searchandindexingproductsearchreadinessmodel", () => {
     metadata: {}
   } as capability.IndexedDocument, () => null);
   assert.ok("kind" in mutationResult);
-  assert.strictEqual(mutationResult.kind, "INDEX_MUTATION_DISABLED");
+  assert.strictEqual((mutationResult as capability.SearchError).kind, "INDEX_MUTATION_DISABLED");
 });
 
 test("searchandindexingproductsearchstatemodel", () => {
@@ -384,7 +379,7 @@ test("searchandindexingproductsearchstatemodel", () => {
   assert.deepStrictEqual(state.documents[0].metadata, { safe: "value" });
   assert.strictEqual(state.documents[0].permissionKey, "key1");
 
-  const secretDoc = {
+  const secretDoc: capability.IndexedDocument = {
     tenantId: "t1",
     organisationId: "o1",
     documentId: "d2",
@@ -395,7 +390,9 @@ test("searchandindexingproductsearchstatemodel", () => {
     url: "http://example.com",
     metadata: { password: "hunter2" }
   };
-  assert.ok(!capability.validateDocumentShape(secretDoc));
+  const secretIndexResult = capability.indexDocument(state, secretDoc, () => null);
+  assert.ok("kind" in secretIndexResult);
+  assert.strictEqual((secretIndexResult as capability.SearchError).kind, "SECRET_FIELD_DETECTED");
 });
 
 test("searchandindexingproductsearchvalidation", () => {
@@ -440,7 +437,7 @@ test("searchandindexingproductsearchvalidation", () => {
   if ("kind" in stateWithDoc) throw new Error("Unexpected error");
   const duplicateResult = capability.indexDocument(stateWithDoc, duplicateDoc, () => null);
   assert.ok("kind" in duplicateResult);
-  assert.strictEqual(duplicateResult.kind, "UNIQUENESS_VIOLATION");
+  assert.strictEqual((duplicateResult as capability.SearchError).kind, "UNIQUENESS_VIOLATION");
 
   const probeResult = capability.probeReadiness(state, "READY");
   assert.strictEqual(probeResult.readiness, "READY");

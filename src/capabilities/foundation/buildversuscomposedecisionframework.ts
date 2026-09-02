@@ -154,6 +154,7 @@ function validateProofDocument(proof: ProofDocument): BuildVersusComposeError | 
   const authorityError = validateAuthorityOrder(proof.decisionRecords, proof.authorityOrder);
   if (authorityError) return authorityError;
   for (const record of proof.decisionRecords) {
+    if (record.supersededBy !== null) continue;
     const completenessError = validateDecisionCompleteness(record);
     if (completenessError) return completenessError;
   }
@@ -225,12 +226,15 @@ function getNextVersion(records: readonly DecisionRecord[], capabilityId: string
   return versions.length > 0 ? Math.max(...versions) + 1 : 1;
 }
 
-function createAuditFn(
-  state: BuildVersusComposeState
-): (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null {
-  return (event: BuildVersusComposeAuditEvent): BuildVersusComposeError | null => {
-    return null;
-  };
+function invokeAuditFn(
+  auditFn: (event: BuildVersusComposeAuditEvent) => BuildVersusComposeError | null,
+  event: BuildVersusComposeAuditEvent
+): BuildVersusComposeError | null {
+  try {
+    return auditFn(event);
+  } catch (err) {
+    return createError('DEPENDENCY_UNAVAILABLE', err instanceof Error ? err.message : 'Audit function failed');
+  }
 }
 
 export function createDecision(
@@ -257,7 +261,7 @@ export function createDecision(
   const record: DecisionRecord = { id, capabilityId, decision, justification, version, authority, supersededBy: null };
   const event = auditDecisionChange('DECISION_CREATED', id, capabilityId, version, authority, timestamp);
 
-  const auditError = auditFn(event);
+  const auditError = invokeAuditFn(auditFn, event);
   if (auditError !== null) {
     return auditError;
   }
@@ -294,6 +298,9 @@ export function reviseDecision(
 
   const newVersion = activeRecord.version + 1;
   const newId = generateDecisionId(capabilityId, newVersion);
+  
+  const updatedActiveRecord: DecisionRecord = { ...activeRecord, supersededBy: newId };
+  
   const newRecord: DecisionRecord = {
     id: newId,
     capabilityId,
@@ -301,11 +308,11 @@ export function reviseDecision(
     justification,
     version: newVersion,
     authority,
-    supersededBy: activeRecord.id
+    supersededBy: null
   };
   const event = auditDecisionChange('DECISION_REVISED', newId, capabilityId, newVersion, authority, timestamp);
 
-  const auditError = auditFn(event);
+  const auditError = invokeAuditFn(auditFn, event);
   if (auditError !== null) {
     return auditError;
   }
@@ -313,7 +320,7 @@ export function reviseDecision(
   const newState: BuildVersusComposeState = {
     ...state,
     decisionRecords: [
-      ...state.decisionRecords.filter(r => r.id !== activeRecord.id),
+      ...state.decisionRecords.map(r => r.id === activeRecord.id ? updatedActiveRecord : r),
       newRecord
     ],
     lastError: null,
@@ -340,6 +347,9 @@ export function supersedeDecision(
 
   const newVersion = activeRecord.version + 1;
   const newId = generateDecisionId(capabilityId, newVersion);
+  
+  const updatedActiveRecord: DecisionRecord = { ...activeRecord, supersededBy: newId };
+  
   const newRecord: DecisionRecord = {
     id: newId,
     capabilityId,
@@ -347,11 +357,11 @@ export function supersedeDecision(
     justification: activeRecord.justification,
     version: newVersion,
     authority,
-    supersededBy: activeRecord.id
+    supersededBy: null
   };
   const event = auditDecisionChange('DECISION_SUPERSEDED', newId, capabilityId, newVersion, authority, timestamp);
 
-  const auditError = auditFn(event);
+  const auditError = invokeAuditFn(auditFn, event);
   if (auditError !== null) {
     return auditError;
   }
@@ -359,7 +369,7 @@ export function supersedeDecision(
   const newState: BuildVersusComposeState = {
     ...state,
     decisionRecords: [
-      ...state.decisionRecords.filter(r => r.id !== activeRecord.id),
+      ...state.decisionRecords.map(r => r.id === activeRecord.id ? updatedActiveRecord : r),
       newRecord
     ],
     lastError: null,
@@ -384,29 +394,43 @@ export function rollbackDecision(
   if (supersededRecords.length === 0) {
     return createError('CONFIGURATION_LOSS', `No superseded decision found for capability ${capabilityId}`);
   }
-  const previousRecord = supersededRecords.reduce((prev, current) =>
-    current.version > prev.version ? current : prev
-  );
-  const targetRecord = state.decisionRecords.find(r => r.id === previousRecord.supersededBy);
-  if (!targetRecord) {
+  
+  const previousRecord = supersededRecords.find(r => r.supersededBy === activeRecord.id);
+  if (!previousRecord) {
     return createError('CONFIGURATION_LOSS', `Previous decision for capability ${capabilityId} not found`);
   }
   if (!validateAuthority(authority, state.authorityOrder)) {
     return createError('AUTHORITY_VIOLATION', `Authority ${authority} not authorized`);
   }
 
-  const event = auditDecisionChange('DECISION_ROLLED_BACK', targetRecord.id, capabilityId, targetRecord.version, authority, timestamp);
+  const newVersion = activeRecord.version + 1;
+  const newId = generateDecisionId(capabilityId, newVersion);
+  
+  const updatedActiveRecord: DecisionRecord = { ...activeRecord, supersededBy: newId };
+  
+  const newRecord: DecisionRecord = {
+    id: newId,
+    capabilityId,
+    decision: previousRecord.decision,
+    justification: previousRecord.justification,
+    version: newVersion,
+    authority,
+    supersededBy: null
+  };
 
-  const auditError = auditFn(event);
+  const event = auditDecisionChange('DECISION_ROLLED_BACK', newId, capabilityId, newVersion, authority, timestamp);
+
+  const auditError = invokeAuditFn(auditFn, event);
   if (auditError !== null) {
     return auditError;
   }
 
   const newState: BuildVersusComposeState = {
     ...state,
-    decisionRecords: state.decisionRecords.map(r =>
-      r.id === activeRecord.id ? { ...activeRecord, supersededBy: targetRecord.id } : r
-    ),
+    decisionRecords: [
+      ...state.decisionRecords.map(r => r.id === activeRecord.id ? updatedActiveRecord : r),
+      newRecord
+    ],
     lastError: null,
     auditTrail: [...state.auditTrail, event],
   };
@@ -423,7 +447,7 @@ export function initializeFramework(
 ): { readonly kind: 'SUCCESS'; readonly state: BuildVersusComposeState } | BuildVersusComposeError {
   const event = auditDecisionChange('DECISION_CREATED', 'framework-init', 'framework', 1, 'platform', timestamp);
 
-  const auditError = auditFn(event);
+  const auditError = invokeAuditFn(auditFn, event);
   if (auditError !== null) {
     return auditError;
   }

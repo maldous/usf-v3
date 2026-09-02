@@ -3,7 +3,6 @@ import test from "node:test";
 import * as capability from "../../../src/capabilities/identityaccess/rbacrolesandpermissions.ts";
 
 test("rbacrolesandpermissionsauditmodel", () => {
-  // Setup: a state with one active member
   const member: capability.RbacRolesAndPermissionsMember = {
     userId: "user1",
     organisationId: "org1",
@@ -15,7 +14,6 @@ test("rbacrolesandpermissionsauditmodel", () => {
     members: [member],
   };
 
-  // 1. Successful role change emits audit event and mutates state
   const auditFn = (event: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => {
     assert.equal(event.kind, "ROLE_ASSIGNED");
     assert.equal(event.userId, "user1");
@@ -35,11 +33,10 @@ test("rbacrolesandpermissionsauditmodel", () => {
     auditFn,
   );
   assert.equal(result.outcome, "SUCCESS");
-  if (result.outcome === "SUCCESS") {
+  if ("state" in result) {
     assert.equal(result.state.members[0].role, "MANAGER");
   }
 
-  // 2. Audit failure aborts mutation, state unchanged
   const failingAuditFn = (_: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => {
     return { kind: "AUDIT_FAILURE", message: "Audit failed" };
   };
@@ -51,13 +48,11 @@ test("rbacrolesandpermissionsauditmodel", () => {
     failingAuditFn,
   );
   assert.equal(failResult.outcome, "UNPROCESSABLE_ENTITY");
-  if (failResult.outcome !== "SUCCESS") {
+  if ("error" in failResult) {
     assert.equal(failResult.error.kind, "AUDIT_FAILURE");
   }
-  // original state must be unchanged
   assert.equal(stateWithMember.members[0].role, "MEMBER");
 
-  // 3. Status change also emits audit event (STATUS_CHANGED)
   const statusAuditFn = (event: capability.RbacRolesAndPermissionsAuditEvent): capability.RbacRolesAndPermissionsError | null => {
     assert.equal(event.kind, "STATUS_CHANGED");
     assert.equal(event.userId, "user1");
@@ -76,7 +71,7 @@ test("rbacrolesandpermissionsauditmodel", () => {
     statusAuditFn,
   );
   assert.equal(statusResult.outcome, "SUCCESS");
-  if (statusResult.outcome === "SUCCESS") {
+  if ("state" in statusResult) {
     assert.equal(statusResult.state.members[0].status, "DISABLED");
   }
 });
@@ -109,7 +104,6 @@ test("rbacrolesandpermissionserrormodel", () => {
     members: [member],
   };
 
-  // Invalid role -> INVALID_BODY outcome
   const invalidRoleError = capability.validateMemberUpdate(
     stateWithMember,
     "user1",
@@ -119,7 +113,6 @@ test("rbacrolesandpermissionserrormodel", () => {
   );
   assert.deepEqual(invalidRoleError, { kind: "INVALID_ROLE", message: "Invalid role: INVALID_ROLE" });
 
-  // Missing membership -> NOT_FOUND outcome
   const notFoundError = capability.validateMemberUpdate(
     state,
     "unknown",
@@ -129,7 +122,6 @@ test("rbacrolesandpermissionserrormodel", () => {
   );
   assert.deepEqual(notFoundError, { kind: "MEMBERSHIP_NOT_FOUND", message: "Membership not found for user unknown in organisation org1" });
 
-  // Last admin demotion -> UNPROCESSABLE_ENTITY
   const lastAdminError = capability.validateMemberUpdate(
     stateWithMember,
     "user1",
@@ -139,7 +131,6 @@ test("rbacrolesandpermissionserrormodel", () => {
   );
   assert.deepEqual(lastAdminError, { kind: "LAST_ADMIN_VIOLATION", message: "Cannot remove last TENANT_ADMIN" });
 
-  // Permission denial is fail-closed
   const permissionDeniedError = capability.enforcePermission(
     state,
     "user1",
@@ -148,7 +139,6 @@ test("rbacrolesandpermissionserrormodel", () => {
   );
   assert.deepEqual(permissionDeniedError, { kind: "PERMISSION_DENIED", message: "Permission denied: tenant.admin.access" });
 
-  // No partial state left on rejected change: updateMemberRole with invalid role returns failure and does not mutate
   const rejectResult = capability.updateMemberRole(
     stateWithMember,
     "user1",
@@ -157,7 +147,7 @@ test("rbacrolesandpermissionserrormodel", () => {
     () => null,
   );
   assert.equal(rejectResult.outcome, "INVALID_BODY");
-  if (rejectResult.outcome !== "SUCCESS") {
+  if ("error" in rejectResult) {
     assert.equal(rejectResult.error.kind, "INVALID_ROLE");
   }
   assert.equal(stateWithMember.members[0].role, "TENANT_ADMIN");
@@ -176,7 +166,6 @@ test("rbacrolesandpermissionslifecycle", () => {
     members: [member],
   };
 
-  // system-admin is rejected as a tenant role
   const systemAdminError = capability.validateMemberUpdate(
     stateWithMember,
     "user1",
@@ -186,15 +175,13 @@ test("rbacrolesandpermissionslifecycle", () => {
   );
   assert.deepEqual(systemAdminError, { kind: "INVALID_ROLE", message: "SYSTEM_ADMIN cannot be assigned as a tenant role" });
 
-  // Permissions before role change
   const permissionsBefore = capability.getMemberPermissions(stateWithMember, "user1", "org1");
   assert.deepEqual(permissionsBefore, ["tenant.members.read"]);
 
-  // Role change re-resolves permissions
   const auditFn = () => null;
   const result = capability.updateMemberRole(stateWithMember, "user1", "org1", "MANAGER", auditFn);
   assert.equal(result.outcome, "SUCCESS");
-  if (result.outcome === "SUCCESS") {
+  if ("state" in result) {
     const permissionsAfter = capability.getMemberPermissions(result.state, "user1", "org1");
     assert.deepEqual(permissionsAfter, ["tenant.members.read", "tenant.groups.read", "tenant.suborgs.read"]);
   }
@@ -213,25 +200,20 @@ test("rbacrolesandpermissionspermissions", () => {
     members: [member],
   };
 
-  // TENANT_ADMIN has tenant.admin.access but not platform.admin.access
   assert.ok(capability.checkPermission(stateWithMember, "user1", "org1", "tenant.admin.access"));
   assert.ok(!capability.checkPermission(stateWithMember, "user1", "org1", "platform.admin.access"));
 
-  // Permission resolution is tenant-scoped: user1 in org2 has no permissions
   assert.ok(!capability.checkPermission(stateWithMember, "user1", "org2", "tenant.members.write"));
 
-  // enforcePermission returns error for missing permission
   const error = capability.enforcePermission(stateWithMember, "user1", "org1", "platform.admin.access");
   assert.deepEqual(error, { kind: "PERMISSION_DENIED", message: "Permission denied: platform.admin.access" });
 });
 
 test("rbacrolesandpermissionsproof", () => {
-  // Contract drift check
   const domainVocabulary = capability.RbacRolesAndPermissionsRole;
   const adminContractRoles = ["TENANT_ADMIN", "MANAGER", "MEMBER", "VIEWER"] as const;
   assert.ok(capability.validateContractDrift(domainVocabulary, adminContractRoles));
 
-  // Permission resolution for each role matches expected bundles
   assert.deepEqual(capability.resolvePermissions("SYSTEM_ADMIN"), ["platform.admin.access"]);
   assert.deepEqual(capability.resolvePermissions("TENANT_ADMIN"), [
     "tenant.admin.access",
@@ -246,7 +228,6 @@ test("rbacrolesandpermissionsproof", () => {
   assert.deepEqual(capability.resolvePermissions("MEMBER"), ["tenant.members.read"]);
   assert.deepEqual(capability.resolvePermissions("VIEWER"), []);
 
-  // Member role mutation proof: role change updates permissions
   const member: capability.RbacRolesAndPermissionsMember = {
     userId: "user1",
     organisationId: "org1",
@@ -259,17 +240,15 @@ test("rbacrolesandpermissionsproof", () => {
   };
   const result = capability.updateMemberRole(state, "user1", "org1", "MANAGER", () => null);
   assert.equal(result.outcome, "SUCCESS");
-  if (result.outcome === "SUCCESS") {
+  if ("state" in result) {
     const perms = capability.getMemberPermissions(result.state, "user1", "org1");
     assert.deepEqual(perms, ["tenant.members.read", "tenant.groups.read", "tenant.suborgs.read"]);
   }
 });
 
 test("rbacrolesandpermissionsreadinessmodel", () => {
-  // Initial readiness is READY
   assert.equal(capability.initialState.readiness, "READY");
 
-  // Permission resolution is pure and works regardless of readiness
   const perms = capability.resolvePermissions("TENANT_ADMIN");
   assert.deepEqual(perms, [
     "tenant.admin.access",
@@ -281,16 +260,14 @@ test("rbacrolesandpermissionsreadinessmodel", () => {
     "tenant.suborgs.write",
   ]);
 
-  // Degraded mode disables store-dependent mutations
   const degradedState = capability.setReadiness(capability.initialState, "DEGRADED");
   assert.equal(degradedState.readiness, "DEGRADED");
   const result = capability.updateMemberRole(degradedState, "user1", "org1", "MEMBER", () => null);
   assert.equal(result.outcome, "UNPROCESSABLE_ENTITY");
-  if (result.outcome !== "SUCCESS") {
+  if ("error" in result) {
     assert.deepEqual(result.error, { kind: "DEGRADED_MODE", message: "Mutation disabled in degraded mode" });
   }
 
-  // Read-only resolution still available in degraded mode
   const member: capability.RbacRolesAndPermissionsMember = {
     userId: "user1",
     organisationId: "org1",
@@ -307,7 +284,6 @@ test("rbacrolesandpermissionsreadinessmodel", () => {
 test("rbacrolesandpermissionsstatemodel", () => {
   const state = capability.initialState;
 
-  // rolePermissionMap contains correct bundles
   assert.deepEqual(state.rolePermissionMap.get("SYSTEM_ADMIN"), ["platform.admin.access"]);
   assert.deepEqual(state.rolePermissionMap.get("TENANT_ADMIN"), [
     "tenant.admin.access",
@@ -322,7 +298,6 @@ test("rbacrolesandpermissionsstatemodel", () => {
   assert.deepEqual(state.rolePermissionMap.get("MEMBER"), ["tenant.members.read"]);
   assert.deepEqual(state.rolePermissionMap.get("VIEWER"), []);
 
-  // Membership status is tracked separately
   const member: capability.RbacRolesAndPermissionsMember = {
     userId: "user1",
     organisationId: "org1",
@@ -335,7 +310,6 @@ test("rbacrolesandpermissionsstatemodel", () => {
   };
   assert.equal(stateWithMember.members[0].status, "ACTIVE");
 
-  // Resolved permission set, not role name, is what downstream consumes
   const perms = capability.getMemberPermissions(stateWithMember, "user1", "org1");
   assert.deepEqual(perms, ["tenant.members.read"]);
 });
@@ -353,7 +327,6 @@ test("rbacrolesandpermissionsvalidation", () => {
     members: [member],
   };
 
-  // Missing user id / organisation id -> INVALID_ROLE
   const missingIdError = capability.validateMemberUpdate(
     stateWithMember,
     undefined as unknown as string,
@@ -363,7 +336,6 @@ test("rbacrolesandpermissionsvalidation", () => {
   );
   assert.deepEqual(missingIdError, { kind: "INVALID_ROLE", message: "User ID and organisation ID are required" });
 
-  // system-admin rejected as tenant role
   const systemAdminError = capability.validateMemberUpdate(
     stateWithMember,
     "user1",
@@ -373,7 +345,6 @@ test("rbacrolesandpermissionsvalidation", () => {
   );
   assert.deepEqual(systemAdminError, { kind: "INVALID_ROLE", message: "SYSTEM_ADMIN cannot be assigned as a tenant role" });
 
-  // Unknown role rejected before any state change
   const unknownRoleError = capability.validateMemberUpdate(
     stateWithMember,
     "user1",
@@ -383,7 +354,6 @@ test("rbacrolesandpermissionsvalidation", () => {
   );
   assert.deepEqual(unknownRoleError, { kind: "INVALID_ROLE", message: "Invalid role: UNKNOWN" });
 
-  // Permission resolution produces correct bundles, including platform vs tenant split
   assert.deepEqual(capability.resolvePermissions("SYSTEM_ADMIN"), ["platform.admin.access"]);
   assert.deepEqual(capability.resolvePermissions("TENANT_ADMIN"), [
     "tenant.admin.access",
