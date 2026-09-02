@@ -363,46 +363,37 @@ ANQR is the product that proves USF V3 has practical value.
 
 USF tooling lives in the repository to deliver ANQR; ANQR does not exist to justify more USF infrastructure.
 
-The initial repository reserves:
+ANQR is a **versioned profile realised against the foundation**, not a directory
+inside it. The boundary is now mechanical rather than advisory:
 
-```text
-apps/anqr/
-```
+- USF Core owns reusable foundation semantics and realises its own platform
+  capabilities as first-class USF source.
+- ANQR owns product semantics in a `ProductProfileRevision`, and its
+  implementation belongs in the **ANQR repository**, declared in the graph by
+  identity and layout and mapped to a local checkout through ignored operator
+  state. The graph never contains a path to it.
+- A profile binds an exact `FoundationRevision` through a resource-scoped
+  dependency closure. Foundation movement outside that closure is not staleness.
+- A capability the product does not claim carries a disposition that produces no
+  work, so an aspiration can never be dispatched or reported as delivery.
+- Generic service requirements bind foundation **ports**. A product owns the
+  requirement and the reason for it; the foundation owns the provider. Requiring
+  durable persistence never makes a database an ANQR capability.
 
-for ANQR application or service code, and:
+Do not blanket-copy the historical ANQR repository. Legacy ANQR source is
+behavioural reference and evidence; it is never semantic authority, and its
+architecture carries no obligation.
 
-```text
-packages/
-```
+QR implementation mathematics is not product semantics. The contract may state
+observable invariants — an artefact decodes to the payload requested,
+customisation stays within a declared scan-safety acceptance — and must not
+prescribe the algorithm that achieves them.
 
-for reusable packages only when a real deliverable requires them.
-
-Do not blanket-copy the historical ANQR repository.
-
-The first ANQR vertical slice is selected after bounded inspection of `/home/user/src/bak/anqr` using these criteria:
-
-1. central to the QR-code product purpose;
-2. bounded enough to complete through the entire V3 loop;
-3. more than one meaningful source file;
-4. machine-readable contract or interface;
-5. valid and invalid input behaviour;
-6. deterministic core behaviour;
-7. explicit security and error semantics;
-8. unit tests and at least one contract or integration test;
-9. packageable or executable output;
-10. no mandatory external production deployment.
-
-If inspection does not reveal a clearer slice, use the fallback:
-
-```text
-ANQR canonical QR payload manifest, validator and resolver package
-```
-
-The fallback must define a canonical payload representation, validate unsafe or malformed destinations, produce deterministic output, expose a callable interface and include negative tests. It is a real ANQR-domain deliverable, not another USF administration tool.
-
-Create `docs/anqr-first-slice.md` with the selected slice, historical evidence, explicit scope and acceptance criteria before broad ANQR migration.
-
----
+The historical ANQR Harness/Symphony machinery — provider routing, worker
+scheduling, autonomous issue handling, worktree orchestration, evidence
+admission, integration orchestration, self-feeding loops, host supervision — is
+delivery machinery that evolved into USF and Hermes. It is programme provenance
+and must not be recreated as ANQR product capability.
 
 ## 6. V1 and V2 lessons
 
@@ -2401,97 +2392,18 @@ Create `docs/board-summary.md` stating, in plain language:
 
 ---
 
-## 24. Execution plan optimized for earliest proof
+## 24. Execution plan — spent
 
-Do not execute as ten long serial platform workstreams. Use a short critical path with parallel lanes.
+The Gate 0 to Gate N bootstrap plan this section carried is complete and has
+been removed. The repository exists, is independently cloneable, is contained,
+and has run the full loop end to end; a plan for reaching that state is no
+longer a directive and competed with the acceptance boundary below.
 
-### Gate 0 — Exact state and repository bootstrap
+Current position, next safe action and open blockers belong in
+`docs/handover.md`, which is the live operational ledger. This file stays
+normative: objective, authority, boundaries, acceptance and nonclaims.
 
-1. read this file and current `AGENTS.md`;
-2. inspect exact starting environment and six historical sources read-only;
-3. create/use `/home/user/src/usf-v3` and `maldous/usf-v3` private;
-4. establish containment, `.usf/`, environment redirection and secret policy;
-5. copy this goal, add compact `AGENTS.md`, and add Apache-2.0 unless an existing explicit operator licence decision says otherwise;
-6. create the initial commit and push the coherent scaffold;
-7. create initial historical inventory, ANQR slice shortlist and bottleneck register.
-
-Acceptance:
-
-```text
-fresh clone bootstrap succeeds
-all mutable state beneath repository
-historical directories not required
-clean initial checkpoint
-```
-
-### Gate 1 — Minimal end-to-end bootstrap loop
-
-In parallel, with disjoint paths:
-
-- Lane A: root, containment, canonical JSON, envelopes and CLI dispatcher;
-- Lane B: minimal semantic kernel, manifest, contract, query and work projection;
-- Lane C: fake provider abstraction, call and contribution schemas;
-- Lane D: ANQR historical inspection and first-slice contract draft;
-- Lane E: workspace/apply/check and adversarial path tests;
-- Lane F: scale harness and metrics schema.
-
-Integrate the smallest coherent vertical path:
-
-```text
-query → work → fake call → resolve → apply → affected check
-```
-
-Use it to make one real tested V3 source change. Add a minimal transparent `recipes/continuous.sh` or early `usf watch --through check` loop over fake work so restartable continuous composition is demonstrated before provider hardening.
-
-### Gate 2 — Live zero-cost provider loop
-
-1. integrate models.dev and AI SDK;
-2. implement models/probe/route;
-3. establish explicit privacy-safe source egress;
-4. use at least two live provider families when available;
-5. run the minimal continuous loop against live eligible work, not only one manual chain;
-6. complete one collaborative V3 or ANQR candidate through check;
-7. prove paid fallback impossible.
-
-Do not block on full provider-universe qualification.
-
-### Gate 3 — First real ANQR slice
-
-1. finalize and currentness-check the first ANQR semantic model and contract;
-2. admit its required exact evidence, pass deterministic proof and activate its
-   bounded realisation permission;
-3. derive its eligible work DAG and immutable realisation bases;
-4. run useful multi-provider parallel implementation/review;
-5. validate and integrate source/tests/package;
-6. admit validation evidence and reprove or remodel when applicable;
-7. publish significant semantic learning;
-8. require zero drift.
-
-This is the earliest board-visible product deliverable.
-
-### Gate 4 — Continuous and massive parallel operation
-
-1. implement `usf watch` using explicit artefacts and local claims;
-2. implement and adversarially test foreground `usf start`, instance-bound
-   `usf stop`, signal drain, concurrent start and forced-restart recovery;
-3. add provider-specific backpressure and adaptive routing observations;
-4. add fine-grained validation caches;
-5. pass synthetic scale and speedup requirements;
-6. run the continuous live proof across at least three batches;
-7. force restart/provider failure/candidate rejection;
-8. repeat with one provider excluded.
-
-### Gate 5 — Complete command surface and fresh-clone proof
-
-Complete observe, review, integrate, evidence, prove, drift, publish, status and doctor to the exact requirements above; run all adversarial gates; delete `.usf/`; rebuild; run from a fresh clone without historical sources; produce the terminal bundle and board summary.
-
-### Parallel agent discipline
-
-After Gate 0, use up to eight active participants when eight genuinely independent scopes exist; delegation depth at most two.
-
-Workers receive only objective, scoped inputs, read/write sets, invariants, acceptance, validation and stop conditions. They do not receive transcripts or the whole graph.
-
-Do not spawn a model for deterministic work or for work the root can finish faster.
+The earlier plan is recoverable from Git history for this file.
 
 ---
 
@@ -2675,31 +2587,24 @@ If coordination, commits or semantic publications approach the number of impleme
 
 ---
 
-## 28. First action
+## 28. First action — spent
 
-From `/home/user/src` as `user`:
+The bootstrap first-action list this section carried is complete and has been
+removed. On resuming, read this file, then `docs/handover.md` for the current
+boundary, then establish exact current Git, graph and host state before acting.
 
-1. read `/home/user/src/GOAL.md` completely;
-2. inspect whether `/home/user/src/usf-v3` and `maldous/usf-v3` already exist;
-3. inventory the six historical sources read-only;
-4. create or safely enter `/home/user/src/usf-v3`;
-5. copy this file to repository-root `GOAL.md`;
-6. create a compact `AGENTS.md` pointing here;
-7. establish Gate 0 containment and repository scaffold;
-8. record the initial ANQR slice shortlist and bottleneck review;
-9. commit and push the coherent scaffold;
-10. launch the independent Gate 1 lanes immediately;
-11. integrate the first minimal vertical loop before broad architecture expansion.
+The standing prohibitions it carried remain in force and are restated here
+because they outlive the bootstrap:
 
-Do not modify historical repositories.
+- do not modify historical repositories;
+- do not blanket-copy prior work;
+- do not rebuild V2 under new names;
+- do not make Git, full-graph validation, provider qualification or semantic
+  publication a gate on ordinary developer-like iteration.
 
-Do not blanket-copy prior work.
-
-Do not rebuild V2 under new names.
-
-Do not make Git, full-graph validation, provider qualification or semantic publication a gate on ordinary developer-like iteration.
-
-Build the smallest system that can continuously turn precise meaning into tested ANQR software at the maximum safe useful throughput available from the zero-paid-cost model population.
+Build the smallest system that can continuously turn precise meaning into tested
+ANQR software at the maximum safe useful throughput available from the
+zero-paid-cost model population.
 
 ---
 
