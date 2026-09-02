@@ -411,8 +411,17 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
     // share a top candidate, so the prefix-stable prompt preamble lands on the
     // same model within its cache window instead of a cold cache every unit.
     const spread = diversifyCandidates(universe.candidates, rotationGroup(ordinal), productivity);
+    // Operator dispatch preference: a preferred, non-deferred transport is tried
+    // ahead of the rest so it actually receives work and builds real history,
+    // instead of sitting at the unknown prior behind cheaper routes forever.
+    // Every safety property survives -- a preferred route still defers when it
+    // fails, still stands down at the unproductive ceiling, and deferred routes
+    // remain last -- so this promotes use without defeating the pool.
+    const preferred = bindings.preferredTransports;
+    const live = spread.filter((candidate) => !deferred.has(candidate.candidateId));
     const ordered = Object.freeze([
-      ...spread.filter((candidate) => !deferred.has(candidate.candidateId)),
+      ...live.filter((candidate) => preferred.has(candidate.transport)),
+      ...live.filter((candidate) => !preferred.has(candidate.transport)),
       ...spread.filter((candidate) => deferred.has(candidate.candidateId)),
     ]);
     const attempts: UnitAttempt[] = [];

@@ -246,6 +246,8 @@
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:modelIdentityObservable> "true" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:nonClaim> "No API credential abstraction is built around this transport; it authenticates by its own session." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:operatorPreferredForDispatch> "true" <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:claude-cli> <urn:usf:predicate:operatorPreferredReason> "The operator promoted the Claude session for active use. A preferred transport is tried ahead of unpreferred non-deferred routes so it receives work and builds real productivity history rather than sitting at the unknown prior behind cheaper free routes. It remains a preference, not an override: a preferred route that fails still defers, and one that produces nothing admissible still stands down at the unproductive ceiling, so promotion cannot become runaway subscription spend. Reversible by setting the flag other than true." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:selectedModel> "claude-fable-5" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:claude-cli> <urn:usf:predicate:selectedModel> "claude-haiku-4-5-20251001" <urn:usf:graph:v3-execution> .
@@ -260,6 +262,7 @@
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:extensibility> "New transports are added without redesigning semantic work; the work model names requirements, never a transport." <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:modelIdentityObservable> "false" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:nonClaim> "This transport does not expose its resolved underlying model identity; results record that fact rather than inventing one." <urn:usf:graph:v3-execution> .
+<urn:usf:execution-transport:codex-cli> <urn:usf:predicate:operatorPreferredForDispatch> "true" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:quotaScope> "operator-subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:selectedModel> "gpt-5.3-codex-spark" <urn:usf:graph:v3-execution> .
 <urn:usf:execution-transport:codex-cli> <urn:usf:predicate:selectedModel> "gpt-5.3-codex-spark@medium" <urn:usf:graph:v3-execution> .
@@ -303,6 +306,8 @@
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:terminalState> "cycles-exhausted" <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:terminalState> "idle-no-pending-work" <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:type> <urn:usf:type:OperationalLifecycle> <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:operatorPreferredForDispatch> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:operatorPreferredReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:baseUrl> "https://api.arcee.ai/api/v1" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:provider> "arcee" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .

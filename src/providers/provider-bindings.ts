@@ -15,6 +15,13 @@ export interface ProviderBindings {
   /** provider route -> additional credential names that also supply it. */
   readonly credentialAliases: ReadonlyMap<string, readonly string[]>;
   /**
+   * Transports the operator has authored a dispatch preference for: tried ahead
+   * of unpreferred routes when not deferred. It is a preference, not an
+   * override -- a preferred route that produces nothing admissible still stands
+   * down at the ceiling, so promotion cannot become runaway spend.
+   */
+  readonly preferredTransports: ReadonlySet<string>;
+  /**
    * Transport IRI local name -> every model that transport may request.
    *
    * A host-agent transport commonly serves several models under one
@@ -51,6 +58,13 @@ export function readProviderBindings(graph: SemanticGraph): ProviderBindings {
     if (provider === null || established === null) continue;
     credentialAliases.set(provider, Object.freeze([...(credentialAliases.get(provider) ?? []), established]));
   }
+  const preferredTransports = new Set<string>();
+  for (const quad of graph.quads) {
+    if (quad.predicate !== `${P}operatorPreferredForDispatch` || quad.object !== "true") continue;
+    if (quad.subject.startsWith("urn:usf:execution-transport:")) {
+      preferredTransports.add(quad.subject.slice("urn:usf:execution-transport:".length));
+    }
+  }
   const transportSelectedModel = new Map<string, readonly string[]>();
   for (const quad of graph.quads) {
     if (quad.predicate !== `${P}selectedModel`) continue;
@@ -64,6 +78,7 @@ export function readProviderBindings(graph: SemanticGraph): ProviderBindings {
   return Object.freeze({
     endpoints,
     credentialAliases,
+    preferredTransports,
     transportSelectedModel,
     declared: endpoints.size > 0 || credentialAliases.size > 0,
   });

@@ -51,14 +51,14 @@ test("manifest overlays isolate products while safely deduplicating shared knowl
     "urn:usf:contract:repository-path-scope:1",
     "urn:usf:contract:semantic-first-order:1",
   ]);
-  // Eleven sources: the ANQR overlay now carries a full product denominator --
-  // profile revision, opportunities, UI ownership and its own realisation
-  // convention -- alongside its product contract, and the generic product
-  // profile vocabulary those instances are stated in. The contract lists above
-  // are what protect isolation; the source count only records that the overlay
-  // grew. It grew without adding a single contract to any other profile, which
-  // is the property that matters.
-  assert.equal(all.sources.length, 11);
+  // Twelve sources: the ANQR overlay carries a full product denominator --
+  // profile revision, opportunities, UI ownership, its own realisation
+  // convention and a documented known-limitation record -- alongside its
+  // product contract and the generic product profile vocabulary those instances
+  // are stated in. The contract lists above are what protect isolation; the
+  // source count only records that the overlay grew, without adding a single
+  // contract to any other profile, which is the property that matters.
+  assert.equal(all.sources.length, 12);
   assert.equal(all.manifests.length, 6);
 });
 
