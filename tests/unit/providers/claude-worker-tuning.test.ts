@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { claudeCliArguments, codexModelSelection } from "../../../src/providers/cli-transports.ts";
+import {
+  antigravityQuotaResetInstant,
+  claudeCliArguments,
+  claudeUsageLimitSignature,
+  classifyAntigravityFailureDetail,
+  codexModelSelection,
+} from "../../../src/providers/cli-transports.ts";
 
 /**
  * The Claude CLI worker invocation, tuned with knowledge of the CLI itself.
@@ -43,4 +49,52 @@ test("codex effort is declared per candidate and never inherited", () => {
   assert.deepEqual(codexModelSelection("model@turbo"), { model: "model", effort: "low" });
   assert.deepEqual(codexModelSelection(null), { model: null, effort: "low" });
   assert.deepEqual(codexModelSelection("@medium"), { model: "@medium", effort: "low" });
+});
+
+/**
+ * A refused host turn is classified from the CLI's own words, never from the
+ * bare exit code. Twelve subscription-limit refusals once read as
+ * TRANSPORT_INVOCATION_FAILED and stood Sonnet and Fable down for a day at the
+ * unproductive-attempt ceiling; the Gemini tiers went the same way while their
+ * envelope named a quota with its own reset instant.
+ */
+test("a failed antigravity envelope classifies from its own error text", () => {
+  const cases: readonly [string, ReturnType<typeof classifyAntigravityFailureDetail>][] = [
+    // Measured against the installed build, 2026-09-02.
+    ["Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 137h51m25s.",
+      "TRANSPORT_USAGE_LIMIT_EXCEEDED"],
+    ["invalid model selection (--model \"gemini-3.1-pro-medium\" --effort \"\"): model gemini-3.1-pro-medium is not recognized as a known model or custom model in settings",
+      "TRANSPORT_MODEL_NOT_ACCEPTED"],
+    ["please sign in to continue", "TRANSPORT_SESSION_UNAUTHENTICATED"],
+    // A planted unrelated failure must stay a turn failure, not a limit.
+    ["the model produced no plan", "TRANSPORT_TURN_FAILED"],
+  ];
+  for (const [detail, expected] of cases) {
+    assert.equal(classifyAntigravityFailureDetail(detail), expected, detail.slice(0, 60));
+  }
+});
+
+test("a quota refusal's relative reset becomes an absolute instant, or null", () => {
+  const observedAt = Date.parse("2026-09-02T20:00:00.000Z");
+  assert.equal(
+    antigravityQuotaResetInstant("Individual quota reached. Resets in 137h51m25s.", observedAt),
+    new Date(observedAt + ((137 * 3600 + 51 * 60 + 25) * 1000)).toISOString(),
+  );
+  assert.equal(antigravityQuotaResetInstant("Resets in 5m", observedAt),
+    new Date(observedAt + 5 * 60 * 1000).toISOString());
+  // No stated duration, malformed duration, and zero all fall back to the
+  // deferral class default rather than inventing an instant.
+  assert.equal(antigravityQuotaResetInstant("Individual quota reached.", observedAt), null);
+  assert.equal(antigravityQuotaResetInstant("Resets in soon", observedAt), null);
+  assert.equal(antigravityQuotaResetInstant("Resets in 0s", observedAt), null);
+});
+
+test("a claude failure report is a usage limit only when the CLI says so", () => {
+  // The signature is a family match on the CLI's report, not a verified exact
+  // message; an unmatched failure keeps the defect classification and its
+  // detail travels on the attempt record for the next diagnosis.
+  assert.ok(claudeUsageLimitSignature("Claude usage limit reached|1788400000"));
+  assert.ok(claudeUsageLimitSignature("5-hour limit reached ∙ resets 6pm"));
+  assert.ok(!claudeUsageLimitSignature("Command failed: claude -p ... ENOENT"));
+  assert.ok(!claudeUsageLimitSignature("model did not answer"));
 });

@@ -465,6 +465,11 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
             model: candidate.model, startedAt: attemptStartedAt, latencyMs: elapsed,
             outcome: produced.outcome, reasonCode: produced.reasonCode, statusCode: null,
             retryAfter: produced.retryAfter, costIncurred: false,
+            // Twelve failures of a host route once left nothing behind but a
+            // reason code; the CLI's own words are the diagnosis. Same
+            // redaction discipline as the SDK path below.
+            providerDetail: produced.refusalDetail === null ? null
+              : produced.refusalDetail.replaceAll(/[A-Za-z0-9_-]{24,}/gu, "[redacted]").slice(0, 300),
           }));
           observedRouteOutcomes.push(Object.freeze({
             candidateId: candidate.candidateId,

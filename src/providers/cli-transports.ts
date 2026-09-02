@@ -82,9 +82,23 @@ export async function invokeClaudeCli(
     });
     stdout = produced.stdout;
   } catch (error) {
+    const failed = error as { killed?: boolean; stdout?: unknown; stderr?: unknown };
     const detail = error instanceof Error ? error.message.slice(0, 300) : "unknown";
-    const killed = (error as { killed?: boolean }).killed === true;
-    return frozenRefusal("claude-cli", killed ? "TRANSPORT_TIMEOUT" : "TRANSPORT_INVOCATION_FAILED", detail);
+    const killed = failed.killed === true;
+    // A non-zero exit still carries the CLI's own report on the error object's
+    // stdout/stderr, and that report is the only place a subscription usage
+    // limit is visible: the bare exit code reads as a transport defect, which
+    // is how twelve limit refusals once burned the attempt ceiling and stood
+    // Sonnet and Fable down for a day. The signature is a family match on the
+    // CLI's own words, not a verified exact message; anything unmatched still
+    // records the full detail for the next diagnosis.
+    const report = `${typeof failed.stdout === "string" ? failed.stdout : ""}\n${typeof failed.stderr === "string" ? failed.stderr : ""}\n${detail}`;
+    const limited = claudeUsageLimitSignature(report);
+    return frozenRefusal(
+      "claude-cli",
+      killed ? "TRANSPORT_TIMEOUT" : limited ? "TRANSPORT_USAGE_LIMIT_EXCEEDED" : "TRANSPORT_INVOCATION_FAILED",
+      detail,
+    );
   }
 
   // The CLI's result JSON is one line of stdout, but stdout is not only the
@@ -108,6 +122,12 @@ export async function invokeClaudeCli(
   }
   if (parsed.is_error === true || parsed.subtype !== "success") {
     const status = typeof parsed.api_error_status === "string" ? parsed.api_error_status : null;
+    // An in-band error turn can also be a usage limit; its words are in the
+    // result field. Same family match, same honesty boundary as above.
+    const inBand = `${typeof parsed.result === "string" ? parsed.result : ""} ${status ?? ""}`;
+    if (claudeUsageLimitSignature(inBand)) {
+      return frozenRefusal("claude-cli", "TRANSPORT_USAGE_LIMIT_EXCEEDED", inBand.trim().slice(0, 300));
+    }
     return frozenRefusal("claude-cli", "TRANSPORT_TURN_FAILED", status);
   }
   const usage = (parsed.usage ?? {}) as Record<string, unknown>;
@@ -301,6 +321,50 @@ export async function invokeCodexCli(
 }
 
 /**
+ * The instant an antigravity quota refusal says it clears, as ISO 8601.
+ *
+ * The CLI states the reset relatively -- "Resets in 137h51m25s", measured
+ * against the installed build -- so the instant is derived from the clock the
+ * refusal was observed on. An unparseable or absent duration returns null and
+ * the deferral falls back to its class default.
+ */
+/**
+ * Whether a failed Claude CLI turn's own report names a subscription usage
+ * limit. A family match on the CLI's words, not a verified exact message:
+ * matched turns defer as temporary limits, unmatched ones keep the full
+ * detail and the defect classification.
+ */
+export function claudeUsageLimitSignature(report: string): boolean {
+  return /usage limit|limit reached|out of usage/iu.test(report);
+}
+
+/**
+ * Classify a failed antigravity turn from the result envelope's own error
+ * text. Quota and unknown-model wordings are measured against the installed
+ * build; anything else stays a turn failure carrying its detail.
+ */
+export function classifyAntigravityFailureDetail(
+  detail: string,
+): "TRANSPORT_USAGE_LIMIT_EXCEEDED" | "TRANSPORT_MODEL_NOT_ACCEPTED" | "TRANSPORT_SESSION_UNAUTHENTICATED" | "TRANSPORT_TURN_FAILED" {
+  // A quota refusal is temporary and provider-stated, and it names its own
+  // reset instant; classifying it as a defect once burned the attempt ceiling
+  // and stood every Gemini tier down as TRANSPORT_INVOCATION_FAILED.
+  if (/quota reached|upgrade your subscription/iu.test(detail)) return "TRANSPORT_USAGE_LIMIT_EXCEEDED";
+  // The CLI reports an unknown model by listing the models it does accept.
+  if (/invalid model selection|not recognized as a known model/iu.test(detail)) return "TRANSPORT_MODEL_NOT_ACCEPTED";
+  if (/sign in|not signed in/iu.test(detail)) return "TRANSPORT_SESSION_UNAUTHENTICATED";
+  return "TRANSPORT_TURN_FAILED";
+}
+
+export function antigravityQuotaResetInstant(detail: string, observedAtMs: number): string | null {
+  const match = /resets in\s+(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?/iu.exec(detail);
+  if (match === null || (match[1] === undefined && match[2] === undefined && match[3] === undefined)) return null;
+  const ms = (Number(match[1] ?? 0) * 3600 + Number(match[2] ?? 0) * 60 + Number(match[3] ?? 0)) * 1000;
+  if (ms <= 0) return null;
+  return new Date(observedAtMs + ms).toISOString();
+}
+
+/**
  * Antigravity CLI: one bounded non-interactive turn.
  *
  * The interface is taken from V2's working adapter rather than guessed: the
@@ -336,7 +400,17 @@ export async function invokeAntigravityCli(
       return frozenRefusal("antigravity-cli", "TRANSPORT_SESSION_UNAUTHENTICATED",
         "the Antigravity CLI holds no signed-in session");
     }
-    return frozenRefusal("antigravity-cli", killed ? "TRANSPORT_TIMEOUT" : "TRANSPORT_INVOCATION_FAILED", detail);
+    // The installed build exits non-zero on a refused turn while its result
+    // envelope -- quota, unknown model, error text -- is already complete on
+    // stdout. Measured: "Individual quota reached ... Resets in 137h51m25s"
+    // exits 1. The exit code is therefore not the classification; when the
+    // envelope arrived, fall through and let it speak. Only a kill or an
+    // empty stream is a transport-level failure.
+    if (!killed && stdoutText.trim().length > 0) {
+      stdout = stdoutText;
+    } else {
+      return frozenRefusal("antigravity-cli", killed ? "TRANSPORT_TIMEOUT" : "TRANSPORT_INVOCATION_FAILED", detail);
+    }
   }
 
   if (/sign in|not signed in|please sign/iu.test(stdout)) {
@@ -388,13 +462,9 @@ export async function invokeAntigravityCli(
 
   if (status !== "SUCCESS") {
     const detail = resultError ?? `status=${status ?? "absent"}`;
-    // The CLI reports an unknown model by listing the models it does accept.
-    const code = /invalid model selection|not recognized as a known model/iu.test(detail)
-      ? "TRANSPORT_MODEL_NOT_ACCEPTED"
-      : /sign in|not signed in/iu.test(detail)
-        ? "TRANSPORT_SESSION_UNAUTHENTICATED"
-        : "TRANSPORT_TURN_FAILED";
-    return frozenRefusal("antigravity-cli", code, detail.slice(0, 300));
+    const code = classifyAntigravityFailureDetail(detail);
+    return frozenRefusal("antigravity-cli", code, detail.slice(0, 300),
+      code === "TRANSPORT_USAGE_LIMIT_EXCEEDED" ? antigravityQuotaResetInstant(detail, Date.now()) : null);
   }
   const text = (response ?? "").trim();
   if (text.length === 0) return frozenRefusal("antigravity-cli", "TRANSPORT_OUTPUT_ABSENT", null);

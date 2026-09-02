@@ -76,6 +76,9 @@ export function deferralDurationMs(reasonCode: string, consecutiveFailures: numb
     case "TRANSPORT_USAGE_LIMIT_EXCEEDED": return 6 * hour;
     case "PROVIDER_AUTHENTICATION_REFUSED": return 12 * hour;
     case "PROVIDER_MODEL_NOT_SERVED": return 24 * hour;
+    // A host CLI naming the models it does accept is the same fact as a 404:
+    // the declared model is not served, and it will not appear within the hour.
+    case "TRANSPORT_MODEL_NOT_ACCEPTED": return 24 * hour;
     case "PROVIDER_RATE_LIMITED": return 5 * minute;
     // A timeout is the most expensive refusal to discover, so it is the one
     // most worth not rediscovering.
