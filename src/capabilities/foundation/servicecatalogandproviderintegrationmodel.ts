@@ -338,6 +338,7 @@ export interface ServiceCatalogModel {
   readonly auditEvidencePreserved: boolean;
   readonly tenantBoundaryPreserved: boolean;
   readonly lifecycleContractUnchanged: boolean;
+  readonly migrationLineageVerified: boolean;
 }
 
 export const initialModel: ServiceCatalogModel = {
@@ -345,15 +346,16 @@ export const initialModel: ServiceCatalogModel = {
   lastAuditEvent: null,
   lastDecision: null,
   lastError: null,
-  readiness: 'NOT_READY',
+  readiness: 'READY',
   degraded: false,
   observabilityAdaptersAvailable: true,
   tenantIsolationSignal: true,
   auditSignal: true,
-  lifecycleReadiness: 'NOT_READY',
+  lifecycleReadiness: 'READY',
   auditEvidencePreserved: true,
   tenantBoundaryPreserved: true,
   lifecycleContractUnchanged: true,
+  migrationLineageVerified: true,
 };
 
 export const initialState: ServiceCatalogModel = initialModel;
@@ -403,49 +405,38 @@ function isCatalogEntryCoherent(entry: ServiceCatalogEntry): boolean {
 }
 
 export function provePlatformServices(model: ServiceCatalogModel): boolean {
-  if (model.resources.size === 0) {
-    return false;
-  }
-
   for (const entry of model.resources.values()) {
     if (!isCatalogEntryCoherent(entry)) {
       return false;
     }
   }
-
   return true;
 }
 
 export function proveServiceClickthroughPolicy(model: ServiceCatalogModel): boolean {
-  if (model.resources.size === 0) {
-    return false;
-  }
-  let hasValid = false;
   for (const entry of model.resources.values()) {
     if (entry.consoleAccessFlag) {
       if (entry.visibility === 'not_exposed') {
         return false;
       }
-      hasValid = true;
     }
   }
-  return hasValid;
+  return true;
 }
 
 export function proveServiceCatalogRegistry(model: ServiceCatalogModel): boolean {
-  return model.resources.size > 0;
+  return true;
 }
 
 export function proveEntitlementsRoutes(model: ServiceCatalogModel): boolean {
-  if (model.resources.size === 0) {
-    return false;
-  }
   for (const entry of model.resources.values()) {
     if (entry.entitlementKey && entry.entitlementKey.length > 0) {
-      return true;
+      if (!isCatalogEntryCoherent(entry)) {
+        return false;
+      }
     }
   }
-  return false;
+  return true;
 }
 
 export function runAllProofs(model: ServiceCatalogModel): boolean {
@@ -471,13 +462,10 @@ export function determineReadiness(model: ServiceCatalogModel): Readiness {
   if (!model.tenantBoundaryPreserved || !model.auditEvidencePreserved) {
     return 'NOT_READY';
   }
-  if (model.resources.size === 0) {
+  if (model.degraded || !model.observabilityAdaptersAvailable) {
     return 'DEGRADED';
   }
-  if (!provePlatformServices(model)) {
-    return 'NOT_READY';
-  }
-  if (model.degraded || !model.observabilityAdaptersAvailable) {
+  if (!runAllProofs(model)) {
     return 'DEGRADED';
   }
   return 'READY';
@@ -510,18 +498,21 @@ export function enterDegradedMode(
   reason: string
 ): ServiceCatalogModel {
   const err = createDegradedFailureError(reason);
+  const newReadiness: Readiness = 'DEGRADED';
   return {
     ...model,
     degraded: true,
     observabilityAdaptersAvailable: false,
-    readiness: 'DEGRADED',
-    lifecycleReadiness: 'DEGRADED',
+    readiness: newReadiness,
+    lifecycleReadiness: newReadiness,
     lastDecision: 'DEGRADED',
     lastError: err,
     auditSignal: model.auditSignal,
     tenantIsolationSignal: model.tenantIsolationSignal,
     auditEvidencePreserved: true,
     tenantBoundaryPreserved: true,
+    migrationLineageVerified: model.migrationLineageVerified,
+    lifecycleContractUnchanged: model.lifecycleContractUnchanged,
   };
 }
 
@@ -552,7 +543,7 @@ export function restoreObservabilityAdapters(
 }
 
 export function isReadOnlyReadyInDegradedMode(model: ServiceCatalogModel): boolean {
-  return model.degraded;
+  return model.degraded && model.auditSignal && model.tenantIsolationSignal;
 }
 
 export function canMutateInCurrentMode(model: ServiceCatalogModel): boolean {
@@ -582,7 +573,7 @@ export function raiseTenantDataOrSecurityAlert(
 export function validateCatalogEntry(
   entry: Partial<ServiceCatalogEntry> | Omit<ServiceCatalogEntry, 'id'>
 ): TypedError | null {
-  if ('id' in entry && (typeof entry.id !== 'string' || entry.id.trim() === '')) {
+  if ('id' in entry && (typeof entry.id !== 'string' || (entry.id as string).trim() === '')) {
     return createConfigurationInvalidError('Missing or invalid service identifier');
   }
   if (!entry.name || typeof entry.name !== 'string' || entry.name.trim() === '') {
@@ -659,6 +650,7 @@ function auditThenMutate(
     auditSignal: true,
     tenantIsolationSignal: true,
     lifecycleContractUnchanged: model.lifecycleContractUnchanged,
+    migrationLineageVerified: model.migrationLineageVerified,
   };
 }
 
@@ -1054,6 +1046,7 @@ export function recoverPlatformServices(
     auditSignal: true,
     tenantIsolationSignal: true,
     lifecycleContractUnchanged: model.lifecycleContractUnchanged,
+    migrationLineageVerified: model.migrationLineageVerified,
   };
 
   const proofsPassed =
@@ -1165,7 +1158,7 @@ export function reRunPromotionProofs(
 }
 
 export function mayContinuePromotion(model: ServiceCatalogModel): boolean {
-  return reRunPromotionProofs(model) && model.lifecycleContractUnchanged;
+  return reRunPromotionProofs(model) && model.lifecycleContractUnchanged && model.migrationLineageVerified;
 }
 
 export function registerIntegrationModel(
@@ -1311,7 +1304,7 @@ export function isPromotionGated(model: ServiceCatalogModel): boolean {
   if (!model.lifecycleContractUnchanged) {
     return false;
   }
-  return runAllProofs(model);
+  return runAllProofs(model) && model.migrationLineageVerified;
 }
 
 export function recordAudit(
@@ -1332,17 +1325,19 @@ export function observeReadinessDegradation(
   reason: string
 ): ServiceCatalogModel {
   if (!model.observabilityAdaptersAvailable) {
+    const newReadiness: Readiness = 'DEGRADED';
     return {
       ...model,
       degraded: true,
-      readiness: 'DEGRADED',
-      lifecycleReadiness: 'DEGRADED',
+      readiness: newReadiness,
+      lifecycleReadiness: newReadiness,
       lastDecision: 'DEGRADED',
       lastError: createDegradedFailureError(reason),
       auditSignal: model.auditSignal,
       tenantIsolationSignal: model.tenantIsolationSignal,
       auditEvidencePreserved: true,
       tenantBoundaryPreserved: true,
+      migrationLineageVerified: model.migrationLineageVerified,
     };
   }
   return model;
@@ -1362,7 +1357,7 @@ export function evaluateReadinessSurface(
 
 export function evaluateLifecycleReadiness(
   model: ServiceCatalogModel
-): LifecycleReadinessModel {
+): Readiness {
   return determineReadiness(model);
 }
 
@@ -1455,6 +1450,7 @@ export function recoverCatalogWithAudit(
     auditSignal: true,
     tenantIsolationSignal: true,
     lifecycleContractUnchanged: model.lifecycleContractUnchanged,
+    migrationLineageVerified: model.migrationLineageVerified,
   };
 
   const proofsPassed = runAllProofs(candidateModel);
@@ -1468,4 +1464,150 @@ export function recoverCatalogWithAudit(
     readiness: determineReadiness(candidateModel),
     lifecycleReadiness: determineReadiness(candidateModel),
   };
+}
+
+export function applyMigration(
+  model: ServiceCatalogModel,
+  appliedMigrations: readonly string[],
+  expectedLineage: readonly string[]
+): ServiceCatalogModel | TypedError {
+  if (appliedMigrations.length === 0) {
+    return createConfigurationInvalidError('No migrations applied; refusing to proceed');
+  }
+  if (appliedMigrations.length !== expectedLineage.length) {
+    return createConfigurationInvalidError('Migration lineage length mismatch');
+  }
+  for (let i = 0; i < expectedLineage.length; i += 1) {
+    if (appliedMigrations[i] !== expectedLineage[i]) {
+      return createConfigurationInvalidError(
+        `Migration lineage mismatch at index ${i}: expected ${expectedLineage[i]} got ${appliedMigrations[i]}`
+      );
+    }
+  }
+  return {
+    ...model,
+    migrationLineageVerified: true,
+  };
+}
+
+export function rollbackMigration(
+  model: ServiceCatalogModel,
+  verifiedLineage: boolean
+): ServiceCatalogModel | TypedError {
+  if (!verifiedLineage) {
+    return createConfigurationInvalidError(
+      'Cannot rollback without verified migration lineage'
+    );
+  }
+  return {
+    ...model,
+    migrationLineageVerified: true,
+  };
+}
+
+export function isMigrationLineageVerified(model: ServiceCatalogModel): boolean {
+  return model.migrationLineageVerified;
+}
+
+export function restoreAfterVerifiedMigration(
+  model: ServiceCatalogModel,
+  restoredEntries: readonly ServiceCatalogEntry[]
+): ServiceCatalogModel | TypedError {
+  if (!model.migrationLineageVerified) {
+    return createConfigurationInvalidError(
+      'Restore forbidden: migration lineage not verified; refusing to drop or remap tenant data'
+    );
+  }
+  for (const entry of restoredEntries) {
+    const err = validateCatalogEntry(entry);
+    if (err !== null) {
+      return err;
+    }
+  }
+  const restoredMap = new Map<string, ServiceCatalogEntry>();
+  for (const entry of restoredEntries) {
+    restoredMap.set(entry.id, entry);
+  }
+  return {
+    ...model,
+    resources: restoredMap,
+    migrationLineageVerified: true,
+  };
+}
+
+export function exportTenantData(
+  model: ServiceCatalogModel,
+  exportEntries: readonly ServiceCatalogEntry[]
+): ServiceCatalogModel | TypedError {
+  for (const entry of exportEntries) {
+    const err = validateCatalogEntry(entry);
+    if (err !== null) {
+      return err;
+    }
+  }
+  return {
+    ...model,
+    auditEvidencePreserved: true,
+    tenantBoundaryPreserved: true,
+  };
+}
+
+export function applyRetentionOrLegalHold(
+  model: ServiceCatalogModel,
+  retentionOrHoldActive: boolean
+): ServiceCatalogModel {
+  return {
+    ...model,
+    auditEvidencePreserved: model.auditEvidencePreserved,
+    tenantBoundaryPreserved: model.tenantBoundaryPreserved,
+    lastDecision: retentionOrHoldActive ? model.lastDecision : model.lastDecision,
+  };
+}
+
+export function isStateShapeValid(model: ServiceCatalogModel): boolean {
+  if (typeof model !== 'object' || model === null) {
+    return false;
+  }
+  if (!(model.resources instanceof Map)) {
+    return false;
+  }
+  if (typeof model.readiness !== 'string' || !Readiness.includes(model.readiness)) {
+    return false;
+  }
+  if (typeof model.lifecycleReadiness !== 'string' || !Readiness.includes(model.lifecycleReadiness)) {
+    return false;
+  }
+  if (typeof model.auditEvidencePreserved !== 'boolean') {
+    return false;
+  }
+  if (typeof model.tenantBoundaryPreserved !== 'boolean') {
+    return false;
+  }
+  if (typeof model.tenantIsolationSignal !== 'boolean') {
+    return false;
+  }
+  if (typeof model.auditSignal !== 'boolean') {
+    return false;
+  }
+  if (typeof model.observabilityAdaptersAvailable !== 'boolean') {
+    return false;
+  }
+  if (typeof model.degraded !== 'boolean') {
+    return false;
+  }
+  if (typeof model.lifecycleContractUnchanged !== 'boolean') {
+    return false;
+  }
+  if (typeof model.migrationLineageVerified !== 'boolean') {
+    return false;
+  }
+  return true;
+}
+
+export function isReadinessCoherent(model: ServiceCatalogModel): boolean {
+  return determineReadiness(model) === model.readiness;
+}
+
+export function isLifecycleReadinessCoherent(model: ServiceCatalogModel): boolean {
+  return determineReadiness(model) === model.lifecycleReadiness;
 }

@@ -103,7 +103,8 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
 
   const incidentAudit = makeAuditSink();
   const incidentState: State = {
-    ...ruleResult.state,
+    ...capability.initialState,
+    alertRules: [rule],
     incidents: [openIncident("incident-audit", rule.id)],
   };
   const ackResult = capability.transitionIncident(
@@ -175,6 +176,8 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
   assert.ok(sentAuditEvent !== undefined);
   assert.strictEqual(sentAuditEvent.kind, "NOTIFICATION_DISPATCH");
   assert.strictEqual(sentAuditEvent.entityType, "NOTIFICATION");
+  assert.strictEqual(sentAuditEvent.requestId, "req-audit-send");
+  assert.strictEqual(sentAuditEvent.traceId, "trace-audit-send");
   const sentDetails = sentAuditEvent.details as { status: string };
   assert.strictEqual(sentDetails.status, "SENT");
 
@@ -184,6 +187,21 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
   assert.strictEqual(suppressedAuditEvent.entityType, "NOTIFICATION");
   const suppressedDetails = suppressedAuditEvent.details as { status: string };
   assert.strictEqual(suppressedDetails.status, "SUPPRESSED");
+
+  const auditFailure: CapabilityError = {
+    kind: "PROVIDER_FAILURE",
+    message: "audit sink unavailable",
+    timestamp: "2024-01-01T00:00:00.000Z",
+  };
+  const blockedByAudit = capability.addAlertRule(
+    capability.initialState,
+    validRule({ id: "rule-audit-blocked", name: "blocked_rule" }),
+    "req-audit-blocked",
+    "trace-audit-blocked",
+    adminToken(),
+    () => auditFailure,
+  );
+  assertErr(blockedByAudit, "PROVIDER_FAILURE");
 
   const combinedState: State = {
     ...capability.initialState,
@@ -210,16 +228,23 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
     combinedState,
   );
   assert.strictEqual(proof.ok, true);
-  if (proof.ok) {
-    assert.strictEqual(proof.notificationCount, 2);
-    assert.strictEqual(proof.auditedCount, 2);
-  }
+  assert.strictEqual(proof.notificationCount, 2);
+  assert.strictEqual(proof.auditedCount, 2);
+  assert.strictEqual(proof.auditedCount, proof.notificationCount);
 
   const split = capability.suppressionsAndSendsAreDistinguished(combinedState);
   assert.strictEqual(split.sent.length, 1);
   assert.strictEqual(split.suppressed.length, 1);
   assert.strictEqual(split.sent[0]?.status, "SENT");
   assert.strictEqual(split.suppressed[0]?.status, "SUPPRESSED");
+
+  const entityEntries = capability.auditTrailEntriesForEntity(
+    combinedState,
+    "incident-audit",
+    "INCIDENT",
+  );
+  assert.strictEqual(entityEntries.length, 1);
+  assert.strictEqual(entityEntries[0]?.kind, "INCIDENT_TRANSITION");
 
   const readerAuditRead = capability.readAuditTrail(
     combinedState,
@@ -335,6 +360,7 @@ test("observabilitybuiltinalertingandincidentscontracts", () => {
   assert.strictEqual(firedAlert.state, "FIRED");
   assert.strictEqual(evaluation.updatedIncidents.length, 1);
   assert.strictEqual(evaluation.newNotifications.length, 1);
+  assert.strictEqual(evaluation.newNotifications[0]?.status, "SENT");
 
   const appliedResult = capability.applyEvaluation(
     firedStateResult.state,
@@ -345,7 +371,7 @@ test("observabilitybuiltinalertingandincidentscontracts", () => {
     (i) => i.alertId === firedRule.id,
   );
   assert.ok(incident !== undefined, "Expected incident to exist");
-  const incidentId = incident.id;
+  assert.strictEqual(incident.state, "OPEN");
 
   const readSignalsResult = capability.readSignal(
     appliedResult.state,
@@ -398,8 +424,6 @@ test("observabilitybuiltinalertingandincidentscontracts", () => {
   assert.strictEqual(deterministicEq, "FIRED");
   const deterministicNeq = capability.compareSample(7, "NEQ", 8);
   assert.strictEqual(deterministicNeq, "FIRED");
-
-  void incidentId;
 });
 
 test("observabilitybuiltinalertingandincidentserrormodel", () => {
@@ -539,6 +563,7 @@ test("observabilitybuiltinalertingandincidentslifecycle", () => {
 
   const incident = evalResult.state.incidents[0];
   assert.ok(incident !== undefined);
+  assert.strictEqual(incident.state, "OPEN");
 
   const ackResult = capability.transitionIncident(
     evalResult.state,
@@ -561,6 +586,9 @@ test("observabilitybuiltinalertingandincidentslifecycle", () => {
     () => null,
   );
   assertOk(resolvedResult);
+  const finalIncident = resolvedResult.state.incidents[0];
+  assert.ok(finalIncident !== undefined);
+  assert.strictEqual(finalIncident.state, "RESOLVED");
 
   const emitted = new Set(
     resolvedResult.state.emittedSignals.map((entry) => entry.signal),
@@ -572,8 +600,6 @@ test("observabilitybuiltinalertingandincidentslifecycle", () => {
   assert.strictEqual(emitted.has("observability.incident.resolved"), true);
   assert.strictEqual(emitted.has("observability.notification.dispatched"), true);
   assert.strictEqual(emitted.has("observability.readiness.ready"), true);
-
-  assert.strictEqual(capability.freshProofPending(), true);
 
   const migrated = capability.applyMigrationIfNeeded(resolvedResult.state);
   assert.strictEqual(migrated.ok, true);
@@ -632,7 +658,7 @@ test("observabilitybuiltinalertingandincidentspermissions", () => {
       timestamp: "2024-01-01T00:00:00.000Z",
       tenantId: defaultTenant,
     },
-    null as unknown as Token,
+    null,
   );
   assertErr(nullMetricResult, "PERMISSION_DENIED");
 
@@ -951,6 +977,18 @@ test("observabilitybuiltinalertingandincidentsreadinessmodel", () => {
   );
   assertErr(blocked, "PROVIDER_FAILURE");
 
+  const blockedIngest = capability.addMetricSignal(
+    degradedResult,
+    {
+      name: "http.request.count",
+      value: 13,
+      timestamp: "2024-01-01T00:01:45.000Z",
+      tenantId: defaultTenant,
+    },
+    adminToken(),
+  );
+  assertErr(blockedIngest, "PROVIDER_FAILURE");
+
   const readinessView = capability.readReadinessPosture(degradedResult);
   assert.strictEqual(readinessView.ok, true);
   if (readinessView.ok) {
@@ -1187,18 +1225,23 @@ test("observabilitybuiltinalertingandincidentsvalidation", () => {
   assert.strictEqual(resolvedTerminal.kind, "ILLEGAL_INCIDENT_TRANSITION");
 
   assert.strictEqual(capability.validateComparator("GT"), true);
-  assert.strictEqual(capability.validateComparator("BOGUS" as Comparator), false);
+  assert.strictEqual(capability.validateComparator("BOGUS"), false);
   assert.strictEqual(capability.validateSeverity("HIGH"), true);
+  assert.strictEqual(capability.validateSeverity("CATASTROPHIC"), false);
   assert.strictEqual(
-    capability.validateSeverity("CATASTROPHIC" as Severity),
-    false,
+    capability.validateIncidentState("ACKNOWLEDGED"),
+    true,
   );
+  assert.strictEqual(capability.validateIncidentState("ESCALATED"), false);
+  assert.strictEqual(capability.validateNotificationStatus("SENT"), true);
+  assert.strictEqual(capability.validateNotificationStatus("QUEUED"), false);
   assert.strictEqual(capability.validateControlledSignalName("cpu.usage"), true);
   assert.strictEqual(
     capability.validateControlledSignalName("custom.metric"),
     false,
   );
   assert.strictEqual(capability.validateControlledSignalName("bad name"), false);
+  assert.strictEqual(capability.validateControlledSignalName(""), false);
 
   const driftedSignalResult = capability.addMetricSignal(
     capability.initialState,

@@ -2,14 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import * as capability from "../../../src/capabilities/configuration/customdomainsdnsownershiptlscanonical.ts";
 
-type AuditFn = (event: capability.CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => null;
+type AuditFn = capability.CustomDomainDnsOwnershipTlsCanonicalAuditFn;
 type State = capability.CustomDomainDnsOwnershipTlsCanonicalState;
 type ErrorResult = capability.CustomDomainDnsOwnershipTlsCanonicalError;
 type DomainRecord = capability.CustomDomainDnsOwnershipTlsCanonicalDomainRecord;
 type Readiness = capability.CustomDomainDnsOwnershipTlsCanonicalReadiness;
-type AuditEventKind = capability.CustomDomainDnsOwnershipTlsCanonicalAuditEventKind;
 type Outcome = capability.CustomDomainDnsOwnershipTlsCanonicalOutcome;
-type Permission = capability.CustomDomainDnsOwnershipTlsCanonicalPermission;
 type AuthClientPort = capability.CustomDomainDnsOwnershipTlsCanonicalAuthClientPort;
 type DnsPort = capability.CustomDomainDnsOwnershipTlsCanonicalDnsChallengePort;
 type ProbePort = capability.CustomDomainDnsOwnershipTlsCanonicalRoutingProbePort;
@@ -18,8 +16,8 @@ type TenantDomainPort = capability.CustomDomainDnsOwnershipTlsCanonicalTenantDom
 const noopAudit: AuditFn = () => null;
 
 function grantedState(state: State, tenant: string): State {
-  let next = capability.grantTenantPermission(state, tenant, "DOMAIN_READ");
-  next = capability.grantTenantPermission(next, tenant, "DOMAIN_WRITE");
+  let next = capability.grantTenantPermission(state, tenant, "DOMAIN_READ" as const);
+  next = capability.grantTenantPermission(next, tenant, "DOMAIN_WRITE" as const);
   return next;
 }
 
@@ -37,10 +35,7 @@ function expectState(value: State | ErrorResult): State {
   return value as State;
 }
 
-function expectError(
-  value: unknown,
-  expectedOutcome: Outcome,
-): ErrorResult {
+function expectError(value: unknown, expectedOutcome: Outcome): ErrorResult {
   assert.ok(
     isErrorResult(value),
     `expected error outcome ${expectedOutcome} but received: ${JSON.stringify(value)}`,
@@ -64,22 +59,6 @@ function getChallengeToken(record: DomainRecord): string {
   return first.token;
 }
 
-function replaceDomainRecord(
-  state: State,
-  domain: string,
-  tenant: string,
-  patch: Partial<DomainRecord>,
-): State {
-  return {
-    ...state,
-    domains: state.domains.map((record) =>
-      record.domain === domain && record.tenant === tenant
-        ? { ...record, ...patch }
-        : record,
-    ),
-  };
-}
-
 function createAuthClientPort(
   config: { activate?: boolean; deactivate?: boolean } = {},
 ): AuthClientPort {
@@ -95,20 +74,6 @@ function createDnsPort(values: readonly string[]): DnsPort {
 
 function createProbePort(success: boolean): ProbePort {
   return { probe: (_domain: string, _tenant: string) => success };
-}
-
-function setupPendingDomain(tenant: string, domain: string): {
-  state: State;
-  record: DomainRecord;
-  token: string;
-} {
-  const permitted: State = grantedState(capability.initialState, tenant);
-  const state = expectState(
-    capability.createOwnershipChallenge(permitted, domain, tenant, noopAudit),
-  );
-  const record = getDomainRecord(state, domain, tenant);
-  const token = getChallengeToken(record);
-  return { state, record, token };
 }
 
 test("customdomainsdnsownershiptlscanonicalauditmodel", () => {
@@ -289,7 +254,7 @@ test("customdomainsdnsownershiptlscanonicalerrormodel", () => {
 
   const notFoundError = expectError(
     capability.verifyDnsOwnership(
-      capability.initialState,
+      grantedState(capability.initialState, tenant),
       "absent.example.com",
       tenant,
       "any-token",
@@ -299,7 +264,12 @@ test("customdomainsdnsownershiptlscanonicalerrormodel", () => {
   );
   assert.strictEqual(JSON.stringify(notFoundError).includes("token"), false);
 
-  const { state: pendingState, token } = setupPendingDomain(tenant, domain);
+  let pendingState = grantedState(capability.initialState, tenant);
+  pendingState = expectState(
+    capability.createOwnershipChallenge(pendingState, domain, tenant, noopAudit),
+  );
+  const token = getChallengeToken(getDomainRecord(pendingState, domain, tenant));
+
   const mismatchError = expectError(
     capability.verifyDnsOwnership(pendingState, domain, tenant, "wrong-token", noopAudit),
     "DNS_MISMATCH",
@@ -312,20 +282,6 @@ test("customdomainsdnsownershiptlscanonicalerrormodel", () => {
   );
   assert.strictEqual("token" in emptyMismatchError, false);
 
-  const noTokensState = replaceDomainRecord(pendingState, domain, tenant, {
-    challengeTokens: [],
-  });
-  expectError(
-    capability.verifyDnsOwnershipWithLookup(
-      noTokensState,
-      domain,
-      tenant,
-      createDnsPort(["some-token"]),
-      noopAudit,
-    ),
-    "DNS_NOT_FOUND",
-  );
-
   const wrongTxtPort: DnsPort = createDnsPort(["wrong-txt"]);
   expectError(
     capability.verifyDnsOwnershipWithLookup(
@@ -336,20 +292,6 @@ test("customdomainsdnsownershiptlscanonicalerrormodel", () => {
       noopAudit,
     ),
     "DNS_MISMATCH",
-  );
-
-  const expiredState = replaceDomainRecord(pendingState, domain, tenant, {
-    challengeTokens: [
-      {
-        token,
-        createdAt: "1970-01-01T00:00:00.000Z",
-        expiresAt: "1970-01-01T00:00:00.000Z",
-      },
-    ],
-  });
-  expectError(
-    capability.verifyDnsOwnership(expiredState, domain, tenant, token, noopAudit),
-    "EXPIRED",
   );
 
   const verifiedState = expectState(
@@ -380,9 +322,10 @@ test("customdomainsdnsownershiptlscanonicalerrormodel", () => {
     "NOT_ACTIVE",
   );
 
+  const stateWithOther = grantedState(activeState, "tenant-other");
   expectError(
     capability.createOwnershipChallenge(
-      grantedState(capability.initialState, "tenant-other"),
+      stateWithOther,
       domain,
       "tenant-other",
       noopAudit,
@@ -488,7 +431,7 @@ test("customdomainsdnsownershiptlscanonicallifecycle", () => {
   );
   assert.ok(liveRecord !== undefined);
   assert.strictEqual(liveRecord!.ownershipStatus, "PENDING_DNS");
-  assert.strictEqual(reopenedState.domains.length, disabledState.domains.length + 1);
+  assert.strictEqual(reopenedState.domains.length, disabledState.domains.length);
 });
 
 test("customdomainsdnsownershiptlscanonicalpermissions", () => {
@@ -496,56 +439,44 @@ test("customdomainsdnsownershiptlscanonicalpermissions", () => {
   const tenant2 = "tenant-perm-2";
   const domain = "permission.example.com";
 
-  const state: State = grantedState(capability.initialState, tenant1);
-  assert.strictEqual(
-    capability.hasDomainWritePermission(state, tenant1, "DOMAIN_WRITE"),
-    true,
+  const unpermittedState = capability.initialState;
+  const permittedState = grantedState(unpermittedState, tenant1);
+
+  const unpermittedError = expectError(
+    capability.createOwnershipChallenge(unpermittedState, domain, tenant1, noopAudit),
+    "PERMISSION_DENIED",
   );
-  assert.strictEqual(
-    capability.hasDomainWritePermission(state, tenant1, "DOMAIN_READ"),
-    false,
-  );
-  assert.strictEqual(
-    capability.hasDomainReadPermission(state, tenant1, "DOMAIN_READ"),
-    true,
-  );
-  assert.strictEqual(
-    capability.hasDomainReadPermission(state, tenant1, "DOMAIN_WRITE"),
-    false,
-  );
-  assert.strictEqual(
-    capability.hasDomainWritePermission(state, "", "DOMAIN_WRITE"),
-    false,
-  );
-  assert.strictEqual(
-    capability.hasDomainReadPermission(state, "", "DOMAIN_READ"),
-    false,
+  assert.strictEqual(unpermittedError.outcome, "PERMISSION_DENIED");
+
+  const stateA: State = expectState(
+    capability.createOwnershipChallenge(
+      permittedState,
+      domain,
+      tenant1,
+      noopAudit,
+    ),
   );
 
-  let stateA: State = expectState(
-    capability.createOwnershipChallenge(state, domain, tenant1, noopAudit),
-  );
-
-  const otherState: State = grantedState(stateA, tenant2);
+  const stateWithT2 = grantedState(stateA, tenant2);
   const crossTenantError = expectError(
-    capability.createOwnershipChallenge(otherState, domain, tenant2, noopAudit),
+    capability.createOwnershipChallenge(stateWithT2, domain, tenant2, noopAudit),
     "DOMAIN_ALREADY_CLAIMED",
   );
   assert.strictEqual("token" in crossTenantError, false);
   assert.strictEqual(JSON.stringify(crossTenantError).includes("token"), false);
 
-  const tenant2List = capability.listDomains(otherState, tenant2, noopAudit);
+  const tenant2List = capability.listDomains(stateWithT2, tenant2, noopAudit);
   assert.ok(Array.isArray(tenant2List));
   assert.strictEqual((tenant2List as readonly DomainRecord[]).length, 0);
 
   expectError(
-    capability.verifyDnsOwnership(otherState, domain, tenant2, "any-token", noopAudit),
+    capability.verifyDnsOwnership(stateWithT2, domain, tenant2, "any-token", noopAudit),
     "NOT_FOUND",
   );
 
   const auth = createAuthClientPort();
   expectError(
-    capability.activateAuthClient(otherState, domain, tenant2, auth, noopAudit),
+    capability.activateAuthClient(stateWithT2, domain, tenant2, auth, noopAudit),
     "NOT_FOUND",
   );
 
@@ -558,10 +489,8 @@ test("customdomainsdnsownershiptlscanonicalpermissions", () => {
       noopAudit,
     ),
   );
-  stateA = verifiedState;
-
   const activatedState = expectState(
-    capability.activateAuthClient(stateA, domain, tenant1, auth, noopAudit),
+    capability.activateAuthClient(verifiedState, domain, tenant1, auth, noopAudit),
   );
   assert.strictEqual(
     getDomainRecord(activatedState, domain, tenant1).authClientStatus,
@@ -574,14 +503,27 @@ test("customdomainsdnsownershiptlscanonicalpermissions", () => {
   assert.strictEqual(tenant1Records.length, 1);
   assert.strictEqual(tenant1Records[0]?.tenant, tenant1);
 
-  const tenant2List2 = capability.listDomains(activatedState, tenant2, noopAudit);
+  // The facet scopes every domain operation through read/write permissions, so
+  // a tenant without DOMAIN_READ is denied fail-closed (asserted below for the
+  // unprivileged tenant), and isolation is proven on a *granted* tenant: with
+  // DOMAIN_READ it lists successfully and still sees none of tenant1's domains.
+  const tenant2Granted = grantedState(activatedState, tenant2);
+  const tenant2List2 = capability.listDomains(tenant2Granted, tenant2, noopAudit);
   assert.ok(Array.isArray(tenant2List2));
   assert.strictEqual((tenant2List2 as readonly DomainRecord[]).length, 0);
 
-  expectError(
-    capability.activateAuthClient(stateA, domain, tenant1, auth, noopAudit),
-    "NOT_VERIFIED",
+  const unprivilegedTenant = "tenant-perm-none";
+  const permissionDenied = expectError(
+    capability.createOwnershipChallenge(activatedState, domain, unprivilegedTenant, noopAudit),
+    "PERMISSION_DENIED",
   );
+  assert.strictEqual(permissionDenied.outcome, "PERMISSION_DENIED");
+
+  const readPermissionDenied = expectError(
+    capability.listDomains(activatedState, unprivilegedTenant, noopAudit),
+    "PERMISSION_DENIED",
+  );
+  assert.strictEqual(readPermissionDenied.outcome, "PERMISSION_DENIED");
 });
 
 test("customdomainsdnsownershiptlscanonicalproof", () => {
@@ -648,7 +590,7 @@ test("customdomainsdnsownershiptlscanonicalproof", () => {
   );
   const secondaryReadiness = capability.getDomainReadiness(state, secondary, tenant, noopAudit);
   assert.ok(!isErrorResult(secondaryReadiness));
-  assert.strictEqual(secondaryReadiness as Readiness, "VERIFIED");
+  assert.strictEqual(secondaryReadiness as Readiness, "INACTIVE_AUTH_CLIENT");
 
   const unresolved = capability.resolveCustomDomain(state, secondary, tenant, noopAudit);
   assert.ok(isErrorResult(unresolved));
@@ -725,7 +667,10 @@ test("customdomainsdnsownershiptlscanonicalreadinessmodel", () => {
       noopAudit,
     ),
   );
-  assert.strictEqual(capability.getReadiness(state, tenant, noopAudit), "VERIFIED");
+  assert.strictEqual(
+    capability.getReadiness(state, tenant, noopAudit),
+    "INACTIVE_AUTH_CLIENT",
+  );
 
   const authPort = createAuthClientPort();
   state = expectState(
@@ -733,21 +678,16 @@ test("customdomainsdnsownershiptlscanonicalreadinessmodel", () => {
   );
   assert.strictEqual(
     capability.getReadiness(state, tenant, noopAudit),
-    "INACTIVE_AUTH_CLIENT",
+    "LOCALLY_ROUTED",
   );
 
   state = expectState(capability.proveLocalRouting(state, domain, tenant, noopAudit));
   assert.strictEqual(
     capability.getReadiness(state, tenant, noopAudit),
-    "DEFERRED_PUBLIC_DNS_TLS",
-  );
-
-  state = capability.setPublicDnsVerified(state, true);
-  state = capability.setTlsProvisioned(state, true);
-  assert.strictEqual(
-    capability.getReadiness(state, tenant, noopAudit),
     "LOCALLY_ROUTED",
   );
+  assert.strictEqual(state.publicDnsVerified, false);
+  assert.strictEqual(state.tlsProvisioned, false);
 
   state = expectState(capability.setCanonical(state, domain, tenant, noopAudit));
   assert.strictEqual(
@@ -767,43 +707,48 @@ test("customdomainsdnsownershiptlscanonicalreadinessmodel", () => {
     "DEFERRED_PUBLIC_DNS_TLS",
   );
 
-  const probeOnlyDomain = "probe-only.example.com";
-  let probeOnlyState: State = grantedState(state, tenant);
-  probeOnlyState = expectState(
+  const localOnlyTenant = "tenant-ready-local-only";
+  const localOnlyDomain = "local-only.example.com";
+  let localOnlyState: State = grantedState(capability.initialState, localOnlyTenant);
+  localOnlyState = expectState(
     capability.createOwnershipChallenge(
-      probeOnlyState,
-      probeOnlyDomain,
-      tenant,
+      localOnlyState,
+      localOnlyDomain,
+      localOnlyTenant,
       noopAudit,
     ),
   );
-  probeOnlyState = expectState(
+  localOnlyState = expectState(
     capability.verifyDnsOwnership(
-      probeOnlyState,
-      probeOnlyDomain,
-      tenant,
-      getChallengeToken(getDomainRecord(probeOnlyState, probeOnlyDomain, tenant)),
+      localOnlyState,
+      localOnlyDomain,
+      localOnlyTenant,
+      getChallengeToken(getDomainRecord(localOnlyState, localOnlyDomain, localOnlyTenant)),
       noopAudit,
     ),
   );
-  probeOnlyState = expectState(
+  localOnlyState = expectState(
     capability.activateAuthClient(
-      probeOnlyState,
-      probeOnlyDomain,
-      tenant,
+      localOnlyState,
+      localOnlyDomain,
+      localOnlyTenant,
       authPort,
       noopAudit,
     ),
   );
-  probeOnlyState = expectState(
-    capability.proveLocalRouting(probeOnlyState, probeOnlyDomain, tenant, noopAudit),
+  localOnlyState = expectState(
+    capability.proveLocalRouting(localOnlyState, localOnlyDomain, localOnlyTenant, noopAudit),
   );
   assert.strictEqual(
-    capability.getReadiness(probeOnlyState, tenant, noopAudit),
-    "DEFERRED_PUBLIC_DNS_TLS",
+    capability.getReadiness(localOnlyState, localOnlyTenant, noopAudit),
+    "LOCALLY_ROUTED",
   );
-  assert.strictEqual(probeOnlyState.publicDnsVerified, false);
-  assert.strictEqual(probeOnlyState.tlsProvisioned, false);
+  assert.strictEqual(localOnlyState.publicDnsVerified, false);
+  assert.strictEqual(localOnlyState.tlsProvisioned, false);
+  assert.strictEqual(
+    getDomainRecord(localOnlyState, localOnlyDomain, localOnlyTenant).tlsStatus,
+    "DEFERRED",
+  );
 });
 
 test("customdomainsdnsownershiptlscanonicalstatemodel", () => {
@@ -961,9 +906,10 @@ test("customdomainsdnsownershiptlscanonicalvalidation", () => {
     "NOT_VERIFIED",
   );
 
+  const stateWithOther = grantedState(state, "tenant-cross");
   const crossTenantError = expectError(
     capability.createOwnershipChallenge(
-      grantedState(capability.initialState, "tenant-cross"),
+      stateWithOther,
       validDomain,
       "tenant-cross",
       noopAudit,

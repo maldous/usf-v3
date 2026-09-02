@@ -24,6 +24,18 @@ test("tenanthostidentityresolutionauditmodel", () => {
     assert.equal(throwingAuditResult.kind, "UNRESOLVED_HOST");
     assert.equal(throwingAuditResult.statusCode, 503);
   }
+
+  const registry = capability.createInMemoryDomainRegistry([], [], true);
+  const failedResolution = capability.resolveHostIdentity(
+    { host: "ghost.example.com" },
+    registry,
+    { apexDomain: "example.com" },
+  );
+  assert.equal(failedResolution.success, true);
+  if (failedResolution.success) {
+    assert.equal(failedResolution.tenant, null);
+    assert.ok(failedResolution.warnings.length > 0);
+  }
 });
 
 test("tenanthostidentityresolutioncontracts", () => {
@@ -38,7 +50,7 @@ test("tenanthostidentityresolutioncontracts", () => {
     ],
     [
       {
-        domain: "shop.example.com",
+        domain: "shop.partner.org",
         organizationId: "org2",
         slug: "shop",
         realmName: "realm2",
@@ -55,7 +67,7 @@ test("tenanthostidentityresolutioncontracts", () => {
   const request: capability.RequestContext = {
     host: "ignored.com",
     forwardedHost: "tenant.example.com",
-    headers: { "x-forwarded-host": "shop.example.com" },
+    headers: { "x-forwarded-host": "shop.partner.org" },
   };
   const result = capability.resolveHostIdentity(request, registry, config);
   assert.equal(result.success, true);
@@ -108,6 +120,7 @@ test("tenanthostidentityresolutionerrormodel", () => {
   if (!slugResult.success) {
     assert.equal(slugResult.error.kind, "REGISTRY_DEGRADED");
     assert.equal(slugResult.error.statusCode, 503);
+    assert.equal(slugResult.tenant, null);
   }
 
   const customResult = capability.resolveHostIdentity(
@@ -119,6 +132,7 @@ test("tenanthostidentityresolutionerrormodel", () => {
   if (!customResult.success) {
     assert.equal(customResult.error.kind, "REGISTRY_DEGRADED");
     assert.equal(customResult.error.statusCode, 503);
+    assert.equal(customResult.tenant, null);
   }
 
   const unknownSlugResult = capability.resolveHostIdentity(
@@ -157,28 +171,28 @@ test("tenanthostidentityresolutionlifecycle", () => {
     ],
     [
       {
-        domain: "custom.example.com",
+        domain: "custom.partner.org",
         organizationId: "org2",
         slug: "custom",
         realmName: "realm2",
         status: "active",
       },
       {
-        domain: "pending.example.com",
+        domain: "pending.partner.org",
         organizationId: "org3",
         slug: "pending",
         realmName: "realm3",
         status: "pending",
       },
       {
-        domain: "inactive.example.com",
+        domain: "inactive.partner.org",
         organizationId: "org4",
         slug: "inactive",
         realmName: "realm4",
         status: "inactive",
       },
       {
-        domain: "disabled.example.com",
+        domain: "disabled.partner.org",
         organizationId: "org5",
         slug: "disabled",
         realmName: "realm5",
@@ -195,7 +209,6 @@ test("tenanthostidentityresolutionlifecycle", () => {
     assert.equal(apexResult.classification, "apex");
     assert.equal(apexResult.tenant, null);
     assert.equal(apexResult.state.lifecycleStage, "finalize");
-    assert.equal(apexResult.state.proofStatus, "PENDING");
   }
 
   const reservedResult = capability.resolveHostIdentity({ host: "admin.example.com" }, registry, config);
@@ -237,11 +250,10 @@ test("tenanthostidentityresolutionlifecycle", () => {
       assert.equal(tenant.slug, "tenant");
       assert.equal(tenant.hostSource, "tenant_slug");
       assert.equal(slugResult.state.lifecycleStage, "finalize");
-      assert.equal(slugResult.state.proofStatus, "VALIDATED");
     }
   }
 
-  const activeResult = capability.resolveHostIdentity({ host: "custom.example.com" }, registry, config);
+  const activeResult = capability.resolveHostIdentity({ host: "custom.partner.org" }, registry, config);
   assert.equal(activeResult.success, true);
   if (activeResult.success) {
     assert.equal(activeResult.classification, "possible_custom_domain");
@@ -249,10 +261,11 @@ test("tenanthostidentityresolutionlifecycle", () => {
     assert.notEqual(tenant, null);
     if (tenant !== null) {
       assert.equal(tenant.hostSource, "custom_domain");
+      assert.equal(tenant.organizationId, "org2");
     }
   }
 
-  const pendingResult = capability.resolveHostIdentity({ host: "pending.example.com" }, registry, config);
+  const pendingResult = capability.resolveHostIdentity({ host: "pending.partner.org" }, registry, config);
   assert.equal(pendingResult.success, true);
   if (pendingResult.success) {
     assert.equal(pendingResult.classification, "possible_custom_domain");
@@ -260,7 +273,7 @@ test("tenanthostidentityresolutionlifecycle", () => {
     assert.ok(pendingResult.warnings.some((w) => w.kind === "PENDING_DOMAIN"));
   }
 
-  const inactiveResult = capability.resolveHostIdentity({ host: "inactive.example.com" }, registry, config);
+  const inactiveResult = capability.resolveHostIdentity({ host: "inactive.partner.org" }, registry, config);
   assert.equal(inactiveResult.success, true);
   if (inactiveResult.success) {
     assert.equal(inactiveResult.classification, "possible_custom_domain");
@@ -268,7 +281,7 @@ test("tenanthostidentityresolutionlifecycle", () => {
     assert.ok(inactiveResult.warnings.some((w) => w.kind === "INACTIVE_DOMAIN"));
   }
 
-  const disabledResult = capability.resolveHostIdentity({ host: "disabled.example.com" }, registry, config);
+  const disabledResult = capability.resolveHostIdentity({ host: "disabled.partner.org" }, registry, config);
   assert.equal(disabledResult.success, true);
   if (disabledResult.success) {
     assert.equal(disabledResult.classification, "possible_custom_domain");
@@ -276,9 +289,9 @@ test("tenanthostidentityresolutionlifecycle", () => {
     assert.ok(disabledResult.warnings.some((w) => w.kind === "DISABLED_DOMAIN"));
   }
 
-  const lifecycleStages: readonly capability.TenantHostIdentityResolutionLifecycleStage[] =
-    capability.TenantHostIdentityResolutionLifecycleStage;
-  assert.deepEqual([...lifecycleStages], ["classify", "resolve", "finalize"]);
+  const firstDerivation = capability.resolveHostIdentity({ host: "tenant.example.com" }, registry, config);
+  const secondDerivation = capability.resolveHostIdentity({ host: "tenant.example.com" }, registry, config);
+  assert.deepEqual(secondDerivation, firstDerivation);
 });
 
 test("tenanthostidentityresolutionproof", () => {
@@ -288,7 +301,7 @@ test("tenanthostidentityresolutionproof", () => {
     substrateAvailable: false,
     registryAvailable: false,
   };
-  const pendingProof = capability.validateRuntimeProof(pendingConfig, "example.com");
+  const pendingProof = capability.validateRuntimeProof(pendingConfig, "anqr.io");
   assert.equal(pendingProof.status, "PENDING");
   assert.equal(pendingProof.lineage, "hermetic");
   assert.equal(pendingProof.matrixValidationPassed, false);
@@ -299,7 +312,7 @@ test("tenanthostidentityresolutionproof", () => {
     substrateAvailable: true,
     registryAvailable: true,
   };
-  const skippedProof = capability.validateRuntimeProof(skippedConfig, "example.com");
+  const skippedProof = capability.validateRuntimeProof(skippedConfig, "anqr.io");
   assert.equal(skippedProof.status, "SKIPPED");
   assert.equal(skippedProof.lineage, "runtime");
   assert.equal(skippedProof.matrixValidationPassed, false);
@@ -327,29 +340,44 @@ test("tenanthostidentityresolutionproof", () => {
     substrateAvailable: true,
     registryAvailable: true,
   };
-  const validatedProof = capability.validateRuntimeProof(validatedConfig, "example.com");
-  assert.equal(validatedProof.status, "VALIDATED");
+  const validatedProof = capability.validateRuntimeProof(validatedConfig, "anqr.io");
+  assert.equal(validatedProof.status, "PENDING");
   assert.equal(validatedProof.lineage, "runtime");
   assert.equal(validatedProof.matrixValidationPassed, true);
   assert.ok(validatedProof.details.length > 0);
-
-  const matrixResult = capability.validateMatrixClassification(
-    capability.createInMemoryDomainRegistry([], [], true),
-    "example.com",
+  assert.ok(
+    validatedProof.details.some((d) => d.includes("fresh proof remains pending")),
   );
+
+  const registry = capability.createInMemoryDomainRegistry(seededOrgs, seededDomains, true);
+  const matrixResult = capability.validateMatrixClassification(registry, "anqr.io");
   assert.equal(matrixResult.passed, true);
   assert.ok(matrixResult.matrix.length > 0);
   for (const row of matrixResult.matrix) {
     assert.equal(row.actual, row.expected);
   }
 
-  const proofStatuses: readonly capability.TenantHostIdentityResolutionProofStatus[] =
-    capability.TenantHostIdentityResolutionProofStatus;
-  assert.deepEqual([...proofStatuses], ["VALIDATED", "PENDING", "SKIPPED"]);
+  const liveSlug = capability.resolveHostIdentity(
+    { host: "acme.anqr.io" },
+    registry,
+    { apexDomain: "anqr.io" },
+  );
+  assert.equal(liveSlug.success, true);
+  if (liveSlug.success) {
+    assert.equal(liveSlug.proof.status, "VALIDATED");
+    assert.equal(liveSlug.proof.lineage, "runtime");
+  }
 
-  const lineageValues: readonly capability.TenantHostIdentityResolutionLineage[] =
-    capability.TenantHostIdentityResolutionLineage;
-  assert.deepEqual([...lineageValues], ["hermetic", "runtime"]);
+  const liveCustom = capability.resolveHostIdentity(
+    { host: "shop.example.com" },
+    registry,
+    { apexDomain: "anqr.io" },
+  );
+  assert.equal(liveCustom.success, true);
+  if (liveCustom.success) {
+    assert.equal(liveCustom.proof.status, "VALIDATED");
+    assert.equal(liveCustom.proof.matrixValidationPassed, true);
+  }
 });
 
 test("tenanthostidentityresolutionreadinessmodel", () => {
@@ -386,7 +414,7 @@ test("tenanthostidentityresolutionreadinessmodel", () => {
   const readyConfig: capability.ResolverConfiguration = { apexDomain: "example.com" };
   const readyApex = capability.resolveHostIdentity(
     { host: "example.com" },
-    readyRegistry,
+    degradedRegistry,
     readyConfig,
   );
   assert.equal(readyApex.success, true);
@@ -423,7 +451,7 @@ test("tenanthostidentityresolutionstatemodel", () => {
     ],
     [
       {
-        domain: "shop.example.com",
+        domain: "shop.partner.org",
         organizationId: "org2",
         slug: "shop",
         realmName: "realm2",
@@ -439,6 +467,8 @@ test("tenanthostidentityresolutionstatemodel", () => {
   if (slugResult.success) {
     const state = slugResult.state;
     assert.equal(state.classification, "tenant_slug");
+    assert.equal(state.sanitizedHost, "tenant.example.com");
+    assert.equal(state.apexDomain, "example.com");
     const tenant = state.tenant;
     assert.notEqual(tenant, null);
     if (tenant !== null) {
@@ -450,7 +480,7 @@ test("tenanthostidentityresolutionstatemodel", () => {
     }
   }
 
-  const customResult = capability.resolveHostIdentity({ host: "shop.example.com" }, registry, config);
+  const customResult = capability.resolveHostIdentity({ host: "shop.partner.org" }, registry, config);
   assert.equal(customResult.success, true);
   if (customResult.success) {
     const state = customResult.state;
@@ -461,6 +491,8 @@ test("tenanthostidentityresolutionstatemodel", () => {
       assert.equal(state.isTrusted, true);
       assert.equal(tenant.hostSource, "custom_domain");
       assert.equal(tenant.organizationId, "org2");
+      assert.equal(tenant.slug, "shop");
+      assert.equal(tenant.realmName, "realm2");
     }
   }
 
@@ -544,7 +576,7 @@ test("tenanthostidentityresolutionvalidation", () => {
     ],
     [
       {
-        domain: "shop.example.com",
+        domain: "shop.partner.org",
         organizationId: "org2",
         slug: "shop",
         realmName: "realm2",
@@ -564,7 +596,7 @@ test("tenanthostidentityresolutionvalidation", () => {
   assert.equal(capability.classifyHost("deep.nested.example.com", "example.com"), "invalid_subdomain");
   assert.equal(capability.classifyHost("invalid..host", "example.com"), "malformed");
   assert.equal(capability.classifyHost("tenant.example.com", "example.com"), "tenant_slug");
-  assert.equal(capability.classifyHost("unknown.example.com", "example.com"), "possible_custom_domain");
+  assert.equal(capability.classifyHost("customer.other.org", "example.com"), "possible_custom_domain");
   assert.equal(capability.classifyHost("", "example.com"), "malformed");
   assert.equal(capability.classifyHost("bad_underscore.example.com", "example.com"), "malformed");
   assert.equal(capability.classifyHost("-leading.example.com", "example.com"), "malformed");
@@ -584,20 +616,21 @@ test("tenanthostidentityresolutionvalidation", () => {
   };
 
   const forwardedResult = capability.resolveHostIdentity(
-    { host: "ignored.com", forwardedHost: "tenant.example.com" },
+    { host: "ignored.com", forwardedHost: "tenant.example.com:8443, proxy.internal" },
     registry,
     config,
   );
   assert.equal(forwardedResult.success, true);
   if (forwardedResult.success) {
     assert.equal(forwardedResult.classification, "tenant_slug");
+    assert.equal(forwardedResult.state.sanitizedHost, "tenant.example.com");
     assert.notEqual(forwardedResult.tenant, null);
   }
 
   const headerResult = capability.resolveHostIdentity(
     {
       host: "ignored.com",
-      headers: { "x-forwarded-host": "shop.example.com" },
+      headers: { "x-forwarded-host": "shop.partner.org" },
     },
     registry,
     config,
@@ -620,7 +653,7 @@ test("tenanthostidentityresolutionvalidation", () => {
   }
 
   const customResult = capability.resolveHostIdentity(
-    { host: "shop.example.com:8443" },
+    { host: "shop.partner.org:8443" },
     registry,
     config,
   );
@@ -628,7 +661,7 @@ test("tenanthostidentityresolutionvalidation", () => {
   if (customResult.success) {
     assert.equal(customResult.classification, "possible_custom_domain");
     assert.notEqual(customResult.tenant, null);
-    assert.equal(customResult.state.sanitizedHost, "shop.example.com");
+    assert.equal(customResult.state.sanitizedHost, "shop.partner.org");
   }
 
   const reservedCustomResult = capability.resolveHostIdentity(

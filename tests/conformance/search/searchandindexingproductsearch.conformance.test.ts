@@ -222,10 +222,32 @@ test("searchandindexingproductsearcherrormodel", () => {
     indexMutationClosed: true,
     readinessProbeFailed: false
   };
-  const degradedIndexResult = capability.indexDocument(degradedState, tenantDoc, () => null);
+  const freshDoc: capability.IndexedDocument = {
+    tenantId: "t1",
+    organisationId: "o1",
+    documentId: "d-fresh",
+    documentType: "note",
+    title: "Fresh",
+    searchVector: "vector",
+    indexName: "idx",
+    url: "http://example.com/fresh",
+    metadata: {}
+  };
+  const degradedIndexResult = capability.indexDocument(degradedState, freshDoc, () => null);
   assert.strictEqual(degradedIndexResult.ok, false);
   if (degradedIndexResult.ok) throw new Error("Expected mutation disabled on degraded");
   assert.strictEqual(degradedIndexResult.error.kind, "INDEX_MUTATION_DISABLED");
+  assert.strictEqual(degradedIndexResult.error.tenantId, "t1");
+  assert.strictEqual(degradedIndexResult.error.organisationId, "o1");
+
+  const degradedSearchResult = capability.performSearch(degradedState, {
+    tenantId: "t1",
+    organisationId: "o1",
+    query: "test"
+  });
+  assert.strictEqual(degradedSearchResult.ok, false);
+  if (degradedSearchResult.ok) throw new Error("Expected degraded search failure");
+  assert.strictEqual(degradedSearchResult.error.kind, "SEARCH_ENGINE_DEGRADED");
 
   const secretDoc: capability.IndexedDocument = {
     tenantId: "t1",
@@ -242,6 +264,11 @@ test("searchandindexingproductsearcherrormodel", () => {
   assert.strictEqual(secretResult.ok, false);
   if (secretResult.ok) throw new Error("Expected secret rejection");
   assert.strictEqual(secretResult.error.kind, "SECRET_FIELD_DETECTED");
+
+  const remapResult = capability.reindexTenant(readyState, "t2", "o2", [tenantDoc], () => null);
+  assert.strictEqual(remapResult.ok, false);
+  if (remapResult.ok) throw new Error("Expected tenant isolation violation");
+  assert.strictEqual(remapResult.error.kind, "TENANT_ISOLATION_VIOLATION");
 
   const providerError = capability.evaluateProviderFailure("t1", "o1", "connection refused");
   assert.strictEqual(providerError.kind, "SEARCH_ENGINE_UNAVAILABLE");
@@ -358,6 +385,7 @@ test("searchandindexingproductsearchpermissions", () => {
   assert.strictEqual(deniedResult.results.length, 1);
   assert.strictEqual(deniedResult.results[0]?.decision, "GRANTED");
   assert.strictEqual(deniedResult.results[0]?.document.documentId, "d1");
+  assert.strictEqual(capability.evaluatePermissionGate(privateDoc, deniedQuery), "DENIED");
 
   const noKeyQuery: capability.SearchQuery = {
     tenantId: "t1",
@@ -680,6 +708,10 @@ test("searchandindexingproductsearchvalidation", () => {
     documentId: "d1"
   };
   assert.strictEqual(capability.validateDocumentShape(invalidShape), false);
+  const invalidIndexResult = capability.indexDocument(state, invalidShape, () => null);
+  assert.strictEqual(invalidIndexResult.ok, false);
+  if (invalidIndexResult.ok) throw new Error("Expected shape rejection");
+  assert.strictEqual(invalidIndexResult.error.kind, "DOCUMENT_VALIDATION_FAILURE");
 
   const duplicateDoc: capability.IndexedDocument = {
     tenantId: "t1",

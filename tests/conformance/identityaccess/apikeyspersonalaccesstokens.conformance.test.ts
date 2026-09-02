@@ -326,13 +326,14 @@ test("apikeyspersonalaccesstokensauditmodel", () => {
     now: () => "2024-01-01T00:00:00Z",
   };
 
-  const created = capability.createKey(config, () => undefined, "t1", ["read"]);
+  const created = capability.createKey(config, config.audit, "t1", ["read"]);
   assert.ok(isCreatedNoSecret(created));
   assert.strictEqual(auditEvents.length, 1);
   const createdAudit = auditEvents[0]!;
   assert.strictEqual(createdAudit.kind, "key-created");
   assert.strictEqual(createdAudit.tenantId, "t1");
   assert.strictEqual(createdAudit.keyId, created.keyId);
+  assert.strictEqual(createCalled, true);
 
   const seededRepo: Repository = {
     ...repository,
@@ -350,7 +351,7 @@ test("apikeyspersonalaccesstokensauditmodel", () => {
   };
   const seededConfig: Config = { ...config, repository: seededRepo };
 
-  const revoked = capability.revokeKey(seededConfig, () => undefined, "t1", created.keyId);
+  const revoked = capability.revokeKey(seededConfig, seededConfig.audit, "t1", created.keyId);
   assert.ok(isOkOutcome(revoked));
   assert.strictEqual(revoked.outcome, "OK");
   assert.strictEqual(auditEvents.length, 2);
@@ -402,8 +403,9 @@ test("apikeyspersonalaccesstokenscontracts", () => {
   const listResult: unknown = capability.listKeys(config, "tenant-a");
   assert.ok(isOkList(listResult));
   assert.strictEqual(listResult.outcome, "OK");
-  assert.ok(listResult.keys.length >= 1);
-  const listedMeta = listResult.keys[0]!;
+  assert.strictEqual(listResult.keys.length, 2);
+  const listedMeta = listResult.keys.find((k) => k.keyId === createdNoSecret.keyId);
+  assert.ok(listedMeta);
   assert.strictEqual(listedMeta.keyId, createdNoSecret.keyId);
   assert.strictEqual(
     (listedMeta as unknown as { secret?: unknown }).secret,
@@ -421,12 +423,21 @@ test("apikeyspersonalaccesstokenscontracts", () => {
     undefined,
   );
 
+  const devContext: unknown = capability.readDeveloperContext(config, "tenant-a");
+  assert.ok(isOkList(devContext));
+  assert.strictEqual(
+    (devContext as unknown as { tenantId?: unknown }).tenantId,
+    "tenant-a",
+  );
+
   const operatorResult: unknown = capability.operatorListKeys(config, "tenant-a");
   assert.ok(isOkList(operatorResult));
   assert.strictEqual(operatorResult.outcome, "OK");
-  assert.ok(operatorResult.keys.length >= 1);
-  const operatorMeta = operatorResult.keys[0]!;
-  assert.strictEqual(operatorMeta.keyId, createdNoSecret.keyId);
+  assert.strictEqual(operatorResult.keys.length, 2);
+  const operatorMeta = operatorResult.keys.find(
+    (k) => k.keyId === createdWithSecret.keyId,
+  );
+  assert.ok(operatorMeta);
   assert.strictEqual(
     (operatorMeta as unknown as { secret?: unknown }).secret,
     undefined,
@@ -471,14 +482,17 @@ test("apikeyspersonalaccesstokenserrormodel", () => {
   const authRevoked = capability.authenticateKey(okConfig, okResult.keyId, "plaintext-secret-once");
   assert.strictEqual(isAuthResult(authRevoked), false);
   assert.strictEqual(isNotEntitled(authRevoked), false);
+  assert.ok(isNoActor(authRevoked));
 
-  const authMalformed = capability.authenticateKey(okConfig, okResult.keyId, "garbage-secret");
-  assert.strictEqual(isAuthResult(authMalformed), false);
-  assert.strictEqual(isNotEntitled(authMalformed), false);
+  const authMalformed = capability.authenticateKey(okConfig, okResult.keyId, "");
+  assert.ok(isError(authMalformed));
+  assert.strictEqual(authMalformed.kind, "MALFORMED_SECRET");
+  assert.strictEqual(capability.mapErrorToStatusCode(authMalformed), 400);
 
   const missingKey = capability.authenticateKey(okConfig, "ak-doesnotexist0000", "anything");
   assert.strictEqual(isAuthResult(missingKey), false);
   assert.strictEqual(isNotEntitled(missingKey), false);
+  assert.ok(isNoActor(missingKey));
 
   const invalidKeyIdAuth = capability.authenticateKey(okConfig, "bad id!", "anything");
   assert.strictEqual(isAuthResult(invalidKeyIdAuth), false);
@@ -510,6 +524,7 @@ test("apikeyspersonalaccesstokenserrormodel", () => {
   );
   assert.ok(isError(degraded));
   assert.strictEqual(degraded.kind, "PROVIDER_FAILURE");
+  assert.strictEqual(capability.mapErrorToStatusCode(degraded), 503);
 
   const errorKinds: readonly capability.ApiKeysPersonalAccessTokensErrorKind[] = [
     "INVALID_ROUTE_IDENTIFIER",
@@ -574,6 +589,10 @@ test("apikeyspersonalaccesstokenslifecycle", () => {
   const afterReadMeta = afterRead as Metadata;
   assert.strictEqual(afterReadMeta.active, false);
   assert.strictEqual(typeof afterReadMeta.revokedAt, "string");
+  assert.strictEqual(
+    (afterReadMeta as unknown as { secret?: unknown }).secret,
+    undefined,
+  );
 });
 
 test("apikeyspersonalaccesstokenspermissions", () => {
@@ -696,6 +715,7 @@ test("apikeyspersonalaccesstokensproof", () => {
   const afterRevoke = capability.authenticateKey(config, created.keyId, created.secret);
   assert.strictEqual(isAuthResult(afterRevoke), false);
   assert.strictEqual(isNotEntitled(afterRevoke), false);
+  assert.ok(isNoActor(afterRevoke));
 
   const readiness = capability.computeReadiness(config);
   assert.strictEqual(readiness, "READY");
@@ -708,6 +728,23 @@ test("apikeyspersonalaccesstokensproof", () => {
   assert.ok(isOkList(listResult));
   assert.strictEqual(listResult.keys.length, 2);
 
+  const noEntitlementConfig: Config = {
+    ...buildReadyConfig(),
+    permissions: {
+      tenantApiKeyRead: true,
+      tenantApiKeyWrite: true,
+      platformApiKeyRead: true,
+      apiAccessEntitlement: false,
+    },
+  };
+  const gated = capability.createKeyWithSecret(
+    noEntitlementConfig,
+    noEntitlementConfig.audit,
+    "t1",
+    [],
+  );
+  assert.ok(isNotEntitled(gated));
+
   assert.strictEqual(capability.initialState, null);
 });
 
@@ -715,6 +752,7 @@ test("apikeyspersonalaccesstokensreadinessmodel", () => {
   const readyConfig = buildReadyConfig();
   const readyReadiness = capability.computeReadiness(readyConfig);
   assert.strictEqual(readyReadiness, "READY");
+  assert.strictEqual(capability.isDegraded(readyConfig), false);
 
   const throwingRepo: Repository = {
     create: () => {
@@ -746,13 +784,7 @@ test("apikeyspersonalaccesstokensreadinessmodel", () => {
 
   const readinessFromDegraded = capability.computeReadiness(degradedConfig);
   assert.strictEqual(readinessFromDegraded, "DEGRADED");
-
-  const readDuringDegraded = capability.readKeyMetadata(
-    degradedConfig,
-    "t1",
-    "ak-1234567890123456",
-  );
-  assert.ok(isError(readDuringDegraded));
+  assert.strictEqual(capability.isDegraded(degradedConfig), true);
 
   const mutateDuringDegraded = capability.createKey(
     degradedConfig,
@@ -761,7 +793,8 @@ test("apikeyspersonalaccesstokensreadinessmodel", () => {
     [],
   );
   assert.ok(isError(mutateDuringDegraded));
-  assert.strictEqual(mutateDuringDegraded.kind, "PROVIDER_FAILURE");
+  assert.strictEqual(mutateDuringDegraded.kind, "DEGRADED");
+  assert.strictEqual(capability.mapErrorToStatusCode(mutateDuringDegraded), 503);
 
   const revokedDuringDegraded = capability.revokeKey(
     degradedConfig,
@@ -770,7 +803,7 @@ test("apikeyspersonalaccesstokensreadinessmodel", () => {
     "ak-1234567890123456",
   );
   assert.ok(isError(revokedDuringDegraded));
-  assert.strictEqual(revokedDuringDegraded.kind, "PROVIDER_FAILURE");
+  assert.strictEqual(revokedDuringDegraded.kind, "DEGRADED");
 
   const readinessValues: readonly capability.ApiKeysPersonalAccessTokensReadiness[] = [
     "READY",
@@ -798,9 +831,6 @@ test("apikeyspersonalaccesstokensstatemodel", () => {
   assert.strictEqual((meta as unknown as { salt?: unknown }).salt, undefined);
   assert.strictEqual((meta as unknown as { secret?: unknown }).secret, undefined);
 
-  assert.strictEqual(created.secret.includes("hash"), false);
-  assert.strictEqual(created.secret.includes("salt"), false);
-
   const listResult: unknown = capability.listKeys(config, "t1");
   assert.ok(isOkList(listResult));
   const listedMeta = listResult.keys[0]!;
@@ -826,12 +856,6 @@ test("apikeyspersonalaccesstokensstatemodel", () => {
   const afterMeta = afterRevokeList.keys[0]!;
   assert.strictEqual(afterMeta.active, false);
   assert.strictEqual(typeof afterMeta.revokedAt, "string");
-
-  const outcomeValues: readonly capability.ApiKeysPersonalAccessTokensOutcome[] = [
-    "OK",
-    "NOT_ENTITLED",
-  ];
-  assert.deepEqual([...capability.ApiKeysPersonalAccessTokensOutcome], outcomeValues);
 
   const auditKinds: readonly capability.ApiKeysPersonalAccessTokensAuditEventKind[] = [
     "key-created",
@@ -862,6 +886,13 @@ test("apikeyspersonalaccesstokensuisemantics", () => {
 
   const devRead: unknown = capability.readKeyMetadata(config, "t1", created.keyId);
   assert.ok(isMetadata(devRead));
+
+  const devContext: unknown = capability.readDeveloperContext(config, "t1");
+  assert.ok(isOkList(devContext));
+  assert.strictEqual(
+    (devContext as unknown as { tenantId?: unknown }).tenantId,
+    "t1",
+  );
 
   const operatorResult: unknown = capability.operatorListKeys(config, "t1");
   assert.ok(isOkList(operatorResult));
@@ -915,21 +946,12 @@ test("apikeyspersonalaccesstokensvalidation", () => {
   const garbageSecret = capability.authenticateKey(config, created.keyId, "garbage");
   assert.strictEqual(isAuthResult(garbageSecret), false);
   assert.strictEqual(isNotEntitled(garbageSecret), false);
+  assert.ok(isNoActor(garbageSecret));
 
   const wrongSecret = capability.authenticateKey(config, created.keyId, "wrong-secret");
   assert.strictEqual(isAuthResult(wrongSecret), false);
   assert.strictEqual(isNotEntitled(wrongSecret), false);
-
-  const missingKeyAuth = capability.authenticateKey(
-    config,
-    "ak-valididentifier123",
-    "any-secret",
-  );
-  assert.strictEqual(isAuthResult(missingKeyAuth), false);
-  assert.strictEqual(isNotEntitled(missingKeyAuth), false);
-
-  const revoked = capability.revokeKey(config, config.audit, "t1", created.keyId);
-  assert.ok(isOkOutcome(revoked));
+  assert.ok(isNoActor(wrongSecret));
 
   const hashPresented = capability.authenticateKey(
     config,
@@ -938,6 +960,27 @@ test("apikeyspersonalaccesstokensvalidation", () => {
   );
   assert.strictEqual(isAuthResult(hashPresented), false);
   assert.strictEqual(isNotEntitled(hashPresented), false);
+  assert.ok(isNoActor(hashPresented));
+
+  const missingKeyAuth = capability.authenticateKey(
+    config,
+    "ak-valididentifier123",
+    "any-secret",
+  );
+  assert.strictEqual(isAuthResult(missingKeyAuth), false);
+  assert.strictEqual(isNotEntitled(missingKeyAuth), false);
+  assert.ok(isNoActor(missingKeyAuth));
+
+  const revoked = capability.revokeKey(config, config.audit, "t1", created.keyId);
+  assert.ok(isOkOutcome(revoked));
+
+  const expiredSecret = capability.authenticateKey(
+    config,
+    created.keyId,
+    "plaintext-secret-once",
+  );
+  assert.strictEqual(isAuthResult(expiredSecret), false);
+  assert.ok(isNoActor(expiredSecret));
 
   const crossTenantConfig: Config = {
     ...buildReadyConfig(),

@@ -363,17 +363,25 @@ function performAuditOrFail(
   return null;
 }
 
+export function tenantHasDomainPermission(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  permission: CustomDomainDnsOwnershipTlsCanonicalPermission,
+): boolean {
+  const safe = asState(state);
+  if (typeof tenant !== 'string' || tenant.length === 0) return false;
+  const tp = safe.tenantPermissions.find((p) => p.tenant === tenant);
+  if (tp === undefined) return false;
+  return tp.permissions.has(permission);
+}
+
 export function hasDomainReadPermission(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   tenant: string,
   permission: CustomDomainDnsOwnershipTlsCanonicalPermission,
 ): boolean {
   if (permission !== 'DOMAIN_READ') return false;
-  if (typeof tenant !== 'string' || tenant.length === 0) return false;
-  const safe = asState(state);
-  const tp = safe.tenantPermissions.find((p) => p.tenant === tenant);
-  if (tp === undefined) return false;
-  return tp.permissions.has('DOMAIN_READ');
+  return tenantHasDomainPermission(state, tenant, 'DOMAIN_READ');
 }
 
 export function hasDomainWritePermission(
@@ -382,11 +390,15 @@ export function hasDomainWritePermission(
   permission: CustomDomainDnsOwnershipTlsCanonicalPermission,
 ): boolean {
   if (permission !== 'DOMAIN_WRITE') return false;
-  if (typeof tenant !== 'string' || tenant.length === 0) return false;
-  const safe = asState(state);
-  const tp = safe.tenantPermissions.find((p) => p.tenant === tenant);
-  if (tp === undefined) return false;
-  return tp.permissions.has('DOMAIN_WRITE');
+  return tenantHasDomainPermission(state, tenant, 'DOMAIN_WRITE');
+}
+
+export function tenantHasPermission(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  permission: CustomDomainDnsOwnershipTlsCanonicalPermission,
+): boolean {
+  return tenantHasDomainPermission(state, tenant, permission);
 }
 
 export function checkDomainReadPermission(
@@ -1521,6 +1533,18 @@ export function grantTenantPermission(
   };
 }
 
+export function grantTenantPermissions(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  permissions: readonly CustomDomainDnsOwnershipTlsCanonicalPermission[],
+): CustomDomainDnsOwnershipTlsCanonicalState {
+  let working = state;
+  for (const permission of permissions) {
+    working = grantTenantPermission(working, tenant, permission);
+  }
+  return working;
+}
+
 function cryptoRandomUuid(): string {
   const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
   if (c !== undefined && typeof c.randomUUID === 'function') {
@@ -1558,7 +1582,7 @@ export function runDomainChallengeAndVerificationProof(
   auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
   const safe = asState(state);
-  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const withPerms = grantTenantPermissions(safe, tenant, ['DOMAIN_WRITE', 'DOMAIN_READ']);
   const created = createOwnershipChallenge(withPerms, 'proof.example.com', tenant, auditFn);
   if ('outcome' in created) return created;
   const tokens = created.domains.find(
@@ -1580,7 +1604,7 @@ export function runLocalRoutingProof(
   auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
   const safe = asState(state);
-  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const withPerms = grantTenantPermissions(safe, tenant, ['DOMAIN_WRITE', 'DOMAIN_READ']);
   const created = createOwnershipChallenge(withPerms, 'route.example.com', tenant, auditFn);
   if ('outcome' in created) return created;
   const tokens = created.domains.find(
@@ -1610,7 +1634,7 @@ export function runCanonicalCutoverProof(
   auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
   const safe = asState(state);
-  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const withPerms = grantTenantPermissions(safe, tenant, ['DOMAIN_WRITE', 'DOMAIN_READ']);
   const created = createOwnershipChallenge(withPerms, 'canonical.example.com', tenant, auditFn);
   if ('outcome' in created) return created;
   const tokens = created.domains.find(
@@ -1654,7 +1678,7 @@ export function runClaimLifecycleProof(
   auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
   const safe = asState(state);
-  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const withPerms = grantTenantPermissions(safe, tenant, ['DOMAIN_WRITE', 'DOMAIN_READ']);
   const created = createOwnershipChallenge(withPerms, 'lifecycle.example.com', tenant, auditFn);
   if ('outcome' in created) return created;
   const authPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort = {
@@ -1692,8 +1716,7 @@ export function runCustomDomainResolutionProof(
   | CustomDomainDnsOwnershipTlsCanonicalError {
   const routingResult = runLocalRoutingProof(state, tenant, auditFn);
   if ('outcome' in routingResult) return routingResult;
-  const withRead = grantTenantPermission(routingResult, tenant, 'DOMAIN_READ');
-  const resolved = resolveCustomDomain(withRead, 'route.example.com', tenant, auditFn);
+  const resolved = resolveCustomDomain(routingResult, 'route.example.com', tenant, auditFn);
   if ('outcome' in resolved) return resolved;
   return { outcome: 'SUCCESS', state: routingResult };
 }
@@ -1709,7 +1732,7 @@ export function runCustomDomainAuthOriginProof(
     }
   | CustomDomainDnsOwnershipTlsCanonicalError {
   const safe = asState(state);
-  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const withPerms = grantTenantPermissions(safe, tenant, ['DOMAIN_WRITE', 'DOMAIN_READ']);
   const created = createOwnershipChallenge(withPerms, 'auth.example.com', tenant, auditFn);
   if ('outcome' in created) return created;
   const tokens = created.domains.find(
@@ -1730,8 +1753,7 @@ export function runCustomDomainAuthOriginProof(
   };
   const activated = activateAuthClient(verified, 'auth.example.com', tenant, authPort, auditFn);
   if ('outcome' in activated) return activated;
-  const withRead = grantTenantPermission(activated, tenant, 'DOMAIN_READ');
-  const origin = resolveCustomDomainAuthOrigin(withRead, 'auth.example.com', tenant, auditFn);
+  const origin = resolveCustomDomainAuthOrigin(activated, 'auth.example.com', tenant, auditFn);
   if ('outcome' in origin) return origin;
   return { outcome: 'SUCCESS', state: activated };
 }

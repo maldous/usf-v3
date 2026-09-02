@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import * as capability from "../../../src/capabilities/configuration/brandingandtheming.ts";
 
-// Helper token factories
 const writeToken = (tenantId: string): Readonly<Record<string, unknown>> => ({
   tenantId,
   permissions: ["configuration:write", "configuration:read"] as const,
@@ -12,7 +11,6 @@ const readToken = (tenantId: string): Readonly<Record<string, unknown>> => ({
   permissions: ["configuration:read"] as const,
 });
 
-// brandingandthemingauditmodel
 test("brandingandthemingauditmodel", () => {
   const auditEvents: capability.BrandingAndThemingAuditEvent[] = [];
   const auditFn: capability.BrandingAndThemingAuditFn = (event) => {
@@ -22,7 +20,6 @@ test("brandingandthemingauditmodel", () => {
 
   const baseState: capability.BrandingAndThemingState = capability.initialState;
 
-  // Create a definition
   const createResult = capability.createBrandingDefinition(
     "tenant-audit",
     { applicationName: "Original", themeSelection: "light" },
@@ -35,7 +32,6 @@ test("brandingandthemingauditmodel", () => {
   assert.equal(auditEvents[0].action, "value-changed");
   assert.equal(auditEvents[0].tenantId, "tenant-audit");
 
-  // Patch the definition
   const patchResult = capability.patchBrandingDefinition(
     "tenant-audit",
     { applicationName: "Renamed", themeSelection: "dark" },
@@ -47,7 +43,6 @@ test("brandingandthemingauditmodel", () => {
   assert.equal(auditEvents.length, 2);
   assert.equal(auditEvents[1].action, "value-changed");
 
-  // Delete the definition
   const deleteResult = capability.deleteBrandingDefinition(
     "tenant-audit",
     writeToken("tenant-audit"),
@@ -58,14 +53,12 @@ test("brandingandthemingauditmodel", () => {
   assert.equal(auditEvents.length, 3);
   assert.equal(auditEvents[2].action, "value-cleared");
 
-  // Verify readBootstrapTheme does not emit audit
   const beforeRead = auditEvents.length;
   const readResult = capability.readBootstrapTheme("somehost.example", baseState);
   assert.ok(readResult.kind === "SUCCESS" || readResult.kind === "FALLBACK");
   assert.equal(auditEvents.length, beforeRead);
 });
 
-// brandingandthemingcontracts
 test("brandingandthemingcontracts", () => {
   const adapter = capability.brandingAndThemingConfigurationStoreAdapter;
   const check = capability.checkContracts(adapter);
@@ -98,25 +91,32 @@ test("brandingandthemingcontracts", () => {
   assert.equal(check.bootstrapUnauthenticated, true);
 });
 
-// brandingandthemingerrormodel
 test("brandingandthemingerrormodel", () => {
-  // Theme read failures are non‑blocking (fallback)
   const fallbackResult = capability.getEffectiveTheme("unknownhost.example");
   assert.equal(fallbackResult.kind, "FALLBACK");
   assert.equal(fallbackResult.fallback, true);
   assert.equal(fallbackResult.isDefault, true);
 
-  // Bootstrap error mode is FAIL_OPEN
   const bootstrapError = capability.buildThemeReadError("read failed");
   assert.equal(bootstrapError.path, "BOOTSTRAP");
   assert.equal(bootstrapError.mode, "FAIL_OPEN");
 
-  // Validation error (fail‑closed)
+  const seedAudit: capability.BrandingAndThemingAuditFn = () => null;
+  const seedResult = capability.createBrandingDefinition(
+    "tenant-val",
+    { applicationName: "Seed", themeSelection: "light" },
+    writeToken("tenant-val"),
+    capability.initialState,
+    seedAudit,
+  );
+  assert.equal(seedResult.kind, "SUCCESS");
+  const seededState = seedResult.kind === "SUCCESS" ? seedResult.newState : capability.initialState;
+
   const validationErrorResult = capability.patchBrandingDefinition(
     "tenant-val",
     { themeSelection: "neon" },
     writeToken("tenant-val"),
-    capability.initialState,
+    seededState,
   );
   assert.equal(validationErrorResult.kind, "ERROR");
   if (validationErrorResult.kind === "ERROR") {
@@ -125,7 +125,6 @@ test("brandingandthemingerrormodel", () => {
     assert.equal(validationErrorResult.error.mode, "FAIL_CLOSED");
   }
 
-  // Forbidden error (fail‑closed)
   const forbiddenResult = capability.listBrandingDefinitions("tenant-forbid", null);
   assert.equal(forbiddenResult.kind, "ERROR");
   if (forbiddenResult.kind === "ERROR") {
@@ -133,7 +132,6 @@ test("brandingandthemingerrormodel", () => {
     assert.equal(forbiddenResult.error.mode, "FAIL_CLOSED");
   }
 
-  // Unknown‑key error (fail‑closed) – tenant has no definition
   const unknownResult = capability.patchBrandingDefinition(
     "tenant-unknown",
     { applicationName: "X" },
@@ -146,7 +144,6 @@ test("brandingandthemingerrormodel", () => {
     assert.equal(unknownResult.error.mode, "FAIL_CLOSED");
   }
 
-  // Non‑overridable error (fail‑closed)
   const nonOverridableState: capability.BrandingAndThemingState = {
     ...capability.initialState,
     nonOverridableTenants: ["tenant-nonoverridable"],
@@ -163,17 +160,14 @@ test("brandingandthemingerrormodel", () => {
     assert.equal(nonOverridableResult.error.mode, "FAIL_CLOSED");
   }
 
-  // Mapping error to status code
   const mapped = capability.mapErrorToStatusCode({ kind: "FORBIDDEN", message: "no", path: "MANAGEMENT", mode: "FAIL_CLOSED" });
   assert.equal(mapped, 403);
 
-  // Bootstrap vs management error kind checks
   assert.equal(capability.isBootstrapErrorKind("THEME_READ_FAILURE"), true);
   assert.equal(capability.isBootstrapErrorKind("VALIDATION_ERROR"), false);
   assert.equal(capability.isManagementErrorKind("VALIDATION_ERROR"), true);
   assert.equal(capability.isManagementErrorKind("THEME_READ_FAILURE"), false);
 
-  // Error model summary
   const summary = capability.describeErrorModel(capability.initialState);
   assert.equal(summary.path, "BOOTSTRAP");
   assert.equal(summary.mode, "FAIL_OPEN");
@@ -189,9 +183,7 @@ test("brandingandthemingerrormodel", () => {
   assert.ok(summary.configurationKinds.includes("NON_OVERRIDABLE"));
 });
 
-// brandingandtheminglifecycle
 test("brandingandtheminglifecycle", () => {
-  // State with tenant theme overrides
   const stateWithOverrides: capability.BrandingAndThemingState = {
     ...capability.initialState,
     bootstrapTheme: {
@@ -200,18 +192,15 @@ test("brandingandtheminglifecycle", () => {
     },
   };
 
-  // Bootstrap read for tenant with overrides
   const bootstrapRead = capability.readBootstrapTheme("tenant-lifecycle.example", stateWithOverrides);
   assert.equal(bootstrapRead.kind, "SUCCESS");
   if (bootstrapRead.kind === "SUCCESS") {
     assert.equal(bootstrapRead.theme.primaryColor, "#abcdef");
   }
 
-  // Fallback for unknown host
   const fallbackRead = capability.readBootstrapTheme("unmapped.example", stateWithOverrides);
   assert.equal(fallbackRead.kind, "FALLBACK");
 
-  // Brander edits flow through configuration registry – create
   const auditEvents: capability.BrandingAndThemingAuditEvent[] = [];
   const auditFn: capability.BrandingAndThemingAuditFn = (e) => { auditEvents.push(e); return null; };
   const createResult = capability.createBrandingDefinition(
@@ -227,7 +216,6 @@ test("brandingandtheminglifecycle", () => {
 
   const afterCreate = createResult.kind === "SUCCESS" ? createResult.newState : stateWithOverrides;
 
-  // Patch
   const patchResult = capability.patchBrandingDefinition(
     "tenant-lifecycle",
     { applicationName: "LifecycleAppRenamed" },
@@ -241,7 +229,6 @@ test("brandingandtheminglifecycle", () => {
 
   const afterPatch = patchResult.kind === "SUCCESS" ? patchResult.newState : afterCreate;
 
-  // Delete
   const deleteResult = capability.deleteBrandingDefinition(
     "tenant-lifecycle",
     writeToken("tenant-lifecycle"),
@@ -252,14 +239,12 @@ test("brandingandtheminglifecycle", () => {
   assert.equal(auditEvents.length, 3);
   assert.equal(auditEvents[2].action, "value-cleared");
 
-  // Contract check on adapter built with the base state
   const adapter = capability.createConfigurationStoreAdapter(stateWithOverrides);
   const contract = capability.checkContracts(adapter);
   assert.ok(contract.ok);
   assert.ok(contract.bootstrapPath.includes("readBootstrapTheme"));
 });
 
-// brandingandthemingpermissions
 test("brandingandthemingpermissions", () => {
   const stateWithDef: capability.BrandingAndThemingState = {
     ...capability.initialState,
@@ -269,18 +254,15 @@ test("brandingandthemingpermissions", () => {
     },
   };
 
-  // Unauthenticated bootstrap read
   const bootstrapRead = capability.readBootstrapTheme("anyhost.example", capability.initialState);
   assert.ok(bootstrapRead.kind === "SUCCESS" || bootstrapRead.kind === "FALLBACK");
 
-  // No token – forbidden
   const noTokenResult = capability.listBrandingDefinitions("tenant-a", null);
   assert.equal(noTokenResult.kind, "ERROR");
   if (noTokenResult.kind === "ERROR") {
     assert.equal(noTokenResult.error.kind, "FORBIDDEN");
   }
 
-  // Wrong tenant token – forbidden
   const wrongTenantResult = capability.listBrandingDefinitions(
     "tenant-a",
     writeToken("tenant-b"),
@@ -291,7 +273,6 @@ test("brandingandthemingpermissions", () => {
     assert.equal(wrongTenantResult.error.kind, "FORBIDDEN");
   }
 
-  // Read‑only token cannot write
   const readOnlyResult = capability.patchBrandingDefinition(
     "tenant-a",
     { applicationName: "Attempted" },
@@ -303,7 +284,6 @@ test("brandingandthemingpermissions", () => {
     assert.equal(readOnlyResult.error.kind, "FORBIDDEN");
   }
 
-  // Correct read token can read
   const readResult = capability.listBrandingDefinitions(
     "tenant-a",
     readToken("tenant-a"),
@@ -311,7 +291,6 @@ test("brandingandthemingpermissions", () => {
   );
   assert.equal(readResult.kind, "SUCCESS");
 
-  // Correct write token can write
   const writeResult = capability.patchBrandingDefinition(
     "tenant-a",
     { applicationName: "Granted" },
@@ -320,7 +299,6 @@ test("brandingandthemingpermissions", () => {
   );
   assert.equal(writeResult.kind, "SUCCESS");
 
-  // Permission check helpers
   const permCheck = capability.checkBrandingPermission("tenant-a", writeToken("tenant-a"), "write");
   assert.equal(permCheck.kind, "GRANTED");
 
@@ -328,9 +306,7 @@ test("brandingandthemingpermissions", () => {
   assert.equal(deniedCheck.kind, "DENIED");
 });
 
-// brandingandthemingproof
 test("brandingandthemingproof", () => {
-  // Proof types
   assert.ok((capability.BrandingAndThemingProof as readonly string[]).includes("hermetic"));
   assert.ok((capability.BrandingAndThemingProof as readonly string[]).includes("runtime"));
   assert.ok((capability.BrandingAndThemingProof as readonly string[]).includes("pending"));
@@ -342,7 +318,6 @@ test("brandingandthemingproof", () => {
   assert.ok((capability.BrandingAndThemingProofStatus as readonly string[]).includes("fresh-pending"));
   assert.ok((capability.BrandingAndThemingProofStatus as readonly string[]).includes("verified"));
 
-  // Contract check indicates proof is present
   const adapter = capability.brandingAndThemingConfigurationStoreAdapter;
   const contract = capability.checkContracts(adapter);
   assert.ok(contract.ok);
@@ -350,21 +325,17 @@ test("brandingandthemingproof", () => {
   assert.equal(contract.auditBeforePersistence, true);
   assert.ok(contract.bootstrapPath.includes("getEffectiveTheme"));
 
-  // EnsureContracts also passes
   const ensured = capability.ensureContracts(adapter);
   assert.ok(ensured.ok);
   assert.equal(ensured.invariantReady, true);
   assert.equal(ensured.auditBeforePersistence, true);
 
-  // Route‑level coverage: default fallback
   const fallback = capability.getEffectiveTheme("unknownhost.example");
   assert.equal(fallback.kind, "FALLBACK");
   assert.equal(fallback.isDefault, true);
 });
 
-// brandingandthemingreadinessmodel
 test("brandingandthemingreadinessmodel", () => {
-  // Readiness getters
   assert.equal(capability.getReadiness(capability.initialState), "READY");
   assert.equal(capability.getReadiness(), "READY");
   assert.equal(capability.getReadiness(undefined), "READY");
@@ -381,10 +352,8 @@ test("brandingandthemingreadinessmodel", () => {
   };
   assert.equal(capability.getReadiness(notReadyState), "NOT_READY");
 
-  // Alias
   assert.equal(capability.checkReadiness(degradedState), "DEGRADED");
 
-  // Degraded theme delivery when persistence or tenant resolver unavailable
   const degradedConfig: capability.BrandingAndThemingState = {
     ...capability.initialState,
     persistenceReachable: false,
@@ -396,7 +365,6 @@ test("brandingandthemingreadinessmodel", () => {
   assert.equal(degradedTheme.fallback, true);
   assert.equal(degradedTheme.isDefault, true);
 
-  // Invariant ready when substrate reachable (use a normal state)
   const normalConfig: capability.BrandingAndThemingState = {
     ...capability.initialState,
     bootstrapTheme: {
@@ -410,13 +378,11 @@ test("brandingandthemingreadinessmodel", () => {
   assert.equal(readyTheme.kind, "SUCCESS");
   assert.equal(readyTheme.isDefault, false);
 
-  // Contract check also reports invariantReady
   const adapter = capability.createConfigurationStoreAdapter(normalConfig);
   const contract = capability.checkContracts(adapter);
   assert.equal(contract.invariantReady, true);
 });
 
-// brandingandthemingstatemodel
 test("brandingandthemingstatemodel", () => {
   const state: capability.BrandingAndThemingState = {
     ...capability.initialState,
@@ -456,7 +422,6 @@ test("brandingandthemingstatemodel", () => {
   assert.ok(description.stateKinds.includes("BOOTSTRAP_THEME"));
   assert.ok(description.stateKinds.includes("BRANDING_REGISTRY"));
 
-  // Full description
   const full = capability.describeStateModelFull(state);
   assert.equal(full.hasDefaultTheme, true);
   assert.equal(full.hasTenantThemeOverrides, true);
@@ -468,13 +433,10 @@ test("brandingandthemingstatemodel", () => {
   assert.equal(full.stateKindsDistinct, true);
 });
 
-// brandingandthemingvalidation
 test("brandingandthemingvalidation", () => {
-  // Theme read tolerance – missing tenant resolves to fallback
   const tolerantRead = capability.getEffectiveTheme("missing.example");
   assert.equal(tolerantRead.kind, "FALLBACK");
 
-  // Validation of branding definition
   const validResult = capability.validateBrandingDefinition({
     applicationName: "Valid",
     themeSelection: "system",
@@ -509,24 +471,32 @@ test("brandingandthemingvalidation", () => {
     assert.equal(notAnObjectResult.error.kind, "VALIDATION_ERROR");
   }
 
-  // Theme selection validation helper
   assert.equal(capability.validateThemeSelection("dark"), true);
   assert.equal(capability.validateThemeSelection("light"), true);
   assert.equal(capability.validateThemeSelection("system"), true);
   assert.equal(capability.validateThemeSelection("neon"), false);
   assert.equal(capability.validateThemeSelection(123), false);
 
-  // Application name validation helper
   assert.equal(capability.validateApplicationName("MyApp"), true);
   assert.equal(capability.validateApplicationName(123), false);
   assert.equal(capability.validateApplicationName(null), false);
 
-  // Mutation validation (fail‑closed)
+  const seedAudit: capability.BrandingAndThemingAuditFn = () => null;
+  const seedResult = capability.createBrandingDefinition(
+    "tenant-val",
+    { applicationName: "Seed", themeSelection: "light" },
+    writeToken("tenant-val"),
+    capability.initialState,
+    seedAudit,
+  );
+  assert.equal(seedResult.kind, "SUCCESS");
+  const seededState = seedResult.kind === "SUCCESS" ? seedResult.newState : capability.initialState;
+
   const mutationValidationError = capability.patchBrandingDefinition(
     "tenant-val",
     { themeSelection: "neon" },
     writeToken("tenant-val"),
-    capability.initialState,
+    seededState,
   );
   assert.equal(mutationValidationError.kind, "ERROR");
   if (mutationValidationError.kind === "ERROR") {
