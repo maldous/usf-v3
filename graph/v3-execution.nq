@@ -308,6 +308,8 @@
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:type> <urn:usf:type:OperationalLifecycle> <urn:usf:graph:v3-execution> .
 <urn:usf:predicate:operatorPreferredForDispatch> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
 <urn:usf:predicate:operatorPreferredReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:reservedModelPrefixExemptReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:reservedModelPrefixExemptTransport> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:baseUrl> "https://api.arcee.ai/api/v1" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:provider> "arcee" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:recoveredFrom> "V2 usf-factory config/providers.yaml base_url; the models.dev projection does not carry an endpoint." <urn:usf:graph:v3-execution> .
@@ -378,6 +380,8 @@
 <urn:usf:provider-execution-policy:operator-reserved-claude-api:1> <urn:usf:predicate:reservedModelPrefix> "anthropic/" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude-api:1> <urn:usf:predicate:reservedModelPrefix> "claude " <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude-api:1> <urn:usf:predicate:reservedModelPrefix> "claude-" <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude-api:1> <urn:usf:predicate:reservedModelPrefixExemptReason> "The claude model-prefix reservation blocks Claude reached through marketplace transports and the Anthropic API. It must not block the operator claude-cli session, which is the sanctioned home of the Claude family and governed by its own toggleable transport reservation. Exempting claude-cli here is what makes lifting that transport reservation actually admit the declared Claude models instead of being silently overruled by this policy." <urn:usf:graph:v3-execution> .
+<urn:usf:provider-execution-policy:operator-reserved-claude-api:1> <urn:usf:predicate:reservedModelPrefixExemptTransport> <urn:usf:execution-transport:claude-cli> <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude-api:1> <urn:usf:predicate:reservedProvider> "anthropic" <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude-api:1> <urn:usf:predicate:reviewCondition> "The reservation is lifted only by removing this policy resource through an ordinary semantic transaction, which is an explicit operator decision rather than a lapse." <urn:usf:graph:v3-execution> .
 <urn:usf:provider-execution-policy:operator-reserved-claude-api:1> <urn:usf:predicate:revocation> "Removing this policy resource restores routability of the Anthropic API and marketplace Claude. That is an explicit economic decision, not a toggle, because those routes are not covered by the zero-paid authorisation." <urn:usf:graph:v3-execution> .

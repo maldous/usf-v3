@@ -23,6 +23,15 @@ export interface ProviderExecutionPolicy {
    * marketplace is still the reserved family.
    */
   readonly reservedModelPrefixes: ReadonlyMap<string, PolicyDisposition>;
+  /**
+   * Transports a model-prefix reservation does not apply to, because they are
+   * the sanctioned home of that family and governed by their own dedicated
+   * reservation. Without this, lifting the claude-cli transport reservation
+   * admitted the transport and the claude model-prefix reservation -- which
+   * exists to block Claude via marketplace and API routes -- silently refused
+   * its own declared models, defeating the operator's explicit admission.
+   */
+  readonly modelPrefixExemptTransports: ReadonlyMap<string, ReadonlySet<string>>;
   readonly reasons: ReadonlyMap<string, string>;
   readonly declared: boolean;
 }
@@ -40,6 +49,7 @@ export function readProviderExecutionPolicy(graph: SemanticGraph): ProviderExecu
   const reservedTransports = new Map<string, PolicyDisposition>();
   const reservedProviders = new Map<string, PolicyDisposition>();
   const reservedModelPrefixes = new Map<string, PolicyDisposition>();
+  const modelPrefixExemptTransports = new Map<string, Set<string>>();
   const reasons = new Map<string, string>();
   for (const subject of subjects) {
     // A policy is active unless it explicitly says otherwise. Absent, malformed
@@ -59,13 +69,22 @@ export function readProviderExecutionPolicy(graph: SemanticGraph): ProviderExecu
       reservedProviders.set(provider, disposition);
       reasons.set(`provider:${provider}`, reason);
     }
+    const exemptTransports = values(graph, subject, "reservedModelPrefixExemptTransport")
+      .map((transport) => transport.split(":").pop()!);
     for (const prefix of values(graph, subject, "reservedModelPrefix")) {
-      reservedModelPrefixes.set(prefix.toLowerCase(), disposition);
-      reasons.set(`model:${prefix.toLowerCase()}`, reason);
+      const key = prefix.toLowerCase();
+      reservedModelPrefixes.set(key, disposition);
+      reasons.set(`model:${key}`, reason);
+      if (exemptTransports.length > 0) {
+        const held = modelPrefixExemptTransports.get(key) ?? new Set<string>();
+        for (const transport of exemptTransports) held.add(transport);
+        modelPrefixExemptTransports.set(key, held);
+      }
     }
   }
   return Object.freeze({
-    reservedTransports, reservedProviders, reservedModelPrefixes, reasons,
+    reservedTransports, reservedProviders, reservedModelPrefixes,
+    modelPrefixExemptTransports, reasons,
     declared: subjects.length > 0,
   });
 }
@@ -110,6 +129,11 @@ export function permitsExecution(
       // Substring rather than prefix: a marketplace namespaces the family, as in
       // "anthropic/claude-sonnet", and a bare identity may carry it anywhere.
       if (!model.includes(prefix)) continue;
+      // The family's sanctioned transport is exempt: a reservation against
+      // reaching Claude through marketplace or API routes must not refuse the
+      // operator's own Claude session, which its own transport reservation
+      // governs.
+      if (transport !== null && policy.modelPrefixExemptTransports.get(prefix)?.has(transport) === true) continue;
       return Object.freeze({
         permitted: false, disposition,
         matchedOn: "model" as const, reason: policy.reasons.get(`model:${prefix}`) ?? null,
