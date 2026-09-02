@@ -125,8 +125,11 @@ test("equal admission rates split on what a kept result costs", () => {
   const productivity = routeProductivity(records);
   assert.equal(productivity.get(expensive)?.tokensPerAcceptance, 1_039_410);
   assert.equal(productivity.get(frugal)?.tokensPerAcceptance, 17_000);
-  const ordered = diversifyCandidates([candidate(expensive), candidate(frugal)]
-    .map((c, i) => ({ ...c, provider: "shared" }) as never), 0, productivity);
+  const shared = (candidateId: string) => ({
+    candidateId, transport: candidateId.split(":")[0]!, provider: "shared",
+    model: candidateId.split(":").pop()!,
+  }) as never;
+  const ordered = diversifyCandidates([shared(expensive), shared(frugal)], 0, productivity);
   assert.equal(ordered[0]!.candidateId, frugal,
     "the frugal route must outrank the expensive one at equal admission rate, despite worse latency");
 });
