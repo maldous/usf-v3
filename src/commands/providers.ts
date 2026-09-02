@@ -656,6 +656,13 @@ function rowMatches(row: Readonly<Record<string, unknown>>, parsed: ParsedArgume
 const dispatchRegisteredProviderLeaf = createProviderLeafDispatcher();
 
 export const providersCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
+  // policy is an authority-mutating operator action -- toggle a reservation,
+  // promote a transport for dispatch -- kept out of the read-only census path
+  // and routed through the ordinary transaction, so it mints no authority here.
+  if (args[0] === "policy") {
+    const { providerPolicyCommand } = await import("./provider-policy.ts");
+    return providerPolicyCommand(repositoryRoot, args.slice(1));
+  }
   const leafResult = await dispatchRegisteredProviderLeaf(args, repositoryRoot);
   if (leafResult !== null) return leafResult;
   const parsed = parseArguments(args);
