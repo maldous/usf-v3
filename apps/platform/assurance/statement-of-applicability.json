@@ -1,0 +1,971 @@
+{
+  "approvalState": "prepared-not-certified",
+  "completeness": {
+    "applicable": 43,
+    "decided": 48,
+    "declared": 93,
+    "notApplicable": 5,
+    "pending": 45
+  },
+  "completenessRule": "A control is decided only where a recovered assessment states its applicability. The remaining controls are carried as pending-assessment and are not asserted to be either applicable or excluded. This statement is therefore complete in its control set and explicitly incomplete in its decisions.",
+  "controls": [
+    {
+      "applicability": "applicable",
+      "control": "A.5.1",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/authority-model.md",
+        "docs/architecture/charter.md"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Repository governance standards and authority model are defined as source artefacts, but formal approval, publication, and periodic communication of an information security policy set are operating-management activities not present in the repository.",
+      "title": "Policies for information security"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.2",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/enterprise-iso-style-evidence-foundation.json",
+        "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Information security roles and responsibilities"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.3",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.4",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.5",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.6",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.7",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "future-rung",
+      "rationale": "A threat-model and abuse-case register exists as an input, but an operating threat-intelligence process (feeds, analysis, dissemination) is not evidenced and is deferred to future enterprise-readiness work.",
+      "title": "Threat intelligence"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.8",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "future-rung",
+      "rationale": "Security-in-delivery is embedded through the AI work-packet and review contract, but a dedicated project-management security control with operating evidence is deferred to future enterprise-readiness work.",
+      "title": "Information security in project management"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.9",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/service-completeness-matrix.json",
+        "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "The service catalogue and enterprise evidence register enumerate repository services and assets as source artefacts; a maintained operating asset inventory with owners across live environments is deferred to enterprise-readiness work.",
+      "title": "Inventory of information and other associated assets"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.10",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.11",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.12",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/enterprise-persistence-metadata-and-classification-standard.md",
+        "docs/architecture/persistent-object-classification-registry.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Classification of information"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.13",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.14",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.15",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/authn-authz-tenant-role-permission-test-suite.json",
+        "spec/instances/semantic-contract/abac-policy-decision-point.json",
+        "spec/instances/semantic-contract/rbac-roles-and-permissions.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Access control"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.16",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "spec/instances/semantic-contract/authentication-platform.json",
+        "spec/instances/semantic-contract/user-identity-and-tenant-membership.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Identity management"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.17",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "spec/instances/audit-event/authentication-login.json",
+        "spec/instances/semantic-contract/api-keys-personal-access-tokens.json",
+        "spec/instances/semantic-contract/authentication-platform.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Authentication information"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.18",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/operator-access-review-deprovisioning-execution-proof.json",
+        "spec/instances/semantic-contract/delegated-administration-roles.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Access rights"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.19",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json",
+        "spec/instances/semantic-contract/provider-configuration-plane.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Provider and service dependencies are catalogued with disposition and non-claims, but supplier security assessment, contractual controls, and ongoing supplier monitoring are operating activities not present in the repository.",
+      "title": "Information security in supplier relationships"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.20",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.21",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.22",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.23",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "spec/instances/semantic-contract/provider-configuration-plane.json",
+        "spec/instances/semantic-contract/provider-environment-classification.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Cloud and provider configuration and environment classification are defined semantically; live provider onboarding, hardening evidence, and operating monitoring are deferred with no live-provider claim.",
+      "title": "Information security for use of cloud services"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.24",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/observability-alerting-dashboard-incident-execution-proof.json",
+        "docs/architecture/operational-resilience-failure-mode-suite.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Incident and alerting semantics and failure-mode exercises are defined; a staffed on-call rotation, incident runbook execution, and post-incident review records are operating activities requiring external assessment.",
+      "title": "Information security incident management planning and preparation"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.25",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.26",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.27",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.28",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/audit-evidence-standard.md",
+        "docs/architecture/non-ui-completeness-assurance-case.json",
+        "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Collection of evidence"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.29",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.30",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/backup-restore-dr-pitr-rpo-rto-execution-proof.json",
+        "docs/architecture/operational-resilience-failure-mode-suite.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Backup, restore, DR, and RPO/RTO semantics and proof-depth are defined; live DR rehearsal and continuity exercise records across staging and production are deferred with no staging or production claim.",
+      "title": "ICT readiness for business continuity"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.31",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "external-auditor-only",
+      "rationale": "Identification of and operating conformance with applicable legal, statutory, regulatory, and contractual obligations is a legal and organizational determination outside the repository's semantic scope and requires external legal and auditor assessment.",
+      "title": "Legal, statutory, regulatory and contractual requirements"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.32",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.33",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.34",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/privacy-compliance-consent-proof-semantics.json",
+        "spec/instances/semantic-contract/pitr-retention-legal-hold-data-residency.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "PII governance, DSR, consent, and residency semantics are defined; operating DSR fulfilment, privacy programme governance, and regulator-facing evidence require external assessment and live-environment proof.",
+      "title": "Privacy and protection of PII"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.35",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "external-auditor-only",
+      "rationale": "Independent review of the information security approach is by definition performed by parties external to the delivery repository; the repository provides evidence inputs only, not the independent review itself.",
+      "title": "Independent review of information security"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.5.36",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/enterprise-control-evidence-test-suite.json",
+        "tools/validate-enterprise/validate-enterprise.py",
+        "tools/validate-spec/validate-spec.py"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Repository standards are mechanically enforced by validator families in continuous integration; independent management review of conformance and cross-organisational rule coverage are operating activities requiring external assessment.",
+      "title": "Compliance with policies, rules and standards"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.5.37",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.6.1",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "external-auditor-only",
+      "rationale": "Personnel screening is a people and HR process performed outside the repository; no repository evidence exists and it requires external organizational assessment.",
+      "title": "Screening"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.6.2",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.6.3",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "external-auditor-only",
+      "rationale": "Awareness, education, and training delivery to people is an organizational programme; repository machine-actor guidance guardrails do not evidence human training records, which require external assessment.",
+      "title": "Information security awareness, education and training"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.6.4",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "external-auditor-only",
+      "rationale": "A disciplinary process is an HR and organizational control outside the repository's semantic scope and requires external assessment.",
+      "title": "Disciplinary process"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.6.5",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.6.6",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "external-auditor-only",
+      "rationale": "Confidentiality and non-disclosure agreements are legal and HR instruments outside the repository's semantic scope and require external assessment.",
+      "title": "Confidentiality or non-disclosure agreements"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.6.7",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.6.8",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/observability-alerting-dashboard-incident-execution-proof.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Event and alerting semantics are defined; a staffed reporting channel and human reporting culture require external assessment and live-environment operation.",
+      "title": "Information security event reporting"
+    },
+    {
+      "applicability": "not-applicable",
+      "control": "A.7.1",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "not-applicable",
+      "rationale": "The repository holds no owned physical estate; physical perimeter controls are inherited from the future hosting or cloud provider and are out of scope of this repository semantic map. This is not a Statement-of-Applicability determination.",
+      "title": "Physical security perimeters"
+    },
+    {
+      "applicability": "not-applicable",
+      "control": "A.7.2",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "not-applicable",
+      "rationale": "Physical entry controls apply to the future hosting or cloud provider estate and are out of scope of this repository semantic map. This is not a Statement-of-Applicability determination.",
+      "title": "Physical entry"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.3",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "not-applicable",
+      "control": "A.7.4",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "not-applicable",
+      "rationale": "Physical security monitoring applies to the future hosting or cloud provider estate and is out of scope of this repository semantic map. This is not a Statement-of-Applicability determination.",
+      "title": "Physical security monitoring"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.5",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.6",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.7",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.8",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.9",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "not-applicable",
+      "control": "A.7.10",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "not-applicable",
+      "rationale": "Physical storage media handling applies to the future hosting or cloud provider estate and is out of scope of this repository semantic map. This is not a Statement-of-Applicability determination.",
+      "title": "Storage media"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.11",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.12",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.7.13",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "not-applicable",
+      "control": "A.7.14",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "not-applicable",
+      "rationale": "Secure disposal or re-use of physical equipment applies to the future hosting or cloud provider estate and is out of scope of this repository semantic map. This is not a Statement-of-Applicability determination.",
+      "title": "Secure disposal or re-use of equipment"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.1",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.2",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/operator-access-review-deprovisioning-execution-proof.json",
+        "spec/instances/semantic-contract/audit-of-privileged-access.json",
+        "spec/instances/semantic-contract/support-mode-break-glass-access.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Privileged access rights"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.3",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.4",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.5",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/authn-authz-tenant-role-permission-test-suite.json",
+        "spec/instances/audit-event/authentication-login.json",
+        "spec/instances/semantic-contract/authentication-platform.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Secure authentication"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.6",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.7",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "future-rung",
+      "rationale": "Malware protection is captured only as a provider disposition matrix input; no live scanning control is evidenced and it is deferred to future provider-integration work.",
+      "title": "Protection against malware"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.8",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/security-abuse-fuzzing-regression-suite.json",
+        "docs/architecture/supply-chain-sbom-licence-test-gate.json",
+        "spec/instances/semantic-contract/code-quality-and-secret-and-dependency-scanning.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Management of technical vulnerabilities"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.9",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/config-and-secrets-standard.md",
+        "spec/instances/semantic-contract/configuration-registry-and-history.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Configuration registry and history semantics are defined; operating configuration baselines and drift monitoring across live environments are deferred.",
+      "title": "Configuration management"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.10",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "spec/instances/semantic-contract/pitr-retention-legal-hold-data-residency.json",
+        "spec/instances/semantic-contract/tenant-lifecycle-provision-suspend-delete-export.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Deletion, retention, and export semantics are defined; operating deletion execution and verification across live data stores are deferred.",
+      "title": "Information deletion"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.11",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.12",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "future-rung",
+      "rationale": "No dedicated data-leakage-prevention control is evidenced; tenant-isolation and classification semantics partially bound the risk, but a DLP control is deferred to future enterprise-readiness work.",
+      "title": "Data leakage prevention"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.13",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/backup-restore-dr-pitr-rpo-rto-execution-proof.json",
+        "docs/architecture/data-lifecycle-backup-bulk-migration-test-suite.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Backup semantics and proof-depth are defined; live backup execution, off-site retention, and restore verification are operating activities that are deferred.",
+      "title": "Information backup"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.14",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.15",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/audit-evidence-standard.md",
+        "spec/instances/audit-event/authentication-login.json",
+        "spec/instances/semantic-contract/logs-aggregation-and-tenant-scoped-search.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Logging"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.16",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/observability-alerting-dashboard-incident-execution-proof.json",
+        "docs/architecture/observability-telemetry-and-operational-evidence-standard.md",
+        "spec/instances/semantic-contract/metrics-and-traces.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Monitoring activities"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.17",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.18",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.19",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.20",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/compose-port-exposure-and-hardening-standard.md"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "The compose port-exposure and hardening standard defines network posture at the dev-compose boundary; production network segmentation and perimeter controls are operating and provider activities that are deferred.",
+      "title": "Networks security"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.21",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.22",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.23",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.24",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/config-and-secrets-standard.md",
+        "docs/architecture/config-secrets-enterprise-proof-depth-matrix.json",
+        "spec/instances/semantic-contract/runtime-secrets-management.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Secrets and cryptographic-material lifecycle semantics are defined; operating key management, rotation execution, and cryptographic control validation in live environments are deferred.",
+      "title": "Use of cryptography"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.25",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/ai-agent-work-packet-and-review-contract.md",
+        "docs/architecture/dev-test-staging-artifact-promotion-contract.json",
+        "docs/architecture/git-practices-standard.md"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Secure development life cycle"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.26",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/authn-authz-tenant-role-permission-test-suite.json",
+        "docs/architecture/security-abuse-fuzzing-regression-suite.json"
+      ],
+      "evidenceClassification": "partially-evidenced",
+      "rationale": "Application security requirements are semantically defined and exercised in test suites; comprehensive requirement traceability and live-environment security validation are deferred.",
+      "title": "Application security requirements"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.27",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.28",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/git-practices-standard.md",
+        "docs/architecture/sonarqube-zero-issue-quality-gate-assurance.json",
+        "spec/instances/semantic-contract/code-quality-and-secret-and-dependency-scanning.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Secure coding"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.29",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/authn-authz-tenant-role-permission-test-suite.json",
+        "docs/architecture/security-abuse-fuzzing-regression-suite.json",
+        "tools/validate-test-readiness/validate-test-readiness.py"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Security testing in development and acceptance"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.30",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.31",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/dev-test-staging-artifact-promotion-contract.json",
+        "spec/instances/semantic-contract/environment-registry-and-bootstrap.json",
+        "spec/instances/semantic-contract/provider-environment-classification.json"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Separation of development, test and production environments"
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.32",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [
+        "docs/architecture/dev-test-staging-artifact-promotion-contract.json",
+        "docs/architecture/git-practices-standard.md",
+        "tools/validate-spec/validate-spec.py"
+      ],
+      "evidenceClassification": "dev-evidenced",
+      "rationale": "",
+      "title": "Change management"
+    },
+    {
+      "applicability": "pending-assessment",
+      "control": "A.8.33",
+      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "evidence": [],
+      "evidenceClassification": null,
+      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "title": null
+    },
+    {
+      "applicability": "applicable",
+      "control": "A.8.34",
+      "decisionBasis": "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly.",
+      "evidence": [],
+      "evidenceClassification": "future-rung",
+      "rationale": "Audit-testing safeguards such as read-only, scheduled, and scoped access are recognised but not yet evidenced as a dedicated control; deferred to future enterprise-readiness work.",
+      "title": "Protection of information systems during audit testing"
+    }
+  ],
+  "frameworkEdition": "ISO/IEC 27001:2022 Annex A",
+  "nonClaims": [
+    "a-decided-applicability-is-not-a-claim-that-the-control-is-implemented",
+    "no-external-auditor-acceptance-claim",
+    "no-iso-certification-claim",
+    "no-statement-of-applicability-completeness-claim",
+    "prepared-is-not-certified-no-certification-audit-has-occurred",
+    "semantic-map-is-not-control-satisfaction"
+  ],
+  "provenance": "Control set and undecided placeholders recovered from the pinned V1 assurance graph graph/assurance/enterprise.trig at revision 028a9f96; decided applicability recovered from that repository's ISO 27001 alignment artefact, which covers 48 of the 93 controls and declares itself alignment-only.",
+  "schema": "urn:usf:statement-of-applicability:1",
+  "scope": "USF semantic authority, its registered command surface, the capability implementations realised from delivery authority, and the declared operational substrates."
+}

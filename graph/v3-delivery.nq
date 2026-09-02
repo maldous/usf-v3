@@ -1,3 +1,686 @@
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:canonicalName> "a510" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a510> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:canonicalName> "a511" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a511> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:canonicalName> "a512" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a512> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:evidenceArtefact> "docs/architecture/enterprise-persistence-metadata-and-classification-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:evidenceArtefact> "docs/architecture/persistent-object-classification-registry.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a512> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:canonicalName> "a513" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a513> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:canonicalName> "a514" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a514> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:canonicalName> "a515" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a515> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:evidenceArtefact> "docs/architecture/authn-authz-tenant-role-permission-test-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/abac-policy-decision-point.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/rbac-roles-and-permissions.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a515> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:canonicalName> "a516" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a516> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/authentication-platform.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/user-identity-and-tenant-membership.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a516> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:canonicalName> "a517" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a517> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:evidenceArtefact> "spec/instances/audit-event/authentication-login.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/api-keys-personal-access-tokens.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/authentication-platform.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a517> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:canonicalName> "a518" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a518> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:evidenceArtefact> "docs/architecture/operator-access-review-deprovisioning-execution-proof.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/delegated-administration-roles.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a518> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:applicabilityRationale> "Provider and service dependencies are catalogued with disposition and non-claims, but supplier security assessment, contractual controls, and ongoing supplier monitoring are operating activities not present in the repository." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:canonicalName> "a519" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a519> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:evidenceArtefact> "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/provider-configuration-plane.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a519> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:applicabilityRationale> "Repository governance standards and authority model are defined as source artefacts, but formal approval, publication, and periodic communication of an information security policy set are operating-management activities not present in the repository." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:canonicalName> "a51" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a51> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:evidenceArtefact> "docs/architecture/authority-model.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:evidenceArtefact> "docs/architecture/charter.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a51> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:canonicalName> "a520" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a520> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:canonicalName> "a521" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a521> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:canonicalName> "a522" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a522> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:applicabilityRationale> "Cloud and provider configuration and environment classification are defined semantically; live provider onboarding, hardening evidence, and operating monitoring are deferred with no live-provider claim." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:canonicalName> "a523" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a523> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/provider-configuration-plane.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/provider-environment-classification.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a523> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:applicabilityRationale> "Incident and alerting semantics and failure-mode exercises are defined; a staffed on-call rotation, incident runbook execution, and post-incident review records are operating activities requiring external assessment." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:canonicalName> "a524" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a524> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:evidenceArtefact> "docs/architecture/observability-alerting-dashboard-incident-execution-proof.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:evidenceArtefact> "docs/architecture/operational-resilience-failure-mode-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a524> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:canonicalName> "a525" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a525> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:canonicalName> "a526" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a526> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:canonicalName> "a527" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a527> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:canonicalName> "a528" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a528> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:evidenceArtefact> "docs/architecture/audit-evidence-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:evidenceArtefact> "docs/architecture/non-ui-completeness-assurance-case.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:evidenceArtefact> "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a528> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:canonicalName> "a529" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a529> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:canonicalName> "a52" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a52> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:evidenceArtefact> "docs/architecture/enterprise-iso-style-evidence-foundation.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:evidenceArtefact> "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a52> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:applicabilityRationale> "Backup, restore, DR, and RPO/RTO semantics and proof-depth are defined; live DR rehearsal and continuity exercise records across staging and production are deferred with no staging or production claim." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:canonicalName> "a530" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a530> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:evidenceArtefact> "docs/architecture/backup-restore-dr-pitr-rpo-rto-execution-proof.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:evidenceArtefact> "docs/architecture/operational-resilience-failure-mode-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a530> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a531> <urn:usf:predicate:applicabilityRationale> "Identification of and operating conformance with applicable legal, statutory, regulatory, and contractual obligations is a legal and organizational determination outside the repository's semantic scope and requires external legal and auditor assessment." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a531> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a531> <urn:usf:predicate:canonicalName> "a531" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a531> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a531> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a531> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a531> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a531> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:canonicalName> "a532" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a532> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:canonicalName> "a533" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a533> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:applicabilityRationale> "PII governance, DSR, consent, and residency semantics are defined; operating DSR fulfilment, privacy programme governance, and regulator-facing evidence require external assessment and live-environment proof." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:canonicalName> "a534" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a534> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:evidenceArtefact> "docs/architecture/privacy-compliance-consent-proof-semantics.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/pitr-retention-legal-hold-data-residency.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a534> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a535> <urn:usf:predicate:applicabilityRationale> "Independent review of the information security approach is by definition performed by parties external to the delivery repository; the repository provides evidence inputs only, not the independent review itself." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a535> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a535> <urn:usf:predicate:canonicalName> "a535" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a535> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a535> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a535> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a535> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a535> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:applicabilityRationale> "Repository standards are mechanically enforced by validator families in continuous integration; independent management review of conformance and cross-organisational rule coverage are operating activities requiring external assessment." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:canonicalName> "a536" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a536> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:evidenceArtefact> "docs/architecture/enterprise-control-evidence-test-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:evidenceArtefact> "tools/validate-enterprise/validate-enterprise.py" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:evidenceArtefact> "tools/validate-spec/validate-spec.py" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a536> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:canonicalName> "a537" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a537> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:canonicalName> "a53" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a53> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:canonicalName> "a54" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a54> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:canonicalName> "a55" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a55> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:canonicalName> "a56" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a56> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a57> <urn:usf:predicate:applicabilityRationale> "A threat-model and abuse-case register exists as an input, but an operating threat-intelligence process (feeds, analysis, dissemination) is not evidenced and is deferred to future enterprise-readiness work." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a57> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a57> <urn:usf:predicate:canonicalName> "a57" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a57> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a57> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a57> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a57> <urn:usf:predicate:evidenceClassification> "future-rung" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a57> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a58> <urn:usf:predicate:applicabilityRationale> "Security-in-delivery is embedded through the AI work-packet and review contract, but a dedicated project-management security control with operating evidence is deferred to future enterprise-readiness work." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a58> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a58> <urn:usf:predicate:canonicalName> "a58" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a58> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a58> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a58> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a58> <urn:usf:predicate:evidenceClassification> "future-rung" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a58> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:applicabilityRationale> "The service catalogue and enterprise evidence register enumerate repository services and assets as source artefacts; a maintained operating asset inventory with owners across live environments is deferred to enterprise-readiness work." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:canonicalName> "a59" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a59> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:evidenceArtefact> "docs/architecture/service-completeness-matrix.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:evidenceArtefact> "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a59> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a61> <urn:usf:predicate:applicabilityRationale> "Personnel screening is a people and HR process performed outside the repository; no repository evidence exists and it requires external organizational assessment." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a61> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a61> <urn:usf:predicate:canonicalName> "a61" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a61> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a61> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a61> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a61> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a61> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:canonicalName> "a62" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a62> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a63> <urn:usf:predicate:applicabilityRationale> "Awareness, education, and training delivery to people is an organizational programme; repository machine-actor guidance guardrails do not evidence human training records, which require external assessment." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a63> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a63> <urn:usf:predicate:canonicalName> "a63" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a63> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a63> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a63> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a63> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a63> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a64> <urn:usf:predicate:applicabilityRationale> "A disciplinary process is an HR and organizational control outside the repository's semantic scope and requires external assessment." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a64> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a64> <urn:usf:predicate:canonicalName> "a64" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a64> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a64> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a64> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a64> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a64> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:canonicalName> "a65" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a65> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a66> <urn:usf:predicate:applicabilityRationale> "Confidentiality and non-disclosure agreements are legal and HR instruments outside the repository's semantic scope and require external assessment." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a66> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a66> <urn:usf:predicate:canonicalName> "a66" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a66> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a66> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a66> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a66> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a66> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:canonicalName> "a67" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a67> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a68> <urn:usf:predicate:applicabilityRationale> "Event and alerting semantics are defined; a staffed reporting channel and human reporting culture require external assessment and live-environment operation." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a68> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a68> <urn:usf:predicate:canonicalName> "a68" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a68> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a68> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a68> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a68> <urn:usf:predicate:evidenceArtefact> "docs/architecture/observability-alerting-dashboard-incident-execution-proof.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a68> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a68> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a710> <urn:usf:predicate:applicabilityRationale> "Physical storage media handling applies to the future hosting or cloud provider estate and is out of scope of this repository semantic map. This is not a Statement-of-Applicability determination." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a710> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a710> <urn:usf:predicate:canonicalName> "a710" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a710> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a710> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a710> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a710> <urn:usf:predicate:evidenceClassification> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a710> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:canonicalName> "a711" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a711> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:canonicalName> "a712" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a712> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:canonicalName> "a713" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a713> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a714> <urn:usf:predicate:applicabilityRationale> "Secure disposal or re-use of physical equipment applies to the future hosting or cloud provider estate and is out of scope of this repository semantic map. This is not a Statement-of-Applicability determination." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a714> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a714> <urn:usf:predicate:canonicalName> "a714" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a714> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a714> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a714> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a714> <urn:usf:predicate:evidenceClassification> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a714> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a71> <urn:usf:predicate:applicabilityRationale> "The repository holds no owned physical estate; physical perimeter controls are inherited from the future hosting or cloud provider and are out of scope of this repository semantic map. This is not a Statement-of-Applicability determination." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a71> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a71> <urn:usf:predicate:canonicalName> "a71" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a71> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a71> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a71> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a71> <urn:usf:predicate:evidenceClassification> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a71> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a72> <urn:usf:predicate:applicabilityRationale> "Physical entry controls apply to the future hosting or cloud provider estate and are out of scope of this repository semantic map. This is not a Statement-of-Applicability determination." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a72> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a72> <urn:usf:predicate:canonicalName> "a72" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a72> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a72> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a72> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a72> <urn:usf:predicate:evidenceClassification> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a72> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:canonicalName> "a73" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a73> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a74> <urn:usf:predicate:applicabilityRationale> "Physical security monitoring applies to the future hosting or cloud provider estate and is out of scope of this repository semantic map. This is not a Statement-of-Applicability determination." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a74> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a74> <urn:usf:predicate:canonicalName> "a74" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a74> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a74> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a74> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a74> <urn:usf:predicate:evidenceClassification> "not-applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a74> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:canonicalName> "a75" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a75> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:canonicalName> "a76" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a76> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:canonicalName> "a77" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a77> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:canonicalName> "a78" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a78> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:canonicalName> "a79" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a79> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:applicabilityRationale> "Deletion, retention, and export semantics are defined; operating deletion execution and verification across live data stores are deferred." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:canonicalName> "a810" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a810> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/pitr-retention-legal-hold-data-residency.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/tenant-lifecycle-provision-suspend-delete-export.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a810> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:canonicalName> "a811" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a811> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a812> <urn:usf:predicate:applicabilityRationale> "No dedicated data-leakage-prevention control is evidenced; tenant-isolation and classification semantics partially bound the risk, but a DLP control is deferred to future enterprise-readiness work." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a812> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a812> <urn:usf:predicate:canonicalName> "a812" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a812> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a812> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a812> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a812> <urn:usf:predicate:evidenceClassification> "future-rung" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a812> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:applicabilityRationale> "Backup semantics and proof-depth are defined; live backup execution, off-site retention, and restore verification are operating activities that are deferred." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:canonicalName> "a813" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a813> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:evidenceArtefact> "docs/architecture/backup-restore-dr-pitr-rpo-rto-execution-proof.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:evidenceArtefact> "docs/architecture/data-lifecycle-backup-bulk-migration-test-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a813> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:canonicalName> "a814" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a814> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:canonicalName> "a815" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a815> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:evidenceArtefact> "docs/architecture/audit-evidence-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:evidenceArtefact> "spec/instances/audit-event/authentication-login.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/logs-aggregation-and-tenant-scoped-search.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a815> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:canonicalName> "a816" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a816> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:evidenceArtefact> "docs/architecture/observability-alerting-dashboard-incident-execution-proof.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:evidenceArtefact> "docs/architecture/observability-telemetry-and-operational-evidence-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/metrics-and-traces.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a816> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:canonicalName> "a817" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a817> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:canonicalName> "a818" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a818> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:canonicalName> "a819" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a819> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:canonicalName> "a81" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a81> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a820> <urn:usf:predicate:applicabilityRationale> "The compose port-exposure and hardening standard defines network posture at the dev-compose boundary; production network segmentation and perimeter controls are operating and provider activities that are deferred." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a820> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a820> <urn:usf:predicate:canonicalName> "a820" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a820> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a820> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a820> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a820> <urn:usf:predicate:evidenceArtefact> "docs/architecture/compose-port-exposure-and-hardening-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a820> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a820> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:canonicalName> "a821" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a821> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:canonicalName> "a822" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a822> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:canonicalName> "a823" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a823> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:applicabilityRationale> "Secrets and cryptographic-material lifecycle semantics are defined; operating key management, rotation execution, and cryptographic control validation in live environments are deferred." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:canonicalName> "a824" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a824> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:evidenceArtefact> "docs/architecture/config-and-secrets-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:evidenceArtefact> "docs/architecture/config-secrets-enterprise-proof-depth-matrix.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/runtime-secrets-management.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a824> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:canonicalName> "a825" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a825> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:evidenceArtefact> "docs/architecture/ai-agent-work-packet-and-review-contract.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:evidenceArtefact> "docs/architecture/dev-test-staging-artifact-promotion-contract.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:evidenceArtefact> "docs/architecture/git-practices-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a825> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:applicabilityRationale> "Application security requirements are semantically defined and exercised in test suites; comprehensive requirement traceability and live-environment security validation are deferred." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:canonicalName> "a826" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a826> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:evidenceArtefact> "docs/architecture/authn-authz-tenant-role-permission-test-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:evidenceArtefact> "docs/architecture/security-abuse-fuzzing-regression-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a826> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:canonicalName> "a827" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a827> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:canonicalName> "a828" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a828> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:evidenceArtefact> "docs/architecture/git-practices-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:evidenceArtefact> "docs/architecture/sonarqube-zero-issue-quality-gate-assurance.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/code-quality-and-secret-and-dependency-scanning.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a828> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:canonicalName> "a829" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a829> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:evidenceArtefact> "docs/architecture/authn-authz-tenant-role-permission-test-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:evidenceArtefact> "docs/architecture/security-abuse-fuzzing-regression-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:evidenceArtefact> "tools/validate-test-readiness/validate-test-readiness.py" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a829> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:canonicalName> "a82" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a82> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:evidenceArtefact> "docs/architecture/operator-access-review-deprovisioning-execution-proof.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/audit-of-privileged-access.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/support-mode-break-glass-access.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a82> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:canonicalName> "a830" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a830> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:canonicalName> "a831" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a831> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:evidenceArtefact> "docs/architecture/dev-test-staging-artifact-promotion-contract.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/environment-registry-and-bootstrap.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/provider-environment-classification.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a831> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:canonicalName> "a832" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a832> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:evidenceArtefact> "docs/architecture/dev-test-staging-artifact-promotion-contract.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:evidenceArtefact> "docs/architecture/git-practices-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:evidenceArtefact> "tools/validate-spec/validate-spec.py" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a832> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:canonicalName> "a833" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a833> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a834> <urn:usf:predicate:applicabilityRationale> "Audit-testing safeguards such as read-only, scheduled, and scoped access are recognised but not yet evidenced as a dedicated control; deferred to future enterprise-readiness work." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a834> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a834> <urn:usf:predicate:canonicalName> "a834" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a834> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a834> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a834> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a834> <urn:usf:predicate:evidenceClassification> "future-rung" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a834> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:canonicalName> "a83" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a83> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:canonicalName> "a84" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a84> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:canonicalName> "a85" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a85> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:evidenceArtefact> "docs/architecture/authn-authz-tenant-role-permission-test-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:evidenceArtefact> "spec/instances/audit-event/authentication-login.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/authentication-platform.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a85> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:canonicalName> "a86" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a86> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a87> <urn:usf:predicate:applicabilityRationale> "Malware protection is captured only as a provider disposition matrix input; no live scanning control is evidenced and it is deferred to future provider-integration work." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a87> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a87> <urn:usf:predicate:canonicalName> "a87" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a87> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a87> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a87> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a87> <urn:usf:predicate:evidenceClassification> "future-rung" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a87> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:canonicalName> "a88" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a88> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:evidenceArtefact> "docs/architecture/security-abuse-fuzzing-regression-suite.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:evidenceArtefact> "docs/architecture/supply-chain-sbom-licence-test-gate.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/code-quality-and-secret-and-dependency-scanning.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a88> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:applicabilityRationale> "Configuration registry and history semantics are defined; operating configuration baselines and drift monitoring across live environments are deferred." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:canonicalName> "a89" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:decisionBasis> "Recovered from the V1 ISO 27001 alignment assessment, which decided this control explicitly." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a89> <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:evidenceArtefact> "docs/architecture/config-and-secrets-standard.md" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/configuration-registry-and-history.json" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a89> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:artefact-kind:bundle> <urn:usf:predicate:canonicalName> "bundle" <urn:usf:graph:v3-delivery> .
 <urn:usf:artefact-kind:bundle> <urn:usf:predicate:plannedArtefactCount> "1" <urn:usf:graph:v3-delivery> .
 <urn:usf:artefact-kind:bundle> <urn:usf:predicate:type> <urn:usf:type:ArtefactKind> <urn:usf:graph:v3-delivery> .
@@ -788,14 +1471,13 @@
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:supersededBy> <urn:usf:validation-evidence-model:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:specvalidationworkflow> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:report> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:blockedReason> "governance-layer-not-captured" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:canonicalName> "statementofapplicability" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:canonicalPath> "assurance/statement-of-applicability.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:generatedByComponent> <urn:usf:delivery-generator:assurance> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:governedByPathRule> <urn:usf:delivery-path-rule:statementofapplicability> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realisationStatus> "not-started" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanism> "BLOCKED_ON_AUTHORITY" <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanismReason> "A statement of applicability asserts governance control coverage. The V1 governance layer, 93 framework controls and 93 applicability decisions, is inventoried but not captured, so a truthful statement cannot be derived. Producing one over facet kinds would fabricate a compliance artefact." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanism> "DETERMINISTIC_GENERATOR" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:realizationMechanismReason> "A statement of applicability is a projection over declared framework controls and their applicability decisions. Both are now stated: the complete 93-control ISO/IEC 27001:2022 Annex A set, with 48 decisions recovered from an explicit assessment and 45 carried as pending-assessment. The projection is therefore derivable and truthful, because it reports its own decision completeness rather than implying it." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:statementofapplicability> <urn:usf:predicate:type> <urn:usf:type:DeliveryArtefact> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:artefactKind> <urn:usf:artefact-kind:report> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-artefact:uidocumentationmodel> <urn:usf:predicate:canonicalName> "uidocumentationmodel" <urn:usf:graph:v3-delivery> .
@@ -1505,11 +2187,14 @@
 <urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:predicate:declarationCount> "238" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:predicate:note> "82 tests, 53 proof results, 52 proofs, 51 proof executions: the content inside the proof and validation facets" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:captureNote> "The 50 declarations are not a single uncaptured layer. The occurrence names are approximately 90 per cent recovered under auditmodel, because V1 modelled the same occurrence as both a domain event and an audit event. What is genuinely absent is the delivery contract: a per-event guarantee and a producer binding over a closed vocabulary. See urn:usf:mechanism-assessment-item:capture-event-vocabulary." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:declarationCount> "50" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:note> "declared domain events" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
-<urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:captureNote> "All 186 declarations are captured: 93 framework controls and 93 applicability decisions. Capture preserved the decision state it found rather than inventing one, so 45 decisions remain pending-assessment." <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:captureStatus> "captured" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:capturedAs> <urn:usf:statement-of-applicability:v3:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:declarationCount> "186" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:note> "93 framework controls and 93 applicability decisions" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
@@ -8761,6 +9446,7 @@
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:serviceCount> "60" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-infrastructure-set:v1:1> <urn:usf:predicate:type> <urn:usf:type:DeliveryInfrastructureSet> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:capture-assurance-content> <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:capture-realisation-bindings> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:capture-state-machine-content> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-mechanism-assessment:v1:1> <urn:usf:predicate:assesses> <urn:usf:mechanism-assessment-item:capture-validator-rules> <urn:usf:graph:v3-delivery> .
@@ -10188,6 +10874,333 @@
 <urn:usf:foundation-revision:v3:1> <urn:usf:predicate:nonClaim> "A foundation revision names the reusable authority a profile was realised against. It does not pin the foundation's content: content identity is derived per resource, so a profile is only affected by movement in the resources it actually depends on." <urn:usf:graph:v3-delivery> .
 <urn:usf:foundation-revision:v3:1> <urn:usf:predicate:type> <urn:usf:type:FoundationRevision> <urn:usf:graph:v3-delivery> .
 <urn:usf:foundation-revision:v3:1> <urn:usf:predicate:version> "1" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a510> <urn:usf:predicate:canonicalName> "a510" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a510> <urn:usf:predicate:frameworkReference> "A.5.10" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a510> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a511> <urn:usf:predicate:canonicalName> "a511" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a511> <urn:usf:predicate:frameworkReference> "A.5.11" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a511> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a512> <urn:usf:predicate:canonicalName> "a512" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a512> <urn:usf:predicate:controlName> "Classification of information" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a512> <urn:usf:predicate:frameworkReference> "A.5.12" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a512> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a513> <urn:usf:predicate:canonicalName> "a513" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a513> <urn:usf:predicate:frameworkReference> "A.5.13" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a513> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a514> <urn:usf:predicate:canonicalName> "a514" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a514> <urn:usf:predicate:frameworkReference> "A.5.14" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a514> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a515> <urn:usf:predicate:canonicalName> "a515" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a515> <urn:usf:predicate:controlName> "Access control" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a515> <urn:usf:predicate:frameworkReference> "A.5.15" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a515> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a516> <urn:usf:predicate:canonicalName> "a516" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a516> <urn:usf:predicate:controlName> "Identity management" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a516> <urn:usf:predicate:frameworkReference> "A.5.16" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a516> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a517> <urn:usf:predicate:canonicalName> "a517" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a517> <urn:usf:predicate:controlName> "Authentication information" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a517> <urn:usf:predicate:frameworkReference> "A.5.17" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a517> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a518> <urn:usf:predicate:canonicalName> "a518" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a518> <urn:usf:predicate:controlName> "Access rights" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a518> <urn:usf:predicate:frameworkReference> "A.5.18" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a518> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a519> <urn:usf:predicate:canonicalName> "a519" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a519> <urn:usf:predicate:controlName> "Information security in supplier relationships" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a519> <urn:usf:predicate:frameworkReference> "A.5.19" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a519> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a51> <urn:usf:predicate:canonicalName> "a51" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a51> <urn:usf:predicate:controlName> "Policies for information security" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a51> <urn:usf:predicate:frameworkReference> "A.5.1" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a51> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a520> <urn:usf:predicate:canonicalName> "a520" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a520> <urn:usf:predicate:frameworkReference> "A.5.20" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a520> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a521> <urn:usf:predicate:canonicalName> "a521" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a521> <urn:usf:predicate:frameworkReference> "A.5.21" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a521> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a522> <urn:usf:predicate:canonicalName> "a522" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a522> <urn:usf:predicate:frameworkReference> "A.5.22" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a522> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a523> <urn:usf:predicate:canonicalName> "a523" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a523> <urn:usf:predicate:controlName> "Information security for use of cloud services" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a523> <urn:usf:predicate:frameworkReference> "A.5.23" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a523> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a524> <urn:usf:predicate:canonicalName> "a524" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a524> <urn:usf:predicate:controlName> "Information security incident management planning and preparation" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a524> <urn:usf:predicate:frameworkReference> "A.5.24" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a524> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a525> <urn:usf:predicate:canonicalName> "a525" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a525> <urn:usf:predicate:frameworkReference> "A.5.25" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a525> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a526> <urn:usf:predicate:canonicalName> "a526" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a526> <urn:usf:predicate:frameworkReference> "A.5.26" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a526> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a527> <urn:usf:predicate:canonicalName> "a527" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a527> <urn:usf:predicate:frameworkReference> "A.5.27" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a527> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a528> <urn:usf:predicate:canonicalName> "a528" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a528> <urn:usf:predicate:controlName> "Collection of evidence" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a528> <urn:usf:predicate:frameworkReference> "A.5.28" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a528> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a529> <urn:usf:predicate:canonicalName> "a529" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a529> <urn:usf:predicate:frameworkReference> "A.5.29" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a529> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a52> <urn:usf:predicate:canonicalName> "a52" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a52> <urn:usf:predicate:controlName> "Information security roles and responsibilities" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a52> <urn:usf:predicate:frameworkReference> "A.5.2" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a52> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a530> <urn:usf:predicate:canonicalName> "a530" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a530> <urn:usf:predicate:controlName> "ICT readiness for business continuity" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a530> <urn:usf:predicate:frameworkReference> "A.5.30" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a530> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a531> <urn:usf:predicate:canonicalName> "a531" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a531> <urn:usf:predicate:controlName> "Legal, statutory, regulatory and contractual requirements" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a531> <urn:usf:predicate:frameworkReference> "A.5.31" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a531> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a532> <urn:usf:predicate:canonicalName> "a532" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a532> <urn:usf:predicate:frameworkReference> "A.5.32" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a532> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a533> <urn:usf:predicate:canonicalName> "a533" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a533> <urn:usf:predicate:frameworkReference> "A.5.33" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a533> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a534> <urn:usf:predicate:canonicalName> "a534" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a534> <urn:usf:predicate:controlName> "Privacy and protection of PII" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a534> <urn:usf:predicate:frameworkReference> "A.5.34" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a534> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a535> <urn:usf:predicate:canonicalName> "a535" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a535> <urn:usf:predicate:controlName> "Independent review of information security" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a535> <urn:usf:predicate:frameworkReference> "A.5.35" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a535> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a536> <urn:usf:predicate:canonicalName> "a536" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a536> <urn:usf:predicate:controlName> "Compliance with policies, rules and standards" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a536> <urn:usf:predicate:frameworkReference> "A.5.36" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a536> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a537> <urn:usf:predicate:canonicalName> "a537" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a537> <urn:usf:predicate:frameworkReference> "A.5.37" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a537> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a53> <urn:usf:predicate:canonicalName> "a53" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a53> <urn:usf:predicate:frameworkReference> "A.5.3" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a53> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a54> <urn:usf:predicate:canonicalName> "a54" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a54> <urn:usf:predicate:frameworkReference> "A.5.4" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a54> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a55> <urn:usf:predicate:canonicalName> "a55" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a55> <urn:usf:predicate:frameworkReference> "A.5.5" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a55> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a56> <urn:usf:predicate:canonicalName> "a56" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a56> <urn:usf:predicate:frameworkReference> "A.5.6" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a56> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a57> <urn:usf:predicate:canonicalName> "a57" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a57> <urn:usf:predicate:controlName> "Threat intelligence" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a57> <urn:usf:predicate:frameworkReference> "A.5.7" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a57> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a58> <urn:usf:predicate:canonicalName> "a58" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a58> <urn:usf:predicate:controlName> "Information security in project management" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a58> <urn:usf:predicate:frameworkReference> "A.5.8" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a58> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a59> <urn:usf:predicate:canonicalName> "a59" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a59> <urn:usf:predicate:controlName> "Inventory of information and other associated assets" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a59> <urn:usf:predicate:frameworkReference> "A.5.9" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a59> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a61> <urn:usf:predicate:canonicalName> "a61" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a61> <urn:usf:predicate:controlName> "Screening" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a61> <urn:usf:predicate:frameworkReference> "A.6.1" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a61> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a62> <urn:usf:predicate:canonicalName> "a62" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a62> <urn:usf:predicate:frameworkReference> "A.6.2" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a62> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a63> <urn:usf:predicate:canonicalName> "a63" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a63> <urn:usf:predicate:controlName> "Information security awareness, education and training" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a63> <urn:usf:predicate:frameworkReference> "A.6.3" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a63> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a64> <urn:usf:predicate:canonicalName> "a64" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a64> <urn:usf:predicate:controlName> "Disciplinary process" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a64> <urn:usf:predicate:frameworkReference> "A.6.4" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a64> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a65> <urn:usf:predicate:canonicalName> "a65" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a65> <urn:usf:predicate:frameworkReference> "A.6.5" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a65> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a66> <urn:usf:predicate:canonicalName> "a66" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a66> <urn:usf:predicate:controlName> "Confidentiality or non-disclosure agreements" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a66> <urn:usf:predicate:frameworkReference> "A.6.6" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a66> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a67> <urn:usf:predicate:canonicalName> "a67" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a67> <urn:usf:predicate:frameworkReference> "A.6.7" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a67> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a68> <urn:usf:predicate:canonicalName> "a68" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a68> <urn:usf:predicate:controlName> "Information security event reporting" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a68> <urn:usf:predicate:frameworkReference> "A.6.8" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a68> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a710> <urn:usf:predicate:canonicalName> "a710" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a710> <urn:usf:predicate:controlName> "Storage media" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a710> <urn:usf:predicate:frameworkReference> "A.7.10" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a710> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a711> <urn:usf:predicate:canonicalName> "a711" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a711> <urn:usf:predicate:frameworkReference> "A.7.11" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a711> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a712> <urn:usf:predicate:canonicalName> "a712" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a712> <urn:usf:predicate:frameworkReference> "A.7.12" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a712> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a713> <urn:usf:predicate:canonicalName> "a713" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a713> <urn:usf:predicate:frameworkReference> "A.7.13" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a713> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a714> <urn:usf:predicate:canonicalName> "a714" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a714> <urn:usf:predicate:controlName> "Secure disposal or re-use of equipment" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a714> <urn:usf:predicate:frameworkReference> "A.7.14" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a714> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a71> <urn:usf:predicate:canonicalName> "a71" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a71> <urn:usf:predicate:controlName> "Physical security perimeters" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a71> <urn:usf:predicate:frameworkReference> "A.7.1" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a71> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a72> <urn:usf:predicate:canonicalName> "a72" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a72> <urn:usf:predicate:controlName> "Physical entry" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a72> <urn:usf:predicate:frameworkReference> "A.7.2" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a72> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a73> <urn:usf:predicate:canonicalName> "a73" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a73> <urn:usf:predicate:frameworkReference> "A.7.3" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a73> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a74> <urn:usf:predicate:canonicalName> "a74" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a74> <urn:usf:predicate:controlName> "Physical security monitoring" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a74> <urn:usf:predicate:frameworkReference> "A.7.4" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a74> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a75> <urn:usf:predicate:canonicalName> "a75" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a75> <urn:usf:predicate:frameworkReference> "A.7.5" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a75> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a76> <urn:usf:predicate:canonicalName> "a76" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a76> <urn:usf:predicate:frameworkReference> "A.7.6" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a76> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a77> <urn:usf:predicate:canonicalName> "a77" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a77> <urn:usf:predicate:frameworkReference> "A.7.7" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a77> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a78> <urn:usf:predicate:canonicalName> "a78" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a78> <urn:usf:predicate:frameworkReference> "A.7.8" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a78> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a79> <urn:usf:predicate:canonicalName> "a79" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a79> <urn:usf:predicate:frameworkReference> "A.7.9" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a79> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a810> <urn:usf:predicate:canonicalName> "a810" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a810> <urn:usf:predicate:controlName> "Information deletion" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a810> <urn:usf:predicate:frameworkReference> "A.8.10" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a810> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a811> <urn:usf:predicate:canonicalName> "a811" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a811> <urn:usf:predicate:frameworkReference> "A.8.11" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a811> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a812> <urn:usf:predicate:canonicalName> "a812" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a812> <urn:usf:predicate:controlName> "Data leakage prevention" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a812> <urn:usf:predicate:frameworkReference> "A.8.12" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a812> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a813> <urn:usf:predicate:canonicalName> "a813" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a813> <urn:usf:predicate:controlName> "Information backup" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a813> <urn:usf:predicate:frameworkReference> "A.8.13" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a813> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a814> <urn:usf:predicate:canonicalName> "a814" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a814> <urn:usf:predicate:frameworkReference> "A.8.14" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a814> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a815> <urn:usf:predicate:canonicalName> "a815" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a815> <urn:usf:predicate:controlName> "Logging" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a815> <urn:usf:predicate:frameworkReference> "A.8.15" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a815> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a816> <urn:usf:predicate:canonicalName> "a816" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a816> <urn:usf:predicate:controlName> "Monitoring activities" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a816> <urn:usf:predicate:frameworkReference> "A.8.16" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a816> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a817> <urn:usf:predicate:canonicalName> "a817" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a817> <urn:usf:predicate:frameworkReference> "A.8.17" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a817> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a818> <urn:usf:predicate:canonicalName> "a818" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a818> <urn:usf:predicate:frameworkReference> "A.8.18" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a818> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a819> <urn:usf:predicate:canonicalName> "a819" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a819> <urn:usf:predicate:frameworkReference> "A.8.19" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a819> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a81> <urn:usf:predicate:canonicalName> "a81" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a81> <urn:usf:predicate:frameworkReference> "A.8.1" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a81> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a820> <urn:usf:predicate:canonicalName> "a820" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a820> <urn:usf:predicate:controlName> "Networks security" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a820> <urn:usf:predicate:frameworkReference> "A.8.20" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a820> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a821> <urn:usf:predicate:canonicalName> "a821" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a821> <urn:usf:predicate:frameworkReference> "A.8.21" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a821> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a822> <urn:usf:predicate:canonicalName> "a822" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a822> <urn:usf:predicate:frameworkReference> "A.8.22" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a822> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a823> <urn:usf:predicate:canonicalName> "a823" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a823> <urn:usf:predicate:frameworkReference> "A.8.23" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a823> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a824> <urn:usf:predicate:canonicalName> "a824" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a824> <urn:usf:predicate:controlName> "Use of cryptography" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a824> <urn:usf:predicate:frameworkReference> "A.8.24" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a824> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a825> <urn:usf:predicate:canonicalName> "a825" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a825> <urn:usf:predicate:controlName> "Secure development life cycle" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a825> <urn:usf:predicate:frameworkReference> "A.8.25" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a825> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a826> <urn:usf:predicate:canonicalName> "a826" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a826> <urn:usf:predicate:controlName> "Application security requirements" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a826> <urn:usf:predicate:frameworkReference> "A.8.26" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a826> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a827> <urn:usf:predicate:canonicalName> "a827" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a827> <urn:usf:predicate:frameworkReference> "A.8.27" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a827> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a828> <urn:usf:predicate:canonicalName> "a828" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a828> <urn:usf:predicate:controlName> "Secure coding" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a828> <urn:usf:predicate:frameworkReference> "A.8.28" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a828> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a829> <urn:usf:predicate:canonicalName> "a829" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a829> <urn:usf:predicate:controlName> "Security testing in development and acceptance" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a829> <urn:usf:predicate:frameworkReference> "A.8.29" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a829> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a82> <urn:usf:predicate:canonicalName> "a82" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a82> <urn:usf:predicate:controlName> "Privileged access rights" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a82> <urn:usf:predicate:frameworkReference> "A.8.2" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a82> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a830> <urn:usf:predicate:canonicalName> "a830" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a830> <urn:usf:predicate:frameworkReference> "A.8.30" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a830> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a831> <urn:usf:predicate:canonicalName> "a831" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a831> <urn:usf:predicate:controlName> "Separation of development, test and production environments" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a831> <urn:usf:predicate:frameworkReference> "A.8.31" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a831> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a832> <urn:usf:predicate:canonicalName> "a832" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a832> <urn:usf:predicate:controlName> "Change management" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a832> <urn:usf:predicate:frameworkReference> "A.8.32" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a832> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a833> <urn:usf:predicate:canonicalName> "a833" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a833> <urn:usf:predicate:frameworkReference> "A.8.33" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a833> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a834> <urn:usf:predicate:canonicalName> "a834" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a834> <urn:usf:predicate:controlName> "Protection of information systems during audit testing" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a834> <urn:usf:predicate:frameworkReference> "A.8.34" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a834> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a83> <urn:usf:predicate:canonicalName> "a83" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a83> <urn:usf:predicate:frameworkReference> "A.8.3" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a83> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a84> <urn:usf:predicate:canonicalName> "a84" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a84> <urn:usf:predicate:frameworkReference> "A.8.4" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a84> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a85> <urn:usf:predicate:canonicalName> "a85" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a85> <urn:usf:predicate:controlName> "Secure authentication" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a85> <urn:usf:predicate:frameworkReference> "A.8.5" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a85> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a86> <urn:usf:predicate:canonicalName> "a86" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a86> <urn:usf:predicate:frameworkReference> "A.8.6" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a86> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a87> <urn:usf:predicate:canonicalName> "a87" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a87> <urn:usf:predicate:controlName> "Protection against malware" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a87> <urn:usf:predicate:frameworkReference> "A.8.7" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a87> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a88> <urn:usf:predicate:canonicalName> "a88" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a88> <urn:usf:predicate:controlName> "Management of technical vulnerabilities" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a88> <urn:usf:predicate:frameworkReference> "A.8.8" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a88> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a89> <urn:usf:predicate:canonicalName> "a89" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a89> <urn:usf:predicate:controlName> "Configuration management" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a89> <urn:usf:predicate:frameworkReference> "A.8.9" <urn:usf:graph:v3-delivery> .
+<urn:usf:framework-control:a89> <urn:usf:predicate:type> <urn:usf:type:FrameworkControl> <urn:usf:graph:v3-delivery> .
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:admissibilityRule> "A conformance test is admissible only when it imports the capability module at its graph-derived relative path, declares one subtest per outstanding applicable facet named exactly that facet canonicalName, and makes at least one assertion inside each such subtest against a value the module returned. A test that does not import the module, or that stubs it, evidences nothing and is refused before execution." <urn:usf:graph:v3-delivery> .
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:usf:graph:v3-delivery> .
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:antiSelfWarrant> "The rule records what an execution returned. It never records satisfaction, and the facet evaluator remains the only authority that turns an outcome into a verdict." <urn:usf:graph:v3-delivery> .
@@ -10208,6 +11221,15 @@
 <urn:usf:mechanism-assessment-item:capture-assurance-content> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-assurance-content> <urn:usf:predicate:v3Mechanism> "The proof and validation facets are satisfied by executed conformance subtests that a clean clone re-executes from tracked bytes, since conformance evidence is ignored state rather than carried authority." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-assurance-content> <urn:usf:predicate:verdict> "INVARIANT_RETAINED_MECHANISM_SUPERSEDED" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:assessedCaptureRemainder> <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:bottleneckRisk> "Low and bounded. Nothing currently blocks on it, and the gap is narrower than the declarationCount of 50 implies: only 5 of the 50 names have no V3 counterpart of any kind. Closing it means declaring a delivery guarantee per event and a producer binding, not recapturing 50 declarations." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:classification> "PARTIALLY_SUPERSEDED_V1_CAPTURE_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:invariantProtected> "Each product event carries a stated delivery guarantee and a declared producing capability, over a closed product-event vocabulary." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:legacyTrustBoundary> "None. V2 carried the vocabulary forward and grew it to 60 events, so this is a discontinuity at the V1-to-V3 jump rather than a deliberate deprecation." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:reason> "Two things were carried only by the domain-event class and have no V3 counterpart. First, a per-event delivery guarantee: all 50 V1 events declared at-least-once, and V3 declares no delivery-guarantee predicate anywhere, so the guarantee survives as prose inside the event-bus facets and as an idempotency key rather than as a property a new event must state. Second, a closed product-event vocabulary bound to its producer: V3 types an event as a free-form string and has no producesEvent edge, so the fact that one capability publishes exactly one named set is unrepresentable. The graph names canonical product events in facet prose without declaring them, which is the clearest evidence of the gap. auditmodel cannot express either: it records that something happened, not how its delivery is guaranteed." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:v3Mechanism> "The occurrence-recording half is superseded and satisfied. V1 modelled the same occurrence twice, once as a bus-delivered domain event and once as an audit record: 45 of its 50 domain-event canonical names also exist as audit-event names. V3 carries that half under the auditmodel facet kind, with 52 exported audit-event-kind constants yielding 147 distinct kinds across the realised capability modules, 67 auditmodel facetStatements, and audit assertions in every one of the 64 conformance suites. The delivery-contract half has no V3 mechanism at all." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-realisation-bindings> <urn:usf:predicate:assessedCaptureRemainder> <urn:usf:delivery-capture-remainder:realisation-bindings> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-realisation-bindings> <urn:usf:predicate:bottleneckRisk> "None. The remainder's captureStatus remains a true statement about V1's declarations and is not a work backlog." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-realisation-bindings> <urn:usf:predicate:classification> "SUPERSEDED_V1_CAPTURE_MECHANISM" <urn:usf:graph:v3-delivery> .
@@ -10249,9 +11271,9 @@
 <urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:invariantProtected> "Which governance controls apply to the delivered product, and why." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:legacyTrustBoundary> "None; the V1 layer is a scaffold that was never decided, so nothing is being trusted forward." <urn:usf:graph:v3-delivery> .
-<urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:reason> "The V1 governance layer names ISO/IEC 27001:2022 Annex A and carries the complete 93-control set, but every one of its 93 applicability decisions holds the same pendingassessment status and one boilerplate rationale, under a statement of applicability whose approval state is draft. The controls carry no titles. The only decided applicability, 43 applicable and 5 not applicable with per-control justification, covers 48 of the 93 and is recorded in a separate alignment-only artefact that disclaims completeness. Capturing the layer verbatim would therefore convert an absent control set into an undecided one, which is a more honest record but still not a derivable statement." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:reason> "Capturing the layer converted an absent control set into a stated one whose decisions are explicitly partial. That is the honest position: the statement is complete in its controls and incomplete in its decisions, and it records which is which rather than presenting an undecided control as an excluded one." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
-<urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:v3Mechanism> "None yet. The V1 layer is locatable and licensed for reviewed re-expression, so capture is mechanically feasible, but it would import 93 identical placeholder decisions rather than decided ones." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:v3Mechanism> "Capture is done. The layer was recovered from the pinned V1 assurance graph under its Apache-2.0 reviewed-re-expression boundary, joined to the 48 decisions the V1 alignment artefact had actually made, and now carries the control titles that the assurance graph alone did not hold." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:governance-capture-feasibility> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_NOT_YET_SATISFIED" <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:graphqlcontract> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:graphql-contract> <urn:usf:predicate:bottleneckRisk> "None: local, deterministic, parallel." <urn:usf:graph:v3-delivery> .
@@ -10357,9 +11379,9 @@
 <urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:classification> "PRODUCT_DELIVERABLE" <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:invariantProtected> "Which governance controls apply to the delivered product, and why." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:legacyTrustBoundary> "None; this is a compliance deliverable rather than a handoff mechanism." <urn:usf:graph:v3-delivery> .
-<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:reason> "A statement of applicability asserts control coverage. Producing one over facet kinds instead of the real control set would fabricate a compliance artefact. It is blocked on capturing the governance layer, not on a key or a tool." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:reason> "The invariant is partly satisfied and says so. 48 controls carry a decided applicability with its rationale and evidence classification; 45 carry pending-assessment. Deciding those 45 is governance judgement and cannot be derived from facet evidence, so the verdict stays SURVIVING_INVARIANT_NOT_YET_SATISFIED until they are decided." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
-<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:v3Mechanism> "Nothing in V3 currently states the control set. The governance layer of the V1 graph, 93 framework controls and 93 applicability decisions, is inventoried but not captured." <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:v3Mechanism> "V3 states the control set. urn:usf:statement-of-applicability:v3:1 carries the complete ISO/IEC 27001:2022 Annex A set of 93 controls with one applicability decision each, in approval state prepared-not-certified." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:statement-of-applicability> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_NOT_YET_SATISFIED" <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:assessedArtefact> <urn:usf:delivery-artefact:validatormanifest> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:validator-manifest> <urn:usf:predicate:bottleneckRisk> "None, but redundant." <urn:usf:graph:v3-delivery> .
@@ -10392,6 +11414,118 @@
 <urn:usf:realisation-identity:v1:1> <urn:usf:predicate:member> "usf-foundation-revision" <urn:usf:graph:v3-delivery> .
 <urn:usf:realisation-identity:v1:1> <urn:usf:predicate:nonClaim> "Recording the external facts a realisation was produced against is not a claim that re-running it will reproduce the same output. It is what makes a difference explainable rather than mysterious." <urn:usf:graph:v3-delivery> .
 <urn:usf:realisation-identity:v1:1> <urn:usf:predicate:type> <urn:usf:type:RealisationIdentityModel> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:approvalState> "prepared-not-certified" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:canonicalName> "v3" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:completenessRule> "A control is decided only where a recovered assessment states its applicability. The remaining controls are carried as pending-assessment and are not asserted to be either applicable or excluded. This statement is therefore complete in its control set and explicitly incomplete in its decisions." <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:decidedControlCount> "48" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:declaredControlCount> "93" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a510> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a511> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a512> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a513> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a514> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a515> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a516> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a517> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a518> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a519> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a51> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a520> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a521> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a522> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a523> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a524> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a525> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a526> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a527> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a528> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a529> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a52> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a530> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a531> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a532> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a533> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a534> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a535> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a536> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a537> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a53> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a54> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a55> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a56> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a57> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a58> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a59> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a61> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a62> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a63> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a64> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a65> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a66> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a67> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a68> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a710> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a711> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a712> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a713> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a714> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a71> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a72> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a73> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a74> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a75> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a76> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a77> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a78> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a79> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a810> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a811> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a812> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a813> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a814> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a815> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a816> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a817> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a818> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a819> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a81> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a820> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a821> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a822> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a823> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a824> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a825> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a826> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a827> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a828> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a829> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a82> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a830> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a831> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a832> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a833> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a834> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a83> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a84> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a85> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a86> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a87> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a88> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a89> <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "a-decided-applicability-is-not-a-claim-that-the-control-is-implemented" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "no-external-auditor-acceptance-claim" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "no-iso-certification-claim" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "no-statement-of-applicability-completeness-claim" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "prepared-is-not-certified-no-certification-audit-has-occurred" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "semantic-map-is-not-control-satisfaction" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:pendingControlCount> "45" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:provenance> "Control set and undecided placeholders recovered from the pinned V1 assurance graph graph/assurance/enterprise.trig at revision 028a9f96; decided applicability recovered from that repository's ISO 27001 alignment artefact, which covers 48 of the 93 controls and declares itself alignment-only." <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:soaFrameworkEdition> "ISO/IEC 27001:2022 Annex A" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:soaScope> "USF semantic authority, its registered command surface, the capability implementations realised from delivery authority, and the declared operational substrates." <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:type> <urn:usf:type:StatementOfApplicability> <urn:usf:graph:v3-delivery> .
+<urn:usf:type:ApplicabilityDecision> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
+<urn:usf:type:FrameworkControl> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
+<urn:usf:type:StatementOfApplicability> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:antiSelfWarrant> "The evidence records that a validator ran and what it returned. It never records satisfaction. The facet evaluator derives satisfaction from this evidence, and a requirement can never be its own evidence." <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:bottleneck> "none: validation happens at the point of realization, in parallel, with no gate between producing and accepting" <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:evidenceShape> "artefact identity, content digest, validator identity, validation outcome, authority snapshot digest" <urn:usf:graph:v3-delivery> .

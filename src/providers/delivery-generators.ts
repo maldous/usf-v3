@@ -271,18 +271,77 @@ function scaffoldGenerator(input: GeneratorInput): GeneratedArtefact {
 
 
 
+/**
+ * Projects the statement of applicability over the declared framework controls
+ * and their applicability decisions. It reports its own decision completeness
+ * rather than implying it: a control whose applicability was never assessed is
+ * emitted as pending, never silently as excluded, because a statement that
+ * cannot tell those apart is the compliance artefact this refused to fabricate.
+ */
+function assuranceGenerator(input: GeneratorInput): GeneratedArtefact {
+  const statements = subjectsOfType(input.graph, "urn:usf:type:StatementOfApplicability");
+  if (statements.length !== 1) {
+    return blocked("CONTROL_SET_NOT_STATED",
+      `A statement of applicability projects one declared control set; the corpus declares ${statements.length}.`);
+  }
+  const soa = statements[0]!;
+  const decisions = values(input.graph, soa, "hasApplicabilityDecision");
+  if (decisions.length === 0) {
+    return blocked("CONTROL_SET_NOT_STATED",
+      "The statement declares no applicability decisions, so no control coverage can be projected.");
+  }
+
+  const rows = decisions.map((decision) => {
+    const control = one(input.graph, decision, "decisionForControl");
+    return Object.freeze({
+      control: control === null ? null : one(input.graph, control, "frameworkReference"),
+      title: control === null ? null : one(input.graph, control, "controlName"),
+      applicability: one(input.graph, decision, "applicabilityStatus"),
+      rationale: one(input.graph, decision, "applicabilityRationale"),
+      evidenceClassification: one(input.graph, decision, "evidenceClassification"),
+      decisionBasis: one(input.graph, decision, "decisionBasis"),
+      evidence: values(input.graph, decision, "evidenceArtefact"),
+    });
+  }).sort((left, right) => String(left.control).localeCompare(String(right.control), "en", { numeric: true }));
+
+  const decided = rows.filter((row) => row.applicability !== "pending-assessment");
+  const counts = Object.freeze({
+    declared: rows.length,
+    decided: decided.length,
+    pending: rows.length - decided.length,
+    applicable: rows.filter((row) => row.applicability === "applicable").length,
+    notApplicable: rows.filter((row) => row.applicability === "not-applicable").length,
+  });
+
+  return ok(stableJson({
+    schema: "urn:usf:statement-of-applicability:1",
+    frameworkEdition: one(input.graph, soa, "soaFrameworkEdition"),
+    scope: one(input.graph, soa, "soaScope"),
+    approvalState: one(input.graph, soa, "approvalState"),
+    completeness: counts,
+    completenessRule: one(input.graph, soa, "completenessRule"),
+    provenance: one(input.graph, soa, "provenance"),
+    controls: rows,
+    nonClaims: values(input.graph, soa, "nonClaim"),
+  }), [counts, rows.length]);
+}
+
 export interface GeneratorRegistration {
   readonly generator: string;
   readonly produce: (input: GeneratorInput) => GeneratedArtefact;
 }
 
 /**
- * Surviving deterministic generators. The proof, validation, assurance and
- * workflow families were assessed as legacy ceremony whose invariants V3 already
+ * Surviving deterministic generators. The proof, validation and workflow
+ * families were assessed as legacy ceremony whose invariants V3 already
  * satisfies, and are not implemented; see
- * urn:usf:delivery-mechanism-assessment:v1:1.
+ * urn:usf:delivery-mechanism-assessment:v1:1. Assurance is not one of them: its
+ * assessment classifies the statement of applicability as a PRODUCT_DELIVERABLE
+ * whose invariant survives, and it became derivable once the control set and
+ * its applicability decisions were stated.
  */
 export const deterministicGenerators: Readonly<Record<string, GeneratorRegistration["produce"]>> = Object.freeze({
+  assurance: assuranceGenerator,
   scaffold: scaffoldGenerator,
 });
 

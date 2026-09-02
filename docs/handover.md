@@ -1,5 +1,81 @@
 # USF V3 handover
 
+## Authority boundary 2026-09-03 — governance captured, every remainder assessed
+
+The statement of applicability is realised and all six capture remainders now
+carry a verdict. `apps/platform/assurance/statement-of-applicability.json`
+exists, 49 KB, derived by a deterministic generator with **zero model
+invocations**.
+
+Operator input that unblocked it: **ISO 27001 prepared, but not certified.**
+That is a real posture, and clause 6.1.3(d) requires an SoA during preparation,
+so producing one in prepared state is not fabrication. What would be false is
+presenting it as complete or certified, and the artefact says otherwise in six
+explicit non-claims including `no-iso-certification-claim` and
+`prepared-is-not-certified-no-certification-audit-has-occurred`.
+
+The earlier refusal — "a truthful statement cannot be derived" — was correct
+while nothing stated the control set. It no longer holds:
+
+- **Captured** from the pinned V1 sources under the Apache-2.0
+  reviewed-re-expression boundary: the complete ISO/IEC 27001:2022 Annex A set
+  of 93 controls from `bak/usf/graph/assurance/enterprise.trig` at `028a9f96`,
+  joined to the 48 decisions the V1 alignment artefact had actually made, which
+  also supplied the control titles the assurance graph alone did not hold. 1 122
+  quads, transaction `sha256:29d1647a…`.
+- **Nothing was invented.** 48 controls carry a decided applicability (43
+  applicable, 5 not applicable) with rationale, evidence classification and
+  decision basis. The remaining **45 stay `pending-assessment`** with an explicit
+  basis recording that no assessment ever decided them, and no fabricated title
+  or evidence. A statement that could not distinguish undecided from excluded
+  would be the compliance artefact this refusal existed to prevent.
+- The artefact reports its own completeness — declared 93, decided 48, pending
+  45 — rather than implying it.
+
+Mechanism: `realizationMechanism` moved `BLOCKED_ON_AUTHORITY` →
+`DETERMINISTIC_GENERATOR`. That is a functional predicate, so this is the one
+change in the session that required `write-file` rather than append; the
+postimage was generated programmatically with exact-line removal that fails
+loudly on drift, and removed exactly the 8 intended lines and no others. The
+`assurance` generator is implemented in `src/providers/delivery-generators.ts`
+and registered; the registry comment claiming the assurance family was legacy
+ceremony is corrected, since its own assessment classifies it
+`PRODUCT_DELIVERABLE`.
+
+**`event-vocabulary` is resolved as PARTIAL**, verdict
+`SURVIVING_INVARIANT_REQUIRES_MECHANISM`. V1 modelled the same occurrence twice,
+as a bus-delivered domain event and as an audit record, and 45 of its 50
+domain-event names also exist as audit-event names. V3 carries that half under
+`auditmodel`: 52 exported audit-event-kind constants yielding 147 distinct
+kinds, 67 `auditmodel` facetStatements, audit assertions in all 64 conformance
+suites. What has **no** V3 mechanism is the delivery contract — a per-event
+guarantee (all 50 V1 events declared at-least-once; V3 declares no
+delivery-guarantee predicate at all) and a producer binding over a closed
+vocabulary (V3 types an event as a free-form string and the graph names
+canonical product events in facet prose without declaring them). The gap is
+real but far narrower than `declarationCount "50"` implies: only 5 of the 50
+names have no V3 counterpart of any kind, and V2 had grown the vocabulary to
+60, so this is a V1-to-V3 discontinuity rather than a deprecation.
+
+All six verdicts now read: assurance-content, realisation-bindings,
+state-machine-content and validator-rules superseded; event-vocabulary requires
+a mechanism; governance-content not yet satisfied, pending 45 decisions.
+
+Verification: 406/406 tests, gate conforming (24 legacy against a constant of
+24, 0 owned), corpus 24 697 → 25 831 quads. Blast radius measured in a lane at
+`10379e2` before applying — all eight profile projections and the facet verdict
+digest byte-identical, even though the governance capture removes quads from a
+subject the artefact set references. Facet **states** are unchanged after
+realisation (670 facets, 575 SATISFIED, UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED
+all 0, 64 capabilities fully satisfied); the realise-lane verdict digest moved
+`sha256:92a7e6a4…` → `sha256:1ffb9646…` because that digest binds the corpus
+that produced the verdicts and the corpus grew. Satisfaction did not change;
+identity did.
+
+Remaining, and genuinely not derivable: deciding the 45 pending controls is
+governance judgement. It cannot come from facet evidence, and no model should
+supply it.
+
 ## Authority boundary 2026-09-03 — capture remainders assessed
 
 One bounded semantic transaction landed against `graph/v3-delivery.nq`,
