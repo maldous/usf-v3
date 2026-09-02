@@ -642,6 +642,32 @@ export function looksTruncated(content: string): boolean {
   return !["}", ";", ")", "\u0060"].includes(last);
 }
 
+/**
+ * The names a module exports, for the surface-preservation gate.
+ *
+ * A repair exists to fix failing behaviour, not to reinvent the module. A
+ * clean-compiling wholesale rewrite that drops the exported surface destroys
+ * every facet the incumbent already satisfied -- measured: two capabilities went
+ * from two failing facets to nine the cycle such a rewrite landed, and the
+ * repair queue grew from one entry to sixteen. Parsing declarations is enough:
+ * the gate protects names, and behaviour changes within a preserved surface
+ * remain the rounds ceiling's problem.
+ */
+export function exportedNames(source: string): readonly string[] {
+  const names = new Set<string>();
+  for (const match of source.matchAll(
+    /^export\s+(?:async\s+)?(?:const|function|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/gmu)) {
+    names.add(match[1]!);
+  }
+  for (const match of source.matchAll(/^export\s*\{([^}]*)\}/gmu)) {
+    for (const entry of match[1]!.split(",")) {
+      const name = entry.split(" as ").pop()?.trim();
+      if (name !== undefined && name.length > 0) names.add(name);
+    }
+  }
+  return Object.freeze([...names].sort());
+}
+
 export interface ImplementationOutputCheck {
   readonly accepted: boolean;
   readonly code: string;

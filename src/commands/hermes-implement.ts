@@ -16,6 +16,7 @@ import {
   validateConformanceOutput, validateImplementationOutput,
   type CapabilityImplementationNeed, type CapabilityRepairState, type FailingRequirement,
   type ImplementationWorkUnit,
+  exportedNames,
 } from "../providers/implementation-work.ts";
 import {
   lookupSemanticResult, recordSemanticReuse, semanticCacheStatistics, storeSemanticResult,
@@ -546,6 +547,28 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       //
       // The compiler output is what makes the next attempt effective, so it is
       // kept even though the candidate is discarded.
+      if (unit.stage === "implementation" && unit.repairRound > 0) {
+        // A repair round may not shrink the exported surface the incumbent
+        // already carries: the test asserts against those names, and a rewrite
+        // that drops them lands cleanly and then fails every facet at once.
+        const incumbentSource = await readFile(
+          resolve(rootOf(unit.need.sourceRepository), unit.need.modulePath), "utf8").catch(() => null);
+        const dropped = incumbentSource === null ? []
+          : exportedNames(incumbentSource).filter((name) => !exportedNames(checked.content).includes(name));
+        if (dropped.length > 0) {
+          admissionOf(record, false);
+          candidateFailures[unit.need.capability] =
+            `the repair candidate drops exported names the incumbent module carries: ${dropped.join(", ")}. Repair the failing behaviour without removing the existing surface`.slice(0, 1_200);
+          outcomes.push(Object.freeze({
+            unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName,
+            outcome: "output-refused", code: "repair-drops-exports",
+            detail: `dropped: ${dropped.slice(0, 12).join(", ")}`,
+            transport: record.transport ?? null, actualModel: record.actualModel ?? null,
+            usage: record.usage ?? null,
+          }));
+          continue;
+        }
+      }
       if (unit.stage === "implementation") {
         const candidate = await typecheckCandidateModule(repositoryRoot, checked.content);
         if (!candidate.clean) {
