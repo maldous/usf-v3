@@ -205,6 +205,36 @@ async function resolveProductRealisationRoot(
   return authenticateProductRepositoryRoot(repositoryRoot, declared);
 }
 
+/**
+ * What this invocation actually spent.
+ *
+ * Split by whether the result was kept, because tokens spent on a candidate
+ * that did not compile are spent all the same. A total that counted only
+ * accepted results would understate the cost of a bad cycle exactly when that
+ * cost matters most. A cached result consumes nothing and is simply absent.
+ */
+export function summariseTokenUsage(
+  outcomes: readonly Readonly<Record<string, unknown>>[],
+): Readonly<Record<string, number>> {
+  const total = { inputTokens: 0, outputTokens: 0, totalTokens: 0, acceptedTokens: 0, refusedTokens: 0, invocationsCounted: 0 };
+  for (const outcome of outcomes) {
+    const usage = outcome.usage as Readonly<Record<string, unknown>> | null | undefined;
+    if (usage === null || usage === undefined) continue;
+    const number = (key: string): number => {
+      const value = usage[key];
+      return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
+    };
+    const totalTokens = number("totalTokens");
+    total.inputTokens += number("inputTokens");
+    total.outputTokens += number("outputTokens");
+    total.totalTokens += totalTokens;
+    total.invocationsCounted += 1;
+    if (outcome.outcome === "accepted") total.acceptedTokens += totalTokens;
+    else total.refusedTokens += totalTokens;
+  }
+  return Object.freeze(total);
+}
+
 function localName(iri: string): string {
   return iri.split(":").slice(-2, -1)[0] ?? iri.split(":").pop() ?? iri;
 }
@@ -456,6 +486,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         outcomes.push(Object.freeze({
           unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "output-refused",
           code: checked.code, detail: checked.detail, transport: record.transport ?? null, actualModel: record.actualModel ?? null,
+          usage: record.usage ?? null,
         }));
         continue;
       }
@@ -476,6 +507,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
             code: holding.has(unit.need.capability) ? "candidate-regresses-module" : "candidate-does-not-compile",
             detail: (candidate.detail ?? "the module does not compile").slice(0, 300),
             transport: record.transport ?? null, actualModel: record.actualModel ?? null,
+            usage: record.usage ?? null,
           }));
           continue;
         }
@@ -542,6 +574,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       // Derived after this invocation's conformance runs, so a check that just
       // passed is visible in the same cycle that produced it.
       facets: await summariseCurrentFacets(),
+      tokenUsage: summariseTokenUsage(outcomes),
       targetRepository: convention.productRepository,
       realisationRoot: convention.productRepository === null ? "." : realisationRoot,
       dispatchedUnits: pending.length,

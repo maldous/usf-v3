@@ -374,6 +374,8 @@ export async function hermesLifecycleStatusCommand(repositoryRoot: string, args:
       supersededCycle,
       authorityIdentity: observed.record?.authorityIdentity ?? authorityIdentity(repositoryRoot, selectedManifest),
       currentCycle: cycle === null ? null : cycle.cycle ?? null,
+      tokenUsage: cycle === null ? null : cycle.tokenUsage ?? null,
+      cumulativeTokens: cycle === null ? null : cycle.cumulativeTokens ?? null,
       lastObservedAt: cycle === null ? null : cycle.observedAt ?? null,
       lastReason: cycle === null ? "no cycle has run under a supervisor yet"
         : observed.liveness === "live" ? cycle.lastReason ?? null
@@ -453,6 +455,10 @@ interface CycleProjection {
   readonly artefactLane: string;
   readonly artefact: Record<string, unknown> | null;
   readonly transactions: readonly Record<string, unknown>[];
+  /** What this cycle spent, split by whether the result was kept. */
+  readonly tokenUsage: Record<string, number> | null;
+  /** Cumulative across this supervisor's life; it resets when the supervisor does. */
+  readonly cumulativeTokens: number;
   readonly facets: Record<string, unknown> | null;
   readonly blockers: readonly Record<string, unknown>[];
   readonly providerActivity: readonly Record<string, unknown>[];
@@ -514,6 +520,10 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
 
   let cycle = 0;
   let idleCycles = 0;
+  // Cumulative across this supervisor's life. It resets when the supervisor
+  // does, which is honest: a new process has spent nothing yet, and the ignored
+  // cycle record is not an accounting ledger.
+  let spentTokens = 0;
   let reason = "running";
   try {
     for (;;) {
@@ -577,6 +587,8 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
           }));
         }
       }
+      const cycleTokens = (implementation?.tokenUsage ?? null) as Record<string, number> | null;
+      spentTokens += cycleTokens?.totalTokens ?? 0;
       const projection: CycleProjection = Object.freeze({
         schema: "urn:usf:hermes-cycle-projection:1" as const,
         version: 1 as const,
@@ -615,9 +627,17 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
         // lane ran at all.
         facets: (implementation?.facets ?? artefact?.facets ?? null) as Record<string, unknown> | null,
         blockers: Object.freeze(blockers.slice(0, 24)),
+        // What the cycle spent, and what it spent it on. Usage rides along with
+        // each unit so a costly model that produces nothing is visible per
+        // capability rather than only in the total.
+        tokenUsage: cycleTokens,
+        cumulativeTokens: spentTokens,
         providerActivity: Object.freeze(outcomes
           .filter((outcome) => outcome.outcome === "accepted")
-          .map((outcome) => Object.freeze({ capability: outcome.capability, transport: outcome.transport, model: outcome.actualModel }))
+          .map((outcome) => Object.freeze({
+            capability: outcome.capability, transport: outcome.transport, model: outcome.actualModel,
+            totalTokens: ((outcome.usage as Record<string, unknown> | null | undefined)?.totalTokens as number | undefined) ?? null,
+          }))
           .slice(0, 24)),
         idleCycles,
         lastReason: implementation === null ? "implementation lane refused"
