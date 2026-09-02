@@ -79,7 +79,17 @@ test("behaviour is observed by executing the module inside the repository confin
     assert.equal(evidence.get("urn:usf:delivery-facet:probeholds")?.passed, true);
     assert.equal(evidence.get("urn:usf:delivery-facet:probeholds")?.stale, false);
     assert.equal(evidence.get("urn:usf:delivery-facet:probefails")?.passed, false);
-    assert.equal(evidence.get("urn:usf:delivery-facet:probeunwritten"), undefined);
+    // A requirement whose subtest was never written must surface as repairable
+    // work, not vanish. When this loaded as undefined it was invisible to
+    // repair -- repair keys on evidence entries -- and fifty-five facets sat
+    // NOT_ASSESSED across six cycles with nothing ever coming for them. The
+    // detail names the test file, which routes the repair to the test side.
+    const unwritten = evidence.get("urn:usf:delivery-facet:probeunwritten");
+    assert.equal(unwritten?.blocked, true);
+    assert.equal(unwritten?.executed, false);
+    assert.match(unwritten?.detail ?? "", /declares no subtest named for this requirement/u);
+    assert.ok((unwritten?.detail ?? "").includes(conformancePath),
+      "the detail must name the test so repair targets the right artefact");
 
     // Changing the module makes the recorded observation stale rather than wrong.
     await writeFile(resolve(repositoryRoot, modulePath),

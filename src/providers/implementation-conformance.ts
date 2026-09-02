@@ -418,15 +418,24 @@ export async function loadConformanceEvidence(
     if (blocked && record.modulePathDigest.length === 0) continue;
     for (const outcome of record.outcomes ?? []) {
       if (typeof outcome.facet !== "string") continue;
-      // A subtest that observes no behaviour is work outstanding, not silence.
       const inadmissible = outcome.admissible === false || currentInadmissible.has(outcome.facet);
-      if (!blocked && !inadmissible && !outcome.executed) continue;
+      // A subtest the test never declared is work outstanding, not silence --
+      // and skipping it here made it silence: the facet stayed NOT_ASSESSED
+      // forever, invisible to repair, because repair keys on evidence entries
+      // and this was the one branch that produced none. Fifty-five facets sat
+      // pinned that way across six cycles. An executed run that omits a facet
+      // now records a blocked entry whose detail names the test file, which
+      // routes the repair to the conformance stage.
+      const unwritten = !blocked && !inadmissible && !outcome.executed;
+      if (unwritten && !record.executed) continue;
       const candidate: ConformanceEvidenceEntry = Object.freeze({
-        executed: !blocked && !inadmissible,
-        passed: !blocked && !inadmissible && outcome.passed === true,
-        stale, blocked: blocked || inadmissible,
+        executed: !blocked && !inadmissible && !unwritten,
+        passed: !blocked && !inadmissible && !unwritten && outcome.passed === true,
+        stale, blocked: blocked || inadmissible || unwritten,
         evidence: `${record.conformancePath}@${record.conformancePathDigest.slice(0, 19)} subtest ${outcome.facetName}`,
-        detail: inadmissible
+        detail: unwritten
+          ? `the test at ${record.conformancePath} declares no subtest named for this requirement; add one that invokes the module and asserts the behaviour the requirement states`
+          : inadmissible
           ? outcome.detail ?? `the subtest for this requirement in ${record.conformancePath} asserts exported shape without invoking the module, so it observes no behaviour`
           : blocked
           ? `${record.refusal ?? "the behavioural check could not execute"}${record.typecheck.detail === null ? "" : `: ${record.typecheck.detail.slice(0, 900)}`}`
