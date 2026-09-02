@@ -47,6 +47,13 @@
       "graph": "urn:anqr:graph:realisation-convention",
       "role": "product-contract",
       "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/known-limitations.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:known-limitations",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
     }
   ]
 }

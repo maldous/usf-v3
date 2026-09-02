@@ -32,7 +32,17 @@ separate lane: they are satisfied by an artefact at a canonical path, produced
 by `usf hermes realise`, which is deliberately not run under a product profile.
 They will sit NOT_ASSESSED throughout this run and that is correct, not a stall;
 closing them is its own directive, not part of this one. The conformance loop
-cannot and must not try to satisfy them. UI and other undefined
+cannot and must not try to satisfy them.
+
+One implementation-conformance capability is also excluded, by operator decision
+on 2026-09-02 and recorded as `urn:anqr:known-limitation:qrartefactcreation-codec`:
+`qrartefactcreation` requires a from-scratch QR codec (Reed-Solomon, matrix
+placement, decoder) that the stdlib-only convention forbids importing and a
+bounded worker cannot write; aimed repair with the real assertion did not close
+it. Its 5 facets stay honestly UNSATISFIED in the evaluator and are subtracted
+from the completion condition. Resolution options (heavier route, permit one
+audited dependency, or leave open) are in the graph record; the operator accepted
+it open. UI and other undefined
 scope deliberately waits; it is recorded as dispositions and opportunities in
 the ANQR profile, not as pending work.
 
