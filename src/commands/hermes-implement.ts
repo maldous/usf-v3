@@ -490,6 +490,14 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     evidenceDigest = typeof result.evidenceDigest === "string" ? result.evidenceDigest : null;
     const records = Array.isArray(result.units) ? result.units as Record<string, unknown>[] : [];
     const byUnit = new Map(records.map((record) => [record.unit as string, record] as const));
+    // Admission verdicts fold back into route history after the loop: the
+    // transport layer knows a route answered, only this layer knows whether the
+    // answer was worth keeping, and ordering runs on what was kept.
+    const admissions: Array<Readonly<{ candidateId: string; admitted: boolean }>> = [];
+    const admissionOf = (record: Record<string, unknown>, admitted: boolean): void => {
+      const candidateId = record.selectedCandidateId;
+      if (typeof candidateId === "string" && candidateId.length > 0) admissions.push(Object.freeze({ candidateId, admitted }));
+    };
     for (const { unit, identity } of pending) {
       const record = byUnit.get(unit.unit);
       if (record === undefined || record.status !== "ok" || typeof record.resultText !== "string") {
@@ -506,6 +514,13 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         ? validateImplementationOutput(record.resultText)
         : validateConformanceOutput(record.resultText, unit.need, specifier);
       if (!checked.accepted) {
+        admissionOf(record, false);
+        // Truncation must reach the repair prompt as truncation. The compiler
+        // would otherwise report the damage hundreds of lines from its cause
+        // and the next round would chase a defect the model never made.
+        if (checked.code === "candidate-truncated") {
+          candidateFailures[unit.need.capability] = (checked.detail ?? "the generation was truncated").slice(0, 1_200);
+        }
         outcomes.push(Object.freeze({
           unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "output-refused",
           code: checked.code, detail: checked.detail, transport: record.transport ?? null, actualModel: record.actualModel ?? null,
@@ -523,6 +538,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       if (unit.stage === "implementation") {
         const candidate = await typecheckCandidateModule(repositoryRoot, checked.content);
         if (!candidate.clean) {
+          admissionOf(record, false);
           candidateFailures[unit.need.capability] = (candidate.detail ?? "the module does not compile").slice(0, 1_200);
           outcomes.push(Object.freeze({
             unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName,
@@ -536,6 +552,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         }
         delete candidateFailures[unit.need.capability];
       }
+      admissionOf(record, true);
       await storeSemanticResult(repositoryRoot, identity, checked.content, evidenceDigest);
       accepted.push(Object.freeze({
         path: unit.targetPath, content: checked.content,
@@ -546,6 +563,13 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "accepted",
         transport: record.transport ?? null, actualModel: record.actualModel ?? null, usage: record.usage ?? null,
       }));
+    }
+
+    if (admissions.length > 0) {
+      const { readRouteDeferrals, writeRouteDeferrals, applyOutputAdmissions } =
+        await import("../providers/route-deferral.ts");
+      await writeRouteDeferrals(repositoryRoot,
+        applyOutputAdmissions(await readRouteDeferrals(repositoryRoot), admissions, Date.now()));
     }
   }
 

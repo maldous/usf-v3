@@ -24,6 +24,17 @@ export interface RouteDeferral {
   readonly attempts?: number;
   readonly successes?: number;
   readonly meanLatencyMs?: number;
+  /**
+   * What downstream admission made of the text this route returned.
+   *
+   * Transport success only means the route answered. Measured, one host route
+   * answered 43 times for 1.77 million tokens while almost nothing it produced
+   * survived admission -- and because ordering ranked transport success, the
+   * most wasteful route in the pool was being preferred for it. These counters
+   * let ordering rank what a route produced that was actually kept.
+   */
+  readonly outputAcceptances?: number;
+  readonly outputRefusals?: number;
 }
 
 /**
@@ -96,6 +107,10 @@ export async function readRouteDeferrals(repositoryRoot: string): Promise<Readon
         successes: Number.isInteger(record.successes) && (record.successes ?? 0) >= 0 ? record.successes! : 0,
         meanLatencyMs: typeof record.meanLatencyMs === "number" && Number.isFinite(record.meanLatencyMs)
           && record.meanLatencyMs >= 0 ? record.meanLatencyMs : 0,
+        outputAcceptances: Number.isInteger(record.outputAcceptances) && (record.outputAcceptances ?? 0) >= 0
+          ? record.outputAcceptances! : 0,
+        outputRefusals: Number.isInteger(record.outputRefusals) && (record.outputRefusals ?? 0) >= 0
+          ? record.outputRefusals! : 0,
       });
     }
     return Object.freeze(records);
@@ -118,12 +133,64 @@ export interface ObservedRouteOutcome {
 }
 
 /** How productive a route has been, for ordering rather than admission. */
+/** One admission verdict for text a route produced: kept, or refused downstream. */
+export interface ObservedOutputAdmission {
+  readonly candidateId: string;
+  readonly admitted: boolean;
+}
+
+/**
+ * Fold admission verdicts into the record.
+ *
+ * This is a second, later observation about the same invocation: the transport
+ * fold said the route answered; this says whether what it answered with
+ * survived admission. It therefore never touches attempts, successes or any
+ * deferral produced by the transport layer -- counting it again would
+ * double-count the invocation.
+ *
+ * The one exception is the stand-down: a route whose output has been refused at
+ * the ceiling without a single acceptance is spending real budget producing
+ * nothing usable, which is the transport-unproductive rule one layer up.
+ * Measured before this existed, one route consumed 86 percent of a session's
+ * tokens with zero admissions while ranking top of its provider.
+ */
+export function applyOutputAdmissions(
+  records: Readonly<Record<string, RouteDeferral>>,
+  admissions: readonly ObservedOutputAdmission[],
+  nowMs: number,
+): Readonly<Record<string, RouteDeferral>> {
+  const next: Record<string, RouteDeferral> = { ...records };
+  for (const admission of admissions) {
+    const held = next[admission.candidateId];
+    const outputAcceptances = (held?.outputAcceptances ?? 0) + (admission.admitted ? 1 : 0);
+    const outputRefusals = (held?.outputRefusals ?? 0) + (admission.admitted ? 0 : 1);
+    const base: RouteDeferral = held ?? Object.freeze({
+      candidateId: admission.candidateId, reasonCode: "OUTPUT_OBSERVED",
+      consecutiveFailures: 0, observedAtMs: nowMs, deferUntilMs: 0,
+      attempts: 0, successes: 0, meanLatencyMs: 0,
+    });
+    const outputUnproductive = outputRefusals >= unproductiveAttemptCeiling && outputAcceptances === 0;
+    next[admission.candidateId] = Object.freeze({
+      ...base,
+      observedAtMs: nowMs,
+      outputAcceptances,
+      outputRefusals,
+      ...(outputUnproductive && base.deferUntilMs <= nowMs
+        ? { reasonCode: `ROUTE_OUTPUT_UNPRODUCTIVE:${outputRefusals}`, deferUntilMs: nowMs + 24 * hour }
+        : {}),
+    });
+  }
+  return Object.freeze(next);
+}
+
 export interface RouteProductivity {
   readonly candidateId: string;
   readonly attempts: number;
   readonly successes: number;
   readonly successRate: number;
   readonly meanLatencyMs: number;
+  readonly outputAcceptances: number;
+  readonly outputRefusals: number;
 }
 
 export function routeProductivity(
@@ -138,6 +205,8 @@ export function routeProductivity(
       candidateId, attempts, successes,
       successRate: successes / attempts,
       meanLatencyMs: record.meanLatencyMs ?? 0,
+      outputAcceptances: record.outputAcceptances ?? 0,
+      outputRefusals: record.outputRefusals ?? 0,
     }));
   }
   return productivity;
@@ -162,9 +231,18 @@ export function applyRouteOutcomes(
   // Cumulative history survives a cleared deferral: a route that succeeds is no
   // longer deferred, but what it has done is still how it earns its place in
   // the order.
-  const history = (candidateId: string): Readonly<{ attempts: number; successes: number; meanLatencyMs: number }> => {
+  const history = (candidateId: string): Readonly<{
+    attempts: number; successes: number; meanLatencyMs: number;
+    outputAcceptances: number; outputRefusals: number;
+  }> => {
     const held = records[candidateId];
-    return { attempts: held?.attempts ?? 0, successes: held?.successes ?? 0, meanLatencyMs: held?.meanLatencyMs ?? 0 };
+    return {
+      attempts: held?.attempts ?? 0, successes: held?.successes ?? 0, meanLatencyMs: held?.meanLatencyMs ?? 0,
+      // Admission history rides along untouched: a transport observation says
+      // nothing about admission, and rebuilding the record without these fields
+      // is the same silent-omission defect the reader once had.
+      outputAcceptances: held?.outputAcceptances ?? 0, outputRefusals: held?.outputRefusals ?? 0,
+    };
   };
   const observed = (candidateId: string, ok: boolean, latencyMs: number) => {
     const prior = history(candidateId);
@@ -173,6 +251,8 @@ export function applyRouteOutcomes(
       attempts,
       successes: prior.successes + (ok ? 1 : 0),
       meanLatencyMs: Math.round((prior.meanLatencyMs * prior.attempts + latencyMs) / attempts),
+      outputAcceptances: prior.outputAcceptances,
+      outputRefusals: prior.outputRefusals,
     };
   };
   for (const outcome of outcomes) {

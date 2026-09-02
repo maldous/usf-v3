@@ -572,6 +572,72 @@ export function classifySubtests(
   return Object.freeze({ named, invoking });
 }
 
+
+/**
+ * Structural truncation detection.
+ *
+ * A generation cut off by an output ceiling ends mid-construct, and the
+ * compiler then reports the damage far from its cause -- a missing semicolon at
+ * line 718 of a file whose real defect is that it stops. API transports report
+ * finishReason and are refused upstream; host-CLI transports report nothing, so
+ * the text itself is the only witness. The scanner skips strings, template
+ * literals and comments, then calls the output truncated only on the compound
+ * signal: brace depth still open at end of text AND the text stopping somewhere
+ * no module ends. Either alone is too eager; together they do not occur in a
+ * finished module.
+ */
+export function looksTruncated(content: string): boolean {
+  let depth = 0;
+  let index = 0;
+  const length = content.length;
+  while (index < length) {
+    const ch = content[index]!;
+    const next = content[index + 1];
+    if (ch === "/" && next === "/") {
+      while (index < length && content[index] !== "\n") index += 1;
+      continue;
+    }
+    if (ch === "/" && next === "*") {
+      index += 2;
+      while (index < length && !(content[index] === "*" && content[index + 1] === "/")) index += 1;
+      index += 2;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") {
+      const quote = ch;
+      index += 1;
+      while (index < length) {
+        if (content[index] === "\\") { index += 2; continue; }
+        // A template's interpolation may hold braces; counting the outer pair
+        // and skipping its contents is enough for a depth-only scan.
+        if (quote === "`" && content[index] === "$" && content[index + 1] === "{") {
+          let inner = 1;
+          index += 2;
+          while (index < length && inner > 0) {
+            if (content[index] === "{") inner += 1;
+            if (content[index] === "}") inner -= 1;
+            index += 1;
+          }
+          continue;
+        }
+        if (content[index] === quote) break;
+        if (quote !== "`" && content[index] === "\n") break;
+        index += 1;
+      }
+      index += 1;
+      continue;
+    }
+    if (ch === "{") depth += 1;
+    if (ch === "}") depth -= 1;
+    index += 1;
+  }
+  if (depth <= 0) return false;
+  const tail = content.trimEnd();
+  const last = tail[tail.length - 1] ?? "";
+  // A finished construct ends a line at one of these; text cut mid-token does not.
+  return !["}", ";", ")", "\u0060"].includes(last);
+}
+
 export interface ImplementationOutputCheck {
   readonly accepted: boolean;
   readonly code: string;
@@ -620,6 +686,10 @@ export function validateImplementationOutput(raw: string): ImplementationOutputC
   const refuse = (code: string, detail: string): ImplementationOutputCheck =>
     Object.freeze({ accepted: false, code, detail, content, contentDigest: canonicalDigest(content) });
   if (content.length === 0) return refuse("empty-output", "the model returned no content");
+  if (looksTruncated(content)) {
+    return refuse("candidate-truncated",
+      "the generation was cut off by an output ceiling: it ends mid-construct with braces still open. Produce a materially smaller module that still satisfies every facet, rather than the same module again");
+  }
   // Content beginning with a slash reads as an absolute path to the canonical
   // envelope. A leading comment is not that, and rejecting idiomatic TypeScript
   // that opens with a docblock would discard most valid output.
@@ -657,6 +727,10 @@ export function validateConformanceOutput(
     accepted: false, code, detail, content, contentDigest: digest, coveredFacets: Object.freeze([] as readonly string[]),
   });
   if (content.length === 0) return refuse("empty-output", "the model returned no content");
+  if (looksTruncated(content)) {
+    return refuse("candidate-truncated",
+      "the generation was cut off by an output ceiling: it ends mid-construct with braces still open. Produce a materially smaller test that still exercises every facet, rather than the same test again");
+  }
   if (content.startsWith("/") && !content.startsWith("//") && !content.startsWith("/*")) {
     return refuse("leading-slash", "test content may not begin with a path-like slash");
   }

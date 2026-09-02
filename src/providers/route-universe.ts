@@ -252,6 +252,9 @@ export interface RouteOrderingObservation {
   readonly successes: number;
   readonly successRate: number;
   readonly meanLatencyMs: number;
+  /** Downstream admission verdicts on what the route produced, when observed. */
+  readonly outputAcceptances?: number;
+  readonly outputRefusals?: number;
 }
 
 /**
@@ -268,7 +271,16 @@ function routeRank(
   observed: ReadonlyMap<string, RouteOrderingObservation> | undefined,
 ): readonly [number, number] {
   const record = observed?.get(candidate.candidateId);
-  if (record === undefined || record.attempts === 0) return [0.5, 0];
+  if (record === undefined) return [0.5, 0];
+  // Admission outranks transport. A route that answers every time while nothing
+  // it produces survives admission is not productive, it is expensive -- one
+  // such route absorbed 86 percent of a session's tokens with zero admissions
+  // while its perfect transport record kept it at the top of its provider.
+  // Admission verdicts are rarer than transport observations, so they are used
+  // whenever they exist and transport success remains the prior until then.
+  const verdicts = (record.outputAcceptances ?? 0) + (record.outputRefusals ?? 0);
+  if (verdicts > 0) return [(record.outputAcceptances ?? 0) / verdicts, record.meanLatencyMs];
+  if (record.attempts === 0) return [0.5, 0];
   return [record.successRate, record.meanLatencyMs];
 }
 

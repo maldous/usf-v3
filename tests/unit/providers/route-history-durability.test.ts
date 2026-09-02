@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import test from "node:test";
 
 import {
+  applyOutputAdmissions,
   applyRouteOutcomes,
   readRouteDeferrals,
   routeProductivity,
@@ -121,5 +122,26 @@ test("a malformed count is treated as absent rather than trusted", async () => {
     assert.equal(readBack[route]?.attempts, 0);
     assert.equal(readBack[route]?.successes, 0);
     assert.equal(readBack[route]?.meanLatencyMs, 0);
+  } finally { await cleanup(); }
+});
+
+test("admission verdicts survive the round trip exactly as transport history does", async () => {
+  const { root, cleanup } = await scratch();
+  try {
+    let records = applyRouteOutcomes({},
+      [{ candidateId: route, outcome: "ok", reasonCode: "INVOCATION_OK", latencyMs: 1_000 }], 1_000);
+    records = applyOutputAdmissions(records,
+      [{ candidateId: route, admitted: true }, { candidateId: route, admitted: false }], 2_000);
+    await writeRouteDeferrals(root, records);
+    const readBack = await readRouteDeferrals(root);
+    assert.equal(readBack[route]?.outputAcceptances, 1);
+    assert.equal(readBack[route]?.outputRefusals, 1);
+    // And a later transport fold must not erase them: rebuilding the record
+    // with an explicit field list is how the last history was silently lost.
+    const folded = applyRouteOutcomes(readBack,
+      [{ candidateId: route, outcome: "ok", reasonCode: "INVOCATION_OK", latencyMs: 3_000 }], 3_000);
+    assert.equal(folded[route]?.outputAcceptances, 1);
+    assert.equal(folded[route]?.outputRefusals, 1);
+    assert.equal(folded[route]?.attempts, 2);
   } finally { await cleanup(); }
 });
