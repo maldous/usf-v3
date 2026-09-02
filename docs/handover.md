@@ -66,8 +66,49 @@ authority change, not hygiene:
   dormant, explicitly incomplete historical recovery lane, unchanged by this
   pass.
 
-Next safe action: verify the clean-clone proof recorded in the section below
-(or re-run it), then tag the release commit.
+### Clean-clone proof (executed 2026-09-03)
+
+Semantic completion is reproducible from tracked bytes, not preserved cache.
+A private standalone lane held fresh `--no-hardlinks` clones of both
+repositories, usf-v3 detached at `e815080` and anqr at `1cf44ce`, given only
+the hermetic inputs a third party would supply: the pnpm store and frozen
+catalogue copied beneath `.usf/` (`.usf/cache` kept owner-private 0700), the
+`.usf/repositories.json` locator naming `anqr-main: ../anqr`, and an empty
+mode-0600 env file. `FORCE_COLOR` was unset throughout. Then, in order:
+
+1. `./scripts/bootstrap.sh` — offline frozen-lockfile install completed in
+   747 ms with no network fetch; the frozen catalogue read back the exact
+   recorded digests (`raw sha256:9c9be3f3…`, `normalized sha256:f54dc34e…`);
+   `usf init` ok; containment check pass.
+2. `corepack pnpm run check` — typecheck clean, **404/404 tests, 0 failures**.
+3. Evidence regeneration: the lane starts at NOT_ASSESSED 719 because
+   conformance evidence is ignored state. Five
+   `usf hermes implement --apply` invocations (empty env file, `--limit 1`)
+   re-executed **all 103 capability conformance suites inside the cage:
+   103/103 executed, 0 failed, 0 units dispatched to any provider**.
+4. Facet read-back after regeneration: 64/64, 39/39 and 103/103 with
+   UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0, and the three verdict digests
+   **byte-identical to the primary's**
+   (`sha256:e958768a…`, `sha256:17d52953…`, `sha256:3a9fa0d6…`).
+5. The packet-lane read-back reproduced semantic digest `sha256:aea7ac1b…`;
+   `usf profile record` regenerated the realisation record and
+   `usf profile status` then read `current` with closure digest
+   `sha256:5527a1e5…` and no external-fact drift.
+6. The lane's working tree remained clean at the exact commit through every
+   step. The lane was removed after this record was written; the receipt is
+   the evidence, the directory is not.
+
+Declared prerequisites outside the repository, all machine-checked during the
+proof: Git, Node.js ≥ 22, Corepack (pnpm 11.24.0 pinned by `packageManager`),
+util-linux `flock`, bubblewrap 0.9.0 (graph-declared exact host tool), a POSIX
+shell, and — only for a first bootstrap with no provided catalogue — bounded
+network access to models.dev. Secrets/runtime configuration:
+`.usf/credentials/providers.env` (operator-supplied, owner-only, never
+tracked) and the repository locator. Optional pinned historical sources (V1 at
+028a9f96, V2 at 2d7eb31) are re-audit inputs only and are not needed for any
+build, test, evaluation or realisation step above.
+
+Next safe action: tag the release commit (this section's own commit).
 
 ## Wrap-up 2026-09-02 — directive complete; supervisor intentionally stopped
 
