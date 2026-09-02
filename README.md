@@ -60,13 +60,39 @@ later products without Hermes-Agent. Docker, GitHub, remote runners, CAS,
 databases and historical repositories are not runtime prerequisites. See
 [`docs/hermes-management.md`](docs/hermes-management.md).
 
+## Product repositories
+
+ANQR's realised source lives in its own repository, declared in the graph as
+`urn:anqr:repository:main` and mapped to a local checkout through ignored
+operator state, exactly as credentials are handled. Clone it beside this
+repository and write the locator before running product conformance or
+product-profile evaluation:
+
+```sh
+printf '%s\n' '{' ' "schema": "urn:usf:repository-locators:1",' ' "repositories": { "anqr-main": "../anqr" }' '}' > .usf/repositories.json
+```
+
+Product evidence executes against that checkout inside USF's confinement; the
+product repository needs no toolchain of its own.
+
 ## Current claim
 
-Gate 0, the fake-provider/isolated-check Gate 1 path, foreground lifecycle,
-provider-qualification foundation and bounded semantic-recovery tooling are
-implemented. Historical recovery inventory/adoption, trusted provider receipt
-and live provider contribution remain incomplete. The repository does not claim
-complete semantic denominator coverage, enterprise ANQR realisation, terminal
-proof, staging, production or production BAU. See
-[`docs/handover.md`](docs/handover.md) for the exact optional-Hermes realization
-status and current boundary.
+The first complete semantic realisation boundary was reached on 2026-09-02.
+Every implementation-conformance facet on `graph/manifests/v3-delivery.json`
+(64/64 capabilities), `graph/products/anqr/manifest.json` (39/39) and the
+composed `graph/manifests/anqr-with-foundation.json` (103/103) reads
+UNSATISFIED 0, NOT_ASSESSED 0, BLOCKED 0 and STALE 0. Verdicts are derived
+from executed behavioural conformance evidence, never authored or stored;
+re-derive them at any time with:
+
+```sh
+./bin/usf hermes implement --manifest graph/manifests/anqr-with-foundation.json
+./bin/usf profile status --manifest graph/products/anqr/manifest.json
+```
+
+Claims stop at that boundary: no staging, production, terminal proof or live
+external provider behaviour is claimed, and packet-lane completion records
+under `graph/manifests/self-host-provider-v3.json` are point-in-time
+authority whose currentness moves with the exact bytes they bind. See
+[`docs/handover.md`](docs/handover.md) for the wrap-up boundary and
+[`docs/acceptance/`](docs/acceptance/) for the recorded acceptance run.

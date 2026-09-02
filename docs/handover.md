@@ -1,5 +1,74 @@
 # USF V3 handover
 
+## Housekeeping boundary 2026-09-03 — release candidate prepared
+
+A post-realisation housekeeping pass prepared the wrap-up boundary below as a
+clean, hermetic release baseline. No product behaviour or semantic requirement
+changed. What was done, all evidence-backed:
+
+- **Worktrees**: seven leftover detached validation lanes (five
+  `/tmp/usf-integration-validation-verify.*`, `.usf/tmp/full-check-46c18cb`,
+  `.usf/tmp/integration-validation-verify.8R6PiH`) were removed after proving
+  per blob that every byte they held is superseded on the mainline (each lane
+  was one synthetic integration-verification commit whose only unique blob was
+  an earlier iteration of a file the mainline carries in later form; the one
+  dirty edit, a `${originalBinding}\n` replace fix in
+  `tests/unit/realisation/workspace.test.ts`, is already at HEAD line 574).
+  One canonical worktree remains.
+- **Branches**: `recovery/operator-leaf-tsc-failure` deleted; its one commit's
+  blobs landed at 349a362 with the removed test block relocated to
+  `tests/contract/operator-provider-leaf.test.ts`. `main` is retained and equal
+  to `origin/main` (8fa2ef7), the last remote-verified boundary; the release
+  line `v3-authority-transition` is 101 commits ahead and unpushed.
+- **Refs**: five ad-hoc bookmark refs under `refs/usf/` (authority-restored,
+  census-done, fai-done, final, handover-tip) deleted; each pointed at a
+  mainline ancestor. The registered `refs/usf/integration/*` refs are retained.
+- **Ignored state**: `.usf` pruned from 1.3 GB to ~460 MB — `.usf/tmp` lanes
+  and scratch, `.usf/workspaces` (post-integration candidate materialisations,
+  rederivable through resolve/apply), a check-debug directory, a stale pnpm
+  store-index backup, and the orphaned `.usf/drafts/operator-6076913` (an
+  abandoned implementation iteration from the 2026-09-01 tsc-failure recovery,
+  referenced by nothing tracked and superseded by the landed, fully verified
+  implementation). Retained: `.usf/cache` (hermetic pnpm store),
+  `.usf/catalog` (frozen catalogue bytes bound by recorded digests),
+  credentials, the repository locator, and all receipt/evidence/observation
+  records.
+- **ANQR repository**: the final supervisor cycle's post-checkpoint output
+  (repaired payloadclassification and qrartefactcreation module/test pairs)
+  was checkpointed as `1cf44ce`; the 39/39 verdict binds those exact bytes.
+  The repository is clean. It still has **no remote**: until one is added, the
+  realised product exists only on this machine.
+- **Interface hygiene**: `scripts/hermes-bau.sh` (superseded external driver
+  with a hard-coded machine path; graph-undeclared) removed. README's
+  "Current claim" was two boundaries stale and now states the realisation
+  boundary, the re-derivation commands and the product-repository locator.
+
+Known conditions recorded, deliberately not repaired here because each is an
+authority change, not hygiene:
+
+- The graph integrity gate reads `gateConforming: false`: legacy violations 27
+  against a recorded debt constant of 24 (`src/commands/graph-integrity.ts`).
+  The three newer entries are multi-valued `selectedModel` declarations on the
+  three host-CLI transports — intended state since the multi-model pool work,
+  flagged by a single-valued-predicate rule. Deciding between raising the
+  recorded debt, exempting the predicate, or remodelling the declaration is a
+  semantic decision for a follow-up directive.
+- The provider packet lane (`graph/manifests/self-host-provider-v3.json`,
+  profile v3-self-host:3, semantic digest `sha256:aea7ac1b…` unchanged) reads
+  3 of 9 packets `verified-complete` (repository-path-scope, file-asset-index,
+  provider-hidden-holdout) and 6 `blocked` on completion currentness: the
+  realisation run's ~100 commits moved bytes inside their scoped closures.
+  That is the copy-on-write rule working, not a defect; restoring the cohort
+  (stale roots before consumers) is possible follow-up work under the recorded
+  recovery pattern.
+- `urn:usf:work:semantic-recovery-acceptance` refuses derivation with
+  `WORK_DEPENDENCY_MISSING:config/semantic-recovery-inventory.json` — the
+  dormant, explicitly incomplete historical recovery lane, unchanged by this
+  pass.
+
+Next safe action: verify the clean-clone proof recorded in the section below
+(or re-run it), then tag the release commit.
+
 ## Wrap-up 2026-09-02 — directive complete; supervisor intentionally stopped
 
 The operator directed the supervisor wrapped up and the remainder completed by

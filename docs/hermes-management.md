@@ -37,8 +37,10 @@ core-only manifest.
 
 `usf hermes start`, `usf hermes status` and `usf hermes stop` are the supported
 operator interface for business-as-usual. They own process identity, duplicate
-refusal, orderly drain and the runtime files, so no operator needs to know
-`scripts/hermes-bau.sh`, a PID, or any file under `.usf/hermes/`.
+refusal, orderly drain and the runtime files, so no operator needs to know a
+PID or any file under `.usf/hermes/`. The former external driver script
+(`scripts/hermes-bau.sh`) was removed at the post-realisation housekeeping
+boundary; the registered lifecycle commands are the only interface.
 
 ```text
 usf hermes start  [--env-file PATH] [--pause-seconds N] [--concurrency N] [--limit N]
