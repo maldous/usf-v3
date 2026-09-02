@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { resolve } from "node:path";
 import {
   catalogueCostClass, classifyCatalogue, readinessLadder,
   type ClassificationInput,
@@ -251,4 +252,81 @@ test("candidate order prefers what a route has produced, keeping provider spread
   // is not implicitly ranked by anything.
   const fresh = diversifyCandidates(pool, 0, new Map()).map((entry) => entry.candidateId);
   assert.equal(fresh[0], "vercel-ai-sdk:groq:a-useless");
+});
+
+test("a reserved model cannot enter the pool through a permitted host-agent transport", async () => {
+  const { readProviderExecutionPolicy, permitsExecution } =
+    await import("../../../src/providers/provider-policy.ts");
+  const { loadSemanticGraph } = await import("../../../src/graph/index.ts");
+  const root = resolve(import.meta.dirname, "..", "..", "..");
+  const policy = readProviderExecutionPolicy(loadSemanticGraph(root, "graph/manifests/v3-execution.json"));
+
+  // The antigravity subscription serves Claude models alongside its own. The
+  // transport is permitted, so reservation has to hold at the model, in both
+  // the CLI's identifier form and its display form.
+  for (const model of ["claude-sonnet-4-6", "claude-opus-4-6-thinking", "Claude Sonnet 4.6 (Thinking)"]) {
+    const decision = permitsExecution(policy, { transport: "antigravity-cli", provider: "antigravity-cli", model });
+    assert.equal(decision.permitted, false, `${model} must be refused`);
+    assert.equal(decision.matchedOn, "model");
+  }
+  // Its non-Claude models remain usable, so the reservation is not a blanket ban.
+  for (const model of ["gemini-3.7-flash-low", "gpt-oss-120b-medium"]) {
+    assert.equal(permitsExecution(policy, { transport: "antigravity-cli", provider: "antigravity-cli", model }).permitted, true);
+  }
+  // And every declared model of that transport is one the policy permits.
+  const { readProviderBindings } = await import("../../../src/providers/provider-bindings.ts");
+  const declared = readProviderBindings(loadSemanticGraph(root, "graph/manifests/v3-execution.json"))
+    .transportSelectedModel.get("antigravity-cli") ?? [];
+  assert.ok(declared.length > 1, "several models are declared so one exhausted quota is not the whole subscription");
+  for (const model of declared) {
+    assert.equal(permitsExecution(policy, { transport: "antigravity-cli", provider: "antigravity-cli", model }).permitted,
+      true, `declared model ${model} must be permitted`);
+  }
+});
+
+test("the operator's own Claude session is toggleable; paid Claude routes are not", async () => {
+  const { readProviderExecutionPolicy, permitsExecution } =
+    await import("../../../src/providers/provider-policy.ts");
+  const { canonicalQuadLine } = await import("../../../src/graph/nquads.ts");
+  const E = "urn:usf:graph:v3-execution";
+  const P = "urn:usf:predicate:";
+  const graphOf = (quads: readonly unknown[]) =>
+    Object.freeze({ quads: Object.freeze([...quads]) }) as never;
+  const q = (subject: string, predicate: string, object: string, kind: "iri" | "literal" = "literal") => {
+    const built = { subject, predicate, object, objectKind: kind, graph: E, canonical: "" };
+    built.canonical = canonicalQuadLine(built);
+    return built;
+  };
+  const oauth = "urn:usf:provider-execution-policy:operator-reserved-claude-oauth:1";
+  const paid = "urn:usf:provider-execution-policy:operator-reserved-claude-api:1";
+  const build = (active: string | null) => graphOf([
+    q(oauth, `${P}type`, "urn:usf:type:ProviderExecutionPolicy", "iri"),
+    q(oauth, `${P}reservedTransport`, "urn:usf:execution-transport:claude-cli", "iri"),
+    ...(active === null ? [] : [q(oauth, `${P}policyActive`, active)]),
+    q(paid, `${P}type`, "urn:usf:type:ProviderExecutionPolicy", "iri"),
+    q(paid, `${P}reservedProvider`, "anthropic"),
+    q(paid, `${P}reservedModelPrefix`, "anthropic/"),
+  ]);
+  const check = (active: string | null) => {
+    const policy = readProviderExecutionPolicy(build(active));
+    return {
+      session: permitsExecution(policy, { transport: "claude-cli", provider: "claude-cli", model: null }).permitted,
+      api: permitsExecution(policy, { transport: "vercel-ai-sdk", provider: "anthropic", model: "claude-opus-4" }).permitted,
+      market: permitsExecution(policy, { transport: "vercel-ai-sdk", provider: "openrouter", model: "anthropic/claude-sonnet-4" }).permitted,
+    };
+  };
+
+  // Default and explicit-true both reserve everything.
+  assert.deepEqual(check(null), { session: false, api: false, market: false });
+  assert.deepEqual(check("true"), { session: false, api: false, market: false });
+
+  // Toggling admits only the operator's own session. The paid routes carry cost
+  // this repository has not authorised, so they are not part of the switch.
+  assert.deepEqual(check("false"), { session: true, api: false, market: false });
+
+  // Fail safe: anything that is not exactly "false" keeps the reservation, so a
+  // malformed or half-written value can never quietly admit the supervisor.
+  for (const malformed of ["FALSE", "no", "0", "", "disabled"]) {
+    assert.equal(check(malformed).session, false, `${malformed} must not lift the reservation`);
+  }
 });

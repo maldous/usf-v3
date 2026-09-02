@@ -4,7 +4,7 @@ import * as capability from "../../../src/capabilities/supportadmin/tenantlifecy
 
 function unwrapState(result: capability.TenantLifecycleCoordinatorState | capability.TenantLifecycleError): capability.TenantLifecycleCoordinatorState {
   if ('kind' in result) {
-    assert.fail(`Unexpected error: ${result.kind}`);
+    assert.fail(`Unexpected error: ${(result as capability.TenantLifecycleError).kind}`);
   }
   return result;
 }
@@ -482,7 +482,9 @@ test("tenantlifecycleprovisionsuspenddeleteexportstatemodel", () => {
     ),
   );
   const metadata = exported.tenants[0].exportMetadata;
-  assert.notEqual(metadata, null);
+  if (metadata === null) {
+    assert.fail('Expected exportMetadata to be non-null');
+  }
   assert.match(metadata.digest, /^export-digest-tenant-statemodel-\d+$/);
   assert.match(metadata.keyReference, /^export-key-tenant-statemodel-\d+$/);
 

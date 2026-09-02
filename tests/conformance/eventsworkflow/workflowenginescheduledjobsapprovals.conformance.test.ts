@@ -15,76 +15,110 @@ test("workflowenginescheduledjobsapprovalsauditmodel", () => {
     readiness: 'READY',
   };
 
-  const workflow = {
+  const workflow: capability.WorkflowEngineScheduledJobsApprovalsWorkflow = {
     workflowId: 'w1',
     workflowKey: 'k1',
     tenantId: 't1',
     payload: {},
-    status: 'running' as const,
+    status: 'running',
     detail: 'started',
-    providerReadiness: 'READY' as const,
+    providerReadiness: 'READY',
   };
 
-  const updatedState = capability.addWorkflow(state, workflow);
-  const signalResult = capability.signalWorkflow(
-    updatedState,
+  const runningState = capability.addWorkflow(state, workflow);
+  const reqResult = capability.signalWorkflow(
+    runningState,
     'w1',
     'approval.requested',
     't1',
     ['platform.workflow.write'],
     auditFn
   );
+  assert.equal(reqResult.kind, 'success');
+  if (reqResult.kind === 'success') {
+    assert.equal(reqResult.value.status, 'waiting');
+  }
 
-  assert.equal(signalResult.kind, 'success');
   assert.equal(auditEvents.length, 1);
   assert.equal(auditEvents[0].kind, 'workflow.started');
 
-  const grantedResult = capability.signalWorkflow(
-    updatedState,
+  const waitingState = capability.updateWorkflow(runningState, 'w1', (w) => ({ ...w, status: 'waiting' }));
+  const grantResult = capability.signalWorkflow(
+    waitingState,
     'w1',
     'approval.granted',
     't1',
     ['platform.workflow.write'],
     auditFn
   );
+  assert.equal(grantResult.kind, 'success');
+  if (grantResult.kind === 'success') {
+    assert.equal(grantResult.value.status, 'completed');
+  }
 
-  assert.equal(grantedResult.kind, 'success');
   assert.equal(auditEvents.length, 3);
   assert.equal(auditEvents[1].kind, 'workflow.approved');
   assert.equal(auditEvents[2].kind, 'support-session');
+  assert.equal(auditEvents[2].detail, 'Access granted via approval');
+
+  const failingAuditFn = (_event: capability.WorkflowEngineScheduledJobsApprovalsAuditEvent): capability.WorkflowEngineScheduledJobsApprovalsError | null => {
+    return {
+      kind: 'PROVIDER_UNAVAILABLE',
+      message: 'Audit logging failed',
+    };
+  };
+
+  const failAuditResult = capability.signalWorkflow(
+    waitingState,
+    'w1',
+    'approval.denied',
+    't1',
+    ['platform.workflow.write'],
+    failingAuditFn
+  );
+  assert.equal(failAuditResult.kind, 'failure');
+  if (failAuditResult.kind === 'failure') {
+    assert.equal(failAuditResult.error.kind, 'PROVIDER_UNAVAILABLE');
+  }
 });
 
 test("workflowenginescheduledjobsapprovalscontracts", () => {
-  const state: capability.WorkflowEngineScheduledJobsApprovalsState = {
-    workflows: [],
-    auditEvents: [],
-    readiness: 'READY',
-  };
+  const state: capability.WorkflowEngineScheduledJobsApprovalsState = capability.setReadiness(capability.initialState, 'READY');
 
   const getWorkflowsResult = capability.getWorkflows(state, 't1', ['tenant.workflow.read']);
   assert.equal(getWorkflowsResult.kind, 'success');
-  assert.deepEqual(getWorkflowsResult.value, []);
+  if (getWorkflowsResult.kind === 'success') {
+    assert.deepEqual(getWorkflowsResult.value, []);
+  }
 
   const getReadinessResult = capability.getWorkflowReadiness(state);
   assert.equal(getReadinessResult.kind, 'success');
-  assert.equal(getReadinessResult.value, 'READY');
+  if (getReadinessResult.kind === 'success') {
+    assert.equal(getReadinessResult.value, 'READY');
+  }
 
   const startResult = capability.startWorkflow(
     state,
     'w1',
     'k1',
     't1',
-    {},
+    { job: 'nightly' },
     ['platform.workflow.write'],
     () => null
   );
   assert.equal(startResult.kind, 'success');
-  assert.equal(startResult.value.status, 'running');
+  if (startResult.kind === 'success') {
+    assert.equal(startResult.value.status, 'running');
+    assert.equal(startResult.value.workflowId, 'w1');
+  }
 
-  const workflowState = capability.addWorkflow(state, startResult.value);
+  let workflowState = capability.addWorkflow(state, (startResult as capability.WorkflowEngineScheduledJobsApprovalsResult<capability.WorkflowEngineScheduledJobsApprovalsWorkflow>).value);
+
   const getWorkflowResult = capability.getWorkflow(workflowState, 'w1', 't1', ['tenant.workflow.read']);
   assert.equal(getWorkflowResult.kind, 'success');
-  assert.equal(getWorkflowResult.value?.workflowId, 'w1');
+  if (getWorkflowResult.kind === 'success') {
+    assert.equal(getWorkflowResult.value?.workflowId, 'w1');
+  }
 
   const signalResult = capability.signalWorkflow(
     workflowState,
@@ -95,6 +129,10 @@ test("workflowenginescheduledjobsapprovalscontracts", () => {
     () => null
   );
   assert.equal(signalResult.kind, 'success');
+  if (signalResult.kind === 'success') {
+    assert.equal(signalResult.value.status, 'waiting');
+    workflowState = capability.updateWorkflow(workflowState, 'w1', () => signalResult.value);
+  }
 
   const cancelResult = capability.cancelWorkflow(
     workflowState,
@@ -104,17 +142,20 @@ test("workflowenginescheduledjobsapprovalscontracts", () => {
     () => null
   );
   assert.equal(cancelResult.kind, 'success');
+  if (cancelResult.kind === 'success') {
+    assert.equal(cancelResult.value.status, 'cancelled');
+  }
 });
 
 test("workflowenginescheduledjobsapprovalserrormodel", () => {
-  const state: capability.WorkflowEngineScheduledJobsApprovalsState = {
+  const degradedState: capability.WorkflowEngineScheduledJobsApprovalsState = {
     workflows: [],
     auditEvents: [],
     readiness: 'DEGRADED',
   };
 
-  const startResult = capability.startWorkflow(
-    state,
+  const startDegradedResult = capability.startWorkflow(
+    degradedState,
     'w1',
     'k1',
     't1',
@@ -122,37 +163,46 @@ test("workflowenginescheduledjobsapprovalserrormodel", () => {
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(startResult.kind, 'failure');
-  assert.equal(startResult.error.kind, 'READINESS_DEGRADED');
+  assert.equal(startDegradedResult.kind, 'failure');
+  if (startDegradedResult.kind === 'failure') {
+    assert.equal(startDegradedResult.error.kind, 'READINESS_DEGRADED');
+  }
 
-  const getWorkflowResult = capability.getWorkflow(state, 'unknown', 't1', ['tenant.workflow.read']);
-  assert.equal(getWorkflowResult.kind, 'failure');
-  assert.equal(getWorkflowResult.error.kind, 'UNKNOWN_WORKFLOW');
+  const unknownWorkflowResult = capability.getWorkflow(degradedState, 'unknown-id', 't1', ['tenant.workflow.read']);
+  assert.equal(unknownWorkflowResult.kind, 'failure');
+  if (unknownWorkflowResult.kind === 'failure') {
+    assert.equal(unknownWorkflowResult.error.kind, 'UNKNOWN_WORKFLOW');
+  }
 
-  const workflow = {
+  const workflow: capability.WorkflowEngineScheduledJobsApprovalsWorkflow = {
     workflowId: 'w1',
     workflowKey: 'k1',
     tenantId: 't1',
     payload: {},
-    status: 'running' as const,
-    detail: 'started',
-    providerReadiness: 'READY' as const,
+    status: 'waiting',
+    detail: 'waiting for approval',
+    providerReadiness: 'READY',
   };
-  const workflowState = capability.addWorkflow(state, workflow);
-  const signalResult = capability.signalWorkflow(
-    workflowState,
+  const readyState = capability.setReadiness(capability.addWorkflow(degradedState, workflow), 'READY');
+
+  const deniedResult = capability.signalWorkflow(
+    readyState,
     'w1',
     'approval.denied',
     't1',
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(signalResult.kind, 'success');
-  assert.equal(signalResult.value.status, 'failed');
+  assert.equal(deniedResult.kind, 'success');
+  if (deniedResult.kind === 'success') {
+    assert.equal(deniedResult.value.status, 'failed');
+  }
 
-  const crossTenantResult = capability.getWorkflow(workflowState, 'w1', 't2', ['tenant.workflow.read']);
+  const crossTenantResult = capability.getWorkflow(readyState, 'w1', 't2', ['tenant.workflow.read']);
   assert.equal(crossTenantResult.kind, 'failure');
-  assert.equal(crossTenantResult.error.kind, 'CROSS_TENANT_ACCESS');
+  if (crossTenantResult.kind === 'failure') {
+    assert.equal(crossTenantResult.error.kind, 'CROSS_TENANT_ACCESS');
+  }
 });
 
 test("workflowenginescheduledjobsapprovalslifecycle", () => {
@@ -162,72 +212,94 @@ test("workflowenginescheduledjobsapprovalslifecycle", () => {
     readiness: 'READY',
   };
 
-  const startResult = capability.startWorkflow(
+  const startRes = capability.startWorkflow(
     state,
-    'w1',
-    'k1',
-    't1',
+    'wf-lifecycle',
+    'key-1',
+    'tenant-a',
     {},
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(startResult.kind, 'success');
-  assert.equal(startResult.value.status, 'running');
+  assert.equal(startRes.kind, 'success');
+  if (startRes.kind === 'success') {
+    assert.equal(startRes.value.status, 'running');
+  }
 
-  const workflowState = capability.addWorkflow(state, startResult.value);
-  const requestedResult = capability.signalWorkflow(
-    workflowState,
-    'w1',
+  let currentState = capability.addWorkflow(state, (startRes as capability.WorkflowEngineScheduledJobsApprovalsResult<capability.WorkflowEngineScheduledJobsApprovalsWorkflow>).value);
+
+  const reqRes = capability.signalWorkflow(
+    currentState,
+    'wf-lifecycle',
     'approval.requested',
-    't1',
+    'tenant-a',
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(requestedResult.kind, 'success');
-  assert.equal(requestedResult.value.status, 'waiting');
+  assert.equal(reqRes.kind, 'success');
+  if (reqRes.kind === 'success') {
+    assert.equal(reqRes.value.status, 'waiting');
+    currentState = capability.updateWorkflow(currentState, 'wf-lifecycle', () => reqRes.value);
+  }
 
-  const grantedResult = capability.signalWorkflow(
-    workflowState,
-    'w1',
+  const grantRes = capability.signalWorkflow(
+    currentState,
+    'wf-lifecycle',
     'approval.granted',
-    't1',
+    'tenant-a',
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(grantedResult.kind, 'success');
-  assert.equal(grantedResult.value.status, 'completed');
+  assert.equal(grantRes.kind, 'success');
+  if (grantRes.kind === 'success') {
+    assert.equal(grantRes.value.status, 'completed');
+  }
 
-  const deniedResult = capability.signalWorkflow(
-    workflowState,
-    'w1',
+  const waitingWorkflow: capability.WorkflowEngineScheduledJobsApprovalsWorkflow = {
+    workflowId: 'wf-deny',
+    workflowKey: 'key-2',
+    tenantId: 'tenant-a',
+    payload: {},
+    status: 'waiting',
+    detail: 'waiting',
+    providerReadiness: 'READY',
+  };
+  const denyState = capability.addWorkflow(currentState, waitingWorkflow);
+  const denyRes = capability.signalWorkflow(
+    denyState,
+    'wf-deny',
     'approval.denied',
-    't1',
+    'tenant-a',
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(deniedResult.kind, 'success');
-  assert.equal(deniedResult.value.status, 'failed');
+  assert.equal(denyRes.kind, 'success');
+  if (denyRes.kind === 'success') {
+    assert.equal(denyRes.value.status, 'failed');
+  }
 
-  const cancelResult = capability.cancelWorkflow(
-    workflowState,
-    'w1',
-    't1',
+  const cancelRes = capability.cancelWorkflow(
+    denyState,
+    'wf-deny',
+    'tenant-a',
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(cancelResult.kind, 'success');
-  assert.equal(cancelResult.value.status, 'cancelled');
+  assert.equal(cancelRes.kind, 'success');
+  if (cancelRes.kind === 'success') {
+    assert.equal(cancelRes.value.status, 'cancelled');
+  }
 });
 
 test("workflowenginescheduledjobsapprovalspermissions", () => {
-  const workflow = {
-    workflowId: 'w1',
-    workflowKey: 'k1',
-    tenantId: 't1',
+  const workflow: capability.WorkflowEngineScheduledJobsApprovalsWorkflow = {
+    workflowId: 'wf-perm',
+    workflowKey: 'key-perm',
+    tenantId: 'tenant-1',
     payload: {},
-    status: 'running' as const,
-    detail: 'started',
-    providerReadiness: 'READY' as const,
+    status: 'running',
+    detail: 'running',
+    providerReadiness: 'READY',
   };
   const state: capability.WorkflowEngineScheduledJobsApprovalsState = {
     workflows: [workflow],
@@ -235,40 +307,59 @@ test("workflowenginescheduledjobsapprovalspermissions", () => {
     readiness: 'READY',
   };
 
-  const noPermResult = capability.getWorkflows(state, 't1', []);
-  assert.equal(noPermResult.kind, 'failure');
-  assert.equal(noPermResult.error.kind, 'CROSS_TENANT_ACCESS');
+  const noPermList = capability.getWorkflows(state, 'tenant-1', []);
+  assert.equal(noPermList.kind, 'failure');
+  if (noPermList.kind === 'failure') {
+    assert.equal(noPermList.error.kind, 'CROSS_TENANT_ACCESS');
+  }
 
-  const tenantReadResult = capability.getWorkflows(state, 't1', ['tenant.workflow.read']);
-  assert.equal(tenantReadResult.kind, 'success');
-  assert.equal(tenantReadResult.value.length, 1);
+  const tenantReadList = capability.getWorkflows(state, 'tenant-1', ['tenant.workflow.read']);
+  assert.equal(tenantReadList.kind, 'success');
+  if (tenantReadList.kind === 'success') {
+    assert.equal(tenantReadList.value.length, 1);
+  }
 
-  const platformReadResult = capability.getWorkflows(state, 't1', ['platform.workflow.read']);
-  assert.equal(platformReadResult.kind, 'success');
-  assert.equal(platformReadResult.value.length, 1);
+  const platformReadList = capability.getWorkflows(state, 'other-tenant', ['platform.workflow.read']);
+  assert.equal(platformReadList.kind, 'success');
+  if (platformReadList.kind === 'success') {
+    assert.equal(platformReadList.value.length, 1);
+  }
 
-  const noWritePermResult = capability.startWorkflow(
+  const noWriteStart = capability.startWorkflow(
     state,
-    'w2',
-    'k2',
-    't1',
+    'wf-new',
+    'key-new',
+    'tenant-1',
     {},
-    [],
+    ['tenant.workflow.read'],
     () => null
   );
-  assert.equal(noWritePermResult.kind, 'failure');
-  assert.equal(noWritePermResult.error.kind, 'CROSS_TENANT_ACCESS');
+  assert.equal(noWriteStart.kind, 'failure');
+  if (noWriteStart.kind === 'failure') {
+    assert.equal(noWriteStart.error.kind, 'CROSS_TENANT_ACCESS');
+  }
 
-  const crossTenantResult = capability.getWorkflow(state, 'w1', 't2', ['tenant.workflow.read']);
-  assert.equal(crossTenantResult.kind, 'failure');
-  assert.equal(crossTenantResult.error.kind, 'CROSS_TENANT_ACCESS');
+  const crossTenantGet = capability.getWorkflow(state, 'wf-perm', 'tenant-2', ['tenant.workflow.read']);
+  assert.equal(crossTenantGet.kind, 'failure');
+  if (crossTenantGet.kind === 'failure') {
+    assert.equal(crossTenantGet.error.kind, 'CROSS_TENANT_ACCESS');
+  }
 
-  const platformReadWorkflowResult = capability.getWorkflow(state, 'w1', 't2', ['platform.workflow.read']);
-  assert.equal(platformReadWorkflowResult.kind, 'success');
-  assert.equal(platformReadWorkflowResult.value?.workflowId, 'w1');
+  const platformGet = capability.getWorkflow(state, 'wf-perm', 'tenant-2', ['platform.workflow.read']);
+  assert.equal(platformGet.kind, 'success');
+  if (platformGet.kind === 'success') {
+    assert.equal(platformGet.value?.workflowId, 'wf-perm');
+  }
 });
 
 test("workflowenginescheduledjobsapprovalsproof", () => {
+  const state = capability.initialState;
+  const readinessRes = capability.getWorkflowReadiness(state);
+  assert.equal(readinessRes.kind, 'success');
+  if (readinessRes.kind === 'success') {
+    assert.equal(readinessRes.value, 'NOT_READY');
+  }
+
   assert.deepEqual(capability.WorkflowEngineScheduledJobsApprovalsWorkflowStatus, [
     'running',
     'waiting',
@@ -283,116 +374,227 @@ test("workflowenginescheduledjobsapprovalsproof", () => {
     'workflow.completed',
     'support-session',
   ]);
+  assert.deepEqual(capability.WorkflowEngineScheduledJobsApprovalsSignal, [
+    'approval.requested',
+    'approval.granted',
+    'approval.denied',
+  ]);
+  assert.deepEqual(capability.WorkflowEngineScheduledJobsApprovalsErrorKind, [
+    'UNKNOWN_WORKFLOW',
+    'INVALID_WORKFLOW_ID',
+    'PROVIDER_UNAVAILABLE',
+    'APPROVAL_DENIED',
+    'CROSS_TENANT_ACCESS',
+    'READINESS_DEGRADED',
+  ]);
 });
 
 test("workflowenginescheduledjobsapprovalsreadinessmodel", () => {
-  const state: capability.WorkflowEngineScheduledJobsApprovalsState = {
-    workflows: [],
-    auditEvents: [],
-    readiness: 'READY',
-  };
+  const notReadyState = capability.initialState;
+  const notReadyRes = capability.getWorkflowReadiness(notReadyState);
+  assert.equal(notReadyRes.kind, 'success');
+  if (notReadyRes.kind === 'success') {
+    assert.equal(notReadyRes.value, 'NOT_READY');
+  }
 
-  const getReadinessResult = capability.getWorkflowReadiness(state);
-  assert.equal(getReadinessResult.kind, 'success');
-  assert.equal(getReadinessResult.value, 'READY');
+  const degradedState = capability.setReadiness(notReadyState, 'DEGRADED');
+  const degradedRes = capability.getWorkflowReadiness(degradedState);
+  assert.equal(degradedRes.kind, 'success');
+  if (degradedRes.kind === 'success') {
+    assert.equal(degradedRes.value, 'DEGRADED');
+  }
 
-  const degradedState = capability.setReadiness(state, 'DEGRADED');
-  assert.equal(degradedState.readiness, 'DEGRADED');
-
-  const startResult = capability.startWorkflow(
+  const startDegraded = capability.startWorkflow(
     degradedState,
-    'w1',
-    'k1',
-    't1',
+    'wf-1',
+    'key-1',
+    'tenant-1',
     {},
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(startResult.kind, 'failure');
-  assert.equal(startResult.error.kind, 'READINESS_DEGRADED');
+  assert.equal(startDegraded.kind, 'failure');
+  if (startDegraded.kind === 'failure') {
+    assert.equal(startDegraded.error.kind, 'READINESS_DEGRADED');
+  }
+
+  const readyState = capability.setReadiness(degradedState, 'READY');
+  const readyRes = capability.getWorkflowReadiness(readyState);
+  assert.equal(readyRes.kind, 'success');
+  if (readyRes.kind === 'success') {
+    assert.equal(readyRes.value, 'READY');
+  }
+
+  const startReady = capability.startWorkflow(
+    readyState,
+    'wf-1',
+    'key-1',
+    'tenant-1',
+    {},
+    ['platform.workflow.write'],
+    () => null
+  );
+  assert.equal(startReady.kind, 'success');
 });
 
 test("workflowenginescheduledjobsapprovalsstatemodel", () => {
   const workflow: capability.WorkflowEngineScheduledJobsApprovalsWorkflow = {
-    workflowId: 'w1',
-    workflowKey: 'k1',
-    tenantId: 't1',
-    payload: {},
+    workflowId: 'wf-state-1',
+    workflowKey: 'key-state',
+    tenantId: 'tenant-owner',
+    payload: { config: 'test' },
     status: 'running',
-    detail: 'started',
+    detail: 'running detail',
     providerReadiness: 'READY',
   };
 
-  assert.equal(workflow.workflowId, 'w1');
-  assert.equal(workflow.workflowKey, 'k1');
-  assert.equal(workflow.tenantId, 't1');
-  assert.equal(workflow.status, 'running');
-  assert.equal(workflow.detail, 'started');
-  assert.equal(workflow.providerReadiness, 'READY');
+  const baseState = capability.setReadiness(capability.initialState, 'READY');
+  const stateWithWorkflow = capability.addWorkflow(baseState, workflow);
 
-  const state: capability.WorkflowEngineScheduledJobsApprovalsState = {
-    workflows: [workflow],
-    auditEvents: [],
-    readiness: 'READY',
+  const ownerAccess = capability.getWorkflow(stateWithWorkflow, 'wf-state-1', 'tenant-owner', ['tenant.workflow.read']);
+  assert.equal(ownerAccess.kind, 'success');
+  if (ownerAccess.kind === 'success') {
+    assert.equal(ownerAccess.value?.workflowId, 'wf-state-1');
+    assert.equal(ownerAccess.value?.tenantId, 'tenant-owner');
+    assert.equal(ownerAccess.value?.status, 'running');
+    assert.equal(ownerAccess.value?.detail, 'running detail');
+    assert.equal(ownerAccess.value?.providerReadiness, 'READY');
+  }
+
+  const crossTenantAccess = capability.getWorkflow(stateWithWorkflow, 'wf-state-1', 'other-tenant', ['tenant.workflow.read']);
+  assert.equal(crossTenantAccess.kind, 'failure');
+  if (crossTenantAccess.kind === 'failure') {
+    assert.equal(crossTenantAccess.error.kind, 'CROSS_TENANT_ACCESS');
+  }
+
+  const updatedState = capability.updateWorkflow(stateWithWorkflow, 'wf-state-1', (w) => ({
+    ...w,
+    status: 'completed',
+    detail: 'completed detail',
+  }));
+  const updatedAccess = capability.getWorkflow(updatedState, 'wf-state-1', 'tenant-owner', ['tenant.workflow.read']);
+  assert.equal(updatedAccess.kind, 'success');
+  if (updatedAccess.kind === 'success') {
+    assert.equal(updatedAccess.value?.status, 'completed');
+    assert.equal(updatedAccess.value?.detail, 'completed detail');
+  }
+
+  const auditEvent: capability.WorkflowEngineScheduledJobsApprovalsAuditEvent = {
+    kind: 'workflow.external_run',
+    workflowId: 'wf-state-1',
+    tenantId: 'tenant-owner',
+    timestamp: '2026-09-02T00:00:00.000Z',
+    detail: 'external dispatch',
   };
-
-  assert.equal(capability.canAccess('w1', 't1', state), true);
-  assert.equal(capability.canAccess('w1', 't2', state), false);
+  const auditState = capability.addAuditEvent(updatedState, auditEvent);
+  assert.equal(auditState.auditEvents.length, 1);
+  assert.equal(auditState.auditEvents[0].kind, 'workflow.external_run');
 });
 
 test("workflowenginescheduledjobsapprovalsvalidation", () => {
-  const state: capability.WorkflowEngineScheduledJobsApprovalsState = {
-    workflows: [],
-    auditEvents: [],
-    readiness: 'READY',
-  };
+  const readyState = capability.setReadiness(capability.initialState, 'READY');
 
-  const invalidStartResult = capability.startWorkflow(
-    state,
+  const emptyIdRes = capability.startWorkflow(
+    readyState,
     '',
-    'k1',
-    't1',
+    'key-1',
+    'tenant-1',
     {},
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(invalidStartResult.kind, 'failure');
-  assert.equal(invalidStartResult.error.kind, 'INVALID_WORKFLOW_ID');
+  assert.equal(emptyIdRes.kind, 'failure');
+  if (emptyIdRes.kind === 'failure') {
+    assert.equal(emptyIdRes.error.kind, 'INVALID_WORKFLOW_ID');
+  }
 
-  const workflow = {
-    workflowId: 'w1',
-    workflowKey: 'k1',
-    tenantId: 't1',
+  const emptyKeyRes = capability.startWorkflow(
+    readyState,
+    'wf-1',
+    '',
+    'tenant-1',
+    {},
+    ['platform.workflow.write'],
+    () => null
+  );
+  assert.equal(emptyKeyRes.kind, 'failure');
+  if (emptyKeyRes.kind === 'failure') {
+    assert.equal(emptyKeyRes.error.kind, 'INVALID_WORKFLOW_ID');
+  }
+
+  const emptyTenantRes = capability.startWorkflow(
+    readyState,
+    'wf-1',
+    'key-1',
+    '',
+    {},
+    ['platform.workflow.write'],
+    () => null
+  );
+  assert.equal(emptyTenantRes.kind, 'failure');
+  if (emptyTenantRes.kind === 'failure') {
+    assert.equal(emptyTenantRes.error.kind, 'INVALID_WORKFLOW_ID');
+  }
+
+  const workflow: capability.WorkflowEngineScheduledJobsApprovalsWorkflow = {
+    workflowId: 'wf-valid',
+    workflowKey: 'key-1',
+    tenantId: 'tenant-1',
     payload: {},
-    status: 'running' as const,
-    detail: 'started',
-    providerReadiness: 'READY' as const,
+    status: 'running',
+    detail: 'running',
+    providerReadiness: 'READY',
   };
-  const workflowState = capability.addWorkflow(state, workflow);
+  const workflowState = capability.addWorkflow(readyState, workflow);
 
-  const invalidSignalResult = capability.signalWorkflow(
+  const duplicateStartRes = capability.startWorkflow(
     workflowState,
-    'w1',
-    'invalid.signal' as capability.WorkflowEngineScheduledJobsApprovalsSignal,
-    't1',
+    'wf-valid',
+    'key-1',
+    'tenant-1',
+    {},
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(invalidSignalResult.kind, 'failure');
-  assert.equal(invalidSignalResult.error.kind, 'INVALID_WORKFLOW_ID');
+  assert.equal(duplicateStartRes.kind, 'failure');
+  if (duplicateStartRes.kind === 'failure') {
+    assert.equal(duplicateStartRes.error.kind, 'UNKNOWN_WORKFLOW');
+  }
 
-  const deniedResult = capability.signalWorkflow(
+  const invalidSignalRes = capability.signalWorkflow(
     workflowState,
-    'w1',
-    'approval.denied',
-    't1',
+    'wf-valid',
+    'unknown.signal' as capability.WorkflowEngineScheduledJobsApprovalsSignal,
+    'tenant-1',
     ['platform.workflow.write'],
     () => null
   );
-  assert.equal(deniedResult.kind, 'success');
-  assert.equal(deniedResult.value.status, 'failed');
+  assert.equal(invalidSignalRes.kind, 'failure');
+  if (invalidSignalRes.kind === 'failure') {
+    assert.equal(invalidSignalRes.error.kind, 'INVALID_WORKFLOW_ID');
+  }
 
-  const unknownWorkflowResult = capability.getWorkflow(workflowState, 'unknown', 't1', ['tenant.workflow.read']);
-  assert.equal(unknownWorkflowResult.kind, 'failure');
-  assert.equal(unknownWorkflowResult.error.kind, 'UNKNOWN_WORKFLOW');
+  const unknownSignalRes = capability.signalWorkflow(
+    workflowState,
+    'non-existent',
+    'approval.requested',
+    'tenant-1',
+    ['platform.workflow.write'],
+    () => null
+  );
+  assert.equal(unknownSignalRes.kind, 'failure');
+  if (unknownSignalRes.kind === 'failure') {
+    assert.equal(unknownSignalRes.error.kind, 'UNKNOWN_WORKFLOW');
+  }
+
+  const unknownGetRes = capability.getWorkflow(
+    workflowState,
+    'non-existent',
+    'tenant-1',
+    ['tenant.workflow.read']
+  );
+  assert.equal(unknownGetRes.kind, 'failure');
+  if (unknownGetRes.kind === 'failure') {
+    assert.equal(unknownGetRes.error.kind, 'UNKNOWN_WORKFLOW');
+  }
 });

@@ -43,7 +43,7 @@ test("supportmodebreakglassaccessauditmodel", () => {
     "tenant-1",
     requestedBy,
     accessReason,
-    ["system-admin"] as const,
+    ["platform-admin", "system-admin"],
     auditFn,
   );
   assert.ok(
@@ -71,7 +71,7 @@ test("supportmodebreakglassaccessauditmodel", () => {
     "tenant-1",
     requestedBy,
     accessReason,
-    ["system-admin"] as const,
+    ["platform-admin", "system-admin"],
     failingAuditFn,
   );
   assert.ok(
@@ -94,7 +94,7 @@ test("supportmodebreakglassaccesscontracts", () => {
   const accessReason = "Operational intervention";
   const requestedBy = "org-1";
   const targetTenantId = "tenant-1";
-  const roles = ["system-admin"] as const;
+  const roles = ["platform-admin", "system-admin"];
 
   const requestResult = capability.requestSupportAccess(
     initial,
@@ -149,28 +149,28 @@ test("supportmodebreakglassaccesserrormodel", () => {
   assert.strictEqual(nonAdmin, "FORBIDDEN");
 
   const noOrg = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: null },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: null },
     "tenant.example.com",
     "reason",
   );
   assert.strictEqual(noOrg, "FORBIDDEN");
 
   const emptyReason = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-1" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-1" },
     "tenant.example.com",
     "   ",
   );
   assert.strictEqual(emptyReason, "REASON_REQUIRED");
 
   const emptyTarget = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-1" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-1" },
     "",
     "reason",
   );
   assert.strictEqual(emptyTarget, "INVALID_TARGET");
 
   const wrongFqdn = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-1" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-1" },
     "tenant.other.com",
     "reason",
   );
@@ -196,7 +196,7 @@ test("supportmodebreakglassaccesserrormodel", () => {
     kind: "AUDIT_BACKEND_FAILURE",
     message: "Audit backend down",
   };
-  const failingAudit = (
+  const failingAuditFn = (
     _event: capability.SupportModeBreakGlassAccessAuditEvent,
   ): capability.SupportModeBreakGlassAccessError | null => auditFailure;
   const auditFailResult = capability.requestSupportAccess(
@@ -205,7 +205,7 @@ test("supportmodebreakglassaccesserrormodel", () => {
     "tenant.example.com",
     "reason",
     "org-1",
-    failingAudit,
+    failingAuditFn,
   );
   assert.ok(
     typeof auditFailResult === "object" && auditFailResult !== null && "kind" in auditFailResult,
@@ -227,7 +227,7 @@ test("supportmodebreakglassaccesslifecycle", () => {
   const accessReason = "Outage intervention";
   const requestedBy = "org-1";
   const targetTenantId = "tenant-1";
-  const roles = ["system-admin"] as const;
+  const roles = ["platform-admin", "system-admin"];
 
   const requestResult = capability.requestSupportAccess(
     initial,
@@ -292,21 +292,21 @@ test("supportmodebreakglassaccesspermissions", () => {
   assert.strictEqual(nonAdmin, "FORBIDDEN");
 
   const noOrg = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: null },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: null },
     "tenant.example.com",
     "reason",
   );
   assert.strictEqual(noOrg, "FORBIDDEN");
 
   const approved = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-1" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-1" },
     "tenant.example.com",
     "reason",
   );
   assert.strictEqual(approved, "APPROVED");
 
   const wrongFqdn = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-1" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-1" },
     "tenant.other.com",
     "reason",
   );
@@ -319,9 +319,9 @@ test("supportmodebreakglassaccesspermissions", () => {
   const noOrgAttempt = capability.enterSupportModeDirectly(
     capability.initialState,
     "tenant-1",
-    null as unknown as string,
+    null,
     "reason",
-    ["system-admin"] as const,
+    ["platform-admin", "system-admin"],
     "tenant.example.com",
     auditFn,
   );
@@ -334,14 +334,14 @@ test("supportmodebreakglassaccesspermissions", () => {
   );
 
   const mismatchedFqdn = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-other" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-other" },
     "tenant.example.com",
     "reason",
   );
   assert.strictEqual(mismatchedFqdn, "APPROVED");
 
   const foreignFqdn = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-1" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-1" },
     "foreign.example.com",
     "reason",
   );
@@ -355,7 +355,7 @@ test("supportmodebreakglassaccessproof", () => {
   const accessReason = "Proven access";
   const requestedBy = "org-1";
   const targetTenantId = "tenant-1";
-  const roles = ["system-admin"] as const;
+  const roles = ["platform-admin", "system-admin"];
 
   const proofResult = capability.proveWorkflowAndSessionStateMachine(
     initial,
@@ -422,7 +422,7 @@ test("supportmodebreakglassaccessreadinessmodel", () => {
     "tenant-1",
     "org-1",
     "reason",
-    ["system-admin"] as const,
+    ["platform-admin", "system-admin"],
     auditFn,
   );
   assert.ok(
@@ -437,7 +437,7 @@ test("supportmodebreakglassaccessreadinessmodel", () => {
     "tenant-1",
     "org-1",
     "reason",
-    ["system-admin"] as const,
+    ["platform-admin", "system-admin"],
     "tenant.example.com",
     auditFn,
   );
@@ -465,7 +465,7 @@ test("supportmodebreakglassaccessstatemodel", () => {
   const accessReason = "State model probe";
   const requestedBy = "org-1";
   const targetTenantId = "tenant-1";
-  const roles = ["system-admin"] as const;
+  const roles = ["platform-admin", "system-admin"];
 
   const requestResult = capability.requestSupportAccess(
     initial,
@@ -505,7 +505,7 @@ test("supportmodebreakglassaccessstatemodel", () => {
   assert.strictEqual(session.targetTenantId, targetTenantId);
   assert.strictEqual(session.effectiveOrganisationId, requestedBy);
   assert.strictEqual(session.accessReason, accessReason);
-  assert.deepStrictEqual([...session.roles], ["system-admin"]);
+  assert.deepStrictEqual([...session.roles], ["platform-admin", "system-admin"]);
   assert.strictEqual(session.ttlSeconds, capability.SUPPORT_SESSION_TTL_SECONDS);
   assert.strictEqual(session.supportMode, true);
   assert.strictEqual(typeof session.createdAt, "string");
@@ -528,21 +528,21 @@ test("supportmodebreakglassaccessvalidation", () => {
   assert.strictEqual(nonAdmin, "FORBIDDEN");
 
   const emptyReason = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-1" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-1" },
     "tenant.example.com",
     "   ",
   );
   assert.strictEqual(emptyReason, "REASON_REQUIRED");
 
   const noOrg = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: null },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: null },
     "tenant.example.com",
     "reason",
   );
   assert.strictEqual(noOrg, "FORBIDDEN");
 
   const foreignFqdn = capability.validateRequest(
-    { roles: ["system-admin"], effectiveOrganisationId: "org-1" },
+    { roles: ["platform-admin", "system-admin"], effectiveOrganisationId: "org-1" },
     "tenant.other.com",
     "reason",
   );

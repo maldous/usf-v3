@@ -226,6 +226,17 @@ export function generateProof(
   if (state.classifications.length === 0) {
     return { status: 'PENDING', details: 'No classifications present.' };
   }
+
+  for (const classification of state.classifications) {
+    if (
+      (classification.mode === 'hermetic-mock' && classification.environment === 'live') ||
+      (classification.mode === 'production-shaped' && classification.environment === 'live') ||
+      (classification.mode === 'production-live' && classification.environment !== 'live')
+    ) {
+      return { status: 'INVALID', details: `Invalid classification for provider '${classification.provider}'.` };
+    }
+  }
+
   return { status: 'VALID' };
 }
 

@@ -161,49 +161,60 @@ test("productcatalogplanspricesreadinessmodel", () => {
 });
 
 test("productcatalogplanspricesstatemodel", () => {
-  const product: capability.Product = {
-    id: "p1",
-    name: "Test Product",
-    description: "Test Description",
-    active: true,
-    createdAt: "2023-01-01T00:00:00Z",
-  };
-  const plan: capability.Plan = {
-    id: "pl1",
-    productId: "p1",
-    name: "Test Plan",
-    currency: "USD",
-    billingPeriod: "MONTHLY",
-    active: true,
-    createdAt: "2023-01-01T00:00:00Z",
-  };
-  const price: capability.Price = {
-    id: "pr1",
-    planId: "pl1",
-    version: 1,
-    priceType: "RECURRING",
-    unitAmount: 100,
-    currency: "USD",
-    billingPeriod: "MONTHLY",
-    active: true,
-    createdAt: "2023-01-01T00:00:00Z",
-  };
-  assert.equal(product.id, "p1");
+  const createResult = capability.createProduct(
+    capability.initialState,
+    "test-operator",
+    { name: "Test Product", description: "Test Description" },
+    () => null,
+    ["PLATFORM_BILLING_ADMIN"] as const
+  );
+  if ("kind" in createResult) throw new Error("Expected product creation to succeed");
+  const product = createResult.products[0];
+  
+  assert.ok(typeof product.id === "string" && product.id.startsWith("product-"));
   assert.equal(product.name, "Test Product");
   assert.equal(product.description, "Test Description");
   assert.equal(product.active, true);
   assert.ok(product.createdAt);
-
-  assert.equal(plan.id, "pl1");
-  assert.equal(plan.productId, "p1");
+  
+  const listedProducts = capability.listProducts(createResult);
+  assert.equal(listedProducts.length, 1);
+  assert.equal(listedProducts[0].id, product.id);
+  
+  const planResult = capability.createPlan(
+    createResult,
+    "test-operator",
+    { productId: product.id, name: "Test Plan", currency: "USD", billingPeriod: "MONTHLY" },
+    () => null,
+    ["PLATFORM_BILLING_ADMIN"] as const
+  );
+  if ("kind" in planResult) throw new Error("Expected plan creation to succeed");
+  const plan = planResult.plans[0];
+  
+  assert.ok(typeof plan.id === "string" && plan.id.startsWith("plan-"));
+  assert.equal(plan.productId, product.id);
   assert.equal(plan.name, "Test Plan");
   assert.equal(plan.currency, "USD");
   assert.equal(plan.billingPeriod, "MONTHLY");
   assert.equal(plan.active, true);
   assert.ok(plan.createdAt);
-
-  assert.equal(price.id, "pr1");
-  assert.equal(price.planId, "pl1");
+  
+  const listedPlans = capability.listPlans(planResult);
+  assert.equal(listedPlans.length, 1);
+  assert.equal(listedPlans[0].id, plan.id);
+  
+  const priceResult = capability.createPrice(
+    planResult,
+    "test-operator",
+    { planId: plan.id, version: 1, priceType: "RECURRING", unitAmount: 100, currency: "USD", billingPeriod: "MONTHLY" },
+    () => null,
+    ["PLATFORM_BILLING_ADMIN"] as const
+  );
+  if ("kind" in priceResult) throw new Error("Expected price creation to succeed");
+  const price = priceResult.prices[0];
+  
+  assert.ok(typeof price.id === "string" && price.id.startsWith("price-"));
+  assert.equal(price.planId, plan.id);
   assert.equal(price.version, 1);
   assert.equal(price.priceType, "RECURRING");
   assert.equal(price.unitAmount, 100);
@@ -211,6 +222,27 @@ test("productcatalogplanspricesstatemodel", () => {
   assert.equal(price.billingPeriod, "MONTHLY");
   assert.equal(price.active, true);
   assert.ok(price.createdAt);
+  
+  const listedPrices = capability.listPrices(priceResult);
+  assert.equal(listedPrices.length, 1);
+  assert.equal(listedPrices[0].id, price.id);
+  
+  const priceResultV2 = capability.createPrice(
+    priceResult,
+    "test-operator",
+    { planId: plan.id, version: 2, priceType: "RECURRING", unitAmount: 150, currency: "USD", billingPeriod: "MONTHLY" },
+    () => null,
+    ["PLATFORM_BILLING_ADMIN"] as const
+  );
+  if ("kind" in priceResultV2) throw new Error("Expected second price creation to succeed");
+  const prices = priceResultV2.prices;
+  assert.equal(prices.length, 2);
+  
+  const firstPrice = prices.find(p => p.id === price.id);
+  const secondPrice = prices.find(p => p.id !== price.id);
+  
+  assert.equal(firstPrice?.version, 1);
+  assert.equal(secondPrice?.version, 2);
 });
 
 test("productcatalogplanspricesvalidation", () => {

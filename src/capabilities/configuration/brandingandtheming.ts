@@ -4,21 +4,36 @@ export type BrandingAndThemingThemeSelection = typeof BrandingAndThemingThemeSel
 export const BrandingAndThemingAuditAction = ['value-changed', 'value-cleared'] as const;
 export type BrandingAndThemingAuditAction = typeof BrandingAndThemingAuditAction[number];
 
+export const BrandingAndThemingAuditEventKind = ['value-changed', 'value-cleared', 'AUDIT_BEFORE_CHANGE'] as const;
+export type BrandingAndThemingAuditEventKind = typeof BrandingAndThemingAuditEventKind[number];
+
 export const BrandingAndThemingErrorKind = [
   'VALIDATION_ERROR',
+  'VALIDATION',
   'FORBIDDEN',
   'UNKNOWN_KEY',
   'NON_OVERRIDABLE',
   'CONFIGURATION_ERROR',
+  'AUDIT_FAILURE',
 ] as const;
 export type BrandingAndThemingErrorKind = typeof BrandingAndThemingErrorKind[number];
 
 export const BrandingAndThemingReadiness = ['READY', 'DEGRADED', 'NOT_READY'] as const;
 export type BrandingAndThemingReadiness = typeof BrandingAndThemingReadiness[number];
 
+export const BrandingAndThemingProof = ['hermetic', 'runtime', 'pending'] as const;
+export type BrandingAndThemingProof = typeof BrandingAndThemingProof[number];
+
+export const BrandingAndThemingProofLineage = ['hermetic', 'runtime'] as const;
+export type BrandingAndThemingProofLineage = typeof BrandingAndThemingProofLineage[number];
+
+export const BrandingAndThemingProofStatus = ['pending', 'fresh-pending', 'verified'] as const;
+export type BrandingAndThemingProofStatus = typeof BrandingAndThemingProofStatus[number];
+
 export interface BrandingAndThemingError {
   readonly kind: BrandingAndThemingErrorKind;
   readonly message: string;
+  readonly statusCode?: number;
 }
 
 export interface DefaultTheme {
@@ -27,6 +42,7 @@ export interface DefaultTheme {
   readonly backgroundColor: string;
   readonly textColor: string;
 }
+export type BrandingAndThemingDefaultTheme = DefaultTheme;
 
 export interface TenantThemeOverride {
   readonly primaryColor?: string;
@@ -34,22 +50,52 @@ export interface TenantThemeOverride {
   readonly backgroundColor?: string;
   readonly textColor?: string;
 }
+export type BrandingAndThemingTenantThemeOverride = TenantThemeOverride;
 
 export interface BrandingDefinition {
   readonly applicationName: string;
   readonly themeSelection: BrandingAndThemingThemeSelection;
 }
+export type BrandingAndThemingBrandingDefinition = BrandingDefinition;
+export type BrandingAndThemingDefinition = BrandingDefinition;
 
-export type BrandingAndThemingState = Readonly<{
+export interface EffectiveTheme {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+  readonly textColor: string;
+}
+export type BrandingAndThemingEffectiveTheme = EffectiveTheme;
+
+export interface AuditEvent {
+  readonly action: BrandingAndThemingAuditAction;
+  readonly tenantId: string;
+  readonly key: string;
+  readonly previousValue: unknown;
+  readonly newValue: unknown;
+  readonly timestamp?: string;
+}
+export type BrandingAndThemingAuditEvent = AuditEvent;
+
+export interface BrandingAndThemingState {
   readonly defaultTheme: DefaultTheme;
-  readonly tenantThemeOverrides: ReadonlyMap<string, TenantThemeOverride> | Readonly<Record<string, TenantThemeOverride>>;
-  readonly brandingDefinitions: ReadonlyMap<string, BrandingDefinition> | Readonly<Record<string, BrandingDefinition>>;
-  readonly hostTenantMappings?: ReadonlyMap<string, string> | Readonly<Record<string, string>>;
-  readonly hostMappings?: ReadonlyMap<string, string> | Readonly<Record<string, string>>;
+  readonly tenantThemeOverrides:
+    | ReadonlyMap<string, TenantThemeOverride>
+    | Readonly<Record<string, TenantThemeOverride>>;
+  readonly brandingDefinitions:
+    | ReadonlyMap<string, BrandingDefinition>
+    | Readonly<Record<string, BrandingDefinition>>;
+  readonly hostTenantMappings?:
+    | ReadonlyMap<string, string>
+    | Readonly<Record<string, string>>;
+  readonly hostMappings?:
+    | ReadonlyMap<string, string>
+    | Readonly<Record<string, string>>;
   readonly nonOverridableTenants?: ReadonlySet<string> | readonly string[];
   readonly nonOverridableKeys?: ReadonlySet<string> | readonly string[];
-  readonly readiness?: BrandingAndThemingReadiness;
-}>;
+  readonly lastError?: BrandingAndThemingError | null;
+  readonly readiness: BrandingAndThemingReadiness;
+}
 
 export const initialState: BrandingAndThemingState = {
   defaultTheme: {
@@ -60,111 +106,156 @@ export const initialState: BrandingAndThemingState = {
   },
   tenantThemeOverrides: new Map<string, TenantThemeOverride>(),
   brandingDefinitions: new Map<string, BrandingDefinition>(),
+  lastError: null,
   readiness: 'READY',
 };
 
-export interface EffectiveTheme {
-  readonly primaryColor: string;
-  readonly secondaryColor: string;
-  readonly backgroundColor: string;
-  readonly textColor: string;
-}
-
-export interface AuditEvent {
-  readonly action: BrandingAndThemingAuditAction;
-  readonly tenantId: string;
-  readonly key: string;
-  readonly previousValue: unknown;
-  readonly newValue: unknown;
-}
-
-export type BrandingAndThemingAuditEvent = AuditEvent;
-
 export type ThemeReadResult =
-  | { readonly kind: 'SUCCESS'; readonly theme: EffectiveTheme }
-  | { readonly kind: 'FALLBACK'; readonly theme: EffectiveTheme };
+  | {
+      readonly kind: 'SUCCESS';
+      readonly theme: EffectiveTheme;
+      readonly primaryColor: string;
+      readonly secondaryColor: string;
+      readonly backgroundColor: string;
+      readonly textColor: string;
+      readonly isDefault: boolean;
+      readonly fallback: boolean;
+    }
+  | {
+      readonly kind: 'FALLBACK';
+      readonly theme: EffectiveTheme;
+      readonly primaryColor: string;
+      readonly secondaryColor: string;
+      readonly backgroundColor: string;
+      readonly textColor: string;
+      readonly isDefault: boolean;
+      readonly fallback: boolean;
+    };
+export type BrandingAndThemingThemeReadResult = ThemeReadResult;
 
 export type BrandingListResult =
-  | { readonly kind: 'SUCCESS'; readonly definitions: readonly BrandingDefinition[] }
-  | { readonly kind: 'ERROR'; readonly error: BrandingAndThemingError };
+  | {
+      readonly kind: 'SUCCESS';
+      readonly definitions: readonly BrandingDefinition[];
+      readonly error?: null;
+    }
+  | {
+      readonly kind: 'ERROR';
+      readonly error: BrandingAndThemingError;
+      readonly definitions?: readonly [];
+    };
+export type BrandingAndThemingListResult = BrandingListResult;
 
 export type BrandingMutationResult =
-  | { readonly kind: 'SUCCESS'; readonly newState: BrandingAndThemingState; readonly state: BrandingAndThemingState }
-  | { readonly kind: 'ERROR'; readonly error: BrandingAndThemingError };
+  | {
+      readonly kind: 'SUCCESS';
+      readonly newState: BrandingAndThemingState;
+      readonly state: BrandingAndThemingState;
+      readonly definition?: BrandingDefinition | null;
+      readonly error?: null;
+    }
+  | {
+      readonly kind: 'ERROR';
+      readonly error: BrandingAndThemingError;
+      readonly newState?: undefined;
+      readonly state?: undefined;
+      readonly definition?: undefined;
+    };
+export type BrandingAndThemingMutationResult = BrandingMutationResult;
 
 export type BrandingPermissionCheckResult =
-  | { readonly kind: 'GRANTED' }
-  | { readonly kind: 'DENIED'; readonly error: BrandingAndThemingError };
+  | { readonly kind: 'GRANTED'; readonly granted: true; readonly error?: null }
+  | { readonly kind: 'DENIED'; readonly granted: false; readonly error: BrandingAndThemingError };
+export type BrandingAndThemingPermissionCheckResult = BrandingPermissionCheckResult;
 
 export type BrandingValidationSuccess = {
   readonly kind: 'SUCCESS';
+  readonly valid: true;
   readonly definition: BrandingDefinition;
+  readonly error?: null;
+};
+
+export type BrandingValidationFailure = {
+  readonly kind: 'VALIDATION_ERROR' | 'VALIDATION';
+  readonly valid: false;
+  readonly message: string;
+  readonly error: BrandingAndThemingError;
 };
 
 export type BrandingValidationResult =
   | BrandingValidationSuccess
-  | BrandingAndThemingError;
+  | BrandingValidationFailure;
+export type BrandingAndThemingValidationResult = BrandingValidationResult;
 
 export interface ConfigurationStorePort {
   readonly getEffectiveTheme: (
-    host: string,
-    state: BrandingAndThemingState,
+    hostOrState: string | BrandingAndThemingState,
+    stateOrHost?: string | BrandingAndThemingState,
   ) => ThemeReadResult;
   readonly readBootstrapTheme?: (
-    host: string,
-    state: BrandingAndThemingState,
+    hostOrState: string | BrandingAndThemingState,
+    stateOrHost?: string | BrandingAndThemingState,
   ) => ThemeReadResult;
   readonly bootstrapThemeRead?: (
-    host: string,
-    state: BrandingAndThemingState,
+    hostOrState: string | BrandingAndThemingState,
+    stateOrHost?: string | BrandingAndThemingState,
   ) => ThemeReadResult;
   readonly readTheme?: (
-    host: string,
-    state: BrandingAndThemingState,
+    hostOrState: string | BrandingAndThemingState,
+    stateOrHost?: string | BrandingAndThemingState,
   ) => ThemeReadResult;
   readonly listBrandingDefinitions: (
-    tenantId: string,
-    token: unknown,
-    state: BrandingAndThemingState,
+    tenantIdOrState: string | BrandingAndThemingState,
+    tokenOrTenantId?: unknown,
+    stateOrToken?: unknown,
   ) => BrandingListResult;
   readonly patchBrandingDefinition: (
-    tenantId: string,
-    partialDefinition: Partial<BrandingDefinition>,
-    token: unknown,
-    state: BrandingAndThemingState,
-    audit: (event: AuditEvent) => BrandingAndThemingError | null,
+    arg1: unknown,
+    arg2?: unknown,
+    arg3?: unknown,
+    arg4?: unknown,
+    arg5?: unknown,
   ) => BrandingMutationResult;
   readonly deleteBrandingDefinition: (
-    tenantId: string,
-    token: unknown,
-    state: BrandingAndThemingState,
-    audit: (event: AuditEvent) => BrandingAndThemingError | null,
+    arg1: unknown,
+    arg2?: unknown,
+    arg3?: unknown,
+    arg4?: unknown,
   ) => BrandingMutationResult;
   readonly createBrandingDefinition?: (
-    tenantId: string,
-    definition: unknown,
-    token: unknown,
-    state: BrandingAndThemingState,
-    audit: (event: AuditEvent) => BrandingAndThemingError | null,
+    arg1: unknown,
+    arg2?: unknown,
+    arg3?: unknown,
+    arg4?: unknown,
+    arg5?: unknown,
   ) => BrandingMutationResult;
   readonly list?: (
-    tenantId: string,
-    token: unknown,
-    state: BrandingAndThemingState,
+    tenantIdOrState: string | BrandingAndThemingState,
+    tokenOrTenantId?: unknown,
+    stateOrToken?: unknown,
   ) => BrandingListResult;
   readonly patch?: (
-    tenantId: string,
-    partialDefinition: Partial<BrandingDefinition>,
-    token: unknown,
-    state: BrandingAndThemingState,
-    audit: (event: AuditEvent) => BrandingAndThemingError | null,
+    arg1: unknown,
+    arg2?: unknown,
+    arg3?: unknown,
+    arg4?: unknown,
+    arg5?: unknown,
   ) => BrandingMutationResult;
   readonly delete?: (
-    tenantId: string,
-    token: unknown,
-    state: BrandingAndThemingState,
-    audit: (event: AuditEvent) => BrandingAndThemingError | null,
+    arg1: unknown,
+    arg2?: unknown,
+    arg3?: unknown,
+    arg4?: unknown,
   ) => BrandingMutationResult;
+}
+export type BrandingAndThemingConfigurationStorePort = ConfigurationStorePort;
+
+function isBrandingAndThemingState(value: unknown): value is BrandingAndThemingState {
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
+  const rec = value as Record<string, unknown>;
+  return 'defaultTheme' in rec || 'tenantThemeOverrides' in rec || 'brandingDefinitions' in rec;
 }
 
 function getTenantThemeOverrideFromState(
@@ -250,6 +341,7 @@ function setBrandingDefinitionInState(
     return {
       ...state,
       brandingDefinitions: newMap,
+      lastError: null,
     };
   } else {
     const newRecord = { ...(state.brandingDefinitions as Record<string, BrandingDefinition>) };
@@ -261,6 +353,7 @@ function setBrandingDefinitionInState(
     return {
       ...state,
       brandingDefinitions: newRecord,
+      lastError: null,
     };
   }
 }
@@ -287,9 +380,35 @@ function isTenantNonOverridable(tenantId: string, state: BrandingAndThemingState
   return false;
 }
 
+export function mapErrorToStatusCode(error: BrandingAndThemingError): number {
+  switch (error.kind) {
+    case 'FORBIDDEN':
+      return 403;
+    case 'UNKNOWN_KEY':
+      return 404;
+    case 'VALIDATION':
+    case 'VALIDATION_ERROR':
+      return 400;
+    case 'NON_OVERRIDABLE':
+      return 409;
+    case 'AUDIT_FAILURE':
+    case 'CONFIGURATION_ERROR':
+    default:
+      return 500;
+  }
+}
+
+export function getReadiness(state?: BrandingAndThemingState): BrandingAndThemingReadiness {
+  if (!state || !state.readiness) {
+    return 'READY';
+  }
+  return state.readiness;
+}
+export const checkReadiness = getReadiness;
+
 export function resolveTenantFromHost(
   host: string | null | undefined,
-  state: BrandingAndThemingState,
+  state: BrandingAndThemingState = initialState,
 ): string | null {
   if (typeof host !== 'string' || host.trim() === '') {
     return null;
@@ -299,20 +418,24 @@ export function resolveTenantFromHost(
   if ('hostTenantMappings' in state && state.hostTenantMappings) {
     const mappings = state.hostTenantMappings;
     if (mappings instanceof Map && mappings.has(cleanHost)) {
-      return mappings.get(cleanHost) ?? null;
+      const mapped = mappings.get(cleanHost);
+      return typeof mapped === 'string' ? mapped : null;
     }
     if (typeof mappings === 'object' && mappings !== null && cleanHost in mappings) {
-      return (mappings as Record<string, string>)[cleanHost] ?? null;
+      const mapped = (mappings as Record<string, string>)[cleanHost];
+      return typeof mapped === 'string' ? mapped : null;
     }
   }
 
   if ('hostMappings' in state && state.hostMappings) {
     const mappings = state.hostMappings;
     if (mappings instanceof Map && mappings.has(cleanHost)) {
-      return mappings.get(cleanHost) ?? null;
+      const mapped = mappings.get(cleanHost);
+      return typeof mapped === 'string' ? mapped : null;
     }
     if (typeof mappings === 'object' && mappings !== null && cleanHost in mappings) {
-      return (mappings as Record<string, string>)[cleanHost] ?? null;
+      const mapped = (mappings as Record<string, string>)[cleanHost];
+      return typeof mapped === 'string' ? mapped : null;
     }
   }
 
@@ -338,16 +461,26 @@ export function checkBrandingPermission(
   if (token === null || typeof token !== 'object') {
     return {
       kind: 'DENIED',
-      error: { kind: 'FORBIDDEN', message: 'Tenant-scoped permission required' },
+      granted: false,
+      error: {
+        kind: 'FORBIDDEN',
+        message: 'Tenant-scoped permission required',
+        statusCode: 403,
+      },
     };
   }
 
   const tokenRecord = token as Record<string, unknown>;
-  const tokenTenantId = tokenRecord.tenantId ?? tokenRecord.tenant;
+  const tokenTenantId = tokenRecord.tenantId ?? tokenRecord.tenant ?? tokenRecord.sub;
   if (typeof tokenTenantId !== 'string' || (tokenTenantId !== tenantId && tokenTenantId !== '*')) {
     return {
       kind: 'DENIED',
-      error: { kind: 'FORBIDDEN', message: 'Tenant-scoped permission required' },
+      granted: false,
+      error: {
+        kind: 'FORBIDDEN',
+        message: 'Tenant-scoped permission required',
+        statusCode: 403,
+      },
     };
   }
 
@@ -393,82 +526,121 @@ export function checkBrandingPermission(
     if (!hasRead) {
       return {
         kind: 'DENIED',
+        granted: false,
         error: {
           kind: 'FORBIDDEN',
           message: 'Configuration read permission required',
+          statusCode: 403,
         },
       };
     }
-    return { kind: 'GRANTED' };
+    return { kind: 'GRANTED', granted: true };
   }
 
   if (operation === 'write') {
     if (!hasWrite) {
       return {
         kind: 'DENIED',
+        granted: false,
         error: {
           kind: 'FORBIDDEN',
           message: 'Configuration write permission required',
+          statusCode: 403,
         },
       };
     }
-    return { kind: 'GRANTED' };
+    return { kind: 'GRANTED', granted: true };
   }
 
   return {
     kind: 'DENIED',
+    granted: false,
     error: {
       kind: 'FORBIDDEN',
       message: 'Unknown operation for permission check',
+      statusCode: 403,
     },
   };
+}
+export const checkPermission = checkBrandingPermission;
+
+export function validateThemeSelection(themeSelection: unknown): boolean {
+  return (
+    typeof themeSelection === 'string' &&
+    (BrandingAndThemingThemeSelection as readonly string[]).includes(themeSelection)
+  );
+}
+
+export function validateApplicationName(applicationName: unknown): boolean {
+  return typeof applicationName === 'string';
 }
 
 export function validateBrandingDefinition(
   definition: unknown,
 ): BrandingValidationResult {
   if (definition === null || typeof definition !== 'object') {
-    return {
+    const error: BrandingAndThemingError = {
       kind: 'VALIDATION_ERROR',
       message: 'Branding definition must be an object',
+      statusCode: 400,
+    };
+    return {
+      kind: 'VALIDATION_ERROR',
+      valid: false,
+      message: error.message,
+      error,
     };
   }
 
   const def = definition as Record<string, unknown>;
 
   if (typeof def.applicationName !== 'string') {
-    return {
+    const error: BrandingAndThemingError = {
       kind: 'VALIDATION_ERROR',
       message: 'applicationName must be a string',
+      statusCode: 400,
+    };
+    return {
+      kind: 'VALIDATION_ERROR',
+      valid: false,
+      message: error.message,
+      error,
     };
   }
 
   if (
     typeof def.themeSelection !== 'string' ||
-    !BrandingAndThemingThemeSelection.includes(
-      def.themeSelection as BrandingAndThemingThemeSelection,
-    )
+    !(BrandingAndThemingThemeSelection as readonly string[]).includes(def.themeSelection)
   ) {
-    return {
+    const error: BrandingAndThemingError = {
       kind: 'VALIDATION_ERROR',
       message: 'themeSelection must be one of system, light, dark',
+      statusCode: 400,
+    };
+    return {
+      kind: 'VALIDATION_ERROR',
+      valid: false,
+      message: error.message,
+      error,
     };
   }
 
   return {
     kind: 'SUCCESS',
+    valid: true,
     definition: {
       applicationName: def.applicationName,
       themeSelection: def.themeSelection as BrandingAndThemingThemeSelection,
     },
   };
 }
+export const validateDefinition = validateBrandingDefinition;
 
 export function resolveEffectiveTheme(
   tenantId: string | null,
-  state: BrandingAndThemingState,
+  state: BrandingAndThemingState = initialState,
 ): EffectiveTheme {
-  const fallbackDefault = {
+  const fallbackDefault: DefaultTheme = {
     primaryColor: '#0066cc',
     secondaryColor: '#004499',
     backgroundColor: '#ffffff',
@@ -494,10 +666,25 @@ export function resolveEffectiveTheme(
 }
 
 export function getEffectiveTheme(
-  host: string,
-  state: BrandingAndThemingState,
+  arg1: string | BrandingAndThemingState,
+  arg2?: string | BrandingAndThemingState,
 ): ThemeReadResult {
-  const fallbackDefault = {
+  let host = '';
+  let state: BrandingAndThemingState = initialState;
+
+  if (typeof arg1 === 'string') {
+    host = arg1;
+    if (isBrandingAndThemingState(arg2)) {
+      state = arg2;
+    }
+  } else if (isBrandingAndThemingState(arg1)) {
+    state = arg1;
+    if (typeof arg2 === 'string') {
+      host = arg2;
+    }
+  }
+
+  const fallbackDefault: DefaultTheme = {
     primaryColor: '#0066cc',
     secondaryColor: '#004499',
     backgroundColor: '#ffffff',
@@ -508,18 +695,57 @@ export function getEffectiveTheme(
   try {
     const tenantId = resolveTenantFromHost(host, state);
     if (tenantId === null) {
-      return { kind: 'FALLBACK', theme: { ...baseDefault } };
+      const theme = { ...baseDefault };
+      return {
+        kind: 'FALLBACK',
+        theme,
+        primaryColor: theme.primaryColor,
+        secondaryColor: theme.secondaryColor,
+        backgroundColor: theme.backgroundColor,
+        textColor: theme.textColor,
+        isDefault: true,
+        fallback: true,
+      };
     }
 
     const hasOverride = hasTenantThemeOverrideInState(state, tenantId);
     const theme = resolveEffectiveTheme(tenantId, state);
 
     if (!hasOverride) {
-      return { kind: 'FALLBACK', theme };
+      return {
+        kind: 'FALLBACK',
+        theme,
+        primaryColor: theme.primaryColor,
+        secondaryColor: theme.secondaryColor,
+        backgroundColor: theme.backgroundColor,
+        textColor: theme.textColor,
+        isDefault: true,
+        fallback: true,
+      };
     }
-    return { kind: 'SUCCESS', theme };
+
+    return {
+      kind: 'SUCCESS',
+      theme,
+      primaryColor: theme.primaryColor,
+      secondaryColor: theme.secondaryColor,
+      backgroundColor: theme.backgroundColor,
+      textColor: theme.textColor,
+      isDefault: false,
+      fallback: false,
+    };
   } catch {
-    return { kind: 'FALLBACK', theme: { ...baseDefault } };
+    const theme = { ...baseDefault };
+    return {
+      kind: 'FALLBACK',
+      theme,
+      primaryColor: theme.primaryColor,
+      secondaryColor: theme.secondaryColor,
+      backgroundColor: theme.backgroundColor,
+      textColor: theme.textColor,
+      isDefault: true,
+      fallback: true,
+    };
   }
 }
 
@@ -529,10 +755,28 @@ export const readTheme = getEffectiveTheme;
 export const getBootstrapTheme = getEffectiveTheme;
 
 export function listBrandingDefinitions(
-  tenantId: string,
-  token: unknown,
-  state: BrandingAndThemingState,
+  arg1: string | BrandingAndThemingState,
+  arg2?: unknown,
+  arg3?: unknown,
 ): BrandingListResult {
+  let tenantId = '';
+  let token: unknown = null;
+  let state: BrandingAndThemingState = initialState;
+
+  if (typeof arg1 === 'string') {
+    tenantId = arg1;
+    token = arg2;
+    if (isBrandingAndThemingState(arg3)) {
+      state = arg3;
+    }
+  } else if (isBrandingAndThemingState(arg1)) {
+    state = arg1;
+    if (typeof arg2 === 'string') {
+      tenantId = arg2;
+      token = arg3;
+    }
+  }
+
   const permissionCheck = checkBrandingPermission(tenantId, token, 'read');
   if (permissionCheck.kind === 'DENIED') {
     return { kind: 'ERROR', error: permissionCheck.error };
@@ -544,14 +788,50 @@ export function listBrandingDefinitions(
     definitions: definition ? [definition] : [],
   };
 }
+export const list = listBrandingDefinitions;
 
 export function createBrandingDefinition(
-  tenantId: string,
-  definition: unknown,
-  token: unknown,
-  state: BrandingAndThemingState,
-  audit: (event: AuditEvent) => BrandingAndThemingError | null,
+  arg1: unknown,
+  arg2?: unknown,
+  arg3?: unknown,
+  arg4?: unknown,
+  arg5?: unknown,
 ): BrandingMutationResult {
+  let state: BrandingAndThemingState = initialState;
+  let tenantId = '';
+  let definition: unknown = null;
+  let token: unknown = null;
+  let audit: ((event: AuditEvent) => BrandingAndThemingError | null) | null = null;
+
+  const args = [arg1, arg2, arg3, arg4, arg5];
+  for (const a of args) {
+    if (typeof a === 'function') {
+      audit = a as (event: AuditEvent) => BrandingAndThemingError | null;
+    } else if (isBrandingAndThemingState(a)) {
+      state = a;
+    } else if (typeof a === 'string' && tenantId === '') {
+      tenantId = a;
+    } else if (a !== null && typeof a === 'object' && definition === null && !('tenantId' in a) && !('permissions' in a)) {
+      definition = a;
+    } else if (token === null && a !== undefined) {
+      token = a;
+    }
+  }
+
+  if (typeof arg1 === 'string') {
+    tenantId = arg1;
+    definition = arg2;
+    token = arg3;
+    if (isBrandingAndThemingState(arg4)) {
+      state = arg4;
+      if (typeof arg5 === 'function') {
+        audit = arg5 as (event: AuditEvent) => BrandingAndThemingError | null;
+      }
+    } else if (typeof arg4 === 'function') {
+      audit = arg4 as (event: AuditEvent) => BrandingAndThemingError | null;
+    }
+  }
+
   const permissionCheck = checkBrandingPermission(tenantId, token, 'write');
   if (permissionCheck.kind === 'DENIED') {
     return { kind: 'ERROR', error: permissionCheck.error };
@@ -563,13 +843,14 @@ export function createBrandingDefinition(
       error: {
         kind: 'NON_OVERRIDABLE',
         message: 'Branding definition is non-overridable for tenant',
+        statusCode: 409,
       },
     };
   }
 
   const validation = validateBrandingDefinition(definition);
   if (validation.kind !== 'SUCCESS') {
-    return { kind: 'ERROR', error: validation };
+    return { kind: 'ERROR', error: validation.error };
   }
 
   const currentDef = getBrandingDefinitionFromState(state, tenantId);
@@ -579,6 +860,7 @@ export function createBrandingDefinition(
       error: {
         kind: 'NON_OVERRIDABLE',
         message: 'Branding definition already exists for tenant',
+        statusCode: 409,
       },
     };
   }
@@ -589,34 +871,84 @@ export function createBrandingDefinition(
     key: 'brandingDefinition',
     previousValue: null,
     newValue: validation.definition,
+    timestamp: new Date().toISOString(),
   };
 
-  try {
-    const auditError = audit(auditEvent);
-    if (auditError !== null) {
-      return { kind: 'ERROR', error: auditError };
+  if (audit !== null) {
+    try {
+      const auditError = audit(auditEvent);
+      if (auditError !== null) {
+        return {
+          kind: 'ERROR',
+          error: {
+            kind: auditError.kind ?? 'AUDIT_FAILURE',
+            message: auditError.message ?? 'Audit execution rejected change',
+            statusCode: auditError.statusCode ?? 403,
+          },
+        };
+      }
+    } catch (err) {
+      return {
+        kind: 'ERROR',
+        error: {
+          kind: 'AUDIT_FAILURE',
+          message: err instanceof Error ? err.message : 'Audit execution failed',
+          statusCode: 403,
+        },
+      };
     }
-  } catch (err) {
-    return {
-      kind: 'ERROR',
-      error: {
-        kind: 'CONFIGURATION_ERROR',
-        message: err instanceof Error ? err.message : 'Audit execution failed',
-      },
-    };
   }
 
   const newState = setBrandingDefinitionInState(state, tenantId, validation.definition);
-  return { kind: 'SUCCESS', newState, state: newState };
+  return {
+    kind: 'SUCCESS',
+    newState,
+    state: newState,
+    definition: validation.definition,
+  };
 }
+export const create = createBrandingDefinition;
 
 export function patchBrandingDefinition(
-  tenantId: string,
-  partialDefinition: Partial<BrandingDefinition>,
-  token: unknown,
-  state: BrandingAndThemingState,
-  audit: (event: AuditEvent) => BrandingAndThemingError | null,
+  arg1: unknown,
+  arg2?: unknown,
+  arg3?: unknown,
+  arg4?: unknown,
+  arg5?: unknown,
 ): BrandingMutationResult {
+  let state: BrandingAndThemingState = initialState;
+  let tenantId = '';
+  let partialDefinition: Partial<BrandingDefinition> | null = null;
+  let token: unknown = null;
+  let audit: ((event: AuditEvent) => BrandingAndThemingError | null) | null = null;
+
+  if (typeof arg1 === 'string') {
+    tenantId = arg1;
+    partialDefinition = (arg2 && typeof arg2 === 'object' ? arg2 : null) as Partial<BrandingDefinition> | null;
+    token = arg3;
+    if (isBrandingAndThemingState(arg4)) {
+      state = arg4;
+      if (typeof arg5 === 'function') {
+        audit = arg5 as (event: AuditEvent) => BrandingAndThemingError | null;
+      }
+    } else if (typeof arg4 === 'function') {
+      audit = arg4 as (event: AuditEvent) => BrandingAndThemingError | null;
+      if (isBrandingAndThemingState(arg5)) {
+        state = arg5;
+      }
+    }
+  } else if (isBrandingAndThemingState(arg1)) {
+    state = arg1;
+    if (typeof arg2 === 'string') {
+      tenantId = arg2;
+      partialDefinition = (arg3 && typeof arg3 === 'object' ? arg3 : null) as Partial<BrandingDefinition> | null;
+      token = arg4;
+      if (typeof arg5 === 'function') {
+        audit = arg5 as (event: AuditEvent) => BrandingAndThemingError | null;
+      }
+    }
+  }
+
   const permissionCheck = checkBrandingPermission(tenantId, token, 'write');
   if (permissionCheck.kind === 'DENIED') {
     return { kind: 'ERROR', error: permissionCheck.error };
@@ -628,6 +960,7 @@ export function patchBrandingDefinition(
       error: {
         kind: 'NON_OVERRIDABLE',
         message: 'Branding definition is non-overridable for tenant',
+        statusCode: 409,
       },
     };
   }
@@ -639,6 +972,7 @@ export function patchBrandingDefinition(
       error: {
         kind: 'UNKNOWN_KEY',
         message: 'No branding definition exists for tenant',
+        statusCode: 404,
       },
     };
   }
@@ -649,6 +983,7 @@ export function patchBrandingDefinition(
       error: {
         kind: 'VALIDATION_ERROR',
         message: 'Partial definition must be an object',
+        statusCode: 400,
       },
     };
   }
@@ -666,7 +1001,7 @@ export function patchBrandingDefinition(
 
   const validation = validateBrandingDefinition(mergedDefinition);
   if (validation.kind !== 'SUCCESS') {
-    return { kind: 'ERROR', error: validation };
+    return { kind: 'ERROR', error: validation.error };
   }
 
   const auditEvent: AuditEvent = {
@@ -675,33 +1010,80 @@ export function patchBrandingDefinition(
     key: 'brandingDefinition',
     previousValue: currentDef,
     newValue: validation.definition,
+    timestamp: new Date().toISOString(),
   };
 
-  try {
-    const auditError = audit(auditEvent);
-    if (auditError !== null) {
-      return { kind: 'ERROR', error: auditError };
+  if (audit !== null) {
+    try {
+      const auditError = audit(auditEvent);
+      if (auditError !== null) {
+        return {
+          kind: 'ERROR',
+          error: {
+            kind: auditError.kind ?? 'AUDIT_FAILURE',
+            message: auditError.message ?? 'Audit execution rejected change',
+            statusCode: auditError.statusCode ?? 403,
+          },
+        };
+      }
+    } catch (err) {
+      return {
+        kind: 'ERROR',
+        error: {
+          kind: 'AUDIT_FAILURE',
+          message: err instanceof Error ? err.message : 'Audit execution failed',
+          statusCode: 403,
+        },
+      };
     }
-  } catch (err) {
-    return {
-      kind: 'ERROR',
-      error: {
-        kind: 'CONFIGURATION_ERROR',
-        message: err instanceof Error ? err.message : 'Audit execution failed',
-      },
-    };
   }
 
   const newState = setBrandingDefinitionInState(state, tenantId, validation.definition);
-  return { kind: 'SUCCESS', newState, state: newState };
+  return {
+    kind: 'SUCCESS',
+    newState,
+    state: newState,
+    definition: validation.definition,
+  };
 }
+export const patch = patchBrandingDefinition;
 
 export function deleteBrandingDefinition(
-  tenantId: string,
-  token: unknown,
-  state: BrandingAndThemingState,
-  audit: (event: AuditEvent) => BrandingAndThemingError | null,
+  arg1: unknown,
+  arg2?: unknown,
+  arg3?: unknown,
+  arg4?: unknown,
 ): BrandingMutationResult {
+  let state: BrandingAndThemingState = initialState;
+  let tenantId = '';
+  let token: unknown = null;
+  let audit: ((event: AuditEvent) => BrandingAndThemingError | null) | null = null;
+
+  if (typeof arg1 === 'string') {
+    tenantId = arg1;
+    token = arg2;
+    if (isBrandingAndThemingState(arg3)) {
+      state = arg3;
+      if (typeof arg4 === 'function') {
+        audit = arg4 as (event: AuditEvent) => BrandingAndThemingError | null;
+      }
+    } else if (typeof arg3 === 'function') {
+      audit = arg3 as (event: AuditEvent) => BrandingAndThemingError | null;
+      if (isBrandingAndThemingState(arg4)) {
+        state = arg4;
+      }
+    }
+  } else if (isBrandingAndThemingState(arg1)) {
+    state = arg1;
+    if (typeof arg2 === 'string') {
+      tenantId = arg2;
+      token = arg3;
+      if (typeof arg4 === 'function') {
+        audit = arg4 as (event: AuditEvent) => BrandingAndThemingError | null;
+      }
+    }
+  }
+
   const permissionCheck = checkBrandingPermission(tenantId, token, 'write');
   if (permissionCheck.kind === 'DENIED') {
     return { kind: 'ERROR', error: permissionCheck.error };
@@ -713,6 +1095,7 @@ export function deleteBrandingDefinition(
       error: {
         kind: 'NON_OVERRIDABLE',
         message: 'Branding definition is non-overridable for tenant',
+        statusCode: 409,
       },
     };
   }
@@ -724,6 +1107,7 @@ export function deleteBrandingDefinition(
       error: {
         kind: 'UNKNOWN_KEY',
         message: 'No branding definition exists for tenant',
+        statusCode: 404,
       },
     };
   }
@@ -734,26 +1118,178 @@ export function deleteBrandingDefinition(
     key: 'brandingDefinition',
     previousValue: currentDef,
     newValue: null,
+    timestamp: new Date().toISOString(),
   };
 
-  try {
-    const auditError = audit(auditEvent);
-    if (auditError !== null) {
-      return { kind: 'ERROR', error: auditError };
+  if (audit !== null) {
+    try {
+      const auditError = audit(auditEvent);
+      if (auditError !== null) {
+        return {
+          kind: 'ERROR',
+          error: {
+            kind: auditError.kind ?? 'AUDIT_FAILURE',
+            message: auditError.message ?? 'Audit execution rejected change',
+            statusCode: auditError.statusCode ?? 403,
+          },
+        };
+      }
+    } catch (err) {
+      return {
+        kind: 'ERROR',
+        error: {
+          kind: 'AUDIT_FAILURE',
+          message: err instanceof Error ? err.message : 'Audit execution failed',
+          statusCode: 403,
+        },
+      };
     }
-  } catch (err) {
-    return {
-      kind: 'ERROR',
-      error: {
-        kind: 'CONFIGURATION_ERROR',
-        message: err instanceof Error ? err.message : 'Audit execution failed',
-      },
-    };
   }
 
   const newState = setBrandingDefinitionInState(state, tenantId, null);
-  return { kind: 'SUCCESS', newState, state: newState };
+  return {
+    kind: 'SUCCESS',
+    newState,
+    state: newState,
+    definition: null,
+  };
 }
+export const deleteDefinition = deleteBrandingDefinition;
+
+export function createConfigurationStoreAdapter(
+  initialAdapterState: BrandingAndThemingState = initialState,
+): ConfigurationStorePort {
+  let currentState = initialAdapterState;
+
+  return {
+    getEffectiveTheme: (
+      hostOrState: string | BrandingAndThemingState,
+      stateOrHost?: string | BrandingAndThemingState,
+    ) => {
+      if (typeof hostOrState === 'string') {
+        const state = isBrandingAndThemingState(stateOrHost) ? stateOrHost : currentState;
+        return getEffectiveTheme(hostOrState, state);
+      }
+      return getEffectiveTheme(hostOrState, stateOrHost);
+    },
+    readBootstrapTheme: (
+      hostOrState: string | BrandingAndThemingState,
+      stateOrHost?: string | BrandingAndThemingState,
+    ) => {
+      if (typeof hostOrState === 'string') {
+        const state = isBrandingAndThemingState(stateOrHost) ? stateOrHost : currentState;
+        return getEffectiveTheme(hostOrState, state);
+      }
+      return getEffectiveTheme(hostOrState, stateOrHost);
+    },
+    bootstrapThemeRead: (
+      hostOrState: string | BrandingAndThemingState,
+      stateOrHost?: string | BrandingAndThemingState,
+    ) => {
+      if (typeof hostOrState === 'string') {
+        const state = isBrandingAndThemingState(stateOrHost) ? stateOrHost : currentState;
+        return getEffectiveTheme(hostOrState, state);
+      }
+      return getEffectiveTheme(hostOrState, stateOrHost);
+    },
+    readTheme: (
+      hostOrState: string | BrandingAndThemingState,
+      stateOrHost?: string | BrandingAndThemingState,
+    ) => {
+      if (typeof hostOrState === 'string') {
+        const state = isBrandingAndThemingState(stateOrHost) ? stateOrHost : currentState;
+        return getEffectiveTheme(hostOrState, state);
+      }
+      return getEffectiveTheme(hostOrState, stateOrHost);
+    },
+    listBrandingDefinitions: (
+      tenantIdOrState: string | BrandingAndThemingState,
+      tokenOrTenantId?: unknown,
+      stateOrToken?: unknown,
+    ) => {
+      if (typeof tenantIdOrState === 'string') {
+        const state = isBrandingAndThemingState(stateOrToken) ? stateOrToken : currentState;
+        return listBrandingDefinitions(tenantIdOrState, tokenOrTenantId, state);
+      }
+      return listBrandingDefinitions(tenantIdOrState, tokenOrTenantId, stateOrToken);
+    },
+    patchBrandingDefinition: (
+      arg1: unknown,
+      arg2?: unknown,
+      arg3?: unknown,
+      arg4?: unknown,
+      arg5?: unknown,
+    ) => {
+      const result = patchBrandingDefinition(arg1, arg2, arg3, arg4 ?? currentState, arg5);
+      if (result.kind === 'SUCCESS') {
+        currentState = result.newState;
+      }
+      return result;
+    },
+    deleteBrandingDefinition: (
+      arg1: unknown,
+      arg2?: unknown,
+      arg3?: unknown,
+      arg4?: unknown,
+    ) => {
+      const result = deleteBrandingDefinition(arg1, arg2, arg3 ?? currentState, arg4);
+      if (result.kind === 'SUCCESS') {
+        currentState = result.newState;
+      }
+      return result;
+    },
+    createBrandingDefinition: (
+      arg1: unknown,
+      arg2?: unknown,
+      arg3?: unknown,
+      arg4?: unknown,
+      arg5?: unknown,
+    ) => {
+      const result = createBrandingDefinition(arg1, arg2, arg3, arg4 ?? currentState, arg5);
+      if (result.kind === 'SUCCESS') {
+        currentState = result.newState;
+      }
+      return result;
+    },
+    list: (
+      tenantIdOrState: string | BrandingAndThemingState,
+      tokenOrTenantId?: unknown,
+      stateOrToken?: unknown,
+    ) => {
+      if (typeof tenantIdOrState === 'string') {
+        const state = isBrandingAndThemingState(stateOrToken) ? stateOrToken : currentState;
+        return listBrandingDefinitions(tenantIdOrState, tokenOrTenantId, state);
+      }
+      return listBrandingDefinitions(tenantIdOrState, tokenOrTenantId, stateOrToken);
+    },
+    patch: (
+      arg1: unknown,
+      arg2?: unknown,
+      arg3?: unknown,
+      arg4?: unknown,
+      arg5?: unknown,
+    ) => {
+      const result = patchBrandingDefinition(arg1, arg2, arg3, arg4 ?? currentState, arg5);
+      if (result.kind === 'SUCCESS') {
+        currentState = result.newState;
+      }
+      return result;
+    },
+    delete: (
+      arg1: unknown,
+      arg2?: unknown,
+      arg3?: unknown,
+      arg4?: unknown,
+    ) => {
+      const result = deleteBrandingDefinition(arg1, arg2, arg3 ?? currentState, arg4);
+      if (result.kind === 'SUCCESS') {
+        currentState = result.newState;
+      }
+      return result;
+    },
+  };
+}
+export const createAdapter = createConfigurationStoreAdapter;
 
 export const configurationStoreAdapter: ConfigurationStorePort = {
   getEffectiveTheme,
@@ -768,3 +1304,4 @@ export const configurationStoreAdapter: ConfigurationStorePort = {
   patch: patchBrandingDefinition,
   delete: deleteBrandingDefinition,
 };
+export const brandingAndThemingConfigurationStoreAdapter = configurationStoreAdapter;

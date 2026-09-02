@@ -3,170 +3,187 @@ import assert from 'node:assert/strict';
 import * as capability from "../../../src/capabilities/identityaccess/tenanthostidentityresolution.ts";
 
 test("tenanthostidentityresolutionauditmodel", () => {
-  const state: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    domainRegistry: new Map([['example.com', { organisationId: 'org1', slug: 'example', realmName: 'realm1', active: true }]]),
-    readiness: 'READY',
-  };
-  const result = capability.resolveTenantContext(state, 'example.com', null);
-  assert.ok(!('tenantContext' in result) || result.tenantContext !== null || 'kind' in result);
+  assert.equal(capability.HAS_MUTATION_AUDIT, false);
 });
 
 test("tenanthostidentityresolutioncontracts", () => {
-  const state: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    domainRegistry: new Map([['tenant.example.com', { organisationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }]]),
-    readiness: 'READY',
-  };
-  const result = capability.resolveTenantContext(state, 'tenant.example.com', null);
-  assert.deepEqual(result, {
-    classification: 'POSSIBLE_CUSTOM_DOMAIN',
-    tenantContext: {
-      organisationId: 'org1',
-      slug: 'tenant',
-      realmName: 'realm1',
-      hostSource: 'custom_domain',
-    },
-  });
+  const registry = capability.createInMemoryDomainRegistry(
+    [{ organizationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }],
+    [],
+    true
+  );
+  const config: capability.ResolverConfiguration = { apexDomain: 'example.com' };
+  const request: capability.RequestContext = { host: 'tenant.example.com' };
+  const result = capability.resolveHostIdentity(request, registry, config);
+  assert.equal(result.classification, 'tenant_slug');
+  assert.notEqual(result.tenant, null);
+  assert.equal(result.tenant?.slug, 'tenant');
 });
 
 test("tenanthostidentityresolutionerrormodel", () => {
-  const state: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    readiness: 'READY',
-  };
-  const apexResult = capability.resolveTenantContext(state, 'example.com', null);
-  assert.deepEqual(apexResult, {
-    kind: 'APEX_SUBDOMAIN_REJECTED',
-    message: 'Apex subdomains are explicitly rejected',
-  });
+  const registry = capability.createInMemoryDomainRegistry([], [], false);
+  const config: capability.ResolverConfiguration = { apexDomain: 'example.com' };
 
-  const invalidResult = capability.resolveTenantContext(state, 'invalid@host', null);
-  assert.deepEqual(invalidResult, {
-    classification: 'MALFORMED',
-    tenantContext: null,
-  });
+  const apexRequest: capability.RequestContext = { host: 'example.com' };
+  const apexResult = capability.resolveHostIdentity(apexRequest, registry, config);
+  assert.equal(apexResult.tenant, null);
+  assert.equal(apexResult.classification, 'apex');
+
+  const reservedRequest: capability.RequestContext = { host: 'admin.example.com' };
+  const reservedResult = capability.resolveHostIdentity(reservedRequest, registry, config);
+  assert.equal(reservedResult.tenant, null);
+  assert.equal(reservedResult.classification, 'reserved_subdomain');
+
+  const globalGuard = capability.guardGlobalRoute('reserved_subdomain', 'admin.example.com');
+  assert.equal(globalGuard.rejected, true);
+  assert.equal(globalGuard.reason, 'APEX_SUBDOMAIN_REJECTED');
+
+  const degradedRequest: capability.RequestContext = { host: 'tenant.example.com' };
+  const degradedResult = capability.resolveHostIdentity(degradedRequest, registry, config);
+  assert.equal(degradedResult.success, false);
+  assert.equal(degradedResult.error?.kind, 'REGISTRY_DEGRADED');
 });
 
 test("tenanthostidentityresolutionlifecycle", () => {
-  const state: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    domainRegistry: new Map([
-      ['tenant.localhost', { organisationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }],
-      ['custom.example.com', { organisationId: 'org2', slug: 'custom', realmName: 'realm2', active: false }],
-    ]),
-    readiness: 'READY',
-  };
+  const registry = capability.createInMemoryDomainRegistry(
+    [{ organizationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }],
+    [
+      { domain: 'custom.example.com', organizationId: 'org2', slug: 'custom', realmName: 'realm2', status: 'active' },
+      { domain: 'inactive.example.com', organizationId: 'org3', slug: 'inactive', realmName: 'realm3', status: 'inactive' }
+    ],
+    true
+  );
+  const config: capability.ResolverConfiguration = { apexDomain: 'example.com' };
 
-  const apexResult = capability.classifyHost('example.com');
-  assert.equal(apexResult, 'APEX');
+  const apexRequest: capability.RequestContext = { host: 'example.com' };
+  const apexResult = capability.resolveHostIdentity(apexRequest, registry, config);
+  assert.equal(apexResult.classification, 'apex');
+  assert.equal(apexResult.tenant, null);
 
-  const reservedResult = capability.classifyHost('www.example.com');
-  assert.equal(reservedResult, 'RESERVED_SUBDOMAIN');
+  const reservedRequest: capability.RequestContext = { host: 'admin.example.com' };
+  const reservedResult = capability.resolveHostIdentity(reservedRequest, registry, config);
+  assert.equal(reservedResult.classification, 'reserved_subdomain');
+  assert.equal(reservedResult.tenant, null);
 
-  const tenantSlugResult = capability.resolveTenantContext(state, 'tenant.localhost', null);
-  assert.deepEqual(tenantSlugResult, {
-    classification: 'TENANT_SLUG',
-    tenantContext: {
-      organisationId: 'org1',
-      slug: 'tenant',
-      realmName: 'realm1',
-      hostSource: 'slug',
-    },
-  });
+  const invalidRequest: capability.RequestContext = { host: 'invalid..host' };
+  const invalidResult = capability.resolveHostIdentity(invalidRequest, registry, config);
+  assert.equal(invalidResult.classification, 'malformed');
+  assert.equal(invalidResult.tenant, null);
 
-  const inactiveCustomDomainResult = capability.resolveTenantContext(state, 'custom.example.com', null);
-  assert.deepEqual(inactiveCustomDomainResult, {
-    classification: 'POSSIBLE_CUSTOM_DOMAIN',
-    tenantContext: null,
-  });
+  const tenantSlugRequest: capability.RequestContext = { host: 'tenant.example.com' };
+  const tenantSlugResult = capability.resolveHostIdentity(tenantSlugRequest, registry, config);
+  assert.equal(tenantSlugResult.classification, 'tenant_slug');
+  assert.notEqual(tenantSlugResult.tenant, null);
+
+  const activeCustomRequest: capability.RequestContext = { host: 'custom.example.com' };
+  const activeCustomResult = capability.resolveHostIdentity(activeCustomRequest, registry, config);
+  assert.equal(activeCustomResult.classification, 'possible_custom_domain');
+  assert.notEqual(activeCustomResult.tenant, null);
+
+  const inactiveCustomRequest: capability.RequestContext = { host: 'inactive.example.com' };
+  const inactiveCustomResult = capability.resolveHostIdentity(inactiveCustomRequest, registry, config);
+  assert.equal(inactiveCustomResult.classification, 'possible_custom_domain');
+  assert.equal(inactiveCustomResult.tenant, null);
 });
 
 test("tenanthostidentityresolutionproof", () => {
-  const state: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    domainRegistry: new Map([['tenant.example.com', { organisationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }]]),
-    readiness: 'READY',
+  const proofConfig: capability.HermeticSubstrateProofConfig = {
+    seededOrganizations: [{ organizationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }],
+    seededDomains: [
+      { domain: 'custom.example.com', organizationId: 'org1', slug: 'tenant', realmName: 'realm1', status: 'active' }
+    ],
+    substrateAvailable: true,
+    registryAvailable: true
   };
+  const proof = capability.validateRuntimeProof(proofConfig);
+  assert.equal(proof.status, 'VALIDATED');
+  assert.equal(proof.lineage, 'hermetic');
+  assert.equal(proof.matrixValidationPassed, true);
 
-  const classification = capability.classifyHost('tenant.example.com');
-  assert.equal(classification, 'POSSIBLE_CUSTOM_DOMAIN');
-
-  const resolution = capability.resolveTenantContext(state, 'tenant.example.com', null);
-  assert.deepEqual(resolution, {
-    classification: 'POSSIBLE_CUSTOM_DOMAIN',
-    tenantContext: {
-      organisationId: 'org1',
-      slug: 'tenant',
-      realmName: 'realm1',
-      hostSource: 'custom_domain',
-    },
-  });
+  const pendingConfig: capability.HermeticSubstrateProofConfig = {
+    seededOrganizations: [],
+    seededDomains: [],
+    substrateAvailable: false,
+    registryAvailable: false
+  };
+  const pendingProof = capability.validateRuntimeProof(pendingConfig);
+  assert.equal(pendingProof.status, 'PENDING');
+  assert.equal(pendingProof.lineage, 'runtime');
 });
 
 test("tenanthostidentityresolutionreadinessmodel", () => {
-  const emptyState: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    domainRegistry: new Map(),
-    readiness: 'READY',
-  };
-  assert.equal(capability.checkReadiness(emptyState), 'DEGRADED');
+  const registry = capability.createInMemoryDomainRegistry([], [], true);
+  const ready = capability.checkReadiness(registry);
+  assert.equal(ready, 'READY');
 
-  const readyState: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    domainRegistry: new Map([['example.com', { organisationId: 'org1', slug: 'example', realmName: 'realm1', active: true }]]),
-    readiness: 'READY',
+  const degradedRegistry = capability.createInMemoryDomainRegistry([], [], false);
+  const degraded = capability.checkReadiness(degradedRegistry);
+  assert.equal(degraded, 'DEGRADED');
+
+  const nullRegistry = capability.checkReadiness(null);
+  assert.equal(nullRegistry, 'NOT_READY');
+
+  const proofConfig: capability.HermeticSubstrateProofConfig = {
+    seededOrganizations: [],
+    seededDomains: [],
+    substrateAvailable: true,
+    registryAvailable: true
   };
-  assert.equal(capability.checkReadiness(readyState), 'READY');
+  const skippedProof = capability.validateRuntimeProof(proofConfig);
+  assert.equal(skippedProof.status, 'SKIPPED');
 });
 
 test("tenanthostidentityresolutionstatemodel", () => {
-  const state: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    domainRegistry: new Map([['tenant.example.com', { organisationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }]]),
-    readiness: 'READY',
-  };
+  const registry = capability.createInMemoryDomainRegistry(
+    [{ organizationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }],
+    [],
+    true
+  );
+  const config: capability.ResolverConfiguration = { apexDomain: 'example.com' };
 
-  const resolvedResult = capability.resolveTenantContext(state, 'tenant.example.com', null);
-  assert.equal(resolvedResult.classification, 'POSSIBLE_CUSTOM_DOMAIN');
-  assert.notEqual(resolvedResult.tenantContext, null);
-  assert.equal(resolvedResult.tenantContext?.organisationId, 'org1');
-  assert.equal(resolvedResult.tenantContext?.slug, 'tenant');
-  assert.equal(resolvedResult.tenantContext?.realmName, 'realm1');
-  assert.equal(resolvedResult.tenantContext?.hostSource, 'custom_domain');
+  const resolvedRequest: capability.RequestContext = { host: 'tenant.example.com' };
+  const resolvedResult = capability.resolveHostIdentity(resolvedRequest, registry, config);
+  assert.equal(resolvedResult.classification, 'tenant_slug');
+  assert.notEqual(resolvedResult.tenant, null);
+  assert.equal(resolvedResult.tenant?.organizationId, 'org1');
+  assert.equal(resolvedResult.tenant?.slug, 'tenant');
+  assert.equal(resolvedResult.tenant?.realmName, 'realm1');
+  assert.equal(resolvedResult.tenant?.hostSource, 'tenant_slug');
 
-  const untrustedResult = capability.resolveTenantContext(state, 'malformed', null);
-  assert.equal(untrustedResult.classification, 'MALFORMED');
-  assert.equal(untrustedResult.tenantContext, null);
+  const untrustedRequest: capability.RequestContext = { host: 'malformed' };
+  const untrustedResult = capability.resolveHostIdentity(untrustedRequest, registry, config);
+  assert.equal(untrustedResult.classification, 'malformed');
+  assert.equal(untrustedResult.tenant, null);
 });
 
 test("tenanthostidentityresolutionvalidation", () => {
-  const state: capability.TenantHostIdentityResolutionState = {
-    ...capability.initialState,
-    domainRegistry: new Map([['tenant.example.com', { organisationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }]]),
-    readiness: 'READY',
+  const registry = capability.createInMemoryDomainRegistry(
+    [{ organizationId: 'org1', slug: 'tenant', realmName: 'realm1', active: true }],
+    [],
+    true
+  );
+  const config: capability.ResolverConfiguration = {
+    apexDomain: 'example.com',
+    trustForwardedHost: true,
+    reservedSubdomains: ['admin', 'api']
   };
 
-  assert.equal(capability.classifyHost('example.com:8080'), 'APEX');
-  assert.equal(capability.classifyHost('www.example.com'), 'RESERVED_SUBDOMAIN');
-  assert.equal(capability.classifyHost(''), 'MALFORMED');
-  assert.equal(capability.classifyHost('tenant.localhost'), 'TENANT_SLUG');
-  assert.equal(capability.classifyHost('unknown.example.com'), 'POSSIBLE_CUSTOM_DOMAIN');
+  assert.equal(capability.classifyHost('example.com:8080', 'example.com'), 'apex');
+  assert.equal(capability.classifyHost('admin.example.com', 'example.com'), 'reserved_subdomain');
+  assert.equal(capability.classifyHost('', 'example.com'), 'malformed');
+  assert.equal(capability.classifyHost('tenant.example.com', 'example.com'), 'tenant_slug');
+  assert.equal(capability.classifyHost('unknown.example.com', 'example.com'), 'possible_custom_domain');
 
-  const forwardedHostResult = capability.resolveTenantContext(state, 'ignored.com', 'tenant.example.com');
-  assert.deepEqual(forwardedHostResult, {
-    classification: 'POSSIBLE_CUSTOM_DOMAIN',
-    tenantContext: {
-      organisationId: 'org1',
-      slug: 'tenant',
-      realmName: 'realm1',
-      hostSource: 'custom_domain',
-    },
-  });
+  const forwardedRequest: capability.RequestContext = {
+    host: 'ignored.com',
+    forwardedHost: 'tenant.example.com'
+  };
+  const forwardedResult = capability.resolveHostIdentity(forwardedRequest, registry, config);
+  assert.equal(forwardedResult.classification, 'tenant_slug');
+  assert.notEqual(forwardedResult.tenant, null);
 
-  const unknownSlugResult = capability.resolveTenantContext(state, 'unknown.localhost', null);
-  assert.deepEqual(unknownSlugResult, {
-    classification: 'TENANT_SLUG',
-    tenantContext: null,
-  });
+  const unknownSlugRequest: capability.RequestContext = { host: 'unknown.example.com' };
+  const unknownSlugResult = capability.resolveHostIdentity(unknownSlugRequest, registry, config);
+  assert.equal(unknownSlugResult.classification, 'possible_custom_domain');
+  assert.equal(unknownSlugResult.tenant, null);
 });

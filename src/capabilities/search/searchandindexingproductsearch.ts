@@ -248,12 +248,14 @@ export function performSearch(
     doc.organisationId === query.organisationId
   );
 
-  const results: SearchResult[] = tenantDocs.map(doc => {
-    if (query.permissionKey !== undefined && doc.permissionKey !== query.permissionKey) {
-      return { document: doc, decision: 'DENIED' };
-    }
-    return { document: doc, decision: 'GRANTED' };
-  });
+  const results: SearchResult[] = tenantDocs
+    .filter(doc => query.documentType === undefined || doc.documentType === query.documentType)
+    .map(doc => {
+      if (doc.permissionKey !== undefined && query.permissionKey !== doc.permissionKey) {
+        return { document: doc, decision: 'DENIED' };
+      }
+      return { document: doc, decision: 'GRANTED' };
+    });
 
   return { results, error: null };
 }
@@ -288,6 +290,14 @@ export function reindexTenant(
       return {
         kind: 'SECRET_FIELD_DETECTED',
         message: 'Document metadata contains secret fields during reindex',
+        tenantId,
+        organisationId
+      };
+    }
+    if (doc.tenantId !== tenantId || doc.organisationId !== organisationId) {
+      return {
+        kind: 'TENANT_ISOLATION_VIOLATION',
+        message: 'Reindex documents must belong to the specified tenant and organisation',
         tenantId,
         organisationId
       };
@@ -351,7 +361,11 @@ export function checkSearchIsolation(
     doc.tenantId !== query.tenantId || doc.organisationId !== query.organisationId
   );
 
-  if (hasOtherTenantDocs && result.results.length > 0) {
+  const hasResultsFromOtherTenants = result.results.some(r =>
+    r.document.tenantId !== query.tenantId || r.document.organisationId !== query.organisationId
+  );
+
+  if (hasResultsFromOtherTenants) {
     return {
       isolated: false,
       error: {
@@ -364,6 +378,36 @@ export function checkSearchIsolation(
   }
 
   return { isolated: true, error: null };
+}
+
+export function searchRoutesProof(
+  state: SearchState,
+  query: SearchQuery
+): { readonly passed: boolean; readonly error: SearchError | null } {
+  const result = performSearch(state, query);
+  if (result.error !== null) {
+    return { passed: false, error: result.error };
+  }
+
+  const crossTenantQuery: SearchQuery = {
+    ...query,
+    tenantId: 'foreign-tenant',
+    organisationId: 'foreign-org'
+  };
+  const crossTenantResult = performSearch(state, crossTenantQuery);
+  if (crossTenantResult.results.length > 0) {
+    return {
+      passed: false,
+      error: {
+        kind: 'TENANT_ISOLATION_VIOLATION',
+        message: 'Cross-tenant query returned results',
+        tenantId: query.tenantId,
+        organisationId: query.organisationId
+      }
+    };
+  }
+
+  return { passed: true, error: null };
 }
 
 export const initialState: SearchState = {

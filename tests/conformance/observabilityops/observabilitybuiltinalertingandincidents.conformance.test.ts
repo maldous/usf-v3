@@ -14,6 +14,12 @@ function isError(
   return "kind" in result;
 }
 
+function assertState(
+  result: State | CapabilityError,
+): asserts result is State {
+  assert.equal(isError(result), false);
+}
+
 test("observabilitybuiltinalertingandincidentsauditmodel", () => {
   const signal: MetricSignal = {
     name: "cpu.usage",
@@ -33,14 +39,15 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
     tenantId: "tenant-a",
   };
   const ruleAudit: AuditEvent[] = [];
-  const withRule = capability.addAlertRule(
+  const withRuleResult = capability.addAlertRule(
     withSignal,
     rule,
     "req-audit-rule",
     "trace-audit-rule",
     (event) => ruleAudit.push(event),
   );
-  assert.equal(isError(withRule), false);
+  assertState(withRuleResult);
+  const withRule = withRuleResult;
   assert.strictEqual(ruleAudit.length, 1);
   assert.strictEqual(ruleAudit[0].kind, "ALERT_RULE_CHANGE");
   assert.strictEqual(ruleAudit[0].entityType, "ALERT_RULE");
@@ -50,11 +57,12 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
   assert.deepStrictEqual(ruleAudit[0].details, { action: "ADD", rule });
 
   const evaluated = capability.applyEvaluation(withRule, "2024-01-01T00:01:00.000Z");
+  assert.strictEqual(evaluated.incidents.length, 1);
   const incident = evaluated.incidents[0];
   assert.ok(incident !== undefined);
 
   const transitionAudit: AuditEvent[] = [];
-  const transitioned = capability.transitionIncident(
+  const transitionedResult = capability.transitionIncident(
     evaluated,
     incident.id,
     "ACKNOWLEDGED",
@@ -62,7 +70,8 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
     "trace-incident-transition",
     (event) => transitionAudit.push(event),
   );
-  assert.equal(isError(transitioned), false);
+  assertState(transitionedResult);
+  const transitioned = transitionedResult;
   assert.strictEqual(transitioned.incidents[0].state, "ACKNOWLEDGED");
   assert.strictEqual(transitionAudit.length, 1);
   assert.strictEqual(transitionAudit[0].kind, "INCIDENT_TRANSITION");
@@ -89,14 +98,15 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
       },
     ],
   };
-  const dispatched = capability.dispatchNotification(
+  const dispatchedResult = capability.dispatchNotification(
     dispatchInput,
     "incident-dispatch",
     "req-notify-send",
     "trace-notify-send",
     (event) => dispatchAudit.push(event),
   );
-  assert.equal(isError(dispatched), false);
+  assertState(dispatchedResult);
+  const dispatched = dispatchedResult;
   assert.strictEqual(dispatched.notifications.length, 1);
   assert.strictEqual(dispatched.notifications[0].status, "SENT");
   assert.strictEqual(dispatchAudit.length, 1);
@@ -117,14 +127,15 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
       },
     ],
   };
-  const suppressed = capability.suppressNotification(
+  const suppressedResult = capability.suppressNotification(
     suppressInput,
     "incident-suppress",
     "req-notify-suppress",
     "trace-notify-suppress",
     (event) => suppressAudit.push(event),
   );
-  assert.equal(isError(suppressed), false);
+  assertState(suppressedResult);
+  const suppressed = suppressedResult;
   assert.strictEqual(suppressed.notifications.length, 1);
   assert.strictEqual(suppressed.notifications[0].status, "SUPPRESSED");
   assert.strictEqual(suppressAudit.length, 1);
@@ -159,27 +170,29 @@ test("observabilitybuiltinalertingandincidentscontracts", () => {
     severity: "HIGH",
     tenantId: "tenant-a",
   };
-  const withNoDataRule = capability.addAlertRule(
+  const withNoDataRuleResult = capability.addAlertRule(
     withSignal,
     noDataRule,
     "req-no-data",
     "trace-no-data",
     () => {},
   );
-  assert.equal(isError(withNoDataRule), false);
+  assertState(withNoDataRuleResult);
+  const withNoDataRule = withNoDataRuleResult;
 
-  const withTwoRules = capability.addAlertRule(
+  const withTwoRulesResult = capability.addAlertRule(
     withNoDataRule,
     withinRule,
     "req-within",
     "trace-within",
     () => {},
   );
-  assert.equal(isError(withTwoRules), false);
+  assertState(withTwoRulesResult);
+  const withTwoRules = withTwoRulesResult;
 
-  const evaluation = capability.evaluateAlertRules(withTwoRules, "2024-01-01T00:04:30.000Z");
-  const noDataAlert = evaluation.newAlerts.find((alert) => alert.ruleId === "rule-no-data");
-  const withinAlert = evaluation.newAlerts.find((alert) => alert.ruleId === "rule-within");
+  const firstEvaluation = capability.evaluateAlertRules(withTwoRules, "2024-01-01T00:04:30.000Z");
+  const noDataAlert = firstEvaluation.newAlerts.find((alert) => alert.ruleId === "rule-no-data");
+  const withinAlert = firstEvaluation.newAlerts.find((alert) => alert.ruleId === "rule-within");
   assert.ok(noDataAlert !== undefined);
   assert.ok(withinAlert !== undefined);
   assert.strictEqual(noDataAlert.state, "NO_DATA");
@@ -194,20 +207,21 @@ test("observabilitybuiltinalertingandincidentscontracts", () => {
     severity: "CRITICAL",
     tenantId: "tenant-a",
   };
-  const withFiringRule = capability.addAlertRule(
+  const withFiringRuleResult = capability.addAlertRule(
     withSignal,
     firingRule,
     "req-fired",
     "trace-fired",
     () => {},
   );
-  assert.equal(isError(withFiringRule), false);
+  assertState(withFiringRuleResult);
+  const withFiringRule = withFiringRuleResult;
 
   const updatedRule: AlertRule = {
     ...firingRule,
     threshold: 15,
   };
-  const updated = capability.updateAlertRule(
+  const updatedResult = capability.updateAlertRule(
     withFiringRule,
     firingRule.id,
     updatedRule,
@@ -215,26 +229,30 @@ test("observabilitybuiltinalertingandincidentscontracts", () => {
     "trace-update",
     () => {},
   );
-  assert.equal(isError(updated), false);
+  assertState(updatedResult);
+  const updated = updatedResult;
   assert.strictEqual(updated.alertRules[0].threshold, 15);
 
-  const evaluated = capability.applyEvaluation(updated, "2024-01-01T00:05:00.000Z");
-  assert.strictEqual(evaluated.alerts.length, 1);
-  assert.strictEqual(evaluated.alerts[0].state, "FIRED");
-  assert.strictEqual(evaluated.incidents.length, 1);
-  assert.strictEqual(evaluated.notifications.length, 1);
-  assert.strictEqual(evaluated.notifications[0].status, "SENT");
+  const secondEvaluation = capability.applyEvaluation(updated, "2024-01-01T00:05:00.000Z");
+  assert.strictEqual(secondEvaluation.alerts.length, 1);
+  assert.strictEqual(secondEvaluation.alerts[0].state, "FIRED");
+  assert.strictEqual(secondEvaluation.incidents.length, 1);
+  assert.strictEqual(secondEvaluation.notifications.length, 1);
+  assert.strictEqual(secondEvaluation.notifications[0].status, "SENT");
 
-  const transitioned = capability.transitionIncident(
-    evaluated,
-    evaluated.incidents[0].id,
+  const transitionedResult = capability.transitionIncident(
+    secondEvaluation,
+    secondEvaluation.incidents[0].id,
     "ACKNOWLEDGED",
     "req-ack",
     "trace-ack",
     () => {},
   );
-  assert.equal(isError(transitioned), false);
-  const resolved = capability.transitionIncident(
+  assertState(transitionedResult);
+  const transitioned = transitionedResult;
+  assert.strictEqual(transitioned.incidents[0].state, "ACKNOWLEDGED");
+
+  const resolvedResult = capability.transitionIncident(
     transitioned,
     transitioned.incidents[0].id,
     "RESOLVED",
@@ -242,10 +260,11 @@ test("observabilitybuiltinalertingandincidentscontracts", () => {
     "trace-resolve",
     () => {},
   );
-  assert.equal(isError(resolved), false);
+  assertState(resolvedResult);
+  const resolved = resolvedResult;
   assert.strictEqual(resolved.incidents[0].state, "RESOLVED");
 
-  assert.strictEqual(capability.checkReadiness(evaluated), "READY");
+  assert.strictEqual(capability.checkReadiness(secondEvaluation), "READY");
 });
 
 test("observabilitybuiltinalertingandincidentserrormodel", () => {
@@ -344,14 +363,15 @@ test("observabilitybuiltinalertingandincidentslifecycle", () => {
     severity: "MEDIUM",
     tenantId: "tenant-a",
   };
-  const withRule = capability.addAlertRule(
+  const withRuleResult = capability.addAlertRule(
     withSignal,
     rule,
     "req-lifecycle",
     "trace-lifecycle",
     () => {},
   );
-  assert.equal(isError(withRule), false);
+  assertState(withRuleResult);
+  const withRule = withRuleResult;
 
   const applied = capability.applyEvaluation(withRule, "2024-01-01T00:07:30.000Z");
   assert.strictEqual(applied.alerts[0].state, "FIRED");
@@ -408,23 +428,25 @@ test("observabilitybuiltinalertingandincidentspermissions", () => {
     tenantId: "tenant-b",
   };
 
-  const withTenantARule = capability.addAlertRule(
+  const withTenantARuleResult = capability.addAlertRule(
     withSignals,
     tenantARule,
     "req-tenant-a",
     "trace-tenant-a",
     () => {},
   );
-  assert.equal(isError(withTenantARule), false);
+  assertState(withTenantARuleResult);
+  const withTenantARule = withTenantARuleResult;
 
-  const withTenantRules = capability.addAlertRule(
+  const withTenantRulesResult = capability.addAlertRule(
     withTenantARule,
     tenantBRule,
     "req-tenant-b",
     "trace-tenant-b",
     () => {},
   );
-  assert.equal(isError(withTenantRules), false);
+  assertState(withTenantRulesResult);
+  const withTenantRules = withTenantRulesResult;
 
   const evalResult = capability.evaluateAlertRules(withTenantRules, "2024-01-01T00:08:30.000Z");
   const alertA = evalResult.newAlerts.find((alert) => alert.ruleId === "rule-tenant-a");
@@ -458,21 +480,22 @@ test("observabilitybuiltinalertingandincidentsproof", () => {
     severity: "HIGH",
     tenantId: "tenant-a",
   };
-  const withRule = capability.addAlertRule(
+  const withRuleResult = capability.addAlertRule(
     withSignal,
     rule,
     "req-proof",
     "trace-proof",
     () => {},
   );
-  assert.equal(isError(withRule), false);
+  assertState(withRuleResult);
+  const withRule = withRuleResult;
 
   const applied = capability.applyEvaluation(withRule, "2024-01-01T00:10:30.000Z");
   const incident = applied.incidents[0];
   assert.ok(incident !== undefined);
 
   const transitionEvents: AuditEvent[] = [];
-  const acknowledged = capability.transitionIncident(
+  const acknowledgedResult = capability.transitionIncident(
     applied,
     incident.id,
     "ACKNOWLEDGED",
@@ -480,9 +503,10 @@ test("observabilitybuiltinalertingandincidentsproof", () => {
     "trace-proof-ack",
     (event) => transitionEvents.push(event),
   );
-  assert.equal(isError(acknowledged), false);
+  assertState(acknowledgedResult);
+  const acknowledged = acknowledgedResult;
 
-  const resolved = capability.transitionIncident(
+  const resolvedResult = capability.transitionIncident(
     acknowledged,
     incident.id,
     "RESOLVED",
@@ -490,7 +514,8 @@ test("observabilitybuiltinalertingandincidentsproof", () => {
     "trace-proof-resolve",
     (event) => transitionEvents.push(event),
   );
-  assert.equal(isError(resolved), false);
+  assertState(resolvedResult);
+  const resolved = resolvedResult;
 
   const emittedSignals = new Set(resolved.emittedSignals.map((entry) => entry.signal));
   assert.strictEqual(emittedSignals.has("observability.signal.ingested"), true);
@@ -530,14 +555,15 @@ test("observabilitybuiltinalertingandincidentsreadinessmodel", () => {
     severity: "LOW",
     tenantId: "tenant-a",
   };
-  const withRule = capability.addAlertRule(
+  const withRuleResult = capability.addAlertRule(
     withMetric,
     rule,
     "req-readiness-rule",
     "trace-readiness-rule",
     () => {},
   );
-  assert.equal(isError(withRule), false);
+  assertState(withRuleResult);
+  const withRule = withRuleResult;
 
   const afterReadiness = capability.checkReadiness(withRule);
   assert.strictEqual(afterReadiness, "READY");
@@ -583,14 +609,15 @@ test("observabilitybuiltinalertingandincidentsstatemodel", () => {
     severity: "HIGH",
     tenantId: "tenant-a",
   };
-  const withRule = capability.addAlertRule(
+  const withRuleResult = capability.addAlertRule(
     withSignal,
     rule,
     "req-state",
     "trace-state",
     () => {},
   );
-  assert.equal(isError(withRule), false);
+  assertState(withRuleResult);
+  const withRule = withRuleResult;
 
   const applied = capability.applyEvaluation(withRule, "2024-01-01T00:12:30.000Z");
   assert.strictEqual(applied.metricSignals.length, 1);
@@ -607,20 +634,19 @@ test("observabilitybuiltinalertingandincidentsstatemodel", () => {
     ...applied,
     schemaVersion: 0,
   };
-  const migrated = capability.migrateState(
+  const migratedResult = capability.migrateState(
     legacyState,
     legacyState.schemaVersion,
     capability.ObservabilityBuiltInAlertingAndIncidentsCurrentSchemaVersion,
   );
-  assert.equal(isError(migrated), false);
-  if (!isError(migrated)) {
-    assert.strictEqual(migrated.schemaVersion, 1);
-    assert.strictEqual(migrated.metricSignals.length, applied.metricSignals.length);
-    assert.strictEqual(migrated.alertRules.length, applied.alertRules.length);
-    assert.strictEqual(migrated.alerts.length, applied.alerts.length);
-    assert.strictEqual(migrated.incidents.length, applied.incidents.length);
-    assert.strictEqual(migrated.notifications.length, applied.notifications.length);
-  }
+  assertState(migratedResult);
+  const migrated = migratedResult;
+  assert.strictEqual(migrated.schemaVersion, 1);
+  assert.strictEqual(migrated.metricSignals.length, applied.metricSignals.length);
+  assert.strictEqual(migrated.alertRules.length, applied.alertRules.length);
+  assert.strictEqual(migrated.alerts.length, applied.alerts.length);
+  assert.strictEqual(migrated.incidents.length, applied.incidents.length);
+  assert.strictEqual(migrated.notifications.length, applied.notifications.length);
 
   const blocked = capability.migrateState(applied, 2, 1);
   assert.equal(isError(blocked), true);
@@ -628,11 +654,10 @@ test("observabilitybuiltinalertingandincidentsstatemodel", () => {
     assert.strictEqual(blocked.kind, "CONFIGURATION_DRIFT");
   }
 
-  const alreadyCurrent = capability.applyMigrationIfNeeded(applied);
-  assert.equal(isError(alreadyCurrent), false);
-  if (!isError(alreadyCurrent)) {
-    assert.strictEqual(alreadyCurrent, applied);
-  }
+  const alreadyCurrentResult = capability.applyMigrationIfNeeded(applied);
+  assertState(alreadyCurrentResult);
+  const alreadyCurrent = alreadyCurrentResult;
+  assert.strictEqual(alreadyCurrent, applied);
 });
 
 test("observabilitybuiltinalertingandincidentsvalidation", () => {

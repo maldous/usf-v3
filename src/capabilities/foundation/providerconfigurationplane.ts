@@ -161,7 +161,15 @@ export function auditProviderConfigMutation(
     newState,
     metadata,
   };
-  return auditFn(event);
+  try {
+    return auditFn(event);
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit failed',
+      providerKey,
+    };
+  }
 }
 
 export function createProviderConfig(

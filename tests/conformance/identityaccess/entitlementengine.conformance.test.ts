@@ -12,25 +12,27 @@ const ALLOWED_DECISION: capability.EntitlementEngineDecision = "ALLOWED";
 const DENIED_DECISION: capability.EntitlementEngineDecision = "DENIED";
 
 function isEntitlementError(
-  value: capability.EntitlementEngineState | capability.EntitlementEngineError,
+  value: unknown,
 ): value is capability.EntitlementEngineError {
-  return "kind" in value;
+  return typeof value === "object" && value !== null && "kind" in value;
 }
 
 function isTenantViewError(
-  value:
-    | { readonly result: readonly capability.TenantEntitlementView[] }
-    | capability.EntitlementEngineError,
+  value: unknown,
 ): value is capability.EntitlementEngineError {
-  return "kind" in value;
+  return typeof value === "object" && value !== null && "kind" in value;
 }
 
 function isAccessError(
-  value:
-    | { readonly decision: capability.EntitlementEngineDecision }
-    | capability.EntitlementEngineError,
+  value: unknown,
 ): value is capability.EntitlementEngineError {
-  return "kind" in value;
+  return typeof value === "object" && value !== null && "kind" in value;
+}
+
+function isEntitlementState(
+  value: unknown,
+): value is capability.EntitlementEngineState {
+  return typeof value === "object" && value !== null && "entitlements" in value;
 }
 
 test("entitlementengineauditmodel", () => {
@@ -40,9 +42,7 @@ test("entitlementengineauditmodel", () => {
   };
 
   const events: capability.EntitlementEngineAuditEvent[] = [];
-  const passingAudit: (
-    event: capability.EntitlementEngineAuditEvent,
-  ) => capability.EntitlementEngineError | null = (event) => {
+  const passingAudit = (event: capability.EntitlementEngineAuditEvent): capability.EntitlementEngineError | null => {
     events.push(event);
     return null;
   };
@@ -56,17 +56,14 @@ test("entitlementengineauditmodel", () => {
     { reason: "bootstrap" },
     passingAudit,
   );
-  assert.equal(isEntitlementError(grantResult), false);
-  if (isEntitlementError(grantResult)) {
-    return;
-  }
-
-  assert.equal(events.length, 1);
-  assert.equal(events[0].kind, "ENTITLEMENT_GRANTED");
-  assert.equal(events[0].newState, GRANTED_STATE);
-  assert.equal(events[0].tenantId, "tenant-1");
-  assert.equal(events[0].entitlementKey, "FEATURE_A");
-  assert.equal(grantResult.entitlements.length, 1);
+  assert.ok(!isEntitlementError(grantResult));
+  assert.ok(isEntitlementState(grantResult));
+  assert.strictEqual(events.length, 1);
+  assert.strictEqual(events[0].kind, "ENTITLEMENT_GRANTED");
+  assert.strictEqual(events[0].newState, GRANTED_STATE);
+  assert.strictEqual(events[0].tenantId, "tenant-1");
+  assert.strictEqual(events[0].entitlementKey, "FEATURE_A");
+  assert.strictEqual(grantResult.entitlements.length, 1);
 
   const revokeResult = capability.revokeEntitlement(
     grantResult,
@@ -77,23 +74,18 @@ test("entitlementengineauditmodel", () => {
     { reason: "deprovision" },
     passingAudit,
   );
-  assert.equal(isEntitlementError(revokeResult), false);
-  if (isEntitlementError(revokeResult)) {
-    return;
-  }
-
-  assert.equal(events.length, 2);
-  assert.equal(events[1].kind, "ENTITLEMENT_REVOKED");
-  assert.equal(events[1].newState, REVOKED_STATE);
-  assert.equal(revokeResult.entitlements[0].state, REVOKED_STATE);
+  assert.ok(!isEntitlementError(revokeResult));
+  assert.ok(isEntitlementState(revokeResult));
+  assert.strictEqual(events.length, 2);
+  assert.strictEqual(events[1].kind, "ENTITLEMENT_REVOKED");
+  assert.strictEqual(events[1].newState, REVOKED_STATE);
+  assert.strictEqual(revokeResult.entitlements[0].state, "REVOKED");
 
   const auditFailure: capability.EntitlementEngineError = {
     kind: "AUDIT_FAILURE",
     message: "audit failed",
   };
-  const failingAudit: (
-    event: capability.EntitlementEngineAuditEvent,
-  ) => capability.EntitlementEngineError | null = (event) => {
+  const failingAudit = (event: capability.EntitlementEngineAuditEvent): capability.EntitlementEngineError | null => {
     events.push(event);
     return auditFailure;
   };
@@ -106,12 +98,9 @@ test("entitlementengineauditmodel", () => {
     {},
     failingAudit,
   );
-  assert.equal(isEntitlementError(failedGrant), true);
-  if (isEntitlementError(failedGrant)) {
-    assert.equal(failedGrant.kind, "AUDIT_FAILURE");
-  }
-
-  assert.equal(state.entitlements.length, 0);
+  assert.ok(isEntitlementError(failedGrant));
+  assert.strictEqual(failedGrant.kind, "AUDIT_FAILURE");
+  assert.strictEqual(state.entitlements.length, 0);
 
   const readAuditBaseline = events.length;
   const accessResult = capability.evaluateAccess(
@@ -120,23 +109,17 @@ test("entitlementengineauditmodel", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isAccessError(accessResult), false);
-  if (isAccessError(accessResult)) {
-    return;
-  }
-  assert.equal(accessResult.decision, ALLOWED_DECISION);
+  assert.ok(!isAccessError(accessResult));
+  assert.strictEqual(accessResult.decision, ALLOWED_DECISION);
 
   const readViewResult = capability.tenantSelfReadEntitlements(
     grantResult,
     "tenant-1",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(readViewResult), false);
-  if (isTenantViewError(readViewResult)) {
-    return;
-  }
-  assert.equal(readViewResult.result.length, 1);
-  assert.equal(events.length, readAuditBaseline);
+  assert.ok(!isTenantViewError(readViewResult));
+  assert.strictEqual(readViewResult.result.length, 1);
+  assert.strictEqual(events.length, readAuditBaseline);
 });
 
 test("entitlementenginecontracts", () => {
@@ -153,22 +136,16 @@ test("entitlementenginecontracts", () => {
     "tenant-1",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(tenantReadResult), false);
-  if (isTenantViewError(tenantReadResult)) {
-    return;
-  }
-  assert.equal(tenantReadResult.result.length, 2);
+  assert.ok(!isTenantViewError(tenantReadResult));
+  assert.strictEqual(tenantReadResult.result.length, 2);
 
   const operatorReadResult = capability.operatorReadEntitlements(
     initial,
     "tenant-1",
     [PLATFORM_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(operatorReadResult), false);
-  if (isTenantViewError(operatorReadResult)) {
-    return;
-  }
-  assert.equal(operatorReadResult.result.length, 2);
+  assert.ok(!isTenantViewError(operatorReadResult));
+  assert.strictEqual(operatorReadResult.result.length, 2);
 
   const events: capability.EntitlementEngineAuditEvent[] = [];
   const writeResult = capability.operatorWriteEntitlement(
@@ -185,11 +162,9 @@ test("entitlementenginecontracts", () => {
       return null;
     },
   );
-  assert.equal(isEntitlementError(writeResult), false);
-  if (isEntitlementError(writeResult)) {
-    return;
-  }
-  assert.equal(events.length, 1);
+  assert.ok(!isEntitlementError(writeResult));
+  assert.ok(isEntitlementState(writeResult));
+  assert.strictEqual(events.length, 1);
 
   const evaluateResult = capability.evaluateAccess(
     writeResult,
@@ -197,11 +172,8 @@ test("entitlementenginecontracts", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isAccessError(evaluateResult), false);
-  if (isAccessError(evaluateResult)) {
-    return;
-  }
-  assert.equal(evaluateResult.decision, ALLOWED_DECISION);
+  assert.ok(!isAccessError(evaluateResult));
+  assert.strictEqual(evaluateResult.decision, ALLOWED_DECISION);
 
   const assertResult = capability.assertAccess(
     writeResult,
@@ -209,20 +181,18 @@ test("entitlementenginecontracts", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(assertResult, null);
+  assert.strictEqual(assertResult, null);
 
   const denyDecision = capability.evaluateEntitlement(writeResult, "tenant-1", "FEATURE_B");
-  assert.equal(denyDecision, DENIED_DECISION);
+  assert.strictEqual(denyDecision, DENIED_DECISION);
   const deniedAssert = capability.assertAccess(
     writeResult,
     "tenant-1",
     "FEATURE_B",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isEntitlementError(deniedAssert), true);
-  if (isEntitlementError(deniedAssert)) {
-    assert.equal(deniedAssert.kind, "FORBIDDEN");
-  }
+  assert.ok(isEntitlementError(deniedAssert));
+  assert.strictEqual(deniedAssert.kind, "FORBIDDEN");
 });
 
 test("entitlementengineerrormodel", () => {
@@ -237,10 +207,8 @@ test("entitlementengineerrormodel", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isEntitlementError(forbiddenAssertion), true);
-  if (isEntitlementError(forbiddenAssertion)) {
-    assert.equal(forbiddenAssertion.kind, "FORBIDDEN");
-  }
+  assert.ok(isEntitlementError(forbiddenAssertion));
+  assert.strictEqual(forbiddenAssertion.kind, "FORBIDDEN");
 
   const deniedByPermission = capability.evaluateAccess(
     state,
@@ -248,10 +216,8 @@ test("entitlementengineerrormodel", () => {
     "FEATURE_A",
     [],
   );
-  assert.equal(isAccessError(deniedByPermission), true);
-  if (isAccessError(deniedByPermission)) {
-    assert.equal(deniedByPermission.kind, "FORBIDDEN");
-  }
+  assert.ok(isAccessError(deniedByPermission));
+  assert.strictEqual(deniedByPermission.kind, "FORBIDDEN");
 
   const deniedByEntitlement = capability.evaluateAccess(
     state,
@@ -259,11 +225,8 @@ test("entitlementengineerrormodel", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isAccessError(deniedByEntitlement), false);
-  if (isAccessError(deniedByEntitlement)) {
-    return;
-  }
-  assert.equal(deniedByEntitlement.decision, DENIED_DECISION);
+  assert.ok(!isAccessError(deniedByEntitlement));
+  assert.strictEqual(deniedByEntitlement.decision, DENIED_DECISION);
 
   const invalidTenant = capability.assertAccess(
     state,
@@ -271,10 +234,8 @@ test("entitlementengineerrormodel", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isEntitlementError(invalidTenant), true);
-  if (isEntitlementError(invalidTenant)) {
-    assert.equal(invalidTenant.kind, "INVALID_TENANT");
-  }
+  assert.ok(isEntitlementError(invalidTenant));
+  assert.strictEqual(invalidTenant.kind, "INVALID_TENANT");
 
   const invalidKey = capability.assertAccess(
     state,
@@ -282,10 +243,8 @@ test("entitlementengineerrormodel", () => {
     "UNKNOWN_FEATURE",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isEntitlementError(invalidKey), true);
-  if (isEntitlementError(invalidKey)) {
-    assert.equal(invalidKey.kind, "INVALID_KEY");
-  }
+  assert.ok(isEntitlementError(invalidKey));
+  assert.strictEqual(invalidKey.kind, "INVALID_KEY");
 
   const degraded: capability.EntitlementEngineError = {
     kind: "AUDIT_FAILURE",
@@ -302,14 +261,12 @@ test("entitlementengineerrormodel", () => {
     [PLATFORM_WRITE_PERMISSION],
     () => degraded,
   );
-  assert.equal(isEntitlementError(writeFailure), true);
-  if (isEntitlementError(writeFailure)) {
-    assert.equal(writeFailure.kind, "AUDIT_FAILURE");
-  }
-  assert.equal(state.entitlements.length, 0);
+  assert.ok(isEntitlementError(writeFailure));
+  assert.strictEqual(writeFailure.kind, "AUDIT_FAILURE");
+  assert.strictEqual(state.entitlements.length, 0);
 
   const defaultDenied = capability.evaluateEntitlement(state, "tenant-1", "FEATURE_A");
-  assert.equal(defaultDenied, DENIED_DECISION);
+  assert.strictEqual(defaultDenied, DENIED_DECISION);
 });
 
 test("entitlementenginelifecycle", () => {
@@ -319,12 +276,10 @@ test("entitlementenginelifecycle", () => {
   };
 
   const absentDecision = capability.evaluateEntitlement(base, "tenant-1", "FEATURE_A");
-  assert.equal(absentDecision, DENIED_DECISION);
+  assert.strictEqual(absentDecision, DENIED_DECISION);
 
   const events: capability.EntitlementEngineAuditEvent[] = [];
-  const passAudit: (
-    event: capability.EntitlementEngineAuditEvent,
-  ) => capability.EntitlementEngineError | null = (event) => {
+  const passAudit = (event: capability.EntitlementEngineAuditEvent): capability.EntitlementEngineError | null => {
     events.push(event);
     return null;
   };
@@ -340,10 +295,8 @@ test("entitlementenginelifecycle", () => {
     [PLATFORM_WRITE_PERMISSION],
     passAudit,
   );
-  assert.equal(isEntitlementError(grantedState), false);
-  if (isEntitlementError(grantedState)) {
-    return;
-  }
+  assert.ok(!isEntitlementError(grantedState));
+  assert.ok(isEntitlementState(grantedState));
 
   const grantedAssert = capability.assertAccess(
     grantedState,
@@ -351,17 +304,14 @@ test("entitlementenginelifecycle", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(grantedAssert, null);
+  assert.strictEqual(grantedAssert, null);
 
   const grantView = capability.tenantSelfReadEntitlements(
     grantedState,
     "tenant-1",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(grantView), false);
-  if (isTenantViewError(grantView)) {
-    return;
-  }
+  assert.ok(!isTenantViewError(grantView));
   assert.deepStrictEqual(grantView.result, [
     { entitlementKey: "FEATURE_A", state: GRANTED_STATE },
     { entitlementKey: "FEATURE_B", state: NOT_GRANTED_STATE },
@@ -378,13 +328,11 @@ test("entitlementenginelifecycle", () => {
     [PLATFORM_WRITE_PERMISSION],
     passAudit,
   );
-  assert.equal(isEntitlementError(revokedState), false);
-  if (isEntitlementError(revokedState)) {
-    return;
-  }
+  assert.ok(!isEntitlementError(revokedState));
+  assert.ok(isEntitlementState(revokedState));
 
   const revokedDecision = capability.evaluateEntitlement(revokedState, "tenant-1", "FEATURE_A");
-  assert.equal(revokedDecision, DENIED_DECISION);
+  assert.strictEqual(revokedDecision, DENIED_DECISION);
 
   const revokedAccess = capability.assertAccess(
     revokedState,
@@ -392,10 +340,8 @@ test("entitlementenginelifecycle", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isEntitlementError(revokedAccess), true);
-  if (isEntitlementError(revokedAccess)) {
-    assert.equal(revokedAccess.kind, "FORBIDDEN");
-  }
+  assert.ok(isEntitlementError(revokedAccess));
+  assert.strictEqual(revokedAccess.kind, "FORBIDDEN");
 
   const absentAccess = capability.assertAccess(
     revokedState,
@@ -403,10 +349,8 @@ test("entitlementenginelifecycle", () => {
     "FEATURE_B",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isEntitlementError(absentAccess), true);
-  if (isEntitlementError(absentAccess)) {
-    assert.equal(absentAccess.kind, "FORBIDDEN");
-  }
+  assert.ok(isEntitlementError(absentAccess));
+  assert.strictEqual(absentAccess.kind, "FORBIDDEN");
 
   const evaluateAbsent = capability.evaluateAccess(
     revokedState,
@@ -414,11 +358,8 @@ test("entitlementenginelifecycle", () => {
     "FEATURE_B",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isAccessError(evaluateAbsent), false);
-  if (isAccessError(evaluateAbsent)) {
-    return;
-  }
-  assert.equal(evaluateAbsent.decision, DENIED_DECISION);
+  assert.ok(!isAccessError(evaluateAbsent));
+  assert.strictEqual(evaluateAbsent.decision, DENIED_DECISION);
 });
 
 test("entitlementenginepermissions", () => {
@@ -432,20 +373,16 @@ test("entitlementenginepermissions", () => {
     "tenant-1",
     [],
   );
-  assert.equal(isTenantViewError(missingTenantRead), true);
-  if (isTenantViewError(missingTenantRead)) {
-    assert.equal(missingTenantRead.kind, "FORBIDDEN");
-  }
+  assert.ok(isTenantViewError(missingTenantRead));
+  assert.strictEqual(missingTenantRead.kind, "FORBIDDEN");
 
   const missingPlatformRead = capability.operatorReadEntitlements(
     base,
     "tenant-1",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(missingPlatformRead), true);
-  if (isTenantViewError(missingPlatformRead)) {
-    assert.equal(missingPlatformRead.kind, "FORBIDDEN");
-  }
+  assert.ok(isTenantViewError(missingPlatformRead));
+  assert.strictEqual(missingPlatformRead.kind, "FORBIDDEN");
 
   const missingPlatformWrite = capability.operatorWriteEntitlement(
     base,
@@ -458,10 +395,8 @@ test("entitlementenginepermissions", () => {
     [],
     () => null,
   );
-  assert.equal(isEntitlementError(missingPlatformWrite), true);
-  if (isEntitlementError(missingPlatformWrite)) {
-    assert.equal(missingPlatformWrite.kind, "FORBIDDEN");
-  }
+  assert.ok(isEntitlementError(missingPlatformWrite));
+  assert.strictEqual(missingPlatformWrite.kind, "FORBIDDEN");
 
   const grantedState = capability.operatorWriteEntitlement(
     base,
@@ -474,10 +409,8 @@ test("entitlementenginepermissions", () => {
     [PLATFORM_WRITE_PERMISSION],
     () => null,
   );
-  assert.equal(isEntitlementError(grantedState), false);
-  if (isEntitlementError(grantedState)) {
-    return;
-  }
+  assert.ok(!isEntitlementError(grantedState));
+  assert.ok(isEntitlementState(grantedState));
 
   const deniedBeforeEntitlement = capability.evaluateAccess(
     grantedState,
@@ -485,20 +418,15 @@ test("entitlementenginepermissions", () => {
     "FEATURE_A",
     [],
   );
-  assert.equal(isAccessError(deniedBeforeEntitlement), true);
-  if (isAccessError(deniedBeforeEntitlement)) {
-    assert.equal(deniedBeforeEntitlement.kind, "FORBIDDEN");
-  }
+  assert.ok(isAccessError(deniedBeforeEntitlement));
+  assert.strictEqual(deniedBeforeEntitlement.kind, "FORBIDDEN");
 
   const tenant2View = capability.tenantSelfReadEntitlements(
     grantedState,
     "tenant-2",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(tenant2View), false);
-  if (isTenantViewError(tenant2View)) {
-    return;
-  }
+  assert.ok(!isTenantViewError(tenant2View));
   assert.deepStrictEqual(tenant2View.result, [
     { entitlementKey: "FEATURE_A", state: NOT_GRANTED_STATE },
     { entitlementKey: "FEATURE_B", state: NOT_GRANTED_STATE },
@@ -512,7 +440,7 @@ test("entitlementengineproof", () => {
   };
 
   const denyByDefault = capability.evaluateEntitlement(state, "tenant-1", "FEATURE_A");
-  assert.equal(denyByDefault, DENIED_DECISION);
+  assert.strictEqual(denyByDefault, DENIED_DECISION);
 
   const writeResult = capability.operatorWriteEntitlement(
     state,
@@ -525,10 +453,8 @@ test("entitlementengineproof", () => {
     [PLATFORM_WRITE_PERMISSION],
     () => null,
   );
-  assert.equal(isEntitlementError(writeResult), false);
-  if (isEntitlementError(writeResult)) {
-    return;
-  }
+  assert.ok(!isEntitlementError(writeResult));
+  assert.ok(isEntitlementState(writeResult));
 
   const evaluateDecision = capability.evaluateAccess(
     writeResult,
@@ -536,11 +462,8 @@ test("entitlementengineproof", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isAccessError(evaluateDecision), false);
-  if (isAccessError(evaluateDecision)) {
-    return;
-  }
-  assert.equal(evaluateDecision.decision, ALLOWED_DECISION);
+  assert.ok(!isAccessError(evaluateDecision));
+  assert.strictEqual(evaluateDecision.decision, ALLOWED_DECISION);
 
   const assertDecision = capability.assertAccess(
     writeResult,
@@ -548,10 +471,10 @@ test("entitlementengineproof", () => {
     "FEATURE_A",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(assertDecision, null);
+  assert.strictEqual(assertDecision, null);
 
   const denyDecision = capability.evaluateEntitlement(writeResult, "tenant-1", "FEATURE_B");
-  assert.equal(denyDecision, DENIED_DECISION);
+  assert.strictEqual(denyDecision, DENIED_DECISION);
 
   const missingPermission = capability.evaluateAccess(
     writeResult,
@@ -559,10 +482,8 @@ test("entitlementengineproof", () => {
     "FEATURE_A",
     [],
   );
-  assert.equal(isAccessError(missingPermission), true);
-  if (isAccessError(missingPermission)) {
-    assert.equal(missingPermission.kind, "FORBIDDEN");
-  }
+  assert.ok(isAccessError(missingPermission));
+  assert.strictEqual(missingPermission.kind, "FORBIDDEN");
 
   const catalog1 = capability.serviceCatalogRead(writeResult);
   const catalog2 = capability.serviceCatalogRead(writeResult);
@@ -574,11 +495,8 @@ test("entitlementengineproof", () => {
     "tenant-1",
     [PLATFORM_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(operatorRead), false);
-  if (isTenantViewError(operatorRead)) {
-    return;
-  }
-  assert.equal(operatorRead.result[0].entitlementKey, "FEATURE_A");
+  assert.ok(!isTenantViewError(operatorRead));
+  assert.strictEqual(operatorRead.result[0].entitlementKey, "FEATURE_A");
 });
 
 test("entitlementenginereadinessmodel", () => {
@@ -616,34 +534,28 @@ test("entitlementenginereadinessmodel", () => {
   assert.notStrictEqual(catalogResult1.result, catalogResult2.result);
 
   const tenant1Read = capability.tenantSelfReadEntitlements(state, "tenant-1", [TENANT_READ_PERMISSION]);
-  assert.equal(isTenantViewError(tenant1Read), false);
-  if (isTenantViewError(tenant1Read)) {
-    return;
-  }
+  assert.ok(!isTenantViewError(tenant1Read));
   const tenant1FeatureA = tenant1Read.result.find((entry) => entry.entitlementKey === "FEATURE_A");
   const tenant1FeatureB = tenant1Read.result.find((entry) => entry.entitlementKey === "FEATURE_B");
   const tenant1FeatureC = tenant1Read.result.find((entry) => entry.entitlementKey === "FEATURE_C");
   assert.ok(tenant1FeatureA);
   assert.ok(tenant1FeatureB);
   assert.ok(tenant1FeatureC);
-  if (!tenant1FeatureA || !tenant1FeatureB || !tenant1FeatureC) {
-    return;
-  }
-  assert.equal(tenant1FeatureA.state, GRANTED_STATE);
-  assert.equal(tenant1FeatureB.state, NOT_GRANTED_STATE);
-  assert.equal(tenant1FeatureC.state, NOT_GRANTED_STATE);
+  assert.strictEqual(tenant1FeatureA.state, GRANTED_STATE);
+  assert.strictEqual(tenant1FeatureB.state, NOT_GRANTED_STATE);
+  assert.strictEqual(tenant1FeatureC.state, NOT_GRANTED_STATE);
 
   const tenant1ViewObject = tenant1Read.result[0];
-  assert.equal(Object.prototype.hasOwnProperty.call(tenant1ViewObject, "entitlementKey"), true);
-  assert.equal(Object.prototype.hasOwnProperty.call(tenant1ViewObject, "state"), true);
-  assert.equal(
+  assert.strictEqual(Object.prototype.hasOwnProperty.call(tenant1ViewObject, "entitlementKey"), true);
+  assert.strictEqual(Object.prototype.hasOwnProperty.call(tenant1ViewObject, "state"), true);
+  assert.strictEqual(
     Object.prototype.hasOwnProperty.call(
       tenant1ViewObject as unknown as Record<string, unknown>,
       "organisationId",
     ),
     false,
   );
-  assert.equal(
+  assert.strictEqual(
     Object.prototype.hasOwnProperty.call(
       tenant1ViewObject as unknown as Record<string, unknown>,
       "updatedBy",
@@ -656,35 +568,23 @@ test("entitlementenginereadinessmodel", () => {
     "tenant-2",
     [PLATFORM_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(operatorBypass), false);
-  if (isTenantViewError(operatorBypass)) {
-    return;
-  }
+  assert.ok(!isTenantViewError(operatorBypass));
   const operatorFeatureB = operatorBypass.result.find((entry) => entry.entitlementKey === "FEATURE_B");
   const operatorFeatureA = operatorBypass.result.find((entry) => entry.entitlementKey === "FEATURE_A");
   assert.ok(operatorFeatureB);
   assert.ok(operatorFeatureA);
-  if (!operatorFeatureB || !operatorFeatureA) {
-    return;
-  }
-  assert.equal(operatorFeatureB.state, REVOKED_STATE);
-  assert.equal(operatorFeatureA.state, NOT_GRANTED_STATE);
+  assert.strictEqual(operatorFeatureB.state, REVOKED_STATE);
+  assert.strictEqual(operatorFeatureA.state, NOT_GRANTED_STATE);
 
   const tenant2Read = capability.tenantSelfReadEntitlements(
     state,
     "tenant-2",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(tenant2Read), false);
-  if (isTenantViewError(tenant2Read)) {
-    return;
-  }
+  assert.ok(!isTenantViewError(tenant2Read));
   const tenant2FeatureA = tenant2Read.result.find((entry) => entry.entitlementKey === "FEATURE_A");
   assert.ok(tenant2FeatureA);
-  if (!tenant2FeatureA) {
-    return;
-  }
-  assert.equal(tenant2FeatureA.state, NOT_GRANTED_STATE);
+  assert.strictEqual(tenant2FeatureA.state, NOT_GRANTED_STATE);
 
   const readinessAudit: capability.EntitlementEngineAuditEvent[] = [];
   const readinessGranted = capability.operatorWriteEntitlement(
@@ -701,12 +601,10 @@ test("entitlementenginereadinessmodel", () => {
       return null;
     },
   );
-  assert.equal(isEntitlementError(readinessGranted), false);
-  if (isEntitlementError(readinessGranted)) {
-    return;
-  }
-  assert.equal(readinessAudit.length, 1);
-  assert.equal(readinessAudit[0].kind, "ENTITLEMENT_GRANTED");
+  assert.ok(!isEntitlementError(readinessGranted));
+  assert.ok(isEntitlementState(readinessGranted));
+  assert.strictEqual(readinessAudit.length, 1);
+  assert.strictEqual(readinessAudit[0].kind, "ENTITLEMENT_GRANTED");
 
   const readinessRevoked = capability.operatorWriteEntitlement(
     readinessGranted,
@@ -722,19 +620,14 @@ test("entitlementenginereadinessmodel", () => {
       return null;
     },
   );
-  assert.equal(isEntitlementError(readinessRevoked), false);
-  if (isEntitlementError(readinessRevoked)) {
-    return;
-  }
-  assert.equal(readinessAudit.length, 2);
-  assert.equal(readinessAudit[1].kind, "ENTITLEMENT_REVOKED");
+  assert.ok(!isEntitlementError(readinessRevoked));
+  assert.ok(isEntitlementState(readinessRevoked));
+  assert.strictEqual(readinessAudit.length, 2);
+  assert.strictEqual(readinessAudit[1].kind, "ENTITLEMENT_REVOKED");
   const readinessView = capability.projectTenantView(readinessRevoked, "tenant-1");
   const readinessFeatureC = readinessView.find((entry) => entry.entitlementKey === "FEATURE_C");
   assert.ok(readinessFeatureC);
-  if (!readinessFeatureC) {
-    return;
-  }
-  assert.equal(readinessFeatureC.state, REVOKED_STATE);
+  assert.strictEqual(readinessFeatureC.state, REVOKED_STATE);
 
   const degradedAudit: capability.EntitlementEngineAuditEvent[] = [];
   const degradedResult = capability.operatorWriteEntitlement(
@@ -754,22 +647,17 @@ test("entitlementenginereadinessmodel", () => {
       };
     },
   );
-  assert.equal(isEntitlementError(degradedResult), true);
-  if (isEntitlementError(degradedResult)) {
-    assert.equal(degradedResult.kind, "DEGRADED");
-  }
-  assert.equal(degradedAudit.length, 1);
+  assert.ok(isEntitlementError(degradedResult));
+  assert.strictEqual(degradedResult.kind, "DEGRADED");
+  assert.strictEqual(degradedAudit.length, 1);
 
   const degradedRead = capability.tenantSelfReadEntitlements(
     state,
     "tenant-1",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(degradedRead), false);
-  if (isTenantViewError(degradedRead)) {
-    return;
-  }
-  assert.equal(degradedRead.result.length, 3);
+  assert.ok(!isTenantViewError(degradedRead));
+  assert.strictEqual(degradedRead.result.length, 3);
 });
 
 test("entitlementenginestatemodel", () => {
@@ -787,19 +675,17 @@ test("entitlementenginestatemodel", () => {
     { reason: "provision" },
     () => null,
   );
-  assert.equal(isEntitlementError(granted), false);
-  if (isEntitlementError(granted)) {
-    return;
-  }
+  assert.ok(!isEntitlementError(granted));
+  assert.ok(isEntitlementState(granted));
 
   const grantedRecord = granted.entitlements[0];
-  assert.equal(grantedRecord.organisationId, "tenant-1");
-  assert.equal(grantedRecord.entitlementKey, "FEATURE_A");
-  assert.equal(grantedRecord.state, GRANTED_STATE);
-  assert.equal(grantedRecord.source, "source-grant");
+  assert.strictEqual(grantedRecord.organisationId, "tenant-1");
+  assert.strictEqual(grantedRecord.entitlementKey, "FEATURE_A");
+  assert.strictEqual(grantedRecord.state, GRANTED_STATE);
+  assert.strictEqual(grantedRecord.source, "source-grant");
   assert.deepStrictEqual(grantedRecord.metadata, { reason: "provision" });
-  assert.equal(typeof grantedRecord.updatedAt, "string");
-  assert.equal(grantedRecord.updatedBy, "operator-1");
+  assert.strictEqual(typeof grantedRecord.updatedAt, "string");
+  assert.strictEqual(grantedRecord.updatedBy, "operator-1");
 
   const revoked = capability.revokeEntitlement(
     granted,
@@ -810,35 +696,31 @@ test("entitlementenginestatemodel", () => {
     { reason: "deprovision" },
     () => null,
   );
-  assert.equal(isEntitlementError(revoked), false);
-  if (isEntitlementError(revoked)) {
-    return;
-  }
+  assert.ok(!isEntitlementError(revoked));
+  assert.ok(isEntitlementState(revoked));
 
   const revokedRecord = revoked.entitlements[0];
-  assert.equal(revokedRecord.organisationId, "tenant-1");
-  assert.equal(revokedRecord.state, REVOKED_STATE);
-  assert.equal(revokedRecord.source, "source-revoke");
+  assert.strictEqual(revokedRecord.organisationId, "tenant-1");
+  assert.strictEqual(revokedRecord.state, REVOKED_STATE);
+  assert.strictEqual(revokedRecord.source, "source-revoke");
   assert.deepStrictEqual(revokedRecord.metadata, { reason: "deprovision" });
-  assert.equal(revokedRecord.updatedBy, "operator-2");
-  assert.equal(typeof revokedRecord.updatedAt, "string");
+  assert.strictEqual(revokedRecord.updatedBy, "operator-2");
+  assert.strictEqual(typeof revokedRecord.updatedAt, "string");
 
   const tenantView = capability.tenantSelfReadEntitlements(
     revoked,
     "tenant-1",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(tenantView), false);
-  if (isTenantViewError(tenantView)) {
-    return;
-  }
+  assert.ok(!isTenantViewError(tenantView));
   assert.deepStrictEqual(tenantView.result, [
     { entitlementKey: "FEATURE_A", state: REVOKED_STATE },
     { entitlementKey: "FEATURE_B", state: NOT_GRANTED_STATE },
   ]);
 
   const unknownKey = capability.validateEntitlementKey("UNKNOWN_FEATURE", revoked.catalogKeys);
-  assert.equal(unknownKey?.kind, "INVALID_KEY");
+  assert.ok(unknownKey !== null);
+  assert.strictEqual(unknownKey.kind, "INVALID_KEY");
 });
 
 test("entitlementenginevalidation", () => {
@@ -860,12 +742,10 @@ test("entitlementenginevalidation", () => {
       return null;
     },
   );
-  assert.equal(isEntitlementError(unknownGrant), true);
-  if (isEntitlementError(unknownGrant)) {
-    assert.equal(unknownGrant.kind, "INVALID_KEY");
-  }
-  assert.equal(unknownAuditCount, 0);
-  assert.equal(state.entitlements.length, 0);
+  assert.ok(isEntitlementError(unknownGrant));
+  assert.strictEqual(unknownGrant.kind, "INVALID_KEY");
+  assert.strictEqual(unknownAuditCount, 0);
+  assert.strictEqual(state.entitlements.length, 0);
 
   let tenantAuditCount = 0;
   const invalidTenant = capability.revokeEntitlement(
@@ -880,12 +760,10 @@ test("entitlementenginevalidation", () => {
       return null;
     },
   );
-  assert.equal(isEntitlementError(invalidTenant), true);
-  if (isEntitlementError(invalidTenant)) {
-    assert.equal(invalidTenant.kind, "INVALID_TENANT");
-  }
-  assert.equal(tenantAuditCount, 0);
-  assert.equal(state.entitlements.length, 0);
+  assert.ok(isEntitlementError(invalidTenant));
+  assert.strictEqual(invalidTenant.kind, "INVALID_TENANT");
+  assert.strictEqual(tenantAuditCount, 0);
+  assert.strictEqual(state.entitlements.length, 0);
 
   const writeState = capability.operatorWriteEntitlement(
     state,
@@ -898,20 +776,15 @@ test("entitlementenginevalidation", () => {
     [PLATFORM_WRITE_PERMISSION],
     () => null,
   );
-  assert.equal(isEntitlementError(writeState), false);
-  if (isEntitlementError(writeState)) {
-    return;
-  }
+  assert.ok(!isEntitlementError(writeState));
+  assert.ok(isEntitlementState(writeState));
 
   const tenant2View = capability.tenantSelfReadEntitlements(
     writeState,
     "tenant-2",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isTenantViewError(tenant2View), false);
-  if (isTenantViewError(tenant2View)) {
-    return;
-  }
+  assert.ok(!isTenantViewError(tenant2View));
   assert.deepStrictEqual(tenant2View.result, [{ entitlementKey: "FEATURE_A", state: NOT_GRANTED_STATE }]);
 
   const unknownEvaluation = capability.evaluateAccess(
@@ -920,15 +793,10 @@ test("entitlementenginevalidation", () => {
     "UNKNOWN_FEATURE",
     [TENANT_READ_PERMISSION],
   );
-  assert.equal(isAccessError(unknownEvaluation), true);
-  if (isAccessError(unknownEvaluation)) {
-    assert.equal(unknownEvaluation.kind, "INVALID_KEY");
-  }
+  assert.ok(isAccessError(unknownEvaluation));
+  assert.strictEqual(unknownEvaluation.kind, "INVALID_KEY");
 
   const unchangedRead = capability.tenantSelfReadEntitlements(state, "tenant-1", [TENANT_READ_PERMISSION]);
-  assert.equal(isTenantViewError(unchangedRead), false);
-  if (isTenantViewError(unchangedRead)) {
-    return;
-  }
-  assert.equal(unchangedRead.result.length, 1);
+  assert.ok(!isTenantViewError(unchangedRead));
+  assert.strictEqual(unchangedRead.result.length, 1);
 });

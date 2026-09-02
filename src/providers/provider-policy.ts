@@ -42,6 +42,10 @@ export function readProviderExecutionPolicy(graph: SemanticGraph): ProviderExecu
   const reservedModelPrefixes = new Map<string, PolicyDisposition>();
   const reasons = new Map<string, string>();
   for (const subject of subjects) {
+    // A policy is active unless it explicitly says otherwise. Absent, malformed
+    // or unrecognised values keep the reservation standing, so the only way to
+    // lift one is a deliberate, exact declaration -- never an omission.
+    if (values(graph, subject, "policyActive")[0] === "false") continue;
     const dispositionValue = values(graph, subject, "policyDisposition")[0];
     const disposition: PolicyDisposition = dispositionValue === "DISABLED_BY_POLICY"
       ? "DISABLED_BY_POLICY" : "OPERATOR_RESERVED";

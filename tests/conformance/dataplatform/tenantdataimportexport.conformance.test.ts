@@ -192,8 +192,9 @@ test("tenantdataimportexportcontracts", () => {
 
   assert.strictEqual(firstImport.ok, false);
   if (firstImport.ok) return;
-  assert.deepStrictEqual(firstImport.progress?.completedUnits, ["contract-unit-1"]);
-  assert.strictEqual(firstImport.progress?.failedUnit, "contract-unit-2");
+  assert.ok(firstImport.progress !== undefined);
+  assert.deepStrictEqual(firstImport.progress.completedUnits, ["contract-unit-1"]);
+  assert.strictEqual(firstImport.progress.failedUnit, "contract-unit-2");
 
   const resumeCalls: string[] = [];
   const resumedImport = capability.importTenantData(
@@ -235,7 +236,7 @@ test("tenantdataimportexportcontracts", () => {
   if (!replayImport.ok) return;
   assert.strictEqual(replayCalled, false);
   assert.deepStrictEqual(replayImport.progress.completedUnits, ["contract-unit-1", "contract-unit-2"]);
-  assert.deepStrictEqual(replayImport.progress.failedUnit, null);
+  assert.strictEqual(replayImport.progress.failedUnit, null);
   assert.strictEqual(firstCalls.length, 2);
 });
 
@@ -318,8 +319,9 @@ test("tenantdataimportexporterrormodel", () => {
   if (partialFail.ok) return;
   assert.strictEqual(partialFail.error.kind, "UNIT_PROCESSING_FAILED");
   assert.strictEqual(partialFail.error.risk, "TENANT_DATA_LOSS");
-  assert.deepStrictEqual(partialFail.progress?.completedUnits, ["error-unit-a"]);
-  assert.strictEqual(partialFail.progress?.failedUnit, "error-unit-b");
+  assert.ok(partialFail.progress !== undefined);
+  assert.deepStrictEqual(partialFail.progress.completedUnits, ["error-unit-a"]);
+  assert.strictEqual(partialFail.progress.failedUnit, "error-unit-b");
 });
 
 test("tenantdataimportexportlifecycle", () => {
@@ -365,8 +367,9 @@ test("tenantdataimportexportlifecycle", () => {
 
   assert.strictEqual(interrupted.ok, false);
   if (interrupted.ok) return;
-  assert.deepStrictEqual(interrupted.progress?.completedUnits, ["life-unit-1", "life-unit-2"]);
-  assert.strictEqual(interrupted.progress?.failedUnit, "life-unit-3");
+  assert.ok(interrupted.progress !== undefined);
+  assert.deepStrictEqual(interrupted.progress.completedUnits, ["life-unit-1", "life-unit-2"]);
+  assert.strictEqual(interrupted.progress.failedUnit, "life-unit-3");
   assert.deepStrictEqual(interruptedCalls, ["life-unit-1", "life-unit-2", "life-unit-3"]);
 
   const resumedCalls: string[] = [];
@@ -435,8 +438,9 @@ test("tenantdataimportexportpermissions", () => {
   assert.strictEqual(crossTenantUnit.ok, false);
   if (crossTenantUnit.ok) return;
   assert.strictEqual(crossTenantUnit.error.kind, "TENANT_ISOLATION_VIOLATION");
-  assert.strictEqual(crossTenantUnit.progress?.tenantId, tenantId);
-  assert.strictEqual(crossTenantUnit.progress?.archiveDigest, expectedTenantArchive.contentDigest);
+  assert.ok(crossTenantUnit.progress !== undefined);
+  assert.strictEqual(crossTenantUnit.progress.tenantId, tenantId);
+  assert.strictEqual(crossTenantUnit.progress.archiveDigest, expectedTenantArchive.contentDigest);
 });
 
 test("tenantdataimportexportproof", () => {
@@ -587,7 +591,8 @@ test("tenantdataimportexportstatemodel", () => {
   );
   assert.strictEqual(failed.ok, false);
   if (failed.ok) return;
-  assert.strictEqual(failed.progress?.failedUnit, "state-c");
+  assert.ok(failed.progress !== undefined);
+  assert.strictEqual(failed.progress.failedUnit, "state-c");
 
   let replayCalled = false;
   const replay = capability.importTenantData(
@@ -669,8 +674,9 @@ test("tenantdataimportexportvalidation", () => {
   );
   assert.strictEqual(firstPass.ok, false);
   if (firstPass.ok) return;
-  assert.deepStrictEqual(firstPass.progress?.completedUnits, ["validation-unit-1"]);
-  assert.strictEqual(firstPass.progress?.failedUnit, "validation-unit-2");
+  assert.ok(firstPass.progress !== undefined);
+  assert.deepStrictEqual(firstPass.progress.completedUnits, ["validation-unit-1"]);
+  assert.strictEqual(firstPass.progress.failedUnit, "validation-unit-2");
   assert.strictEqual(firstPass.error.kind, "UNIT_PROCESSING_FAILED");
 
   const secondCalls: string[] = [];

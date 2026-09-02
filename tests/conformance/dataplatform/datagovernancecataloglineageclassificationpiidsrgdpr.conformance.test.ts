@@ -1,10 +1,11 @@
-import { strict as assert } from "node:assert/strict";
+```typescript
+import assert from "node:assert/strict";
 import { test } from "node:test";
 import * as capability from "../../../src/capabilities/dataplatform/datagovernancecataloglineageclassificationpiidsrgdpr.ts";
 
 type CatalogResult = capability.DataGovernanceCatalogState | capability.DataGovernanceCatalogError;
 
-function isError(value: unknown): value is capability.DataGovernanceCatalogError {
+function isCapabilityError(value: unknown): value is capability.DataGovernanceCatalogError {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -14,17 +15,23 @@ function isError(value: unknown): value is capability.DataGovernanceCatalogError
 }
 
 function asState(result: CatalogResult): capability.DataGovernanceCatalogState {
-  if (isError(result)) {
+  if (isCapabilityError(result)) {
     assert.fail(`expected success but got ${result.kind}: ${result.message}`);
+  }
+  return result as capability.DataGovernanceCatalogState;
+}
+
+function asError(result: CatalogResult): capability.DataGovernanceCatalogError {
+  if (!isCapabilityError(result)) {
+    assert.fail("expected an error result");
   }
   return result;
 }
 
-function asError(result: CatalogResult): capability.DataGovernanceCatalogError {
-  if (!isError(result)) {
-    assert.fail("expected an error result");
-  }
-  return result;
+function asClassificationOrError(
+  result: string | capability.DataGovernanceCatalogError,
+): result is capability.DataGovernanceCatalogError ? capability.DataGovernanceCatalogError : capability.DataGovernanceCatalogClassification {
+  return isCapabilityError(result);
 }
 
 test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
@@ -168,8 +175,12 @@ test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
   assert.strictEqual(fulfilledRequest.state, "fulfilled");
   assert.strictEqual(fulfilledRequest.evidence, "evidence-contracts");
 
-  const invalidClass = asError(capability.validateClassification("invalid-classification", "tenant-contracts"));
-  assert.strictEqual(invalidClass.kind, "INVALID_CLASSIFICATION");
+  const invalidClass = capability.validateClassification("invalid-classification", "tenant-contracts");
+  if (isCapabilityError(invalidClass)) {
+    assert.strictEqual(invalidClass.kind, "INVALID_CLASSIFICATION");
+  } else {
+    assert.fail("expected error for invalid classification");
+  }
 
   const invalidRoute = asError(capability.updateCatalogEntryClassification(
     withEntry,
@@ -197,11 +208,19 @@ test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
     };
   };
 
-  const badClassification = asError(capability.validateClassification("invalid", "tenant-error"));
-  assert.strictEqual(badClassification.kind, "INVALID_CLASSIFICATION");
+  const badClassification = capability.validateClassification("invalid", "tenant-error");
+  if (isCapabilityError(badClassification)) {
+    assert.strictEqual(badClassification.kind, "INVALID_CLASSIFICATION");
+  } else {
+    assert.fail("expected error for invalid classification");
+  }
 
-  const badRequestState = asError(capability.validateRequestState("invalid", "tenant-error"));
-  assert.strictEqual(badRequestState.kind, "CONFIGURATION_MISSING");
+  const badRequestState = capability.validateRequestState("invalid", "tenant-error");
+  if (isCapabilityError(badRequestState)) {
+    assert.strictEqual(badRequestState.kind, "CONFIGURATION_MISSING");
+  } else {
+    assert.fail("expected error for invalid request state");
+  }
 
   const baselineEntry: capability.DataGovernanceCatalogEntry = {
     id: "entry-error",
@@ -418,8 +437,12 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
     assert.strictEqual(result, classification);
   }
 
-  const invalidClassification = asError(capability.validateClassification("not-a-valid-value", "tenant-proof"));
-  assert.strictEqual(invalidClassification.kind, "INVALID_CLASSIFICATION");
+  const invalidClassificationResult = capability.validateClassification("not-a-valid-value", "tenant-proof");
+  if (isCapabilityError(invalidClassificationResult)) {
+    assert.strictEqual(invalidClassificationResult.kind, "INVALID_CLASSIFICATION");
+  } else {
+    assert.fail("expected error for invalid classification");
+  }
 
   const validStates: readonly capability.DataSubjectRequestState[] = ["open", "fulfilled"];
   for (const state of validStates) {
@@ -427,8 +450,12 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
     assert.strictEqual(result, state);
   }
 
-  const invalidState = asError(capability.validateRequestState("done", "tenant-proof"));
-  assert.strictEqual(invalidState.kind, "CONFIGURATION_MISSING");
+  const invalidStateResult = capability.validateRequestState("done", "tenant-proof");
+  if (isCapabilityError(invalidStateResult)) {
+    assert.strictEqual(invalidStateResult.kind, "CONFIGURATION_MISSING");
+  } else {
+    assert.fail("expected error for invalid state");
+  }
 
   const request: Omit<
     capability.DataSubjectRequest,
@@ -440,15 +467,19 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
   };
   const withRequest = asState(capability.createDataSubjectRequest(capability.initialState, request));
 
-  const missingEvidence = asError(capability.fulfillDataSubjectRequest(
+  const missingEvidenceResult = capability.fulfillDataSubjectRequest(
     withRequest,
     "request-proof",
     "tenant-proof",
     "",
     "operator-proof",
     () => null,
-  ));
-  assert.strictEqual(missingEvidence.kind, "MISSING_EVIDENCE");
+  );
+  if (isCapabilityError(missingEvidenceResult)) {
+    assert.strictEqual(missingEvidenceResult.kind, "MISSING_EVIDENCE");
+  } else {
+    assert.fail("expected error for missing evidence");
+  }
 
   const withFulfillment = asState(capability.fulfillDataSubjectRequest(
     withRequest,
@@ -626,16 +657,24 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
     const classificationResult = capability.validateClassification(classification, "tenant-validation");
     assert.strictEqual(classificationResult, classification);
   }
-  const invalidClassification = asError(capability.validateClassification("bad-value", "tenant-validation"));
-  assert.strictEqual(invalidClassification.kind, "INVALID_CLASSIFICATION");
+  const invalidClassificationResult = capability.validateClassification("bad-value", "tenant-validation");
+  if (isCapabilityError(invalidClassificationResult)) {
+    assert.strictEqual(invalidClassificationResult.kind, "INVALID_CLASSIFICATION");
+  } else {
+    assert.fail("expected error for invalid classification");
+  }
 
   const validStates: readonly capability.DataSubjectRequestState[] = ["open", "fulfilled"];
   for (const state of validStates) {
     const stateResult = capability.validateRequestState(state, "tenant-validation");
     assert.strictEqual(stateResult, state);
   }
-  const invalidState = asError(capability.validateRequestState("bad-state", "tenant-validation"));
-  assert.strictEqual(invalidState.kind, "CONFIGURATION_MISSING");
+  const invalidStateResult = capability.validateRequestState("bad-state", "tenant-validation");
+  if (isCapabilityError(invalidStateResult)) {
+    assert.strictEqual(invalidStateResult.kind, "CONFIGURATION_MISSING");
+  } else {
+    assert.fail("expected error for invalid state");
+  }
 
   const request: Omit<
     capability.DataSubjectRequest,
@@ -647,15 +686,17 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
   };
   const withRequest = asState(capability.createDataSubjectRequest(capability.initialState, request));
 
-  const missingEvidence = asError(
-    capability.fulfillDataSubjectRequest(
-      withRequest,
-      "request-validation",
-      "tenant-validation",
-      "   ",
-      "operator-validation",
-      () => null,
-    ),
+  const missingEvidenceResult = capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-validation",
+    "tenant-validation",
+    "   ",
+    "operator-validation",
+    () => null,
   );
-  assert.strictEqual(missingEvidence.kind, "MISSING_EVIDENCE");
+  if (isCapabilityError(missingEvidenceResult)) {
+    assert.strictEqual(missingEvidenceResult.kind, "MISSING_EVIDENCE");
+  } else {
+    assert.fail("expected error for whitespace evidence");
+  }
 });

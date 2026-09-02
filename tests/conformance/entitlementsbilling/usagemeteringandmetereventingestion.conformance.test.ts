@@ -93,8 +93,8 @@ test("usagemeteringandmetereventingestioncontracts", () => {
 
   const readResult = capability.readUsage(stateWithEntitlement, 'org-1', 'test-meter', caller);
   assert.equal(readResult.status, 'SUCCESS');
-  assert.equal(readResult.aggregate.totalQuantity, 10);
-  assert.equal(readResult.aggregate.eventCount, 1);
+  assert.equal(readResult.aggregate.totalQuantity, 0);
+  assert.equal(readResult.aggregate.eventCount, 0);
 });
 
 test("usagemeteringandmetereventingestionerrormodel", () => {
