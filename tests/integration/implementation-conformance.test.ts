@@ -28,6 +28,7 @@ function need(): CapabilityImplementationNeed {
     requirements: Object.freeze([requirement("probeholds"), requirement("probefails"), requirement("probeunwritten")]),
     requirementClasses: Object.freeze(["behavioural-runtime"]),
     runtimeDependencies: Object.freeze([]),
+    sourceRepository: null,
   });
 }
 

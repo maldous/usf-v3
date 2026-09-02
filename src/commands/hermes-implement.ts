@@ -12,7 +12,7 @@ import {
   deriveCapabilityImplementationNeeds, deriveConformancePrompt, deriveImplementationPrompt,
   deriveImplementationWorkUnits, importSpecifierFor, inspectRepositoryFile, maximumRepairRounds,
   maximumRewriteBytes, maximumSiblingBytes,
-  readConformanceRule, readImplementationConvention,
+  readConformanceRule, readImplementationConvention, readImplementationConventions,
   validateConformanceOutput, validateImplementationOutput,
   type CapabilityImplementationNeed, type CapabilityRepairState, type FailingRequirement,
   type ImplementationWorkUnit,
@@ -102,12 +102,15 @@ async function preimageDigestOf(repositoryRoot: string, path: string): Promise<s
 }
 
 async function presentPaths(
-  repositoryRoot: string,
+  // Each need resolves against the repository that owns it, because a composed
+  // selection spans more than one and a path present in one is absent in the
+  // other.
+  rootOf: (repository: string | null) => string,
   needs: readonly CapabilityImplementationNeed[],
 ): Promise<ReadonlySet<string>> {
   const present = new Set<string>();
   await Promise.all(needs.flatMap((need) => [need.modulePath, need.conformancePath].map(async (path) => {
-    const bytes = await readFile(resolve(repositoryRoot, path), "utf8").catch(() => undefined);
+    const bytes = await readFile(resolve(rootOf(need.sourceRepository), path), "utf8").catch(() => undefined);
     if (bytes !== undefined) present.add(path);
   })));
   return present;
@@ -179,6 +182,8 @@ interface Accepted {
   readonly path: string;
   readonly content: string;
   readonly preimageDigest: string | null;
+  /** Which repository the path is relative to, so results can be grouped. */
+  readonly repository: string | null;
 }
 
 /**
@@ -242,16 +247,27 @@ function localName(iri: string): string {
 export async function implementCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const parsed = parse(args);
   const graph: SemanticGraph = loadSemanticGraph(repositoryRoot, parsed.manifest);
-  const convention = readImplementationConvention(graph);
+  const conventions = readImplementationConventions(graph);
+  // Compose freely: a selection may declare the foundation's convention, a
+  // product's, or both. Each capability lands under the one that owns it.
+  const convention = conventions[0]!;
   // Paths the convention derives are relative to the repository that owns the
   // realisation, which is USF itself unless the convention names a product
   // repository. Resolving it here keeps every downstream read, preimage and
   // write on the same root rather than silently mixing two repositories.
-  const realisationRoot = convention.productRepository === null ? repositoryRoot
-    : await resolveProductRealisationRoot(repositoryRoot, graph, convention.productRepository);
+  const rootByRepository = new Map<string | null, string>([[null, repositoryRoot]]);
+  for (const entry of conventions) {
+    if (entry.productRepository === null || rootByRepository.has(entry.productRepository)) continue;
+    rootByRepository.set(entry.productRepository,
+      await resolveProductRealisationRoot(repositoryRoot, graph, entry.productRepository));
+  }
+  const rootOf = (repository: string | null): string => rootByRepository.get(repository) ?? repositoryRoot;
+  // The root of the convention listed first, kept for the single-profile
+  // projections that report one realisation root.
+  const realisationRoot = rootOf(convention.productRepository);
   const conformanceRule = readConformanceRule(graph);
   const policyDigest = canonicalDigest(graph.graphDigests ?? {});
-  const allNeeds = deriveCapabilityImplementationNeeds(graph, convention);
+  const allNeeds = deriveCapabilityImplementationNeeds(graph, conventions);
   const needs = parsed.onlyCapability === null ? allNeeds
     : allNeeds.filter((need) => need.canonicalName === parsed.onlyCapability);
   if (needs.length === 0 && parsed.onlyCapability !== null) {
@@ -261,10 +277,9 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
 
   // A record's paths are relative to the repository that produced it. This
   // profile's records resolve under its realisation root; anything else is USF's.
-  const sourceRootFor = (repository: string | null): string =>
-    repository !== null && repository === convention.productRepository ? realisationRoot : repositoryRoot;
+  const sourceRootFor = (repository: string | null): string => rootOf(repository);
 
-  const present = await presentPaths(realisationRoot, needs);
+  const present = await presentPaths(rootOf, needs);
 
   // Conformance execution is independent of dispatch: any capability whose
   // module and test both exist but whose behaviour has not been observed under
@@ -355,7 +370,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   const conformanceResults: Array<Readonly<Record<string, unknown>>> = [];
   for (const need of awaitingCheck.slice(0, maximumConformanceRuns)) {
     const run = await runCapabilityConformance(
-      repositoryRoot, need, policyDigest, convention.productRepository, realisationRoot);
+      repositoryRoot, need, policyDigest, need.sourceRepository, rootOf(need.sourceRepository));
     const path = await recordConformanceRun(repositoryRoot, run);
     conformanceResults.push(Object.freeze({
       capability: need.canonicalName, evidencePath: path, executed: run.executed,
@@ -399,9 +414,10 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   for (const unit of selected) {
     // The artefact being rewritten is shown whole; the module a test binds to
     // is shown whole too, because a test cannot bind to a surface it cannot see.
-    const existingTarget = await inspectRepositoryFile(realisationRoot, unit.targetPath, maximumRewriteBytes);
+    const unitRoot = rootOf(unit.need.sourceRepository);
+    const existingTarget = await inspectRepositoryFile(unitRoot, unit.targetPath, maximumRewriteBytes);
     const moduleSource = unit.stage === "conformance"
-      ? await inspectRepositoryFile(realisationRoot, unit.need.modulePath, maximumRewriteBytes) : null;
+      ? await inspectRepositoryFile(unitRoot, unit.need.modulePath, maximumRewriteBytes) : null;
     if (unit.stage === "conformance" && moduleSource === null) continue;
     const specifier = importSpecifierFor(unit.need);
     const priorFailure = candidateFailures[unit.need.capability];
@@ -415,7 +431,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       ? deriveImplementationPrompt(unit.need, convention, Object.freeze({
           existingTarget,
           moduleSource: null,
-          siblingModule: await siblingModule(realisationRoot, needs, present, unit.need.modulePath),
+          siblingModule: await siblingModule(unitRoot, needs, present, unit.need.modulePath),
         }), carried)
       : deriveConformancePrompt(unit.need, moduleSource!, specifier, unit.repairs, existingTarget);
     // Existing source is part of identity: a changed module must not reuse a
@@ -438,7 +454,8 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         await recordSemanticReuse(repositoryRoot, lookup.entry);
         accepted.push(Object.freeze({
           path: unit.targetPath, content: checked.content,
-          preimageDigest: await preimageDigestOf(realisationRoot, unit.targetPath),
+          repository: unit.need.sourceRepository,
+          preimageDigest: await preimageDigestOf(unitRoot, unit.targetPath),
         }));
         outcomes.push(Object.freeze({ unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "reused" }));
         continue;
@@ -522,7 +539,8 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       await storeSemanticResult(repositoryRoot, identity, checked.content, evidenceDigest);
       accepted.push(Object.freeze({
         path: unit.targetPath, content: checked.content,
-        preimageDigest: await preimageDigestOf(realisationRoot, unit.targetPath),
+        repository: unit.need.sourceRepository,
+        preimageDigest: await preimageDigestOf(rootOf(unit.need.sourceRepository), unit.targetPath),
       }));
       outcomes.push(Object.freeze({
         unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "accepted",
@@ -549,27 +567,40 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   // Independent results are batched into one transaction. Conflict sets, not
   // unit count, decide the boundary, and every unit here owns a distinct path.
   let proposalPath: string | null = null;
+  const proposals: Array<Readonly<{ repository: string | null; path: string; pathCount: number }>> = [];
   if (accepted.length > 0) {
-    const byPath = new Map(accepted.map((entry) => [entry.path, entry] as const));
-    const proposal = Object.freeze({
-      schema: "urn:usf:semantic-transaction-proposal:1" as const,
-      intent: `Land ${byPath.size} independent implementation results derived from outstanding facet requirements of ${convention.convention}.`,
-      declaredAffectedPaths: Object.freeze([...byPath.keys()].sort()),
-      operations: Object.freeze([...byPath.values()]
-        .sort((left, right) => left.path.localeCompare(right.path))
-        .map((entry) => Object.freeze({
-          kind: "write-file" as const, path: entry.path, content: entry.content, preimageDigest: entry.preimageDigest,
-        }))),
-    });
+    // One proposal per owning repository. A transaction targets exactly one
+    // repository, so a composed selection that realised into two would be
+    // unlandable as a single proposal; and a product realisation must never
+    // overwrite the foundation's pending results, or vice versa.
+    const byRepository = new Map<string | null, Map<string, Accepted>>();
+    for (const entry of accepted) {
+      const group = byRepository.get(entry.repository) ?? new Map<string, Accepted>();
+      group.set(entry.path, entry);
+      byRepository.set(entry.repository, group);
+    }
     const directory = resolve(repositoryRoot, ".usf", "proposals");
     await mkdir(directory, { recursive: true, mode: 0o700 });
-    // One proposal per owning convention. A product realisation and USF's own
-    // must never overwrite each other's pending results, and the reader needs
-    // to know which repository the paths inside are relative to.
-    proposalPath = convention.productRepository === null
-      ? ".usf/proposals/implementation-realisation.json"
-      : `.usf/proposals/implementation-realisation-${localName(convention.productRepository)}.json`;
-    await writeFile(resolve(repositoryRoot, proposalPath), `${JSON.stringify(proposal, null, 2)}\n`, { mode: 0o600 });
+    for (const [repository, byPath] of [...byRepository.entries()]
+      .sort(([left], [right]) => (left ?? "").localeCompare(right ?? ""))) {
+      const proposal = Object.freeze({
+        schema: "urn:usf:semantic-transaction-proposal:1" as const,
+        intent: `Land ${byPath.size} independent implementation results derived from outstanding facet requirements of ${repository ?? "the foundation"}.`,
+        declaredAffectedPaths: Object.freeze([...byPath.keys()].sort()),
+        operations: Object.freeze([...byPath.values()]
+          .sort((left, right) => left.path.localeCompare(right.path))
+          .map((entry) => Object.freeze({
+            kind: "write-file" as const, path: entry.path, content: entry.content, preimageDigest: entry.preimageDigest,
+          }))),
+      });
+      const path = repository === null
+        ? ".usf/proposals/implementation-realisation.json"
+        : `.usf/proposals/implementation-realisation-${localName(repository)}.json`;
+      await writeFile(resolve(repositoryRoot, path), `${JSON.stringify(proposal, null, 2)}\n`, { mode: 0o600 });
+      proposals.push(Object.freeze({ repository, path, pathCount: byPath.size }));
+    }
+    // Preserved for readers that expect a single path; the full set is below.
+    proposalPath = proposals[0]?.path ?? null;
   }
 
   return {
@@ -588,6 +619,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       cacheHits,
       acceptedResults: accepted.length,
       proposalPath,
+      proposals: Object.freeze(proposals),
       executionEvidenceDigest: evidenceDigest,
       outcomes: Object.freeze(outcomes),
       cache: await semanticCacheStatistics(repositoryRoot),

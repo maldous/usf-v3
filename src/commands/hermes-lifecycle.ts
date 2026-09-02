@@ -542,20 +542,28 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
           blockers.push(Object.freeze({ lane: "implementation", reason: error instanceof Error ? error.message.slice(0, 300) : "unknown" }));
           return null;
         });
-      const implementationProposal = implementation?.proposalPath;
-      if (typeof implementationProposal === "string") {
-        // Results are relative to whichever repository owns the realisation, so
-        // the transaction must be told which one. Without this the paths would
-        // be written into USF itself, which is precisely the confusion the
-        // product profile exists to prevent.
-        const targetRepository = implementation?.targetRepository;
-        const repositoryArguments = typeof targetRepository === "string"
-          ? ["--repository", targetRepository, "--manifest", parsed.manifest] : [];
+      // One transaction per owning repository. A composed selection realises
+      // into more than one, and a transaction targets exactly one, so the
+      // results are landed as a set of transactions rather than assumed to
+      // share a destination. Results are relative to whichever repository owns
+      // them; without saying which, a product's paths would be written into USF
+      // itself, which is the confusion the profile boundary exists to prevent.
+      const implementationProposals = (implementation?.proposals ?? []) as ReadonlyArray<
+        Readonly<{ repository: string | null; path: string }>
+      >;
+      for (const entry of implementationProposals) {
+        const repositoryArguments = entry.repository === null ? []
+          : ["--repository", entry.repository, "--manifest", parsed.manifest];
         // A transaction is never interrupted by a stop request: it is atomic and
         // completing it is cheaper and safer than abandoning it.
-        transactions.push(await transactCommand(repositoryRoot, ["--proposal", implementationProposal, ...repositoryArguments])
-          .then((result) => Object.freeze({ lane: "implementation", ...(result.output as Record<string, unknown>) }),
-            (error: unknown) => Object.freeze({ lane: "implementation", refused: error instanceof Error ? error.message.slice(0, 300) : "unknown" })));
+        transactions.push(await transactCommand(repositoryRoot, ["--proposal", entry.path, ...repositoryArguments])
+          .then((result) => Object.freeze({
+            lane: "implementation", repository: entry.repository, ...(result.output as Record<string, unknown>),
+          }),
+            (error: unknown) => Object.freeze({
+              lane: "implementation", repository: entry.repository,
+              refused: error instanceof Error ? error.message.slice(0, 300) : "unknown",
+            })));
       }
 
       // The artefact lane realises USF's own delivery artefacts, and only those.

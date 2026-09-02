@@ -51,13 +51,35 @@ export interface ImplementationConvention {
  * the convention exists to prevent.
  */
 export function readImplementationConvention(graph: SemanticGraph): ImplementationConvention {
-  const subjects = subjectsOfType(graph, conventionType);
-  if (subjects.length !== 1) {
-    throw new UsfError("IMPLEMENTATION_CONVENTION_UNAVAILABLE", exitCodes.DOMAIN_FAILURE,
-      "Exactly one capability implementation convention must be declared before implementation work can be derived.",
-      { declared: subjects.length });
+  const conventions = readImplementationConventions(graph);
+  if (conventions.length !== 1) {
+    throw new UsfError("IMPLEMENTATION_CONVENTION_AMBIGUOUS", exitCodes.DOMAIN_FAILURE,
+      "This selection declares more than one implementation convention, so no single one governs it.",
+      { declared: conventions.length });
   }
-  const convention = subjects[0]!;
+  return conventions[0]!;
+}
+
+/**
+ * Every convention the selection declares.
+ *
+ * A selection may compose a product profile with the foundation, in which case
+ * both are realised: each capability under the convention whose repository owns
+ * it, into that repository. Requiring exactly one convention made that
+ * composition impossible to express -- the selection refused before it could
+ * describe work it was perfectly able to describe.
+ */
+export function readImplementationConventions(graph: SemanticGraph): readonly ImplementationConvention[] {
+  const subjects = subjectsOfType(graph, conventionType);
+  if (subjects.length === 0) {
+    throw new UsfError("IMPLEMENTATION_CONVENTION_UNAVAILABLE", exitCodes.DOMAIN_FAILURE,
+      "At least one capability implementation convention must be declared before implementation work can be derived.",
+      { declared: 0 });
+  }
+  return Object.freeze(subjects.map((subject) => readOneConvention(graph, subject)));
+}
+
+function readOneConvention(graph: SemanticGraph, convention: string): ImplementationConvention {
   const repository = one(graph, convention, "ownedByRepository");
   // A convention may be owned by USF itself, which declares its realisation
   // root in the graph, or by a product repository, which deliberately does not:
@@ -128,6 +150,12 @@ export interface CapabilityImplementationNeed {
   readonly requirementClasses: readonly string[];
   /** Capabilities this one composes with at runtime; context only, not ordering. */
   readonly runtimeDependencies: readonly string[];
+  /**
+   * The product repository this capability lands in, or null for the foundation
+   * itself. The command resolves it to an on-disk root; the graph never holds a
+   * path to one.
+   */
+  readonly sourceRepository: string | null;
 }
 
 /**
@@ -139,8 +167,27 @@ export interface CapabilityImplementationNeed {
  */
 export function deriveCapabilityImplementationNeeds(
   graph: SemanticGraph,
-  convention: ImplementationConvention,
+  governing: ImplementationConvention | readonly ImplementationConvention[],
 ): readonly CapabilityImplementationNeed[] {
+  const conventions = Array.isArray(governing)
+    ? governing as readonly ImplementationConvention[]
+    : [governing as ImplementationConvention];
+  // A capability declared by a product profile is that product's, and lands in
+  // that product's repository. Anything no profile declares is the foundation's
+  // own. Resolving it this way keeps the rule in the graph rather than in an
+  // IRI-prefix guess, which is the same mistake that once made every product
+  // capability invisible.
+  const repositoryOfCapability = new Map<string, string>();
+  for (const quad of graph.quads) {
+    if (quad.predicate !== `${P}declaresCapability`) continue;
+    const repository = one(graph, quad.subject, "productRepository");
+    if (repository !== null) repositoryOfCapability.set(quad.object, repository);
+  }
+  const byRepository = new Map<string | null, ImplementationConvention>();
+  for (const entry of conventions) byRepository.set(entry.productRepository, entry);
+  const foundationConvention = byRepository.get(null) ?? conventions[0]!;
+  const conventionFor = (capability: string): ImplementationConvention =>
+    byRepository.get(repositoryOfCapability.get(capability) ?? null) ?? foundationConvention;
   const contractOfFacet = new Map<string, string>();
   for (const quad of graph.quads) {
     if (quad.predicate === `${P}declaresFacet`) contractOfFacet.set(quad.object, quad.subject);
@@ -190,9 +237,10 @@ export function deriveCapabilityImplementationNeeds(
       // A realisation root of "." means the owning repository realises this
       // itself, so the declared pattern is already repository-relative and
       // nothing is prefixed to it.
+      const governingConvention = conventionFor(capability);
       const substitute = (pattern: string): string => {
         const resolved = pattern.replace("{domain}", domain).replace("{capability}", name);
-        const root = convention.realisationRoot;
+        const root = governingConvention.realisationRoot;
         return root === "." || root.length === 0 ? resolved : `${root}/${resolved}`;
       };
       const sorted = Object.freeze([...requirements].sort((left, right) => left.facet.localeCompare(right.facet)));
@@ -201,11 +249,12 @@ export function deriveCapabilityImplementationNeeds(
         canonicalName: name,
         domain,
         contract: [...capabilityOfContract.entries()].find(([, value]) => value === capability)?.[0] ?? null,
-        modulePath: substitute(convention.modulePathPattern),
-        conformancePath: substitute(convention.conformancePathPattern),
+        modulePath: substitute(governingConvention.modulePathPattern),
+        conformancePath: substitute(governingConvention.conformancePathPattern),
         requirements: sorted,
         requirementClasses: Object.freeze([...new Set(sorted.map((entry) => entry.requirementClass))].sort()),
         runtimeDependencies: Object.freeze([...(runtimeDependencies.get(capability) ?? [])].sort()),
+        sourceRepository: governingConvention.productRepository,
       });
     }));
 }
