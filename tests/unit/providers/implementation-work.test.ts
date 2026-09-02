@@ -209,13 +209,16 @@ test("an implementation-conformance facet is satisfied only by an executed behav
   assert.equal(stale.find((verdict) => verdict.facet === behaviour)!.state, "STALE");
 
   // A check that could not execute observed nothing, so it satisfies nothing,
-  // and its reason names what stopped it.
+  // and its reason names what stopped it. It is BLOCKED, not never-assessed:
+  // a check ran and something repairable stood in its way, and labelling that
+  // as absence hid every blocked facet inside the never-assessed count for a
+  // whole run.
   const blocked = evaluateFacets(graph, evidenceWith(new Map([[behaviour, Object.freeze({
     executed: false, passed: false, stale: false, blocked: true,
     evidence: "t.ts@sha256:dd subtest policygatebehaviour", detail: "the implementation does not typecheck",
   })]])));
   const verdict = blocked.find((entry) => entry.facet === behaviour)!;
-  assert.equal(verdict.state, "NOT_ASSESSED");
+  assert.equal(verdict.state, "BLOCKED");
   assert.match(verdict.reason, /does not typecheck/u);
 });
 

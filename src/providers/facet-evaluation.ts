@@ -191,6 +191,20 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
       // audit or authorization requirement. A realized specification artefact
       // cannot, and neither can the presence of a module at its canonical path.
       const outcome = evidence.conformanceOutcomes.get(facet);
+      // A blocked entry is not an absence: a check ran and could not observe
+      // this facet -- the pair does not compile, the subtest is inadmissible or
+      // was never written. Mapping those to NOT_ASSESSED hid every blocked
+      // facet inside the never-assessed count, so BLOCKED read zero all run
+      // while its own definition sat four lines below in the nonclaims. The
+      // repair loop always saw them; only the projection lied.
+      if (outcome !== undefined && outcome.blocked && !outcome.stale) {
+        return Object.freeze({
+          facet, facetKind: kind, capability, state: "BLOCKED" as const,
+          evidence: Object.freeze([outcome.evidence]),
+          reason: outcome.detail
+            ?? "A behavioural check ran but could not observe this requirement; the blocking condition must be repaired before evidence can exist.",
+        });
+      }
       if (outcome === undefined || !outcome.executed) {
         return Object.freeze({
           facet, facetKind: kind, capability, state: "NOT_ASSESSED" as const, evidence: Object.freeze([]),

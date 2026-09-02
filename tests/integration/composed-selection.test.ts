@@ -119,3 +119,25 @@ test("a product's own UI facets are its requirements, never handed back to the p
   assert.ok(anqrUi.every((verdict) => verdict.state !== "PROFILE_SUPPLIED"),
     "the product's own UI facets count in the product's denominator");
 });
+
+test("blocked evidence surfaces as BLOCKED, never as never-assessed", () => {
+  // Blocked entries mapped to NOT_ASSESSED for the whole run: BLOCKED read zero
+  // while its own definition sat in the nonclaims, twenty-five blocked facets
+  // hid inside the never-assessed count, and the healing that converts
+  // unwritten subtests into repairable work was invisible in every projection.
+  const graph = loadSemanticGraph(canonicalRoot, composedManifest);
+  const facet = graph.quads.find((q) =>
+    q.predicate === "urn:usf:predicate:admissibleEvidenceClass" && q.object === "implementation-conformance")!.subject;
+  const outcome = {
+    executed: false, passed: false, stale: false, blocked: true,
+    evidence: "probe@sha256:0 subtest probe", detail: "the pair does not compile",
+  };
+  const verdicts = evaluateFacets(graph, {
+    realizedArtefacts: new Map(), runtimeComposed: false,
+    validatorOutcomes: [], proofOutcomes: [],
+    conformanceOutcomes: new Map([[facet, outcome]]) as never,
+  });
+  const verdict = verdicts.find((v) => v.facet === facet)!;
+  assert.equal(verdict.state, "BLOCKED");
+  assert.equal(verdict.reason, "the pair does not compile");
+});
