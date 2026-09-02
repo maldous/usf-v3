@@ -6,14 +6,10 @@ export const ApiKeysPersonalAccessTokensErrorKind = [
   'PROVIDER_FAILURE',
   'AUDIT_VIOLATION',
   'NOT_ENTITLED',
+  'MALFORMED_SECRET',
+  'DEGRADED',
 ] as const;
 export type ApiKeysPersonalAccessTokensErrorKind = typeof ApiKeysPersonalAccessTokensErrorKind[number];
-
-export interface ApiKeysPersonalAccessTokensError {
-  readonly kind: ApiKeysPersonalAccessTokensErrorKind;
-  readonly message: string;
-  readonly statusCode: number;
-}
 
 export const ApiKeysPersonalAccessTokensReadiness = ['READY', 'DEGRADED'] as const;
 export type ApiKeysPersonalAccessTokensReadiness = typeof ApiKeysPersonalAccessTokensReadiness[number];
@@ -21,11 +17,20 @@ export type ApiKeysPersonalAccessTokensReadiness = typeof ApiKeysPersonalAccessT
 export const ApiKeysPersonalAccessTokensAuditEventKind = ['key-created', 'key-revoked'] as const;
 export type ApiKeysPersonalAccessTokensAuditEventKind = typeof ApiKeysPersonalAccessTokensAuditEventKind[number];
 
+export const ApiKeysPersonalAccessTokensActor = ['NO_ACTOR'] as const;
+export type ApiKeysPersonalAccessTokensActor = typeof ApiKeysPersonalAccessTokensActor[number];
+
 export interface ApiKeysPersonalAccessTokensAuditEvent {
   readonly kind: ApiKeysPersonalAccessTokensAuditEventKind;
   readonly tenantId: string;
   readonly keyId: string;
   readonly timestamp: string;
+}
+
+export interface ApiKeysPersonalAccessTokensError {
+  readonly kind: ApiKeysPersonalAccessTokensErrorKind;
+  readonly message: string;
+  readonly statusCode: number;
 }
 
 export interface ApiKeysPersonalAccessTokensState {
@@ -52,6 +57,11 @@ export interface ApiKeysPersonalAccessTokensMetadata {
   readonly scopes: readonly string[];
 }
 
+export interface ApiKeysPersonalAccessTokensAuthenticationResult {
+  readonly tenantId: string;
+  readonly scopes: readonly string[];
+}
+
 export interface ApiKeysPersonalAccessTokensRepository {
   readonly create: (
     tenantId: string,
@@ -64,7 +74,7 @@ export interface ApiKeysPersonalAccessTokensRepository {
   readonly authenticate: (
     keyId: string,
     secret: string,
-  ) => { readonly tenantId: string; readonly scopes: readonly string[] } | null | ApiKeysPersonalAccessTokensError;
+  ) => ApiKeysPersonalAccessTokensAuthenticationResult | null | ApiKeysPersonalAccessTokensError;
 }
 
 export interface ApiKeysPersonalAccessTokensPermissions {
@@ -124,12 +134,20 @@ export function computeReadiness(
   }
 }
 
+export function isDegraded(config: ApiKeysPersonalAccessTokensConfig): boolean {
+  return computeReadiness(config) === 'DEGRADED';
+}
+
 function wrapRepositoryError(error: ApiKeysPersonalAccessTokensError): ApiKeysPersonalAccessTokensError {
   return { kind: 'PROVIDER_FAILURE', message: error.message, statusCode: 503 };
 }
 
-function notEntitledError(): ApiKeysPersonalAccessTokensError {
-  return { kind: 'NOT_ENTITLED', message: 'Not entitled', statusCode: 403 };
+function notEntitledError(): { readonly outcome: 'NOT_ENTITLED' } {
+  return { outcome: 'NOT_ENTITLED' };
+}
+
+function noActor(): { readonly outcome: 'NO_ACTOR' } {
+  return { outcome: 'NO_ACTOR' };
 }
 
 function performAudit(
@@ -166,6 +184,7 @@ export function generateKeyId(salt: string): string {
 
 export function createKey(
   config: ApiKeysPersonalAccessTokensConfig,
+  auditFn: (event: ApiKeysPersonalAccessTokensAuditEvent) => void | ApiKeysPersonalAccessTokensError,
   tenantId: string,
   scopes: readonly string[],
 ):
@@ -173,14 +192,14 @@ export function createKey(
   | { readonly outcome: 'NOT_ENTITLED' }
   | ApiKeysPersonalAccessTokensError {
   if (!config.permissions.tenantApiKeyWrite) {
-    return { outcome: 'NOT_ENTITLED' };
+    return notEntitledError();
   }
   if (!config.permissions.apiAccessEntitlement) {
-    return { outcome: 'NOT_ENTITLED' };
+    return notEntitledError();
   }
 
-  if (computeReadiness(config) === 'DEGRADED') {
-    return { kind: 'PROVIDER_FAILURE', message: 'Store unavailable for mutation', statusCode: 503 };
+  if (isDegraded(config)) {
+    return { kind: 'DEGRADED', message: 'Store unavailable for mutation', statusCode: 503 };
   }
 
   const salt = config.crypto.generateSalt();
@@ -212,7 +231,7 @@ export function createKey(
     timestamp: now,
   };
 
-  const auditError = performAudit(config.audit, auditEvent);
+  const auditError = performAudit(auditFn, auditEvent);
   if (auditError !== null) {
     return auditError;
   }
@@ -239,18 +258,19 @@ export function createKey(
 
 export function revokeKey(
   config: ApiKeysPersonalAccessTokensConfig,
+  auditFn: (event: ApiKeysPersonalAccessTokensAuditEvent) => void | ApiKeysPersonalAccessTokensError,
   tenantId: string,
   keyId: string,
 ): { readonly outcome: 'OK' } | { readonly outcome: 'NOT_ENTITLED' } | ApiKeysPersonalAccessTokensError {
   if (!config.permissions.tenantApiKeyWrite) {
-    return { outcome: 'NOT_ENTITLED' };
+    return notEntitledError();
   }
   if (!validateRouteIdentifier(keyId)) {
     return { kind: 'INVALID_ROUTE_IDENTIFIER', message: 'Invalid key identifier', statusCode: 400 };
   }
 
-  if (computeReadiness(config) === 'DEGRADED') {
-    return { kind: 'PROVIDER_FAILURE', message: 'Store unavailable for mutation', statusCode: 503 };
+  if (isDegraded(config)) {
+    return { kind: 'DEGRADED', message: 'Store unavailable for mutation', statusCode: 503 };
   }
 
   const metadata = config.repository.readMetadata(tenantId, keyId);
@@ -269,7 +289,7 @@ export function revokeKey(
     timestamp: now,
   };
 
-  const auditError = performAudit(config.audit, auditEvent);
+  const auditError = performAudit(auditFn, auditEvent);
   if (auditError !== null) {
     return auditError;
   }
@@ -290,15 +310,15 @@ export function listKeys(
   | { readonly outcome: 'NOT_ENTITLED' }
   | ApiKeysPersonalAccessTokensError {
   if (!config.permissions.tenantApiKeyRead) {
-    return { outcome: 'NOT_ENTITLED' };
+    return notEntitledError();
   }
 
   const result = config.repository.listMetadata(tenantId);
-  if (result === null) {
-    return { outcome: 'OK', keys: [] };
-  }
   if (isError(result)) {
     return wrapRepositoryError(result);
+  }
+  if (result === null) {
+    return { outcome: 'OK', keys: [] };
   }
   return { outcome: 'OK', keys: result };
 }
@@ -311,15 +331,15 @@ export function operatorListKeys(
   | { readonly outcome: 'NOT_ENTITLED' }
   | ApiKeysPersonalAccessTokensError {
   if (!config.permissions.platformApiKeyRead) {
-    return { outcome: 'NOT_ENTITLED' };
+    return notEntitledError();
   }
 
   const result = config.repository.listMetadata(tenantId);
-  if (result === null) {
-    return { outcome: 'OK', keys: [] };
-  }
   if (isError(result)) {
     return wrapRepositoryError(result);
+  }
+  if (result === null) {
+    return { outcome: 'OK', keys: [] };
   }
   return { outcome: 'OK', keys: result };
 }
@@ -330,7 +350,7 @@ export function readKeyMetadata(
   keyId: string,
 ): ApiKeysPersonalAccessTokensMetadata | { readonly outcome: 'NOT_ENTITLED' } | ApiKeysPersonalAccessTokensError {
   if (!config.permissions.tenantApiKeyRead) {
-    return { outcome: 'NOT_ENTITLED' };
+    return notEntitledError();
   }
   if (!validateRouteIdentifier(keyId)) {
     return { kind: 'INVALID_ROUTE_IDENTIFIER', message: 'Invalid key identifier', statusCode: 400 };
@@ -346,25 +366,52 @@ export function readKeyMetadata(
   return result;
 }
 
+export function readDeveloperContext(
+  config: ApiKeysPersonalAccessTokensConfig,
+  tenantId: string,
+):
+  | { readonly outcome: 'OK'; readonly tenantId: string; readonly keys: readonly ApiKeysPersonalAccessTokensMetadata[] }
+  | { readonly outcome: 'NOT_ENTITLED' }
+  | ApiKeysPersonalAccessTokensError {
+  if (!config.permissions.tenantApiKeyRead) {
+    return notEntitledError();
+  }
+  const result = config.repository.listMetadata(tenantId);
+  if (isError(result)) {
+    return wrapRepositoryError(result);
+  }
+  if (result === null) {
+    return { outcome: 'OK', tenantId, keys: [] };
+  }
+  return { outcome: 'OK', tenantId, keys: result };
+}
+
 export function authenticateKey(
   config: ApiKeysPersonalAccessTokensConfig,
   keyId: string,
   secret: string,
-): { readonly tenantId: string; readonly scopes: readonly string[] } | { readonly outcome: 'NOT_ENTITLED' } | ApiKeysPersonalAccessTokensError {
+):
+  | ApiKeysPersonalAccessTokensAuthenticationResult
+  | { readonly outcome: 'NO_ACTOR' }
+  | ApiKeysPersonalAccessTokensError {
   if (!validateRouteIdentifier(keyId)) {
-    return { outcome: 'NOT_ENTITLED' };
+    return { kind: 'MALFORMED_SECRET', message: 'Invalid key identifier', statusCode: 400 };
   }
 
   if (typeof secret !== 'string' || secret.length === 0) {
-    return { outcome: 'NOT_ENTITLED' };
+    return { kind: 'MALFORMED_SECRET', message: 'Malformed secret', statusCode: 400 };
+  }
+
+  if (isDegraded(config)) {
+    return { kind: 'PROVIDER_FAILURE', message: 'Provider unavailable', statusCode: 503 };
   }
 
   const result = config.repository.authenticate(keyId, secret);
-  if (result === null) {
-    return { outcome: 'NOT_ENTITLED' };
-  }
   if (isError(result)) {
     return wrapRepositoryError(result);
+  }
+  if (result === null) {
+    return noActor();
   }
   return result;
 }
@@ -372,11 +419,13 @@ export function authenticateKey(
 export function mapErrorToStatusCode(error: ApiKeysPersonalAccessTokensError): number {
   switch (error.kind) {
     case 'INVALID_ROUTE_IDENTIFIER':
+    case 'MALFORMED_SECRET':
       return 400;
     case 'NOT_ENTITLED':
     case 'AUDIT_VIOLATION':
       return 403;
     case 'PROVIDER_FAILURE':
+    case 'DEGRADED':
     default:
       return 503;
   }
@@ -384,6 +433,7 @@ export function mapErrorToStatusCode(error: ApiKeysPersonalAccessTokensError): n
 
 export function createKeyWithSecret(
   config: ApiKeysPersonalAccessTokensConfig,
+  auditFn: (event: ApiKeysPersonalAccessTokensAuditEvent) => void | ApiKeysPersonalAccessTokensError,
   tenantId: string,
   scopes: readonly string[],
 ):
@@ -391,14 +441,14 @@ export function createKeyWithSecret(
   | { readonly outcome: 'NOT_ENTITLED' }
   | ApiKeysPersonalAccessTokensError {
   if (!config.permissions.tenantApiKeyWrite) {
-    return { outcome: 'NOT_ENTITLED' };
+    return notEntitledError();
   }
   if (!config.permissions.apiAccessEntitlement) {
-    return { outcome: 'NOT_ENTITLED' };
+    return notEntitledError();
   }
 
-  if (computeReadiness(config) === 'DEGRADED') {
-    return { kind: 'PROVIDER_FAILURE', message: 'Store unavailable for mutation', statusCode: 503 };
+  if (isDegraded(config)) {
+    return { kind: 'DEGRADED', message: 'Store unavailable for mutation', statusCode: 503 };
   }
 
   const salt = config.crypto.generateSalt();
@@ -430,7 +480,7 @@ export function createKeyWithSecret(
     timestamp: now,
   };
 
-  const auditError = performAudit(config.audit, auditEvent);
+  const auditError = performAudit(auditFn, auditEvent);
   if (auditError !== null) {
     return auditError;
   }

@@ -50,6 +50,7 @@ export interface RateLimitAuditEvent {
   readonly kind: RateLimitAuditEventKind;
   readonly tenantId: string;
   readonly policyKey: string;
+  readonly resource: string;
   readonly policy: unknown;
   readonly timestamp: string;
   readonly operatorId: string;
@@ -127,6 +128,7 @@ export function createAuditEvent(
     kind: 'AUDIT_BEFORE_CHANGE',
     tenantId,
     policyKey,
+    resource: 'rate-limit',
     policy,
     timestamp: new Date().toISOString(),
     operatorId,
@@ -173,6 +175,29 @@ export function getNextWindowStart(windowSeconds: number, nowMs?: number): numbe
 
 export function calculateWindowExpiry(windowStart: number, windowSeconds: number): number {
   return windowStart + windowSeconds * 1000;
+}
+
+export function auditPolicyChange(
+  tenantId: string,
+  policyKey: string,
+  policy: unknown,
+  operatorId: string,
+  auditSequence: number,
+  auditFn: (event: RateLimitAuditEvent) => RateLimitError | null,
+): RateLimitError | null {
+  const event = createAuditEvent(tenantId, policyKey, policy, operatorId, auditSequence);
+  try {
+    const result = auditFn(event);
+    if (result !== null) {
+      return result;
+    }
+    return null;
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit failed',
+    };
+  }
 }
 
 export function setPolicy(
@@ -223,21 +248,24 @@ export function updatePolicy(
   }
 
   const auditSequence = state.auditLog.length;
-  const auditEvent = createAuditEvent(tenantId, policyKey, policy, operatorId, auditSequence);
 
-  let auditResult: RateLimitError | null;
-  try {
-    auditResult = auditFn(auditEvent);
-  } catch (err) {
-    auditResult = { kind: 'AUDIT_FAILURE', message: err instanceof Error ? err.message : 'Audit failed' };
-  }
+  const auditError = auditPolicyChange(
+    tenantId,
+    policyKey,
+    policy,
+    operatorId,
+    auditSequence,
+    auditFn,
+  );
 
-  if (auditResult !== null) {
+  if (auditError !== null) {
     return {
       ok: false,
-      error: auditResult,
+      error: auditError,
     };
   }
+
+  const auditEvent = createAuditEvent(tenantId, policyKey, policy, operatorId, auditSequence);
 
   const existingIndex = state.policies.findIndex(
     (p) => p.policyKey === policyKey && p.tenantKey === tenantId,
@@ -1114,6 +1142,10 @@ export function runHermeticProof(
     };
   }
 
+  const initialPolicyCount = state.policies.length;
+  const initialCounterCount = state.counters.length;
+  const initialAuditLogCount = state.auditLog.length;
+
   const blockedAuditResult = setPolicy(
     state,
     tenantId,
@@ -1126,28 +1158,21 @@ export function runHermeticProof(
     () => ({ kind: 'AUDIT_FAILURE', message: 'Proof audit blocked' }),
     permissionFn,
   );
-  const noMutationOnAuditFailureFromBlocked = !blockedAuditResult.ok;
-  const stateUntouchedByBlockedMutation =
-    state.policies.length === state.policies.length &&
-    state.counters.length === state.counters.length &&
-    state.auditLog.length === state.auditLog.length;
   const auditBlockedStateUnchanged =
     !blockedAuditResult.ok &&
-    blockedAuditResult.ok === false &&
-    state.policies.length === state.policies.length &&
-    state.counters.length === state.counters.length &&
-    state.auditLog.length === state.auditLog.length;
+    state.policies.length === initialPolicyCount &&
+    state.counters.length === initialCounterCount &&
+    state.auditLog.length === initialAuditLogCount;
 
   let auditCalled = false;
-  let mutationBlockedRecorded = false;
-
+  let auditPassed = false;
   const recordingAuditFn = (event: RateLimitAuditEvent): RateLimitError | null => {
     auditCalled = true;
-    const innerResult = auditFn(event);
-    if (innerResult !== null) {
-      mutationBlockedRecorded = true;
+    const result = auditFn(event);
+    if (result === null) {
+      auditPassed = true;
     }
-    return innerResult;
+    return result;
   };
 
   const setResult = setPolicy(
@@ -1198,12 +1223,10 @@ export function runHermeticProof(
   );
   const auditBeforeMutationValid =
     auditCalled &&
-    noMutationOnAuditFailureFromBlocked &&
-    stateUntouchedByBlockedMutation &&
-    auditBlockedStateUnchanged &&
+    auditPassed &&
     proofPolicyInserted &&
     auditEventRecorded &&
-    mutationBlockedRecorded;
+    auditBlockedStateUnchanged;
   const auditBeforeMutationOrdered = auditBeforeMutationValid;
   const policyStoredAfterAudit = auditBeforeMutationValid;
 

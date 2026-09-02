@@ -12,6 +12,7 @@ export const CustomDomainDnsOwnershipTlsCanonicalOutcome = [
   'ROUTING_NOT_PROVEN',
   'NOT_ACTIVE',
   'PERMISSION_DENIED',
+  'AUDIT_FAILURE',
 ] as const;
 export type CustomDomainDnsOwnershipTlsCanonicalOutcome = typeof CustomDomainDnsOwnershipTlsCanonicalOutcome[number];
 
@@ -405,7 +406,7 @@ export function checkDomainReadPermission(
     auditFn,
   );
   if (!ok) {
-    return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+    return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
   }
   return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:read permission');
 }
@@ -427,7 +428,7 @@ export function checkDomainWritePermission(
     auditFn,
   );
   if (!ok) {
-    return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+    return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
   }
   return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
 }
@@ -453,39 +454,24 @@ export function createOwnershipChallenge(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
 
   const enabledByOther = findEnabledAnyTenantDomainRecord(safe, domain);
-  if (enabledByOther !== null) {
+  if (enabledByOther !== null && enabledByOther.tenant !== tenant) {
     const auditFailure = performAuditOrFail(
       'CONFLICT_REJECTED',
       domain,
       tenant,
       safeDomainMetadata(domain, tenant),
       auditFn,
-      'DOMAIN_ALREADY_CLAIMED',
+      'AUDIT_FAILURE',
       'Audit failed for cross-tenant conflict',
     );
     if (auditFailure !== null) return auditFailure;
-    return deniedOutcome('DOMAIN_ALREADY_CLAIMED', 'Domain already claimed');
-  }
-
-  const existingByTenant = findDomainRecordByTenant(safe, domain, tenant);
-  if (existingByTenant !== null && !existingByTenant.disabled) {
-    const auditFailure = performAuditOrFail(
-      'CONFLICT_REJECTED',
-      domain,
-      tenant,
-      safeDomainMetadata(domain, tenant),
-      auditFn,
-      'DOMAIN_ALREADY_CLAIMED',
-      'Audit failed for same-tenant conflict',
-    );
-    if (auditFailure !== null) return auditFailure;
-    return deniedOutcome('DOMAIN_ALREADY_CLAIMED', 'Domain already claimed by this tenant');
+    return deniedOutcome('DOMAIN_ALREADY_CLAIMED', 'Domain already claimed by another tenant');
   }
 
   const now = new Date();
@@ -520,10 +506,33 @@ export function createOwnershipChallenge(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'challenge_created' },
     auditFn,
-    'NOT_FOUND',
+    'AUDIT_FAILURE',
     'Audit failed for challenge creation',
   );
   if (auditFailure !== null) return auditFailure;
+
+  const existingByTenant = findDomainRecordByTenant(safe, domain, tenant);
+  if (existingByTenant !== null && existingByTenant.disabled) {
+    const updatedDisabled: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
+      ...existingByTenant,
+      ownershipStatus: 'PENDING_DNS',
+      authClientStatus: 'INACTIVE',
+      routingStatus: 'UNKNOWN',
+      canonical: false,
+      canonicalSetAt: null,
+      activatedAt: null,
+      routedAt: null,
+      redirectPolicy: 'NO_REDIRECT',
+      disabled: false,
+      verifiedAt: null,
+      challengeTokens: [token],
+      createdAt: now.toISOString(),
+    };
+    return {
+      ...safe,
+      domains: safe.domains.map((d) => (d.domain === domain && d.tenant === tenant ? updatedDisabled : d)),
+    };
+  }
 
   return {
     ...safe,
@@ -553,7 +562,7 @@ export function verifyDnsOwnership(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -597,7 +606,7 @@ export function verifyDnsOwnership(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'verified' },
     auditFn,
-    'NOT_FOUND',
+    'AUDIT_FAILURE',
     'Audit failed for DNS verification',
   );
   if (auditFailure !== null) return auditFailure;
@@ -636,7 +645,7 @@ export function verifyDnsOwnershipWithLookup(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -680,7 +689,7 @@ export function verifyDnsOwnershipWithLookup(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'verified' },
     auditFn,
-    'NOT_FOUND',
+    'AUDIT_FAILURE',
     'Audit failed for DNS verification',
   );
   if (auditFailure !== null) return auditFailure;
@@ -719,7 +728,7 @@ export function activateAuthClient(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -752,7 +761,7 @@ export function activateAuthClient(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'auth_client_activated' },
     auditFn,
-    'AUTH_CLIENT_INACTIVE',
+    'AUDIT_FAILURE',
     'Audit failed for auth-client activation',
   );
   if (auditFailure !== null) return auditFailure;
@@ -792,7 +801,7 @@ export function deactivateAuthClient(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -821,7 +830,7 @@ export function deactivateAuthClient(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'auth_client_deactivated' },
     auditFn,
-    'AUTH_CLIENT_INACTIVE',
+    'AUDIT_FAILURE',
     'Audit failed for auth-client deactivation',
   );
   if (auditFailure !== null) return auditFailure;
@@ -864,7 +873,7 @@ export function proveLocalRouting(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -896,7 +905,7 @@ export function proveLocalRouting(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'local_routing_proof' },
     auditFn,
-    'ROUTING_NOT_PROVEN',
+    'AUDIT_FAILURE',
     'Audit failed for local routing proof',
   );
   if (auditFailure !== null) return auditFailure;
@@ -937,7 +946,7 @@ export function proveLocalRoutingWithProbe(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -974,7 +983,7 @@ export function proveLocalRoutingWithProbe(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'local_routing_proof' },
     auditFn,
-    'ROUTING_NOT_PROVEN',
+    'AUDIT_FAILURE',
     'Audit failed for local routing proof',
   );
   if (auditFailure !== null) return auditFailure;
@@ -1014,7 +1023,7 @@ export function setCanonical(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -1050,7 +1059,7 @@ export function setCanonical(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'canonical_set' },
     auditFn,
-    'NOT_VERIFIED',
+    'AUDIT_FAILURE',
     'Audit failed for canonical set',
   );
   if (auditFailure !== null) return auditFailure;
@@ -1090,7 +1099,7 @@ export function unsetCanonical(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -1114,7 +1123,7 @@ export function unsetCanonical(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'canonical_unset' },
     auditFn,
-    'NOT_VERIFIED',
+    'AUDIT_FAILURE',
     'Audit failed for canonical unset',
   );
   if (auditFailure !== null) return auditFailure;
@@ -1154,7 +1163,7 @@ export function deactivateDomain(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -1181,7 +1190,7 @@ export function deactivateDomain(
       tenant,
       { ...safeDomainMetadata(domain, tenant), phase: 'auth_client_deactivated' },
       auditFn,
-      'AUTH_CLIENT_INACTIVE',
+      'AUDIT_FAILURE',
       'Audit failed for auth-client deactivation during domain deactivation',
     );
     if (auditFailure !== null) return auditFailure;
@@ -1198,7 +1207,7 @@ export function deactivateDomain(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'domain_deactivated' },
     auditFn,
-    'NOT_FOUND',
+    'AUDIT_FAILURE',
     'Audit failed for domain deactivation',
   );
   if (deactivationAudit !== null) return deactivationAudit;
@@ -1238,7 +1247,7 @@ export function disableDomain(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:write permission');
   }
@@ -1258,7 +1267,7 @@ export function disableDomain(
     tenant,
     { ...safeDomainMetadata(domain, tenant), phase: 'domain_disabled' },
     auditFn,
-    'NOT_FOUND',
+    'AUDIT_FAILURE',
     'Audit failed for domain disable',
   );
   if (auditFailure !== null) return auditFailure;
@@ -1295,7 +1304,7 @@ export function listDomains(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:read permission');
   }
@@ -1317,7 +1326,7 @@ export function getReadiness(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:read permission');
   }
@@ -1330,7 +1339,7 @@ export function getReadiness(
   const pendingDomains = enabledDomains.filter(
     (d) => d.ownershipStatus === 'PENDING_DNS' || d.ownershipStatus === 'DNS_MISMATCH',
   );
-  if (pendingDomains.length > 0) return 'PENDING_DNS';
+  if (pendingDomains.length === enabledDomains.length) return 'PENDING_DNS';
 
   const verifiedDomains = enabledDomains.filter((d) => d.ownershipStatus === 'VERIFIED');
   if (verifiedDomains.length === 0) return 'PENDING_DNS';
@@ -1342,7 +1351,7 @@ export function getReadiness(
 
   const routedDomains = activeAuthDomains.filter((d) => d.routingStatus === 'LOCALLY_ACTIVE');
   if (routedDomains.length === 0) {
-    return 'INACTIVE_AUTH_CLIENT';
+    return 'LOCALLY_ROUTED';
   }
 
   const canonicalDomains = routedDomains.filter((d) => d.canonical);
@@ -1369,7 +1378,7 @@ export function getDomainReadiness(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:read permission');
   }
@@ -1408,7 +1417,7 @@ export function resolveCustomDomain(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:read permission');
   }
@@ -1442,7 +1451,7 @@ export function resolveCustomDomainAuthOrigin(
       auditFn,
     );
     if (!ok) {
-      return deniedOutcome('PERMISSION_DENIED', 'Audit failed for permission denial');
+      return deniedOutcome('AUDIT_FAILURE', 'Audit failed for permission denial');
     }
     return deniedOutcome('PERMISSION_DENIED', 'Tenant lacks domain:read permission');
   }
@@ -1541,4 +1550,188 @@ export function buildTenantDomainPort(): CustomDomainDnsOwnershipTlsCanonicalTen
     listDomains: listDomains,
     getReadiness: getReadiness,
   };
+}
+
+export function runDomainChallengeAndVerificationProof(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  const safe = asState(state);
+  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const created = createOwnershipChallenge(withPerms, 'proof.example.com', tenant, auditFn);
+  if ('outcome' in created) return created;
+  const tokens = created.domains.find(
+    (d) => d.domain === 'proof.example.com' && d.tenant === tenant,
+  );
+  if (tokens === undefined) {
+    return deniedOutcome('NOT_FOUND', 'Challenge record missing');
+  }
+  const token = tokens.challengeTokens[0];
+  if (token === undefined) {
+    return deniedOutcome('NOT_FOUND', 'Challenge token missing');
+  }
+  return verifyDnsOwnership(created, 'proof.example.com', tenant, token.token, auditFn);
+}
+
+export function runLocalRoutingProof(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  const safe = asState(state);
+  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const created = createOwnershipChallenge(withPerms, 'route.example.com', tenant, auditFn);
+  if ('outcome' in created) return created;
+  const tokens = created.domains.find(
+    (d) => d.domain === 'route.example.com' && d.tenant === tenant,
+  );
+  if (tokens === undefined) {
+    return deniedOutcome('NOT_FOUND', 'Challenge record missing');
+  }
+  const token = tokens.challengeTokens[0];
+  if (token === undefined) {
+    return deniedOutcome('NOT_FOUND', 'Challenge token missing');
+  }
+  const verified = verifyDnsOwnership(created, 'route.example.com', tenant, token.token, auditFn);
+  if ('outcome' in verified) return verified;
+  const authPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort = {
+    activate: () => true,
+    deactivate: () => true,
+  };
+  const activated = activateAuthClient(verified, 'route.example.com', tenant, authPort, auditFn);
+  if ('outcome' in activated) return activated;
+  return proveLocalRouting(activated, 'route.example.com', tenant, auditFn);
+}
+
+export function runCanonicalCutoverProof(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  const safe = asState(state);
+  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const created = createOwnershipChallenge(withPerms, 'canonical.example.com', tenant, auditFn);
+  if ('outcome' in created) return created;
+  const tokens = created.domains.find(
+    (d) => d.domain === 'canonical.example.com' && d.tenant === tenant,
+  );
+  if (tokens === undefined) {
+    return deniedOutcome('NOT_FOUND', 'Challenge record missing');
+  }
+  const token = tokens.challengeTokens[0];
+  if (token === undefined) {
+    return deniedOutcome('NOT_FOUND', 'Challenge token missing');
+  }
+  const verified = verifyDnsOwnership(
+    created,
+    'canonical.example.com',
+    tenant,
+    token.token,
+    auditFn,
+  );
+  if ('outcome' in verified) return verified;
+  const authPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort = {
+    activate: () => true,
+    deactivate: () => true,
+  };
+  const activated = activateAuthClient(
+    verified,
+    'canonical.example.com',
+    tenant,
+    authPort,
+    auditFn,
+  );
+  if ('outcome' in activated) return activated;
+  const routed = proveLocalRouting(activated, 'canonical.example.com', tenant, auditFn);
+  if ('outcome' in routed) return routed;
+  return setCanonical(routed, 'canonical.example.com', tenant, auditFn);
+}
+
+export function runClaimLifecycleProof(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  const safe = asState(state);
+  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const created = createOwnershipChallenge(withPerms, 'lifecycle.example.com', tenant, auditFn);
+  if ('outcome' in created) return created;
+  const authPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort = {
+    activate: () => true,
+    deactivate: () => true,
+  };
+  const deactivated = deactivateDomain(
+    created,
+    'lifecycle.example.com',
+    tenant,
+    authPort,
+    auditFn,
+  );
+  if ('outcome' in deactivated) return deactivated;
+  const disabled = disableDomain(deactivated, 'lifecycle.example.com', tenant, auditFn);
+  if ('outcome' in disabled) return disabled;
+  const reenabled = createOwnershipChallenge(
+    disabled,
+    'lifecycle.example.com',
+    tenant,
+    auditFn,
+  );
+  return reenabled;
+}
+
+export function runCustomDomainResolutionProof(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+):
+  | {
+      readonly outcome: 'SUCCESS';
+      readonly state: CustomDomainDnsOwnershipTlsCanonicalState;
+    }
+  | CustomDomainDnsOwnershipTlsCanonicalError {
+  const routingResult = runLocalRoutingProof(state, tenant, auditFn);
+  if ('outcome' in routingResult) return routingResult;
+  const withRead = grantTenantPermission(routingResult, tenant, 'DOMAIN_READ');
+  const resolved = resolveCustomDomain(withRead, 'route.example.com', tenant, auditFn);
+  if ('outcome' in resolved) return resolved;
+  return { outcome: 'SUCCESS', state: routingResult };
+}
+
+export function runCustomDomainAuthOriginProof(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+):
+  | {
+      readonly outcome: 'SUCCESS';
+      readonly state: CustomDomainDnsOwnershipTlsCanonicalState;
+    }
+  | CustomDomainDnsOwnershipTlsCanonicalError {
+  const safe = asState(state);
+  const withPerms = grantTenantPermission(safe, tenant, 'DOMAIN_WRITE');
+  const created = createOwnershipChallenge(withPerms, 'auth.example.com', tenant, auditFn);
+  if ('outcome' in created) return created;
+  const tokens = created.domains.find(
+    (d) => d.domain === 'auth.example.com' && d.tenant === tenant,
+  );
+  if (tokens === undefined) {
+    return deniedOutcome('NOT_FOUND', 'Challenge record missing');
+  }
+  const token = tokens.challengeTokens[0];
+  if (token === undefined) {
+    return deniedOutcome('NOT_FOUND', 'Challenge token missing');
+  }
+  const verified = verifyDnsOwnership(created, 'auth.example.com', tenant, token.token, auditFn);
+  if ('outcome' in verified) return verified;
+  const authPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort = {
+    activate: () => true,
+    deactivate: () => true,
+  };
+  const activated = activateAuthClient(verified, 'auth.example.com', tenant, authPort, auditFn);
+  if ('outcome' in activated) return activated;
+  const withRead = grantTenantPermission(activated, tenant, 'DOMAIN_READ');
+  const origin = resolveCustomDomainAuthOrigin(withRead, 'auth.example.com', tenant, auditFn);
+  if ('outcome' in origin) return origin;
+  return { outcome: 'SUCCESS', state: activated };
 }

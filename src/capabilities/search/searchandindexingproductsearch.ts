@@ -336,6 +336,24 @@ export function performSearch(
     };
   }
 
+  const auditEvent: SearchAuditEvent = {
+    kind: 'AUDIT_BEFORE_SEARCH',
+    tenantId: query.tenantId,
+    organisationId: query.organisationId,
+    operation: 'perform_search',
+    timestamp: new Date().toISOString(),
+    span: 'route/use-case/provider'
+  };
+
+  let recordedState: SearchState = state;
+  if (auditFn !== undefined) {
+    const auditError = auditSearchOperation(auditEvent, auditFn);
+    if (auditError !== null) {
+      return { ok: false, error: auditError };
+    }
+    recordedState = { ...state, lastAudit: auditEvent };
+  }
+
   if (state.readiness === 'BLOCKED' || state.readinessProbeFailed) {
     return {
       ok: false,
@@ -358,24 +376,6 @@ export function performSearch(
         query.organisationId
       )
     };
-  }
-
-  const auditEvent: SearchAuditEvent = {
-    kind: 'AUDIT_BEFORE_SEARCH',
-    tenantId: query.tenantId,
-    organisationId: query.organisationId,
-    operation: 'perform_search',
-    timestamp: new Date().toISOString(),
-    span: 'route/use-case/provider'
-  };
-
-  let recordedState: SearchState = state;
-  if (auditFn !== undefined) {
-    const auditError = auditSearchOperation(auditEvent, auditFn);
-    if (auditError !== null) {
-      return { ok: false, error: auditError };
-    }
-    recordedState = { ...state, lastAudit: auditEvent };
   }
 
   const tenantDocs = state.documents.filter(doc =>
@@ -417,6 +417,20 @@ export function reindexTenant(
         organisationId
       )
     };
+  }
+
+  const auditEvent: SearchAuditEvent = {
+    kind: 'AUDIT_BEFORE_REINDEX',
+    tenantId,
+    organisationId,
+    operation: 'reindex_tenant',
+    timestamp: new Date().toISOString(),
+    span: 'route/use-case/provider'
+  };
+
+  const auditError = auditSearchOperation(auditEvent, auditFn);
+  if (auditError !== null) {
+    return { ok: false, error: auditError };
   }
 
   if (state.indexMutationClosed || state.readiness !== 'READY') {
@@ -480,26 +494,18 @@ export function reindexTenant(
     validatedDocs.push(doc);
   }
 
-  const auditEvent: SearchAuditEvent = {
-    kind: 'AUDIT_BEFORE_REINDEX',
-    tenantId,
-    organisationId,
-    operation: 'reindex_tenant',
-    timestamp: new Date().toISOString(),
-    span: 'route/use-case/provider'
-  };
-
-  return applyMutation(state, auditEvent, auditFn, (s) => {
-    const retained = s.documents.filter(doc =>
-      !(doc.tenantId === tenantId && doc.organisationId === organisationId)
-    );
-    return {
-      ...s,
+  const retained = state.documents.filter(doc =>
+    !(doc.tenantId === tenantId && doc.organisationId === organisationId)
+  );
+  return {
+    ok: true,
+    state: {
+      ...state,
       documents: [...retained, ...validatedDocs],
       lastError: null,
       lastAudit: auditEvent
     }
-  });
+  };
 }
 
 export function probeReadiness(

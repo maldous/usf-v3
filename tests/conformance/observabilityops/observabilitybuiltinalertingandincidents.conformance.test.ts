@@ -7,7 +7,6 @@ type CapabilityError = capability.ObservabilityBuiltInAlertingAndIncidentsError;
 type AlertRule = capability.ObservabilityBuiltInAlertingAndIncidentsAlertRule;
 type Incident = capability.ObservabilityBuiltInAlertingAndIncidentsIncident;
 type IncidentState = capability.ObservabilityBuiltInAlertingAndIncidentsIncidentState;
-type Notification = capability.ObservabilityBuiltInAlertingAndIncidentsNotification;
 type AuditEvent = capability.ObservabilityBuiltInAlertingAndIncidentsAuditEvent;
 type Comparator = capability.ObservabilityBuiltInAlertingAndIncidentsComparator;
 type Severity = capability.ObservabilityBuiltInAlertingAndIncidentsSeverity;
@@ -24,7 +23,11 @@ function adminToken(tenantId: string = defaultTenant): Token {
   return { authLevel: "admin", permissions: ["admin"], tenantId };
 }
 function readerToken(tenantId: string = defaultTenant): Token {
-  return { authLevel: "viewer", permissions: ["observability.read"], tenantId };
+  return {
+    authLevel: "viewer",
+    permissions: ["observability.read"],
+    tenantId,
+  };
 }
 function makeAuditSink(): { events: AuditEvent[]; sink: AuditFn } {
   const events: AuditEvent[] = [];
@@ -182,19 +185,44 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
   const suppressedDetails = suppressedAuditEvent.details as { status: string };
   assert.strictEqual(suppressedDetails.status, "SUPPRESSED");
 
-  const finalState = suppressedResult.state;
-  const lineage = capability.proofLineage(finalState);
+  const combinedState: State = {
+    ...capability.initialState,
+    auditTrail: [
+      ...ruleResult.state.auditTrail,
+      ...ackResult.state.auditTrail,
+      ...sentResult.state.auditTrail,
+      ...suppressedResult.state.auditTrail,
+    ],
+    notifications: [sentNotification, suppressedNotification],
+  };
+
+  const lineage = capability.proofLineage(combinedState);
   assert.strictEqual(lineage.ok, true);
   if (lineage.ok) {
-    assert.strictEqual(lineage.audits.length, finalState.auditTrail.length);
+    assert.strictEqual(lineage.audits.length, combinedState.auditTrail.length);
     const kinds = lineage.audits.map((e) => e.kind);
     assert.ok(kinds.includes("ALERT_RULE_CHANGE"));
     assert.ok(kinds.includes("INCIDENT_TRANSITION"));
     assert.ok(kinds.includes("NOTIFICATION_DISPATCH"));
   }
 
+  const proof = capability.proveAuditTrailAgreesWithNotifications(
+    combinedState,
+  );
+  assert.strictEqual(proof.ok, true);
+  if (proof.ok) {
+    assert.strictEqual(proof.notificationCount, 2);
+    assert.strictEqual(proof.auditedCount, 2);
+  }
+
+  const split = capability.suppressionsAndSendsAreDistinguished(combinedState);
+  assert.strictEqual(split.sent.length, 1);
+  assert.strictEqual(split.suppressed.length, 1);
+  assert.strictEqual(split.sent[0]?.status, "SENT");
+  assert.strictEqual(split.suppressed[0]?.status, "SUPPRESSED");
+
   const readerAuditRead = capability.readAuditTrail(
-    finalState,
+    combinedState,
     defaultTenant,
     readerToken(),
   );
@@ -202,12 +230,12 @@ test("observabilitybuiltinalertingandincidentsauditmodel", () => {
   if (readerAuditRead.ok) {
     assert.strictEqual(
       readerAuditRead.trail.length,
-      finalState.auditTrail.length,
+      combinedState.auditTrail.length,
     );
   }
 
   const unauthorizedAuditRead = capability.readAuditTrail(
-    finalState,
+    combinedState,
     defaultTenant,
     { authLevel: "viewer", permissions: [], tenantId: defaultTenant },
   );
@@ -361,6 +389,17 @@ test("observabilitybuiltinalertingandincidentscontracts", () => {
     assert.strictEqual(postureResult.posture.state, "READY");
     assert.strictEqual(postureResult.posture.sideEffectsDisabled, false);
   }
+
+  const deterministicFire = capability.compareSample(120, "GTE", 50);
+  assert.strictEqual(deterministicFire, "FIRED");
+  const deterministicWithin = capability.compareSample(120, "GT", 150);
+  assert.strictEqual(deterministicWithin, "WITHIN");
+  const deterministicEq = capability.compareSample(7, "EQ", 7);
+  assert.strictEqual(deterministicEq, "FIRED");
+  const deterministicNeq = capability.compareSample(7, "NEQ", 8);
+  assert.strictEqual(deterministicNeq, "FIRED");
+
+  void incidentId;
 });
 
 test("observabilitybuiltinalertingandincidentserrormodel", () => {
@@ -443,6 +482,13 @@ test("observabilitybuiltinalertingandincidentserrormodel", () => {
     () => null,
   );
   assertErr(missingIncident, "ILLEGAL_INCIDENT_TRANSITION");
+
+  const driftResult = capability.handleProviderFailure(
+    capability.initialState,
+    "CONFIGURATION_DRIFT",
+    "drift detected",
+  );
+  assert.strictEqual(driftResult.lastError?.kind, "CONFIGURATION_DRIFT");
 });
 
 test("observabilitybuiltinalertingandincidentslifecycle", () => {
@@ -803,16 +849,16 @@ test("observabilitybuiltinalertingandincidentsproof", () => {
     );
   }
 
-  const proofState = capability.recordRuntimeProof(
+  const recorded: State = capability.recordRuntimeProof(
     resolvedResult.state,
     "observability_signals",
     "test proof",
   );
   assert.strictEqual(
-    proofState.lineage.length,
+    recorded.lineage.length,
     resolvedResult.state.lineage.length + 1,
   );
-  const lastLineage = proofState.lineage[proofState.lineage.length - 1];
+  const lastLineage = recorded.lineage[recorded.lineage.length - 1];
   assert.ok(lastLineage !== undefined);
   assert.strictEqual(lastLineage.kind, "observability_signals");
   assert.strictEqual(lastLineage.description, "test proof");
@@ -910,6 +956,16 @@ test("observabilitybuiltinalertingandincidentsreadinessmodel", () => {
   if (readinessView.ok) {
     assert.strictEqual(readinessView.posture.state, "UNREADY");
     assert.strictEqual(readinessView.posture.sideEffectsDisabled, true);
+  }
+
+  const signalReadout = capability.readEmittedSignals(degradedResult);
+  assert.strictEqual(signalReadout.ok, true);
+  if (signalReadout.ok) {
+    const signalNames = new Set(
+      signalReadout.signals.map((s) => s.signal),
+    );
+    assert.strictEqual(signalNames.has("observability.readiness.unready"), true);
+    assert.strictEqual(signalNames.has("observability.error.provider_failure"), true);
   }
 });
 

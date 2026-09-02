@@ -345,12 +345,12 @@ export const initialModel: ServiceCatalogModel = {
   lastAuditEvent: null,
   lastDecision: null,
   lastError: null,
-  readiness: 'READY',
+  readiness: 'NOT_READY',
   degraded: false,
   observabilityAdaptersAvailable: true,
   tenantIsolationSignal: true,
   auditSignal: true,
-  lifecycleReadiness: 'READY',
+  lifecycleReadiness: 'NOT_READY',
   auditEvidencePreserved: true,
   tenantBoundaryPreserved: true,
   lifecycleContractUnchanged: true,
@@ -360,6 +360,7 @@ export const initialState: ServiceCatalogModel = initialModel;
 
 function isProviderResolved(details: Readonly<Record<string, unknown>>): boolean {
   const record = details as Record<string, unknown>;
+
   const falseByBoolean: readonly string[] = [
     'providerResolved',
     'resolved',
@@ -471,12 +472,11 @@ export function determineReadiness(model: ServiceCatalogModel): Readiness {
     return 'NOT_READY';
   }
   if (model.resources.size === 0) {
-    return 'READY';
+    return 'DEGRADED';
   }
   if (!provePlatformServices(model)) {
     return 'NOT_READY';
   }
-
   if (model.degraded || !model.observabilityAdaptersAvailable) {
     return 'DEGRADED';
   }
@@ -714,6 +714,8 @@ export function registerPlatformService(
         lastError: null,
         tenantBoundaryPreserved: true,
         auditEvidencePreserved: true,
+        auditSignal: true,
+        tenantIsolationSignal: true,
       };
       return {
         ...candidate,
@@ -784,6 +786,8 @@ export function updateServiceState(
         lastError: null,
         tenantBoundaryPreserved: true,
         auditEvidencePreserved: true,
+        auditSignal: true,
+        tenantIsolationSignal: true,
       };
       return {
         ...candidate,
@@ -833,6 +837,8 @@ export function unregisterService(
         lastError: null,
         tenantBoundaryPreserved: true,
         auditEvidencePreserved: true,
+        auditSignal: true,
+        tenantIsolationSignal: true,
       };
       return {
         ...candidate,
@@ -1357,8 +1363,7 @@ export function evaluateReadinessSurface(
 export function evaluateLifecycleReadiness(
   model: ServiceCatalogModel
 ): LifecycleReadinessModel {
-  const r = determineReadiness(model);
-  return r;
+  return determineReadiness(model);
 }
 
 export function auditBeforeMutationCallable(

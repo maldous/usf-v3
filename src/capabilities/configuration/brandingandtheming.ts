@@ -1503,9 +1503,6 @@ export function describeErrorModel(
     'TENANT_RESOLUTION_FAILURE',
     'PERSISTENCE_UNAVAILABLE',
   ];
-  const persistenceReachable = state ? state.persistenceReachable !== false : true;
-  const tenantResolverAvailable = state ? state.tenantResolverAvailable !== false : true;
-  const degraded = !persistenceReachable || !tenantResolverAvailable;
   return {
     path: 'BOOTSTRAP',
     mode: 'FAIL_OPEN',

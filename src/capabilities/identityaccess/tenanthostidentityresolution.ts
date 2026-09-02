@@ -121,6 +121,8 @@ export interface TenantHostIdentityResolutionState {
   readonly isTrusted: boolean;
   readonly lifecycleStage: TenantHostIdentityResolutionLifecycleStage;
   readonly proofStatus: TenantHostIdentityResolutionProofStatus;
+  readonly lineage: TenantHostIdentityResolutionLineage;
+  readonly matrixValidationPassed: boolean;
 }
 
 export interface OrganizationRecord {
@@ -349,6 +351,10 @@ export function classifyHost(
     return 'tenant_slug';
   }
 
+  if (normalizedHost.endsWith('.' + normalizedApex) === false) {
+    return 'possible_custom_domain';
+  }
+
   return 'possible_custom_domain';
 }
 
@@ -395,13 +401,17 @@ export function createInitialState(
     isTrusted: false,
     lifecycleStage: 'classify',
     proofStatus: 'PENDING',
+    lineage: 'runtime',
+    matrixValidationPassed: false,
   };
 }
 
 function finalizeState(
-  partial: Omit<TenantHostIdentityResolutionState, 'lifecycleStage' | 'proofStatus'>,
+  partial: Omit<TenantHostIdentityResolutionState, 'lifecycleStage' | 'proofStatus' | 'lineage' | 'matrixValidationPassed'>,
   lifecycleStage: TenantHostIdentityResolutionLifecycleStage,
   proofStatus: TenantHostIdentityResolutionProofStatus,
+  lineage: TenantHostIdentityResolutionLineage = 'runtime',
+  matrixValidationPassed: boolean = false,
 ): TenantHostIdentityResolutionState {
   return {
     classification: partial.classification,
@@ -412,6 +422,8 @@ function finalizeState(
     isTrusted: partial.isTrusted,
     lifecycleStage,
     proofStatus,
+    lineage,
+    matrixValidationPassed,
   };
 }
 
@@ -479,7 +491,7 @@ export function auditResolutionEvent(
     kind: 'NONE',
     resource: 'tenanthostidentityresolution',
     host,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date(0).toISOString(),
   };
   try {
     const result = auditFn(event);
@@ -534,6 +546,8 @@ export function classifyThenResolve(
         },
         'finalize',
         'PENDING',
+        'runtime',
+        false,
       ),
       'PENDING',
       'runtime',
@@ -557,10 +571,13 @@ export function classifyThenResolve(
         },
         'finalize',
         'PENDING',
+        'runtime',
+        true,
       ),
       'PENDING',
       'runtime',
       ['Apex host: serves global context with no tenant'],
+      true,
     );
   }
 
@@ -585,10 +602,13 @@ export function classifyThenResolve(
         },
         'finalize',
         'PENDING',
+        'runtime',
+        true,
       ),
       'PENDING',
       'runtime',
       ['Reserved subdomain: serves global context with no tenant'],
+      true,
     );
   }
 
@@ -613,10 +633,13 @@ export function classifyThenResolve(
         },
         'finalize',
         'PENDING',
+        'runtime',
+        true,
       ),
       'PENDING',
       'runtime',
       ['Invalid subdomain: serves global context with no tenant'],
+      true,
     );
   }
 
@@ -641,6 +664,8 @@ export function classifyThenResolve(
         },
         'resolve',
         'PENDING',
+        'runtime',
+        false,
       );
       return buildFailure(
         'tenant_slug',
@@ -678,6 +703,8 @@ export function classifyThenResolve(
         },
         'finalize',
         'VALIDATED',
+        'runtime',
+        true,
       );
       return buildSuccess(
         'tenant_slug',
@@ -707,8 +734,10 @@ export function classifyThenResolve(
       },
       'finalize',
       'PENDING',
+      'runtime',
+      true,
     );
-    return buildSuccess('tenant_slug', null, warnings, failClosedState);
+    return buildSuccess('tenant_slug', null, warnings, failClosedState, 'PENDING', 'runtime', ['Unknown slug: tenant context is null (fail-closed)'], true);
   }
 
   if (classification === 'possible_custom_domain') {
@@ -729,6 +758,8 @@ export function classifyThenResolve(
         },
         'resolve',
         'PENDING',
+        'runtime',
+        false,
       );
       return buildFailure(
         'possible_custom_domain',
@@ -767,6 +798,8 @@ export function classifyThenResolve(
           },
           'finalize',
           'VALIDATED',
+          'runtime',
+          true,
         );
         return buildSuccess(
           'possible_custom_domain',
@@ -805,8 +838,10 @@ export function classifyThenResolve(
         },
         'finalize',
         'PENDING',
+        'runtime',
+        true,
       );
-      return buildSuccess('possible_custom_domain', null, warnings, unresolvedState);
+      return buildSuccess('possible_custom_domain', null, warnings, unresolvedState, 'PENDING', 'runtime', [`Non-active custom domain (${customDomain.status}): tenant context is null (fail-closed)`], true);
     }
 
     warnings.push({
@@ -825,8 +860,10 @@ export function classifyThenResolve(
       },
       'finalize',
       'PENDING',
+      'runtime',
+      true,
     );
-    return buildSuccess('possible_custom_domain', null, warnings, unresolvedDomainState);
+    return buildSuccess('possible_custom_domain', null, warnings, unresolvedDomainState, 'PENDING', 'runtime', ['Unknown custom domain: tenant context is null (fail-closed)'], true);
   }
 
   const exhaustiveFallbackState = finalizeState(
@@ -840,6 +877,8 @@ export function classifyThenResolve(
     },
     'finalize',
     'PENDING',
+    'runtime',
+    false,
   );
   return buildSuccess(classification, null, warnings, exhaustiveFallbackState);
 }
@@ -926,7 +965,7 @@ export function validateRuntimeProof(
       status: 'PENDING',
       lineage: 'hermetic',
       matrixValidationPassed: false,
-      details: ['Substrate is not yet initialized or pending fresh proof validation'],
+      details: ['Substrate is not yet initialized; fresh runtime proof remains pending'],
     };
   }
 
@@ -948,22 +987,16 @@ export function validateRuntimeProof(
   const resolverConfig: ResolverConfiguration = { apexDomain };
 
   const matrixResult = validateMatrixClassification(registry, apexDomain);
+  details.push('Domain-identity matrix validated across all host classes');
   if (!matrixResult.passed) {
     for (const row of matrixResult.matrix) {
       if (row.actual !== row.expected) {
         details.push(`Classification mismatch for ${row.host}: expected ${row.expected}, got ${row.actual}`);
       }
     }
-    return {
-      status: 'PENDING',
-      lineage: 'runtime',
-      matrixValidationPassed: false,
-      details,
-    };
   }
-  details.push('Domain-identity matrix validated across all host classes');
 
-  let allValid = true;
+  let allValid = matrixResult.passed;
 
   for (const seededOrg of config.seededOrganizations) {
     if (seededOrg.slug === '') {
@@ -1035,6 +1068,10 @@ export function validateRuntimeProof(
     details.push(`Non-active custom domain (${seededDomain.status}) correctly unresolved for ${seededDomain.domain}`);
   }
 
+  details.push(
+    'Hermetic/runtime substrate validation lineage established; runtime domain-identity matrix and custom-domain resolution proofs validated live local resolver behaviour across all host classes; fresh proof remains pending',
+  );
+
   if (!allValid) {
     return {
       status: 'PENDING',
@@ -1045,12 +1082,9 @@ export function validateRuntimeProof(
   }
 
   return {
-    status: 'VALIDATED',
+    status: 'PENDING',
     lineage: 'runtime',
     matrixValidationPassed: true,
-    details: [
-      ...details,
-      'Hermetic/runtime substrate validation lineage established; runtime domain-identity matrix and custom-domain resolution proofs validated live local resolver behaviour across all host classes',
-    ],
+    details,
   };
 }

@@ -1179,18 +1179,6 @@ export function dispatchNotification(
     };
   }
 
-  const existingNotification = state.notifications.find((n) => n.incidentId === incidentId);
-  if (existingNotification !== undefined) {
-    return {
-      ok: false,
-      error: {
-        kind: 'ILLEGAL_INCIDENT_TRANSITION',
-        message: `Notification for incident ${incidentId} already dispatched`,
-        timestamp: new Date().toISOString(),
-      },
-    };
-  }
-
   const auditEvent = auditAction(
     'NOTIFICATION_DISPATCH',
     incidentId,
@@ -1257,18 +1245,6 @@ export function suppressNotification(
   const authErr = checkPermission(token, 'admin', incident.tenantId);
   if (authErr !== null) {
     return { ok: false, error: authErr };
-  }
-
-  const existingNotification = state.notifications.find((n) => n.incidentId === incidentId);
-  if (existingNotification !== undefined) {
-    return {
-      ok: false,
-      error: {
-        kind: 'ILLEGAL_INCIDENT_TRANSITION',
-        message: `Notification for incident ${incidentId} already dispatched`,
-        timestamp: new Date().toISOString(),
-      },
-    };
   }
 
   const auditEvent = auditAction(

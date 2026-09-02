@@ -60,12 +60,13 @@ test("searchandindexingproductsearchauditmodel", () => {
   const successfulIndexResult = capability.indexDocument(readyState, validDoc, () => null);
   assert.strictEqual(successfulIndexResult.ok, true);
   if (!successfulIndexResult.ok) throw new Error("Expected successful index");
-  assert.strictEqual(successfulIndexResult.state.lastAudit?.kind, "AUDIT_BEFORE_INDEX");
-  assert.strictEqual(successfulIndexResult.state.lastAudit?.tenantId, "t1");
-  assert.strictEqual(successfulIndexResult.state.lastAudit?.organisationId, "o1");
-  assert.strictEqual(successfulIndexResult.state.lastAudit?.span, "route/use-case/provider");
+  const indexed = successfulIndexResult.state;
+  assert.strictEqual(indexed.lastAudit?.kind, "AUDIT_BEFORE_INDEX");
+  assert.strictEqual(indexed.lastAudit?.tenantId, "t1");
+  assert.strictEqual(indexed.lastAudit?.organisationId, "o1");
+  assert.strictEqual(indexed.lastAudit?.span, "route/use-case/provider");
 
-  const reindexed = capability.reindexTenant(successfulIndexResult.state, "t1", "o1", [validDoc], () => null);
+  const reindexed = capability.reindexTenant(indexed, "t1", "o1", [validDoc], () => null);
   assert.strictEqual(reindexed.ok, true);
   if (!reindexed.ok) throw new Error("Expected reindex success");
   assert.strictEqual(reindexed.state.lastAudit?.kind, "AUDIT_BEFORE_REINDEX");
@@ -568,7 +569,7 @@ test("searchandindexingproductsearchreadinessmodel", () => {
   });
   const gates = capability.checkPromotionGates(withProof);
   assert.strictEqual(gates.allowed, false);
-  assert.strictEqual(gates.errors.some(e => e.kind === "READINESS_PROBE_FAILED"), true);
+  assert.strictEqual(gates.errors.some((e: capability.SearchError) => e.kind === "READINESS_PROBE_FAILED"), true);
 });
 
 test("searchandindexingproductsearchstatemodel", () => {
