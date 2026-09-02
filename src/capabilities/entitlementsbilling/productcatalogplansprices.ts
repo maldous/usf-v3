@@ -21,10 +21,45 @@ export const ProductCatalogPlansPricesReadiness = [
 ] as const;
 export type ProductCatalogPlansPricesReadiness = typeof ProductCatalogPlansPricesReadiness[number];
 
+export const ProductCatalogPlansPricesCurrency = [
+  'USD',
+  'EUR',
+  'GBP',
+  'CAD',
+  'AUD',
+  'JPY',
+] as const;
+export type ProductCatalogPlansPricesCurrency = typeof ProductCatalogPlansPricesCurrency[number];
+
+export const ProductCatalogPlansPricesBillingPeriod = [
+  'MONTHLY',
+  'QUARTERLY',
+  'ANNUAL',
+  'WEEKLY',
+  'DAILY',
+] as const;
+export type ProductCatalogPlansPricesBillingPeriod = typeof ProductCatalogPlansPricesBillingPeriod[number];
+
+export const ProductCatalogPlansPricesPriceType = [
+  'FIXED',
+  'PER_UNIT',
+  'TIERED',
+  'GRADUATED',
+  'VOLUME',
+] as const;
+export type ProductCatalogPlansPricesPriceType = typeof ProductCatalogPlansPricesPriceType[number];
+
+export const ProductCatalogPlansPricesEntityType = [
+  'PRODUCT',
+  'PLAN',
+  'PRICE',
+] as const;
+export type ProductCatalogPlansPricesEntityType = typeof ProductCatalogPlansPricesEntityType[number];
+
 export interface ProductCatalogPlansPricesAuditEvent {
   readonly kind: ProductCatalogPlansPricesAuditEventKind;
   readonly operatorId: string;
-  readonly entityType: 'PRODUCT' | 'PLAN' | 'PRICE';
+  readonly entityType: ProductCatalogPlansPricesEntityType;
   readonly entityId: string;
   readonly timestamp: string;
 }
@@ -46,8 +81,8 @@ export interface Plan {
   readonly identifier: string;
   readonly owningProduct: string;
   readonly name: string;
-  readonly currency: string;
-  readonly billingPeriod: string;
+  readonly currency: ProductCatalogPlansPricesCurrency;
+  readonly billingPeriod: ProductCatalogPlansPricesBillingPeriod;
   readonly active: boolean;
   readonly createdTimestamp: string;
 }
@@ -56,10 +91,10 @@ export interface Price {
   readonly identifier: string;
   readonly owningPlan: string;
   readonly version: number;
-  readonly priceType: string;
+  readonly priceType: ProductCatalogPlansPricesPriceType;
   readonly unitAmount: number;
-  readonly currency: string;
-  readonly billingPeriod: string;
+  readonly currency: ProductCatalogPlansPricesCurrency;
+  readonly billingPeriod: ProductCatalogPlansPricesBillingPeriod;
   readonly active: boolean;
   readonly createdTimestamp: string;
 }
@@ -96,20 +131,32 @@ export interface CreateProductRequest {
 export interface CreatePlanRequest {
   readonly owningProduct: string;
   readonly name: string;
-  readonly currency: string;
-  readonly billingPeriod: string;
+  readonly currency: ProductCatalogPlansPricesCurrency;
+  readonly billingPeriod: ProductCatalogPlansPricesBillingPeriod;
 }
 
 export interface CreatePriceRequest {
   readonly owningPlan: string;
   readonly version: number;
-  readonly priceType: string;
+  readonly priceType: ProductCatalogPlansPricesPriceType;
   readonly unitAmount: number;
-  readonly currency: string;
-  readonly billingPeriod: string;
+  readonly currency: ProductCatalogPlansPricesCurrency;
+  readonly billingPeriod: ProductCatalogPlansPricesBillingPeriod;
 }
 
 export type CreateRequest = CreateProductRequest | CreatePlanRequest | CreatePriceRequest;
+
+export function isProductCatalogPlansPricesCurrency(value: string): value is ProductCatalogPlansPricesCurrency {
+  return (ProductCatalogPlansPricesCurrency as readonly string[]).includes(value);
+}
+
+export function isProductCatalogPlansPricesBillingPeriod(value: string): value is ProductCatalogPlansPricesBillingPeriod {
+  return (ProductCatalogPlansPricesBillingPeriod as readonly string[]).includes(value);
+}
+
+export function isProductCatalogPlansPricesPriceType(value: string): value is ProductCatalogPlansPricesPriceType {
+  return (ProductCatalogPlansPricesPriceType as readonly string[]).includes(value);
+}
 
 export function validateCreateProductRequest(request: unknown): ProductCatalogPlansPricesError | CreateProductRequest {
   if (request === null || typeof request !== 'object') {
@@ -129,7 +176,10 @@ export function validateCreateProductRequest(request: unknown): ProductCatalogPl
   return { name, description };
 }
 
-export function validateCreatePlanRequest(request: unknown): ProductCatalogPlansPricesError | CreatePlanRequest {
+export function validateCreatePlanRequest(
+  request: unknown,
+  knownProducts: readonly Product[],
+): ProductCatalogPlansPricesError | CreatePlanRequest {
   if (request === null || typeof request !== 'object') {
     return { kind: 'VALIDATION_ERROR', message: 'Request must be an object' };
   }
@@ -144,18 +194,26 @@ export function validateCreatePlanRequest(request: unknown): ProductCatalogPlans
     return { kind: 'VALIDATION_ERROR', message: 'Plan name must be a non-empty string' };
   }
 
-  if (typeof currency !== 'string' || currency.trim() === '') {
-    return { kind: 'VALIDATION_ERROR', message: 'Currency must be a non-empty string' };
+  if (typeof currency !== 'string' || !isProductCatalogPlansPricesCurrency(currency)) {
+    return { kind: 'VALIDATION_ERROR', message: 'Currency must be a supported currency code' };
   }
 
-  if (typeof billingPeriod !== 'string' || billingPeriod.trim() === '') {
-    return { kind: 'VALIDATION_ERROR', message: 'Billing period must be a non-empty string' };
+  if (typeof billingPeriod !== 'string' || !isProductCatalogPlansPricesBillingPeriod(billingPeriod)) {
+    return { kind: 'VALIDATION_ERROR', message: 'Billing period must be a supported billing period' };
+  }
+
+  const productExists = knownProducts.some((p) => p.identifier === owningProduct);
+  if (!productExists) {
+    return { kind: 'VALIDATION_ERROR', message: `Owning product reference ${owningProduct} does not resolve` };
   }
 
   return { owningProduct, name, currency, billingPeriod };
 }
 
-export function validateCreatePriceRequest(request: unknown): ProductCatalogPlansPricesError | CreatePriceRequest {
+export function validateCreatePriceRequest(
+  request: unknown,
+  knownPlans: readonly Plan[],
+): ProductCatalogPlansPricesError | CreatePriceRequest {
   if (request === null || typeof request !== 'object') {
     return { kind: 'VALIDATION_ERROR', message: 'Request must be an object' };
   }
@@ -170,20 +228,25 @@ export function validateCreatePriceRequest(request: unknown): ProductCatalogPlan
     return { kind: 'VALIDATION_ERROR', message: 'Version must be a positive number' };
   }
 
-  if (typeof priceType !== 'string' || priceType.trim() === '') {
-    return { kind: 'VALIDATION_ERROR', message: 'Price type must be a non-empty string' };
+  if (typeof priceType !== 'string' || !isProductCatalogPlansPricesPriceType(priceType)) {
+    return { kind: 'VALIDATION_ERROR', message: 'Price type must be a supported price type' };
   }
 
   if (typeof unitAmount !== 'number' || unitAmount <= 0) {
     return { kind: 'VALIDATION_ERROR', message: 'Unit amount must be a positive number' };
   }
 
-  if (typeof currency !== 'string' || currency.trim() === '') {
-    return { kind: 'VALIDATION_ERROR', message: 'Currency must be a non-empty string' };
+  if (typeof currency !== 'string' || !isProductCatalogPlansPricesCurrency(currency)) {
+    return { kind: 'VALIDATION_ERROR', message: 'Currency must be a supported currency code' };
   }
 
-  if (typeof billingPeriod !== 'string' || billingPeriod.trim() === '') {
-    return { kind: 'VALIDATION_ERROR', message: 'Billing period must be a non-empty string' };
+  if (typeof billingPeriod !== 'string' || !isProductCatalogPlansPricesBillingPeriod(billingPeriod)) {
+    return { kind: 'VALIDATION_ERROR', message: 'Billing period must be a supported billing period' };
+  }
+
+  const planExists = knownPlans.some((p) => p.identifier === owningPlan);
+  if (!planExists) {
+    return { kind: 'VALIDATION_ERROR', message: `Owning plan reference ${owningPlan} does not resolve` };
   }
 
   return { owningPlan, version, priceType, unitAmount, currency, billingPeriod };
@@ -198,16 +261,17 @@ export function checkPermission(
 
 export function auditCatalogChange(
   operatorId: string,
-  entityType: 'PRODUCT' | 'PLAN' | 'PRICE',
+  entityType: ProductCatalogPlansPricesEntityType,
   entityId: string,
   auditFn: (event: ProductCatalogPlansPricesAuditEvent) => ProductCatalogPlansPricesError | null,
+  timestamp: string = new Date().toISOString(),
 ): ProductCatalogPlansPricesError | null {
   const event: ProductCatalogPlansPricesAuditEvent = {
     kind: 'CATALOG_CHANGED',
     operatorId,
     entityType,
     entityId,
-    timestamp: new Date().toISOString(),
+    timestamp,
   };
   return auditFn(event);
 }
@@ -218,6 +282,8 @@ export function createProduct(
   request: unknown,
   auditFn: (event: ProductCatalogPlansPricesAuditEvent) => ProductCatalogPlansPricesError | null,
   tokenPermissions: readonly ProductCatalogPlansPricesPermission[],
+  idGenerator: () => string = () => `product-${state.products.length + 1}`,
+  clock: () => string = () => new Date().toISOString(),
 ): ProductCatalogPlansPricesState | ProductCatalogPlansPricesError {
   if (!checkPermission('PLATFORM_BILLING_ADMIN', tokenPermissions)) {
     return { kind: 'PERMISSION_DENIED', message: 'PLATFORM_BILLING_ADMIN permission required' };
@@ -233,14 +299,14 @@ export function createProduct(
   }
 
   const newProduct: Product = {
-    identifier: `product-${Date.now()}`,
+    identifier: idGenerator(),
     name: validatedRequest.name,
     description: validatedRequest.description,
     active: true,
-    createdTimestamp: new Date().toISOString(),
+    createdTimestamp: clock(),
   };
 
-  const auditError = auditCatalogChange(operatorId, 'PRODUCT', newProduct.identifier, auditFn);
+  const auditError = auditCatalogChange(operatorId, 'PRODUCT', newProduct.identifier, auditFn, newProduct.createdTimestamp);
   if (auditError !== null) {
     return auditError;
   }
@@ -265,6 +331,8 @@ export function createPlan(
   request: unknown,
   auditFn: (event: ProductCatalogPlansPricesAuditEvent) => ProductCatalogPlansPricesError | null,
   tokenPermissions: readonly ProductCatalogPlansPricesPermission[],
+  idGenerator: () => string = () => `plan-${state.plans.length + 1}`,
+  clock: () => string = () => new Date().toISOString(),
 ): ProductCatalogPlansPricesState | ProductCatalogPlansPricesError {
   if (!checkPermission('PLATFORM_BILLING_ADMIN', tokenPermissions)) {
     return { kind: 'PERMISSION_DENIED', message: 'PLATFORM_BILLING_ADMIN permission required' };
@@ -274,27 +342,22 @@ export function createPlan(
     return { kind: 'READINESS_FAILURE', message: 'Catalog mutations disabled due to readiness state' };
   }
 
-  const validatedRequest = validateCreatePlanRequest(request);
+  const validatedRequest = validateCreatePlanRequest(request, state.products);
   if ('kind' in validatedRequest) {
     return validatedRequest;
   }
 
-  const productExists = state.products.some((p) => p.identifier === validatedRequest.owningProduct);
-  if (!productExists) {
-    return { kind: 'REFERENCE_NOT_FOUND', message: `Product with identifier ${validatedRequest.owningProduct} not found` };
-  }
-
   const newPlan: Plan = {
-    identifier: `plan-${Date.now()}`,
+    identifier: idGenerator(),
     owningProduct: validatedRequest.owningProduct,
     name: validatedRequest.name,
     currency: validatedRequest.currency,
     billingPeriod: validatedRequest.billingPeriod,
     active: true,
-    createdTimestamp: new Date().toISOString(),
+    createdTimestamp: clock(),
   };
 
-  const auditError = auditCatalogChange(operatorId, 'PLAN', newPlan.identifier, auditFn);
+  const auditError = auditCatalogChange(operatorId, 'PLAN', newPlan.identifier, auditFn, newPlan.createdTimestamp);
   if (auditError !== null) {
     return auditError;
   }
@@ -319,6 +382,8 @@ export function createPrice(
   request: unknown,
   auditFn: (event: ProductCatalogPlansPricesAuditEvent) => ProductCatalogPlansPricesError | null,
   tokenPermissions: readonly ProductCatalogPlansPricesPermission[],
+  idGenerator: () => string = () => `price-${state.prices.length + 1}`,
+  clock: () => string = () => new Date().toISOString(),
 ): ProductCatalogPlansPricesState | ProductCatalogPlansPricesError {
   if (!checkPermission('PLATFORM_BILLING_ADMIN', tokenPermissions)) {
     return { kind: 'PERMISSION_DENIED', message: 'PLATFORM_BILLING_ADMIN permission required' };
@@ -328,18 +393,13 @@ export function createPrice(
     return { kind: 'READINESS_FAILURE', message: 'Catalog mutations disabled due to readiness state' };
   }
 
-  const validatedRequest = validateCreatePriceRequest(request);
+  const validatedRequest = validateCreatePriceRequest(request, state.plans);
   if ('kind' in validatedRequest) {
     return validatedRequest;
   }
 
-  const planExists = state.plans.some((p) => p.identifier === validatedRequest.owningPlan);
-  if (!planExists) {
-    return { kind: 'REFERENCE_NOT_FOUND', message: `Plan with identifier ${validatedRequest.owningPlan} not found` };
-  }
-
   const newPrice: Price = {
-    identifier: `price-${Date.now()}`,
+    identifier: idGenerator(),
     owningPlan: validatedRequest.owningPlan,
     version: validatedRequest.version,
     priceType: validatedRequest.priceType,
@@ -347,10 +407,10 @@ export function createPrice(
     currency: validatedRequest.currency,
     billingPeriod: validatedRequest.billingPeriod,
     active: true,
-    createdTimestamp: new Date().toISOString(),
+    createdTimestamp: clock(),
   };
 
-  const auditError = auditCatalogChange(operatorId, 'PRICE', newPrice.identifier, auditFn);
+  const auditError = auditCatalogChange(operatorId, 'PRICE', newPrice.identifier, auditFn, newPrice.createdTimestamp);
   if (auditError !== null) {
     return auditError;
   }
@@ -371,14 +431,22 @@ export function createPrice(
 
 export function listProducts(
   state: ProductCatalogPlansPricesState,
-): readonly Product[] {
+  tokenPermissions: readonly ProductCatalogPlansPricesPermission[],
+): readonly Product[] | ProductCatalogPlansPricesError {
+  if (!checkPermission('PLATFORM_BILLING_ADMIN', tokenPermissions)) {
+    return { kind: 'PERMISSION_DENIED', message: 'PLATFORM_BILLING_ADMIN permission required' };
+  }
   return state.products;
 }
 
 export function listPlans(
   state: ProductCatalogPlansPricesState,
+  tokenPermissions: readonly ProductCatalogPlansPricesPermission[],
   owningProduct?: string,
-): readonly Plan[] {
+): readonly Plan[] | ProductCatalogPlansPricesError {
+  if (!checkPermission('PLATFORM_BILLING_ADMIN', tokenPermissions)) {
+    return { kind: 'PERMISSION_DENIED', message: 'PLATFORM_BILLING_ADMIN permission required' };
+  }
   if (owningProduct === undefined) {
     return state.plans;
   }
@@ -387,8 +455,12 @@ export function listPlans(
 
 export function listPrices(
   state: ProductCatalogPlansPricesState,
+  tokenPermissions: readonly ProductCatalogPlansPricesPermission[],
   owningPlan?: string,
-): readonly Price[] {
+): readonly Price[] | ProductCatalogPlansPricesError {
+  if (!checkPermission('PLATFORM_BILLING_ADMIN', tokenPermissions)) {
+    return { kind: 'PERMISSION_DENIED', message: 'PLATFORM_BILLING_ADMIN permission required' };
+  }
   if (owningPlan === undefined) {
     return state.prices;
   }
@@ -398,14 +470,251 @@ export function listPrices(
 export function getTenantCatalog(
   state: ProductCatalogPlansPricesState,
   tokenPermissions: readonly ProductCatalogPlansPricesPermission[],
+  organisationId: string,
+  tokenOrganisationId: string,
 ): TenantCatalog | ProductCatalogPlansPricesError {
   if (!checkPermission('TENANT_BILLING_READ', tokenPermissions)) {
     return { kind: 'PERMISSION_DENIED', message: 'TENANT_BILLING_READ permission required' };
   }
 
+  if (organisationId !== tokenOrganisationId) {
+    return { kind: 'PERMISSION_DENIED', message: 'Tenant context cannot access another tenant catalog' };
+  }
+
   return {
-    products: state.products,
-    plans: state.plans,
-    prices: state.prices,
+    products: state.products.filter((p) => p.active),
+    plans: state.plans.filter((p) => p.active),
+    prices: state.prices.filter((p) => p.active),
+  };
+}
+
+export function setReadiness(
+  state: ProductCatalogPlansPricesState,
+  readiness: ProductCatalogPlansPricesReadiness,
+): ProductCatalogPlansPricesState {
+  return {
+    ...state,
+    readiness,
+  };
+}
+
+export interface MigrationStep {
+  readonly sourceVersion: number;
+  readonly targetVersion: number;
+  readonly apply: (state: ProductCatalogPlansPricesState) => ProductCatalogPlansPricesState;
+}
+
+export const productCatalogPlansPricesMigrations: readonly MigrationStep[] = [
+  {
+    sourceVersion: 0,
+    targetVersion: 1,
+    apply: (state: ProductCatalogPlansPricesState): ProductCatalogPlansPricesState => ({
+      ...state,
+      products: state.products.map((p): Product => ({
+        identifier: p.identifier,
+        name: p.name,
+        description: p.description,
+        active: p.active,
+        createdTimestamp: p.createdTimestamp,
+      })),
+      plans: state.plans.map((p): Plan => ({
+        identifier: p.identifier,
+        owningProduct: p.owningProduct,
+        name: p.name,
+        currency: p.currency,
+        billingPeriod: p.billingPeriod,
+        active: p.active,
+        createdTimestamp: p.createdTimestamp,
+      })),
+      prices: state.prices.map((p): Price => ({
+        identifier: p.identifier,
+        owningPlan: p.owningPlan,
+        version: p.version,
+        priceType: p.priceType,
+        unitAmount: p.unitAmount,
+        currency: p.currency,
+        billingPeriod: p.billingPeriod,
+        active: p.active,
+        createdTimestamp: p.createdTimestamp,
+      })),
+    }),
+  },
+  {
+    sourceVersion: 1,
+    targetVersion: 2,
+    apply: (state: ProductCatalogPlansPricesState): ProductCatalogPlansPricesState => ({
+      ...state,
+      products: state.products.map((p): Product => ({
+        identifier: p.identifier,
+        name: p.name,
+        description: p.description,
+        active: p.active,
+        createdTimestamp: p.createdTimestamp,
+      })),
+      plans: state.plans.map((p): Plan => ({
+        identifier: p.identifier,
+        owningProduct: p.owningProduct,
+        name: p.name,
+        currency: p.currency,
+        billingPeriod: p.billingPeriod,
+        active: p.active,
+        createdTimestamp: p.createdTimestamp,
+      })),
+      prices: state.prices.map((p): Price => ({
+        identifier: p.identifier,
+        owningPlan: p.owningPlan,
+        version: p.version,
+        priceType: p.priceType,
+        unitAmount: p.unitAmount,
+        currency: p.currency,
+        billingPeriod: p.billingPeriod,
+        active: p.active,
+        createdTimestamp: p.createdTimestamp,
+      })),
+    }),
+  },
+];
+
+export interface VersionedProductCatalogPlansPricesState {
+  readonly version: number;
+  readonly state: ProductCatalogPlansPricesState;
+}
+
+export function applyMigrations(
+  versioned: VersionedProductCatalogPlansPricesState,
+  migrations: readonly MigrationStep[] = productCatalogPlansPricesMigrations,
+): VersionedProductCatalogPlansPricesState {
+  let currentVersion = versioned.version;
+  let currentState = versioned.state;
+
+  const sortedMigrations: readonly MigrationStep[] = [...migrations].sort(
+    (a, b) => a.sourceVersion - b.sourceVersion,
+  );
+
+  for (const migration of sortedMigrations) {
+    if (migration.sourceVersion === currentVersion) {
+      currentState = migration.apply(currentState);
+      currentVersion = migration.targetVersion;
+    }
+  }
+
+  return { version: currentVersion, state: currentState };
+}
+
+export function migrateCatalog(
+  state: ProductCatalogPlansPricesState,
+  currentVersion: number,
+  migrations: readonly MigrationStep[] = productCatalogPlansPricesMigrations,
+): VersionedProductCatalogPlansPricesState {
+  return applyMigrations({ version: currentVersion, state }, migrations);
+}
+
+export function setProductActive(
+  state: ProductCatalogPlansPricesState,
+  identifier: string,
+  active: boolean,
+): ProductCatalogPlansPricesState {
+  return {
+    ...state,
+    products: state.products.map((p): Product =>
+      p.identifier === identifier
+        ? {
+            identifier: p.identifier,
+            name: p.name,
+            description: p.description,
+            active,
+            createdTimestamp: p.createdTimestamp,
+          }
+        : p,
+    ),
+  };
+}
+
+export function setPlanActive(
+  state: ProductCatalogPlansPricesState,
+  identifier: string,
+  active: boolean,
+): ProductCatalogPlansPricesState {
+  return {
+    ...state,
+    plans: state.plans.map((p): Plan =>
+      p.identifier === identifier
+        ? {
+            identifier: p.identifier,
+            owningProduct: p.owningProduct,
+            name: p.name,
+            currency: p.currency,
+            billingPeriod: p.billingPeriod,
+            active,
+            createdTimestamp: p.createdTimestamp,
+          }
+        : p,
+    ),
+  };
+}
+
+export function addPriceVersion(
+  state: ProductCatalogPlansPricesState,
+  operatorId: string,
+  basePriceIdentifier: string,
+  newVersion: number,
+  newUnitAmount: number,
+  auditFn: (event: ProductCatalogPlansPricesAuditEvent) => ProductCatalogPlansPricesError | null,
+  idGenerator: () => string = () => `price-${state.prices.length + 1}`,
+  clock: () => string = () => new Date().toISOString(),
+): ProductCatalogPlansPricesState | ProductCatalogPlansPricesError {
+  if (state.readiness !== 'FULL') {
+    return { kind: 'READINESS_FAILURE', message: 'Catalog mutations disabled due to readiness state' };
+  }
+
+  const basePrice = state.prices.find((p) => p.identifier === basePriceIdentifier);
+  if (basePrice === undefined) {
+    return { kind: 'REFERENCE_NOT_FOUND', message: `Price with identifier ${basePriceIdentifier} not found` };
+  }
+
+  if (newVersion <= basePrice.version) {
+    return { kind: 'VALIDATION_ERROR', message: 'New price version must be greater than existing version' };
+  }
+
+  const deactivated: Price = {
+    identifier: basePrice.identifier,
+    owningPlan: basePrice.owningPlan,
+    version: basePrice.version,
+    priceType: basePrice.priceType,
+    unitAmount: basePrice.unitAmount,
+    currency: basePrice.currency,
+    billingPeriod: basePrice.billingPeriod,
+    active: false,
+    createdTimestamp: basePrice.createdTimestamp,
+  };
+
+  const newPrice: Price = {
+    identifier: idGenerator(),
+    owningPlan: basePrice.owningPlan,
+    version: newVersion,
+    priceType: basePrice.priceType,
+    unitAmount: newUnitAmount,
+    currency: basePrice.currency,
+    billingPeriod: basePrice.billingPeriod,
+    active: true,
+    createdTimestamp: clock(),
+  };
+
+  const auditError = auditCatalogChange(operatorId, 'PRICE', newPrice.identifier, auditFn, newPrice.createdTimestamp);
+  if (auditError !== null) {
+    return auditError;
+  }
+
+  return {
+    ...state,
+    prices: [...state.prices.filter((p) => p.identifier !== basePrice.identifier), deactivated, newPrice],
+    lastAuditEvent: {
+      kind: 'CATALOG_CHANGED',
+      operatorId,
+      entityType: 'PRICE',
+      entityId: newPrice.identifier,
+      timestamp: newPrice.createdTimestamp,
+    },
+    lastError: null,
   };
 }

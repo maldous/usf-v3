@@ -123,9 +123,9 @@ test("tenantdataimportexportauditmodel", () => {
     tenantId,
     actor,
     exportResult.archive,
-    makeApplier(
-      [{ id: "unit-foreign", tenantId: "tenant-other", payload: { secret: "forbidden" } }],
-    ),
+    makeApplier([
+      { id: "unit-foreign", tenantId: "tenant-other", payload: { secret: "forbidden" } },
+    ]),
     audit.auditFn,
   );
 
@@ -146,6 +146,7 @@ test("tenantdataimportexportauditmodel", () => {
   assert.strictEqual(failedProgress.failedUnit, "unit-foreign");
   assert.deepStrictEqual(failedProgress.completedUnits, []);
   assert.strictEqual(("payload" in failedProgress), false);
+  assert.strictEqual(("encryptedData" in failedProgress), false);
   assert.strictEqual(importResult.error.kind, "TENANT_ISOLATION_VIOLATION");
   assert.strictEqual(importResult.error.tenantId, tenantId);
   assert.strictEqual(exportResult.archive.isEncrypted, true);
@@ -213,7 +214,10 @@ test("tenantdataimportexportcontracts", () => {
 
   assert.strictEqual(resumedImport.ok, true);
   if (!resumedImport.ok) return;
-  assert.deepStrictEqual(resumedImport.progress.completedUnits, ["contract-unit-1", "contract-unit-2"]);
+  assert.deepStrictEqual(resumedImport.progress.completedUnits, [
+    "contract-unit-1",
+    "contract-unit-2",
+  ]);
   assert.deepStrictEqual(resumeCalls, ["contract-unit-2"]);
   assert.strictEqual(resumedImport.progress.failedUnit, null);
 
@@ -235,7 +239,10 @@ test("tenantdataimportexportcontracts", () => {
   assert.strictEqual(replayImport.ok, true);
   if (!replayImport.ok) return;
   assert.strictEqual(replayCalled, false);
-  assert.deepStrictEqual(replayImport.progress.completedUnits, ["contract-unit-1", "contract-unit-2"]);
+  assert.deepStrictEqual(replayImport.progress.completedUnits, [
+    "contract-unit-1",
+    "contract-unit-2",
+  ]);
   assert.strictEqual(replayImport.progress.failedUnit, null);
   assert.strictEqual(firstCalls.length, 2);
 });
@@ -243,7 +250,9 @@ test("tenantdataimportexportcontracts", () => {
 test("tenantdataimportexporterrormodel", () => {
   const tenantId = "tenant-error";
   const actor = "error-operator";
-  const units: readonly capability.DataUnit[] = [{ id: "error-unit-1", tenantId, payload: {} }];
+  const units: readonly capability.DataUnit[] = [
+    { id: "error-unit-1", tenantId, payload: {} },
+  ];
   const archive = makeArchive(tenantId, "error-digest", 2);
 
   const disabledExport = capability.exportTenantData(
@@ -368,9 +377,16 @@ test("tenantdataimportexportlifecycle", () => {
   assert.strictEqual(interrupted.ok, false);
   if (interrupted.ok) return;
   assert.ok(interrupted.progress !== undefined);
-  assert.deepStrictEqual(interrupted.progress.completedUnits, ["life-unit-1", "life-unit-2"]);
+  assert.deepStrictEqual(interrupted.progress.completedUnits, [
+    "life-unit-1",
+    "life-unit-2",
+  ]);
   assert.strictEqual(interrupted.progress.failedUnit, "life-unit-3");
-  assert.deepStrictEqual(interruptedCalls, ["life-unit-1", "life-unit-2", "life-unit-3"]);
+  assert.deepStrictEqual(interruptedCalls, [
+    "life-unit-1",
+    "life-unit-2",
+    "life-unit-3",
+  ]);
 
   const resumedCalls: string[] = [];
   const resumed = capability.importTenantData(
@@ -390,7 +406,11 @@ test("tenantdataimportexportlifecycle", () => {
   assert.strictEqual(resumed.ok, true);
   if (!resumed.ok) return;
   assert.strictEqual(resumed.state.readiness, "READY");
-  assert.deepStrictEqual(resumed.progress.completedUnits, ["life-unit-1", "life-unit-2", "life-unit-3"]);
+  assert.deepStrictEqual(resumed.progress.completedUnits, [
+    "life-unit-1",
+    "life-unit-2",
+    "life-unit-3",
+  ]);
   assert.deepStrictEqual(resumedCalls, ["life-unit-3"]);
 });
 
@@ -440,7 +460,10 @@ test("tenantdataimportexportpermissions", () => {
   assert.strictEqual(crossTenantUnit.error.kind, "TENANT_ISOLATION_VIOLATION");
   assert.ok(crossTenantUnit.progress !== undefined);
   assert.strictEqual(crossTenantUnit.progress.tenantId, tenantId);
-  assert.strictEqual(crossTenantUnit.progress.archiveDigest, expectedTenantArchive.contentDigest);
+  assert.strictEqual(
+    crossTenantUnit.progress.archiveDigest,
+    expectedTenantArchive.contentDigest,
+  );
 });
 
 test("tenantdataimportexportproof", () => {
@@ -455,7 +478,12 @@ test("tenantdataimportexportproof", () => {
     assert.strictEqual(pending.error.kind, "PROMOTION_BLOCKED");
   }
 
-  const missingSignals = capability.evaluatePromotionBlockers(readyState, "VERIFIED", false, false);
+  const missingSignals = capability.evaluatePromotionBlockers(
+    readyState,
+    "VERIFIED",
+    false,
+    false,
+  );
   assert.strictEqual(missingSignals.canPromote, false);
   if (!missingSignals.canPromote) {
     assert.strictEqual(missingSignals.error.kind, "PROMOTION_BLOCKED");
@@ -484,7 +512,10 @@ test("tenantdataimportexportproof", () => {
 
 test("tenantdataimportexportreadinessmodel", () => {
   const archive = makeArchive("tenant-readiness", "readiness-digest", 1);
-  const alwaysReady = capability.checkReadiness(makeBuilder(archive, { available: true }), makeApplier([], { available: true }));
+  const alwaysReady = capability.checkReadiness(
+    makeBuilder(archive, { available: true }),
+    makeApplier([], { available: true }),
+  );
   assert.strictEqual(alwaysReady, "READY");
 
   const degradedByApplier = capability.checkReadiness(
@@ -511,11 +542,14 @@ test("tenantdataimportexportreadinessmodel", () => {
     "tenant-readiness",
     "readiness-operator",
     [],
-    makeBuilder(makeArchive("tenant-readiness", "readiness-disabled", 0), { available: false }),
+    makeBuilder(
+      makeArchive("tenant-readiness", "readiness-disabled", 0),
+      { available: false },
+    ),
     () => null,
   );
   assert.strictEqual(disabledExport.ok, false);
-  if (!disabledExport.ok) return;
+  if (disabledExport.ok) return;
   assert.strictEqual(disabledExport.error.kind, "ARCHIVE_BUILDER_UNAVAILABLE");
   assert.strictEqual(disabledExport.state.readiness, "DEGRADED");
 
@@ -567,8 +601,12 @@ test("tenantdataimportexportstatemodel", () => {
   if (!second.ok) return;
   assert.strictEqual(second.state.progressRecords.length, 2);
 
-  const recordA = second.state.progressRecords.find((record) => record.archiveDigest === archiveA.contentDigest);
-  const recordB = second.state.progressRecords.find((record) => record.archiveDigest === archiveB.contentDigest);
+  const recordA = second.state.progressRecords.find(
+    (record) => record.archiveDigest === archiveA.contentDigest,
+  );
+  const recordB = second.state.progressRecords.find(
+    (record) => record.archiveDigest === archiveB.contentDigest,
+  );
   assert.ok(recordA !== undefined);
   assert.ok(recordB !== undefined);
   assert.strictEqual(recordA.tenantId, tenantId);
@@ -639,7 +677,10 @@ test("tenantdataimportexportvalidation", () => {
     isCompressed: true,
     unitCount: 1,
   };
-  const digestMismatch = capability.validateArchiveIntegrity(malformedDigestArchive, tenantId);
+  const digestMismatch = capability.validateArchiveIntegrity(
+    malformedDigestArchive,
+    tenantId,
+  );
   assert.strictEqual(digestMismatch.ok, false);
   if (!digestMismatch.ok) {
     assert.strictEqual(digestMismatch.error.kind, "DIGEST_MISMATCH");
@@ -655,7 +696,7 @@ test("tenantdataimportexportvalidation", () => {
     () => null,
   );
   assert.strictEqual(closedImport.ok, false);
-  if (!closedImport.ok) return;
+  if (closedImport.ok) return;
   assert.strictEqual(closedImport.error.kind, "FAIL_CLOSED_CONFIGURATION_ERROR");
 
   const units: readonly capability.DataUnit[] = [
@@ -696,7 +737,10 @@ test("tenantdataimportexportvalidation", () => {
   assert.strictEqual(secondPass.ok, true);
   if (!secondPass.ok) return;
   assert.deepStrictEqual(secondCalls, ["validation-unit-2"]);
-  assert.deepStrictEqual(secondPass.progress.completedUnits, ["validation-unit-1", "validation-unit-2"]);
+  assert.deepStrictEqual(secondPass.progress.completedUnits, [
+    "validation-unit-1",
+    "validation-unit-2",
+  ]);
 
   let thirdCalled = false;
   const thirdPass = capability.importTenantData(

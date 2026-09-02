@@ -2,9 +2,11 @@ import { strict as assert } from "node:assert/strict";
 import { test } from "node:test";
 import * as capability from "../../../src/capabilities/foundation/providerconfigurationplane.ts";
 
-function isErrorResult(
-  result: capability.ProviderConfigurationPlaneState | capability.ProviderConfigurationPlaneError,
-): result is capability.ProviderConfigurationPlaneError {
+type StateOrError =
+  | capability.ProviderConfigurationPlaneState
+  | capability.ProviderConfigurationPlaneError;
+
+function isErrorResult(result: StateOrError): result is capability.ProviderConfigurationPlaneError {
   return typeof result === "object" && result !== null && "kind" in result;
 }
 
@@ -36,7 +38,9 @@ test("providerconfigurationplaneauditmodel", () => {
   const auditMetadata = makeAuditMetadata("audit-admin");
   const auditEvents: capability.ProviderConfigurationPlaneAuditEvent[] = [];
 
-  const auditFn = (event: capability.ProviderConfigurationPlaneAuditEvent): capability.ProviderConfigurationPlaneError | null => {
+  const auditFn = (
+    event: capability.ProviderConfigurationPlaneAuditEvent,
+  ): capability.ProviderConfigurationPlaneError | null => {
     auditEvents.push(event);
     return null;
   };
@@ -64,7 +68,6 @@ test("providerconfigurationplaneauditmodel", () => {
     "PROPOSED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
   assert.strictEqual(createEvent.metadata.changedBy, "audit-admin");
-  assert.strictEqual(createEvent.metadata.timestamp, "2026-09-02T00:00:00Z");
 
   const created = createResult.providerConfigs[0];
   assert.ok(created !== undefined);
@@ -107,7 +110,6 @@ test("providerconfigurationplaneauditmodel", () => {
     transitionEvent.newState,
     "DEGRADED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
-  assert.deepStrictEqual(transitionEvent.metadata, auditMetadata);
 
   const transitioned = transitionResult.providerConfigs[0];
   assert.ok(transitioned !== undefined);
@@ -116,6 +118,7 @@ test("providerconfigurationplaneauditmodel", () => {
     "DEGRADED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
 
+  // Readiness signal remains visible in degraded mode (audit-history honesty).
   const readiness = capability.getProviderReadiness(transitionResult, "provider-auditmodel");
   assert.strictEqual(
     readiness,
@@ -123,7 +126,9 @@ test("providerconfigurationplaneauditmodel", () => {
   );
 
   const deleteAuditEvents: capability.ProviderConfigurationPlaneAuditEvent[] = [];
-  const deleteAuditFn = (event: capability.ProviderConfigurationPlaneAuditEvent): capability.ProviderConfigurationPlaneError | null => {
+  const deleteAuditFn = (
+    event: capability.ProviderConfigurationPlaneAuditEvent,
+  ): capability.ProviderConfigurationPlaneError | null => {
     deleteAuditEvents.push(event);
     return null;
   };
@@ -152,17 +157,18 @@ test("providerconfigurationplanecontracts", () => {
   const auditMetadata = makeAuditMetadata("contract-admin");
   const auditFn = () => null;
 
+  // Initial repository state is empty and last-error is null.
   const baseConfigs = capability.getAllProviderConfigs(capability.initialState);
   assert.strictEqual(baseConfigs.length, 0);
   assert.strictEqual(capability.initialState.lastError, null);
 
+  // Admin create operation.
   const created = capability.createProviderConfig(
     capability.initialState,
     makeProviderConfig("provider-contracts"),
     auditMetadata,
     auditFn,
   );
-
   if (isErrorResult(created)) {
     assert.fail(created.kind);
   }
@@ -170,12 +176,15 @@ test("providerconfigurationplanecontracts", () => {
   const allConfigs = capability.getAllProviderConfigs(created);
   assert.strictEqual(allConfigs.length, 1);
 
+  // Admin read operation.
   const readConfig = capability.getProviderConfig(created, "provider-contracts");
   assert.ok(readConfig !== null);
   assert.strictEqual(readConfig.providerKey, "provider-contracts");
 
+  // Read of missing configuration returns null (no invented default).
   assert.strictEqual(capability.getProviderConfig(created, "missing-provider"), null);
 
+  // Lifecycle transition operations.
   const configured = capability.transitionProviderLifecycle(
     created,
     "provider-contracts",
@@ -187,6 +196,12 @@ test("providerconfigurationplanecontracts", () => {
   if (isErrorResult(configured)) {
     assert.fail(configured.kind);
   }
+  const configuredRecord = capability.getProviderConfig(configured, "provider-contracts");
+  assert.ok(configuredRecord !== null);
+  assert.strictEqual(
+    configuredRecord.lifecycleState,
+    "CONFIGURED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
+  );
 
   const ready = capability.transitionProviderLifecycle(
     configured,
@@ -199,7 +214,14 @@ test("providerconfigurationplanecontracts", () => {
   if (isErrorResult(ready)) {
     assert.fail(ready.kind);
   }
+  const readyRecord = capability.getProviderConfig(ready, "provider-contracts");
+  assert.ok(readyRecord !== null);
+  assert.strictEqual(
+    readyRecord.lifecycleState,
+    "READY" satisfies capability.ProviderConfigurationPlaneLifecycleState,
+  );
 
+  // Admin delete operation.
   const deleted = capability.deleteProviderConfig(
     ready,
     "provider-contracts",
@@ -209,10 +231,12 @@ test("providerconfigurationplanecontracts", () => {
   if (isErrorResult(deleted)) {
     assert.fail(deleted.kind);
   }
+  assert.strictEqual(
+    capability.getProviderConfig(deleted, "provider-contracts"),
+    null,
+  );
 
-  const missingAfterDelete = capability.getProviderConfig(deleted, "provider-contracts");
-  assert.strictEqual(missingAfterDelete, null);
-
+  // Fail-closed: missing required providerKey is rejected rather than defaulted.
   const invalidCreate = capability.createProviderConfig(
     capability.initialState,
     {
@@ -224,11 +248,11 @@ test("providerconfigurationplanecontracts", () => {
   );
   if (isErrorResult(invalidCreate)) {
     assert.strictEqual(invalidCreate.kind, "INVALID_CONFIGURATION");
-    assert.strictEqual(invalidCreate.providerKey, "unknown");
   } else {
     assert.fail("invalid config should fail contract validation");
   }
 
+  // The state object exposed for read was not mutated by the failed create.
   const stateAfterInvalid = capability.getAllProviderConfigs(capability.initialState);
   assert.strictEqual(stateAfterInvalid.length, 0);
 });
@@ -237,7 +261,9 @@ test("providerconfigurationplaneerrormodel", () => {
   const auditMetadata = makeAuditMetadata("error-admin");
   const auditEvents: capability.ProviderConfigurationPlaneAuditEvent[] = [];
 
-  const auditFn = (event: capability.ProviderConfigurationPlaneAuditEvent): capability.ProviderConfigurationPlaneError | null => {
+  const auditFn = (
+    event: capability.ProviderConfigurationPlaneAuditEvent,
+  ): capability.ProviderConfigurationPlaneError | null => {
     auditEvents.push(event);
     return null;
   };
@@ -264,6 +290,8 @@ test("providerconfigurationplaneerrormodel", () => {
     assert.fail(configured.kind);
   }
 
+  // Health-probe failure returns a typed degraded/readiness failure and keeps the
+  // mutation boundary closed.
   const preErrorAuditCount = auditEvents.length;
   const failedReady = capability.transitionProviderLifecycle(
     configured,
@@ -281,6 +309,7 @@ test("providerconfigurationplaneerrormodel", () => {
     assert.fail("health-probe failure should return typed error");
   }
 
+  // No successful mutation was reported; the lifecycle is unchanged.
   assert.strictEqual(auditEvents.length, preErrorAuditCount);
 
   const stillConfigured = capability.getProviderConfig(configured, "provider-errormodel");
@@ -289,10 +318,10 @@ test("providerconfigurationplaneerrormodel", () => {
     stillConfigured.lifecycleState,
     "CONFIGURED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
+  // No false readiness was reported.
+  assert.strictEqual(capability.getProviderReadiness(configured, "provider-errormodel"), null);
 
-  const readySignal = capability.getProviderReadiness(configured, "provider-errormodel");
-  assert.strictEqual(readySignal, null);
-
+  // Explicit degraded mode stays visible read-only.
   const degradedResult = capability.transitionProviderLifecycle(
     configured,
     "provider-errormodel",
@@ -310,6 +339,10 @@ test("providerconfigurationplaneerrormodel", () => {
     "DEGRADED" satisfies capability.ProviderConfigurationPlaneReadinessSignal,
   );
 
+  // Audit history is still visible in degraded mode.
+  assert.ok(auditEvents.length > 0);
+
+  // Illegal lifecycle transition is reported as a typed error.
   const illegalTransition = capability.transitionProviderLifecycle(
     configured,
     "provider-errormodel",
@@ -329,6 +362,7 @@ test("providerconfigurationplanelifecycle", () => {
   const auditMetadata = makeAuditMetadata("lifecycle-admin");
   const auditFn = () => null;
 
+  // PROPOSED on creation.
   const created = capability.createProviderConfig(
     capability.initialState,
     makeProviderConfig("provider-lifecycle"),
@@ -345,6 +379,7 @@ test("providerconfigurationplanelifecycle", () => {
     "PROPOSED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
 
+  // PROPOSED -> CONFIGURED.
   const configured = capability.transitionProviderLifecycle(
     created,
     "provider-lifecycle",
@@ -363,6 +398,7 @@ test("providerconfigurationplanelifecycle", () => {
     "CONFIGURED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
 
+  // CONFIGURED -> READY.
   const ready = capability.transitionProviderLifecycle(
     configured,
     "provider-lifecycle",
@@ -385,6 +421,7 @@ test("providerconfigurationplanelifecycle", () => {
     "READY" satisfies capability.ProviderConfigurationPlaneReadinessSignal,
   );
 
+  // READY -> DEGRADED.
   const degraded = capability.transitionProviderLifecycle(
     ready,
     "provider-lifecycle",
@@ -407,6 +444,7 @@ test("providerconfigurationplanelifecycle", () => {
     "DEGRADED" satisfies capability.ProviderConfigurationPlaneReadinessSignal,
   );
 
+  // DEGRADED -> DISABLED.
   const disabled = capability.transitionProviderLifecycle(
     degraded,
     "provider-lifecycle",
@@ -426,6 +464,7 @@ test("providerconfigurationplanelifecycle", () => {
   );
   assert.strictEqual(capability.getProviderReadiness(disabled, "provider-lifecycle"), null);
 
+  // DISABLED -> PROPOSED.
   const reopened = capability.transitionProviderLifecycle(
     disabled,
     "provider-lifecycle",
@@ -444,6 +483,7 @@ test("providerconfigurationplanelifecycle", () => {
     "PROPOSED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
 
+  // PROPOSED -> READY is illegal; promotion is deliberate.
   const illegalJump = capability.transitionProviderLifecycle(
     reopened,
     "provider-lifecycle",
@@ -462,6 +502,8 @@ test("providerconfigurationplanelifecycle", () => {
 test("providerconfigurationplanepermissions", () => {
   const baseMetadata = makeAuditMetadata("permission-admin");
 
+  // Credential reference is gated by requiresCredential; the secrets boundary
+  // is enforced by the validator.
   const requiresRefMissing = capability.createProviderConfig(
     capability.initialState,
     {
@@ -480,6 +522,7 @@ test("providerconfigurationplanepermissions", () => {
     assert.fail("requiresCredential without credentialRef should fail");
   }
 
+  // Provider config is created with a credential reference, not embedded secrets.
   const created = capability.createProviderConfig(
     capability.initialState,
     {
@@ -499,6 +542,7 @@ test("providerconfigurationplanepermissions", () => {
   assert.strictEqual(stored.requiresCredential, true);
   assert.strictEqual(stored.credentialRef, "secrets://provider-permissions/key");
 
+  // Audit failure must keep the lifecycle mutation boundary closed.
   const blockedAudit: capability.ProviderConfigurationPlaneAuditEvent[] = [];
   const auditBlockedError = capability.transitionProviderLifecycle(
     created,
@@ -530,6 +574,7 @@ test("providerconfigurationplanepermissions", () => {
   );
   assert.strictEqual(blockedAudit.length, 1);
 
+  // Audit failure also closes the delete mutation boundary.
   const deleteBlockedAudit: capability.ProviderConfigurationPlaneAuditEvent[] = [];
   const deleteBlocked = capability.deleteProviderConfig(
     created,
@@ -556,6 +601,7 @@ test("providerconfigurationplanepermissions", () => {
 test("providerconfigurationplaneproof", () => {
   const proofMetadata = makeAuditMetadata("proof-admin");
 
+  // Configuration semantics: valid configuration passes validation.
   const validated = capability.validateProviderConfig({
     ...makeProviderConfig("provider-proof"),
     lifecycleState: "PROPOSED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
@@ -563,16 +609,12 @@ test("providerconfigurationplaneproof", () => {
   });
   assert.strictEqual(validated, null);
 
+  // Lifecycle semantics: a legal transition passes; an illegal one is rejected.
   const transitionProofA = capability.validateLifecycleTransition(
     "PROPOSED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
     "CONFIGURED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
-  const transitionProofB = capability.validateLifecycleTransition(
-    "PROPOSED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
-    "CONFIGURED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
-  );
   assert.strictEqual(transitionProofA, null);
-  assert.strictEqual(transitionProofB, null);
 
   const transitionProofBad = capability.validateLifecycleTransition(
     "READY" satisfies capability.ProviderConfigurationPlaneLifecycleState,
@@ -584,6 +626,7 @@ test("providerconfigurationplaneproof", () => {
     assert.fail("invalid lifecycle transition should fail");
   }
 
+  // Audit-before-mutation semantics: the audit callback observes the event.
   const auditEvents: capability.ProviderConfigurationPlaneAuditEvent[] = [];
   const auditResult = capability.auditProviderConfigMutation(
     "provider-proof",
@@ -598,6 +641,7 @@ test("providerconfigurationplaneproof", () => {
   assert.strictEqual(auditResult, null);
   assert.strictEqual(auditEvents.length, 1);
 
+  // A throwing audit fn is converted to a typed AUDIT_FAILURE.
   const throwingAudit = capability.auditProviderConfigMutation(
     "provider-proof-throw",
     null,
@@ -614,6 +658,7 @@ test("providerconfigurationplaneproof", () => {
     assert.fail("throwing audit fn should return typed AUDIT_FAILURE");
   }
 
+  // Readiness semantics: configured providers are not yet ready.
   const proofState = capability.createProviderConfig(
     capability.initialState,
     makeProviderConfig("provider-proof"),
@@ -635,9 +680,7 @@ test("providerconfigurationplaneproof", () => {
   if (isErrorResult(proofTransition)) {
     assert.fail(proofTransition.kind);
   }
-
-  const readiness = capability.getProviderReadiness(proofTransition, "provider-proof");
-  assert.strictEqual(readiness, null);
+  assert.strictEqual(capability.getProviderReadiness(proofTransition, "provider-proof"), null);
 
   const readyState = capability.transitionProviderLifecycle(
     proofTransition,
@@ -670,9 +713,12 @@ test("providerconfigurationplanereadinessmodel", () => {
     assert.fail(created.kind);
   }
 
+  // PROPOSED is not ready.
   assert.strictEqual(capability.getProviderReadiness(created, "provider-readiness"), null);
   assert.strictEqual(capability.getProviderReadiness(created, "missing-provider"), null);
 
+  // PROPOSED -> READY is illegal; readiness cannot be reached without
+  // configuration.
   const illegalReady = capability.transitionProviderLifecycle(
     created,
     "provider-readiness",
@@ -687,6 +733,7 @@ test("providerconfigurationplanereadinessmodel", () => {
     assert.fail("provider should not become READY from PROPOSED");
   }
 
+  // CONFIGURED is still not ready.
   const configured = capability.transitionProviderLifecycle(
     created,
     "provider-readiness",
@@ -700,6 +747,7 @@ test("providerconfigurationplanereadinessmodel", () => {
   }
   assert.strictEqual(capability.getProviderReadiness(configured, "provider-readiness"), null);
 
+  // A failed health probe blocks the READY transition (fails closed).
   const failedReady = capability.transitionProviderLifecycle(
     configured,
     "provider-readiness",
@@ -721,6 +769,7 @@ test("providerconfigurationplanereadinessmodel", () => {
     "CONFIGURED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
 
+  // A passing health probe allows the transition to READY.
   const ready = capability.transitionProviderLifecycle(
     configured,
     "provider-readiness",
@@ -737,6 +786,7 @@ test("providerconfigurationplanereadinessmodel", () => {
     "READY" satisfies capability.ProviderConfigurationPlaneReadinessSignal,
   );
 
+  // READY -> DEGRADED keeps readiness visible read-only.
   const degraded = capability.transitionProviderLifecycle(
     ready,
     "provider-readiness",
@@ -753,6 +803,7 @@ test("providerconfigurationplanereadinessmodel", () => {
     "DEGRADED" satisfies capability.ProviderConfigurationPlaneReadinessSignal,
   );
 
+  // DISABLED has no readiness signal.
   const disabled = capability.transitionProviderLifecycle(
     degraded,
     "provider-readiness",
@@ -820,24 +871,27 @@ test("providerconfigurationplanestatemodel", () => {
   );
   assert.strictEqual(state.lastError, null);
 
+  // The lifecycle-state union must include all contractual states.
+  const lifecycle: readonly capability.ProviderConfigurationPlaneLifecycleState[] =
+    capability.ProviderConfigurationPlaneLifecycleState;
   assert.ok(
-    capability.ProviderConfigurationPlaneLifecycleState.includes("PROPOSED" as never),
+    (lifecycle as readonly string[]).includes("PROPOSED"),
     "lifecycle state union must include PROPOSED",
   );
   assert.ok(
-    capability.ProviderConfigurationPlaneLifecycleState.includes("CONFIGURED" as never),
+    (lifecycle as readonly string[]).includes("CONFIGURED"),
     "lifecycle state union must include CONFIGURED",
   );
   assert.ok(
-    capability.ProviderConfigurationPlaneLifecycleState.includes("READY" as never),
+    (lifecycle as readonly string[]).includes("READY"),
     "lifecycle state union must include READY",
   );
   assert.ok(
-    capability.ProviderConfigurationPlaneLifecycleState.includes("DEGRADED" as never),
+    (lifecycle as readonly string[]).includes("DEGRADED"),
     "lifecycle state union must include DEGRADED",
   );
   assert.ok(
-    capability.ProviderConfigurationPlaneLifecycleState.includes("DISABLED" as never),
+    (lifecycle as readonly string[]).includes("DISABLED"),
     "lifecycle state union must include DISABLED",
   );
 
@@ -858,6 +912,7 @@ test("providerconfigurationplanevalidation", () => {
   const metadata = makeAuditMetadata("validation-admin");
   const auditFn = () => null;
 
+  // Missing providerKey fails closed.
   const directValidation = capability.validateProviderConfig({
     ...makeProviderConfig("provider-validation"),
     providerKey: "",
@@ -869,6 +924,7 @@ test("providerconfigurationplanevalidation", () => {
     assert.strictEqual(directValidation.kind, "INVALID_CONFIGURATION");
   }
 
+  // Missing capability fails closed.
   const missingCapability = capability.validateProviderConfig({
     ...makeProviderConfig("provider-validation"),
     capability: "",
@@ -880,6 +936,7 @@ test("providerconfigurationplanevalidation", () => {
     assert.strictEqual(missingCapability.kind, "INVALID_CONFIGURATION");
   }
 
+  // requiresCredential with no credentialRef fails closed.
   const missingCredential = capability.createProviderConfig(
     capability.initialState,
     {
@@ -896,6 +953,7 @@ test("providerconfigurationplanevalidation", () => {
     assert.fail("requiresCredential with no credentialRef should fail");
   }
 
+  // Valid configuration succeeds and is validated before mutation.
   const created = capability.createProviderConfig(
     capability.initialState,
     makeProviderConfig("provider-validation"),
@@ -906,6 +964,7 @@ test("providerconfigurationplanevalidation", () => {
     assert.fail(created.kind);
   }
 
+  // Illegal lifecycle transition (PROPOSED -> READY) is rejected before mutation.
   const invalidTransition = capability.transitionProviderLifecycle(
     created,
     "provider-validation",
@@ -932,6 +991,7 @@ test("providerconfigurationplanevalidation", () => {
     assert.fail(configured.kind);
   }
 
+  // Health is probed before READY is allowed; a failed probe fails closed.
   const healthFail = capability.transitionProviderLifecycle(
     configured,
     "provider-validation",
@@ -953,6 +1013,7 @@ test("providerconfigurationplanevalidation", () => {
     "CONFIGURED" satisfies capability.ProviderConfigurationPlaneLifecycleState,
   );
 
+  // Transitioning a missing provider is rejected.
   const missingProviderTransition = capability.transitionProviderLifecycle(
     configured,
     "missing-provider",

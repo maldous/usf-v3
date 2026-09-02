@@ -1,7 +1,3 @@
-// servicecatalogandproviderintegrationmodel.ts
-
-// --- Type Definitions ---
-
 export const Visibility = ['tenant_scoped_safe', 'global_only', 'not_exposed'] as const;
 export type Visibility = typeof Visibility[number];
 
@@ -11,7 +7,6 @@ export type IntegrationDecision = typeof IntegrationDecision[number];
 export type EntitlementKey = string;
 export type ResourceType = string;
 
-// Fixed set of error kinds for the error model
 export const ErrorKind = [
   'AUDIT_FAILURE',
   'AUTHENTICATION_REQUIRED',
@@ -24,7 +19,6 @@ export const ErrorKind = [
 ] as const;
 export type ErrorKind = typeof ErrorKind[number];
 
-// Fixed set of decision kinds
 export const DecisionKind = [
   'GRANTED',
   'POLICY_DENIED',
@@ -34,15 +28,52 @@ export const DecisionKind = [
 ] as const;
 export type DecisionKind = typeof DecisionKind[number];
 
-// Fixed set of readiness values
 export const Readiness = ['READY', 'DEGRADED', 'NOT_READY'] as const;
 export type Readiness = typeof Readiness[number];
 
-// Audit event kind
 export const AuditEventKind = ['AUDIT_BEFORE_CHANGE'] as const;
 export type AuditEventKind = typeof AuditEventKind[number];
 
-// --- Audit Model ---
+export const RequiredProofReferences = [
+  'proof:platform-services',
+  'proof:service-clickthrough-policy',
+  'proof:service-catalog-registry',
+  'proof:entitlements-routes',
+] as const;
+export type RequiredProofReferences = typeof RequiredProofReferences[number];
+
+export const ProviderConfigKeys = [
+  'platformServicesRegistry',
+  'serviceCatalogRegistry',
+  'providerAdapters',
+  'observabilityAdapters',
+  'entitlementsRegistry',
+] as const;
+export type ProviderConfigKeys = typeof ProviderConfigKeys[number];
+
+export const CatalogEndpoints = [
+  'GET /api/platform/service-catalog',
+] as const;
+export type CatalogEndpoints = typeof CatalogEndpoints[number];
+
+export const CatalogContractVersions = [
+  'catalog-v2',
+] as const;
+export type CatalogContractVersions = typeof CatalogContractVersions[number];
+
+export const LifecycleReadinessModel = ['READY', 'DEGRADED', 'NOT_READY'] as const;
+export type LifecycleReadinessModel = typeof LifecycleReadinessModel[number];
+
+export const CatalogEntryDecisionSet = ['build', 'compose', 'adapter', 'defer', 'reject'] as const;
+export type CatalogEntryDecisionSet = typeof CatalogEntryDecisionSet[number];
+
+export const LifecycleProofs = [
+  'proof:platform-services',
+  'proof:service-clickthrough-policy',
+  'proof:service-catalog-registry',
+  'proof:entitlements-routes',
+] as const;
+export type LifecycleProofs = typeof LifecycleProofs[number];
 
 export interface AuditEvent {
   readonly kind: AuditEventKind;
@@ -85,10 +116,9 @@ export function applyAuditToState(
   return {
     ...state,
     lastAuditEvent: event,
+    auditEvidencePreserved: true,
   };
 }
-
-// --- Error Model ---
 
 export interface TypedError {
   readonly kind: ErrorKind;
@@ -102,12 +132,20 @@ export function isTypedError(value: unknown): value is TypedError {
     typeof value === 'object' &&
     value !== null &&
     'isError' in value &&
-    (value as TypedError).isError === true
+    (value as { isError: unknown }).isError === true
   );
 }
 
 export function createAuditFailureError(message: string): TypedError {
   return { kind: 'AUDIT_FAILURE', message, isError: true, statusCode: 403 };
+}
+
+export function createAuthenticationRequiredError(message: string): TypedError {
+  return { kind: 'AUTHENTICATION_REQUIRED', message, isError: true, statusCode: 401 };
+}
+
+export function createStepUpRequiredError(message: string): TypedError {
+  return { kind: 'STEP_UP_REQUIRED', message, isError: true, statusCode: 401 };
 }
 
 export function createPolicyDeniedError(message: string): TypedError {
@@ -137,7 +175,72 @@ export function handleProviderFailure(reason: string): TypedError {
   return createDegradedFailureError(`Provider failure: ${reason}`);
 }
 
-// --- Permissions & Isolation ---
+export interface ProviderConfig {
+  readonly platformServicesRegistry?: ReadonlyMap<string, ServiceCatalogEntry> | undefined;
+  readonly serviceCatalogRegistry?: ReadonlyMap<string, ServiceCatalogEntry> | undefined;
+  readonly providerAdapters?: ReadonlyMap<string, Readonly<Record<string, unknown>>> | undefined;
+  readonly observabilityAdapters?: ReadonlyMap<string, Readonly<Record<string, unknown>>> | undefined;
+  readonly entitlementsRegistry?: ReadonlyMap<string, readonly string[]> | undefined;
+}
+
+export function isProviderConfig(value: unknown): value is ProviderConfig {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const v = value as Record<string, unknown>;
+  for (const k of Object.keys(v)) {
+    if (!(ProviderConfigKeys as readonly string[]).includes(k)) {
+      return false;
+    }
+    const field = v[k];
+    if (field !== undefined && !(field instanceof Map)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function readProviderConfig(
+  config: unknown,
+  key: ProviderConfigKeys
+): ReadonlyMap<string, unknown> {
+  if (!isProviderConfig(config)) {
+    throw createConfigurationInvalidError(
+      `Configuration plane for '${key}' is missing or invalid; failing closed`
+    );
+  }
+  const v = config as Record<string, unknown>;
+  const field = v[key];
+  if (!(field instanceof Map)) {
+    throw createConfigurationInvalidError(
+      `Configuration plane for '${key}' is missing or invalid; failing closed`
+    );
+  }
+  return field as ReadonlyMap<string, unknown>;
+}
+
+export function resolveProviderDetails(
+  config: unknown,
+  providerKey: string
+): Readonly<Record<string, unknown>> {
+  try {
+    const adapters = readProviderConfig(config, 'providerAdapters');
+    const v = adapters.get(providerKey);
+    if (v === undefined || typeof v !== 'object' || v === null) {
+      throw createConfigurationInvalidError(
+        `Provider adapter for '${providerKey}' did not resolve; failing closed`
+      );
+    }
+    return v as Readonly<Record<string, unknown>>;
+  } catch (err) {
+    if (isTypedError(err)) {
+      throw err;
+    }
+    throw createConfigurationInvalidError(
+      `Provider resolution for '${providerKey}' failed`
+    );
+  }
+}
 
 export interface TenantToken {
   readonly authLevel?: string;
@@ -196,8 +299,6 @@ export function checkTenantAccess(
   return true;
 }
 
-// --- State Model ---
-
 export interface ServiceCatalogEntry {
   readonly id: string;
   readonly key: string;
@@ -220,6 +321,13 @@ export interface ServiceCatalogModel {
   readonly lastError: TypedError | null;
   readonly readiness: Readiness;
   readonly degraded: boolean;
+  readonly observabilityAdaptersAvailable: boolean;
+  readonly tenantIsolationSignal: boolean;
+  readonly auditSignal: boolean;
+  readonly lifecycleReadiness: Readiness;
+  readonly auditEvidencePreserved: boolean;
+  readonly tenantBoundaryPreserved: boolean;
+  readonly lifecycleContractUnchanged: boolean;
 }
 
 export const initialModel: ServiceCatalogModel = {
@@ -229,11 +337,59 @@ export const initialModel: ServiceCatalogModel = {
   lastError: null,
   readiness: 'NOT_READY',
   degraded: false,
+  observabilityAdaptersAvailable: true,
+  tenantIsolationSignal: true,
+  auditSignal: true,
+  lifecycleReadiness: 'NOT_READY',
+  auditEvidencePreserved: true,
+  tenantBoundaryPreserved: true,
+  lifecycleContractUnchanged: true,
 };
 
 export const initialState: ServiceCatalogModel = initialModel;
 
-// --- Proof Functions (Hermetic Runtime Lineage) ---
+function isProviderResolved(details: Readonly<Record<string, unknown>>): boolean {
+  const record = details as Record<string, unknown>;
+  const falseByBoolean: readonly string[] = [
+    'providerResolved',
+    'resolved',
+    'providerAvailable',
+    'available',
+    'adapterAvailable',
+  ];
+
+  for (const key of falseByBoolean) {
+    const value = record[key];
+    if (typeof value === 'boolean' && value === false) {
+      return false;
+    }
+  }
+
+  const explicitErrors: readonly string[] = [
+    'resolutionError',
+    'providerError',
+    'adapterError',
+    'providerResolutionError',
+  ];
+  for (const key of explicitErrors) {
+    if (typeof record[key] === 'string' && (record[key] as string).trim().length > 0) {
+      return false;
+    }
+  }
+
+  const status = record.status;
+  if (typeof status === 'string') {
+    if (status === 'DEGRADED' || status === 'FAILED' || status === 'UNAVAILABLE') {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function isCatalogEntryCoherent(entry: ServiceCatalogEntry): boolean {
+  return validateCatalogEntry(entry) === null;
+}
 
 export function provePlatformServices(model: ServiceCatalogModel): boolean {
   if (model.resources.size === 0) {
@@ -241,15 +397,7 @@ export function provePlatformServices(model: ServiceCatalogModel): boolean {
   }
 
   for (const entry of model.resources.values()) {
-    if (
-      !entry.id ||
-      !entry.name ||
-      !entry.category ||
-      !Visibility.includes(entry.visibility) ||
-      !IntegrationDecision.includes(entry.integrationDecision) ||
-      typeof entry.entitlementKey !== 'string' ||
-      !Readiness.includes(entry.readiness)
-    ) {
+    if (!isCatalogEntryCoherent(entry)) {
       return false;
     }
   }
@@ -302,17 +450,26 @@ export function verifyPromotionLineage(model: ServiceCatalogModel): boolean {
   return runAllProofs(model);
 }
 
-// --- Readiness Model ---
-
 export function determineReadiness(model: ServiceCatalogModel): Readiness {
-  if (model.degraded) {
+  if (!model.tenantIsolationSignal || !model.auditSignal) {
+    return 'NOT_READY';
+  }
+  if (model.degraded || !model.observabilityAdaptersAvailable) {
     return 'DEGRADED';
   }
   if (model.resources.size === 0) {
     return 'NOT_READY';
   }
+  if (!provePlatformServices(model)) {
+    return 'NOT_READY';
+  }
+
   let allReady = true;
   for (const entry of model.resources.values()) {
+    if (!isProviderResolved(entry.providerDetails)) {
+      allReady = false;
+      continue;
+    }
     if (entry.readiness === 'NOT_READY') {
       return 'NOT_READY';
     }
@@ -324,7 +481,7 @@ export function determineReadiness(model: ServiceCatalogModel): Readiness {
 }
 
 export function getReadiness(model: ServiceCatalogModel): Readiness {
-  return model.readiness;
+  return determineReadiness(model);
 }
 
 export function getPlatformServicesReadiness(model: ServiceCatalogModel): {
@@ -339,11 +496,91 @@ export function getPlatformServicesReadiness(model: ServiceCatalogModel): {
   };
 }
 
-// --- Validation ---
+export function observabilityAdaptersAvailable(
+  model: ServiceCatalogModel
+): boolean {
+  return model.observabilityAdaptersAvailable;
+}
+
+export function enterDegradedMode(
+  model: ServiceCatalogModel,
+  reason: string
+): ServiceCatalogModel {
+  const err = createDegradedFailureError(reason);
+  return {
+    ...model,
+    degraded: true,
+    readiness: 'DEGRADED',
+    lifecycleReadiness: 'DEGRADED',
+    lastDecision: 'DEGRADED',
+    lastError: err,
+    auditSignal: model.auditSignal,
+    tenantIsolationSignal: model.tenantIsolationSignal,
+    auditEvidencePreserved: true,
+    tenantBoundaryPreserved: true,
+  };
+}
+
+export function reportObservabilityAdapterLoss(
+  model: ServiceCatalogModel,
+  reason: string
+): ServiceCatalogModel {
+  return {
+    ...enterDegradedMode(model, reason),
+    observabilityAdaptersAvailable: false,
+  };
+}
+
+export function restoreObservabilityAdapters(
+  model: ServiceCatalogModel
+): ServiceCatalogModel {
+  if (!model.degraded) {
+    return model;
+  }
+  const candidate: ServiceCatalogModel = {
+    ...model,
+    observabilityAdaptersAvailable: true,
+  };
+  return {
+    ...candidate,
+    degraded: false,
+    readiness: determineReadiness(candidate),
+    lifecycleReadiness: determineReadiness(candidate),
+    lastError: null,
+  };
+}
+
+export function isReadOnlyReadyInDegradedMode(model: ServiceCatalogModel): boolean {
+  return model.degraded;
+}
+
+export function canMutateInCurrentMode(model: ServiceCatalogModel): boolean {
+  if (!model.tenantIsolationSignal || !model.auditSignal) {
+    return false;
+  }
+  return !model.degraded && model.observabilityAdaptersAvailable;
+}
+
+export function detectMissingTenantIsolationOrAuditSignal(
+  model: ServiceCatalogModel
+): boolean {
+  return !model.tenantIsolationSignal || !model.auditSignal;
+}
+
+export function raiseTenantDataOrSecurityAlert(
+  model: ServiceCatalogModel
+): TypedError {
+  return createTenantIsolationViolationError(
+    'Missing tenant isolation or audit signal: alertable tenant-data-or-security condition'
+  );
+}
 
 export function validateCatalogEntry(
   entry: Partial<ServiceCatalogEntry> | Omit<ServiceCatalogEntry, 'id'>
 ): TypedError | null {
+  if ('id' in entry && (typeof entry.id !== 'string' || entry.id.trim() === '')) {
+    return createConfigurationInvalidError('Missing or invalid service identifier');
+  }
   if (!entry.name || typeof entry.name !== 'string' || entry.name.trim() === '') {
     return createConfigurationInvalidError('Missing or invalid service name');
   }
@@ -374,7 +611,32 @@ export function validateCatalogEntry(
   return null;
 }
 
-// --- Lifecycle Management & Mutations ---
+function auditThenMutate(
+  model: ServiceCatalogModel,
+  auditEvent: AuditEvent,
+  auditFn: (event: AuditEvent) => TypedError | null,
+  mutate: (m: ServiceCatalogModel) => ServiceCatalogModel
+): ServiceCatalogModel | TypedError {
+  let auditError: TypedError | null;
+  try {
+    auditError = auditFn(auditEvent);
+  } catch (err) {
+    return createAuditFailureError(err instanceof Error ? err.message : 'Audit failed');
+  }
+  if (auditError !== null) {
+    return auditError;
+  }
+  const mutated = mutate(model);
+  return {
+    ...mutated,
+    lastAuditEvent: auditEvent,
+    auditEvidencePreserved: true,
+    tenantBoundaryPreserved: true,
+    auditSignal: true,
+    tenantIsolationSignal: true,
+    lifecycleContractUnchanged: model.lifecycleContractUnchanged,
+  };
+}
 
 export function registerPlatformService(
   model: ServiceCatalogModel,
@@ -382,8 +644,10 @@ export function registerPlatformService(
   auditFn: (event: AuditEvent) => TypedError | null,
   actor: string = 'system'
 ): ServiceCatalogModel | TypedError {
-  if (model.degraded) {
-    return createDegradedFailureError('Cannot perform mutations in degraded mode');
+  if (!canMutateInCurrentMode(model)) {
+    return createDegradedFailureError(
+      'Cannot perform mutations in degraded mode: observability adapters unavailable'
+    );
   }
 
   const validationError = validateCatalogEntry(service);
@@ -391,7 +655,7 @@ export function registerPlatformService(
     return validationError;
   }
 
-  const id = service.id ?? service.key ?? `${service.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+  const id = service.id ?? service.key ?? `${service.name.toLowerCase().replace(/\s+/g, '-')}-recovery`;
   const key = service.key ?? id;
 
   const newEntry: ServiceCatalogEntry = {
@@ -399,10 +663,7 @@ export function registerPlatformService(
     id,
     key,
     proofReferences: service.proofReferences ?? [
-      'proof:platform-services',
-      'proof:service-clickthrough-policy',
-      'proof:service-catalog-registry',
-      'proof:entitlements-routes',
+      ...RequiredProofReferences,
     ],
   };
 
@@ -415,30 +676,28 @@ export function registerPlatformService(
     details: { service: newEntry },
   };
 
-  try {
-    const auditError = auditFn(auditEvent);
-    if (auditError !== null) {
-      return auditError;
+  return auditThenMutate(
+    model,
+    auditEvent,
+    auditFn,
+    (m) => {
+      const newResources = new Map(m.resources);
+      newResources.set(id, newEntry);
+      const candidate: ServiceCatalogModel = {
+        ...m,
+        resources: newResources,
+        lastDecision: 'GRANTED',
+        lastError: null,
+        tenantBoundaryPreserved: true,
+        auditEvidencePreserved: true,
+      };
+      return {
+        ...candidate,
+        readiness: determineReadiness(candidate),
+        lifecycleReadiness: determineReadiness(candidate),
+      };
     }
-  } catch (err) {
-    return createAuditFailureError(err instanceof Error ? err.message : 'Audit failed');
-  }
-
-  const newResources = new Map(model.resources);
-  newResources.set(id, newEntry);
-
-  const updatedModel: ServiceCatalogModel = {
-    ...model,
-    resources: newResources,
-    lastAuditEvent: auditEvent,
-    lastDecision: 'GRANTED',
-    lastError: null,
-  };
-
-  return {
-    ...updatedModel,
-    readiness: determineReadiness(updatedModel),
-  };
+  );
 }
 
 export function registerService(
@@ -457,8 +716,10 @@ export function updateServiceState(
   auditFn: (event: AuditEvent) => TypedError | null,
   actor: string = 'system'
 ): ServiceCatalogModel | TypedError {
-  if (model.degraded) {
-    return createDegradedFailureError('Cannot perform mutations in degraded mode');
+  if (!canMutateInCurrentMode(model)) {
+    return createDegradedFailureError(
+      'Cannot perform mutations in degraded mode: observability adapters unavailable'
+    );
   }
 
   const entry = model.resources.get(serviceId);
@@ -485,30 +746,28 @@ export function updateServiceState(
     details: { updates },
   };
 
-  try {
-    const auditError = auditFn(auditEvent);
-    if (auditError !== null) {
-      return auditError;
+  return auditThenMutate(
+    model,
+    auditEvent,
+    auditFn,
+    (m) => {
+      const newResources = new Map(m.resources);
+      newResources.set(serviceId, updatedEntry);
+      const candidate: ServiceCatalogModel = {
+        ...m,
+        resources: newResources,
+        lastDecision: 'GRANTED',
+        lastError: null,
+        tenantBoundaryPreserved: true,
+        auditEvidencePreserved: true,
+      };
+      return {
+        ...candidate,
+        readiness: determineReadiness(candidate),
+        lifecycleReadiness: determineReadiness(candidate),
+      };
     }
-  } catch (err) {
-    return createAuditFailureError(err instanceof Error ? err.message : 'Audit failed');
-  }
-
-  const newResources = new Map(model.resources);
-  newResources.set(serviceId, updatedEntry);
-
-  const updatedModel: ServiceCatalogModel = {
-    ...model,
-    resources: newResources,
-    lastAuditEvent: auditEvent,
-    lastDecision: 'GRANTED',
-    lastError: null,
-  };
-
-  return {
-    ...updatedModel,
-    readiness: determineReadiness(updatedModel),
-  };
+  );
 }
 
 export function unregisterService(
@@ -517,8 +776,10 @@ export function unregisterService(
   auditFn: (event: AuditEvent) => TypedError | null,
   actor: string = 'system'
 ): ServiceCatalogModel | TypedError {
-  if (model.degraded) {
-    return createDegradedFailureError('Cannot perform mutations in degraded mode');
+  if (!canMutateInCurrentMode(model)) {
+    return createDegradedFailureError(
+      'Cannot perform mutations in degraded mode: observability adapters unavailable'
+    );
   }
 
   const entry = model.resources.get(id);
@@ -534,30 +795,28 @@ export function unregisterService(
     timestamp: new Date().toISOString(),
   };
 
-  try {
-    const auditError = auditFn(auditEvent);
-    if (auditError !== null) {
-      return auditError;
+  return auditThenMutate(
+    model,
+    auditEvent,
+    auditFn,
+    (m) => {
+      const newResources = new Map(m.resources);
+      newResources.delete(id);
+      const candidate: ServiceCatalogModel = {
+        ...m,
+        resources: newResources,
+        lastDecision: 'GRANTED',
+        lastError: null,
+        tenantBoundaryPreserved: true,
+        auditEvidencePreserved: true,
+      };
+      return {
+        ...candidate,
+        readiness: determineReadiness(candidate),
+        lifecycleReadiness: determineReadiness(candidate),
+      };
     }
-  } catch (err) {
-    return createAuditFailureError(err instanceof Error ? err.message : 'Audit failed');
-  }
-
-  const newResources = new Map(model.resources);
-  newResources.delete(id);
-
-  const updatedModel: ServiceCatalogModel = {
-    ...model,
-    resources: newResources,
-    lastAuditEvent: auditEvent,
-    lastDecision: 'GRANTED',
-    lastError: null,
-  };
-
-  return {
-    ...updatedModel,
-    readiness: determineReadiness(updatedModel),
-  };
+  );
 }
 
 export function updateIntegration(
@@ -580,21 +839,133 @@ export function updateIntegration(
   );
 }
 
-// --- API Contract (Platform Readiness & GET /api/platform/service-catalog) ---
+export interface CatalogReadResponse {
+  readonly endpoint: 'GET /api/platform/service-catalog';
+  readonly version: 'catalog-v2';
+  readonly entries: ReadonlyArray<ServiceCatalogEntry>;
+  readonly readiness: Readiness;
+  readonly proofsPassed: boolean;
+  readonly isError: false;
+}
+
+export interface CatalogReadError {
+  readonly endpoint: 'GET /api/platform/service-catalog';
+  readonly version: 'catalog-v2';
+  readonly isError: true;
+  readonly error: TypedError;
+}
+
+export type CatalogReadResult = CatalogReadResponse | CatalogReadError;
 
 export function getCatalog(model: ServiceCatalogModel): ReadonlyArray<ServiceCatalogEntry> {
   return Array.from(model.resources.values());
 }
 
-export function getPlatformServiceCatalog(
-  model: ServiceCatalogModel,
-  token?: TenantToken
-): ReadonlyArray<ServiceCatalogEntry> {
+export function getPlatformServiceCatalog(model: ServiceCatalogModel, token?: TenantToken): ReadonlyArray<ServiceCatalogEntry> {
   const all = Array.from(model.resources.values());
   if (!token) {
     return all.filter((s) => s.visibility === 'global_only');
   }
   return all.filter((s) => checkTenantAccess(s, token));
+}
+
+export function readPlatformServiceCatalog(
+  model: ServiceCatalogModel,
+  token?: TenantToken
+): CatalogReadResult {
+  if (!runAllProofs(model)) {
+    return {
+      endpoint: 'GET /api/platform/service-catalog',
+      version: 'catalog-v2',
+      isError: true,
+      error: createPolicyDeniedError(
+        'Catalog proofs did not pass; failing closed rather than inventing defaults'
+      ),
+    };
+  }
+  const entries = getPlatformServiceCatalog(model, token);
+  return {
+    endpoint: 'GET /api/platform/service-catalog',
+    version: 'catalog-v2',
+    entries,
+    readiness: determineReadiness(model),
+    proofsPassed: true,
+    isError: false,
+  };
+}
+
+export function readReadinessSurface(
+  model: ServiceCatalogModel
+): {
+  readonly endpoint: 'proof:platform-services';
+  readonly status: Readiness;
+  readonly proofsPassed: boolean;
+  readonly degraded: boolean;
+  readonly observabilityAdaptersAvailable: boolean;
+  readonly isError: false;
+  readonly readOnly: boolean;
+  readonly lifecycleContractUnchanged: boolean;
+  readonly lifecycleReadiness: Readiness;
+} {
+  return {
+    endpoint: 'proof:platform-services',
+    status: getReadiness(model),
+    proofsPassed: runAllProofs(model),
+    degraded: model.degraded,
+    observabilityAdaptersAvailable: model.observabilityAdaptersAvailable,
+    isError: false,
+    readOnly: isReadOnlyReadyInDegradedMode(model),
+    lifecycleContractUnchanged: model.lifecycleContractUnchanged,
+    lifecycleReadiness: model.lifecycleReadiness,
+  };
+}
+
+export function readLifecycleReadinessSurface(
+  model: ServiceCatalogModel
+): {
+  readonly endpoint: 'proof:platform-services';
+  readonly status: LifecycleReadinessModel;
+  readonly proofsPassed: boolean;
+  readonly degraded: boolean;
+  readonly observabilityAdaptersAvailable: boolean;
+  readonly isError: false;
+  readonly readOnly: boolean;
+  readonly contractUnchanged: boolean;
+} {
+  return {
+    endpoint: 'proof:platform-services',
+    status: model.lifecycleReadiness,
+    proofsPassed: runAllProofs(model),
+    degraded: model.degraded,
+    observabilityAdaptersAvailable: model.observabilityAdaptersAvailable,
+    isError: false,
+    readOnly: isReadOnlyReadyInDegradedMode(model),
+    contractUnchanged: model.lifecycleContractUnchanged,
+  };
+}
+
+export interface ProviderPort {
+  readonly name: string;
+  readonly resolve: (key: string) => Readonly<Record<string, unknown>>;
+}
+
+export function makeProviderPort(
+  name: string,
+  config: unknown
+): ProviderPort {
+  return {
+    name,
+    resolve(key: string): Readonly<Record<string, unknown>> {
+      return resolveProviderDetails(config, key);
+    },
+  };
+}
+
+export function resolveThroughPort(
+  port: ProviderPort,
+  key: string
+): Readonly<Record<string, unknown>> {
+  return port.resolve(key);
 }
 
 export function recoverPlatformServices(
@@ -610,13 +981,14 @@ export function recoverPlatformServices(
     timestamp: new Date().toISOString(),
   };
 
+  let auditError: TypedError | null;
   try {
-    const auditError = auditFn(auditEvent);
-    if (auditError !== null) {
-      return auditError;
-    }
+    auditError = auditFn(auditEvent);
   } catch (err) {
     return createAuditFailureError(err instanceof Error ? err.message : 'Audit failed');
+  }
+  if (auditError !== null) {
+    return auditError;
   }
 
   const restoredMap = new Map<string, ServiceCatalogEntry>();
@@ -634,8 +1006,11 @@ export function recoverPlatformServices(
     lastAuditEvent: auditEvent,
     lastDecision: 'GRANTED',
     lastError: null,
-    degraded: false,
-    readiness: 'READY',
+    auditEvidencePreserved: true,
+    tenantBoundaryPreserved: true,
+    auditSignal: true,
+    tenantIsolationSignal: true,
+    lifecycleContractUnchanged: model.lifecycleContractUnchanged,
   };
 
   if (!verifyPromotionLineage(candidateModel)) {
@@ -645,5 +1020,200 @@ export function recoverPlatformServices(
   return {
     ...candidateModel,
     readiness: determineReadiness(candidateModel),
+    lifecycleReadiness: determineReadiness(candidateModel),
+  };
+}
+
+export interface LifecycleContract {
+  readonly capability: string;
+  readonly contractVersion: string;
+  readonly endpoints: readonly string[];
+  readonly requiredProofs: readonly string[];
+  readonly backedBy: readonly string[];
+  readonly touchesTenantData: boolean;
+  readonly catalogEndpoint: string;
+  readonly catalogVersion: string;
+  readonly readinessEndpoint: string;
+  readonly supportsBuildComposeAdapter: boolean;
+  readonly decision: IntegrationDecision;
+  readonly visibility: Visibility;
+}
+
+export const LIFECYCLE_PROOFS: readonly string[] = [
+  'proof:platform-services',
+  'proof:service-clickthrough-policy',
+  'proof:service-catalog-registry',
+  'proof:entitlements-routes',
+];
+
+export const LIFECYCLE_ENDPOINTS: readonly string[] = [
+  'proof:platform-services',
+  'proof:service-clickthrough-policy',
+  'proof:service-catalog-registry',
+  'proof:entitlements-routes',
+  'GET /api/platform/service-catalog',
+  'catalog-v2',
+];
+
+export const lifecycleContract: LifecycleContract = {
+  capability: 'servicecatalogandproviderintegrationmodel',
+  contractVersion: 'V1',
+  endpoints: LIFECYCLE_ENDPOINTS,
+  requiredProofs: LIFECYCLE_PROOFS,
+  backedBy: ['provider', 'database'],
+  touchesTenantData: true,
+  catalogEndpoint: 'GET /api/platform/service-catalog',
+  catalogVersion: 'catalog-v2',
+  readinessEndpoint: 'proof:platform-services',
+  supportsBuildComposeAdapter: true,
+  decision: 'build',
+  visibility: 'global_only',
+};
+
+export function getLifecycleContract(): LifecycleContract {
+  return lifecycleContract;
+}
+
+export function listRequiredProofs(): readonly string[] {
+  return LIFECYCLE_PROOFS;
+}
+
+export function getLifecycleEndpoints(): readonly string[] {
+  return LIFECYCLE_ENDPOINTS;
+}
+
+export function getCatalogEndpoint(): string {
+  return lifecycleContract.catalogEndpoint;
+}
+
+export function getCatalogVersion(): string {
+  return lifecycleContract.catalogVersion;
+}
+
+export function getReadinessEndpoint(): string {
+  return lifecycleContract.readinessEndpoint;
+}
+
+export function getRequiredProofsForPromotion(): readonly string[] {
+  return LIFECYCLE_PROOFS;
+}
+
+export function isLifecycleContractUnchanged(
+  model: ServiceCatalogModel
+): boolean {
+  if (model.resources.size === 0) {
+    return false;
+  }
+  return verifyPromotionLineage(model) && model.lifecycleContractUnchanged;
+}
+
+export function reRunPromotionProofs(
+  model: ServiceCatalogModel
+): boolean {
+  return (
+    provePlatformServices(model) &&
+    proveServiceClickthroughPolicy(model) &&
+    proveServiceCatalogRegistry(model) &&
+    proveEntitlementsRoutes(model)
+  );
+}
+
+export function mayContinuePromotion(model: ServiceCatalogModel): boolean {
+  return reRunPromotionProofs(model);
+}
+
+export function registerIntegrationModel(
+  model: ServiceCatalogModel,
+  service: Omit<ServiceCatalogEntry, 'id'> & { readonly id?: string },
+  auditFn: (event: AuditEvent) => TypedError | null,
+  actor: string = 'system'
+): ServiceCatalogModel | TypedError {
+  return registerPlatformService(model, service, auditFn, actor);
+}
+
+export function getContractSurface(): {
+  readonly endpoint: string;
+  readonly version: string;
+  readonly configKeys: readonly ProviderConfigKeys[];
+  readonly proofs: readonly RequiredProofReferences[];
+} {
+  return {
+    endpoint: 'GET /api/platform/service-catalog',
+    version: 'catalog-v2',
+    configKeys: [...ProviderConfigKeys],
+    proofs: [...RequiredProofReferences],
+  };
+}
+
+export function validateConfigPlane(config: unknown): boolean {
+  return isProviderConfig(config);
+}
+
+export interface PlatformServiceContractSurface {
+  readonly endpoint: 'proof:platform-services';
+  readonly version: 'catalog-v2';
+  readonly isError: false;
+  readonly status: Readiness;
+  readonly proofsPassed: boolean;
+  readonly degraded: boolean;
+  readonly observabilityAdaptersAvailable: boolean;
+  readonly readOnly: boolean;
+  readonly lifecycleReadiness: Readiness;
+  readonly lifecycleContractUnchanged: boolean;
+  readonly requiredProofs: readonly string[];
+}
+
+export interface PlatformServiceContractError {
+  readonly endpoint: 'proof:platform-services';
+  readonly version: 'catalog-v2';
+  readonly isError: true;
+  readonly error: TypedError;
+}
+
+export type PlatformServiceContractResult = PlatformServiceContractSurface | PlatformServiceContractError;
+
+export function readPlatformServiceContract(
+  model: ServiceCatalogModel
+): PlatformServiceContractResult {
+  return {
+    endpoint: 'proof:platform-services',
+    version: 'catalog-v2',
+    isError: false,
+    status: getReadiness(model),
+    proofsPassed: runAllProofs(model),
+    degraded: model.degraded,
+    observabilityAdaptersAvailable: model.observabilityAdaptersAvailable,
+    readOnly: isReadOnlyReadyInDegradedMode(model),
+    lifecycleReadiness: model.lifecycleReadiness,
+    lifecycleContractUnchanged: model.lifecycleContractUnchanged,
+    requiredProofs: LIFECYCLE_PROOFS,
+  };
+}
+
+export function isAuditEvidencePreserved(model: ServiceCatalogModel): boolean {
+  return model.auditEvidencePreserved && model.lastAuditEvent !== null;
+}
+
+export function isTenantBoundaryPreserved(model: ServiceCatalogModel): boolean {
+  return model.tenantBoundaryPreserved;
+}
+
+export function recordAuditEvidence(
+  model: ServiceCatalogModel,
+  event: AuditEvent
+): ServiceCatalogModel {
+  return {
+    ...model,
+    lastAuditEvent: event,
+    auditEvidencePreserved: true,
+  };
+}
+
+export function preserveTenantBoundary(
+  model: ServiceCatalogModel
+): ServiceCatalogModel {
+  return {
+    ...model,
+    tenantBoundaryPreserved: true,
   };
 }

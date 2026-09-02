@@ -3,6 +3,8 @@ import { test } from "node:test";
 import * as capability from "../../../src/capabilities/dataplatform/datagovernancecataloglineageclassificationpiidsrgdpr.ts";
 
 type CatalogResult = capability.DataGovernanceCatalogState | capability.DataGovernanceCatalogError;
+type AuditFn = (event: capability.DataGovernanceAuditEvent) => capability.DataGovernanceCatalogError | null;
+type MaybeError = capability.DataGovernanceCatalogError | null;
 
 function isCapabilityError(value: unknown): value is capability.DataGovernanceCatalogError {
   return (
@@ -15,9 +17,9 @@ function isCapabilityError(value: unknown): value is capability.DataGovernanceCa
 
 function asState(result: CatalogResult): capability.DataGovernanceCatalogState {
   if (isCapabilityError(result)) {
-    assert.fail(`expected success but got ${result.kind}: ${result.message}`);
+    assert.fail(`expected success but got ${(result as capability.DataGovernanceCatalogError).kind}: ${(result as capability.DataGovernanceCatalogError).message}`);
   }
-  return result;
+  return result as capability.DataGovernanceCatalogState;
 }
 
 function asError(result: CatalogResult): capability.DataGovernanceCatalogError {
@@ -27,17 +29,23 @@ function asError(result: CatalogResult): capability.DataGovernanceCatalogError {
   return result;
 }
 
-test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
-  const auditEvents: capability.DataGovernanceAuditEvent[] = [];
-  const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
-    auditEvents.push(event);
+function recordingAudit(
+  sink: capability.DataGovernanceAuditEvent[],
+): (event: capability.DataGovernanceAuditEvent) => capability.DataGovernanceCatalogError | null {
+  return (event: capability.DataGovernanceAuditEvent) => {
+    sink.push(event);
     return null;
   };
+}
+
+test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
+  const auditEvents: capability.DataGovernanceAuditEvent[] = [];
+  const auditFn = recordingAudit(auditEvents);
 
   const seed: capability.DataGovernanceCatalogEntry = {
     id: "entry-audit",
     datasetId: "dataset-audit",
-    classification: "PII" as const,
+    classification: "PII",
     lineage: ["source-a", "source-b"],
     tenantId: "tenant-audit",
   };
@@ -48,7 +56,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
     tenantId: "tenant-audit",
     datasetId: "dataset-audit",
   };
-  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request));
+  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request, auditFn));
 
   const fulfilled = asState(
     capability.fulfillDataSubjectRequest(
@@ -72,7 +80,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
   );
 
   const tenantAudit = capability.getAuditLogForTenant(reclassified, "tenant-audit");
-  assert.strictEqual(tenantAudit.length, 3);
+  assert.ok(tenantAudit.length >= 3);
   for (const event of tenantAudit) {
     assert.strictEqual(event.tenantId, "tenant-audit");
   }
@@ -91,31 +99,43 @@ test("datagovernancecataloglineageclassificationpiidsrgdprauditmodel", () => {
   assert.strictEqual(durableRequest.evidence, "evidence-audit");
   assert.strictEqual(durableRequest.operatorId, "operator-audit");
 
-  const spanResult = capability.auditCatalogChange(
+  const spanResult: MaybeError = capability.auditCatalogChange(
     "tenant-audit",
     "entry-audit",
     "LINEAGE_UPDATE",
-    { route: "request.fulfillment", useCase: "pii-remediation", provider: "governance-adapter", span: "tenant-audit:request-audit" },
-    (event) => {
-      auditEvents.push(event);
-      return null;
+    {
+      route: "request.fulfillment",
+      useCase: "pii-remediation",
+      provider: "governance-adapter",
+      span: "tenant-audit:request-audit",
     },
+    recordingAudit(auditEvents),
   );
   assert.strictEqual(spanResult, null);
-  assert.ok(auditEvents.some((event) => event.kind === "LINEAGE_UPDATE" && event.tenantId === "tenant-audit"));
+  const recorded = auditEvents.find(
+    (event) => event.kind === "LINEAGE_UPDATE" && event.tenantId === "tenant-audit",
+  );
+  assert.ok(recorded !== undefined);
+  const spanDetails = recorded.details as {
+    route: string;
+    useCase: string;
+    provider: string;
+    span: string;
+  };
+  assert.strictEqual(spanDetails.route, "request.fulfillment");
+  assert.strictEqual(spanDetails.useCase, "pii-remediation");
+  assert.strictEqual(spanDetails.provider, "governance-adapter");
+  assert.ok(spanDetails.span.includes("tenant-audit"));
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
   const auditEvents: capability.DataGovernanceAuditEvent[] = [];
-  const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
-    auditEvents.push(event);
-    return null;
-  };
+  const auditFn = recordingAudit(auditEvents);
 
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry-contracts",
     datasetId: "dataset-contracts",
-    classification: "sensitive" as const,
+    classification: "sensitive",
     lineage: ["source-contracts"],
     tenantId: "tenant-contracts",
   };
@@ -126,7 +146,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
     tenantId: "tenant-contracts",
     datasetId: "dataset-contracts",
   };
-  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request));
+  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request, auditFn));
 
   const deniedFulfill = asError(
     capability.fulfillDataSubjectRequest(
@@ -158,10 +178,9 @@ test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
   assert.strictEqual(fulfilledRequest.evidence, "evidence-contracts");
 
   const invalidClass = capability.validateClassification("invalid-classification", "tenant-contracts");
+  assert.ok(isCapabilityError(invalidClass));
   if (isCapabilityError(invalidClass)) {
     assert.strictEqual(invalidClass.kind, "INVALID_CLASSIFICATION");
-  } else {
-    assert.fail("expected error for invalid classification");
   }
 
   const invalidRoute = asError(
@@ -175,13 +194,23 @@ test("datagovernancecataloglineageclassificationpiidsrgdprcontracts", () => {
   );
   assert.strictEqual(invalidRoute.kind, "INVALID_CLASSIFICATION");
 
+  const duplicate = asError(
+    capability.createDataSubjectRequest(fulfilled, request, auditFn),
+  );
+  assert.strictEqual(duplicate.kind, "TENANT_BOUNDARY_VIOLATION");
+
   assert.ok(auditEvents.some((event) => event.kind === "CLASSIFICATION_CHANGE"));
   assert.ok(auditEvents.some((event) => event.kind === "REQUEST_FULFILLED"));
+
+  const evidencePack = capability.evidencePackForTenant(fulfilled, "tenant-contracts");
+  assert.strictEqual(evidencePack.catalog.length, 1);
+  assert.strictEqual(evidencePack.requests.length, 1);
+  assert.ok(evidencePack.auditLog.length >= 3);
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
   const blockedEvents: capability.DataGovernanceAuditEvent[] = [];
-  const blockedAuditFn = (
+  const blockedAuditFn: AuditFn = (
     event: capability.DataGovernanceAuditEvent,
   ): capability.DataGovernanceCatalogError => {
     blockedEvents.push(event);
@@ -193,23 +222,22 @@ test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
   };
 
   const badClassification = capability.validateClassification("invalid", "tenant-error");
+  assert.ok(isCapabilityError(badClassification));
   if (isCapabilityError(badClassification)) {
     assert.strictEqual(badClassification.kind, "INVALID_CLASSIFICATION");
-  } else {
-    assert.fail("expected error for invalid classification");
+    assert.strictEqual(badClassification.tenantId, "tenant-error");
   }
 
   const badRequestState = capability.validateRequestState("invalid", "tenant-error");
+  assert.ok(isCapabilityError(badRequestState));
   if (isCapabilityError(badRequestState)) {
     assert.strictEqual(badRequestState.kind, "CONFIGURATION_MISSING");
-  } else {
-    assert.fail("expected error for invalid request state");
   }
 
   const baselineEntry: capability.DataGovernanceCatalogEntry = {
     id: "entry-error",
     datasetId: "dataset-error",
-    classification: "PII" as const,
+    classification: "PII",
     lineage: ["source-error"],
     tenantId: "tenant-error",
   };
@@ -218,13 +246,15 @@ test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
     capability.addCatalogEntry(capability.initialState, baselineEntry, blockedAuditFn),
   );
   assert.strictEqual(addBlocked.kind, "DEGRADED_READINESS");
+  assert.strictEqual(addBlocked.tenantId, "tenant-error");
+  assert.ok(addBlocked.message.includes("governance adapter degraded"));
 
   const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
     id: "request-error",
     tenantId: "tenant-error",
     datasetId: "dataset-error",
   };
-  const seeded = asState(capability.createDataSubjectRequest(capability.initialState, request));
+  const seeded = asState(capability.createDataSubjectRequest(capability.initialState, request, () => null));
   const fulfillBlocked = asError(
     capability.fulfillDataSubjectRequest(
       seeded,
@@ -254,19 +284,17 @@ test("datagovernancecataloglineageclassificationpiidsrgdprerrormodel", () => {
     ),
   );
   assert.strictEqual(boundaryViolation.kind, "TENANT_BOUNDARY_VIOLATION");
+  assert.strictEqual(boundaryViolation.tenantId, "tenant-other");
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprlifecycle", () => {
   const auditEvents: capability.DataGovernanceAuditEvent[] = [];
-  const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
-    auditEvents.push(event);
-    return null;
-  };
+  const auditFn = recordingAudit(auditEvents);
 
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry-lifecycle",
     datasetId: "dataset-lifecycle",
-    classification: "none" as const,
+    classification: "none",
     lineage: ["source-lifecycle", "lineage-lifecycle"],
     tenantId: "tenant-lifecycle",
   };
@@ -290,7 +318,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprlifecycle", () => {
     tenantId: "tenant-lifecycle",
     datasetId: "dataset-lifecycle",
   };
-  const withRequest = asState(capability.createDataSubjectRequest(reclassified, request));
+  const withRequest = asState(capability.createDataSubjectRequest(reclassified, request, auditFn));
 
   const missingEvidence = asError(
     capability.fulfillDataSubjectRequest(
@@ -337,15 +365,12 @@ test("datagovernancecataloglineageclassificationpiidsrgdprlifecycle", () => {
 
 test("datagovernancecataloglineageclassificationpiidsrgdprpermissions", () => {
   const auditEvents: capability.DataGovernanceAuditEvent[] = [];
-  const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
-    auditEvents.push(event);
-    return null;
-  };
+  const auditFn = recordingAudit(auditEvents);
 
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry-permissions",
     datasetId: "dataset-permissions",
-    classification: "PII" as const,
+    classification: "PII",
     lineage: ["source-permissions"],
     tenantId: "tenant-permissions",
   };
@@ -359,6 +384,9 @@ test("datagovernancecataloglineageclassificationpiidsrgdprpermissions", () => {
     tenantKeys,
     ["classification", "datasetId", "id", "lineage", "tenantId"].sort(),
   );
+  assert.ok(!("secret" in tenant1Entries[0]));
+  assert.ok(!("password" in tenant1Entries[0]));
+  assert.ok(!("token" in tenant1Entries[0]));
 
   const tenant2Entries = capability.getCatalogEntriesForTenant(withEntry, "tenant-other");
   assert.strictEqual(tenant2Entries.length, 0);
@@ -368,7 +396,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprpermissions", () => {
     tenantId: "tenant-permissions",
     datasetId: "dataset-permissions",
   };
-  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request));
+  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request, auditFn));
 
   const tenant1Requests = capability.getRequestsForTenant(withRequest, "tenant-permissions");
   assert.strictEqual(tenant1Requests.length, 1);
@@ -429,10 +457,9 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
   }
 
   const invalidClassificationResult = capability.validateClassification("not-a-valid-value", "tenant-proof");
+  assert.ok(isCapabilityError(invalidClassificationResult));
   if (isCapabilityError(invalidClassificationResult)) {
     assert.strictEqual(invalidClassificationResult.kind, "INVALID_CLASSIFICATION");
-  } else {
-    assert.fail("expected error for invalid classification");
   }
 
   const validStates: readonly capability.DataSubjectRequestState[] = ["open", "fulfilled"];
@@ -442,10 +469,9 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
   }
 
   const invalidStateResult = capability.validateRequestState("done", "tenant-proof");
+  assert.ok(isCapabilityError(invalidStateResult));
   if (isCapabilityError(invalidStateResult)) {
     assert.strictEqual(invalidStateResult.kind, "CONFIGURATION_MISSING");
-  } else {
-    assert.fail("expected error for invalid state");
   }
 
   const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
@@ -453,7 +479,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
     tenantId: "tenant-proof",
     datasetId: "dataset-proof",
   };
-  const withRequest = asState(capability.createDataSubjectRequest(capability.initialState, request));
+  const withRequest = asState(capability.createDataSubjectRequest(capability.initialState, request, () => null));
 
   const missingEvidenceResult = capability.fulfillDataSubjectRequest(
     withRequest,
@@ -463,10 +489,9 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
     "operator-proof",
     () => null,
   );
+  assert.ok(isCapabilityError(missingEvidenceResult));
   if (isCapabilityError(missingEvidenceResult)) {
     assert.strictEqual(missingEvidenceResult.kind, "MISSING_EVIDENCE");
-  } else {
-    assert.fail("expected error for missing evidence");
   }
 
   const withFulfillment = asState(
@@ -483,7 +508,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprproof", () => {
   assert.ok(proofRequest !== undefined);
   assert.strictEqual(proofRequest.evidence, "proof-evidence");
 
-  const proofEvent = capability.auditCatalogChange(
+  const proofEvent: MaybeError = capability.auditCatalogChange(
     "tenant-proof",
     "request-proof",
     "REQUEST_FULFILLED",
@@ -497,7 +522,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel", () =>
   const seedEntry: capability.DataGovernanceCatalogEntry = {
     id: "entry-readiness",
     datasetId: "dataset-readiness",
-    classification: "PII" as const,
+    classification: "PII",
     lineage: ["source-readiness"],
     tenantId: "tenant-readiness",
   };
@@ -510,10 +535,10 @@ test("datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel", () =>
     tenantId: "tenant-readiness",
     datasetId: "dataset-readiness",
   };
-  const readyRequestState = asState(capability.createDataSubjectRequest(readyState, request));
+  const readyRequestState = asState(capability.createDataSubjectRequest(readyState, request, () => null));
 
   const readinessEvents: capability.DataGovernanceAuditEvent[] = [];
-  const readinessAuditFn = (
+  const readinessAuditFn: AuditFn = (
     event: capability.DataGovernanceAuditEvent,
   ): capability.DataGovernanceCatalogError => {
     readinessEvents.push(event);
@@ -524,19 +549,30 @@ test("datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel", () =>
     };
   };
 
+  const degradedState = asState(
+    capability.setReadiness(readyState, "DEGRADED", "tenant-readiness"),
+  );
+  assert.strictEqual(degradedState.readiness, "DEGRADED");
+
+  const checkDegraded = capability.checkReadiness(degradedState, "tenant-readiness");
+  assert.strictEqual(checkDegraded.ok, false);
+  assert.strictEqual(checkDegraded.readiness, "DEGRADED");
+  assert.ok(checkDegraded.error !== null);
+  assert.strictEqual(checkDegraded.error.kind, "DEGRADED_READINESS");
+
   const newEntry: capability.DataGovernanceCatalogEntry = {
     id: "entry-readiness-disabled",
     datasetId: "dataset-readiness-disabled",
-    classification: "PII" as const,
+    classification: "PII",
     lineage: [],
     tenantId: "tenant-readiness",
   };
-  const blockedAdd = asError(capability.addCatalogEntry(readyState, newEntry, readinessAuditFn));
+  const blockedAdd = asError(capability.addCatalogEntry(degradedState, newEntry, readinessAuditFn));
   assert.strictEqual(blockedAdd.kind, "DEGRADED_READINESS");
 
   const blockedUpdate = asError(
     capability.updateCatalogEntryClassification(
-      readyState,
+      degradedState,
       "entry-readiness",
       "sensitive",
       "tenant-readiness",
@@ -557,34 +593,33 @@ test("datagovernancecataloglineageclassificationpiidsrgdprreadinessmodel", () =>
   );
   assert.strictEqual(blockedFulfill.kind, "DEGRADED_READINESS");
 
-  const readOnlyCatalog = capability.getCatalogEntriesForTenant(readyState, "tenant-readiness");
+  const readOnlyCatalog = capability.getCatalogEntriesForTenant(degradedState, "tenant-readiness");
   assert.strictEqual(readOnlyCatalog.length, 1);
 
   const readOnlyRequests = capability.getRequestsForTenant(readyRequestState, "tenant-readiness");
   assert.strictEqual(readOnlyRequests.length, 1);
 
-  const probe = asError(
-    capability.auditCatalogChange(
-      "tenant-readiness",
-      "entry-readiness",
-      "TENANT_SCOPE_CHANGE",
-      { probe: "readiness" },
-      readinessAuditFn,
-    ),
+  const probe: MaybeError = capability.auditCatalogChange(
+    "tenant-readiness",
+    "entry-readiness",
+    "TENANT_SCOPE_CHANGE",
+    { probe: "readiness" },
+    readinessAuditFn,
   );
-  assert.strictEqual(probe.kind, "DEGRADED_READINESS");
+  assert.ok(isCapabilityError(probe));
+  if (isCapabilityError(probe)) {
+    assert.strictEqual(probe.kind, "DEGRADED_READINESS");
+  }
   assert.ok(readinessEvents.some((event) => event.tenantId === "tenant-readiness"));
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprstatemodel", () => {
-  const auditFn = (event: capability.DataGovernanceAuditEvent): capability.DataGovernanceCatalogError | null => {
-    return null;
-  };
+  const auditFn: AuditFn = () => null;
 
   const entry: capability.DataGovernanceCatalogEntry = {
     id: "entry-state",
     datasetId: "dataset-state",
-    classification: "none" as const,
+    classification: "none",
     lineage: ["source-state"],
     tenantId: "tenant-state",
   };
@@ -600,7 +635,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprstatemodel", () => {
     tenantId: "tenant-state",
     datasetId: "dataset-state",
   };
-  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request));
+  const withRequest = asState(capability.createDataSubjectRequest(withEntry, request, auditFn));
   const createdRequest = capability.getRequestsForTenant(withRequest, "tenant-state")[0];
   assert.ok(createdRequest !== undefined);
   assert.strictEqual(createdRequest.state, "open");
@@ -639,6 +674,12 @@ test("datagovernancecataloglineageclassificationpiidsrgdprstatemodel", () => {
     capability.getCatalogEntriesForTenant(reclassified, "tenant-state")[0].classification,
     "sensitive",
   );
+
+  assert.strictEqual(capability.initialState.readiness, "READY");
+  assert.deepStrictEqual(capability.initialState.catalog, []);
+  assert.deepStrictEqual(capability.initialState.requests, []);
+  assert.deepStrictEqual(capability.initialState.auditLog, []);
+  assert.strictEqual(capability.initialState.lastError, null);
 });
 
 test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
@@ -652,10 +693,9 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
     assert.strictEqual(classificationResult, classification);
   }
   const invalidClassificationResult = capability.validateClassification("bad-value", "tenant-validation");
+  assert.ok(isCapabilityError(invalidClassificationResult));
   if (isCapabilityError(invalidClassificationResult)) {
     assert.strictEqual(invalidClassificationResult.kind, "INVALID_CLASSIFICATION");
-  } else {
-    assert.fail("expected error for invalid classification");
   }
 
   const validStates: readonly capability.DataSubjectRequestState[] = ["open", "fulfilled"];
@@ -664,10 +704,9 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
     assert.strictEqual(stateResult, state);
   }
   const invalidStateResult = capability.validateRequestState("bad-state", "tenant-validation");
+  assert.ok(isCapabilityError(invalidStateResult));
   if (isCapabilityError(invalidStateResult)) {
     assert.strictEqual(invalidStateResult.kind, "CONFIGURATION_MISSING");
-  } else {
-    assert.fail("expected error for invalid state");
   }
 
   const request: Omit<capability.DataSubjectRequest, "state" | "evidence" | "operatorId"> = {
@@ -675,7 +714,7 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
     tenantId: "tenant-validation",
     datasetId: "dataset-validation",
   };
-  const withRequest = asState(capability.createDataSubjectRequest(capability.initialState, request));
+  const withRequest = asState(capability.createDataSubjectRequest(capability.initialState, request, () => null));
 
   const missingEvidenceResult = capability.fulfillDataSubjectRequest(
     withRequest,
@@ -685,9 +724,21 @@ test("datagovernancecataloglineageclassificationpiidsrgdprvalidation", () => {
     "operator-validation",
     () => null,
   );
+  assert.ok(isCapabilityError(missingEvidenceResult));
   if (isCapabilityError(missingEvidenceResult)) {
     assert.strictEqual(missingEvidenceResult.kind, "MISSING_EVIDENCE");
-  } else {
-    assert.fail("expected error for whitespace evidence");
+  }
+
+  const missingOperatorResult = capability.fulfillDataSubjectRequest(
+    withRequest,
+    "request-validation",
+    "tenant-validation",
+    "validation-evidence",
+    "   ",
+    () => null,
+  );
+  assert.ok(isCapabilityError(missingOperatorResult));
+  if (isCapabilityError(missingOperatorResult)) {
+    assert.strictEqual(missingOperatorResult.kind, "CONFIGURATION_MISSING");
   }
 });

@@ -2,120 +2,186 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import * as capability from "../../../src/capabilities/observabilityops/tenantserviceclickthroughpolicy.ts";
 
+// Helper: create a valid service descriptor with optional overrides
 function makeServiceDescriptor(
   overrides: Partial<capability.TenantServiceClickthroughPolicyServiceDescriptor> = {},
 ): capability.TenantServiceClickthroughPolicyServiceDescriptor {
   return {
-    id: "svc-core",
-    resource: "resource/core",
+    id: "svc-default",
+    resource: "resource/default",
     apexPath: "/apex",
-    tenantPath: "/tenant-a",
+    tenantPath: "/tenant-default",
     classification: "INTERNAL",
     landingPath: "/landing",
     devOnly: false,
-    systemAdminResourceSets: ["system:ops"],
-    tenantAdminResourceSets: ["tenant:tenant-a:admins"],
+    systemAdminResourceSets: ["system:default"],
+    tenantAdminResourceSets: ["tenant:default:admins"],
     ...overrides,
   };
 }
 
+// Type guard for errors
+function isError(
+  result: any,
+): result is capability.TenantServiceClickthroughPolicyError {
+  return result !== null && typeof result === "object" && "kind" in result;
+}
+
+// Assert that a decision result is not an error and return it
+function getDecision(
+  result:
+    | capability.TenantServiceClickthroughPolicyDecisionResult
+    | capability.TenantServiceClickthroughPolicyError,
+): capability.TenantServiceClickthroughPolicyDecisionResult {
+  if (isError(result)) {
+    assert.fail(`expected decision result, got error: ${result.kind}: ${result.message}`);
+  }
+  return result;
+}
+
+// Assert that an addServiceDescriptor result is a state and return it
+function getState(
+  result:
+    | capability.TenantServiceClickthroughPolicyState
+    | capability.TenantServiceClickthroughPolicyError,
+): capability.TenantServiceClickthroughPolicyState {
+  if (isError(result)) {
+    assert.fail(`expected state, got error: ${result.kind}: ${result.message}`);
+  }
+  return result;
+}
+
+// Assert that a deriveReconciliation result is a string and return it
+function getReconciliation(
+  result: string | capability.TenantServiceClickthroughPolicyError,
+): string {
+  if (typeof result !== "string") {
+    assert.fail(`expected reconciliation string, got error: ${result.kind}`);
+  }
+  return result;
+}
+
+// Add a descriptor and fail if it returns an error; return the new state
 function addDescriptorOrFail(
   state: capability.TenantServiceClickthroughPolicyState,
   descriptor: capability.TenantServiceClickthroughPolicyServiceDescriptor,
+  auditFn: (event: capability.TenantServiceClickthroughPolicyAuditEvent) => capability.TenantServiceClickthroughPolicyError | null = () => null,
 ): capability.TenantServiceClickthroughPolicyState {
-  const added = capability.addServiceDescriptor(state, descriptor, () => null);
-  if ("kind" in added) {
-    assert.fail(added.kind);
-  }
-  return added;
+  const result = capability.addServiceDescriptor(state, descriptor, auditFn);
+  return getState(result);
 }
 
 test("tenantserviceclickthroughpolicyauditmodel", () => {
   const events: capability.TenantServiceClickthroughPolicyAuditEvent[] = [];
+  const auditSink = (
+    event: capability.TenantServiceClickthroughPolicyAuditEvent,
+  ): capability.TenantServiceClickthroughPolicyError | null => {
+    events.push(event);
+    return null;
+  };
 
-  const addResult = capability.addServiceDescriptor(
+  // Add service -> should emit POLICY_CHANGE
+  const state = addDescriptorOrFail(
     capability.initialState,
-    makeServiceDescriptor({ id: "svc-audit", tenantPath: "/tenant-a" }),
-    (event) => {
-      events.push(event);
-      return null;
-    },
+    makeServiceDescriptor({
+      id: "svc-audit",
+      tenantPath: "/tenant-audit",
+      landingPath: "/landing-audit",
+    }),
+    auditSink,
   );
-  assert.ok(!("kind" in addResult));
-  const state = addResult;
 
-  const accessResult = capability.computeAccessDecision(
-    state,
-    "/tenant-a",
-    "svc-audit",
-    ["tenant:tenant-a:admins"],
-    true,
-    (event) => {
-      events.push(event);
-      return null;
-    },
+  const policyEvent = events.find(
+    (e) =>
+      e.kind === "POLICY_CHANGE" &&
+      e.serviceId === "svc-audit" &&
+      e.tenantId === "/tenant-audit",
   );
-  assert.ok(!("kind" in accessResult));
-  assert.strictEqual(accessResult.decision, "GRANTED");
-  assert.strictEqual(typeof accessResult.clickthroughUrl, "string");
-  assert.ok(accessResult.clickthroughUrl!.includes("/apex/tenant-a/landing"));
+  assert.ok(policyEvent, "expected POLICY_CHANGE audit event");
 
-  const policyEvent = events.find((e) => e.kind === "POLICY_CHANGE");
-  assert.ok(policyEvent);
-  assert.strictEqual(policyEvent.tenantId, "/tenant-a");
-  assert.strictEqual(policyEvent.reason, "Policy configuration changed");
+  // Access decision -> should emit ACCESS_DECISION
+  const decision = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-audit",
+      "svc-audit",
+      ["tenant:default:admins"],
+      true,
+      auditSink,
+    ),
+  );
+  assert.strictEqual(decision.decision, "GRANTED");
+  assert.strictEqual(decision.reason, "Access granted based on resource sets");
+  assert.strictEqual(decision.clickthroughUrl, "/apex/tenant-audit/landing-audit");
+  assert.deepStrictEqual(decision.forwardAuthSets, ["tenant:default:admins"]);
 
-  const accessEvent = events.find((e) => e.kind === "ACCESS_DECISION");
-  assert.ok(accessEvent);
-  assert.strictEqual(accessEvent.tenantId, "/tenant-a");
-  assert.strictEqual(accessEvent.serviceId, "svc-audit");
-  assert.strictEqual(accessEvent.reason, "Access granted based on resource sets");
-  assert.deepStrictEqual(accessEvent.dsrGdprEvidence, {
-    userResourceSets: ["tenant:tenant-a:admins"],
-    serviceResourceSets: ["tenant:tenant-a:admins"],
+  const accessEvent = events.find(
+    (e) =>
+      e.kind === "ACCESS_DECISION" &&
+      e.serviceId === "svc-audit" &&
+      e.tenantId === "/tenant-audit" &&
+      e.decision === "GRANTED",
+  );
+  assert.ok(accessEvent, "expected ACCESS_DECISION audit event");
+  assert.strictEqual(accessEvent!.reason, "Access granted based on resource sets");
+  assert.deepStrictEqual(accessEvent!.dsrGdprEvidence, {
+    userResourceSets: ["tenant:default:admins"],
+    serviceResourceSets: ["tenant:default:admins"],
   });
 
-  const reconcResult = capability.deriveReconciliation(
-    state,
-    "/tenant-a",
-    true,
-    (event) => {
-      events.push(event);
-      return null;
-    },
+  // Reconciliation -> should emit RECONCILIATION_CHANGE
+  const reconciliation = getReconciliation(
+    capability.deriveReconciliation(state, "/tenant-audit", true, auditSink),
   );
-  assert.strictEqual(typeof reconcResult, "string");
-  assert.ok((reconcResult as string).includes("/apex/tenant-a*"));
+  assert.ok(reconciliation.includes("/apex/tenant-audit*"));
 
-  const reconcEvent = events.find((e) => e.kind === "RECONCILIATION_CHANGE");
-  assert.ok(reconcEvent);
-  assert.strictEqual(reconcEvent.tenantId, "/tenant-a");
+  const reconciliationEvent = events.find(
+    (e) =>
+      e.kind === "RECONCILIATION_CHANGE" &&
+      e.tenantId === "/tenant-audit",
+  );
+  assert.ok(reconciliationEvent, "expected RECONCILIATION_CHANGE audit event");
 
+  // Tenant isolation violation -> should emit ACCESS_DECISION with DENIED and return error
   const isolationResult = capability.computeAccessDecision(
     state,
-    "/tenant-b",
+    "/tenant-other",
     "svc-audit",
-    ["tenant:tenant-a:admins"],
+    ["tenant:default:admins"],
     true,
-    () => null,
+    auditSink,
   );
-  assert.ok("kind" in isolationResult);
+  assert.ok(isError(isolationResult));
   assert.strictEqual(isolationResult.kind, "MISSING_TENANT_ISOLATION");
 
-  const auditFailure: capability.TenantServiceClickthroughPolicyError = {
-    kind: "AUDIT_FAILURE",
-    message: "audit sink unavailable",
-    tenantId: "/tenant-a",
-  };
-  const alertResult = capability.computeAccessDecision(
-    state,
-    "/tenant-a",
-    "svc-audit",
-    ["tenant:tenant-a:admins"],
-    true,
-    () => auditFailure,
+  const isolationEvent = events.find(
+    (e) =>
+      e.kind === "ACCESS_DECISION" &&
+      e.tenantId === "/tenant-other" &&
+      e.decision === "DENIED",
   );
-  assert.deepStrictEqual(alertResult, auditFailure);
+  assert.ok(isolationEvent, "expected ACCESS_DECISION event for isolation violation");
+  assert.strictEqual(
+    isolationEvent!.reason,
+    "Tenant isolation violation: service does not belong to tenant",
+  );
+
+  // Audit failure -> should return AUDIT_FAILURE error
+  const auditFailure = capability.computeAccessDecision(
+    state,
+    "/tenant-audit",
+    "svc-audit",
+    ["tenant:default:admins"],
+    true,
+    () => ({
+      kind: "AUDIT_FAILURE",
+      message: "audit sink unavailable",
+      tenantId: "/tenant-audit",
+    }),
+  );
+  assert.ok(isError(auditFailure));
+  assert.strictEqual(auditFailure.kind, "AUDIT_FAILURE");
+  assert.strictEqual(auditFailure.message, "audit sink unavailable");
 });
 
 test("tenantserviceclickthroughpolicycontracts", () => {
@@ -124,58 +190,77 @@ test("tenantserviceclickthroughpolicycontracts", () => {
     makeServiceDescriptor({
       id: "svc-contracts",
       tenantPath: "/tenant-contracts",
-      systemAdminResourceSets: ["system:contracts"],
-      tenantAdminResourceSets: ["tenant:contracts:admins"],
-      landingPath: "/contracts/landing",
+      classification: "COMPOSED",
+      landingPath: "/landing-contracts",
+      systemAdminResourceSets: ["system:contracts:admin"],
+      tenantAdminResourceSets: ["tenant:contracts:admin"],
     }),
   );
 
-  const first = capability.computeAccessDecision(
-    state,
-    "/tenant-contracts",
-    "svc-contracts",
-    ["system:contracts", "tenant:contracts:admins"],
-    true,
-    () => null,
+  // Denied: no matching resource sets
+  const denied = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-contracts",
+      "svc-contracts",
+      ["random:set"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in first));
-  assert.strictEqual(first.decision, "GRANTED");
-  assert.strictEqual(first.reason, "Access granted based on resource sets");
-  assert.strictEqual(first.clickthroughUrl, "/apex/tenant-contracts/contracts/landing");
-  assert.deepStrictEqual(first.forwardAuthSets, ["system:contracts", "tenant:contracts:admins"]);
-  assert.strictEqual(typeof first.reconciliationConfig, "string");
-  assert.ok(first.reconciliationConfig!.includes("uri /auth/verify?sets=system:contracts,tenant:contracts:admins"));
+  assert.strictEqual(denied.decision, "DENIED");
+  assert.strictEqual(denied.reason, "User lacks required resource sets for access");
+  assert.strictEqual(denied.clickthroughUrl, null);
+  assert.deepStrictEqual(denied.forwardAuthSets, []);
 
-  const second = capability.computeAccessDecision(
-    state,
-    "/tenant-contracts",
-    "svc-contracts",
-    ["system:contracts", "tenant:contracts:admins"],
-    true,
-    () => null,
+  // Granted: with matching sets
+  const granted = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-contracts",
+      "svc-contracts",
+      ["system:contracts:admin", "tenant:contracts:admin"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in second));
-  assert.deepStrictEqual(second, first);
+  assert.strictEqual(granted.decision, "GRANTED");
+  assert.strictEqual(granted.reason, "Access granted based on resource sets");
+  assert.strictEqual(granted.clickthroughUrl, "/apex/tenant-contracts/landing-contracts");
+  assert.deepStrictEqual(granted.forwardAuthSets, [
+    "system:contracts:admin",
+    "tenant:contracts:admin",
+  ]);
 
-  const firstReconcile = capability.deriveReconciliation(
-    state,
-    "/tenant-contracts",
-    true,
-    () => null,
+  // Reconciliation contains expected directives
+  const reconciliation = getReconciliation(
+    capability.deriveReconciliation(state, "/tenant-contracts", true, () => null),
   );
-  assert.strictEqual(typeof firstReconcile, "string");
-  assert.ok((firstReconcile as string).includes("/apex/tenant-contracts*"));
-  assert.ok((firstReconcile as string).includes("uri /auth/verify?sets=system:contracts,tenant:contracts:admins"));
-  assert.ok((firstReconcile as string).includes("reverse_proxy /contracts/landing"));
+  assert.ok(reconciliation.includes("/apex/tenant-contracts*"));
+  assert.ok(
+    reconciliation.includes(
+      "uri /auth/verify?sets=system:contracts:admin,tenant:contracts:admin",
+    ),
+  );
+  assert.ok(reconciliation.includes("reverse_proxy /landing-contracts"));
 
-  const secondReconcile = capability.deriveReconciliation(
-    state,
-    "/tenant-contracts",
-    true,
-    () => null,
+  // Determinism: two calls produce identical results
+  const granted2 = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-contracts",
+      "svc-contracts",
+      ["system:contracts:admin", "tenant:contracts:admin"],
+      true,
+      () => null,
+    ),
   );
-  assert.strictEqual(typeof secondReconcile, "string");
-  assert.strictEqual(secondReconcile, firstReconcile);
+  assert.deepStrictEqual(granted2, granted);
+
+  const reconciliation2 = getReconciliation(
+    capability.deriveReconciliation(state, "/tenant-contracts", true, () => null),
+  );
+  assert.strictEqual(reconciliation2, reconciliation);
 });
 
 test("tenantserviceclickthroughpolicyerrormodel", () => {
@@ -184,404 +269,544 @@ test("tenantserviceclickthroughpolicyerrormodel", () => {
     makeServiceDescriptor({
       id: "svc-error",
       tenantPath: "/tenant-error",
+      landingPath: "/landing-error",
+      systemAdminResourceSets: ["system:error:ops"],
+      tenantAdminResourceSets: ["tenant:error:admins"],
     }),
   );
-  const snapshot = state.services.map((s) => s.id);
 
-  const events: capability.TenantServiceClickthroughPolicyAuditEvent[] = [];
-  const reconcError = capability.deriveReconciliation(
+  // Reconciler unavailable -> RECONCILER_UNAVAILABLE decision (not an error)
+  const unavailable = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-error",
+      "svc-error",
+      ["system:error:ops", "tenant:error:admins"],
+      false,
+      () => null,
+    ),
+  );
+  assert.strictEqual(unavailable.decision, "RECONCILER_UNAVAILABLE");
+  assert.strictEqual(unavailable.clickthroughUrl, null);
+  assert.strictEqual(unavailable.forwardAuthSets.length, 0);
+
+  // Derive reconciliation with reconciler unavailable -> RECONCILER_FAILURE error
+  const reconciliationError = capability.deriveReconciliation(
     state,
     "/tenant-error",
     false,
-    (event) => {
-      events.push(event);
-      return null;
-    },
+    () => null,
   );
-  assert.ok(reconcError !== null);
-  assert.ok("kind" in reconcError);
-  assert.strictEqual(reconcError.kind, "RECONCILER_FAILURE");
-  assert.deepStrictEqual(state.services.map((s) => s.id), snapshot);
-  assert.strictEqual(events.length, 1);
-  assert.strictEqual(events[0].kind, "RECONCILIATION_CHANGE");
+  assert.ok(isError(reconciliationError));
+  assert.strictEqual(reconciliationError.kind, "RECONCILER_FAILURE");
 
-  const unavailableResult = capability.computeAccessDecision(
+  // Audit failure (thrown error) -> AUDIT_FAILURE error
+  const auditError = capability.computeAccessDecision(
     state,
     "/tenant-error",
     "svc-error",
-    ["system:ops", "tenant:tenant-error:admins"],
-    false,
-    (event) => {
-      events.push(event);
-      return null;
+    ["system:error:ops", "tenant:error:admins"],
+    true,
+    () => {
+      throw new Error("provider failed");
     },
   );
-  assert.ok(!("kind" in unavailableResult));
-  assert.strictEqual(unavailableResult.decision, "RECONCILER_UNAVAILABLE");
-  assert.strictEqual(unavailableResult.clickthroughUrl, null);
-  assert.ok(events.some((e) => e.kind === "ACCESS_DECISION" && e.decision === "RECONCILER_UNAVAILABLE"));
+  assert.ok(isError(auditError));
+  assert.strictEqual(auditError.kind, "AUDIT_FAILURE");
+  assert.strictEqual(auditError.message, "provider failed");
 
-  const deniedResult = capability.computeAccessDecision(
+  // Unknown service -> INVALID_SERVICE_DESCRIPTOR error
+  const unknownService = capability.computeAccessDecision(
     state,
     "/tenant-error",
-    "svc-error",
-    ["unrelated:set"],
+    "svc-missing",
+    ["system:error:ops"],
     true,
     () => null,
   );
-  assert.ok(!("kind" in deniedResult));
-  assert.strictEqual(deniedResult.decision, "DENIED");
-  assert.strictEqual(deniedResult.clickthroughUrl, null);
+  assert.ok(isError(unknownService));
+  assert.strictEqual(unknownService.kind, "INVALID_SERVICE_DESCRIPTOR");
+  assert.notStrictEqual(unknownService.kind, "GRANTED");
+
+  // Adding invalid descriptor -> error, state unchanged
+  const invalidDescriptor = makeServiceDescriptor({
+    id: "",
+    tenantPath: "/tenant-error",
+  });
+  const addResult = capability.addServiceDescriptor(
+    capability.initialState,
+    invalidDescriptor,
+    () => null,
+  );
+  assert.ok(isError(addResult));
+  assert.strictEqual(addResult.kind, "INVALID_SERVICE_DESCRIPTOR");
+
+  // Adding duplicate id -> error
+  const duplicateDescriptor = makeServiceDescriptor({
+    id: "svc-error",
+    tenantPath: "/tenant-error",
+  });
+  const duplicateResult = capability.addServiceDescriptor(
+    state,
+    duplicateDescriptor,
+    () => null,
+  );
+  assert.ok(isError(duplicateResult));
+  assert.strictEqual(duplicateResult.kind, "INVALID_SERVICE_DESCRIPTOR");
 });
 
 test("tenantserviceclickthroughpolicylifecycle", () => {
-  const alpha = makeServiceDescriptor({
-    id: "svc-lifecycle-alpha",
-    tenantPath: "/tenant-alpha",
-    apexPath: "/apex-alpha/",
-    resource: "res/alpha",
-    landingPath: "/landing-alpha",
-    systemAdminResourceSets: ["system:alpha"],
-    tenantAdminResourceSets: ["tenant:alpha:admin"],
-  });
-  const beta = makeServiceDescriptor({
-    id: "svc-lifecycle-beta",
-    tenantPath: "/tenant-beta",
-    apexPath: "/apex-beta/",
-    resource: "res/beta",
-    landingPath: "/landing-beta",
-    systemAdminResourceSets: ["system:beta"],
-    tenantAdminResourceSets: ["tenant:beta:admin"],
-  });
-
-  let state = addDescriptorOrFail(capability.initialState, alpha);
-  state = addDescriptorOrFail(state, beta);
-
-  assert.strictEqual(state.readiness, "READY");
-
-  const alphaDecision = capability.computeAccessDecision(
-    state,
-    "/tenant-alpha",
-    "svc-lifecycle-alpha",
-    ["tenant:alpha:admin"],
-    true,
-    () => null,
+  // Add two services in different tenants
+  let state = addDescriptorOrFail(
+    capability.initialState,
+    makeServiceDescriptor({
+      id: "svc-alpha",
+      tenantPath: "/tenant-alpha",
+      classification: "INTERNAL",
+      apexPath: "/apex-alpha",
+      landingPath: "/landing-alpha",
+      systemAdminResourceSets: ["system:alpha"],
+      tenantAdminResourceSets: ["tenant:alpha:admin"],
+    }),
   );
-  assert.ok(!("kind" in alphaDecision));
+
+  state = addDescriptorOrFail(
+    state,
+    makeServiceDescriptor({
+      id: "svc-beta",
+      tenantPath: "/tenant-beta",
+      classification: "COMPOSED",
+      apexPath: "/apex-beta",
+      landingPath: "/landing-beta",
+      systemAdminResourceSets: ["system:beta"],
+      tenantAdminResourceSets: ["tenant:beta:admin"],
+    }),
+  );
+
+  // Alpha tenant decision
+  const alphaDecision = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-alpha",
+      "svc-alpha",
+      ["tenant:alpha:admin"],
+      true,
+      () => null,
+    ),
+  );
   assert.strictEqual(alphaDecision.decision, "GRANTED");
-  assert.strictEqual(alphaDecision.clickthroughUrl, "/apex-alpha//tenant-alpha/landing-alpha");
+  assert.strictEqual(alphaDecision.clickthroughUrl, "/apex-alpha/tenant-alpha/landing-alpha");
+  assert.deepStrictEqual(alphaDecision.forwardAuthSets, ["tenant:alpha:admin"]);
 
-  const crossTenantDecision = capability.computeAccessDecision(
+  // Beta tenant decision
+  const betaDecision = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-beta",
+      "svc-beta",
+      ["system:beta"],
+      true,
+      () => null,
+    ),
+  );
+  assert.strictEqual(betaDecision.decision, "GRANTED");
+  assert.strictEqual(betaDecision.clickthroughUrl, "/apex-beta/tenant-beta/landing-beta");
+  assert.deepStrictEqual(betaDecision.forwardAuthSets, ["system:beta"]);
+
+  // Cross-tenant access denied
+  const crossTenant = capability.computeAccessDecision(
     state,
     "/tenant-alpha",
-    "svc-lifecycle-beta",
-    ["system:alpha"],
+    "svc-beta",
+    ["system:beta"],
     true,
     () => null,
   );
-  assert.ok("kind" in crossTenantDecision);
-  assert.strictEqual(crossTenantDecision.kind, "MISSING_TENANT_ISOLATION");
+  assert.ok(isError(crossTenant));
+  assert.strictEqual(crossTenant.kind, "MISSING_TENANT_ISOLATION");
 
-  const alphaReconcile = capability.deriveReconciliation(
-    state,
-    "/tenant-alpha",
-    true,
-    () => null,
+  // Reconciliation per tenant contains only that tenant's services
+  const alphaReconciliation = getReconciliation(
+    capability.deriveReconciliation(state, "/tenant-alpha", true, () => null),
   );
-  assert.strictEqual(typeof alphaReconcile, "string");
-  assert.ok((alphaReconcile as string).includes("/apex-alpha//tenant-alpha*"));
-  assert.ok(!(alphaReconcile as string).includes("/apex-beta//tenant-beta*"));
+  assert.ok(alphaReconciliation.includes("/apex-alpha/tenant-alpha*"));
+  assert.ok(!alphaReconciliation.includes("/apex-beta/tenant-beta*"));
 
-  const betaReconcile = capability.deriveReconciliation(
-    state,
-    "/tenant-beta",
-    true,
-    () => null,
+  const betaReconciliation = getReconciliation(
+    capability.deriveReconciliation(state, "/tenant-beta", true, () => null),
   );
-  assert.strictEqual(typeof betaReconcile, "string");
-  assert.ok((betaReconcile as string).includes("/apex-beta//tenant-beta*"));
-  assert.ok(!(betaReconcile as string).includes("/apex-alpha//tenant-alpha*"));
+  assert.ok(betaReconciliation.includes("/apex-beta/tenant-beta*"));
+  assert.ok(!betaReconciliation.includes("/apex-alpha/tenant-alpha*"));
+
+  // Readiness after adding services with reconciler available
+  const readyState = capability.computeReadiness(state, true);
+  assert.strictEqual(readyState.readiness, "READY");
+  assert.strictEqual(readyState.services.length, 2);
+
+  // Readiness degrades when reconciler unavailable
+  const degradedState = capability.computeReadiness(state, false);
+  assert.strictEqual(degradedState.readiness, "DEGRADED");
+  assert.strictEqual(degradedState.reconcilerAvailable, false);
 });
 
 test("tenantserviceclickthroughpolicypermissions", () => {
-  assert.strictEqual(
-    capability.validateServiceDescriptor(
-      makeServiceDescriptor({
-        id: "svc-permissions",
-        classification: "COMPOSED",
-        tenantAdminResourceSets: ["tenant:perms:admin"],
-        systemAdminResourceSets: ["system:perms:ops"],
-      }),
-    ),
-    null,
+  // Validate classification
+  const validClass = capability.validateServiceDescriptor(
+    makeServiceDescriptor({
+      classification: "DEV_ONLY" as capability.TenantServiceClickthroughPolicyClassification,
+    }),
   );
+  assert.strictEqual(validClass, null);
 
   const state = addDescriptorOrFail(
     capability.initialState,
     makeServiceDescriptor({
-      id: "svc-permissions",
+      id: "svc-perms",
       tenantPath: "/tenant-perms",
       classification: "COMPOSED",
       tenantAdminResourceSets: ["tenant:perms:admin"],
       systemAdminResourceSets: ["system:perms:ops"],
+      landingPath: "/landing-perms",
     }),
   );
 
-  const tenantGrant = capability.computeAccessDecision(
-    state,
-    "/tenant-perms",
-    "svc-permissions",
-    ["tenant:perms:admin"],
-    true,
-    () => null,
+  // Tenant-admin access granted
+  const tenantGranted = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-perms",
+      "svc-perms",
+      ["tenant:perms:admin"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in tenantGrant));
-  assert.strictEqual(tenantGrant.decision, "GRANTED");
-  assert.deepStrictEqual(tenantGrant.forwardAuthSets, ["tenant:perms:admin"]);
+  assert.strictEqual(tenantGranted.decision, "GRANTED");
+  assert.deepStrictEqual(tenantGranted.forwardAuthSets, ["tenant:perms:admin"]);
 
-  const systemGrant = capability.computeAccessDecision(
-    state,
-    "/tenant-perms",
-    "svc-permissions",
-    ["system:perms:ops"],
-    true,
-    () => null,
+  // System-admin access granted
+  const systemGranted = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-perms",
+      "svc-perms",
+      ["system:perms:ops"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in systemGrant));
-  assert.strictEqual(systemGrant.decision, "GRANTED");
-  assert.deepStrictEqual(systemGrant.forwardAuthSets, ["system:perms:ops"]);
+  assert.strictEqual(systemGranted.decision, "GRANTED");
+  assert.deepStrictEqual(systemGranted.forwardAuthSets, ["system:perms:ops"]);
 
-  const deny = capability.computeAccessDecision(
-    state,
-    "/tenant-perms",
-    "svc-permissions",
-    ["nobody"],
-    true,
-    () => null,
+  // No matching set -> denied
+  const denied = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-perms",
+      "svc-perms",
+      ["nobody"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in deny));
-  assert.strictEqual(deny.decision, "DENIED");
-  assert.strictEqual(deny.clickthroughUrl, null);
+  assert.strictEqual(denied.decision, "DENIED");
+  assert.strictEqual(denied.clickthroughUrl, null);
 
-  const devOnlyState = addDescriptorOrFail(
+  // Dev-only service is denied even with valid sets
+  const devState = addDescriptorOrFail(
     state,
     makeServiceDescriptor({
-      id: "svc-permissions-dev",
+      id: "svc-perms-dev",
       tenantPath: "/tenant-perms",
       classification: "DEV_ONLY",
       devOnly: true,
+      tenantAdminResourceSets: ["tenant:perms:admin"],
       systemAdminResourceSets: ["system:perms:ops"],
+      landingPath: "/landing-perms-dev",
     }),
   );
 
-  const devOnlyDecision = capability.computeAccessDecision(
-    devOnlyState,
-    "/tenant-perms",
-    "svc-permissions-dev",
-    ["system:perms:ops"],
-    true,
-    () => null,
+  const devDenied = getDecision(
+    capability.computeAccessDecision(
+      devState,
+      "/tenant-perms",
+      "svc-perms-dev",
+      ["system:perms:ops"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in devOnlyDecision));
-  assert.strictEqual(devOnlyDecision.decision, "DENIED");
-  assert.strictEqual(devOnlyDecision.reason, "Dev-only service not accessible in this context");
+  assert.strictEqual(devDenied.decision, "DENIED");
+  assert.strictEqual(
+    devDenied.reason,
+    "Dev-only service not accessible in this context",
+  );
 });
 
 test("tenantserviceclickthroughpolicyproof", () => {
-  const withService = addDescriptorOrFail(
+  const state = addDescriptorOrFail(
     capability.initialState,
     makeServiceDescriptor({
       id: "svc-proof",
       tenantPath: "/tenant-proof",
+      landingPath: "/proof",
       systemAdminResourceSets: ["system:proof:ops"],
       tenantAdminResourceSets: ["tenant:proof:admin"],
-      landingPath: "/proof/landing",
     }),
   );
-  const stateNotReady = capability.setReadiness(withService, "NOT_READY");
 
-  const proofDecisionOne = capability.computeAccessDecision(
-    stateNotReady,
-    "/tenant-proof",
-    "svc-proof",
-    ["system:proof:ops"],
-    true,
-    () => null,
+  // Compute decision and reconciliation on original state
+  const decision = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-proof",
+      "svc-proof",
+      ["system:proof:ops"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in proofDecisionOne));
-
-  const proofDecisionTwo = capability.computeAccessDecision(
-    stateNotReady,
-    "/tenant-proof",
-    "svc-proof",
-    ["system:proof:ops"],
-    true,
-    () => null,
+  const reconciliation = getReconciliation(
+    capability.deriveReconciliation(state, "/tenant-proof", true, () => null),
   );
-  assert.ok(!("kind" in proofDecisionTwo));
-  assert.deepStrictEqual(proofDecisionTwo, proofDecisionOne);
 
-  const reconcOne = capability.deriveReconciliation(stateNotReady, "/tenant-proof", true, () => null);
-  assert.strictEqual(typeof reconcOne, "string");
-  const reconcTwo = capability.deriveReconciliation(stateNotReady, "/tenant-proof", true, () => null);
-  assert.strictEqual(typeof reconcTwo, "string");
-  assert.strictEqual(reconcTwo, reconcOne);
-  assert.ok((reconcOne as string).includes(`sets=${proofDecisionOne.forwardAuthSets.join(",")}`));
-
-  const readyState = capability.setReadiness(stateNotReady, "READY");
-  const afterReadyDecision = capability.computeAccessDecision(
-    readyState,
-    "/tenant-proof",
-    "svc-proof",
-    ["system:proof:ops"],
-    true,
-    () => null,
+  // Change readiness (keeping reconciler available) -> decisions unchanged
+  const notReadyState = capability.setReadiness(state, "NOT_READY", true);
+  const decision2 = getDecision(
+    capability.computeAccessDecision(
+      notReadyState,
+      "/tenant-proof",
+      "svc-proof",
+      ["system:proof:ops"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in afterReadyDecision));
-  assert.deepStrictEqual(afterReadyDecision, proofDecisionOne);
+  assert.deepStrictEqual(decision2, decision);
+
+  const reconciliation2 = getReconciliation(
+    capability.deriveReconciliation(notReadyState, "/tenant-proof", true, () => null),
+  );
+  assert.strictEqual(reconciliation2, reconciliation);
+
+  // computeReadiness returns READY when services exist and reconciler available
+  const computed = capability.computeReadiness(state, true);
+  assert.strictEqual(computed.readiness, "READY");
+
+  // computeReadiness returns NOT_READY when no services
+  const emptyState = capability.computeReadiness(capability.initialState, true);
+  assert.strictEqual(emptyState.readiness, "NOT_READY");
 });
 
 test("tenantserviceclickthroughpolicyreadinessmodel", () => {
-  const base = capability.setReadiness(capability.initialState, "DEGRADED");
-  const state = addDescriptorOrFail(
-    base,
+  // Start with empty state, reconciler available -> NOT_READY
+  const emptyReady = capability.computeReadiness(capability.initialState, true);
+  assert.strictEqual(emptyReady.readiness, "NOT_READY");
+  assert.strictEqual(capability.getReadiness(emptyReady), "NOT_READY");
+
+  // Add a service -> READY
+  const withService = addDescriptorOrFail(
+    emptyReady,
     makeServiceDescriptor({
       id: "svc-readiness",
       tenantPath: "/tenant-readiness",
-      systemAdminResourceSets: ["system:rdy"],
-      tenantAdminResourceSets: ["tenant:rdy:admin"],
+      landingPath: "/readiness",
+      systemAdminResourceSets: ["system:readiness"],
+      tenantAdminResourceSets: ["tenant:readiness:admin"],
     }),
   );
-  assert.strictEqual(capability.getReadiness(state), "DEGRADED");
+  assert.strictEqual(capability.getReadiness(withService), "READY");
 
-  const events: capability.TenantServiceClickthroughPolicyAuditEvent[] = [];
-  const reconciliation = capability.deriveReconciliation(
-    state,
+  // Reconciler unavailable -> DEGRADED
+  const degraded = capability.computeReadiness(withService, false);
+  assert.strictEqual(degraded.readiness, "DEGRADED");
+  assert.strictEqual(degraded.reconcilerAvailable, false);
+  assert.strictEqual(capability.getReadiness(degraded), "DEGRADED");
+
+  // setReadiness with reconcilerAvailable=false forces DEGRADED even if readiness=READY
+  const guarded = capability.setReadiness(degraded, "READY", false);
+  assert.strictEqual(guarded.readiness, "DEGRADED");
+  assert.strictEqual(guarded.reconcilerAvailable, false);
+
+  // Derive reconciliation on degraded state -> RECONCILER_FAILURE error, but audit event emitted
+  const auditEvents: capability.TenantServiceClickthroughPolicyAuditEvent[] = [];
+  const reconcileError = capability.deriveReconciliation(
+    guarded,
     "/tenant-readiness",
     false,
     (event) => {
-      events.push(event);
+      auditEvents.push(event);
       return null;
     },
   );
-  assert.ok(reconciliation !== null);
-  assert.ok("kind" in reconciliation);
-  assert.strictEqual(reconciliation.kind, "RECONCILER_FAILURE");
-  assert.strictEqual(events.length, 1);
-  assert.strictEqual(events[0].kind, "RECONCILIATION_CHANGE");
-  assert.strictEqual(capability.getReadiness(state), "DEGRADED");
+  assert.ok(isError(reconcileError));
+  assert.strictEqual(reconcileError.kind, "RECONCILER_FAILURE");
+  assert.strictEqual(auditEvents.length, 1);
+  assert.strictEqual(auditEvents[0].kind, "RECONCILIATION_CHANGE");
+  assert.strictEqual(auditEvents[0].tenantId, "/tenant-readiness");
 });
 
 test("tenantserviceclickthroughpolicystatemodel", () => {
-  const first = makeServiceDescriptor({
+  const descriptorA: capability.TenantServiceClickthroughPolicyServiceDescriptor = {
     id: "svc-state-a",
     resource: "resource/state-a",
-    apexPath: "/apex/state-a/",
+    apexPath: "/apex/state-a",
     tenantPath: "/tenant-state-a",
     classification: "INTERNAL",
     landingPath: "/landing-a",
+    devOnly: false,
     systemAdminResourceSets: ["system:state-a"],
     tenantAdminResourceSets: ["tenant:state-a:admin"],
-  });
-  const second = makeServiceDescriptor({
+  };
+
+  const descriptorB: capability.TenantServiceClickthroughPolicyServiceDescriptor = {
     id: "svc-state-b",
     resource: "resource/state-b",
-    apexPath: "/apex/state-b/",
+    apexPath: "/apex/state-b",
     tenantPath: "/tenant-state-b",
     classification: "COMPOSED",
     landingPath: "/landing-b",
+    devOnly: false,
     systemAdminResourceSets: ["system:state-b"],
     tenantAdminResourceSets: ["tenant:state-b:admin"],
-  });
+  };
 
-  let state = addDescriptorOrFail(capability.initialState, first);
-  state = addDescriptorOrFail(state, second);
+  let state = addDescriptorOrFail(capability.initialState, descriptorA);
+  state = addDescriptorOrFail(state, descriptorB);
 
+  // Verify all fields are preserved
   assert.strictEqual(state.services.length, 2);
-  assert.strictEqual(state.services[0].id, "svc-state-a");
-  assert.strictEqual(state.services[0].resource, "resource/state-a");
-  assert.strictEqual(state.services[0].apexPath, "/apex/state-a/");
-  assert.strictEqual(state.services[0].tenantPath, "/tenant-state-a");
-  assert.strictEqual(state.services[0].classification, "INTERNAL");
-  assert.strictEqual(state.services[0].landingPath, "/landing-a");
-  assert.strictEqual(state.services[0].devOnly, false);
-  assert.deepStrictEqual(state.services[0].systemAdminResourceSets, ["system:state-a"]);
-  assert.deepStrictEqual(state.services[0].tenantAdminResourceSets, ["tenant:state-a:admin"]);
+  const first = state.services[0];
+  assert.ok(first !== undefined);
+  assert.strictEqual(first.id, "svc-state-a");
+  assert.strictEqual(first.resource, "resource/state-a");
+  assert.strictEqual(first.apexPath, "/apex/state-a");
+  assert.strictEqual(first.tenantPath, "/tenant-state-a");
+  assert.strictEqual(first.classification, "INTERNAL");
+  assert.strictEqual(first.landingPath, "/landing-a");
+  assert.strictEqual(first.devOnly, false);
+  assert.deepStrictEqual(first.systemAdminResourceSets, ["system:state-a"]);
+  assert.deepStrictEqual(first.tenantAdminResourceSets, ["tenant:state-a:admin"]);
 
-  const decision = capability.computeAccessDecision(
-    state,
-    "/tenant-state-b",
-    "svc-state-b",
-    ["tenant:state-b:admin"],
-    true,
-    () => null,
+  const second = state.services[1];
+  assert.ok(second !== undefined);
+  assert.strictEqual(second.id, "svc-state-b");
+  assert.strictEqual(second.resource, "resource/state-b");
+  assert.strictEqual(second.classification, "COMPOSED");
+
+  // Decision derived from state fields
+  const decision = getDecision(
+    capability.computeAccessDecision(
+      state,
+      "/tenant-state-b",
+      "svc-state-b",
+      ["tenant:state-b:admin"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in decision));
   assert.strictEqual(decision.decision, "GRANTED");
-  assert.strictEqual(decision.clickthroughUrl, "/apex/state-b//tenant-state-b/landing-b");
+  assert.strictEqual(decision.clickthroughUrl, "/apex/state-b/tenant-state-b/landing-b");
+  assert.deepStrictEqual(decision.forwardAuthSets, ["tenant:state-b:admin"]);
 
-  const migration = capability.deriveReconciliation(
-    state,
-    "/tenant-state-b",
-    true,
-    () => null,
+  // Reconciliation uses the correct sets
+  const reconciliation = getReconciliation(
+    capability.deriveReconciliation(state, "/tenant-state-b", true, () => null),
   );
-  assert.strictEqual(typeof migration, "string");
-  assert.ok((migration as string).includes("/apex/state-b//tenant-state-b*"));
-  assert.ok((migration as string).includes("uri /auth/verify?sets=system:state-b,tenant:state-b:admin"));
+  assert.ok(reconciliation.includes("/apex/state-b/tenant-state-b*"));
+  assert.ok(
+    reconciliation.includes(
+      "uri /auth/verify?sets=system:state-b,tenant:state-b:admin",
+    ),
+  );
+
+  // State is immutable: original initialState unchanged
+  assert.strictEqual(capability.initialState.services.length, 0);
 });
 
 test("tenantserviceclickthroughpolicyvalidation", () => {
-  const emptyIdError = capability.validateServiceDescriptor(makeServiceDescriptor({ id: "   " }));
-  assert.ok(emptyIdError !== null);
-  assert.strictEqual(emptyIdError.kind, "INVALID_SERVICE_DESCRIPTOR");
+  // Empty id
+  const emptyId = capability.validateServiceDescriptor(
+    makeServiceDescriptor({ id: "   ", tenantPath: "/tenant-validation" }),
+  );
+  assert.ok(emptyId !== null);
+  assert.strictEqual(emptyId.kind, "INVALID_SERVICE_DESCRIPTOR");
 
-  const invalidClassification = {
-    ...makeServiceDescriptor({ id: "svc-validation-class" }),
-    classification: "BROKEN" as unknown as capability.TenantServiceClickthroughPolicyClassification,
-  } as capability.TenantServiceClickthroughPolicyServiceDescriptor;
+  // Empty apex path
+  const emptyApex = capability.validateServiceDescriptor(
+    makeServiceDescriptor({ apexPath: "   " }),
+  );
+  assert.ok(emptyApex !== null);
+  assert.strictEqual(emptyApex.kind, "INVALID_SERVICE_DESCRIPTOR");
 
-  const invalidClassificationError = capability.validateServiceDescriptor(invalidClassification);
-  assert.ok(invalidClassificationError !== null);
-  assert.strictEqual(invalidClassificationError.kind, "INVALID_SERVICE_DESCRIPTOR");
+  // Empty tenant path
+  const emptyTenant = capability.validateServiceDescriptor(
+    makeServiceDescriptor({ tenantPath: "   " }),
+  );
+  assert.ok(emptyTenant !== null);
+  assert.strictEqual(emptyTenant.kind, "INVALID_SERVICE_DESCRIPTOR");
 
-  const rejected = capability.addServiceDescriptor(
-    capability.initialState,
-    invalidClassification,
+  // Empty landing path
+  const emptyLanding = capability.validateServiceDescriptor(
+    makeServiceDescriptor({ landingPath: "   " }),
+  );
+  assert.ok(emptyLanding !== null);
+  assert.strictEqual(emptyLanding.kind, "INVALID_SERVICE_DESCRIPTOR");
+
+  // Invalid classification
+  const invalidClass: capability.TenantServiceClickthroughPolicyServiceDescriptor = {
+    ...makeServiceDescriptor({ tenantPath: "/tenant-validation" }),
+    classification: "BROKEN" as capability.TenantServiceClickthroughPolicyClassification,
+  };
+  const invalidClassError = capability.validateServiceDescriptor(invalidClass);
+  assert.ok(invalidClassError !== null);
+  assert.strictEqual(invalidClassError.kind, "INVALID_SERVICE_DESCRIPTOR");
+
+  // Adding invalid descriptor fails and does not change state
+  const beforeAdd = capability.initialState;
+  const addResult = capability.addServiceDescriptor(
+    beforeAdd,
+    makeServiceDescriptor({ id: "" }),
     () => null,
   );
-  assert.ok("kind" in rejected);
-  assert.strictEqual(rejected.kind, "INVALID_SERVICE_DESCRIPTOR");
+  assert.ok(isError(addResult));
+  assert.strictEqual(addResult.kind, "INVALID_SERVICE_DESCRIPTOR");
+  assert.strictEqual(beforeAdd.services.length, 0);
 
+  // Valid descriptor added successfully
   const validState = addDescriptorOrFail(
     capability.initialState,
     makeServiceDescriptor({
       id: "svc-validation",
       tenantPath: "/tenant-validation",
-      systemAdminResourceSets: ["system:validation"],
+      systemAdminResourceSets: ["system:validation:ops"],
+      tenantAdminResourceSets: ["tenant:validation:admin"],
     }),
   );
 
-  const isolationFailure = capability.computeAccessDecision(
+  // Cross-tenant access -> MISSING_TENANT_ISOLATION
+  const crossTenant = capability.computeAccessDecision(
     validState,
     "/tenant-other",
     "svc-validation",
-    ["system:validation"],
+    ["system:validation:ops"],
     true,
     () => null,
   );
-  assert.ok("kind" in isolationFailure);
-  assert.strictEqual(isolationFailure.kind, "MISSING_TENANT_ISOLATION");
+  assert.ok(isError(crossTenant));
+  assert.strictEqual(crossTenant.kind, "MISSING_TENANT_ISOLATION");
 
-  const denied = capability.computeAccessDecision(
-    validState,
-    "/tenant-validation",
-    "svc-validation",
-    ["random:set"],
-    true,
-    () => null,
+  // No matching resource set -> DENIED (fail closed)
+  const denied = getDecision(
+    capability.computeAccessDecision(
+      validState,
+      "/tenant-validation",
+      "svc-validation",
+      ["random:set"],
+      true,
+      () => null,
+    ),
   );
-  assert.ok(!("kind" in denied));
   assert.strictEqual(denied.decision, "DENIED");
   assert.strictEqual(denied.clickthroughUrl, null);
 });

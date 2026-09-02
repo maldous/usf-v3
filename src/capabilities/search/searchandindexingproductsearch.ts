@@ -1,6 +1,5 @@
-// Search and Indexing Product Search Capability Module
-
-// === Constants and Types ===
+// ANQR capability module: searchandindexingproductsearch
+// Domain: search
 
 export const SearchReadiness = ['READY', 'DEGRADED', 'BLOCKED'] as const;
 export type SearchReadiness = typeof SearchReadiness[number];
@@ -16,6 +15,9 @@ export const SearchErrorKind = [
   'SECRET_FIELD_DETECTED',
   'CROSS_TENANT_QUERY_REJECTED',
   'READINESS_PROBE_FAILED',
+  'MISSING_ISOLATION_SIGNAL',
+  'MISSING_AUDIT_SIGNAL',
+  'PERMISSION_DENIED',
 ] as const;
 export type SearchErrorKind = typeof SearchErrorKind[number];
 
@@ -23,13 +25,19 @@ export const SearchAuditEventKind = [
   'AUDIT_BEFORE_INDEX',
   'AUDIT_BEFORE_REINDEX',
   'AUDIT_BEFORE_SEARCH',
+  'AUDIT_BEFORE_READINESS',
 ] as const;
 export type SearchAuditEventKind = typeof SearchAuditEventKind[number];
 
 export const SearchPermissionDecision = ['GRANTED', 'DENIED'] as const;
 export type SearchPermissionDecision = typeof SearchPermissionDecision[number];
 
-// === Interfaces ===
+export const SearchProofKind = [
+  'SEARCH_PROOF',
+  'SEARCH_ISOLATION_PROOF',
+  'SEARCH_ROUTES_PROOF',
+] as const;
+export type SearchProofKind = typeof SearchProofKind[number];
 
 export interface SearchAuditEvent {
   readonly kind: SearchAuditEventKind;
@@ -79,29 +87,44 @@ export interface SearchEngineProbe {
   readonly details?: string;
 }
 
+export interface SearchProofResult {
+  readonly kind: SearchProofKind;
+  readonly passed: boolean;
+  readonly error: SearchError | null;
+}
+
 export interface SearchState {
   readonly readiness: SearchReadiness;
   readonly documents: readonly IndexedDocument[];
   readonly lastError: SearchError | null;
   readonly lastAudit: SearchAuditEvent | null;
   readonly probeHistory: readonly SearchEngineProbe[];
+  readonly proofHistory: readonly SearchProofResult[];
 }
 
-// === Secret Field Detection ===
+export type SearchOutcome =
+  | { readonly ok: true; readonly state: SearchState }
+  | { readonly ok: false; readonly error: SearchError };
 
-const SECRET_FIELD_PATTERNS = [
+export type SearchQueryOutcome =
+  | { readonly ok: true; readonly results: readonly SearchResult[]; readonly state: SearchState }
+  | { readonly ok: false; readonly error: SearchError };
+
+export type ReadinessOutcome =
+  | { readonly ok: true; readonly state: SearchState }
+  | { readonly ok: false; readonly error: SearchError };
+
+const SECRET_FIELD_PATTERNS: readonly string[] = [
   'password', 'token', 'secret', 'apikey', 'api_key', 'credential',
   'private_key', 'access_key', 'auth_token', 'session_id'
 ];
 
-function containsSecretFields(metadata: Record<string, string>): boolean {
+export function containsSecretFields(metadata: Record<string, string>): boolean {
   const metadataKeys = Object.keys(metadata).map(k => k.toLowerCase());
   return SECRET_FIELD_PATTERNS.some(pattern =>
     metadataKeys.some(key => key.includes(pattern))
   );
 }
-
-// === Validation Functions ===
 
 export function validateDocumentShape(document: unknown): document is IndexedDocument {
   if (typeof document !== 'object' || document === null) return false;
@@ -140,55 +163,153 @@ export function validateQueryScope(query: SearchQuery): boolean {
          query.organisationId.length > 0;
 }
 
-// === Audit Function ===
-
 export function auditSearchOperation(
   event: SearchAuditEvent,
   auditFn: (event: SearchAuditEvent) => SearchError | null
 ): SearchError | null {
-  return auditFn(event);
+  try {
+    const result = auditFn(event);
+    if (result === null) {
+      return null;
+    }
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: result.message,
+      tenantId: event.tenantId,
+      organisationId: event.organisationId
+    };
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit function threw',
+      tenantId: event.tenantId,
+      organisationId: event.organisationId
+    };
+  }
 }
 
-// === Core Operations ===
+export function isReadinessKnown(state: SearchState): boolean {
+  return state.probeHistory.length > 0;
+}
+
+export function isIsolationSignalPresent(state: SearchState): boolean {
+  return state.proofHistory.some(p => p.kind === 'SEARCH_ISOLATION_PROOF' && p.passed);
+}
+
+export function isAuditSignalPresent(state: SearchState): boolean {
+  return state.lastAudit !== null;
+}
+
+export function makeError(
+  kind: SearchErrorKind,
+  message: string,
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return { kind, message, tenantId, organisationId };
+}
+
+function applyMutation(
+  state: SearchState,
+  auditEvent: SearchAuditEvent,
+  auditFn: (event: SearchAuditEvent) => SearchError | null,
+  mutation: (validated: SearchState) => SearchState
+): SearchOutcome {
+  const auditError = auditSearchOperation(auditEvent, auditFn);
+  if (auditError !== null) {
+    return { ok: false, error: auditError };
+  }
+  return { ok: true, state: mutation(state) };
+}
+
+export function evaluatePermissionGate(
+  document: IndexedDocument,
+  query: SearchQuery
+): SearchPermissionDecision {
+  const docHasKey = document.permissionKey !== undefined && document.permissionKey !== '';
+  const queryHasKey = query.permissionKey !== undefined && query.permissionKey !== '';
+
+  if (docHasKey && queryHasKey) {
+    return document.permissionKey === query.permissionKey ? 'GRANTED' : 'DENIED';
+  }
+
+  if (docHasKey && !queryHasKey) {
+    return 'DENIED';
+  }
+
+  return 'GRANTED';
+}
+
+export function enforceRowLevelSecurityPredicate(
+  document: IndexedDocument,
+  tenantId: string,
+  organisationId: string
+): boolean {
+  return document.tenantId === tenantId && document.organisationId === organisationId;
+}
 
 export function indexDocument(
   state: SearchState,
   document: unknown,
   auditFn: (event: SearchAuditEvent) => SearchError | null
-): SearchState | SearchError {
+): SearchOutcome {
   if (!validateDocumentShape(document)) {
     return {
-      kind: 'DOCUMENT_VALIDATION_FAILURE',
-      message: 'Invalid document shape',
-      tenantId: '',
-      organisationId: ''
+      ok: false,
+      error: makeError(
+        'DOCUMENT_VALIDATION_FAILURE',
+        'Invalid document shape',
+        '',
+        ''
+      )
     };
   }
 
   if (containsSecretFields(document.metadata)) {
     return {
-      kind: 'SECRET_FIELD_DETECTED',
-      message: 'Document metadata contains secret fields',
-      tenantId: document.tenantId,
-      organisationId: document.organisationId
+      ok: false,
+      error: makeError(
+        'SECRET_FIELD_DETECTED',
+        'Document metadata contains secret fields',
+        document.tenantId,
+        document.organisationId
+      )
     };
   }
 
   if (!validateUniqueness(state.documents, document)) {
     return {
-      kind: 'UNIQUENESS_VIOLATION',
-      message: 'Document with tenant/type/id already exists',
-      tenantId: document.tenantId,
-      organisationId: document.organisationId
+      ok: false,
+      error: makeError(
+        'UNIQUENESS_VIOLATION',
+        'Document with tenant/type/id already exists',
+        document.tenantId,
+        document.organisationId
+      )
     };
   }
 
-  if (state.readiness !== 'READY') {
+  if (state.readiness === 'BLOCKED') {
     return {
-      kind: 'INDEX_MUTATION_DISABLED',
-      message: 'Search engine not ready for mutations',
-      tenantId: document.tenantId,
-      organisationId: document.organisationId
+      ok: false,
+      error: makeError(
+        'INDEX_MUTATION_DISABLED',
+        `Search engine is BLOCKED; index mutations disabled`,
+        document.tenantId,
+        document.organisationId
+      )
+    };
+  }
+
+  if (state.readiness === 'DEGRADED') {
+    return {
+      ok: false,
+      error: makeError(
+        'INDEX_MUTATION_DISABLED',
+        `Search engine is DEGRADED; index mutations disabled`,
+        document.tenantId,
+        document.organisationId
+      )
     };
   }
 
@@ -201,63 +322,123 @@ export function indexDocument(
     span: 'route/use-case/provider'
   };
 
-  const auditError = auditSearchOperation(auditEvent, auditFn);
-  if (auditError !== null) {
-    return auditError;
-  }
-
-  const newDocuments = [...state.documents, document];
-  return {
-    ...state,
-    documents: newDocuments,
+  return applyMutation(state, auditEvent, auditFn, (s) => ({
+    ...s,
+    documents: [...s.documents, document],
     lastError: null,
     lastAudit: auditEvent
-  };
+  }));
 }
 
 export function performSearch(
   state: SearchState,
-  query: SearchQuery
-): { readonly results: SearchResult[]; readonly error: SearchError | null } {
+  query: SearchQuery,
+  auditFn?: (event: SearchAuditEvent) => SearchError | null
+): SearchQueryOutcome {
   if (!validateQueryScope(query)) {
     return {
-      results: [],
-      error: {
-        kind: 'CROSS_TENANT_QUERY_REJECTED',
-        message: 'Query must be properly scoped to tenant and organisation',
-        tenantId: query.tenantId,
-        organisationId: query.organisationId
-      }
+      ok: false,
+      error: makeError(
+        'CROSS_TENANT_QUERY_REJECTED',
+        'Query must be properly scoped to tenant and organisation',
+        query.tenantId,
+        query.organisationId
+      )
     };
   }
 
   if (state.readiness === 'BLOCKED') {
-    return {
-      results: [],
-      error: {
-        kind: 'SEARCH_ENGINE_UNAVAILABLE',
-        message: 'Search engine is blocked',
-        tenantId: query.tenantId,
-        organisationId: query.organisationId
+    const auditEvent: SearchAuditEvent = {
+      kind: 'AUDIT_BEFORE_SEARCH',
+      tenantId: query.tenantId,
+      organisationId: query.organisationId,
+      operation: 'perform_search',
+      timestamp: new Date().toISOString(),
+      span: 'route/use-case/provider'
+    };
+
+    if (auditFn !== undefined) {
+      const auditError = auditSearchOperation(auditEvent, auditFn);
+      if (auditError !== null) {
+        return { ok: false, error: auditError };
       }
+    }
+
+    return {
+      ok: false,
+      error: makeError(
+        'SEARCH_ENGINE_UNAVAILABLE',
+        'Search engine is BLOCKED; cannot serve results',
+        query.tenantId,
+        query.organisationId
+      )
     };
   }
 
+  if (state.readiness === 'DEGRADED') {
+    const auditEvent: SearchAuditEvent = {
+      kind: 'AUDIT_BEFORE_SEARCH',
+      tenantId: query.tenantId,
+      organisationId: query.organisationId,
+      operation: 'perform_search',
+      timestamp: new Date().toISOString(),
+      span: 'route/use-case/provider'
+    };
+
+    if (auditFn !== undefined) {
+      const auditError = auditSearchOperation(auditEvent, auditFn);
+      if (auditError !== null) {
+        return { ok: false, error: auditError };
+      }
+    }
+
+    return {
+      ok: false,
+      error: makeError(
+        'SEARCH_ENGINE_UNAVAILABLE',
+        'Search engine is DEGRADED; cannot serve results',
+        query.tenantId,
+        query.organisationId
+      )
+    };
+  }
+
+  let auditEvent: SearchAuditEvent | null = null;
+  if (auditFn !== undefined) {
+    auditEvent = {
+      kind: 'AUDIT_BEFORE_SEARCH',
+      tenantId: query.tenantId,
+      organisationId: query.organisationId,
+      operation: 'perform_search',
+      timestamp: new Date().toISOString(),
+      span: 'route/use-case/provider'
+    };
+    const auditError = auditSearchOperation(auditEvent, auditFn);
+    if (auditError !== null) {
+      return { ok: false, error: auditError };
+    }
+  }
+
   const tenantDocs = state.documents.filter(doc =>
-    doc.tenantId === query.tenantId &&
-    doc.organisationId === query.organisationId
+    enforceRowLevelSecurityPredicate(doc, query.tenantId, query.organisationId)
   );
 
-  const results: SearchResult[] = tenantDocs
-    .filter(doc => query.documentType === undefined || doc.documentType === query.documentType)
-    .map(doc => {
-      if (doc.permissionKey !== undefined && query.permissionKey !== doc.permissionKey) {
-        return { document: doc, decision: 'DENIED' };
-      }
-      return { document: doc, decision: 'GRANTED' };
-    });
+  const typeFiltered = query.documentType === undefined
+    ? tenantDocs
+    : tenantDocs.filter(doc => doc.documentType === query.documentType);
 
-  return { results, error: null };
+  const evaluated: SearchResult[] = typeFiltered.map(doc => ({
+    document: doc,
+    decision: evaluatePermissionGate(doc, query)
+  }));
+
+  const grantedResults = evaluated.filter(r => r.decision === 'GRANTED');
+
+  return {
+    ok: true,
+    results: grantedResults,
+    state: auditEvent !== null ? { ...state, lastAudit: auditEvent } : state
+  };
 }
 
 export function reindexTenant(
@@ -266,13 +447,40 @@ export function reindexTenant(
   organisationId: string,
   documents: readonly unknown[],
   auditFn: (event: SearchAuditEvent) => SearchError | null
-): SearchState | SearchError {
-  if (state.readiness !== 'READY') {
+): SearchOutcome {
+  if (tenantId === '' || organisationId === '') {
     return {
-      kind: 'INDEX_MUTATION_DISABLED',
-      message: 'Search engine not ready for mutations',
-      tenantId,
-      organisationId
+      ok: false,
+      error: makeError(
+        'CROSS_TENANT_QUERY_REJECTED',
+        'Reindex requires tenant and organisation identifier',
+        tenantId,
+        organisationId
+      )
+    };
+  }
+
+  if (state.readiness === 'BLOCKED') {
+    return {
+      ok: false,
+      error: makeError(
+        'INDEX_MUTATION_DISABLED',
+        `Search engine is BLOCKED; index mutations disabled`,
+        tenantId,
+        organisationId
+      )
+    };
+  }
+
+  if (state.readiness === 'DEGRADED') {
+    return {
+      ok: false,
+      error: makeError(
+        'INDEX_MUTATION_DISABLED',
+        `Search engine is DEGRADED; index mutations disabled`,
+        tenantId,
+        organisationId
+      )
     };
   }
 
@@ -280,26 +488,46 @@ export function reindexTenant(
   for (const doc of documents) {
     if (!validateDocumentShape(doc)) {
       return {
-        kind: 'DOCUMENT_VALIDATION_FAILURE',
-        message: 'Invalid document shape during reindex',
-        tenantId,
-        organisationId
+        ok: false,
+        error: makeError(
+          'DOCUMENT_VALIDATION_FAILURE',
+          'Invalid document shape during reindex',
+          tenantId,
+          organisationId
+        )
       };
     }
     if (containsSecretFields(doc.metadata)) {
       return {
-        kind: 'SECRET_FIELD_DETECTED',
-        message: 'Document metadata contains secret fields during reindex',
-        tenantId,
-        organisationId
+        ok: false,
+        error: makeError(
+          'SECRET_FIELD_DETECTED',
+          'Document metadata contains secret fields during reindex',
+          tenantId,
+          organisationId
+        )
       };
     }
     if (doc.tenantId !== tenantId || doc.organisationId !== organisationId) {
       return {
-        kind: 'TENANT_ISOLATION_VIOLATION',
-        message: 'Reindex documents must belong to the specified tenant and organisation',
-        tenantId,
-        organisationId
+        ok: false,
+        error: makeError(
+          'TENANT_ISOLATION_VIOLATION',
+          'Reindex documents must belong to the specified tenant and organisation',
+          tenantId,
+          organisationId
+        )
+      };
+    }
+    if (!validateUniqueness(validatedDocs, doc)) {
+      return {
+        ok: false,
+        error: makeError(
+          'UNIQUENESS_VIOLATION',
+          'Duplicate tenant/type/documentId within reindex batch',
+          tenantId,
+          organisationId
+        )
       };
     }
     validatedDocs.push(doc);
@@ -314,100 +542,284 @@ export function reindexTenant(
     span: 'route/use-case/provider'
   };
 
-  const auditError = auditSearchOperation(auditEvent, auditFn);
-  if (auditError !== null) {
-    return auditError;
-  }
-
-  const newDocuments = state.documents.filter(doc =>
-    !(doc.tenantId === tenantId && doc.organisationId === organisationId)
-  );
-  newDocuments.push(...validatedDocs);
-
-  return {
-    ...state,
-    documents: newDocuments,
-    lastError: null,
-    lastAudit: auditEvent
-  };
+  return applyMutation(state, auditEvent, auditFn, (s) => {
+    const retained = s.documents.filter(doc =>
+      !(doc.tenantId === tenantId && doc.organisationId === organisationId)
+    );
+    return {
+      ...s,
+      documents: [...retained, ...validatedDocs],
+      lastError: null,
+      lastAudit: auditEvent
+    }
+  });
 }
 
 export function probeReadiness(
   state: SearchState,
-  engineStatus: SearchReadiness
-): SearchState {
+  engineStatus: SearchReadiness,
+  auditFn: (event: SearchAuditEvent) => SearchError | null
+): ReadinessOutcome {
   const probe: SearchEngineProbe = {
     status: engineStatus,
     timestamp: new Date().toISOString()
   };
 
+  const auditEvent: SearchAuditEvent = {
+    kind: 'AUDIT_BEFORE_READINESS',
+    tenantId: '',
+    organisationId: '',
+    operation: 'probe_readiness',
+    timestamp: new Date().toISOString(),
+    span: 'route/use-case/provider'
+  };
+
+  const auditError = auditSearchOperation(auditEvent, auditFn);
+  if (auditError !== null) {
+    return { ok: false, error: auditError };
+  }
+
   return {
-    ...state,
-    readiness: engineStatus,
-    probeHistory: [...state.probeHistory, probe]
+    ok: true,
+    state: {
+      ...state,
+      readiness: engineStatus,
+      probeHistory: [...state.probeHistory, probe],
+      lastAudit: auditEvent
+    }
+  };
+}
+
+export function probeReadinessForTenant(
+  state: SearchState,
+  engineStatus: SearchReadiness,
+  tenantId: string,
+  organisationId: string,
+  auditFn: (event: SearchAuditEvent) => SearchError | null
+): ReadinessOutcome {
+  const probe: SearchEngineProbe = {
+    status: engineStatus,
+    timestamp: new Date().toISOString()
+  };
+
+  const auditEvent: SearchAuditEvent = {
+    kind: 'AUDIT_BEFORE_READINESS',
+    tenantId,
+    organisationId,
+    operation: 'probe_readiness',
+    timestamp: new Date().toISOString(),
+    span: 'route/use-case/provider'
+  };
+
+  const auditError = auditSearchOperation(auditEvent, auditFn);
+  if (auditError !== null) {
+    return { ok: false, error: auditError };
+  }
+
+  return {
+    ok: true,
+    state: {
+      ...state,
+      readiness: engineStatus,
+      probeHistory: [...state.probeHistory, probe],
+      lastAudit: auditEvent
+    }
   };
 }
 
 export function checkSearchIsolation(
   state: SearchState,
   query: SearchQuery
-): { readonly isolated: boolean; readonly error: SearchError | null } {
+): { readonly isolated: boolean; readonly error: SearchError | null; readonly proof: SearchProofResult } {
   const result = performSearch(state, query);
-  if (result.error !== null) {
-    return { isolated: false, error: result.error };
+
+  if (!result.ok) {
+    const proof: SearchProofResult = {
+      kind: 'SEARCH_ISOLATION_PROOF',
+      passed: false,
+      error: result.error
+    };
+    return { isolated: false, error: result.error, proof };
   }
 
-  const hasOtherTenantDocs = state.documents.some(doc =>
-    doc.tenantId !== query.tenantId || doc.organisationId !== query.organisationId
-  );
-
   const hasResultsFromOtherTenants = result.results.some(r =>
-    r.document.tenantId !== query.tenantId || r.document.organisationId !== query.organisationId
+    !enforceRowLevelSecurityPredicate(r.document, query.tenantId, query.organisationId)
   );
 
   if (hasResultsFromOtherTenants) {
-    return {
-      isolated: false,
-      error: {
-        kind: 'TENANT_ISOLATION_VIOLATION',
-        message: 'Search returned documents from other tenants',
-        tenantId: query.tenantId,
-        organisationId: query.organisationId
-      }
+    const err = makeError(
+      'TENANT_ISOLATION_VIOLATION',
+      'Search returned documents from other tenants',
+      query.tenantId,
+      query.organisationId
+    );
+    const proof: SearchProofResult = {
+      kind: 'SEARCH_ISOLATION_PROOF',
+      passed: false,
+      error: err
     };
+    return { isolated: false, error: err, proof };
   }
 
-  return { isolated: true, error: null };
+  const proof: SearchProofResult = {
+    kind: 'SEARCH_ISOLATION_PROOF',
+    passed: true,
+    error: null
+  };
+  return { isolated: true, error: null, proof };
 }
 
 export function searchRoutesProof(
   state: SearchState,
   query: SearchQuery
-): { readonly passed: boolean; readonly error: SearchError | null } {
+): { readonly passed: boolean; readonly error: SearchError | null; readonly proof: SearchProofResult } {
   const result = performSearch(state, query);
-  if (result.error !== null) {
-    return { passed: false, error: result.error };
+  if (!result.ok) {
+    const proof: SearchProofResult = {
+      kind: 'SEARCH_ROUTES_PROOF',
+      passed: false,
+      error: result.error
+    };
+    return { passed: false, error: result.error, proof };
   }
 
   const crossTenantQuery: SearchQuery = {
-    ...query,
     tenantId: 'foreign-tenant',
-    organisationId: 'foreign-org'
+    organisationId: 'foreign-org',
+    query: query.query
   };
   const crossTenantResult = performSearch(state, crossTenantQuery);
-  if (crossTenantResult.results.length > 0) {
-    return {
+  if (crossTenantResult.ok && crossTenantResult.results.length > 0) {
+    const err = makeError(
+      'TENANT_ISOLATION_VIOLATION',
+      'Cross-tenant query returned results',
+      query.tenantId,
+      query.organisationId
+    );
+    const proof: SearchProofResult = {
+      kind: 'SEARCH_ROUTES_PROOF',
       passed: false,
-      error: {
-        kind: 'TENANT_ISOLATION_VIOLATION',
-        message: 'Cross-tenant query returned results',
-        tenantId: query.tenantId,
-        organisationId: query.organisationId
-      }
+      error: err
+    };
+    return { passed: false, error: err, proof };
+  }
+
+  const proof: SearchProofResult = {
+    kind: 'SEARCH_ROUTES_PROOF',
+    passed: true,
+    error: null
+  };
+  return { passed: true, error: null, proof };
+}
+
+export function runSearchProof(
+  state: SearchState,
+  query: SearchQuery
+): { readonly passed: boolean; readonly error: SearchError | null; readonly proof: SearchProofResult } {
+  const result = performSearch(state, query);
+  if (!result.ok) {
+    const proof: SearchProofResult = {
+      kind: 'SEARCH_PROOF',
+      passed: false,
+      error: result.error
+    };
+    return { passed: false, error: result.error, proof };
+  }
+
+  const proof: SearchProofResult = {
+    kind: 'SEARCH_PROOF',
+    passed: true,
+    error: null
+  };
+  return { passed: true, error: null, proof };
+}
+
+export function recordProof(
+  state: SearchState,
+  proof: SearchProofResult
+): SearchState {
+  return {
+    ...state,
+    proofHistory: [...state.proofHistory, proof]
+  };
+}
+
+export function checkPromotionGates(
+  state: SearchState
+): { readonly allowed: boolean; readonly errors: readonly SearchError[] } {
+  const errors: SearchError[] = [];
+
+  if (state.readiness === 'BLOCKED') {
+    errors.push(makeError(
+      'READINESS_PROBE_FAILED',
+      'Readiness is BLOCKED',
+      '',
+      ''
+    ));
+  }
+
+  if (!isIsolationSignalPresent(state)) {
+    errors.push(makeError(
+      'MISSING_ISOLATION_SIGNAL',
+      'Missing isolation signal',
+      '',
+      ''
+    ));
+  }
+
+  if (!isAuditSignalPresent(state)) {
+    errors.push(makeError(
+      'MISSING_AUDIT_SIGNAL',
+      'Missing audit signal',
+      '',
+      ''
+    ));
+  }
+
+  const failedProof = state.proofHistory.find(p => !p.passed);
+  if (failedProof !== undefined && failedProof.error !== null) {
+    errors.push(failedProof.error);
+  }
+
+  return { allowed: errors.length === 0, errors };
+}
+
+export function crossTenantIsolationAssertion(
+  state: SearchState,
+  tenantId: string,
+  organisationId: string,
+  documentType?: string
+): { readonly isolated: boolean; readonly error: SearchError | null } {
+  const query: SearchQuery = {
+    tenantId,
+    organisationId,
+    query: '',
+    documentType
+  };
+
+  const result = performSearch(state, query);
+
+  if (!result.ok) {
+    return { isolated: true, error: result.error };
+  }
+
+  const hasForeignDocs = result.results.some(r =>
+    !enforceRowLevelSecurityPredicate(r.document, tenantId, organisationId)
+  );
+
+  if (hasForeignDocs) {
+    return {
+      isolated: false,
+      error: makeError(
+        'TENANT_ISOLATION_VIOLATION',
+        'Cross-tenant isolation assertion failed',
+        tenantId,
+        organisationId
+      )
     };
   }
 
-  return { passed: true, error: null };
+  return { isolated: true, error: null };
 }
 
 export const initialState: SearchState = {
@@ -415,5 +827,6 @@ export const initialState: SearchState = {
   documents: [],
   lastError: null,
   lastAudit: null,
-  probeHistory: []
+  probeHistory: [],
+  proofHistory: []
 };

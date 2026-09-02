@@ -23,6 +23,8 @@ export const CustomDomainDnsOwnershipTlsCanonicalAuditEventKind = [
   'LOCAL_ROUTING_PROOF',
   'CANONICAL_SET',
   'CANONICAL_UNSET',
+  'DOMAIN_DISABLED',
+  'DOMAIN_DEACTIVATED',
 ] as const;
 export type CustomDomainDnsOwnershipTlsCanonicalAuditEventKind = typeof CustomDomainDnsOwnershipTlsCanonicalAuditEventKind[number];
 
@@ -56,6 +58,12 @@ export const CustomDomainDnsOwnershipTlsCanonicalRoutingStatus = [
 ] as const;
 export type CustomDomainDnsOwnershipTlsCanonicalRoutingStatus = typeof CustomDomainDnsOwnershipTlsCanonicalRoutingStatus[number];
 
+export const CustomDomainDnsOwnershipTlsCanonicalTlsStatus = [
+  'UNKNOWN',
+  'DEFERRED',
+] as const;
+export type CustomDomainDnsOwnershipTlsCanonicalTlsStatus = typeof CustomDomainDnsOwnershipTlsCanonicalTlsStatus[number];
+
 export const CustomDomainDnsOwnershipTlsCanonicalRedirectPolicy = [
   'NO_REDIRECT',
   'REDIRECT_SLUG_TO_CANONICAL',
@@ -67,16 +75,18 @@ export interface CustomDomainDnsOwnershipTlsCanonicalAuditEvent {
   readonly domain: string;
   readonly tenant: string;
   readonly timestamp: string;
+  readonly metadata: Readonly<Record<string, string>>;
 }
 
 export interface CustomDomainDnsOwnershipTlsCanonicalError {
-  readonly kind: CustomDomainDnsOwnershipTlsCanonicalOutcome;
+  readonly outcome: CustomDomainDnsOwnershipTlsCanonicalOutcome;
   readonly message: string;
 }
 
 export interface CustomDomainDnsOwnershipTlsCanonicalChallengeToken {
   readonly token: string;
   readonly createdAt: string;
+  readonly expiresAt: string;
 }
 
 export interface CustomDomainDnsOwnershipTlsCanonicalDomainRecord {
@@ -85,7 +95,7 @@ export interface CustomDomainDnsOwnershipTlsCanonicalDomainRecord {
   readonly ownershipStatus: CustomDomainDnsOwnershipTlsCanonicalOwnershipStatus;
   readonly authClientStatus: CustomDomainDnsOwnershipTlsCanonicalAuthClientStatus;
   readonly routingStatus: CustomDomainDnsOwnershipTlsCanonicalRoutingStatus;
-  readonly tlsStatus: 'UNKNOWN';
+  readonly tlsStatus: CustomDomainDnsOwnershipTlsCanonicalTlsStatus;
   readonly canonical: boolean;
   readonly redirectPolicy: CustomDomainDnsOwnershipTlsCanonicalRedirectPolicy;
   readonly createdAt: string;
@@ -99,29 +109,132 @@ export interface CustomDomainDnsOwnershipTlsCanonicalDomainRecord {
 
 export interface CustomDomainDnsOwnershipTlsCanonicalState {
   readonly domains: readonly CustomDomainDnsOwnershipTlsCanonicalDomainRecord[];
+  readonly publicDnsVerified: boolean;
+  readonly tlsProvisioned: boolean;
+}
+
+export interface CustomDomainDnsOwnershipTlsCanonicalAuthClientPort {
+  readonly activate: (domain: string, tenant: string) => boolean;
+  readonly deactivate: (domain: string, tenant: string) => boolean;
+}
+
+export interface CustomDomainDnsOwnershipTlsCanonicalDnsChallengePort {
+  readonly lookupTxt: (domain: string) => readonly string[];
+}
+
+export interface CustomDomainDnsOwnershipTlsCanonicalRoutingProbePort {
+  readonly probe: (domain: string, tenant: string) => boolean;
+}
+
+export type CustomDomainDnsOwnershipTlsCanonicalAuditFn = (
+  event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent,
+) => null;
+
+export interface CustomDomainDnsOwnershipTlsCanonicalTenantDomainPort {
+  readonly createChallenge: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly verifyDns: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    expectedToken: string,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly verifyDnsWithLookup: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    dnsPort: CustomDomainDnsOwnershipTlsCanonicalDnsChallengePort,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly activateAuthClient: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    authClientPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly deactivateAuthClient: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    authClientPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly proveLocalRouting: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly proveLocalRoutingWithProbe: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    routingProbePort: CustomDomainDnsOwnershipTlsCanonicalRoutingProbePort,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly setCanonical: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly unsetCanonical: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly disableDomain: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly deactivateDomain: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    domain: string,
+    tenant: string,
+    authClientPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort,
+    auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  ) => CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError;
+  readonly listDomains: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    tenant: string,
+  ) => readonly CustomDomainDnsOwnershipTlsCanonicalDomainRecord[];
+  readonly getReadiness: (
+    state: CustomDomainDnsOwnershipTlsCanonicalState,
+    tenant: string,
+  ) => CustomDomainDnsOwnershipTlsCanonicalReadiness;
 }
 
 export const initialState: CustomDomainDnsOwnershipTlsCanonicalState = {
   domains: [],
+  publicDnsVerified: false,
+  tlsProvisioned: false,
 };
 
-function isValidDomain(domain: string): boolean {
+export const CHALLENGE_TTL_MS = 24 * 60 * 60 * 1000;
+
+export function isValidDomain(domain: string): boolean {
+  if (typeof domain !== 'string') return false;
   if (domain.length === 0 || domain.length > 253) return false;
-  if (/[^a-zA-Z0-9-.]/.test(domain)) return false;
+  if (/[^a-zA-Z0-9.\-]/.test(domain)) return false;
   if (domain.startsWith('-') || domain.endsWith('-')) return false;
   if (domain.startsWith('.') || domain.endsWith('.')) return false;
   if (domain.includes('..')) return false;
   const parts = domain.split('.');
   if (parts.some((part) => part.length === 0)) return false;
+  if (parts.some((part) => part.length > 63)) return false;
+  if (/^\[.*\]$/.test(domain)) return false;
   if (/^[0-9]+(\.[0-9]+){3}$/.test(domain)) return false;
+  if (parts.every((part) => /^[0-9]+$/.test(part))) return false;
   return true;
-}
-
-function findDomainRecord(
-  state: CustomDomainDnsOwnershipTlsCanonicalState,
-  domain: string,
-): CustomDomainDnsOwnershipTlsCanonicalDomainRecord | null {
-  return state.domains.find((d) => d.domain === domain) ?? null;
 }
 
 function findDomainRecordByTenant(
@@ -132,58 +245,158 @@ function findDomainRecordByTenant(
   return state.domains.find((d) => d.domain === domain && d.tenant === tenant) ?? null;
 }
 
-function findAnyTenantDomainRecord(
+function findEnabledAnyTenantDomainRecord(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
 ): CustomDomainDnsOwnershipTlsCanonicalDomainRecord | null {
-  return state.domains.find((d) => d.domain === domain) ?? null;
+  return state.domains.find((d) => d.domain === domain && !d.disabled) ?? null;
+}
+
+function isChallengeTokenExpired(token: CustomDomainDnsOwnershipTlsCanonicalChallengeToken, nowIso: string): boolean {
+  return token.expiresAt <= nowIso;
+}
+
+function hasUnexpiredChallengeToken(
+  record: CustomDomainDnsOwnershipTlsCanonicalDomainRecord,
+  nowIso: string,
+): boolean {
+  return record.challengeTokens.some((t) => !isChallengeTokenExpired(t, nowIso));
 }
 
 function emitAudit(
   kind: CustomDomainDnsOwnershipTlsCanonicalAuditEventKind,
   domain: string,
   tenant: string,
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
-): CustomDomainDnsOwnershipTlsCanonicalError | null {
+  metadata: Readonly<Record<string, string>>,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+): boolean {
   const event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent = {
     kind,
     domain,
     tenant,
     timestamp: new Date().toISOString(),
+    metadata,
   };
-  return auditFn(event);
+  try {
+    auditFn(event);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function deniedOutcome(
+  outcome: CustomDomainDnsOwnershipTlsCanonicalOutcome,
+  message: string,
+): CustomDomainDnsOwnershipTlsCanonicalError {
+  return { outcome, message };
+}
+
+function isState(value: unknown): value is CustomDomainDnsOwnershipTlsCanonicalState {
+  if (value === null || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return (
+    Array.isArray(v.domains) &&
+    typeof v.publicDnsVerified === 'boolean' &&
+    typeof v.tlsProvisioned === 'boolean'
+  );
+}
+
+export function hasDomainWritePermission(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  permission: string,
+): boolean {
+  if (!isState(state)) return false;
+  if (permission !== 'domain:write') return false;
+  if (typeof tenant !== 'string' || tenant.length === 0) return false;
+  return true;
+}
+
+export function hasDomainReadPermission(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  tenant: string,
+  permission: string,
+): boolean {
+  if (!isState(state)) return false;
+  if (permission !== 'domain:read') return false;
+  if (typeof tenant !== 'string' || tenant.length === 0) return false;
+  return true;
+}
+
+function safeDomainMetadata(domain: string, tenant: string): Readonly<Record<string, string>> {
+  return {
+    domain,
+    tenant,
+  };
+}
+
+function performAuditOrFail(
+  kind: CustomDomainDnsOwnershipTlsCanonicalAuditEventKind,
+  domain: string,
+  tenant: string,
+  metadata: Readonly<Record<string, string>>,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+  failureOutcome: CustomDomainDnsOwnershipTlsCanonicalOutcome,
+  failureMessage: string,
+): CustomDomainDnsOwnershipTlsCanonicalError | null {
+  const ok = emitAudit(kind, domain, tenant, metadata, auditFn);
+  if (!ok) {
+    return deniedOutcome(failureOutcome, failureMessage);
+  }
+  return null;
 }
 
 export function createOwnershipChallenge(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
   tenant: string,
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
   if (!isValidDomain(domain)) {
-    return { kind: 'INVALID_DOMAIN', message: 'Domain name is malformed' };
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
   }
 
-  const existingAnyTenant = findAnyTenantDomainRecord(state, domain);
-  if (existingAnyTenant !== null && !existingAnyTenant.disabled) {
-    const auditError = emitAudit('CONFLICT_REJECTED', domain, tenant, auditFn);
-    if (auditError !== null) return auditError;
-    return { kind: 'DOMAIN_ALREADY_CLAIMED', message: 'Domain already claimed by another tenant' };
+  const enabledByOther = findEnabledAnyTenantDomainRecord(state, domain);
+  if (enabledByOther !== null && enabledByOther.tenant !== tenant) {
+    const auditFailure = performAuditOrFail(
+      'CONFLICT_REJECTED',
+      domain,
+      tenant,
+      safeDomainMetadata(domain, tenant),
+      auditFn,
+      'NOT_FOUND',
+      'Audit failed for cross-tenant conflict',
+    );
+    if (auditFailure !== null) return auditFailure;
+    return deniedOutcome('DOMAIN_ALREADY_CLAIMED', 'Domain already claimed by another tenant');
   }
 
-  const existing = findDomainRecordByTenant(state, domain, tenant);
-  if (existing !== null) {
-    const auditError = emitAudit('CONFLICT_REJECTED', domain, tenant, auditFn);
-    if (auditError !== null) return auditError;
-    return { kind: 'DOMAIN_ALREADY_CLAIMED', message: 'Domain already claimed by this tenant' };
+  const existingByTenant = findDomainRecordByTenant(state, domain, tenant);
+  if (existingByTenant !== null && !existingByTenant.disabled) {
+    const auditFailure = performAuditOrFail(
+      'CONFLICT_REJECTED',
+      domain,
+      tenant,
+      safeDomainMetadata(domain, tenant),
+      auditFn,
+      'NOT_FOUND',
+      'Audit failed for same-tenant conflict',
+    );
+    if (auditFailure !== null) return auditFailure;
+    return deniedOutcome('DOMAIN_ALREADY_CLAIMED', 'Domain already claimed by this tenant');
   }
 
-  const auditError = emitAudit('CHALLENGE_CREATED', domain, tenant, auditFn);
-  if (auditError !== null) return auditError;
-
+  const now = new Date();
+  const tokenId = cryptoRandomUuid();
   const token: CustomDomainDnsOwnershipTlsCanonicalChallengeToken = {
-    token: crypto.randomUUID(),
-    createdAt: new Date().toISOString(),
+    token: tokenId,
+    createdAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + CHALLENGE_TTL_MS).toISOString(),
   };
 
   const newRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
@@ -195,7 +408,7 @@ export function createOwnershipChallenge(
     tlsStatus: 'UNKNOWN',
     canonical: false,
     redirectPolicy: 'NO_REDIRECT',
-    createdAt: new Date().toISOString(),
+    createdAt: now.toISOString(),
     verifiedAt: null,
     activatedAt: null,
     routedAt: null,
@@ -203,6 +416,17 @@ export function createOwnershipChallenge(
     disabled: false,
     challengeTokens: [token],
   };
+
+  const auditFailure = performAuditOrFail(
+    'CHALLENGE_CREATED',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'challenge_created' },
+    auditFn,
+    'NOT_FOUND',
+    'Audit failed for challenge creation',
+  );
+  if (auditFailure !== null) return auditFailure;
 
   return {
     ...state,
@@ -215,29 +439,135 @@ export function verifyDnsOwnership(
   domain: string,
   tenant: string,
   expectedToken: string,
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
   const record = findDomainRecordByTenant(state, domain, tenant);
   if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
   }
 
   if (record.ownershipStatus === 'VERIFIED') {
-    return { kind: 'ALREADY_VERIFIED', message: 'Domain already verified' };
+    return deniedOutcome('ALREADY_VERIFIED', 'Domain already verified');
   }
 
-  const tokenMatch = record.challengeTokens.some((t) => t.token === expectedToken);
+  if (typeof expectedToken !== 'string' || expectedToken.length === 0) {
+    return deniedOutcome('DNS_MISMATCH', 'Expected DNS verification token is required');
+  }
+
+  const nowIso = new Date().toISOString();
+  if (!hasUnexpiredChallengeToken(record, nowIso)) {
+    return deniedOutcome('EXPIRED', 'DNS challenge token has expired');
+  }
+
+  if (record.challengeTokens.length === 0) {
+    return deniedOutcome('DNS_NOT_FOUND', 'No DNS challenge token exists for domain');
+  }
+
+  const tokenMatch = record.challengeTokens.some(
+    (t) => t.token === expectedToken && !isChallengeTokenExpired(t, nowIso),
+  );
   if (!tokenMatch) {
-    return { kind: 'DNS_MISMATCH', message: 'DNS verification token mismatch' };
+    return deniedOutcome('DNS_MISMATCH', 'DNS verification token mismatch');
   }
 
-  const auditError = emitAudit('VERIFICATION', domain, tenant, auditFn);
-  if (auditError !== null) return auditError;
+  const auditFailure = performAuditOrFail(
+    'VERIFICATION',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'verified' },
+    auditFn,
+    'NOT_FOUND',
+    'Audit failed for DNS verification',
+  );
+  if (auditFailure !== null) return auditFailure;
 
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
     ...record,
     ownershipStatus: 'VERIFIED',
-    verifiedAt: new Date().toISOString(),
+    verifiedAt: nowIso,
+  };
+
+  return {
+    ...state,
+    domains: state.domains.map((d) => (d.domain === domain && d.tenant === tenant ? updatedRecord : d)),
+  };
+}
+
+export function verifyDnsOwnershipWithLookup(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  domain: string,
+  tenant: string,
+  dnsPort: CustomDomainDnsOwnershipTlsCanonicalDnsChallengePort,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
+  const record = findDomainRecordByTenant(state, domain, tenant);
+  if (record === null) {
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
+  }
+
+  if (record.ownershipStatus === 'VERIFIED') {
+    return deniedOutcome('ALREADY_VERIFIED', 'Domain already verified');
+  }
+
+  const nowIso = new Date().toISOString();
+  if (!hasUnexpiredChallengeToken(record, nowIso)) {
+    return deniedOutcome('EXPIRED', 'DNS challenge token has expired');
+  }
+
+  if (record.challengeTokens.length === 0) {
+    return deniedOutcome('DNS_NOT_FOUND', 'No DNS challenge token exists for domain');
+  }
+
+  const txtRecords = dnsPort.lookupTxt(domain);
+  if (!Array.isArray(txtRecords)) {
+    return deniedOutcome('DNS_NOT_FOUND', 'DNS lookup returned no records');
+  }
+  const matchingToken = record.challengeTokens.find(
+    (t) => txtRecords.includes(t.token) && !isChallengeTokenExpired(t, nowIso),
+  );
+  if (matchingToken === undefined) {
+    return deniedOutcome('DNS_MISMATCH', 'Expected DNS TXT token not found');
+  }
+
+  const auditFailure = performAuditOrFail(
+    'VERIFICATION',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'verified' },
+    auditFn,
+    'NOT_FOUND',
+    'Audit failed for DNS verification',
+  );
+  if (auditFailure !== null) return auditFailure;
+
+  const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
+    ...record,
+    ownershipStatus: 'VERIFIED',
+    verifiedAt: nowIso,
   };
 
   return {
@@ -250,34 +580,55 @@ export function activateAuthClient(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
   tenant: string,
-  authClientPort: { readonly activate: (domain: string, tenant: string) => boolean },
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  authClientPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
   const record = findDomainRecordByTenant(state, domain, tenant);
   if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
   }
 
   if (record.ownershipStatus !== 'VERIFIED') {
-    return { kind: 'NOT_VERIFIED', message: 'Domain must be verified before activating auth client' };
+    return deniedOutcome('NOT_VERIFIED', 'Domain must be verified before activating auth client');
   }
 
   if (record.authClientStatus === 'ACTIVE') {
-    return { kind: 'SUCCESS', message: 'Auth client already active' };
+    return deniedOutcome('AUTH_CLIENT_INACTIVE', 'Auth client already active');
   }
 
   const success = authClientPort.activate(domain, tenant);
   if (!success) {
-    return { kind: 'AUTH_CLIENT_INACTIVE', message: 'Auth client activation failed' };
+    return deniedOutcome('AUTH_CLIENT_INACTIVE', 'Auth client activation failed');
   }
 
-  const auditError = emitAudit('AUTH_CLIENT_ACTIVATED', domain, tenant, auditFn);
-  if (auditError !== null) return auditError;
+  const auditFailure = performAuditOrFail(
+    'AUTH_CLIENT_ACTIVATED',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'auth_client_activated' },
+    auditFn,
+    'AUTH_CLIENT_INACTIVE',
+    'Audit failed for auth-client activation',
+  );
+  if (auditFailure !== null) return auditFailure;
 
+  const nowIso = new Date().toISOString();
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
     ...record,
     authClientStatus: 'ACTIVE',
-    activatedAt: new Date().toISOString(),
+    activatedAt: nowIso,
   };
 
   return {
@@ -290,26 +641,47 @@ export function deactivateAuthClient(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
   tenant: string,
-  authClientPort: { readonly deactivate: (domain: string, tenant: string) => boolean },
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  authClientPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
   const record = findDomainRecordByTenant(state, domain, tenant);
   if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
   }
 
   if (record.authClientStatus !== 'ACTIVE') {
-    return { kind: 'NOT_ACTIVE', message: 'Auth client not active' };
+    return deniedOutcome('NOT_ACTIVE', 'Auth client not active');
   }
 
   const success = authClientPort.deactivate(domain, tenant);
   if (!success) {
-    return { kind: 'AUTH_CLIENT_INACTIVE', message: 'Auth client deactivation failed' };
+    return deniedOutcome('AUTH_CLIENT_INACTIVE', 'Auth client deactivation failed');
   }
 
-  const auditError = emitAudit('AUTH_CLIENT_DEACTIVATED', domain, tenant, auditFn);
-  if (auditError !== null) return auditError;
+  const auditFailure = performAuditOrFail(
+    'AUTH_CLIENT_DEACTIVATED',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'auth_client_deactivated' },
+    auditFn,
+    'AUTH_CLIENT_INACTIVE',
+    'Audit failed for auth-client deactivation',
+  );
+  if (auditFailure !== null) return auditFailure;
 
+  const nowIso = new Date().toISOString();
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
     ...record,
     authClientStatus: 'INACTIVE',
@@ -330,32 +702,120 @@ export function proveLocalRouting(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
   tenant: string,
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
   const record = findDomainRecordByTenant(state, domain, tenant);
   if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
   }
 
   if (record.ownershipStatus !== 'VERIFIED') {
-    return { kind: 'NOT_VERIFIED', message: 'Domain must be verified' };
+    return deniedOutcome('NOT_VERIFIED', 'Domain must be verified');
   }
 
   if (record.authClientStatus !== 'ACTIVE') {
-    return { kind: 'AUTH_CLIENT_INACTIVE', message: 'Auth client must be active' };
+    return deniedOutcome('AUTH_CLIENT_INACTIVE', 'Auth client must be active');
   }
 
   if (record.routingStatus === 'LOCALLY_ACTIVE') {
-    return { kind: 'SUCCESS', message: 'Routing already proven' };
+    return deniedOutcome('ROUTING_NOT_PROVEN', 'Routing already proven');
   }
 
-  const auditError = emitAudit('LOCAL_ROUTING_PROOF', domain, tenant, auditFn);
-  if (auditError !== null) return auditError;
+  const auditFailure = performAuditOrFail(
+    'LOCAL_ROUTING_PROOF',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'local_routing_proof' },
+    auditFn,
+    'ROUTING_NOT_PROVEN',
+    'Audit failed for local routing proof',
+  );
+  if (auditFailure !== null) return auditFailure;
 
+  const nowIso = new Date().toISOString();
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
     ...record,
     routingStatus: 'LOCALLY_ACTIVE',
-    routedAt: new Date().toISOString(),
+    routedAt: nowIso,
+    tlsStatus: 'DEFERRED',
+  };
+
+  return {
+    ...state,
+    domains: state.domains.map((d) => (d.domain === domain && d.tenant === tenant ? updatedRecord : d)),
+  };
+}
+
+export function proveLocalRoutingWithProbe(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  domain: string,
+  tenant: string,
+  routingProbePort: CustomDomainDnsOwnershipTlsCanonicalRoutingProbePort,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
+): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
+  const record = findDomainRecordByTenant(state, domain, tenant);
+  if (record === null) {
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
+  }
+
+  if (record.ownershipStatus !== 'VERIFIED') {
+    return deniedOutcome('NOT_VERIFIED', 'Domain must be verified');
+  }
+
+  if (record.authClientStatus !== 'ACTIVE') {
+    return deniedOutcome('AUTH_CLIENT_INACTIVE', 'Auth client must be active');
+  }
+
+  if (record.routingStatus === 'LOCALLY_ACTIVE') {
+    return deniedOutcome('ROUTING_NOT_PROVEN', 'Routing already proven');
+  }
+
+  const probeOk = routingProbePort.probe(domain, tenant);
+  if (!probeOk) {
+    return deniedOutcome('ROUTING_NOT_PROVEN', 'Local routing probe did not prove');
+  }
+
+  const auditFailure = performAuditOrFail(
+    'LOCAL_ROUTING_PROOF',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'local_routing_proof' },
+    auditFn,
+    'ROUTING_NOT_PROVEN',
+    'Audit failed for local routing proof',
+  );
+  if (auditFailure !== null) return auditFailure;
+
+  const nowIso = new Date().toISOString();
+  const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
+    ...record,
+    routingStatus: 'LOCALLY_ACTIVE',
+    routedAt: nowIso,
+    tlsStatus: 'DEFERRED',
   };
 
   return {
@@ -368,36 +828,57 @@ export function setCanonical(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
   tenant: string,
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
   const record = findDomainRecordByTenant(state, domain, tenant);
   if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
   }
 
   if (record.ownershipStatus !== 'VERIFIED') {
-    return { kind: 'NOT_VERIFIED', message: 'Domain must be verified' };
+    return deniedOutcome('NOT_VERIFIED', 'Domain must be verified before canonical designation');
   }
 
   if (record.authClientStatus !== 'ACTIVE') {
-    return { kind: 'AUTH_CLIENT_INACTIVE', message: 'Auth client must be active' };
+    return deniedOutcome('AUTH_CLIENT_INACTIVE', 'Auth client must be active before canonical designation');
   }
 
   if (record.routingStatus !== 'LOCALLY_ACTIVE') {
-    return { kind: 'ROUTING_NOT_PROVEN', message: 'Routing must be proven' };
+    return deniedOutcome('ROUTING_NOT_PROVEN', 'Routing must be proven before canonical designation');
   }
 
   if (record.canonical) {
-    return { kind: 'SUCCESS', message: 'Domain already canonical' };
+    return deniedOutcome('NOT_ACTIVE', 'Domain already canonical');
   }
 
-  const auditError = emitAudit('CANONICAL_SET', domain, tenant, auditFn);
-  if (auditError !== null) return auditError;
+  const auditFailure = performAuditOrFail(
+    'CANONICAL_SET',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'canonical_set' },
+    auditFn,
+    'NOT_VERIFIED',
+    'Audit failed for canonical set',
+  );
+  if (auditFailure !== null) return auditFailure;
 
+  const nowIso = new Date().toISOString();
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
     ...record,
     canonical: true,
-    canonicalSetAt: new Date().toISOString(),
+    canonicalSetAt: nowIso,
     redirectPolicy: 'REDIRECT_SLUG_TO_CANONICAL',
   };
 
@@ -411,19 +892,39 @@ export function unsetCanonical(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
   tenant: string,
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
   const record = findDomainRecordByTenant(state, domain, tenant);
   if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
   }
 
   if (!record.canonical) {
-    return { kind: 'SUCCESS', message: 'Domain not canonical' };
+    return deniedOutcome('NOT_ACTIVE', 'Domain not canonical');
   }
 
-  const auditError = emitAudit('CANONICAL_UNSET', domain, tenant, auditFn);
-  if (auditError !== null) return auditError;
+  const auditFailure = performAuditOrFail(
+    'CANONICAL_UNSET',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'canonical_unset' },
+    auditFn,
+    'NOT_VERIFIED',
+    'Audit failed for canonical unset',
+  );
+  if (auditFailure !== null) return auditFailure;
 
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
     ...record,
@@ -442,27 +943,63 @@ export function deactivateDomain(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
   tenant: string,
-  authClientPort: { readonly deactivate: (domain: string, tenant: string) => boolean },
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  authClientPort: CustomDomainDnsOwnershipTlsCanonicalAuthClientPort,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
   const record = findDomainRecordByTenant(state, domain, tenant);
   if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
   }
 
-  if (record.authClientStatus === 'ACTIVE') {
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
+  }
+
+  let workingRecord = record;
+
+  if (workingRecord.authClientStatus === 'ACTIVE') {
     const success = authClientPort.deactivate(domain, tenant);
     if (!success) {
-      return { kind: 'AUTH_CLIENT_INACTIVE', message: 'Auth client deactivation failed' };
+      return deniedOutcome('AUTH_CLIENT_INACTIVE', 'Auth client deactivation failed');
     }
-    const auditError = emitAudit('AUTH_CLIENT_DEACTIVATED', domain, tenant, auditFn);
-    if (auditError !== null) return auditError;
+    const auditFailure = performAuditOrFail(
+      'AUTH_CLIENT_DEACTIVATED',
+      domain,
+      tenant,
+      { ...safeDomainMetadata(domain, tenant), phase: 'auth_client_deactivated' },
+      auditFn,
+      'AUTH_CLIENT_INACTIVE',
+      'Audit failed for auth-client deactivation during domain deactivation',
+    );
+    if (auditFailure !== null) return auditFailure;
+    workingRecord = {
+      ...workingRecord,
+      authClientStatus: 'INACTIVE',
+      activatedAt: null,
+    };
   }
 
+  const deactivationAudit = performAuditOrFail(
+    'DOMAIN_DEACTIVATED',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'domain_deactivated' },
+    auditFn,
+    'NOT_FOUND',
+    'Audit failed for domain deactivation',
+  );
+  if (deactivationAudit !== null) return deactivationAudit;
+
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
-    ...record,
-    authClientStatus: 'INACTIVE',
-    activatedAt: null,
+    ...workingRecord,
     canonical: false,
     canonicalSetAt: null,
     routingStatus: 'UNKNOWN',
@@ -479,16 +1016,35 @@ export function disableDomain(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   domain: string,
   tenant: string,
-  auditFn: (event: CustomDomainDnsOwnershipTlsCanonicalAuditEvent) => CustomDomainDnsOwnershipTlsCanonicalError | null,
+  auditFn: CustomDomainDnsOwnershipTlsCanonicalAuditFn,
 ): CustomDomainDnsOwnershipTlsCanonicalState | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainWritePermission(state, tenant, 'domain:write')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:write permission');
+  }
+
+  if (!isValidDomain(domain)) {
+    return deniedOutcome('INVALID_DOMAIN', 'Domain name is malformed or an IP literal');
+  }
+
   const record = findDomainRecordByTenant(state, domain, tenant);
   if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
   }
 
   if (record.disabled) {
-    return { kind: 'SUCCESS', message: 'Domain already disabled' };
+    return deniedOutcome('NOT_FOUND', 'Domain already disabled');
   }
+
+  const auditFailure = performAuditOrFail(
+    'DOMAIN_DISABLED',
+    domain,
+    tenant,
+    { ...safeDomainMetadata(domain, tenant), phase: 'domain_disabled' },
+    auditFn,
+    'NOT_FOUND',
+    'Audit failed for domain disable',
+  );
+  if (auditFailure !== null) return auditFailure;
 
   const updatedRecord: CustomDomainDnsOwnershipTlsCanonicalDomainRecord = {
     ...record,
@@ -511,6 +1067,7 @@ export function listDomains(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   tenant: string,
 ): readonly CustomDomainDnsOwnershipTlsCanonicalDomainRecord[] {
+  if (!hasDomainReadPermission(state, tenant, 'domain:read')) return [];
   return state.domains.filter((d) => d.tenant === tenant);
 }
 
@@ -518,17 +1075,36 @@ export function getReadiness(
   state: CustomDomainDnsOwnershipTlsCanonicalState,
   tenant: string,
 ): CustomDomainDnsOwnershipTlsCanonicalReadiness {
+  if (!hasDomainReadPermission(state, tenant, 'domain:read')) {
+    return 'DEFERRED_PUBLIC_DNS_TLS';
+  }
   const domains = listDomains(state, tenant);
   if (domains.length === 0) return 'NO_DOMAINS';
 
-  const verifiedDomains = domains.filter((d) => d.ownershipStatus === 'VERIFIED');
+  const enabledDomains = domains.filter((d) => !d.disabled);
+  if (enabledDomains.length === 0) return 'DEFERRED_PUBLIC_DNS_TLS';
+
+  const pendingDomains = enabledDomains.filter(
+    (d) => d.ownershipStatus === 'PENDING_DNS' || d.ownershipStatus === 'DNS_MISMATCH',
+  );
+  if (pendingDomains.length > 0) return 'PENDING_DNS';
+
+  const verifiedDomains = enabledDomains.filter((d) => d.ownershipStatus === 'VERIFIED');
   if (verifiedDomains.length === 0) return 'PENDING_DNS';
 
   const activeAuthDomains = verifiedDomains.filter((d) => d.authClientStatus === 'ACTIVE');
-  if (activeAuthDomains.length === 0) return 'VERIFIED';
+  if (activeAuthDomains.length === 0) {
+    return 'VERIFIED';
+  }
 
   const routedDomains = activeAuthDomains.filter((d) => d.routingStatus === 'LOCALLY_ACTIVE');
-  if (routedDomains.length === 0) return 'INACTIVE_AUTH_CLIENT';
+  if (routedDomains.length === 0) {
+    return 'INACTIVE_AUTH_CLIENT';
+  }
+
+  if (!state.publicDnsVerified || !state.tlsProvisioned) {
+    return 'DEFERRED_PUBLIC_DNS_TLS';
+  }
 
   const canonicalDomains = routedDomains.filter((d) => d.canonical);
   if (canonicalDomains.length > 0) return 'CANONICAL_REDIRECT_CUTOVER';
@@ -541,14 +1117,115 @@ export function getDomainReadiness(
   domain: string,
   tenant: string,
 ): CustomDomainDnsOwnershipTlsCanonicalReadiness | CustomDomainDnsOwnershipTlsCanonicalError {
-  const record = findDomainRecordByTenant(state, domain, tenant);
-  if (record === null) {
-    return { kind: 'NOT_FOUND', message: 'Domain not found for tenant' };
+  if (!hasDomainReadPermission(state, tenant, 'domain:read')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:read permission');
   }
 
+  const record = findDomainRecordByTenant(state, domain, tenant);
+  if (record === null) {
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+
+  if (record.disabled) return 'DEFERRED_PUBLIC_DNS_TLS';
+  if (record.ownershipStatus === 'PENDING_DNS' || record.ownershipStatus === 'DNS_MISMATCH') {
+    return 'PENDING_DNS';
+  }
   if (record.ownershipStatus !== 'VERIFIED') return 'PENDING_DNS';
   if (record.authClientStatus !== 'ACTIVE') return 'VERIFIED';
   if (record.routingStatus !== 'LOCALLY_ACTIVE') return 'INACTIVE_AUTH_CLIENT';
+  if (!state.publicDnsVerified || !state.tlsProvisioned) return 'DEFERRED_PUBLIC_DNS_TLS';
   if (record.canonical) return 'CANONICAL_REDIRECT_CUTOVER';
   return 'LOCALLY_ROUTED';
+}
+
+export function resolveCustomDomain(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  domain: string,
+  tenant: string,
+): CustomDomainDnsOwnershipTlsCanonicalDomainRecord | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainReadPermission(state, tenant, 'domain:read')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:read permission');
+  }
+
+  const record = findDomainRecordByTenant(state, domain, tenant);
+  if (record === null) {
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
+  }
+  if (record.routingStatus !== 'LOCALLY_ACTIVE') {
+    return deniedOutcome('ROUTING_NOT_PROVEN', 'Domain routing not proven locally');
+  }
+  return record;
+}
+
+export function resolveCustomDomainAuthOrigin(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  domain: string,
+  tenant: string,
+): CustomDomainDnsOwnershipTlsCanonicalDomainRecord | CustomDomainDnsOwnershipTlsCanonicalError {
+  if (!hasDomainReadPermission(state, tenant, 'domain:read')) {
+    return deniedOutcome('NOT_FOUND', 'Tenant lacks domain:read permission');
+  }
+
+  const record = findDomainRecordByTenant(state, domain, tenant);
+  if (record === null) {
+    return deniedOutcome('NOT_FOUND', 'Domain not found for tenant');
+  }
+  if (record.disabled) {
+    return deniedOutcome('NOT_FOUND', 'Domain is disabled');
+  }
+  if (record.ownershipStatus !== 'VERIFIED') {
+    return deniedOutcome('NOT_VERIFIED', 'Domain ownership not verified');
+  }
+  if (record.authClientStatus !== 'ACTIVE') {
+    return deniedOutcome('AUTH_CLIENT_INACTIVE', 'Auth client not active');
+  }
+  return record;
+}
+
+export function setPublicDnsVerified(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  verified: boolean,
+): CustomDomainDnsOwnershipTlsCanonicalState {
+  return { ...state, publicDnsVerified: verified };
+}
+
+export function setTlsProvisioned(
+  state: CustomDomainDnsOwnershipTlsCanonicalState,
+  provisioned: boolean,
+): CustomDomainDnsOwnershipTlsCanonicalState {
+  return { ...state, tlsProvisioned: provisioned };
+}
+
+function cryptoRandomUuid(): string {
+  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (c !== undefined && typeof c.randomUUID === 'function') {
+    return c.randomUUID();
+  }
+  const bytes: number[] = [];
+  for (let i = 0; i < 16; i += 1) {
+    bytes.push(Math.floor(Math.random() * 256));
+  }
+  const hex = bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+export function buildTenantDomainPort(): CustomDomainDnsOwnershipTlsCanonicalTenantDomainPort {
+  return {
+    createChallenge: createOwnershipChallenge,
+    verifyDns: verifyDnsOwnership,
+    verifyDnsWithLookup: verifyDnsOwnershipWithLookup,
+    activateAuthClient: activateAuthClient,
+    deactivateAuthClient: deactivateAuthClient,
+    proveLocalRouting: proveLocalRouting,
+    proveLocalRoutingWithProbe: proveLocalRoutingWithProbe,
+    setCanonical: setCanonical,
+    unsetCanonical: unsetCanonical,
+    disableDomain: disableDomain,
+    deactivateDomain: deactivateDomain,
+    listDomains: listDomains,
+    getReadiness: getReadiness,
+  };
 }

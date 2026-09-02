@@ -70,6 +70,7 @@ export interface TenantServiceClickthroughPolicyState {
   readonly lastError: TenantServiceClickthroughPolicyError | null;
   readonly readiness: TenantServiceClickthroughPolicyReadiness;
   readonly auditEvents: readonly TenantServiceClickthroughPolicyAuditEvent[];
+  readonly reconcilerAvailable: boolean;
 }
 
 export const initialState: TenantServiceClickthroughPolicyState = {
@@ -78,6 +79,7 @@ export const initialState: TenantServiceClickthroughPolicyState = {
   lastError: null,
   readiness: 'NOT_READY',
   auditEvents: [],
+  reconcilerAvailable: false,
 };
 
 export interface TenantServiceClickthroughPolicyDecisionResult {
@@ -146,7 +148,26 @@ export function auditAccessDecision(
     dsrGdprEvidence,
     timestamp: new Date().toISOString(),
   };
-  return auditFn(event);
+  try {
+    const result = auditFn(event);
+    if (result !== null) {
+      if (result.kind === undefined) {
+        return {
+          kind: 'AUDIT_FAILURE',
+          message: result.message ?? 'Audit failure',
+          tenantId,
+        };
+      }
+      return result;
+    }
+    return null;
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit failed',
+      tenantId,
+    };
+  }
 }
 
 export function auditPolicyChange(
@@ -163,7 +184,26 @@ export function auditPolicyChange(
     dsrGdprEvidence: null,
     timestamp: new Date().toISOString(),
   };
-  return auditFn(event);
+  try {
+    const result = auditFn(event);
+    if (result !== null) {
+      if (result.kind === undefined) {
+        return {
+          kind: 'AUDIT_FAILURE',
+          message: result.message ?? 'Audit failure',
+          tenantId,
+        };
+      }
+      return result;
+    }
+    return null;
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit failed',
+      tenantId,
+    };
+  }
 }
 
 export function auditReconciliationChange(
@@ -180,7 +220,26 @@ export function auditReconciliationChange(
     dsrGdprEvidence: null,
     timestamp: new Date().toISOString(),
   };
-  return auditFn(event);
+  try {
+    const result = auditFn(event);
+    if (result !== null) {
+      if (result.kind === undefined) {
+        return {
+          kind: 'AUDIT_FAILURE',
+          message: result.message ?? 'Audit failure',
+          tenantId,
+        };
+      }
+      return result;
+    }
+    return null;
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit failed',
+      tenantId,
+    };
+  }
 }
 
 export function addServiceDescriptor(
@@ -207,12 +266,29 @@ export function addServiceDescriptor(
     };
   }
 
+  const newAuditEvents: readonly TenantServiceClickthroughPolicyAuditEvent[] = [
+    ...state.auditEvents,
+    {
+      kind: 'POLICY_CHANGE',
+      tenantId: descriptor.tenantPath,
+      serviceId: descriptor.id,
+      decision: null,
+      reason: 'Policy configuration changed',
+      dsrGdprEvidence: null,
+      timestamp: new Date().toISOString(),
+    },
+  ];
+
+  const nextReadiness: TenantServiceClickthroughPolicyReadiness =
+    state.reconcilerAvailable ? 'READY' : 'DEGRADED';
+
   return {
     ...state,
     services: [...state.services, descriptor],
     lastDecision: null,
     lastError: null,
-    readiness: 'READY',
+    readiness: nextReadiness,
+    auditEvents: newAuditEvents,
   };
 }
 
@@ -234,6 +310,17 @@ export function computeAccessDecision(
   }
 
   if (service.tenantPath !== tenantId) {
+    const auditError = auditAccessDecision(
+      tenantId,
+      serviceId,
+      'DENIED',
+      'Tenant isolation violation: service does not belong to tenant',
+      null,
+      auditFn,
+    );
+    if (auditError !== null) {
+      return auditError;
+    }
     return {
       kind: 'MISSING_TENANT_ISOLATION',
       message: 'Tenant isolation violation: service does not belong to tenant',
@@ -242,6 +329,17 @@ export function computeAccessDecision(
   }
 
   if (service.devOnly) {
+    const auditError = auditAccessDecision(
+      tenantId,
+      serviceId,
+      'DENIED',
+      'Dev-only service not accessible in this context',
+      null,
+      auditFn,
+    );
+    if (auditError !== null) {
+      return auditError;
+    }
     return {
       decision: 'DENIED',
       reason: 'Dev-only service not accessible in this context',
@@ -403,15 +501,41 @@ export function deriveReconciliation(
 export function getReadiness(
   state: TenantServiceClickthroughPolicyState,
 ): TenantServiceClickthroughPolicyReadiness {
+  if (!state.reconcilerAvailable) {
+    return 'DEGRADED';
+  }
+  if (state.services.length === 0) {
+    return 'NOT_READY';
+  }
   return state.readiness;
 }
 
 export function setReadiness(
   state: TenantServiceClickthroughPolicyState,
   readiness: TenantServiceClickthroughPolicyReadiness,
+  reconcilerAvailable: boolean,
 ): TenantServiceClickthroughPolicyState {
+  const effectiveReadiness: TenantServiceClickthroughPolicyReadiness =
+    !reconcilerAvailable && readiness === 'READY' ? 'DEGRADED' : readiness;
   return {
     ...state,
-    readiness,
+    readiness: effectiveReadiness,
+    reconcilerAvailable,
+  };
+}
+
+export function computeReadiness(
+  state: TenantServiceClickthroughPolicyState,
+  reconcilerAvailable: boolean,
+): TenantServiceClickthroughPolicyState {
+  const nextReadiness: TenantServiceClickthroughPolicyReadiness = !reconcilerAvailable
+    ? 'DEGRADED'
+    : state.services.length === 0
+      ? 'NOT_READY'
+      : 'READY';
+  return {
+    ...state,
+    readiness: nextReadiness,
+    reconcilerAvailable,
   };
 }

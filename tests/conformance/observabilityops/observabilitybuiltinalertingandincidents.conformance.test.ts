@@ -5,736 +5,1139 @@ import * as capability from "../../../src/capabilities/observabilityops/observab
 type State = capability.ObservabilityBuiltInAlertingAndIncidentsState;
 type CapabilityError = capability.ObservabilityBuiltInAlertingAndIncidentsError;
 type AlertRule = capability.ObservabilityBuiltInAlertingAndIncidentsAlertRule;
-type MetricSignal = capability.ObservabilityBuiltInAlertingAndIncidentsMetricSignal;
+type Alert = capability.ObservabilityBuiltInAlertingAndIncidentsAlert;
 type AuditEvent = capability.ObservabilityBuiltInAlertingAndIncidentsAuditEvent;
+type Incident = capability.ObservabilityBuiltInAlertingAndIncidentsIncident;
+type IncidentState = capability.ObservabilityBuiltInAlertingAndIncidentsIncidentState;
+type EmittedSignal = capability.ObservabilityBuiltInAlertingAndIncidentsEmittedSignal;
+type Comparator = capability.ObservabilityBuiltInAlertingAndIncidentsComparator;
+type Severity = capability.ObservabilityBuiltInAlertingAndIncidentsSeverity;
+type AuditFn = (event: AuditEvent) => CapabilityError | null;
+type Token = {
+  readonly authLevel: string;
+  readonly permissions: readonly string[];
+  readonly tenantId: string;
+};
 
-function isError(
-  result: State | CapabilityError,
-): result is CapabilityError {
-  return "kind" in result;
+const defaultTenant = "tenant-a";
+
+function assertOk(
+  result:
+    | { readonly ok: true; readonly state: State }
+    | { readonly ok: false; readonly error: CapabilityError },
+): asserts result is { readonly ok: true; readonly state: State } {
+  if (!result.ok) {
+    assert.fail(`Expected OK result but got error: ${result.error.kind}`);
+  }
 }
 
-function assertState(
-  result: State | CapabilityError,
-): asserts result is State {
-  assert.equal(isError(result), false);
+function assertErr(
+  result:
+    | { readonly ok: true; readonly state: State }
+    | { readonly ok: false; readonly error: CapabilityError },
+  kind: CapabilityError["kind"],
+): CapabilityError {
+  if (result.ok) {
+    assert.fail("expected error, got ok");
+  }
+  assert.strictEqual(result.error.kind, kind);
+  return result.error;
+}
+
+function makeAuditSink(): { events: AuditEvent[]; sink: AuditFn } {
+  const events: AuditEvent[] = [];
+  return {
+    events,
+    sink: (event) => {
+      events.push(event);
+      return null;
+    },
+  };
+}
+
+function adminToken(tenantId: string = defaultTenant): Token {
+  return { authLevel: "admin", permissions: ["admin"], tenantId };
+}
+
+function readerToken(tenantId: string = defaultTenant): Token {
+  return { authLevel: "viewer", permissions: ["observability.read"], tenantId };
+}
+
+function validRule(overrides: Partial<AlertRule> = {}): AlertRule {
+  const base: AlertRule = {
+    id: "rule-default",
+    name: "default_rule",
+    metricName: "cpu.usage",
+    comparator: "GT",
+    threshold: 50,
+    severity: "HIGH",
+    tenantId: defaultTenant,
+  };
+  return { ...base, ...overrides };
+}
+
+function openIncident(
+  id: string,
+  alertId: string,
+  tenantId: string = defaultTenant,
+): Incident {
+  return {
+    id,
+    alertId,
+    state: "OPEN",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+    tenantId,
+  };
 }
 
 test("observabilitybuiltinalertingandincidentsauditmodel", () => {
-  const signal: MetricSignal = {
-    name: "cpu.usage",
-    value: 80,
-    timestamp: "2024-01-01T00:00:00.000Z",
-    tenantId: "tenant-a",
-  };
-  const withSignal = capability.addMetricSignal(capability.initialState, signal);
-
-  const rule: AlertRule = {
-    id: "rule-audit",
-    name: "cpu_high",
-    metricName: "cpu.usage",
-    comparator: "GT",
-    threshold: 75,
-    severity: "HIGH",
-    tenantId: "tenant-a",
-  };
-  const ruleAudit: AuditEvent[] = [];
-  const withRuleResult = capability.addAlertRule(
-    withSignal,
+  const ruleAudit = makeAuditSink();
+  const rule: AlertRule = validRule({ id: "rule-audit", name: "audit_rule" });
+  const withRule = capability.addAlertRule(
+    capability.initialState,
     rule,
     "req-audit-rule",
     "trace-audit-rule",
-    (event) => ruleAudit.push(event),
+    adminToken(),
+    ruleAudit.sink,
   );
-  assertState(withRuleResult);
-  const withRule = withRuleResult;
-  assert.strictEqual(ruleAudit.length, 1);
-  assert.strictEqual(ruleAudit[0].kind, "ALERT_RULE_CHANGE");
-  assert.strictEqual(ruleAudit[0].entityType, "ALERT_RULE");
-  assert.strictEqual(ruleAudit[0].entityId, rule.id);
-  assert.strictEqual(ruleAudit[0].requestId, "req-audit-rule");
-  assert.strictEqual(ruleAudit[0].traceId, "trace-audit-rule");
-  assert.deepStrictEqual(ruleAudit[0].details, { action: "ADD", rule });
+  assertOk(withRule);
 
-  const evaluated = capability.applyEvaluation(withRule, "2024-01-01T00:01:00.000Z");
-  assert.strictEqual(evaluated.incidents.length, 1);
-  const incident = evaluated.incidents[0];
-  assert.ok(incident !== undefined);
-
-  const transitionAudit: AuditEvent[] = [];
-  const transitionedResult = capability.transitionIncident(
-    evaluated,
-    incident.id,
+  const incidentState: State = {
+    ...capability.initialState,
+    incidents: [openIncident("incident-audit", rule.id)],
+  };
+  const incidentAudit = makeAuditSink();
+  const acknowledged = capability.transitionIncident(
+    incidentState,
+    "incident-audit",
     "ACKNOWLEDGED",
-    "req-incident-transition",
-    "trace-incident-transition",
-    (event) => transitionAudit.push(event),
+    "req-audit-ack",
+    "trace-audit-ack",
+    adminToken(),
+    incidentAudit.sink,
   );
-  assertState(transitionedResult);
-  const transitioned = transitionedResult;
-  assert.strictEqual(transitioned.incidents[0].state, "ACKNOWLEDGED");
-  assert.strictEqual(transitionAudit.length, 1);
-  assert.strictEqual(transitionAudit[0].kind, "INCIDENT_TRANSITION");
-  assert.strictEqual(transitionAudit[0].entityType, "INCIDENT");
-  assert.strictEqual(transitionAudit[0].entityId, incident.id);
-  assert.deepStrictEqual(transitionAudit[0].details, {
-    from: "OPEN",
-    to: "ACKNOWLEDGED",
-  });
-  assert.strictEqual(transitionAudit[0].requestId, "req-incident-transition");
-  assert.strictEqual(transitionAudit[0].traceId, "trace-incident-transition");
+  assertOk(acknowledged);
 
-  const dispatchAudit: AuditEvent[] = [];
-  const dispatchInput: State = {
+  const sentState: State = {
     ...capability.initialState,
-    incidents: [
-      {
-        id: "incident-dispatch",
-        alertId: "rule-audit",
-        state: "OPEN",
-        createdAt: "2024-01-01T00:02:00.000Z",
-        updatedAt: "2024-01-01T00:02:00.000Z",
-        tenantId: "tenant-a",
-      },
-    ],
+    incidents: [openIncident("incident-send", rule.id)],
   };
-  const dispatchedResult = capability.dispatchNotification(
-    dispatchInput,
-    "incident-dispatch",
-    "req-notify-send",
-    "trace-notify-send",
-    (event) => dispatchAudit.push(event),
+  const sentAudit = makeAuditSink();
+  const sent = capability.dispatchNotification(
+    sentState,
+    "incident-send",
+    "req-audit-send",
+    "trace-audit-send",
+    adminToken(),
+    sentAudit.sink,
   );
-  assertState(dispatchedResult);
-  const dispatched = dispatchedResult;
-  assert.strictEqual(dispatched.notifications.length, 1);
-  assert.strictEqual(dispatched.notifications[0].status, "SENT");
-  assert.strictEqual(dispatchAudit.length, 1);
-  assert.strictEqual(dispatchAudit[0].kind, "NOTIFICATION_DISPATCH");
-  assert.deepStrictEqual(dispatchAudit[0].details, { status: "SENT" });
+  assertOk(sent);
 
-  const suppressAudit: AuditEvent[] = [];
-  const suppressInput: State = {
+  const suppressedState: State = {
     ...capability.initialState,
-    incidents: [
-      {
-        id: "incident-suppress",
-        alertId: "rule-audit",
-        state: "OPEN",
-        createdAt: "2024-01-01T00:03:00.000Z",
-        updatedAt: "2024-01-01T00:03:00.000Z",
-        tenantId: "tenant-a",
-      },
-    ],
+    incidents: [openIncident("incident-suppress", rule.id)],
   };
-  const suppressedResult = capability.suppressNotification(
-    suppressInput,
+  const suppressedAudit = makeAuditSink();
+  const suppressed = capability.suppressNotification(
+    suppressedState,
     "incident-suppress",
-    "req-notify-suppress",
-    "trace-notify-suppress",
-    (event) => suppressAudit.push(event),
+    "req-audit-suppress",
+    "trace-audit-suppress",
+    adminToken(),
+    suppressedAudit.sink,
   );
-  assertState(suppressedResult);
-  const suppressed = suppressedResult;
-  assert.strictEqual(suppressed.notifications.length, 1);
-  assert.strictEqual(suppressed.notifications[0].status, "SUPPRESSED");
-  assert.strictEqual(suppressAudit.length, 1);
-  assert.strictEqual(suppressAudit[0].kind, "NOTIFICATION_DISPATCH");
-  assert.deepStrictEqual(suppressAudit[0].details, { status: "SUPPRESSED" });
+  assertOk(suppressed);
+
+  const ruleAuditEvent = ruleAudit.events[0];
+  assert.ok(ruleAuditEvent !== undefined);
+  assert.strictEqual(ruleAuditEvent.kind, "ALERT_RULE_CHANGE");
+  assert.strictEqual(ruleAuditEvent.requestId, "req-audit-rule");
+  assert.strictEqual(ruleAuditEvent.traceId, "trace-audit-rule");
+  assert.strictEqual(ruleAuditEvent.entityType, "ALERT_RULE");
+
+  const ackAuditEvent = incidentAudit.events[0];
+  assert.ok(ackAuditEvent !== undefined);
+  assert.strictEqual(ackAuditEvent.kind, "INCIDENT_TRANSITION");
+  assert.strictEqual(ackAuditEvent.requestId, "req-audit-ack");
+  assert.strictEqual(ackAuditEvent.traceId, "trace-audit-ack");
+  assert.strictEqual(ackAuditEvent.entityType, "INCIDENT");
+
+  const sentAuditEvent = sentAudit.events[0];
+  assert.ok(sentAuditEvent !== undefined);
+  assert.strictEqual(sentAuditEvent.kind, "NOTIFICATION_DISPATCH");
+  assert.strictEqual(sentAuditEvent.requestId, "req-audit-send");
+  assert.strictEqual(sentAuditEvent.entityType, "NOTIFICATION");
+  const sentDetails = sentAuditEvent.details as { status: string };
+  assert.strictEqual(sentDetails.status, "SENT");
+
+  const suppressedAuditEvent = suppressedAudit.events[0];
+  assert.ok(suppressedAuditEvent !== undefined);
+  assert.strictEqual(suppressedAuditEvent.kind, "NOTIFICATION_DISPATCH");
+  assert.strictEqual(suppressedAuditEvent.entityType, "NOTIFICATION");
+  const suppressedDetails = suppressedAuditEvent.details as { status: string };
+  assert.strictEqual(suppressedDetails.status, "SUPPRESSED");
+
+  const readerAuditRead = capability.readAuditTrail(
+    capability.initialState,
+    defaultTenant,
+    readerToken(),
+  );
+  assert.strictEqual(readerAuditRead.ok, true);
+  if (readerAuditRead.ok) {
+    assert.strictEqual(readerAuditRead.trail.length, 0);
+  }
+
+  const viewerAuditRead = capability.readAuditTrail(
+    capability.initialState,
+    defaultTenant,
+    { authLevel: "viewer", permissions: ["viewer"], tenantId: defaultTenant },
+  );
+  assert.strictEqual(viewerAuditRead.ok, false);
+  if (!viewerAuditRead.ok) {
+    assert.strictEqual(viewerAuditRead.error.kind, "PERMISSION_DENIED");
+  }
+
+  const seededForLineage: State = {
+    ...capability.initialState,
+    auditTrail: [ruleAuditEvent, ackAuditEvent, sentAuditEvent, suppressedAuditEvent],
+  };
+  const lineage = capability.proofLineage(seededForLineage);
+  assert.strictEqual(lineage.audits.length, 4);
+  const auditKinds = lineage.audits.map((e) => e.kind);
+  assert.ok(auditKinds.includes("ALERT_RULE_CHANGE"));
+  assert.ok(auditKinds.includes("INCIDENT_TRANSITION"));
+  assert.ok(auditKinds.includes("NOTIFICATION_DISPATCH"));
 });
 
 test("observabilitybuiltinalertingandincidentscontracts", () => {
-  const metric: MetricSignal = {
-    name: "cpu.usage",
-    value: 80,
-    timestamp: "2024-01-01T00:04:00.000Z",
-    tenantId: "tenant-a",
-  };
-  const withSignal = capability.addMetricSignal(capability.initialState, metric);
+  const withSignal = capability.addMetricSignal(
+    capability.initialState,
+    {
+      name: "cpu.usage",
+      value: 74,
+      timestamp: "2024-01-01T00:00:00.000Z",
+      tenantId: defaultTenant,
+    },
+    adminToken(),
+  );
+  assertOk(withSignal);
+  const seeded: State = withSignal.state;
 
-  const noDataRule: AlertRule = {
+  const noDataRule = validRule({
     id: "rule-no-data",
-    name: "cpu_missing",
+    name: "no_data_rule",
     metricName: "errors.count",
     comparator: "GT",
     threshold: 10,
     severity: "MEDIUM",
-    tenantId: "tenant-a",
-  };
-  const withinRule: AlertRule = {
+  });
+  const withinRule = validRule({
     id: "rule-within",
-    name: "cpu_within",
+    name: "within_rule",
     metricName: "cpu.usage",
     comparator: "GT",
-    threshold: 90,
-    severity: "HIGH",
-    tenantId: "tenant-a",
-  };
-  const withNoDataRuleResult = capability.addAlertRule(
-    withSignal,
-    noDataRule,
-    "req-no-data",
-    "trace-no-data",
-    () => {},
-  );
-  assertState(withNoDataRuleResult);
-  const withNoDataRule = withNoDataRuleResult;
-
-  const withTwoRulesResult = capability.addAlertRule(
-    withNoDataRule,
-    withinRule,
-    "req-within",
-    "trace-within",
-    () => {},
-  );
-  assertState(withTwoRulesResult);
-  const withTwoRules = withTwoRulesResult;
-
-  const firstEvaluation = capability.evaluateAlertRules(withTwoRules, "2024-01-01T00:04:30.000Z");
-  const noDataAlert = firstEvaluation.newAlerts.find((alert) => alert.ruleId === "rule-no-data");
-  const withinAlert = firstEvaluation.newAlerts.find((alert) => alert.ruleId === "rule-within");
-  assert.ok(noDataAlert !== undefined);
-  assert.ok(withinAlert !== undefined);
-  assert.strictEqual(noDataAlert.state, "NO_DATA");
-  assert.strictEqual(withinAlert.state, "WITHIN");
-
-  const firingRule: AlertRule = {
+    threshold: 100,
+    severity: "LOW",
+  });
+  const firedRule = validRule({
     id: "rule-fired",
-    name: "cpu_fired",
+    name: "fired_rule",
     metricName: "cpu.usage",
     comparator: "GTE",
-    threshold: 10,
+    threshold: 70,
     severity: "CRITICAL",
-    tenantId: "tenant-a",
-  };
-  const withFiringRuleResult = capability.addAlertRule(
-    withSignal,
-    firingRule,
-    "req-fired",
-    "trace-fired",
-    () => {},
+  });
+
+  const noDataState = capability.addAlertRule(
+    seeded,
+    noDataRule,
+    "req-1",
+    "trace-1",
+    adminToken(),
+    () => null,
   );
-  assertState(withFiringRuleResult);
-  const withFiringRule = withFiringRuleResult;
-
-  const updatedRule: AlertRule = {
-    ...firingRule,
-    threshold: 15,
-  };
-  const updatedResult = capability.updateAlertRule(
-    withFiringRule,
-    firingRule.id,
-    updatedRule,
-    "req-update",
-    "trace-update",
-    () => {},
+  assertOk(noDataState);
+  const withinState = capability.addAlertRule(
+    noDataState.state,
+    withinRule,
+    "req-2",
+    "trace-2",
+    adminToken(),
+    () => null,
   );
-  assertState(updatedResult);
-  const updated = updatedResult;
-  assert.strictEqual(updated.alertRules[0].threshold, 15);
+  assertOk(withinState);
+  const firedState = capability.addAlertRule(
+    withinState.state,
+    firedRule,
+    "req-3",
+    "trace-3",
+    adminToken(),
+    () => null,
+  );
+  assertOk(firedState);
 
-  const secondEvaluation = capability.applyEvaluation(updated, "2024-01-01T00:05:00.000Z");
-  assert.strictEqual(secondEvaluation.alerts.length, 1);
-  assert.strictEqual(secondEvaluation.alerts[0].state, "FIRED");
-  assert.strictEqual(secondEvaluation.incidents.length, 1);
-  assert.strictEqual(secondEvaluation.notifications.length, 1);
-  assert.strictEqual(secondEvaluation.notifications[0].status, "SENT");
+  const evaluation = capability.evaluateAlertRules(
+    firedState.state,
+    "2024-01-01T00:00:30.000Z",
+  );
 
-  const transitionedResult = capability.transitionIncident(
-    secondEvaluation,
-    secondEvaluation.incidents[0].id,
+  const noDataAlert = evaluation.newAlerts.find(
+    (a: Alert) => a.ruleId === noDataRule.id,
+  );
+  const withinAlert = evaluation.newAlerts.find(
+    (a: Alert) => a.ruleId === withinRule.id,
+  );
+  const firedAlert = evaluation.newAlerts.find(
+    (a: Alert) => a.ruleId === firedRule.id,
+  );
+
+  assert.ok(noDataAlert !== undefined, "Expected NO_DATA alert entry");
+  assert.strictEqual(noDataAlert.state, "NO_DATA");
+  assert.ok(withinAlert !== undefined, "Expected WITHIN alert entry");
+  assert.strictEqual(withinAlert.state, "WITHIN");
+  assert.ok(firedAlert !== undefined, "Expected FIRED alert entry");
+  assert.strictEqual(firedAlert.state, "FIRED");
+  assert.strictEqual(evaluation.updatedIncidents.length, 1);
+  assert.strictEqual(evaluation.newNotifications.length, 1);
+
+  const applied = capability.applyEvaluation(
+    firedState.state,
+    "2024-01-01T00:01:00.000Z",
+  );
+  assertOk(applied);
+  const incident = applied.state.incidents.find(
+    (i: Incident) => i.alertId === firedRule.id,
+  );
+  assert.ok(incident !== undefined, "Expected incident to exist");
+  const incidentId = incident.id;
+
+  const readSignals = capability.readSignal(
+    applied.state,
+    "cpu.usage",
+    defaultTenant,
+    readerToken(),
+  );
+  assert.ok(Array.isArray(readSignals));
+  if (Array.isArray(readSignals)) {
+    assert.strictEqual(readSignals.length, 1);
+  }
+
+  const readRules = capability.readAlertRules(
+    applied.state,
+    defaultTenant,
+    readerToken(),
+  );
+  assert.ok(Array.isArray(readRules));
+  if (Array.isArray(readRules)) {
+    assert.strictEqual(readRules.length, 3);
+  }
+
+  const readIncidentsResult = capability.readIncidents(
+    applied.state,
+    defaultTenant,
+    readerToken(),
+  );
+  assert.ok(Array.isArray(readIncidentsResult));
+  if (Array.isArray(readIncidentsResult)) {
+    assert.strictEqual(readIncidentsResult.length, 1);
+  }
+
+  const ack = capability.transitionIncident(
+    applied.state,
+    incidentId,
     "ACKNOWLEDGED",
     "req-ack",
     "trace-ack",
-    () => {},
+    adminToken(),
+    () => null,
   );
-  assertState(transitionedResult);
-  const transitioned = transitionedResult;
-  assert.strictEqual(transitioned.incidents[0].state, "ACKNOWLEDGED");
+  assertOk(ack);
 
-  const resolvedResult = capability.transitionIncident(
-    transitioned,
-    transitioned.incidents[0].id,
+  const resolved = capability.transitionIncident(
+    ack.state,
+    incidentId,
     "RESOLVED",
     "req-resolve",
     "trace-resolve",
-    () => {},
+    adminToken(),
+    () => null,
   );
-  assertState(resolvedResult);
-  const resolved = resolvedResult;
-  assert.strictEqual(resolved.incidents[0].state, "RESOLVED");
-
-  assert.strictEqual(capability.checkReadiness(secondEvaluation), "READY");
+  assertOk(resolved);
+  const resolvedIncident = resolved.state.incidents.find(
+    (i: Incident) => i.id === incidentId,
+  );
+  assert.ok(resolvedIncident !== undefined);
+  assert.strictEqual(resolvedIncident.state, "RESOLVED");
+  assert.strictEqual(capability.checkReadiness(resolved.state), "READY");
+  const posture = capability.readReadinessPosture(resolved.state);
+  assert.strictEqual(posture.state, "READY");
+  assert.strictEqual(posture.sideEffectsDisabled, false);
 });
 
 test("observabilitybuiltinalertingandincidentserrormodel", () => {
-  const withProviderFailure1 = capability.handleProviderFailure(
+  const failure1 = capability.handleProviderFailure(
     capability.initialState,
     "PROVIDER_FAILURE",
-    "first provider failure",
+    "first failure",
   );
-  const withProviderFailure2 = capability.handleProviderFailure(
-    withProviderFailure1,
+  const failure2 = capability.handleProviderFailure(
+    failure1,
     "PROVIDER_FAILURE",
-    "second provider failure",
+    "second failure",
   );
-  const withProviderFailure3 = capability.handleProviderFailure(
-    withProviderFailure2,
+  const failure3 = capability.handleProviderFailure(
+    failure2,
     "PROVIDER_FAILURE",
-    "third provider failure",
+    "third failure",
   );
 
-  assert.strictEqual(capability.shouldAlertOnProviderFailures(withProviderFailure3), true);
-  assert.strictEqual(capability.shouldAlertOnProviderFailures(withProviderFailure3, 2), true);
-  assert.strictEqual(withProviderFailure3.readiness, "DEGRADED_SIGNAL_INGESTION");
+  assert.strictEqual(
+    capability.shouldAlertOnProviderFailures(failure3),
+    true,
+  );
+  assert.strictEqual(
+    capability.shouldAlertOnProviderFailures(failure3, 2),
+    true,
+  );
+  assert.strictEqual(
+    capability.shouldAlertOnProviderFailures(failure3, 5),
+    false,
+  );
 
-  const afterAttempt = capability.applyEvaluation(withProviderFailure3, "2024-01-01T00:06:00.000Z");
-  assert.strictEqual(afterAttempt, withProviderFailure3);
+  assert.strictEqual(failure3.readiness, "DEGRADED_SIGNAL_INGESTION");
+  assert.strictEqual(failure3.lastError?.kind, "PROVIDER_FAILURE");
+  assert.strictEqual(failure3.providerErrors.length, 3);
 
-  let auditCalls = 0;
-  const invalidRule: AlertRule = {
-    id: "bad-rule",
-    name: "invalid_rule",
-    metricName: "cpu.usage",
-    comparator: "INVALID" as unknown as AlertRule["comparator"],
-    threshold: 10,
-    severity: "HIGH",
-    tenantId: "tenant-a",
+  const blockedEvaluation = capability.applyEvaluation(
+    failure3,
+    "2024-01-01T00:02:00.000Z",
+  );
+  assertErr(blockedEvaluation, "PROVIDER_FAILURE");
+
+  const badRuleAudit = makeAuditSink();
+  const badRule: AlertRule = {
+    ...validRule(),
+    id: "rule-invalid",
+    comparator: "NOPE" as Comparator,
   };
   const badRuleResult = capability.addAlertRule(
     capability.initialState,
-    invalidRule,
+    badRule,
     "req-bad-rule",
     "trace-bad-rule",
-    () => {
-      auditCalls += 1;
-    },
+    adminToken(),
+    badRuleAudit.sink,
   );
-  assert.equal(isError(badRuleResult), true);
-  if (isError(badRuleResult)) {
-    assert.strictEqual(badRuleResult.kind, "INVALID_RULE_MUTATION");
-  }
-  assert.strictEqual(auditCalls, 0);
+  assertErr(badRuleResult, "INVALID_RULE_MUTATION");
+  assert.strictEqual(badRuleAudit.events.length, 0);
 
-  const closedState: State = {
+  const closedIncidentState: State = {
     ...capability.initialState,
     incidents: [
       {
         id: "incident-closed",
-        alertId: "rule-a",
+        alertId: "rule-x",
         state: "RESOLVED",
-        createdAt: "2024-01-01T00:06:30.000Z",
-        updatedAt: "2024-01-01T00:06:30.000Z",
-        tenantId: "tenant-a",
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
+        tenantId: defaultTenant,
       },
     ],
   };
   const badTransition = capability.transitionIncident(
-    closedState,
+    closedIncidentState,
     "incident-closed",
-    "OPEN",
-    "req-bad-transition",
-    "trace-bad-transition",
-    () => {},
+    "OPEN" as IncidentState,
+    "req-illegal",
+    "trace-illegal",
+    adminToken(),
+    () => null,
   );
-  assert.equal(isError(badTransition), true);
-  if (isError(badTransition)) {
-    assert.strictEqual(badTransition.kind, "ILLEGAL_INCIDENT_TRANSITION");
-  }
+  assertErr(badTransition, "ILLEGAL_INCIDENT_TRANSITION");
 
-  assert.strictEqual(capability.isAllowedTransition("OPEN", "OPEN"), false);
+  const missing = capability.transitionIncident(
+    capability.initialState,
+    "missing-incident",
+    "ACKNOWLEDGED",
+    "req-missing",
+    "trace-missing",
+    adminToken(),
+    () => null,
+  );
+  assertErr(missing, "ILLEGAL_INCIDENT_TRANSITION");
 });
 
 test("observabilitybuiltinalertingandincidentslifecycle", () => {
-  const signal: MetricSignal = {
-    name: "http.request.duration",
-    value: 150,
-    timestamp: "2024-01-01T00:07:00.000Z",
-    tenantId: "tenant-a",
-  };
-  const withSignal = capability.addMetricSignal(capability.initialState, signal);
+  const withSignalResult = capability.addMetricSignal(
+    capability.initialState,
+    {
+      name: "http.request.duration",
+      value: 200,
+      timestamp: "2024-01-01T00:00:00.000Z",
+      tenantId: defaultTenant,
+    },
+    adminToken(),
+  );
+  assertOk(withSignalResult);
 
-  const rule: AlertRule = {
+  const rule = validRule({
     id: "rule-lifecycle",
-    name: "http_latency",
+    name: "lifecycle_rule",
     metricName: "http.request.duration",
     comparator: "GT",
-    threshold: 100,
+    threshold: 150,
     severity: "MEDIUM",
-    tenantId: "tenant-a",
-  };
-  const withRuleResult = capability.addAlertRule(
-    withSignal,
-    rule,
-    "req-lifecycle",
-    "trace-lifecycle",
-    () => {},
-  );
-  assertState(withRuleResult);
-  const withRule = withRuleResult;
+  });
 
-  const applied = capability.applyEvaluation(withRule, "2024-01-01T00:07:30.000Z");
-  assert.strictEqual(applied.alerts[0].state, "FIRED");
-  assert.strictEqual(applied.incidents[0].state, "OPEN");
-  assert.strictEqual(applied.notifications[0].status, "SENT");
-  assert.strictEqual(applied.alerts[0].tenantId, "tenant-a");
-  assert.strictEqual(applied.incidents[0].tenantId, "tenant-a");
-  assert.strictEqual(applied.notifications[0].tenantId, "tenant-a");
-  const emittedSignals = new Set(
-    applied.emittedSignals.map((entry) => entry.signal),
+  const withRuleResult = capability.addAlertRule(
+    withSignalResult.state,
+    rule,
+    "req-life",
+    "trace-life",
+    adminToken(),
+    () => null,
   );
-  assert.strictEqual(emittedSignals.has("observability.signal.ingested"), true);
-  assert.strictEqual(emittedSignals.has("observability.alert.fired"), true);
-  assert.strictEqual(emittedSignals.has("observability.incident.opened"), true);
-  assert.strictEqual(emittedSignals.has("observability.notification.dispatched"), true);
-  assert.strictEqual(emittedSignals.has("observability.readiness.ready"), true);
+  assertOk(withRuleResult);
+
+  const appliedResult = capability.applyEvaluation(
+    withRuleResult.state,
+    "2024-01-01T00:00:30.000Z",
+  );
+  assertOk(appliedResult);
+  const fired = appliedResult.state.alerts.find(
+    (alert: Alert) => alert.ruleId === rule.id,
+  );
+  assert.ok(fired !== undefined);
+  assert.strictEqual(fired.state, "FIRED");
+  assert.strictEqual(appliedResult.state.incidents.length, 1);
+  assert.strictEqual(appliedResult.state.notifications.length, 1);
+  const firstNotification = appliedResult.state.notifications[0];
+  assert.ok(firstNotification !== undefined);
+  assert.strictEqual(firstNotification.status, "SENT");
+
+  const incident = appliedResult.state.incidents[0];
+  assert.ok(incident !== undefined);
+
+  const ackResult = capability.transitionIncident(
+    appliedResult.state,
+    incident.id,
+    "ACKNOWLEDGED",
+    "req-life-ack",
+    "trace-life-ack",
+    adminToken(),
+    () => null,
+  );
+  assertOk(ackResult);
+
+  const resolvedResult = capability.transitionIncident(
+    ackResult.state,
+    incident.id,
+    "RESOLVED",
+    "req-life-resolve",
+    "trace-life-resolve",
+    adminToken(),
+    () => null,
+  );
+  assertOk(resolvedResult);
+
+  const emitted = new Set(
+    resolvedResult.state.emittedSignals.map((entry: EmittedSignal) => entry.signal),
+  );
+  assert.strictEqual(emitted.has("observability.signal.ingested"), true);
+  assert.strictEqual(emitted.has("observability.alert.fired"), true);
+  assert.strictEqual(emitted.has("observability.incident.opened"), true);
+  assert.strictEqual(emitted.has("observability.incident.acknowledged"), true);
+  assert.strictEqual(emitted.has("observability.incident.resolved"), true);
+  assert.strictEqual(emitted.has("observability.notification.dispatched"), true);
+  assert.strictEqual(emitted.has("observability.readiness.ready"), true);
+
+  assert.strictEqual(capability.freshProofPending(), false);
 });
 
 test("observabilitybuiltinalertingandincidentspermissions", () => {
-  const signalTenantA: MetricSignal = {
-    name: "errors.count",
-    value: 90,
-    timestamp: "2024-01-01T00:08:00.000Z",
-    tenantId: "tenant-a",
+  const viewerToken: Token = {
+    authLevel: "viewer",
+    permissions: ["viewer"],
+    tenantId: defaultTenant,
   };
-  const signalTenantB: MetricSignal = {
-    name: "errors.count",
-    value: 20,
-    timestamp: "2024-01-01T00:08:00.000Z",
+  const wrongTenantToken: Token = {
+    authLevel: "admin",
+    permissions: ["admin"],
     tenantId: "tenant-b",
   };
 
-  const withSignals = capability.addMetricSignal(
-    capability.addMetricSignal(capability.initialState, signalTenantA),
-    signalTenantB,
+  const viewerMetricResult = capability.addMetricSignal(
+    capability.initialState,
+    {
+      name: "errors.count",
+      value: 5,
+      timestamp: "2024-01-01T00:00:00.000Z",
+      tenantId: defaultTenant,
+    },
+    viewerToken,
   );
+  assertErr(viewerMetricResult, "PERMISSION_DENIED");
 
-  const tenantARule: AlertRule = {
-    id: "rule-tenant-a",
-    name: "errors_tenant_a",
-    metricName: "errors.count",
-    comparator: "GT",
-    threshold: 75,
-    severity: "HIGH",
-    tenantId: "tenant-a",
-  };
-  const tenantBRule: AlertRule = {
-    id: "rule-tenant-b",
-    name: "errors_tenant_b",
-    metricName: "errors.count",
-    comparator: "GT",
-    threshold: 75,
-    severity: "LOW",
-    tenantId: "tenant-b",
-  };
-
-  const withTenantARuleResult = capability.addAlertRule(
-    withSignals,
-    tenantARule,
-    "req-tenant-a",
-    "trace-tenant-a",
-    () => {},
+  const nullMetricResult = capability.addMetricSignal(
+    capability.initialState,
+    {
+      name: "errors.count",
+      value: 5,
+      timestamp: "2024-01-01T00:00:00.000Z",
+      tenantId: defaultTenant,
+    },
+    null as unknown as Token,
   );
-  assertState(withTenantARuleResult);
-  const withTenantARule = withTenantARuleResult;
+  assertErr(nullMetricResult, "PERMISSION_DENIED");
 
-  const withTenantRulesResult = capability.addAlertRule(
-    withTenantARule,
-    tenantBRule,
-    "req-tenant-b",
-    "trace-tenant-b",
-    () => {},
+  const wrongTenantRuleResult = capability.addAlertRule(
+    capability.initialState,
+    validRule({ id: "rule-wrong", metricName: "errors.count" }),
+    "req-perm",
+    "trace-perm",
+    wrongTenantToken,
+    () => null,
   );
-  assertState(withTenantRulesResult);
-  const withTenantRules = withTenantRulesResult;
+  assertErr(wrongTenantRuleResult, "PERMISSION_DENIED");
 
-  const evalResult = capability.evaluateAlertRules(withTenantRules, "2024-01-01T00:08:30.000Z");
-  const alertA = evalResult.newAlerts.find((alert) => alert.ruleId === "rule-tenant-a");
-  const alertB = evalResult.newAlerts.find((alert) => alert.ruleId === "rule-tenant-b");
-  assert.ok(alertA !== undefined);
-  assert.ok(alertB !== undefined);
-  assert.strictEqual(alertA.state, "FIRED");
-  assert.strictEqual(alertB.state, "WITHIN");
+  const seededResult = capability.addAlertRule(
+    capability.initialState,
+    validRule({
+      id: "rule-owner",
+      name: "owner_rule",
+      metricName: "errors.count",
+      threshold: 1,
+      severity: "LOW",
+    }),
+    "req-owner",
+    "trace-owner",
+    adminToken(),
+    () => null,
+  );
+  assertOk(seededResult);
 
-  const applied = capability.applyEvaluation(withTenantRules, "2024-01-01T00:09:00.000Z");
-  assert.strictEqual(applied.incidents.length, 1);
-  assert.strictEqual(applied.incidents[0].tenantId, "tenant-a");
-  assert.ok(!applied.incidents.some((incident) => incident.tenantId === "tenant-b"));
+  const withMetricResult = capability.addMetricSignal(
+    seededResult.state,
+    {
+      name: "errors.count",
+      value: 2,
+      timestamp: "2024-01-01T00:00:30.000Z",
+      tenantId: defaultTenant,
+    },
+    adminToken(),
+  );
+  assertOk(withMetricResult);
+
+  const withIncidentResult = capability.applyEvaluation(
+    withMetricResult.state,
+    "2024-01-01T00:01:00.000Z",
+  );
+  assertOk(withIncidentResult);
+  const incident = withIncidentResult.state.incidents[0];
+  assert.ok(incident !== undefined);
+  const incidentId = incident.id;
+
+  const viewerTransitionResult = capability.transitionIncident(
+    withIncidentResult.state,
+    incidentId,
+    "ACKNOWLEDGED",
+    "req-viewer-ack",
+    "trace-viewer-ack",
+    viewerToken,
+    () => null,
+  );
+  assertErr(viewerTransitionResult, "PERMISSION_DENIED");
+
+  const tenantMismatchDispatchResult = capability.dispatchNotification(
+    withIncidentResult.state,
+    incidentId,
+    "req-tenant-dispatch",
+    "trace-tenant-dispatch",
+    wrongTenantToken,
+    () => null,
+  );
+  assertErr(tenantMismatchDispatchResult, "PERMISSION_DENIED");
+
+  const readerSignalsResult = capability.readSignal(
+    withIncidentResult.state,
+    "errors.count",
+    defaultTenant,
+    readerToken(),
+  );
+  assert.ok(Array.isArray(readerSignalsResult));
+  if (Array.isArray(readerSignalsResult)) {
+    assert.strictEqual(readerSignalsResult.length, 1);
+  }
+
+  const crossTenantReadResult = capability.readSignal(
+    withIncidentResult.state,
+    "errors.count",
+    "tenant-b",
+    { authLevel: "admin", permissions: ["observability.read"], tenantId: "tenant-b" },
+  );
+  assert.ok(Array.isArray(crossTenantReadResult));
+  if (Array.isArray(crossTenantReadResult)) {
+    assert.strictEqual(crossTenantReadResult.length, 0);
+  }
 });
 
 test("observabilitybuiltinalertingandincidentsproof", () => {
-  const signal: MetricSignal = {
-    name: "queue.depth",
-    value: 42,
-    timestamp: "2024-01-01T00:10:00.000Z",
-    tenantId: "tenant-a",
-  };
-  const withSignal = capability.addMetricSignal(capability.initialState, signal);
+  const ruleAudit = makeAuditSink();
+  const withSignalResult = capability.addMetricSignal(
+    capability.initialState,
+    {
+      name: "queue.depth",
+      value: 42,
+      timestamp: "2024-01-01T00:00:00.000Z",
+      tenantId: defaultTenant,
+    },
+    adminToken(),
+  );
+  assertOk(withSignalResult);
 
-  const rule: AlertRule = {
+  const rule = validRule({
     id: "rule-proof",
-    name: "queue_depth",
+    name: "proof_rule",
     metricName: "queue.depth",
     comparator: "GT",
     threshold: 10,
     severity: "HIGH",
-    tenantId: "tenant-a",
-  };
+  });
+
   const withRuleResult = capability.addAlertRule(
-    withSignal,
+    withSignalResult.state,
     rule,
     "req-proof",
     "trace-proof",
-    () => {},
+    adminToken(),
+    ruleAudit.sink,
   );
-  assertState(withRuleResult);
-  const withRule = withRuleResult;
+  assertOk(withRuleResult);
+  assert.strictEqual(ruleAudit.events.length, 1);
+  const ruleAuditEvent = ruleAudit.events[0];
+  assert.ok(ruleAuditEvent !== undefined);
+  assert.strictEqual(ruleAuditEvent.kind, "ALERT_RULE_CHANGE");
 
-  const applied = capability.applyEvaluation(withRule, "2024-01-01T00:10:30.000Z");
-  const incident = applied.incidents[0];
+  const evaluated = capability.evaluateAlertRules(
+    withRuleResult.state,
+    "2024-01-01T00:00:30.000Z",
+  );
+  assert.strictEqual(evaluated.newAlerts.length, 1);
+  const firstAlert = evaluated.newAlerts[0];
+  assert.ok(firstAlert !== undefined);
+  assert.strictEqual(firstAlert.state, "FIRED");
+  assert.strictEqual(evaluated.updatedIncidents.length, 1);
+  assert.strictEqual(evaluated.newNotifications.length, 1);
+
+  const appliedResult = capability.applyEvaluation(
+    withRuleResult.state,
+    "2024-01-01T00:01:00.000Z",
+  );
+  assertOk(appliedResult);
+  const incident = appliedResult.state.incidents[0];
   assert.ok(incident !== undefined);
+  const incidentId = incident.id;
 
-  const transitionEvents: AuditEvent[] = [];
-  const acknowledgedResult = capability.transitionIncident(
-    applied,
-    incident.id,
+  const transitionAudit = makeAuditSink();
+  const ackResult = capability.transitionIncident(
+    appliedResult.state,
+    incidentId,
     "ACKNOWLEDGED",
     "req-proof-ack",
     "trace-proof-ack",
-    (event) => transitionEvents.push(event),
+    adminToken(),
+    transitionAudit.sink,
   );
-  assertState(acknowledgedResult);
-  const acknowledged = acknowledgedResult;
+  assertOk(ackResult);
 
   const resolvedResult = capability.transitionIncident(
-    acknowledged,
-    incident.id,
+    ackResult.state,
+    incidentId,
     "RESOLVED",
     "req-proof-resolve",
     "trace-proof-resolve",
-    (event) => transitionEvents.push(event),
+    adminToken(),
+    transitionAudit.sink,
   );
-  assertState(resolvedResult);
-  const resolved = resolvedResult;
+  assertOk(resolvedResult);
+  assert.strictEqual(transitionAudit.events.length, 2);
+  const firstTransition = transitionAudit.events[0];
+  const secondTransition = transitionAudit.events[1];
+  assert.ok(firstTransition !== undefined);
+  assert.ok(secondTransition !== undefined);
+  assert.strictEqual(firstTransition.requestId, "req-proof-ack");
+  assert.strictEqual(secondTransition.requestId, "req-proof-resolve");
+  assert.strictEqual(firstTransition.kind, "INCIDENT_TRANSITION");
+  assert.strictEqual(secondTransition.kind, "INCIDENT_TRANSITION");
 
-  const emittedSignals = new Set(resolved.emittedSignals.map((entry) => entry.signal));
-  assert.strictEqual(emittedSignals.has("observability.signal.ingested"), true);
-  assert.strictEqual(emittedSignals.has("observability.alert.fired"), true);
-  assert.strictEqual(emittedSignals.has("observability.incident.opened"), true);
-  assert.strictEqual(emittedSignals.has("observability.notification.dispatched"), true);
-  assert.strictEqual(emittedSignals.has("observability.incident.acknowledged"), true);
-  assert.strictEqual(emittedSignals.has("observability.incident.resolved"), true);
-  assert.strictEqual(emittedSignals.has("observability.readiness.ready"), true);
-  assert.strictEqual(transitionEvents.length, 2);
+  const emitted = new Set(
+    resolvedResult.state.emittedSignals.map((entry: EmittedSignal) => entry.signal),
+  );
+  assert.strictEqual(emitted.has("observability.alert.fired"), true);
+  assert.strictEqual(emitted.has("observability.incident.opened"), true);
+  assert.strictEqual(emitted.has("observability.notification.dispatched"), true);
+  assert.strictEqual(emitted.has("observability.incident.acknowledged"), true);
+  assert.strictEqual(emitted.has("observability.incident.resolved"), true);
+  assert.strictEqual(emitted.has("observability.readiness.ready"), true);
+
+  const lineage = capability.proofLineage(resolvedResult.state);
+  assert.strictEqual(lineage.audits.length, resolvedResult.state.auditTrail.length);
+  assert.strictEqual(
+    lineage.signals.length,
+    resolvedResult.state.emittedSignals.length,
+  );
+  assert.strictEqual(lineage.incidents.length, resolvedResult.state.incidents.length);
+  assert.strictEqual(
+    lineage.notifications.length,
+    resolvedResult.state.notifications.length,
+  );
+
+  const signalReadout = capability.readEmittedSignals(resolvedResult.state);
+  assert.strictEqual(signalReadout.ok, true);
+  if (signalReadout.ok) {
+    assert.strictEqual(
+      signalReadout.signals.length,
+      resolvedResult.state.emittedSignals.length,
+    );
+  }
+
+  assert.strictEqual(capability.freshProofPending(), false);
 });
 
 test("observabilitybuiltinalertingandincidentsreadinessmodel", () => {
-  const signal: MetricSignal = {
-    name: "http.request.count",
-    value: 12,
-    timestamp: "2024-01-01T00:11:00.000Z",
-    tenantId: "tenant-a",
-  };
-  const initialPosture = capability.computeReadinessPosture(capability.initialState);
-  assert.strictEqual(initialPosture.state, "DEGRADED_ALERT_EVALUATION");
-  assert.strictEqual(capability.checkReadiness(capability.initialState), "DEGRADED_ALERT_EVALUATION");
-  assert.strictEqual(initialPosture.signalIngestion, true);
-  assert.strictEqual(initialPosture.alertEvaluation, false);
-  assert.strictEqual(initialPosture.notificationDispatch, false);
-  assert.strictEqual(initialPosture.sideEffectsDisabled, false);
+  const baseline = capability.computeReadinessPosture(capability.initialState);
+  assert.strictEqual(baseline.state, "DEGRADED_ALERT_EVALUATION");
+  assert.strictEqual(baseline.signalIngestion, true);
+  assert.strictEqual(baseline.alertEvaluation, false);
+  assert.strictEqual(baseline.notificationDispatch, false);
+  assert.strictEqual(baseline.sideEffectsDisabled, false);
+  assert.strictEqual(
+    capability.checkReadiness(capability.initialState),
+    "DEGRADED_ALERT_EVALUATION",
+  );
 
-  const withMetric = capability.addMetricSignal(capability.initialState, signal);
-  assert.strictEqual(capability.checkReadiness(withMetric), "DEGRADED_ALERT_EVALUATION");
+  const withSignalResult = capability.addMetricSignal(
+    capability.initialState,
+    {
+      name: "http.request.count",
+      value: 12,
+      timestamp: "2024-01-01T00:00:00.000Z",
+      tenantId: defaultTenant,
+    },
+    adminToken(),
+  );
+  assertOk(withSignalResult);
 
-  const rule: AlertRule = {
-    id: "rule-readiness",
-    name: "http_count",
-    metricName: "http.request.count",
-    comparator: "GT",
-    threshold: 1,
-    severity: "LOW",
-    tenantId: "tenant-a",
-  };
   const withRuleResult = capability.addAlertRule(
-    withMetric,
-    rule,
-    "req-readiness-rule",
-    "trace-readiness-rule",
-    () => {},
+    withSignalResult.state,
+    validRule({
+      id: "rule-readiness",
+      name: "readiness_rule",
+      metricName: "http.request.count",
+      threshold: 1,
+      severity: "LOW",
+    }),
+    "req-readiness",
+    "trace-readiness",
+    adminToken(),
+    () => null,
   );
-  assertState(withRuleResult);
-  const withRule = withRuleResult;
-
-  const afterReadiness = capability.checkReadiness(withRule);
-  assert.strictEqual(afterReadiness, "READY");
-  const postureReady = capability.computeReadinessPosture(withRule);
-  assert.strictEqual(postureReady.state, "READY");
-  assert.strictEqual(postureReady.signalIngestion, true);
-  assert.strictEqual(postureReady.alertEvaluation, true);
-  assert.strictEqual(postureReady.notificationDispatch, true);
-  assert.strictEqual(postureReady.sideEffectsDisabled, false);
-
-  const degraded = capability.handleProviderFailure(withRule, "PROVIDER_FAILURE", "readiness provider failure");
-  assert.strictEqual(degraded.readiness, "DEGRADED_SIGNAL_INGESTION");
-  assert.strictEqual(degraded.readinessPosture.signalIngestion, false);
-  assert.strictEqual(degraded.readinessPosture.alertEvaluation, false);
-  assert.strictEqual(degraded.readinessPosture.notificationDispatch, false);
-  assert.strictEqual(degraded.readinessPosture.sideEffectsDisabled, true);
-  assert.ok(
-    degraded.emittedSignals.some((entry) => entry.signal === "observability.readiness.degraded"),
+  assertOk(withRuleResult);
+  assert.strictEqual(withRuleResult.state.readinessPosture.state, "READY");
+  assert.strictEqual(withRuleResult.state.readinessPosture.signalIngestion, true);
+  assert.strictEqual(withRuleResult.state.readinessPosture.alertEvaluation, true);
+  assert.strictEqual(
+    withRuleResult.state.readinessPosture.notificationDispatch,
+    true,
   );
-  assert.ok(
-    degraded.emittedSignals.some((entry) => entry.signal === "observability.error.provider_failure"),
+  assert.strictEqual(
+    withRuleResult.state.readinessPosture.sideEffectsDisabled,
+    false,
   );
 
-  const blocked = capability.applyEvaluation(degraded, "2024-01-01T00:11:30.000Z");
-  assert.strictEqual(blocked, degraded);
+  const degradedResult = capability.handleProviderFailure(
+    withRuleResult.state,
+    "PROVIDER_FAILURE",
+    "signal ingestion offline",
+  );
+  assert.strictEqual(degradedResult.readiness, "DEGRADED_SIGNAL_INGESTION");
+  assert.strictEqual(degradedResult.readinessPosture.sideEffectsDisabled, true);
+  assert.strictEqual(degradedResult.readinessPosture.signalIngestion, false);
+  assert.strictEqual(degradedResult.readinessPosture.alertEvaluation, false);
+  assert.strictEqual(
+    degradedResult.readinessPosture.notificationDispatch,
+    false,
+  );
+  assert.strictEqual(
+    capability.checkReadiness(degradedResult),
+    "DEGRADED_SIGNAL_INGESTION",
+  );
+
+  const emitted = new Set(
+    degradedResult.emittedSignals.map((entry: EmittedSignal) => entry.signal),
+  );
+  assert.strictEqual(emitted.has("observability.readiness.degraded"), true);
+  assert.strictEqual(emitted.has("observability.error.provider_failure"), true);
+
+  const blocked = capability.applyEvaluation(
+    degradedResult,
+    "2024-01-01T00:01:30.000Z",
+  );
+  assertErr(blocked, "PROVIDER_FAILURE");
+
+  const readinessView = capability.readReadinessPosture(degradedResult);
+  assert.strictEqual(readinessView.state, "DEGRADED_SIGNAL_INGESTION");
+  assert.strictEqual(readinessView.sideEffectsDisabled, true);
 });
 
 test("observabilitybuiltinalertingandincidentsstatemodel", () => {
-  const signal: MetricSignal = {
-    name: "memory.usage",
-    value: 93,
-    timestamp: "2024-01-01T00:12:00.000Z",
-    tenantId: "tenant-a",
-  };
-  const withSignal = capability.addMetricSignal(capability.initialState, signal);
+  const withSignalResult = capability.addMetricSignal(
+    capability.initialState,
+    {
+      name: "memory.usage",
+      value: 95,
+      timestamp: "2024-01-01T00:00:00.000Z",
+      tenantId: defaultTenant,
+    },
+    adminToken(),
+  );
+  assertOk(withSignalResult);
 
-  const rule: AlertRule = {
-    id: "rule-state",
-    name: "high-memory",
-    metricName: "memory.usage",
-    comparator: "GTE",
-    threshold: 90,
-    severity: "HIGH",
-    tenantId: "tenant-a",
-  };
   const withRuleResult = capability.addAlertRule(
-    withSignal,
-    rule,
+    withSignalResult.state,
+    validRule({
+      id: "rule-state",
+      name: "state_rule",
+      metricName: "memory.usage",
+      comparator: "GTE",
+      threshold: 90,
+      severity: "HIGH",
+    }),
     "req-state",
     "trace-state",
-    () => {},
+    adminToken(),
+    () => null,
   );
-  assertState(withRuleResult);
-  const withRule = withRuleResult;
+  assertOk(withRuleResult);
 
-  const applied = capability.applyEvaluation(withRule, "2024-01-01T00:12:30.000Z");
-  assert.strictEqual(applied.metricSignals.length, 1);
-  assert.strictEqual(applied.alertRules.length, 1);
-  assert.strictEqual(applied.alertRules[0].comparator, "GTE");
-  assert.strictEqual(applied.alerts.length, 1);
-  assert.strictEqual(applied.alerts[0].state, "FIRED");
-  assert.strictEqual(applied.incidents.length, 1);
-  assert.strictEqual(applied.incidents[0].state, "OPEN");
-  assert.strictEqual(applied.notifications[0].status, "SENT");
-  assert.strictEqual(applied.schemaVersion, capability.ObservabilityBuiltInAlertingAndIncidentsCurrentSchemaVersion);
+  const appliedResult = capability.applyEvaluation(
+    withRuleResult.state,
+    "2024-01-01T00:00:30.000Z",
+  );
+  assertOk(appliedResult);
+  const persisted: State = appliedResult.state;
+  assert.strictEqual(persisted.metricSignals.length, 1);
+  assert.strictEqual(persisted.alertRules.length, 1);
+  const persistedRule = persisted.alertRules[0];
+  assert.ok(persistedRule !== undefined);
+  assert.strictEqual(persistedRule.comparator, "GTE");
+  assert.strictEqual(persistedRule.threshold, 90);
+  assert.strictEqual(persistedRule.severity, "HIGH");
+  assert.strictEqual(persisted.alerts.length, 1);
+  const persistedAlert = persisted.alerts[0];
+  assert.ok(persistedAlert !== undefined);
+  assert.strictEqual(persistedAlert.state, "FIRED");
+  assert.strictEqual(persisted.incidents.length, 1);
+  const persistedIncident = persisted.incidents[0];
+  assert.ok(persistedIncident !== undefined);
+  assert.strictEqual(persistedIncident.state, "OPEN");
+  assert.strictEqual(persisted.notifications.length, 1);
+  const persistedNotification = persisted.notifications[0];
+  assert.ok(persistedNotification !== undefined);
+  assert.strictEqual(persistedNotification.status, "SENT");
+  assert.strictEqual(
+    persisted.schemaVersion,
+    capability.ObservabilityBuiltInAlertingAndIncidentsCurrentSchemaVersion,
+  );
 
-  const legacyState: State = {
-    ...applied,
-    schemaVersion: 0,
-  };
-  const migratedResult = capability.migrateState(
+  const legacyState: State = { ...persisted, schemaVersion: 0 };
+  const migrated = capability.migrateState(
     legacyState,
     legacyState.schemaVersion,
     capability.ObservabilityBuiltInAlertingAndIncidentsCurrentSchemaVersion,
   );
-  assertState(migratedResult);
-  const migrated = migratedResult;
-  assert.strictEqual(migrated.schemaVersion, 1);
-  assert.strictEqual(migrated.metricSignals.length, applied.metricSignals.length);
-  assert.strictEqual(migrated.alertRules.length, applied.alertRules.length);
-  assert.strictEqual(migrated.alerts.length, applied.alerts.length);
-  assert.strictEqual(migrated.incidents.length, applied.incidents.length);
-  assert.strictEqual(migrated.notifications.length, applied.notifications.length);
+  assertOk(migrated);
+  assert.strictEqual(migrated.state.schemaVersion, 1);
+  assert.strictEqual(
+    migrated.state.metricSignals.length,
+    persisted.metricSignals.length,
+  );
+  assert.strictEqual(migrated.state.alertRules.length, persisted.alertRules.length);
+  assert.strictEqual(migrated.state.alerts.length, persisted.alerts.length);
+  assert.strictEqual(migrated.state.incidents.length, persisted.incidents.length);
+  assert.strictEqual(
+    migrated.state.notifications.length,
+    persisted.notifications.length,
+  );
 
-  const blocked = capability.migrateState(applied, 2, 1);
-  assert.equal(isError(blocked), true);
-  if (isError(blocked)) {
-    assert.strictEqual(blocked.kind, "CONFIGURATION_DRIFT");
+  const backwards = capability.migrateState(migrated.state, 2, 1);
+  assertErr(backwards, "CONFIGURATION_DRIFT");
+
+  const noPath = capability.migrateState(migrated.state, 1, 99);
+  assertErr(noPath, "CONFIGURATION_DRIFT");
+
+  const same = capability.applyMigrationIfNeeded(persisted);
+  assert.strictEqual(same.ok, true);
+  if (same.ok) {
+    assert.strictEqual(same.state, persisted);
   }
 
-  const alreadyCurrentResult = capability.applyMigrationIfNeeded(applied);
-  assertState(alreadyCurrentResult);
-  const alreadyCurrent = alreadyCurrentResult;
-  assert.strictEqual(alreadyCurrent, applied);
+  const readRules = capability.readAlertRules(
+    persisted,
+    defaultTenant,
+    readerToken(),
+  );
+  assert.ok(Array.isArray(readRules));
+  if (Array.isArray(readRules)) {
+    assert.strictEqual(readRules.length, 1);
+  }
+
+  const readIncidentsResult = capability.readIncidents(
+    persisted,
+    defaultTenant,
+    readerToken(),
+  );
+  assert.ok(Array.isArray(readIncidentsResult));
+  if (Array.isArray(readIncidentsResult)) {
+    assert.strictEqual(readIncidentsResult.length, 1);
+  }
+
+  const readSignals = capability.readSignal(
+    persisted,
+    "memory.usage",
+    defaultTenant,
+    readerToken(),
+  );
+  assert.ok(Array.isArray(readSignals));
+  if (Array.isArray(readSignals)) {
+    assert.strictEqual(readSignals.length, 1);
+  }
+
+  assert.ok(capability.legalIncidentTransitions instanceof Map);
+  assert.deepStrictEqual(
+    Array.from(capability.legalIncidentTransitions.get("RESOLVED") ?? []),
+    [],
+  );
 });
 
 test("observabilitybuiltinalertingandincidentsvalidation", () => {
-  const validRule: AlertRule = {
-    id: "rule-valid",
-    name: "good_rule",
-    metricName: "cpu.usage",
-    comparator: "GT",
-    threshold: 55,
-    severity: "MEDIUM",
-    tenantId: "tenant-a",
-  };
+  const validRuleResult = capability.validateAlertRuleInput(
+    validRule({ id: "rule-valid", name: "valid_rule" }),
+  );
+  assert.strictEqual(validRuleResult, null);
 
-  assert.strictEqual(capability.validateAlertRuleInput(validRule), null);
-
-  const badComparatorRule = {
-    ...validRule,
-    comparator: "BAD" as unknown as AlertRule["comparator"],
-  };
-  const badComparator = capability.validateAlertRuleInput(badComparatorRule as AlertRule);
+  const badComparator = capability.validateAlertRuleInput({
+    ...validRule(),
+    id: "bad-comparator",
+    comparator: "NOPE" as Comparator,
+  });
   assert.ok(badComparator !== null);
   assert.strictEqual(badComparator.kind, "INVALID_RULE_MUTATION");
 
-  const badThresholdRule = {
-    ...validRule,
-    id: "rule-invalid-threshold",
+  const badThreshold = capability.validateAlertRuleInput({
+    ...validRule(),
+    id: "bad-threshold",
     threshold: Number.NaN,
-  };
-  const badThreshold = capability.validateAlertRuleInput(badThresholdRule as AlertRule);
+  });
   assert.ok(badThreshold !== null);
   assert.strictEqual(badThreshold.kind, "INVALID_RULE_MUTATION");
 
-  const badSeverityRule = {
-    ...validRule,
-    id: "rule-invalid-severity",
-    severity: "EXTREME" as unknown as AlertRule["severity"],
-  };
-  const badSeverity = capability.validateAlertRuleInput(badSeverityRule as AlertRule);
+  const badSeverity = capability.validateAlertRuleInput({
+    ...validRule(),
+    id: "bad-severity",
+    severity: "CATASTROPHIC" as Severity,
+  });
   assert.ok(badSeverity !== null);
   assert.strictEqual(badSeverity.kind, "INVALID_RULE_MUTATION");
 
-  const badNameRule = {
-    ...validRule,
-    id: "rule-invalid-name",
+  const badName = capability.validateAlertRuleInput({
+    ...validRule(),
+    id: "bad-name",
     name: "bad rule",
-  };
-  const badName = capability.validateAlertRuleInput(badNameRule as AlertRule);
+  });
   assert.ok(badName !== null);
   assert.strictEqual(badName.kind, "INVALID_RULE_MUTATION");
 
-  const badMetricRule = {
-    ...validRule,
-    id: "rule-invalid-metric",
-    metricName: "custom.metric",
-  };
-  const badMetric = capability.validateAlertRuleInput(badMetricRule as AlertRule);
+  const badMetric = capability.validateAlertRuleInput({
+    ...validRule(),
+    id: "bad-metric",
+    metricName: "custom.unknown.metric",
+  });
   assert.ok(badMetric !== null);
   assert.strictEqual(badMetric.kind, "INVALID_RULE_MUTATION");
 
+  const badEmptyIds = capability.validateAlertRuleInput({
+    ...validRule(),
+    id: "",
+    tenantId: "",
+  });
+  assert.ok(badEmptyIds !== null);
+  assert.strictEqual(badEmptyIds.kind, "INVALID_RULE_MUTATION");
+
   let auditCalls = 0;
-  const rejectResult = capability.addAlertRule(
+  const invalidMutation = capability.addAlertRule(
     capability.initialState,
-    badMetricRule as AlertRule,
-    "req-invalid-mutate",
-    "trace-invalid-mutate",
+    {
+      ...validRule(),
+      id: "invalid-mutation",
+      metricName: "custom.unknown.metric",
+    },
+    "req-reject",
+    "trace-reject",
+    adminToken(),
     () => {
       auditCalls += 1;
+      return null;
     },
   );
-  assert.equal(isError(rejectResult), true);
-  if (isError(rejectResult)) {
-    assert.strictEqual(rejectResult.kind, "INVALID_RULE_MUTATION");
-  }
+  assertErr(invalidMutation, "INVALID_RULE_MUTATION");
   assert.strictEqual(auditCalls, 0);
 
-  const illegalTransition = capability.validateIncidentTransition("OPEN", "OPEN");
-  assert.ok(illegalTransition !== null);
-  assert.strictEqual(illegalTransition.kind, "ILLEGAL_INCIDENT_TRANSITION");
-  assert.strictEqual(capability.validateIncidentTransition("OPEN", "ACKNOWLEDGED"), null);
+  const illegal = capability.validateIncidentTransition(
+    "OPEN",
+    "OPEN" as IncidentState,
+  );
+  assert.ok(illegal !== null);
+  assert.strictEqual(illegal.kind, "ILLEGAL_INCIDENT_TRANSITION");
+
+  const legal = capability.validateIncidentTransition("OPEN", "ACKNOWLEDGED");
+  assert.strictEqual(legal, null);
+
+  const resolvedTerminal = capability.validateIncidentTransition(
+    "RESOLVED",
+    "OPEN" as IncidentState,
+  );
+  assert.ok(resolvedTerminal !== null);
+  assert.strictEqual(resolvedTerminal.kind, "ILLEGAL_INCIDENT_TRANSITION");
+
+  assert.strictEqual(capability.validateComparator("GT"), true);
+  assert.strictEqual(
+    capability.validateComparator("BOGUS" as Comparator),
+    false,
+  );
+  assert.strictEqual(capability.validateSeverity("HIGH"), true);
+  assert.strictEqual(
+    capability.validateSeverity("CATASTROPHIC" as Severity),
+    false,
+  );
+  assert.strictEqual(capability.validateControlledSignalName("cpu.usage"), true);
+  assert.strictEqual(
+    capability.validateControlledSignalName("custom.metric"),
+    false,
+  );
+  assert.strictEqual(capability.validateControlledSignalName("bad name"), false);
+
+  const driftedSignalResult = capability.addMetricSignal(
+    capability.initialState,
+    {
+      name: "custom.drift.metric",
+      value: 1,
+      timestamp: "2024-01-01T00:00:00.000Z",
+      tenantId: defaultTenant,
+    },
+    adminToken(),
+  );
+  assertErr(driftedSignalResult, "CONFIGURATION_DRIFT");
 });

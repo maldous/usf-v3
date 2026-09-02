@@ -55,6 +55,7 @@ export type RelationalStorageAndMigrationsAndRlsRoleKind = typeof RelationalStor
 export interface RelationalStorageAndMigrationsAndRlsAuditEvent {
   readonly kind: RelationalStorageAndMigrationsAndRlsAuditEventKind;
   readonly tenantId: string | null;
+  readonly organisationId: string | null;
   readonly migrationFile: string | null;
   readonly checksum: string | null;
   readonly timestamp: string;
@@ -65,6 +66,8 @@ export interface RelationalStorageAndMigrationsAndRlsError {
   readonly kind: RelationalStorageAndMigrationsAndRlsErrorKind;
   readonly message: string;
   readonly tenantId: string | null;
+  readonly organisationId: string | null;
+  readonly isError: true;
 }
 
 export interface RelationalStorageAndMigrationsAndRlsMigrationFile {
@@ -96,6 +99,7 @@ export interface RelationalStorageAndMigrationsAndRlsTenantContext {
   readonly tenantId: string;
   readonly roleName: string;
   readonly isBypassRole: boolean;
+  readonly organisationId: string | null;
 }
 
 export interface RelationalStorageAndMigrationsAndRlsRepositoryPort {
@@ -134,6 +138,7 @@ export const initialState: RelationalStorageAndMigrationsAndRlsState = {
 export function createAuditEvent(
   kind: RelationalStorageAndMigrationsAndRlsAuditEventKind,
   tenantId: string | null,
+  organisationId: string | null,
   migrationFile: string | null,
   checksum: string | null,
   details: Record<string, unknown>,
@@ -141,6 +146,7 @@ export function createAuditEvent(
   return {
     kind,
     tenantId,
+    organisationId,
     migrationFile,
     checksum,
     timestamp: new Date().toISOString(),
@@ -148,45 +154,83 @@ export function createAuditEvent(
   };
 }
 
+function asError(
+  kind: RelationalStorageAndMigrationsAndRlsErrorKind,
+  message: string,
+  tenantId: string | null,
+  organisationId: string | null,
+): RelationalStorageAndMigrationsAndRlsError {
+  return { kind, message, tenantId, organisationId, isError: true };
+}
+
 function safeExecuteAudit(
   event: RelationalStorageAndMigrationsAndRlsAuditEvent,
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
   tenantId: string | null,
+  organisationId: string | null,
 ): RelationalStorageAndMigrationsAndRlsError | null {
   try {
     const result = auditFn(event);
     if (result !== null) {
-      return {
-        kind: result.kind ?? 'AUDIT_FAILURE',
-        message: result.message ?? 'Audit failure',
-        tenantId: result.tenantId ?? tenantId,
-      };
+      if (typeof result.kind === 'string' && typeof result.message === 'string') {
+        return asError(
+          result.kind,
+          result.message,
+          result.tenantId ?? tenantId,
+          result.organisationId ?? organisationId,
+        );
+      }
+      return asError('AUDIT_FAILURE', 'Audit failure', tenantId, organisationId);
     }
     return null;
   } catch (err) {
-    return {
-      kind: 'AUDIT_FAILURE',
-      message: err instanceof Error ? err.message : 'Audit execution threw an error',
+    return asError(
+      'AUDIT_FAILURE',
+      err instanceof Error ? err.message : 'Audit execution threw an error',
       tenantId,
-    };
+      organisationId,
+    );
   }
+}
+
+export function isError(
+  value: RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError,
+): value is RelationalStorageAndMigrationsAndRlsError {
+  return typeof value === 'object' && value !== null && 'isError' in value && (value as { isError: unknown }).isError === true;
 }
 
 export function auditStateChangingAccess(
   state: RelationalStorageAndMigrationsAndRlsState,
   tenantId: string | null,
+  organisationId: string | null,
   operationType: string,
+  routeName: string,
+  useCaseName: string,
+  providerSpanId: string,
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
-  const event = createAuditEvent('STATE_CHANGING_ACCESS', tenantId, null, null, {
+  const lastCtx = state.tenantContexts.length > 0 ? state.tenantContexts[state.tenantContexts.length - 1] : null;
+  const event = createAuditEvent('STATE_CHANGING_ACCESS', tenantId, organisationId, null, null, {
     operationType,
-    route: state.tenantContexts.length > 0 ? state.tenantContexts[state.tenantContexts.length - 1].roleName : null,
-    useCase: operationType,
-    providerSpan: state.connected ? 'connected' : 'disconnected',
+    route: routeName,
+    routeName,
+    useCase: useCaseName,
+    useCaseName,
+    providerSpan: providerSpanId,
+    providerSpanId,
+    routeSpanId: routeName,
+    useCaseSpanId: useCaseName,
+    providerSpanIdLogged: providerSpanId,
     tenantBoundaryPreserved: tenantId !== null,
     dataSubjectEvidencePreserved: true,
+    auditTrailSpans: {
+      route: routeName,
+      useCase: useCaseName,
+      provider: providerSpanId,
+    },
+    currentRole: lastCtx !== null ? lastCtx.roleName : null,
   });
-  const auditError = safeExecuteAudit(event, auditFn, tenantId);
+  const auditError = safeExecuteAudit(event, auditFn, tenantId, organisationId);
   if (auditError !== null) {
     return auditError;
   }
@@ -200,15 +244,16 @@ export function auditMigrationApplication(
   state: RelationalStorageAndMigrationsAndRlsState,
   migrationFile: RelationalStorageAndMigrationsAndRlsMigrationFile,
   tenantId: string | null,
+  organisationId: string | null,
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
-  const event = createAuditEvent('MIGRATION_APPLIED', tenantId, migrationFile.fileName, migrationFile.checksum, {
+  const event = createAuditEvent('MIGRATION_APPLIED', tenantId, organisationId, migrationFile.fileName, migrationFile.checksum, {
     orderIndex: state.appliedMigrations.length,
     decisionReferenceComment: migrationFile.decisionReferenceComment,
     tenantBoundaryPreserved: tenantId !== null,
     dataSubjectEvidencePreserved: true,
   });
-  const auditError = safeExecuteAudit(event, auditFn, tenantId);
+  const auditError = safeExecuteAudit(event, auditFn, tenantId, organisationId);
   if (auditError !== null) {
     return auditError;
   }
@@ -224,15 +269,16 @@ export function auditMigrationRollback(
   migrationFile: string,
   reason: string,
   tenantId: string | null,
+  organisationId: string | null,
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
-  const event = createAuditEvent('MIGRATION_ROLLBACK', tenantId, migrationFile, null, {
+  const event = createAuditEvent('MIGRATION_ROLLBACK', tenantId, organisationId, migrationFile, null, {
     reason,
     rollbackTimestamp: new Date().toISOString(),
     tenantBoundaryPreserved: tenantId !== null,
     dataSubjectEvidencePreserved: true,
   });
-  const auditError = safeExecuteAudit(event, auditFn, tenantId);
+  const auditError = safeExecuteAudit(event, auditFn, tenantId, organisationId);
   if (auditError !== null) {
     return auditError;
   }
@@ -245,11 +291,12 @@ export function auditMigrationRollback(
 export function validateConnectionPassword(password: string): RelationalStorageAndMigrationsAndRlsError | null {
   const forbiddenChars = /['"`\\]|[\x00-\x1F\x7F]/;
   if (forbiddenChars.test(password)) {
-    return {
-      kind: 'INVALID_CONFIGURATION',
-      message: 'Password contains forbidden characters: quote, backslash, or control characters',
-      tenantId: null,
-    };
+    return asError(
+      'INVALID_CONFIGURATION',
+      'Password contains forbidden characters: quote, backslash, or control characters',
+      null,
+      null,
+    );
   }
   return null;
 }
@@ -289,41 +336,41 @@ export function applyMigrationFile(
     readonly roleName: string;
     readonly password: string;
     readonly tenantId: string | null;
+    readonly organisationId: string | null;
   },
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
   if (!state.substrateAvailable) {
-    return {
-      kind: 'PROVIDER_UNAVAILABLE',
-      message: 'Substrate is not available for migration application',
-      tenantId: connectionConfig.tenantId,
-    };
+    return asError(
+      'PROVIDER_UNAVAILABLE',
+      'Substrate is not available for migration application',
+      connectionConfig.tenantId,
+      connectionConfig.organisationId,
+    );
   }
 
   const passwordError = validateConnectionPassword(connectionConfig.password);
   if (passwordError !== null) {
-    return {
-      ...passwordError,
-      tenantId: connectionConfig.tenantId,
-    };
+    return asError(passwordError.kind, passwordError.message, connectionConfig.tenantId, connectionConfig.organisationId);
   }
 
   if (checksum !== migrationFile.checksum) {
-    const event = createAuditEvent('MIGRATION_CHECKSUM_MISMATCH', connectionConfig.tenantId, migrationFile.fileName, checksum, {
+    const event = createAuditEvent('MIGRATION_CHECKSUM_MISMATCH', connectionConfig.tenantId, connectionConfig.organisationId, migrationFile.fileName, checksum, {
       expectedChecksum: migrationFile.checksum,
       actualChecksum: checksum,
       tenantBoundaryPreserved: connectionConfig.tenantId !== null,
       dataSubjectEvidencePreserved: true,
     });
-    const auditError = safeExecuteAudit(event, auditFn, connectionConfig.tenantId);
+    const auditError = safeExecuteAudit(event, auditFn, connectionConfig.tenantId, connectionConfig.organisationId);
     if (auditError !== null) {
       return auditError;
     }
-    return {
-      kind: 'CHECKSUM_MISMATCH',
-      message: `Checksum mismatch for migration file: ${migrationFile.fileName}`,
-      tenantId: connectionConfig.tenantId,
-    };
+    return asError(
+      'CHECKSUM_MISMATCH',
+      `Checksum mismatch for migration file: ${migrationFile.fileName}`,
+      connectionConfig.tenantId,
+      connectionConfig.organisationId,
+    );
   }
 
   const existingMigration = state.appliedMigrations.find(
@@ -332,14 +379,14 @@ export function applyMigrationFile(
 
   if (existingMigration !== undefined) {
     if (existingMigration.checksum === checksum) {
-      const skippedEvent = createAuditEvent('MIGRATION_SKIPPED', connectionConfig.tenantId, migrationFile.fileName, checksum, {
+      const skippedEvent = createAuditEvent('MIGRATION_SKIPPED', connectionConfig.tenantId, connectionConfig.organisationId, migrationFile.fileName, checksum, {
         reason: 'Already applied with matching checksum',
         orderIndex: existingMigration.orderIndex,
         decisionReferenceComment: existingMigration.decisionReferenceComment,
         tenantBoundaryPreserved: connectionConfig.tenantId !== null,
         dataSubjectEvidencePreserved: true,
       });
-      const skippedAuditError = safeExecuteAudit(skippedEvent, auditFn, connectionConfig.tenantId);
+      const skippedAuditError = safeExecuteAudit(skippedEvent, auditFn, connectionConfig.tenantId, connectionConfig.organisationId);
       if (skippedAuditError !== null) {
         return skippedAuditError;
       }
@@ -348,22 +395,24 @@ export function applyMigrationFile(
         auditLog: [...state.auditLog, skippedEvent],
       };
     } else {
-      const mismatchEvent = createAuditEvent('MIGRATION_CHECKSUM_MISMATCH', connectionConfig.tenantId, migrationFile.fileName, checksum, {
+      const mismatchEvent = createAuditEvent('MIGRATION_CHECKSUM_MISMATCH', connectionConfig.tenantId, connectionConfig.organisationId, migrationFile.fileName, checksum, {
         expectedChecksum: existingMigration.checksum,
         actualChecksum: checksum,
         orderIndex: existingMigration.orderIndex,
+        decisionReferenceComment: existingMigration.decisionReferenceComment,
         tenantBoundaryPreserved: connectionConfig.tenantId !== null,
         dataSubjectEvidencePreserved: true,
       });
-      const mismatchAuditError = safeExecuteAudit(mismatchEvent, auditFn, connectionConfig.tenantId);
+      const mismatchAuditError = safeExecuteAudit(mismatchEvent, auditFn, connectionConfig.tenantId, connectionConfig.organisationId);
       if (mismatchAuditError !== null) {
         return mismatchAuditError;
       }
-      return {
-        kind: 'CHECKSUM_MISMATCH',
-        message: `Checksum mismatch for already applied migration: ${migrationFile.fileName}`,
-        tenantId: connectionConfig.tenantId,
-      };
+      return asError(
+        'CHECKSUM_MISMATCH',
+        `Checksum mismatch for already applied migration: ${migrationFile.fileName}`,
+        connectionConfig.tenantId,
+        connectionConfig.organisationId,
+      );
     }
   }
 
@@ -379,18 +428,17 @@ export function applyMigrationFile(
     state,
     migrationFile,
     connectionConfig.tenantId,
+    connectionConfig.organisationId,
     auditFn,
   );
 
-  if ('kind' in auditState && 'message' in auditState) {
+  if (isError(auditState)) {
     return auditState;
   }
 
-  const successfulState = auditState as RelationalStorageAndMigrationsAndRlsState;
-
   return {
-    ...successfulState,
-    appliedMigrations: [...successfulState.appliedMigrations, appliedMigration],
+    ...auditState,
+    appliedMigrations: [...auditState.appliedMigrations, appliedMigration],
     ledgerNonEmpty: true,
     lastError: null,
   };
@@ -403,23 +451,22 @@ export function runMigrationChain(
     readonly roleName: string;
     readonly password: string;
     readonly tenantId: string | null;
+    readonly organisationId: string | null;
   },
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
   if (!state.substrateAvailable) {
-    return {
-      kind: 'PROVIDER_UNAVAILABLE',
-      message: 'Substrate is not available for migration chain execution',
-      tenantId: connectionConfig.tenantId,
-    };
+    return asError(
+      'PROVIDER_UNAVAILABLE',
+      'Substrate is not available for migration chain execution',
+      connectionConfig.tenantId,
+      connectionConfig.organisationId,
+    );
   }
 
   const passwordError = validateConnectionPassword(connectionConfig.password);
   if (passwordError !== null) {
-    return {
-      ...passwordError,
-      tenantId: connectionConfig.tenantId,
-    };
+    return asError(passwordError.kind, passwordError.message, connectionConfig.tenantId, connectionConfig.organisationId);
   }
 
   const sortedFiles = [...migrationFiles].sort((a, b) =>
@@ -437,7 +484,7 @@ export function runMigrationChain(
       auditFn,
     );
 
-    if ('kind' in result && 'message' in result) {
+    if (isError(result)) {
       return result;
     }
 
@@ -449,67 +496,216 @@ export function runMigrationChain(
 
 export function checkReadiness(
   state: RelationalStorageAndMigrationsAndRlsState,
+  unfilteredCount: number,
+  foreignTenantId: string,
 ): {
   readonly readiness: RelationalStorageAndMigrationsAndRlsReadiness;
   readonly error: RelationalStorageAndMigrationsAndRlsError | null;
+  readonly acceptanceGatesPassed: boolean;
+  readonly promotionBlocked: boolean;
+  readonly promotionBlockReason: string | null;
+  readonly gates: {
+    readonly migrated: boolean;
+    readonly isolation: boolean;
+    readonly audit: boolean;
+  };
 } {
-  if (!state.substrateAvailable) {
+  const substrateUnavailable = !state.substrateAvailable;
+
+  if (substrateUnavailable) {
     return {
       readiness: 'DEGRADED',
-      error: {
-        kind: 'DEGRADED',
-        message: 'Substrate is unavailable - read-only mode active',
-        tenantId: null,
+      error: asError(
+        'DEGRADED',
+        'Substrate is unavailable - read-only readiness visible, mutation and side-effect paths disabled',
+        null,
+        null,
+      ),
+      acceptanceGatesPassed: false,
+      promotionBlocked: true,
+      promotionBlockReason: 'Substrate is unavailable - promotion blocked',
+      gates: {
+        migrated: state.ledgerNonEmpty && state.appliedMigrations.length > 0,
+        isolation: false,
+        audit: state.auditLog.length > 0,
       },
     };
   }
 
-  if (!state.connected) {
+  const migratedGatePassed = state.ledgerNonEmpty && state.appliedMigrations.length > 0;
+  const isolationGatePassed = state.crossTenantIsolationProven && unfilteredCount === 0;
+  const auditGatePassed = state.auditLog.length > 0;
+
+  const allGatesPassed = migratedGatePassed && isolationGatePassed && auditGatePassed;
+
+  if (allGatesPassed) {
     return {
-      readiness: 'DEGRADED',
-      error: {
-        kind: 'DEGRADED',
-        message: 'Connection not established - read-only mode active',
-        tenantId: null,
+      readiness: 'READY',
+      error: null,
+      acceptanceGatesPassed: true,
+      promotionBlocked: false,
+      promotionBlockReason: null,
+      gates: {
+        migrated: true,
+        isolation: true,
+        audit: true,
       },
     };
   }
 
-  if (!state.ledgerNonEmpty || state.appliedMigrations.length === 0) {
-    return {
-      readiness: 'NOT_READY',
-      error: {
-        kind: 'READINESS_UNAVAILABLE',
-        message: 'Migration ledger is empty; store is not fully migrated',
-        tenantId: null,
-      },
-    };
-  }
-
-  if (!state.crossTenantIsolationProven) {
-    return {
-      readiness: 'NOT_READY',
-      error: {
-        kind: 'READINESS_UNAVAILABLE',
-        message: 'Cross-tenant isolation proof is missing',
-        tenantId: null,
-      },
-    };
-  }
-
-  if (state.auditLog.length === 0) {
+  if (!migratedGatePassed) {
     return {
       readiness: 'NOT_READY',
-      error: {
-        kind: 'READINESS_UNAVAILABLE',
-        message: 'Audit signal missing',
-        tenantId: null,
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        'Migration ledger is empty; store is not fully migrated',
+        null,
+        null,
+      ),
+      acceptanceGatesPassed: false,
+      promotionBlocked: true,
+      promotionBlockReason: 'Migration ledger empty - promotion blocked',
+      gates: {
+        migrated: false,
+        isolation: isolationGatePassed,
+        audit: auditGatePassed,
+      },
+    };
+  }
+
+  if (!isolationGatePassed) {
+    return {
+      readiness: 'NOT_READY',
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        `Cross-tenant isolation live-proof failed: unfiltered count under foreign tenant context must be zero (was ${unfilteredCount})`,
+        foreignTenantId,
+        null,
+      ),
+      acceptanceGatesPassed: false,
+      promotionBlocked: true,
+      promotionBlockReason: 'Cross-tenant isolation signal missing - promotion blocked',
+      gates: {
+        migrated: migratedGatePassed,
+        isolation: false,
+        audit: auditGatePassed,
       },
     };
   }
 
   return {
-    readiness: 'READY',
+    readiness: 'NOT_READY',
+    error: asError(
+      'READINESS_UNAVAILABLE',
+      'Audit signal missing',
+      null,
+      null,
+    ),
+    acceptanceGatesPassed: false,
+    promotionBlocked: true,
+    promotionBlockReason: 'Audit signal missing - promotion blocked',
+    gates: {
+      migrated: migratedGatePassed,
+      isolation: isolationGatePassed,
+      audit: false,
+    },
+  };
+}
+
+export function checkCrossTenantIsolationGate(
+  state: RelationalStorageAndMigrationsAndRlsState,
+  unfilteredCount: number,
+  foreignTenantId: string,
+): {
+  readonly passed: boolean;
+  readonly error: RelationalStorageAndMigrationsAndRlsError | null;
+} {
+  if (!state.substrateAvailable) {
+    return {
+      passed: false,
+      error: asError(
+        'PROVIDER_UNAVAILABLE',
+        'Substrate unavailable for cross-tenant isolation check',
+        foreignTenantId,
+        null,
+      ),
+    };
+  }
+
+  if (unfilteredCount !== 0) {
+    return {
+      passed: false,
+      error: asError(
+        'RLS_BYPASS_INVALID',
+        `Cross-tenant isolation proof failed: unfiltered count under foreign tenant context is ${unfilteredCount}, expected 0`,
+        foreignTenantId,
+        null,
+      ),
+    };
+  }
+
+  return {
+    passed: true,
+    error: null,
+  };
+}
+
+export function checkMigratedGate(
+  state: RelationalStorageAndMigrationsAndRlsState,
+): {
+  readonly passed: boolean;
+  readonly error: RelationalStorageAndMigrationsAndRlsError | null;
+} {
+  if (!state.ledgerNonEmpty) {
+    return {
+      passed: false,
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        'Migration ledger is empty',
+        null,
+        null,
+      ),
+    };
+  }
+
+  if (state.appliedMigrations.length === 0) {
+    return {
+      passed: false,
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        'No applied migrations in the migration ledger',
+        null,
+        null,
+      ),
+    };
+  }
+
+  return {
+    passed: true,
+    error: null,
+  };
+}
+
+export function checkAuditSignalGate(
+  state: RelationalStorageAndMigrationsAndRlsState,
+): {
+  readonly passed: boolean;
+  readonly error: RelationalStorageAndMigrationsAndRlsError | null;
+} {
+  if (state.auditLog.length === 0) {
+    return {
+      passed: false,
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        'Audit signal missing',
+        null,
+        null,
+      ),
+    };
+  }
+
+  return {
+    passed: true,
     error: null,
   };
 }
@@ -569,29 +765,31 @@ export function setTenantContext(
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
   if (tenantContext.tenantId === '' || tenantContext.tenantId === null || tenantContext.tenantId === undefined) {
-    return {
-      kind: 'TENANT_CONTEXT_INVALID',
-      message: 'Tenant ID cannot be empty, null, or undefined',
-      tenantId: null,
-    };
+    return asError(
+      'TENANT_CONTEXT_INVALID',
+      'Tenant ID cannot be empty, null, or undefined',
+      null,
+      tenantContext.organisationId,
+    );
   }
 
   if (tenantContext.isBypassRole && tenantContext.roleName !== 'bypass_role') {
-    return {
-      kind: 'TENANT_CONTEXT_INVALID',
-      message: 'Bypass role context must use the designated bypass role name',
-      tenantId: tenantContext.tenantId,
-    };
+    return asError(
+      'TENANT_CONTEXT_INVALID',
+      'Bypass role context must use the designated bypass role name',
+      tenantContext.tenantId,
+      tenantContext.organisationId,
+    );
   }
 
-  const event = createAuditEvent('TENANT_CONTEXT_SET', tenantContext.tenantId, null, null, {
+  const event = createAuditEvent('TENANT_CONTEXT_SET', tenantContext.tenantId, tenantContext.organisationId, null, null, {
     roleName: tenantContext.roleName,
     isBypassRole: tenantContext.isBypassRole,
     tenantBoundaryPreserved: true,
     dataSubjectEvidencePreserved: true,
   });
 
-  const auditError = safeExecuteAudit(event, auditFn, tenantContext.tenantId);
+  const auditError = safeExecuteAudit(event, auditFn, tenantContext.tenantId, tenantContext.organisationId);
   if (auditError !== null) {
     return auditError;
   }
@@ -612,24 +810,26 @@ export function guardRestore(
   const targetMigrationLineage = targetState.migrationLineage;
 
   if (currentMigrationLineage.length !== targetMigrationLineage.length) {
-    return {
-      kind: 'RESTORE_NOT_PERMITTED',
-      message: 'Restore blocked: migration lineage length mismatch between current and target state',
-      tenantId: null,
-    };
+    return asError(
+      'RESTORE_NOT_PERMITTED',
+      'Restore blocked: migration lineage length mismatch between current and target state',
+      null,
+      null,
+    );
   }
 
   for (let i = 0; i < currentMigrationLineage.length; i++) {
     if (currentMigrationLineage[i] !== targetMigrationLineage[i]) {
-      return {
-        kind: 'RESTORE_NOT_PERMITTED',
-        message: 'Restore blocked: migration lineage mismatch between current and target state',
-        tenantId: null,
-      };
+      return asError(
+        'RESTORE_NOT_PERMITTED',
+        'Restore blocked: migration lineage mismatch between current and target state',
+        null,
+        null,
+      );
     }
   }
 
-  const event = createAuditEvent('RESTORE_GUARD_CHECKED', null, null, null, {
+  const event = createAuditEvent('RESTORE_GUARD_CHECKED', null, null, null, null, {
     currentLineage: currentMigrationLineage.join(','),
     targetLineage: targetMigrationLineage.join(','),
     tenantBoundaryPreserved: true,
@@ -638,7 +838,7 @@ export function guardRestore(
     isolationSignalPreserved: state.crossTenantIsolationProven,
   });
 
-  const auditError = safeExecuteAudit(event, auditFn, null);
+  const auditError = safeExecuteAudit(event, auditFn, null, null);
   if (auditError !== null) {
     return auditError;
   }
@@ -673,36 +873,40 @@ export function validateRoleConfiguration(
 ): RelationalStorageAndMigrationsAndRlsError | null {
   const bypassRoles = roles.filter((r) => r.kind === 'BYPASS_ROLE');
   if (bypassRoles.length !== 1) {
-    return {
-      kind: 'INVALID_CONFIGURATION',
-      message: 'Exactly one bypass role must be configured',
-      tenantId: null,
-    };
+    return asError(
+      'INVALID_CONFIGURATION',
+      'Exactly one bypass role must be configured',
+      null,
+      null,
+    );
   }
 
   const applicationRoles = roles.filter((r) => r.kind === 'APPLICATION_ROLE');
   if (applicationRoles.length === 0) {
-    return {
-      kind: 'INVALID_CONFIGURATION',
-      message: 'At least one application role must be configured',
-      tenantId: null,
-    };
+    return asError(
+      'INVALID_CONFIGURATION',
+      'At least one application role must be configured',
+      null,
+      null,
+    );
   }
 
   for (const role of applicationRoles) {
     if (role.inherit !== false) {
-      return {
-        kind: 'INVALID_CONFIGURATION',
-        message: 'Application role must be NOINHERIT',
-        tenantId: null,
-      };
+      return asError(
+        'INVALID_CONFIGURATION',
+        'Application role must be NOINHERIT',
+        null,
+        null,
+      );
     }
     if (role.bypassRls !== false) {
-      return {
-        kind: 'INVALID_CONFIGURATION',
-        message: 'Application role must not bypass RLS',
-        tenantId: null,
-      };
+      return asError(
+        'INVALID_CONFIGURATION',
+        'Application role must not bypass RLS',
+        null,
+        null,
+      );
     }
     if (role.password !== null) {
       const passwordError = validateConnectionPassword(role.password);
@@ -714,11 +918,12 @@ export function validateRoleConfiguration(
 
   for (const role of bypassRoles) {
     if (role.inherit !== true || role.bypassRls !== true) {
-      return {
-        kind: 'INVALID_CONFIGURATION',
-        message: 'Bypass role must have INHERIT and BYPASSRLS enabled',
-        tenantId: null,
-      };
+      return asError(
+        'INVALID_CONFIGURATION',
+        'Bypass role must have INHERIT and BYPASSRLS enabled',
+        null,
+        null,
+      );
     }
   }
 
@@ -804,24 +1009,26 @@ export function proveCrossTenantIsolation(
     tenantId: foreignTenantId,
     roleName: 'foreign_role',
     isBypassRole: false,
+    organisationId: null,
   });
 
   if (!isolationProof) {
-    return {
-      kind: 'RLS_BYPASS_INVALID',
-      message: 'Cross-tenant isolation proof failed: unfiltered count should be zero',
-      tenantId: foreignTenantId,
-    };
+    return asError(
+      'RLS_BYPASS_INVALID',
+      'Cross-tenant isolation proof failed: unfiltered count should be zero',
+      foreignTenantId,
+      null,
+    );
   }
 
-  const event = createAuditEvent('RLS_PREDICATE_EVALUATED', foreignTenantId, null, null, {
+  const event = createAuditEvent('RLS_PREDICATE_EVALUATED', foreignTenantId, null, null, null, {
     unfilteredCount,
     isolationProven: isolationProof,
     tenantBoundaryEnforced: true,
     dataSubjectEvidencePreserved: true,
   });
 
-  const auditError = safeExecuteAudit(event, auditFn, foreignTenantId);
+  const auditError = safeExecuteAudit(event, auditFn, foreignTenantId, null);
   if (auditError !== null) {
     return auditError;
   }
@@ -847,11 +1054,12 @@ export function runLiveIsolationProof(
     return {
       state,
       proofPassed: false,
-      error: {
-        kind: 'RLS_BYPASS_INVALID',
-        message: 'Cannot prove isolation with bypass role',
-        tenantId: foreignTenantContext.tenantId,
-      },
+      error: asError(
+        'RLS_BYPASS_INVALID',
+        'Cannot prove isolation with bypass role',
+        foreignTenantContext.tenantId,
+        foreignTenantContext.organisationId,
+      ),
     };
   }
 
@@ -859,22 +1067,23 @@ export function runLiveIsolationProof(
     return {
       state,
       proofPassed: false,
-      error: {
-        kind: 'RLS_BYPASS_INVALID',
-        message: 'Cross-tenant isolation proof failed: unfiltered count must be zero',
-        tenantId: foreignTenantContext.tenantId,
-      },
+      error: asError(
+        'RLS_BYPASS_INVALID',
+        'Cross-tenant isolation proof failed: unfiltered count must be zero',
+        foreignTenantContext.tenantId,
+        foreignTenantContext.organisationId,
+      ),
     };
   }
 
-  const event = createAuditEvent('RLS_PREDICATE_EVALUATED', foreignTenantContext.tenantId, null, null, {
+  const event = createAuditEvent('RLS_PREDICATE_EVALUATED', foreignTenantContext.tenantId, foreignTenantContext.organisationId, null, null, {
     proofType: 'live_isolation',
     unfilteredCount,
     tenantBoundaryEnforced: true,
     dataSubjectEvidencePreserved: true,
   });
 
-  const auditError = safeExecuteAudit(event, auditFn, foreignTenantContext.tenantId);
+  const auditError = safeExecuteAudit(event, auditFn, foreignTenantContext.tenantId, foreignTenantContext.organisationId);
   if (auditError !== null) {
     return {
       state,
@@ -901,6 +1110,7 @@ export function executeChecksumGates(
     readonly roleName: string;
     readonly password: string;
     readonly tenantId: string | null;
+    readonly organisationId: string | null;
   },
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
@@ -913,22 +1123,24 @@ export function executeChecksumGates(
 
     if (existingMigration !== undefined) {
       if (existingMigration.checksum !== file.checksum) {
-        const mismatchEvent = createAuditEvent('MIGRATION_CHECKSUM_MISMATCH', connectionConfig.tenantId, file.fileName, file.checksum, {
+        const mismatchEvent = createAuditEvent('MIGRATION_CHECKSUM_MISMATCH', connectionConfig.tenantId, connectionConfig.organisationId, file.fileName, file.checksum, {
           expectedChecksum: existingMigration.checksum,
           actualChecksum: file.checksum,
           orderIndex: existingMigration.orderIndex,
+          decisionReferenceComment: existingMigration.decisionReferenceComment,
           tenantBoundaryPreserved: connectionConfig.tenantId !== null,
           dataSubjectEvidencePreserved: true,
         });
-        const auditError = safeExecuteAudit(mismatchEvent, auditFn, connectionConfig.tenantId);
+        const auditError = safeExecuteAudit(mismatchEvent, auditFn, connectionConfig.tenantId, connectionConfig.organisationId);
         if (auditError !== null) {
           return auditError;
         }
-        return {
-          kind: 'CHECKSUM_MISMATCH',
-          message: `Checksum mismatch for applied migration: ${file.fileName}`,
-          tenantId: connectionConfig.tenantId,
-        };
+        return asError(
+          'CHECKSUM_MISMATCH',
+          `Checksum mismatch for applied migration: ${file.fileName}`,
+          connectionConfig.tenantId,
+          connectionConfig.organisationId,
+        );
       }
     }
   }
@@ -946,22 +1158,24 @@ export function verifyMigratedStateGate(
   if (!state.ledgerNonEmpty || state.appliedMigrations.length === 0) {
     return {
       passed: false,
-      error: {
-        kind: 'READINESS_UNAVAILABLE',
-        message: 'Migration ledger is empty',
-        tenantId: null,
-      },
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        'Migration ledger is empty',
+        null,
+        null,
+      ),
     };
   }
 
   if (state.appliedMigrations.length < expectedMigrationCount) {
     return {
       passed: false,
-      error: {
-        kind: 'READINESS_UNAVAILABLE',
-        message: `Expected ${expectedMigrationCount} migrations but found ${state.appliedMigrations.length}`,
-        tenantId: null,
-      },
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        `Expected ${expectedMigrationCount} migrations but found ${state.appliedMigrations.length}`,
+        null,
+        null,
+      ),
     };
   }
 
@@ -974,25 +1188,29 @@ export function verifyMigratedStateGate(
 export function performStateChangingMutation(
   state: RelationalStorageAndMigrationsAndRlsState,
   tenantId: string | null,
+  organisationId: string | null,
   operationType: string,
+  routeName: string,
+  useCaseName: string,
+  providerSpanId: string,
   mutationFn: (currentState: RelationalStorageAndMigrationsAndRlsState) => RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError,
   auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
 ): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
   if (!state.substrateAvailable || !state.connected) {
-    return {
-      kind: 'PROVIDER_UNAVAILABLE',
-      message: 'Substrate or connection unavailable for mutation',
+    return asError(
+      'PROVIDER_UNAVAILABLE',
+      'Substrate or connection unavailable for mutation',
       tenantId,
-    };
+      organisationId,
+    );
   }
 
-  const auditedState = auditStateChangingAccess(state, tenantId, operationType, auditFn);
-  if ('kind' in auditedState && 'message' in auditedState) {
+  const auditedState = auditStateChangingAccess(state, tenantId, organisationId, operationType, routeName, useCaseName, providerSpanId, auditFn);
+  if (isError(auditedState)) {
     return auditedState;
   }
 
-  const mutableState = auditedState as RelationalStorageAndMigrationsAndRlsState;
-  return mutationFn(mutableState);
+  return mutationFn(auditedState);
 }
 
 export function determineDegradedMode(
@@ -1016,12 +1234,13 @@ export function determineDegradedMode(
     return {
       isDegraded: true,
       canMutate: false,
-      canRead: false,
-      error: {
-        kind: 'DEGRADED',
-        message: 'Substrate unavailable - mutation and read disabled',
-        tenantId: null,
-      },
+      canRead: true,
+      error: asError(
+        'DEGRADED',
+        'Substrate unavailable - mutation and side-effects disabled, read-only readiness and audit remain visible',
+        null,
+        null,
+      ),
     };
   }
 
@@ -1029,11 +1248,12 @@ export function determineDegradedMode(
     isDegraded: true,
     canMutate: false,
     canRead: true,
-    error: {
-      kind: 'DEGRADED',
-      message: 'Connection unavailable - read-only mode',
-      tenantId: null,
-    },
+    error: asError(
+      'DEGRADED',
+      'Connection unavailable - read-only mode, mutation disabled',
+      null,
+      null,
+    ),
   };
 }
 
@@ -1041,20 +1261,22 @@ export function validateMissingConfiguration(
   config: Record<string, unknown> | null,
 ): RelationalStorageAndMigrationsAndRlsError | null {
   if (config === null || config === undefined) {
-    return {
-      kind: 'INVALID_CONFIGURATION',
-      message: 'Configuration is missing - fail-closed',
-      tenantId: null,
-    };
+    return asError(
+      'INVALID_CONFIGURATION',
+      'Configuration is missing - fail-closed',
+      null,
+      null,
+    );
   }
 
   for (const key of Object.keys(config)) {
     if (config[key] === null || config[key] === undefined) {
-      return {
-        kind: 'INVALID_CONFIGURATION',
-        message: `Configuration key '${key}' is null or undefined - fail-closed`,
-        tenantId: null,
-      };
+      return asError(
+        'INVALID_CONFIGURATION',
+        `Configuration key '${key}' is null or undefined - fail-closed`,
+        null,
+        null,
+      );
     }
   }
 
@@ -1063,11 +1285,13 @@ export function validateMissingConfiguration(
 
 export function blockPromotionOnUnavailability(
   state: RelationalStorageAndMigrationsAndRlsState,
+  unfilteredCount: number,
+  foreignTenantId: string,
 ): {
   readonly blocked: boolean;
   readonly reason: string | null;
 } {
-  const readiness = checkReadiness(state);
+  const readiness = checkReadiness(state, unfilteredCount, foreignTenantId);
 
   if (readiness.readiness === 'NOT_READY') {
     return {
@@ -1107,5 +1331,295 @@ export function blockPromotionOnUnavailability(
   return {
     blocked: false,
     reason: null,
+  };
+}
+
+export function checkAcceptanceGates(
+  state: RelationalStorageAndMigrationsAndRlsState,
+  unfilteredCount: number,
+  foreignTenantId: string,
+): {
+  readonly passed: boolean;
+  readonly readiness: RelationalStorageAndMigrationsAndRlsReadiness;
+  readonly error: RelationalStorageAndMigrationsAndRlsError | null;
+  readonly gates: {
+    readonly migrated: boolean;
+    readonly isolation: boolean;
+    readonly audit: boolean;
+  };
+} {
+  if (!state.substrateAvailable) {
+    return {
+      passed: false,
+      readiness: 'DEGRADED',
+      error: asError(
+        'DEGRADED',
+        'Substrate is unavailable - read-only readiness visible, mutation and side-effect paths disabled',
+        null,
+        null,
+      ),
+      gates: {
+        migrated: state.ledgerNonEmpty && state.appliedMigrations.length > 0,
+        isolation: false,
+        audit: state.auditLog.length > 0,
+      },
+    };
+  }
+
+  const migratedGate = state.ledgerNonEmpty && state.appliedMigrations.length > 0;
+  const isolationGate = state.crossTenantIsolationProven && unfilteredCount === 0;
+  const auditGate = state.auditLog.length > 0;
+
+  if (!migratedGate) {
+    return {
+      passed: false,
+      readiness: 'NOT_READY',
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        'Migrated check failed: migration ledger is empty',
+        null,
+        null,
+      ),
+      gates: {
+        migrated: false,
+        isolation: isolationGate,
+        audit: auditGate,
+      },
+    };
+  }
+
+  if (!isolationGate) {
+    return {
+      passed: false,
+      readiness: 'NOT_READY',
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        'Cross-tenant isolation live-proof failed: unfiltered count under foreign tenant context must be zero',
+        foreignTenantId,
+        null,
+      ),
+      gates: {
+        migrated: migratedGate,
+        isolation: false,
+        audit: auditGate,
+      },
+    };
+  }
+
+  if (!auditGate) {
+    return {
+      passed: false,
+      readiness: 'NOT_READY',
+      error: asError(
+        'READINESS_UNAVAILABLE',
+        'Audit signal missing',
+        null,
+        null,
+      ),
+      gates: {
+        migrated: migratedGate,
+        isolation: isolationGate,
+        audit: false,
+      },
+    };
+  }
+
+  return {
+    passed: true,
+    readiness: 'READY',
+    error: null,
+    gates: {
+      migrated: true,
+      isolation: true,
+      audit: true,
+    },
+  };
+}
+
+export function checkReadinessModel(
+  state: RelationalStorageAndMigrationsAndRlsState,
+  unfilteredCount: number,
+  foreignTenantId: string,
+): {
+  readonly readiness: RelationalStorageAndMigrationsAndRlsReadiness;
+  readonly error: RelationalStorageAndMigrationsAndRlsError | null;
+  readonly promotionBlocked: boolean;
+  readonly promotionBlockReason: string | null;
+  readonly gates: {
+    readonly migrated: boolean;
+    readonly isolation: boolean;
+    readonly audit: boolean;
+  };
+} {
+  const readiness = checkReadiness(state, unfilteredCount, foreignTenantId);
+  return {
+    readiness: readiness.readiness,
+    error: readiness.error,
+    promotionBlocked: readiness.promotionBlocked,
+    promotionBlockReason: readiness.promotionBlockReason,
+    gates: readiness.gates,
+  };
+}
+
+export function auditRestoredTenantBoundary(
+  state: RelationalStorageAndMigrationsAndRlsState,
+  restoredTenantId: string,
+  restoredOrganisationId: string | null,
+  restoredAuditSignal: boolean,
+  restoredIsolationSignal: boolean,
+  auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
+): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
+  if (restoredTenantId === '' || restoredTenantId === null || restoredTenantId === undefined) {
+    return asError(
+      'RESTORE_NOT_PERMITTED',
+      'Restore blocked: tenant boundary not preserved (missing tenant identifier)',
+      null,
+      null,
+    );
+  }
+
+  if (!restoredAuditSignal) {
+    return asError(
+      'RESTORE_NOT_PERMITTED',
+      'Restore blocked: audit signal not preserved in restored state',
+      restoredTenantId,
+      restoredOrganisationId,
+    );
+  }
+
+  if (!restoredIsolationSignal) {
+    return asError(
+      'RESTORE_NOT_PERMITTED',
+      'Restore blocked: cross-tenant isolation signal not preserved in restored state',
+      restoredTenantId,
+      restoredOrganisationId,
+    );
+  }
+
+  const event = createAuditEvent('RESTORE_GUARD_CHECKED', restoredTenantId, restoredOrganisationId, null, null, {
+    restoreType: 'tenant_boundary_audit',
+    tenantBoundaryPreserved: true,
+    auditSignalPreserved: restoredAuditSignal,
+    isolationSignalPreserved: restoredIsolationSignal,
+    dataSubjectEvidencePreserved: true,
+  });
+
+  const auditError = safeExecuteAudit(event, auditFn, restoredTenantId, restoredOrganisationId);
+  if (auditError !== null) {
+    return auditError;
+  }
+
+  return {
+    ...state,
+    auditLog: [...state.auditLog, event],
+  };
+}
+
+export function recordMutationAuditTrail(
+  state: RelationalStorageAndMigrationsAndRlsState,
+  tenantId: string | null,
+  organisationId: string | null,
+  routeName: string,
+  useCaseName: string,
+  providerSpanId: string,
+  auditFn: (event: RelationalStorageAndMigrationsAndRlsAuditEvent) => RelationalStorageAndMigrationsAndRlsError | null,
+): RelationalStorageAndMigrationsAndRlsState | RelationalStorageAndMigrationsAndRlsError {
+  const isTenantScoped = tenantId !== null;
+  const effectiveTenantId = isTenantScoped ? tenantId : null;
+  const effectiveOrgId = isTenantScoped ? organisationId : null;
+
+  if (isTenantScoped && (organisationId === null || organisationId === '')) {
+    return asError(
+      'TENANT_CONTEXT_INVALID',
+      'Tenant-scoped operation must carry an organisation identifier in the audit trail',
+      tenantId,
+      null,
+    );
+  }
+
+  const event = createAuditEvent('STATE_CHANGING_ACCESS', effectiveTenantId, effectiveOrgId, null, null, {
+    routeName,
+    useCaseName,
+    providerSpanId,
+    organisationId,
+    tenantBoundaryPreserved: isTenantScoped,
+    dataSubjectEvidencePreserved: true,
+    auditTrailSpans: {
+      route: routeName,
+      useCase: useCaseName,
+      provider: providerSpanId,
+    },
+  });
+
+  const auditError = safeExecuteAudit(event, auditFn, effectiveTenantId, effectiveOrgId);
+  if (auditError !== null) {
+    return auditError;
+  }
+
+  return {
+    ...state,
+    auditLog: [...state.auditLog, event],
+  };
+}
+
+export function createTypedTenantError(
+  errorKind: RelationalStorageAndMigrationsAndRlsErrorKind,
+  message: string,
+  tenantId: string | null,
+  organisationId: string | null,
+): RelationalStorageAndMigrationsAndRlsError {
+  const isTenantScoped = tenantId !== null;
+  const errorTenantId = isTenantScoped ? tenantId : null;
+  const errorOrgId = isTenantScoped ? organisationId : null;
+  const orgSuffix = isTenantScoped && organisationId !== null && organisationId !== ''
+    ? ` (organisation=${organisationId})`
+    : '';
+  return {
+    kind: errorKind,
+    message: `${message}${orgSuffix}`,
+    tenantId: errorTenantId,
+    organisationId: errorOrgId,
+    isError: true,
+  };
+}
+
+export function verifyAuditTrailReadiness(
+  state: RelationalStorageAndMigrationsAndRlsState,
+  unfilteredCount: number,
+  foreignTenantId: string,
+): {
+  readonly ready: boolean;
+  readonly error: RelationalStorageAndMigrationsAndRlsError | null;
+  readonly auditSignalPresent: boolean;
+  readonly isolationSignalPresent: boolean;
+  readonly migratedSignalPresent: boolean;
+  readonly promotionBlocked: boolean;
+  readonly promotionBlockReason: string | null;
+} {
+  const readiness = checkReadiness(state, unfilteredCount, foreignTenantId);
+  const migratedSignalPresent = state.ledgerNonEmpty && state.appliedMigrations.length > 0;
+  const isolationSignalPresent = state.crossTenantIsolationProven && unfilteredCount === 0;
+  const auditSignalPresent = state.auditLog.length > 0;
+
+  if (readiness.readiness === 'READY') {
+    return {
+      ready: true,
+      error: null,
+      auditSignalPresent: true,
+      isolationSignalPresent: true,
+      migratedSignalPresent: true,
+      promotionBlocked: false,
+      promotionBlockReason: null,
+    };
+  }
+
+  return {
+    ready: false,
+    error: readiness.error,
+    auditSignalPresent,
+    isolationSignalPresent,
+    migratedSignalPresent,
+    promotionBlocked: readiness.promotionBlocked,
+    promotionBlockReason: readiness.promotionBlockReason,
   };
 }

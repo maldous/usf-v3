@@ -4,6 +4,7 @@ export const UsageMeteringAndMeterEventIngestionOutcome = [
   'UNKNOWN_METER',
   'MISSING_ENTITLEMENT',
   'INVALID_QUANTITY',
+  'INVALID_IDEMPOTENCY_KEY',
   'PROVIDER_UNAVAILABLE',
   'PERMISSION_DENIED',
   'AUDIT_FAILED',
@@ -155,10 +156,88 @@ export const initialUsageMeteringState: UsageMeteringAndMeterEventIngestionState
   events: [],
   tenantEntitlements: [],
   substrateAvailable: true,
-  readiness: 'READY',
+  readiness: 'NOT_READY',
   lastOutcome: null,
   lastError: null,
 };
+
+function withOutcomeState(
+  state: UsageMeteringAndMeterEventIngestionState,
+  outcome: UsageMeteringAndMeterEventIngestionOutcome,
+  error: UsageMeteringAndMeterEventIngestionError | null,
+): UsageMeteringAndMeterEventIngestionState {
+  const nextState: UsageMeteringAndMeterEventIngestionState = {
+    ...state,
+    lastOutcome: outcome,
+    lastError: error,
+  };
+  return {
+    ...nextState,
+    readiness: computeReadiness(nextState),
+  };
+}
+
+function mapValidationErrorToOutcome(
+  errorKind: UsageMeteringAndMeterEventIngestionErrorKind,
+): UsageMeteringAndMeterEventIngestionOutcome {
+  switch (errorKind) {
+    case 'UNKNOWN_METER':
+      return 'UNKNOWN_METER';
+    case 'MISSING_ENTITLEMENT':
+      return 'MISSING_ENTITLEMENT';
+    case 'INVALID_QUANTITY':
+      return 'INVALID_QUANTITY';
+    case 'INVALID_IDEMPOTENCY_KEY':
+      return 'INVALID_IDEMPOTENCY_KEY';
+    case 'PROVIDER_UNAVAILABLE':
+      return 'PROVIDER_UNAVAILABLE';
+    case 'PERMISSION_DENIED':
+    case 'TENANT_ISOLATION_VIOLATION':
+    case 'AUDIT_FAILURE':
+    default:
+      return 'PERMISSION_DENIED';
+  }
+}
+
+function resolveUsageReadAccessError(
+  organizationId: string,
+  caller: CallerContext,
+): UsageMeteringAndMeterEventIngestionError | null {
+  if (caller.role === 'TENANT') {
+    if (!caller.organizationId || caller.organizationId !== organizationId) {
+      return {
+        kind: 'TENANT_ISOLATION_VIOLATION',
+        message: 'Tenant is not authorized to read usage for other organizations',
+      };
+    }
+    return null;
+  }
+
+  if (caller.role === 'INTERNAL') {
+    if (!caller.organizationId) {
+      return {
+        kind: 'TENANT_ISOLATION_VIOLATION',
+        message: 'Internal caller must be scoped to an organization',
+      };
+    }
+    if (caller.organizationId !== organizationId) {
+      return {
+        kind: 'TENANT_ISOLATION_VIOLATION',
+        message: 'Internal caller is not authorized to read usage for other organizations',
+      };
+    }
+    return null;
+  }
+
+  if (caller.role === 'OPERATOR') {
+    return null;
+  }
+
+  return {
+    kind: 'PERMISSION_DENIED',
+    message: 'Unauthorized caller role for usage read',
+  };
+}
 
 export function computeReadiness(
   state: UsageMeteringAndMeterEventIngestionState,
@@ -176,12 +255,14 @@ export function setSubstrateAvailability(
   state: UsageMeteringAndMeterEventIngestionState,
   substrateAvailable: boolean,
 ): UsageMeteringAndMeterEventIngestionState {
-  const next: UsageMeteringAndMeterEventIngestionState = {
+  const nextState: UsageMeteringAndMeterEventIngestionState = {
     ...state,
     substrateAvailable,
-    readiness: substrateAvailable ? (state.catalog.length > 0 ? 'READY' : 'NOT_READY') : 'DEGRADED',
   };
-  return next;
+  return {
+    ...nextState,
+    readiness: computeReadiness(nextState),
+  };
 }
 
 export function registerMeter(
@@ -226,14 +307,28 @@ export function validateIngestionInput(
   input: IngestMeterEventInput,
   caller: CallerContext,
 ): UsageMeteringAndMeterEventIngestionError | null {
-  if (!caller || (caller.role !== 'OPERATOR' && caller.role !== 'INTERNAL')) {
+  if (caller.role !== 'OPERATOR' && caller.role !== 'INTERNAL') {
     return {
       kind: 'PERMISSION_DENIED',
       message: 'Ingestion requires operator or internal caller authorization',
     };
   }
 
-  if (caller.role === 'INTERNAL' && caller.organizationId && caller.organizationId !== input.organizationId) {
+  if (
+    caller.role === 'INTERNAL' &&
+    (!caller.organizationId || caller.organizationId.trim() === '')
+  ) {
+    return {
+      kind: 'TENANT_ISOLATION_VIOLATION',
+      message: 'Internal caller must be scoped to an organization',
+    };
+  }
+
+  if (
+    caller.role === 'INTERNAL' &&
+    caller.organizationId !== undefined &&
+    caller.organizationId !== input.organizationId
+  ) {
     return {
       kind: 'TENANT_ISOLATION_VIOLATION',
       message: 'Internal caller cannot ingest events for a mismatched organization',
@@ -283,11 +378,41 @@ export function validateIngestionInput(
   return null;
 }
 
+export function emitAuditEvent(
+  auditSink:
+    | ((
+        event: UsageMeteringAndMeterEventIngestionAuditEvent,
+      ) => UsageMeteringAndMeterEventIngestionError | null)
+    | undefined,
+  event: UsageMeteringAndMeterEventIngestionAuditEvent,
+): UsageMeteringAndMeterEventIngestionError | null {
+  if (auditSink === undefined) {
+    return null;
+  }
+  try {
+    const result = auditSink(event);
+    if (result === null) {
+      return null;
+    }
+    return {
+      kind: result.kind,
+      message: result.message,
+    };
+  } catch (err) {
+    return {
+      kind: 'AUDIT_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit sink raised an exception',
+    };
+  }
+}
+
 export function ingestMeterEvent(
   state: UsageMeteringAndMeterEventIngestionState,
   input: IngestMeterEventInput,
   caller: CallerContext,
-  auditSink?: (event: UsageMeteringAndMeterEventIngestionAuditEvent) => UsageMeteringAndMeterEventIngestionError | null,
+  auditSink?: (
+    event: UsageMeteringAndMeterEventIngestionAuditEvent,
+  ) => UsageMeteringAndMeterEventIngestionError | null,
 ): IngestionResult {
   const occurredAt = input.occurredAt ?? new Date().toISOString();
   const metadata = input.metadata ?? {};
@@ -301,46 +426,41 @@ export function ingestMeterEvent(
       status: 'FAILURE',
       outcome: 'PROVIDER_UNAVAILABLE',
       error,
-      state: {
-        ...state,
-        readiness: 'DEGRADED',
-        lastOutcome: 'PROVIDER_UNAVAILABLE',
-        lastError: error,
-      },
+      state: withOutcomeState(state, 'PROVIDER_UNAVAILABLE', error),
     };
   }
 
-  if (auditSink) {
-    const preAuditEvent: UsageMeteringAndMeterEventIngestionAuditEvent = {
-      kind: 'INGESTION_ATTEMPTED',
-      organizationId: input.organizationId,
-      meterKey: input.meterKey,
-      subject: input.subject,
-      source: input.source,
-      quantity: input.quantity,
-      idempotencyKey: input.idempotencyKey,
-      metadata,
-      timestamp: occurredAt,
+  const attemptedAudit: UsageMeteringAndMeterEventIngestionAuditEvent = {
+    kind: 'INGESTION_ATTEMPTED',
+    organizationId: input.organizationId,
+    meterKey: input.meterKey,
+    subject: input.subject,
+    source: input.source,
+    quantity: input.quantity,
+    idempotencyKey: input.idempotencyKey,
+    metadata,
+    timestamp: occurredAt,
+  };
+  const attemptedAuditErr = emitAuditEvent(auditSink, attemptedAudit);
+  if (attemptedAuditErr !== null) {
+    return {
+      status: 'FAILURE',
+      outcome: 'AUDIT_FAILED',
+      error: {
+        kind: 'AUDIT_FAILURE',
+        message: attemptedAuditErr.message,
+      },
+      state: withOutcomeState(state, 'AUDIT_FAILED', {
+        kind: 'AUDIT_FAILURE',
+        message: attemptedAuditErr.message,
+      }),
     };
-    const auditErr = auditSink(preAuditEvent);
-    if (auditErr !== null) {
-      return {
-        status: 'FAILURE',
-        outcome: 'AUDIT_FAILED',
-        error: auditErr,
-        state: {
-          ...state,
-          lastOutcome: 'AUDIT_FAILED',
-          lastError: auditErr,
-        },
-      };
-    }
   }
 
   const validationError = validateIngestionInput(state, input, caller);
   if (validationError !== null) {
-    if (auditSink && validationError.kind === 'MISSING_ENTITLEMENT') {
-      auditSink({
+    if (validationError.kind === 'MISSING_ENTITLEMENT') {
+      const rejectionErr = emitAuditEvent(auditSink, {
         kind: 'ENTITLEMENT_REJECTED',
         organizationId: input.organizationId,
         meterKey: input.meterKey,
@@ -352,37 +472,28 @@ export function ingestMeterEvent(
         reason: validationError.message,
         timestamp: occurredAt,
       });
+      if (rejectionErr !== null) {
+        return {
+          status: 'FAILURE',
+          outcome: 'AUDIT_FAILED',
+          error: {
+            kind: 'AUDIT_FAILURE',
+            message: rejectionErr.message,
+          },
+          state: withOutcomeState(state, 'AUDIT_FAILED', {
+            kind: 'AUDIT_FAILURE',
+            message: rejectionErr.message,
+          }),
+        };
+      }
     }
 
-    let outcome: UsageMeteringAndMeterEventIngestionOutcome;
-    switch (validationError.kind) {
-      case 'UNKNOWN_METER':
-        outcome = 'UNKNOWN_METER';
-        break;
-      case 'MISSING_ENTITLEMENT':
-        outcome = 'MISSING_ENTITLEMENT';
-        break;
-      case 'INVALID_QUANTITY':
-        outcome = 'INVALID_QUANTITY';
-        break;
-      case 'PERMISSION_DENIED':
-      case 'TENANT_ISOLATION_VIOLATION':
-        outcome = 'PERMISSION_DENIED';
-        break;
-      default:
-        outcome = 'PERMISSION_DENIED';
-        break;
-    }
-
+    const outcome = mapValidationErrorToOutcome(validationError.kind);
     return {
       status: 'FAILURE',
       outcome,
       error: validationError,
-      state: {
-        ...state,
-        lastOutcome: outcome,
-        lastError: validationError,
-      },
+      state: withOutcomeState(state, outcome, validationError),
     };
   }
 
@@ -394,29 +505,39 @@ export function ingestMeterEvent(
   );
 
   if (existingEvent !== undefined) {
-    if (auditSink) {
-      auditSink({
-        kind: 'DUPLICATE_SUPPRESSED',
-        organizationId: input.organizationId,
-        meterKey: input.meterKey,
-        subject: input.subject,
-        source: input.source,
-        quantity: input.quantity,
-        idempotencyKey: input.idempotencyKey,
-        metadata,
-        timestamp: occurredAt,
-      });
+    const duplicateAuditErr = emitAuditEvent(auditSink, {
+      kind: 'DUPLICATE_SUPPRESSED',
+      organizationId: input.organizationId,
+      meterKey: input.meterKey,
+      subject: input.subject,
+      source: input.source,
+      quantity: existingEvent.quantity,
+      idempotencyKey: input.idempotencyKey,
+      metadata,
+      timestamp: occurredAt,
+    });
+
+    if (duplicateAuditErr !== null) {
+      return {
+        status: 'FAILURE',
+        outcome: 'AUDIT_FAILED',
+        error: {
+          kind: 'AUDIT_FAILURE',
+          message: duplicateAuditErr.message,
+        },
+        state: withOutcomeState(state, 'AUDIT_FAILED', {
+          kind: 'AUDIT_FAILURE',
+          message: duplicateAuditErr.message,
+        }),
+      };
     }
+
     return {
       status: 'SUCCESS',
       outcome: 'DUPLICATE_RESOLVED',
       event: existingEvent,
       isDuplicate: true,
-      state: {
-        ...state,
-        lastOutcome: 'DUPLICATE_RESOLVED',
-        lastError: null,
-      },
+      state: withOutcomeState(state, 'DUPLICATE_RESOLVED', null),
     };
   }
 
@@ -431,26 +552,43 @@ export function ingestMeterEvent(
     occurredAt,
   };
 
-  if (auditSink) {
-    auditSink({
-      kind: 'EVENT_RECORDED',
-      organizationId: newRow.organizationId,
-      meterKey: newRow.meterKey,
-      subject: newRow.subject,
-      source: newRow.source,
-      quantity: newRow.quantity,
-      idempotencyKey: newRow.idempotencyKey,
-      metadata: newRow.metadata,
-      timestamp: newRow.occurredAt,
-    });
+  const recordErr = emitAuditEvent(auditSink, {
+    kind: 'EVENT_RECORDED',
+    organizationId: newRow.organizationId,
+    meterKey: newRow.meterKey,
+    subject: newRow.subject,
+    source: newRow.source,
+    quantity: newRow.quantity,
+    idempotencyKey: newRow.idempotencyKey,
+    metadata: newRow.metadata,
+    timestamp: newRow.occurredAt,
+  });
+
+  if (recordErr !== null) {
+    return {
+      status: 'FAILURE',
+      outcome: 'AUDIT_FAILED',
+      error: {
+        kind: 'AUDIT_FAILURE',
+        message: recordErr.message,
+      },
+      state: withOutcomeState(state, 'AUDIT_FAILED', {
+        kind: 'AUDIT_FAILURE',
+        message: recordErr.message,
+      }),
+    };
   }
 
-  const updatedState: UsageMeteringAndMeterEventIngestionState = {
+  const nextEvents = [...state.events, newRow];
+  const recordedState: UsageMeteringAndMeterEventIngestionState = {
     ...state,
-    events: [...state.events, newRow],
+    events: nextEvents,
     lastOutcome: 'ACCEPTED',
     lastError: null,
-    readiness: computeReadiness(state),
+  };
+  const updatedState: UsageMeteringAndMeterEventIngestionState = {
+    ...recordedState,
+    readiness: computeReadiness(recordedState),
   };
 
   return {
@@ -478,23 +616,11 @@ export function readUsage(
     };
   }
 
-  if (caller.role === 'TENANT') {
-    if (!caller.organizationId || caller.organizationId !== organizationId) {
-      return {
-        status: 'FAILURE',
-        error: {
-          kind: 'TENANT_ISOLATION_VIOLATION',
-          message: 'Tenant is not authorized to read usage for other organizations',
-        },
-      };
-    }
-  } else if (caller.role !== 'OPERATOR' && caller.role !== 'INTERNAL') {
+  const accessError = resolveUsageReadAccessError(organizationId, caller);
+  if (accessError !== null) {
     return {
       status: 'FAILURE',
-      error: {
-        kind: 'PERMISSION_DENIED',
-        message: 'Unauthorized caller role for usage read',
-      },
+      error: accessError,
     };
   }
 
@@ -548,25 +674,12 @@ export function queryAllUsageForTenant(
     };
   }
 
-  if (caller.role === 'TENANT') {
-    if (!caller.organizationId || caller.organizationId !== organizationId) {
-      return {
-        status: 'FAILURE',
-        aggregates: [],
-        error: {
-          kind: 'TENANT_ISOLATION_VIOLATION',
-          message: 'Tenant is not authorized to read usage for other organizations',
-        },
-      };
-    }
-  } else if (caller.role !== 'OPERATOR' && caller.role !== 'INTERNAL') {
+  const accessError = resolveUsageReadAccessError(organizationId, caller);
+  if (accessError !== null) {
     return {
       status: 'FAILURE',
       aggregates: [],
-      error: {
-        kind: 'PERMISSION_DENIED',
-        message: 'Unauthorized caller role for usage read',
-      },
+      error: accessError,
     };
   }
 
@@ -596,22 +709,76 @@ export function verifyHermeticLineageProof(
   readonly verified: boolean;
   readonly checks: Readonly<Record<string, boolean>>;
 } {
-  const hasNoSecretColumns = state.events.every(
-    (e) =>
-      typeof e.organizationId === 'string' &&
-      typeof e.meterKey === 'string' &&
-      typeof e.quantity === 'number' &&
-      typeof e.idempotencyKey === 'string' &&
-      typeof e.subject === 'string' &&
-      typeof e.source === 'string' &&
-      typeof e.occurredAt === 'string',
-  );
+  let noSecretColumns = true;
+  let idempotencyPreserved = true;
+  let entitlementsEnforced = true;
+  let tenantIsolationPreserved = true;
+  let aggregateTraceable = true;
 
-  const checks = {
+  const duplicateKeyCheck = new Set<string>();
+  const aggregationByOrgAndMeter = new Map<string, number>();
+
+  for (const e of state.events) {
+    if (
+      typeof e.organizationId !== 'string' ||
+      typeof e.meterKey !== 'string' ||
+      typeof e.quantity !== 'number' ||
+      typeof e.idempotencyKey !== 'string' ||
+      typeof e.subject !== 'string' ||
+      typeof e.source !== 'string' ||
+      typeof e.occurredAt !== 'string' ||
+      typeof e.metadata !== 'object' ||
+      e.metadata === null ||
+      Array.isArray(e.metadata)
+    ) {
+      noSecretColumns = false;
+    }
+
+    if (
+      e.organizationId.trim() === '' ||
+      e.meterKey.trim() === '' ||
+      e.idempotencyKey.trim() === '' ||
+      !Number.isFinite(e.quantity)
+    ) {
+      tenantIsolationPreserved = false;
+    }
+
+    const identity = `${e.organizationId}|${e.meterKey}|${e.idempotencyKey}`;
+    if (duplicateKeyCheck.has(identity)) {
+      idempotencyPreserved = false;
+    }
+    duplicateKeyCheck.add(identity);
+
+    const meter = state.catalog.find((m) => m.meterKey === e.meterKey);
+    if (meter === undefined) {
+      entitlementsEnforced = false;
+      tenantIsolationPreserved = false;
+    } else {
+      const hasEntitlement = state.tenantEntitlements.some(
+        (grant) => grant.organizationId === e.organizationId && grant.entitlementKey === meter.entitlementKey,
+      );
+      if (!hasEntitlement) {
+        entitlementsEnforced = false;
+      }
+    }
+
+    const aggKey = `${e.organizationId}|${e.meterKey}`;
+    const priorTotal = aggregationByOrgAndMeter.get(aggKey) ?? 0;
+    const nextTotal = priorTotal + e.quantity;
+    if (!Number.isFinite(nextTotal)) {
+      aggregateTraceable = false;
+    }
+    aggregationByOrgAndMeter.set(aggKey, nextTotal);
+  }
+
+  const checks: Record<string, boolean> = {
     substrateHealthy: state.substrateAvailable,
     readinessConsistent: state.readiness === computeReadiness(state),
-    noSecretColumns: hasNoSecretColumns,
-    idempotencyPreserved: true,
+    noSecretColumns,
+    idempotencyPreserved,
+    entitlementsEnforced,
+    tenantIsolationPreserved,
+    aggregateTraceable,
   };
 
   return {

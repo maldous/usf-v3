@@ -34,6 +34,12 @@ export const SupportModeBreakGlassAccessWorkflowStatus = [
 ] as const;
 export type SupportModeBreakGlassAccessWorkflowStatus = typeof SupportModeBreakGlassAccessWorkflowStatus[number];
 
+export const SupportModeBreakGlassAccessRole = [
+  'platform-admin',
+  'system-admin',
+] as const;
+export type SupportModeBreakGlassAccessRole = typeof SupportModeBreakGlassAccessRole[number];
+
 export interface SupportModeBreakGlassAccessAuditEvent {
   readonly kind: SupportModeBreakGlassAccessAuditEventKind;
   readonly workflowId: string;
@@ -41,6 +47,10 @@ export interface SupportModeBreakGlassAccessAuditEvent {
   readonly targetTenantFqdn: string;
   readonly accessReason: string;
   readonly timestamp: string;
+  readonly supportMode: boolean;
+  readonly effectiveOrganisationId: string;
+  readonly roles: readonly string[];
+  readonly tenantScopedPermissions: readonly never[];
 }
 
 export interface SupportModeBreakGlassAccessError {
@@ -57,6 +67,7 @@ export interface SupportModeBreakGlassAccessSession {
   readonly createdAt: string;
   readonly ttlSeconds: number;
   readonly supportMode: boolean;
+  readonly tenantScopedPermissions: readonly never[];
 }
 
 export interface SupportModeBreakGlassAccessWorkflow {
@@ -73,6 +84,7 @@ export interface SupportModeBreakGlassAccessState {
   readonly sessions: readonly SupportModeBreakGlassAccessSession[];
   readonly readiness: SupportModeBreakGlassAccessReadiness;
   readonly lastError: SupportModeBreakGlassAccessError | null;
+  readonly liveExternalProviderClaimed: boolean;
 }
 
 export const initialState: SupportModeBreakGlassAccessState = {
@@ -80,19 +92,79 @@ export const initialState: SupportModeBreakGlassAccessState = {
   sessions: [],
   readiness: 'READY',
   lastError: null,
+  liveExternalProviderClaimed: false,
 };
 
 export const SUPPORT_SESSION_TTL_SECONDS = 3600;
+export const SUPPORT_SESSION_TTL_MS = SUPPORT_SESSION_TTL_SECONDS * 1000;
 
-export function validateRequest(
-  actor: { readonly roles: readonly string[]; readonly effectiveOrganisationId: string | null },
+function hasRole(roles: readonly string[], role: string): boolean {
+  return roles.includes(role);
+}
+
+function buildAuditEvent(
+  kind: SupportModeBreakGlassAccessAuditEventKind,
+  workflowId: string,
+  requestedState: SupportModeBreakGlassAccessWorkflowStatus,
   targetTenantFqdn: string,
   accessReason: string,
+  effectiveOrganisationId: string,
+  roles: readonly string[],
+): SupportModeBreakGlassAccessAuditEvent {
+  return {
+    kind,
+    workflowId,
+    requestedState,
+    targetTenantFqdn,
+    accessReason,
+    timestamp: new Date().toISOString(),
+    supportMode: true,
+    effectiveOrganisationId,
+    roles,
+    tenantScopedPermissions: [],
+  };
+}
+
+function mapDecisionToError(decision: SupportModeBreakGlassAccessDecision): SupportModeBreakGlassAccessError {
+  switch (decision) {
+    case 'FORBIDDEN':
+      return { kind: 'FORBIDDEN', message: 'Access forbidden' };
+    case 'REASON_REQUIRED':
+      return { kind: 'REASON_REQUIRED', message: 'Reason is required' };
+    case 'INVALID_TARGET':
+      return { kind: 'INVALID_TARGET', message: 'Invalid target' };
+    case 'WRONG_TENANT_FQDN':
+      return { kind: 'WRONG_TENANT_FQDN', message: 'Wrong tenant FQDN' };
+    case 'AUDIT_FAILURE':
+      return { kind: 'AUDIT_BACKEND_FAILURE', message: 'Audit backend failure' };
+    case 'DENIED':
+      return { kind: 'FORBIDDEN', message: 'Access denied' };
+    default:
+      return { kind: 'FORBIDDEN', message: 'Access denied' };
+  }
+}
+
+export function validateRequest(
+  actor: {
+    readonly roles: readonly string[];
+    readonly effectiveOrganisationId: string | null;
+    readonly targetTenantFqdn: string;
+    readonly accessReason: string;
+  },
+  targetTenantFqdn: string,
+  accessReason: string,
+  allowedTenantFqdns: readonly string[] = [],
 ): SupportModeBreakGlassAccessDecision {
-  if (!actor.roles.includes('platform-admin') || !actor.roles.includes('system-admin')) {
+  if (!hasRole(actor.roles, 'platform-admin')) {
     return 'FORBIDDEN';
   }
-  if (actor.effectiveOrganisationId === null) {
+  if (!hasRole(actor.roles, 'support-enter')) {
+    return 'FORBIDDEN';
+  }
+  if (!hasRole(actor.roles, 'system-admin')) {
+    return 'FORBIDDEN';
+  }
+  if (actor.effectiveOrganisationId === null || actor.effectiveOrganisationId.trim() === '') {
     return 'FORBIDDEN';
   }
   if (accessReason.trim() === '') {
@@ -101,7 +173,36 @@ export function validateRequest(
   if (targetTenantFqdn.trim() === '') {
     return 'INVALID_TARGET';
   }
-  if (!targetTenantFqdn.endsWith('.example.com')) {
+  if (allowedTenantFqdns.length > 0 && !allowedTenantFqdns.includes(targetTenantFqdn)) {
+    return 'WRONG_TENANT_FQDN';
+  }
+  return 'APPROVED';
+}
+
+export function checkTenantFqdnMatch(
+  actor: {
+    readonly roles: readonly string[];
+    readonly effectiveOrganisationId: string | null;
+    readonly effectiveTenantFqdns: readonly string[];
+  },
+  targetTenantFqdn: string,
+): SupportModeBreakGlassAccessDecision {
+  if (!hasRole(actor.roles, 'platform-admin')) {
+    return 'FORBIDDEN';
+  }
+  if (!hasRole(actor.roles, 'support-enter')) {
+    return 'FORBIDDEN';
+  }
+  if (!hasRole(actor.roles, 'system-admin')) {
+    return 'FORBIDDEN';
+  }
+  if (actor.effectiveOrganisationId === null || actor.effectiveOrganisationId.trim() === '') {
+    return 'FORBIDDEN';
+  }
+  if (targetTenantFqdn.trim() === '') {
+    return 'INVALID_TARGET';
+  }
+  if (!actor.effectiveTenantFqdns.includes(targetTenantFqdn)) {
     return 'WRONG_TENANT_FQDN';
   }
   return 'APPROVED';
@@ -112,17 +213,34 @@ export function emitApprovalRequestAudit(
   requestedState: SupportModeBreakGlassAccessWorkflowStatus,
   targetTenantFqdn: string,
   accessReason: string,
+  effectiveOrganisationId: string,
+  roles: readonly string[],
   auditFn: (event: SupportModeBreakGlassAccessAuditEvent) => SupportModeBreakGlassAccessError | null,
 ): SupportModeBreakGlassAccessError | null {
-  const event: SupportModeBreakGlassAccessAuditEvent = {
-    kind: 'APPROVAL_REQUESTED',
+  const event = buildAuditEvent(
+    'APPROVAL_REQUESTED',
     workflowId,
     requestedState,
     targetTenantFqdn,
     accessReason,
-    timestamp: new Date().toISOString(),
-  };
-  return auditFn(event);
+    effectiveOrganisationId,
+    roles,
+  );
+  try {
+    const result = auditFn(event);
+    if (result === null) {
+      return null;
+    }
+    return {
+      kind: 'AUDIT_BACKEND_FAILURE',
+      message: result.message,
+    };
+  } catch (err) {
+    return {
+      kind: 'AUDIT_BACKEND_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit backend failure',
+    };
+  }
 }
 
 export function emitSupportSessionCreatedAudit(
@@ -130,17 +248,34 @@ export function emitSupportSessionCreatedAudit(
   sessionId: string,
   targetTenantFqdn: string,
   accessReason: string,
+  effectiveOrganisationId: string,
+  roles: readonly string[],
   auditFn: (event: SupportModeBreakGlassAccessAuditEvent) => SupportModeBreakGlassAccessError | null,
 ): SupportModeBreakGlassAccessError | null {
-  const event: SupportModeBreakGlassAccessAuditEvent = {
-    kind: 'SUPPORT_SESSION_CREATED',
+  const event = buildAuditEvent(
+    'SUPPORT_SESSION_CREATED',
     workflowId,
-    requestedState: 'COMPLETED',
+    'COMPLETED',
     targetTenantFqdn,
     accessReason,
-    timestamp: new Date().toISOString(),
-  };
-  return auditFn(event);
+    effectiveOrganisationId,
+    roles,
+  );
+  try {
+    const result = auditFn(event);
+    if (result === null) {
+      return null;
+    }
+    return {
+      kind: 'AUDIT_BACKEND_FAILURE',
+      message: result.message,
+    };
+  } catch (err) {
+    return {
+      kind: 'AUDIT_BACKEND_FAILURE',
+      message: err instanceof Error ? err.message : 'Audit backend failure',
+    };
+  }
 }
 
 export function requestSupportAccess(
@@ -149,22 +284,30 @@ export function requestSupportAccess(
   targetTenantFqdn: string,
   accessReason: string,
   requestedBy: string,
+  actorRoles: readonly string[],
+  actorEffectiveOrganisationId: string | null,
+  allowedTenantFqdns: readonly string[],
   auditFn: (event: SupportModeBreakGlassAccessAuditEvent) => SupportModeBreakGlassAccessError | null,
 ): SupportModeBreakGlassAccessState | SupportModeBreakGlassAccessError {
   const validation = validateRequest(
-    { roles: ['platform-admin', 'system-admin'], effectiveOrganisationId: requestedBy },
+    { roles: actorRoles, effectiveOrganisationId: actorEffectiveOrganisationId, targetTenantFqdn, accessReason },
     targetTenantFqdn,
     accessReason,
+    allowedTenantFqdns,
   );
   if (validation !== 'APPROVED') {
     return mapDecisionToError(validation);
   }
+
+  const effectiveOrganisationId = actorEffectiveOrganisationId === null ? '' : actorEffectiveOrganisationId;
 
   const auditError = emitApprovalRequestAudit(
     workflowId,
     'WAITING',
     targetTenantFqdn,
     accessReason,
+    effectiveOrganisationId,
+    actorRoles,
     auditFn,
   );
   if (auditError !== null) {
@@ -192,7 +335,6 @@ export function approveSupportAccess(
   workflowId: string,
   targetTenantId: string,
   effectiveOrganisationId: string,
-  accessReason: string,
   roles: readonly string[],
   auditFn: (event: SupportModeBreakGlassAccessAuditEvent) => SupportModeBreakGlassAccessError | null,
 ): SupportModeBreakGlassAccessState | SupportModeBreakGlassAccessError {
@@ -205,11 +347,19 @@ export function approveSupportAccess(
   }
 
   const sessionId = `session-${workflowId}`;
+
+  const approvedWorkflows: readonly SupportModeBreakGlassAccessWorkflow[] = state.workflows.map(
+    (w): SupportModeBreakGlassAccessWorkflow =>
+      w.id === workflowId ? { ...w, status: 'APPROVED' } : w,
+  );
+
   const auditError = emitSupportSessionCreatedAudit(
     workflowId,
     sessionId,
     workflow.targetTenantFqdn,
     workflow.accessReason,
+    effectiveOrganisationId,
+    roles,
     auditFn,
   );
   if (auditError !== null) {
@@ -225,16 +375,17 @@ export function approveSupportAccess(
     createdAt: new Date().toISOString(),
     ttlSeconds: SUPPORT_SESSION_TTL_SECONDS,
     supportMode: true,
+    tenantScopedPermissions: [],
   };
 
-  const updatedWorkflows: readonly SupportModeBreakGlassAccessWorkflow[] = state.workflows.map(
+  const completedWorkflows: readonly SupportModeBreakGlassAccessWorkflow[] = approvedWorkflows.map(
     (w): SupportModeBreakGlassAccessWorkflow =>
       w.id === workflowId ? { ...w, status: 'COMPLETED' } : w,
   );
 
   return {
     ...state,
-    workflows: updatedWorkflows,
+    workflows: completedWorkflows,
     sessions: [...state.sessions, newSession],
     lastError: null,
   };
@@ -247,23 +398,31 @@ export function enterSupportModeDirectly(
   accessReason: string,
   roles: readonly string[],
   targetTenantFqdn: string,
+  actorRoles: readonly string[],
+  actorEffectiveOrganisationId: string | null,
+  allowedTenantFqdns: readonly string[],
   auditFn: (event: SupportModeBreakGlassAccessAuditEvent) => SupportModeBreakGlassAccessError | null,
 ): SupportModeBreakGlassAccessState | SupportModeBreakGlassAccessError {
   const validation = validateRequest(
-    { roles: ['platform-admin', 'system-admin'], effectiveOrganisationId },
+    { roles: actorRoles, effectiveOrganisationId: actorEffectiveOrganisationId, targetTenantFqdn, accessReason },
     targetTenantFqdn,
     accessReason,
+    allowedTenantFqdns,
   );
   if (validation !== 'APPROVED') {
     return mapDecisionToError(validation);
   }
 
-  const sessionId = `session-direct-${Date.now()}`;
+  const sessionId = `session-direct-${workflowIdFromFqdn(targetTenantFqdn)}`;
+  const effectiveOrganisationIdForAudit = actorEffectiveOrganisationId === null ? '' : actorEffectiveOrganisationId;
+
   const auditError = emitSupportSessionCreatedAudit(
     'direct',
     sessionId,
     targetTenantFqdn,
     accessReason,
+    effectiveOrganisationIdForAudit,
+    roles,
     auditFn,
   );
   if (auditError !== null) {
@@ -279,6 +438,7 @@ export function enterSupportModeDirectly(
     createdAt: new Date().toISOString(),
     ttlSeconds: SUPPORT_SESSION_TTL_SECONDS,
     supportMode: true,
+    tenantScopedPermissions: [],
   };
 
   return {
@@ -288,6 +448,14 @@ export function enterSupportModeDirectly(
   };
 }
 
+function workflowIdFromFqdn(fqdn: string): string {
+  let hash = 0;
+  for (let i = 0; i < fqdn.length; i += 1) {
+    hash = ((hash << 5) - hash + fqdn.charCodeAt(i)) | 0;
+  }
+  return `${hash}`;
+}
+
 export function proveWorkflowAndSessionStateMachine(
   state: SupportModeBreakGlassAccessState,
   workflowId: string,
@@ -295,45 +463,108 @@ export function proveWorkflowAndSessionStateMachine(
   accessReason: string,
   requestedBy: string,
   targetTenantId: string,
+  effectiveOrganisationId: string,
   roles: readonly string[],
+  actorRoles: readonly string[],
 ): SupportModeBreakGlassAccessState | SupportModeBreakGlassAccessError {
-  const step1 = requestSupportAccess(
+  const okAudit = (): SupportModeBreakGlassAccessError | null => null;
+  const requestResult = requestSupportAccess(
     state,
     workflowId,
     targetTenantFqdn,
     accessReason,
     requestedBy,
-    () => null,
+    actorRoles,
+    effectiveOrganisationId,
+    [targetTenantFqdn],
+    okAudit,
   );
-  if ('kind' in step1 && typeof step1.kind === 'string' && step1.kind !== null) {
-    return step1;
+  if ('kind' in requestResult) {
+    return requestResult;
   }
-  const requestState = step1 as SupportModeBreakGlassAccessState;
-  const step2 = approveSupportAccess(
-    requestState,
+
+  const approveResult = approveSupportAccess(
+    requestResult,
     workflowId,
     targetTenantId,
-    requestedBy,
-    accessReason,
+    effectiveOrganisationId,
     roles,
-    () => null,
+    okAudit,
   );
-  return step2;
+  return approveResult;
 }
 
-function mapDecisionToError(decision: SupportModeBreakGlassAccessDecision): SupportModeBreakGlassAccessError {
-  switch (decision) {
-    case 'FORBIDDEN':
-      return { kind: 'FORBIDDEN', message: 'Access forbidden' };
-    case 'REASON_REQUIRED':
-      return { kind: 'REASON_REQUIRED', message: 'Reason is required' };
-    case 'INVALID_TARGET':
-      return { kind: 'INVALID_TARGET', message: 'Invalid target' };
-    case 'WRONG_TENANT_FQDN':
-      return { kind: 'WRONG_TENANT_FQDN', message: 'Wrong tenant FQDN' };
-    case 'AUDIT_FAILURE':
-      return { kind: 'AUDIT_BACKEND_FAILURE', message: 'Audit backend failure' };
-    default:
-      return { kind: 'FORBIDDEN', message: 'Access denied' };
+export function proveRuntimeApprovalFlow(
+  state: SupportModeBreakGlassAccessState,
+  workflowId: string,
+  targetTenantFqdn: string,
+  accessReason: string,
+  requestedBy: string,
+  actorRoles: readonly string[],
+  actorEffectiveOrganisationId: string | null,
+  allowedTenantFqdns: readonly string[],
+  auditFn: (event: SupportModeBreakGlassAccessAuditEvent) => SupportModeBreakGlassAccessError | null,
+): SupportModeBreakGlassAccessState | SupportModeBreakGlassAccessError {
+  return requestSupportAccess(
+    state,
+    workflowId,
+    targetTenantFqdn,
+    accessReason,
+    requestedBy,
+    actorRoles,
+    actorEffectiveOrganisationId,
+    allowedTenantFqdns,
+    auditFn,
+  );
+}
+
+export function computeReadiness(
+  state: SupportModeBreakGlassAccessState,
+  liveExternalProviderClaimed: boolean,
+): SupportModeBreakGlassAccessReadiness {
+  if (liveExternalProviderClaimed) {
+    return 'DEGRADED';
   }
+  return state.readiness;
+}
+
+export function setReadiness(
+  state: SupportModeBreakGlassAccessState,
+  readiness: SupportModeBreakGlassAccessReadiness,
+): SupportModeBreakGlassAccessState {
+  return { ...state, readiness };
+}
+
+export function markDegradedMode(
+  state: SupportModeBreakGlassAccessState,
+  reason: string,
+): SupportModeBreakGlassAccessState {
+  const error: SupportModeBreakGlassAccessError = {
+    kind: 'AUDIT_BACKEND_FAILURE',
+    message: reason,
+  };
+  return {
+    ...state,
+    readiness: 'DEGRADED',
+    liveExternalProviderClaimed: false,
+    lastError: error,
+  };
+}
+
+export function claimNoLiveExternalProvider(
+  state: SupportModeBreakGlassAccessState,
+): SupportModeBreakGlassAccessState {
+  return { ...state, liveExternalProviderClaimed: false };
+}
+
+export function sessionIsExpired(
+  session: SupportModeBreakGlassAccessSession,
+  nowIso: string,
+): boolean {
+  const createdMs = Date.parse(session.createdAt);
+  const nowMs = Date.parse(nowIso);
+  if (Number.isNaN(createdMs) || Number.isNaN(nowMs)) {
+    return true;
+  }
+  return nowMs - createdMs >= SUPPORT_SESSION_TTL_MS;
 }
