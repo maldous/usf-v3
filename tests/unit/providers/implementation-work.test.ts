@@ -171,6 +171,30 @@ test("the node spec reporter is parsed into per-name outcomes", () => {
   assert.equal(parsed.failCount, 1);
 });
 
+test("a failed subtest's assertion is captured, so repair aims at the real gap", () => {
+  // Repair regenerated blind for lack of this: the recorded detail was always
+  // "executed and failed" while the actual assertion -- decode-mismatch on the
+  // QR round-trip, in the case that surfaced it -- sat unused in the reporter
+  // output. The summary ✖ line carries no body; the detail block does.
+  const parsed = parseSpecOutcomes([
+    "✖ contracts (4ms)",
+    "ℹ fail 1",
+    "✖ failing tests:",
+    "test at t.ts:9:1",
+    "✖ contracts (4ms)",
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "  false !== true",
+    "    at TestContext.<anonymous> (t.ts:9:10)",
+    "    actual: false,",
+    "    expected: true,",
+  ].join(String.fromCharCode(10)));
+  assert.deepEqual([...parsed.failed], ["contracts"]);
+  const detail = parsed.details.get("contracts") ?? "";
+  assert.match(detail, /AssertionError/u);
+  assert.match(detail, /actual: false/u);
+  assert.ok(detail.length <= 300);
+});
+
 function evidenceWith(entries: EvidenceIndex["conformanceOutcomes"]): EvidenceIndex {
   return Object.freeze({
     realizedArtefacts: new Map(), runtimeComposed: false,

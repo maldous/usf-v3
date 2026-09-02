@@ -109,16 +109,36 @@ async function runChild(
 /** Names the Node spec reporter prints for passing and failing tests. */
 export function parseSpecOutcomes(output: string): Readonly<{
   passed: ReadonlySet<string>; failed: ReadonlySet<string>; passCount: number; failCount: number;
+  details: ReadonlyMap<string, string>;
 }> {
   const passed = new Set<string>();
   const failed = new Set<string>();
+  const details = new Map<string, string>();
   let passCount = 0;
   let failCount = 0;
-  for (const line of output.split("\n")) {
+  const lines = output.split("\n");
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index]!;
     const pass = /^✔ (.+?) \(\d/u.exec(line);
     if (pass !== null) { passed.add(pass[1]!); continue; }
     const fail = /^✖ (.+?) \(\d/u.exec(line);
-    if (fail !== null) { failed.add(fail[1]!); continue; }
+    if (fail !== null) {
+      const name = fail[1]!;
+      failed.add(name);
+      // The failure summary lists ✖ names with no body; the detail block lists
+      // each again followed by its AssertionError and actual/expected. Capture
+      // the assertion when a body follows, so repair aims at the real gap
+      // instead of regenerating blind against "executed and failed".
+      const body: string[] = [];
+      for (let look = index + 1; look < lines.length && look < index + 16; look += 1) {
+        const next = lines[look]!;
+        if (/^(✔|✖) .+? \(\d/u.test(next) || /^test at /u.test(next)) break;
+        const trimmed = next.trim();
+        if (/AssertionError|actual:|expected:|Error:|!==|to be/u.test(trimmed)) body.push(trimmed);
+      }
+      if (body.length > 0 && !details.has(name)) details.set(name, body.join(" ").slice(0, 300));
+      continue;
+    }
     const counts = /^.?\s*(pass|fail) (\d+)$/u.exec(line.trim());
     if (counts !== null) {
       if (counts[1] === "pass") passCount = Number(counts[2]);
@@ -127,7 +147,7 @@ export function parseSpecOutcomes(output: string): Readonly<{
   }
   // A name that failed is not also a pass, whatever order the reporter used.
   for (const name of failed) passed.delete(name);
-  return Object.freeze({ passed, failed, passCount, failCount });
+  return Object.freeze({ passed, failed, passCount, failCount, details: details as ReadonlyMap<string, string> });
 }
 
 /**
@@ -297,7 +317,8 @@ export async function runCapabilityConformance(
         passed,
         admissible: true,
         detail: passed ? null
-          : failed ? "the subtest for this requirement executed and failed"
+          : failed ? (parsed.details.get([...parsed.failed].find((entry) => entry.includes(name)) ?? name)
+              ?? "the subtest for this requirement executed and failed")
           : "the conformance test declares no subtest named for this requirement, so nothing was observed",
       });
     })),
