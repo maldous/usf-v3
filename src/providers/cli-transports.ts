@@ -87,11 +87,24 @@ export async function invokeClaudeCli(
     return frozenRefusal("claude-cli", killed ? "TRANSPORT_TIMEOUT" : "TRANSPORT_INVOCATION_FAILED", detail);
   }
 
-  let parsed: Record<string, unknown>;
-  try {
-    parsed = JSON.parse(stdout) as Record<string, unknown>;
-  } catch {
-    return frozenRefusal("claude-cli", "TRANSPORT_OUTPUT_UNPARSEABLE", null);
+  // The CLI's result JSON is one line of stdout, but stdout is not only the
+  // result: the installed build appends stray diagnostics after it -- an MCP
+  // warning at the time this was found -- and parsing the whole buffer threw
+  // Extra data, classifying every successful turn as unparseable. Four recorded
+  // route failures were exactly this, while the probe's own JSON carried
+  // subtype success and a result. Parse per line and take the first document
+  // that has the result shape.
+  let parsed: Record<string, unknown> | null = null;
+  for (const line of stdout.split("\n")) {
+    const candidateLine = line.trim();
+    if (!candidateLine.startsWith("{")) continue;
+    try {
+      const document = JSON.parse(candidateLine) as Record<string, unknown>;
+      if ("is_error" in document || "result" in document || "subtype" in document) { parsed = document; break; }
+    } catch { continue; }
+  }
+  if (parsed === null) {
+    return frozenRefusal("claude-cli", "TRANSPORT_OUTPUT_UNPARSEABLE", stdout.slice(0, 200));
   }
   if (parsed.is_error === true || parsed.subtype !== "success") {
     const status = typeof parsed.api_error_status === "string" ? parsed.api_error_status : null;
