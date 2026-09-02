@@ -52,7 +52,7 @@ function invalid(message: string, details?: Record<string, unknown>): never {
   throw new UsfError("HERMES_LIFECYCLE_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, message, details);
 }
 
-interface LifecycleArguments {
+export interface LifecycleArguments {
   readonly manifest: string;
   readonly envFile: string;
   readonly pauseSeconds: number;
@@ -61,7 +61,7 @@ interface LifecycleArguments {
   readonly waitMs: number;
 }
 
-function parse(args: readonly string[]): LifecycleArguments {
+export function parseLifecycleArguments(args: readonly string[]): LifecycleArguments {
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
@@ -148,8 +148,26 @@ function authorityIdentity(repositoryRoot: string, manifest: string = deliveryMa
 // start
 // ---------------------------------------------------------------------------
 
+/**
+ * The arguments the supervisor child is started with.
+ *
+ * The supervisor runs in a detached child, so every selection the operator made
+ * has to reach it explicitly. Omitting one does not fail: it silently starts a
+ * supervisor operating a different profile from the one that was reported back,
+ * which is why this is a named function with a test rather than an inline list.
+ */
+export function superviseArguments(parsed: LifecycleArguments): readonly string[] {
+  return Object.freeze([
+    "--manifest", parsed.manifest,
+    "--env-file", parsed.envFile,
+    "--pause-seconds", String(parsed.pauseSeconds),
+    "--concurrency", String(parsed.concurrency),
+    "--limit", String(parsed.dispatchLimit),
+  ]);
+}
+
 export async function hermesStartCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
-  const parsed = parse(args);
+  const parsed = parseLifecycleArguments(args);
   await runtimeRoot(repositoryRoot);
   const observed = await observeSupervisor(repositoryRoot);
   if (observed.liveness === "live") {
@@ -172,10 +190,7 @@ export async function hermesStartCommand(repositoryRoot: string, args: readonly 
   const log = await open(resolve(repositoryRoot, supervisorLog), constants.O_CREAT | constants.O_WRONLY | constants.O_APPEND, 0o600);
   const child = spawn(process.execPath, [
     resolve(import.meta.dirname, "..", "cli.ts"), "hermes", "supervise",
-    "--env-file", parsed.envFile,
-    "--pause-seconds", String(parsed.pauseSeconds),
-    "--concurrency", String(parsed.concurrency),
-    "--limit", String(parsed.dispatchLimit),
+    ...superviseArguments(parsed),
   ], {
     cwd: repositoryRoot,
     detached: true,
@@ -228,7 +243,7 @@ export async function hermesStartCommand(repositoryRoot: string, args: readonly 
 // ---------------------------------------------------------------------------
 
 export async function hermesStopCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
-  const parsed = parse(args);
+  const parsed = parseLifecycleArguments(args);
   await runtimeRoot(repositoryRoot);
   const observed = await observeSupervisor(repositoryRoot);
   const idle = (outcome: string, reclaimed: boolean): CommandResult => ({
@@ -445,7 +460,7 @@ async function pause(repositoryRoot: string, supervisorId: string, seconds: numb
 }
 
 export async function hermesSuperviseCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
-  const parsed = parse(args);
+  const parsed = parseLifecycleArguments(args);
   await runtimeRoot(repositoryRoot);
   const existing = await observeSupervisor(repositoryRoot);
   if (existing.liveness === "live") {
