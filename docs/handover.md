@@ -79,20 +79,17 @@ Two sources decide remaining work, by kind:
 - **Programme-level remaining work is decided by GOAL.md section 25** (the
   acceptance boundary) minus what current evidence already satisfies. The open
   criteria as of this boundary:
-  - **25.5 concurrency**: peak live concurrent provider calls must reach
-    `min(8, C_target)` (GOAL 14.3) and never fall below two while two eligible
-    independent assignments are ready. `C_observed`, `C_target` and parallel
-    utilisation are now derived per dispatch and reported on every cycle and in
-    `hermes status` (`dispatchConcurrency`), so the criterion is measured; it is
-    met when a recorded run shows peak reaching `min(8, C_target)`.
+  - **25.5 concurrency**: **measured and met on record.** Both measured
+    dispatches of the acceptance run reached peak 5 of target 5
+    (= `min(8, C_target)`), utilisation 0.767 and 0.664, speedup 3.3x; recorded
+    in the acceptance bundle. The never-below-two-while-two-ready clause holds
+    by construction of the worker pool and is visible in the same records.
   - **25.5 continuous operation**: three-plus batches, forced supervisor
     restart, and concurrent chains have all been exercised, but not recorded as
     one auditable acceptance run.
-  - **25.7 useful-token target**: framed. The supervisor freezes
-    `usefulTokenTarget` at start (floor 100 000 enforced, softer targets
-    refused), counts only kept tokens toward it, and reports progress and
-    achievement per cycle and in status. The criterion is met when a frozen-
-    target run reports `usefulTokenTargetAchieved: true`.
+  - **25.7 useful-token target**: **achieved.** The composed run frozen at
+    100 000 reported 120 871 kept tokens in cycle 2
+    (`usefulTokenTargetAchieved: true`), recorded in the acceptance bundle.
   - **25.3 provider removal**: demonstrated live, not only in the deterministic
     scale suite. `mistral-medium-3-5` produced 315 of the 645 all-time accepted
     cache entries — the single most successful route — then became quota-
@@ -100,26 +97,26 @@ Two sources decide remaining work, by kind:
     nvidia, cohere, groq and antigravity routes, including whole later cycles at
     6/6 acceptance. Recorded here as the removal evidence; the scale suite's
     failure-isolation and two-family-overlap tests carry the mechanism.
-  - **25.8 sanitized acceptance bundle**: not yet produced; every input it needs
-    (evidence, route history, token accounting, nonclaims) now exists.
+  - **25.8 sanitized acceptance bundle**: **produced** from the achieved run —
+    `docs/acceptance/2026-09-02-composed-run.md` and its evidence file. It
+    answers the eleven reviewer questions, discloses that the only non-zero
+    reported cost anywhere is the operator's own toggleable Claude session
+    (none inside the run window; zero paid API cost across 1 009 units), and
+    carries exact claims and nonclaims.
 - **Everything in the gap register below** is remaining work by definition;
   when an entry is fixed it must leave the register in the same change.
 
 ### Next safe actions
 
-1. The running composed supervisor predates the measurement fields; restart it
-   to begin the acceptance-framed run (frozen useful-token target, concurrency
-   measurement, transaction-repository projection all active). Wasted-token
-   share fell 63–70% → 57% → 29% → 19% → 11% across the admission-ranked
-   cycles; keep watching it and any `ROUTE_OUTPUT_UNPRODUCTIVE` stand-down.
-2. When the frozen-target run reports `usefulTokenTargetAchieved: true` and
-   `dispatchConcurrency` shows peak reaching `min(8, C_target)`, produce the
-   sanitized acceptance bundle (GOAL 25.8) from that run's evidence — the bundle
-   must postdate the run it claims, which is why it is sequenced last.
-3. When a repair round leaves a facet UNSATISFIED at the repair ceiling, read
+1. Let the composed supervisor keep realising the remaining frontier; the graph
+   decides it. Checkpoint cycle-landed files at boundaries.
+2. When a repair round leaves a facet UNSATISFIED at the repair ceiling, read
    the evidence record before touching the module: the failure is a product
    behaviour statement, and the fix may belong in the facet, the module or the
    test.
+3. The next restart picks up the profile-supplied denominator fix (18e5cc6);
+   the projection recomputes from evidence, so no restart is needed for it
+   alone — usefulTokens accumulate per supervisor and a restart resets them.
 
 ### Gap register
 

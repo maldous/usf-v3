@@ -1,0 +1,656 @@
+{
+ "achievedCycle": {
+  "artefactLane": "not-applicable-under-a-product-profile",
+  "cumulativeTokens": 148151,
+  "cycle": 2,
+  "dispatchConcurrency": {
+   "parallelSpeedupRatio": 3.318,
+   "parallelUtilisation": 0.664,
+   "peakObserved": 5,
+   "requested": 5,
+   "summedUnitMs": 1318385,
+   "target": 5,
+   "wallClockMs": 397316
+  },
+  "manifest": "graph/manifests/anqr-with-foundation.json",
+  "providerActivity": [
+   {
+    "capability": "structuralinspection",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 6128,
+    "transport": "vercel-ai-sdk"
+   },
+   {
+    "capability": "unsafecustomisationdiagnosis",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 3979,
+    "transport": "vercel-ai-sdk"
+   },
+   {
+    "capability": "mcpdelivery",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 11105,
+    "transport": "vercel-ai-sdk"
+   },
+   {
+    "capability": "structuredpayloadrepresentation",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 9770,
+    "transport": "vercel-ai-sdk"
+   },
+   {
+    "capability": "payloadclassification",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 8519,
+    "transport": "vercel-ai-sdk"
+   },
+   {
+    "capability": "payloadconfidentiality",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 3611,
+    "transport": "vercel-ai-sdk"
+   },
+   {
+    "capability": "productidentitypayload",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 4349,
+    "transport": "vercel-ai-sdk"
+   },
+   {
+    "capability": "qrartefactcreation",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 14061,
+    "transport": "vercel-ai-sdk"
+   },
+   {
+    "capability": "qrdecoding",
+    "model": "minimax/minimax-m3:free",
+    "totalTokens": 4284,
+    "transport": "vercel-ai-sdk"
+   }
+  ],
+  "tokenUsage": {
+   "acceptedTokens": 65806,
+   "inputTokens": 36551,
+   "invocationsCounted": 10,
+   "outputTokens": 36273,
+   "refusedTokens": 7018,
+   "totalTokens": 72824
+  },
+  "transactions": [
+   {
+    "applied": true,
+    "lane": "implementation",
+    "pathCount": 9,
+    "refused": null,
+    "repository": "urn:anqr:repository:main",
+    "transactionDigest": "sha256:af4434d8b9ecb69f2a7cdef7ad337a35b480b4a2d57e165ef6fa7714d063af9d"
+   }
+  ],
+  "usefulTokenTarget": 100000,
+  "usefulTokenTargetAchieved": true,
+  "usefulTokens": 120871
+ },
+ "costAudit": {
+  "apiTransportNonZeroCostUnits": 0,
+  "byTransportAndModel": {
+   "? | ?": {
+    "costUsd": 0.0,
+    "tokens": 0,
+    "units": 89
+   },
+   "antigravity-cli | Gemini 3.7 Flash (Low)": {
+    "costUsd": 0.0,
+    "tokens": 718397,
+    "units": 22
+   },
+   "antigravity-cli | gemini-3.1-pro-low": {
+    "costUsd": 0.0,
+    "tokens": 175439,
+    "units": 7
+   },
+   "antigravity-cli | gpt-oss-120b-medium": {
+    "costUsd": 0.0,
+    "tokens": 3189742,
+    "units": 71
+   },
+   "claude-cli | claude-haiku-4-5-20251001+claude-opus-5[1m]": {
+    "costUsd": 7.2628,
+    "tokens": 51524,
+    "units": 55
+   },
+   "codex-cli | ?": {
+    "costUsd": 0.0,
+    "tokens": 3575497,
+    "units": 18
+   },
+   "vercel-ai-sdk | cohere/north-mini-code:free": {
+    "costUsd": 0.0,
+    "tokens": 119676,
+    "units": 16
+   },
+   "vercel-ai-sdk | deepseek-ai/deepseek-v4-pro-0813": {
+    "costUsd": 0.0,
+    "tokens": 101105,
+    "units": 15
+   },
+   "vercel-ai-sdk | dots-studio/dots-3-note-preview:free": {
+    "costUsd": 0.0,
+    "tokens": 684194,
+    "units": 70
+   },
+   "vercel-ai-sdk | google/gemma-4-31b-it": {
+    "costUsd": 0.0,
+    "tokens": 120865,
+    "units": 15
+   },
+   "vercel-ai-sdk | google/lyria-3-clip-preview": {
+    "costUsd": 0.0,
+    "tokens": 15337,
+    "units": 3
+   },
+   "vercel-ai-sdk | google/lyria-3-pro-preview": {
+    "costUsd": 0.0,
+    "tokens": 13109,
+    "units": 2
+   },
+   "vercel-ai-sdk | groq/compound": {
+    "costUsd": 0.0,
+    "tokens": 18757,
+    "units": 3
+   },
+   "vercel-ai-sdk | groq/compound-mini": {
+    "costUsd": 0.0,
+    "tokens": 145585,
+    "units": 13
+   },
+   "vercel-ai-sdk | inclusionai/ling-3.0-flash-fin:free": {
+    "costUsd": 0.0,
+    "tokens": 69089,
+    "units": 4
+   },
+   "vercel-ai-sdk | liquid/lfm-2.5-2.6b:free": {
+    "costUsd": 0.0,
+    "tokens": 799979,
+    "units": 63
+   },
+   "vercel-ai-sdk | minimax/minimax-m2.7:free": {
+    "costUsd": 0.0,
+    "tokens": 79183,
+    "units": 5
+   },
+   "vercel-ai-sdk | minimax/minimax-m3:free": {
+    "costUsd": 0.0,
+    "tokens": 663002,
+    "units": 76
+   },
+   "vercel-ai-sdk | mistral-medium-3-5": {
+    "costUsd": 0.0,
+    "tokens": 3376626,
+    "units": 386
+   },
+   "vercel-ai-sdk | north-mini-code-1-0": {
+    "costUsd": 0.0,
+    "tokens": 277230,
+    "units": 45
+   },
+   "vercel-ai-sdk | openai/gpt-oss-120b": {
+    "costUsd": 0.0,
+    "tokens": 22118,
+    "units": 4
+   },
+   "vercel-ai-sdk | qwen/qwen3.6-27b": {
+    "costUsd": 0.0,
+    "tokens": 16031,
+    "units": 27
+   }
+  },
+  "claudeCliUnitsInsideRunWindow": 0,
+  "nonZeroCostExplanation": "every non-zero reported cost is claude-cli, the operator's own toggleable subscription session; none fall inside this run's window",
+  "successfulModelsInsideRunWindow": {
+   "vercel-ai-sdk | minimax/minimax-m3:free": 18,
+   "vercel-ai-sdk | north-mini-code-1-0": 2
+  },
+  "totalReportedUsd": 7.2628,
+  "unitsObserved": 1009
+ },
+ "facetTruth": {
+  "byKind": {
+   "auditmodel": {
+    "NOT_APPLICABLE": 3,
+    "NOT_ASSESSED": 6,
+    "SATISFIED": 59,
+    "UNSATISFIED": 4
+   },
+   "contracts": {
+    "NOT_APPLICABLE": 8,
+    "NOT_ASSESSED": 17,
+    "SATISFIED": 80,
+    "UNSATISFIED": 6
+   },
+   "errormodel": {
+    "NOT_APPLICABLE": 3,
+    "NOT_ASSESSED": 14,
+    "SATISFIED": 72,
+    "UNSATISFIED": 11
+   },
+   "lifecycle": {
+    "NOT_APPLICABLE": 4,
+    "NOT_ASSESSED": 10,
+    "SATISFIED": 52,
+    "UNSATISFIED": 3
+   },
+   "permissions": {
+    "NOT_APPLICABLE": 5,
+    "NOT_ASSESSED": 7,
+    "SATISFIED": 62,
+    "UNSATISFIED": 4
+   },
+   "proof": {
+    "NOT_APPLICABLE": 4,
+    "NOT_ASSESSED": 9,
+    "SATISFIED": 56,
+    "UNSATISFIED": 5
+   },
+   "readinessmodel": {
+    "NOT_APPLICABLE": 4,
+    "NOT_ASSESSED": 9,
+    "SATISFIED": 59,
+    "UNSATISFIED": 3
+   },
+   "statemodel": {
+    "NOT_APPLICABLE": 3,
+    "NOT_ASSESSED": 23,
+    "SATISFIED": 50,
+    "UNSATISFIED": 5
+   },
+   "uisemantics": {
+    "NOT_APPLICABLE": 62,
+    "NOT_ASSESSED": 5,
+    "PROFILE_SUPPLIED": 5,
+    "SATISFIED": 11,
+    "UNSATISFIED": 1
+   },
+   "validation": {
+    "NOT_APPLICABLE": 3,
+    "NOT_ASSESSED": 17,
+    "SATISFIED": 77,
+    "UNSATISFIED": 9
+   }
+  },
+  "capabilitiesFullySatisfied": 52,
+  "capabilitiesWithRemainingWork": 51,
+  "evaluated": true,
+  "facetCount": 850,
+  "nonClaims": [
+   "Every satisfied verdict names the evidence that produced it. No verdict is read from a stored satisfaction value.",
+   "NOT_ASSESSED means no admissible evidence exists yet. It is not a claim that the facet is unsatisfied.",
+   "An implementation-conformance verdict is derived from an executed behavioural subtest named for the facet. The presence of a module at its canonical path is never admissible for one.",
+   "BLOCKED means the required evidence class must be produced by running a check and cannot be authored.",
+   "NOT_APPLICABLE is authored authority recovered from V1, not an absence of evidence, and is excluded from the completion denominator rather than counted as satisfied.",
+   "PROFILE_SUPPLIED means the requirement is real and applicable but belongs to a product profile rather than to Core. It is excluded from Core's denominator and is not a claim that any profile has satisfied it."
+  ],
+  "schema": "urn:usf:facet-satisfaction:1",
+  "stateCounts": {
+   "BLOCKED": 0,
+   "NOT_APPLICABLE": 99,
+   "NOT_ASSESSED": 117,
+   "PROFILE_SUPPLIED": 5,
+   "SATISFIED": 578,
+   "STALE": 0,
+   "UNSATISFIED": 51
+  },
+  "verdictDigest": "sha256:3d6a652d745f7bd939a942a93fdcb0b4fcb31bb0149622441730074be48627af"
+ },
+ "gitHeads": {
+  "anqr": "50eabfe20dd7a8314071571b7d725b3768c8985e",
+  "usf": "18e5cc698f72a128dfea2c2dc4d764044edc82ee"
+ },
+ "producedAt": "2026-09-02T03:20:00Z",
+ "routeHistory": [
+  {
+   "attempts": 0,
+   "candidateId": "antigravity-cli:antigravity-cli:Gemini 3.7 Flash (Low)",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 6,
+   "candidateId": "antigravity-cli:antigravity-cli:gemini-3.1-pro-low",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 5,
+   "candidateId": "antigravity-cli:antigravity-cli:gemini-3.6-flash-low",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 2,
+   "candidateId": "antigravity-cli:antigravity-cli:gemini-3.7-flash-low",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 18,
+   "candidateId": "antigravity-cli:antigravity-cli:gpt-oss-120b-medium",
+   "outputAcceptances": 0,
+   "outputRefusals": 3,
+   "reasonCode": "EXPIRED",
+   "successes": 18
+  },
+  {
+   "attempts": 0,
+   "candidateId": "codex-cli:codex-cli",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "TRANSPORT_USAGE_LIMIT_EXCEEDED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "codex-cli:codex-cli:gpt-5.3-codex-spark",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "TRANSPORT_USAGE_LIMIT_EXCEEDED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:cerebras:gemma-4-31b",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:cerebras:gpt-oss-120b",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 5,
+   "candidateId": "vercel-ai-sdk:cohere:north-mini-code-1-0",
+   "outputAcceptances": 3,
+   "outputRefusals": 1,
+   "reasonCode": "PROVIDER_TIMEOUT",
+   "successes": 1
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:groq:groq/compound",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:groq:groq/compound-mini",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:groq:llama-3.1-8b-instant",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:groq:llama-3.3-70b-versatile",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:groq:openai/gpt-oss-120b",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:groq:openai/gpt-oss-20b",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 4,
+   "candidateId": "vercel-ai-sdk:groq:openai/gpt-oss-safeguard-20b",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 2,
+   "candidateId": "vercel-ai-sdk:groq:qwen/qwen3.6-27b",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:mistral:labs-devstral-small-2512",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_QUOTA_EXHAUSTED_PAYMENT_REQUIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:abacusai/dracarys-llama-3.1-70b-instruct",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:black-forest-labs/flux_1-kontext-dev",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:black-forest-labs/flux_2-klein-4b",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:bytedance/seed-oss-36b-instruct",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:nvidia:deepseek-ai/deepseek-v4-flash-0731",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 2,
+   "candidateId": "vercel-ai-sdk:nvidia:deepseek-ai/deepseek-v4-pro-0813",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 1
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:google/gemma-3-12b-it",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:google/gemma-3-4b-it",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:google/gemma-4-31b-it",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:google/google-paligemma",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:meta/llama-3.2-3b-instruct",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:meta/muse-glimmer-30b",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 0,
+   "candidateId": "vercel-ai-sdk:nvidia:minimaxai/minimax-m2.7",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "PROVIDER_MODEL_NOT_SERVED",
+   "successes": 0
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:openrouter:cohere/north-mini-code:free",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 10,
+   "candidateId": "vercel-ai-sdk:openrouter:dots-studio/dots-3-note-preview:free",
+   "outputAcceptances": 14,
+   "outputRefusals": 3,
+   "reasonCode": "EXPIRED",
+   "successes": 6
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:openrouter:google/gemma-4-26b-a4b-it:free",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:openrouter:google/gemma-4-31b-it:free",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 2,
+   "candidateId": "vercel-ai-sdk:openrouter:inclusionai/ling-3.0-flash-fin:free",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 1
+  },
+  {
+   "attempts": 4,
+   "candidateId": "vercel-ai-sdk:openrouter:liquid/lfm-2.5-2.6b:free",
+   "outputAcceptances": 7,
+   "outputRefusals": 4,
+   "reasonCode": "EXPIRED",
+   "successes": 2
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:openrouter:minimax/minimax-m2.7:free",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  },
+  {
+   "attempts": 11,
+   "candidateId": "vercel-ai-sdk:openrouter:minimax/minimax-m3:free",
+   "outputAcceptances": 28,
+   "outputRefusals": 5,
+   "reasonCode": "INVOCATION_OK",
+   "successes": 10
+  },
+  {
+   "attempts": 1,
+   "candidateId": "vercel-ai-sdk:openrouter:nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+   "outputAcceptances": 0,
+   "outputRefusals": 0,
+   "reasonCode": "EXPIRED",
+   "successes": 0
+  }
+ ],
+ "run": {
+  "concurrency": 5,
+  "dispatchLimit": 10,
+  "manifest": "graph/manifests/anqr-with-foundation.json",
+  "startedAt": "2026-09-02T02:59:51.121Z",
+  "supervisorId": "45ea9be11dab54d8453154a50",
+  "usefulTokenTarget": 100000
+ },
+ "schema": "urn:usf:acceptance-bundle-evidence:1",
+ "workTruth": {
+  "capabilityCount": 103,
+  "conformanceTestsLanded": 100,
+  "modulesLanded": 102,
+  "readyFrontier": 32,
+  "requirementCount": 724
+ }
+}
