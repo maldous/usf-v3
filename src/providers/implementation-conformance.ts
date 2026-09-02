@@ -130,7 +130,12 @@ export function parseSpecOutcomes(output: string): Readonly<{
 async function typecheck(
   repositoryRoot: string,
   paths: readonly string[],
+  sourceRoot: string = repositoryRoot,
 ): Promise<Readonly<{ ran: boolean; clean: boolean; detail: string | null }>> {
+  // The compiler is USF's, because USF owns the toolchain. The paths are the
+  // source repository's, because that is where the code being compiled lives.
+  // A product realisation therefore needs no toolchain of its own, which is
+  // what lets a product repository stay a plain checkout.
   const compiler = resolve(repositoryRoot, "node_modules", "typescript", "bin", "tsc");
   if (await stat(compiler).then(() => false, () => true)) {
     return Object.freeze({ ran: false, clean: false, detail: "the TypeScript compiler is not installed" });
@@ -139,7 +144,10 @@ async function typecheck(
     compiler, "--noEmit", "--strict", "--skipLibCheck",
     "--target", "es2024", "--module", "nodenext", "--moduleResolution", "nodenext",
     "--allowImportingTsExtensions", "--types", "node",
-    ...paths,
+    // Absolute, because the compiler runs from the USF root so that its own
+    // installed type definitions resolve, while the files it compiles live in
+    // whichever repository owns the realisation.
+    ...paths.map((path) => resolve(sourceRoot, path)),
   ], repositoryRoot, typecheckTimeoutMs);
   if (!result.launched) return Object.freeze({ ran: false, clean: false, detail: "the compiler could not be launched" });
   return Object.freeze({
@@ -158,9 +166,17 @@ export async function runCapabilityConformance(
   repositoryRoot: string,
   need: CapabilityImplementationNeed,
   authoritySnapshot: string,
+  /**
+   * Where the capability source lives. USF realises its own capabilities into
+   * itself, so this defaults to the USF root; a product profile realises into
+   * its own repository, and its evidence must be executed against that source
+   * rather than against USF. Satisfaction of a product requirement can then
+   * only ever be derived from that product's own evidence.
+   */
+  sourceRoot: string = repositoryRoot,
 ): Promise<ConformanceRun> {
-  const moduleBytes = await readFile(resolve(repositoryRoot, need.modulePath), "utf8").catch(() => undefined);
-  const testBytes = await readFile(resolve(repositoryRoot, need.conformancePath), "utf8").catch(() => undefined);
+  const moduleBytes = await readFile(resolve(sourceRoot, need.modulePath), "utf8").catch(() => undefined);
+  const testBytes = await readFile(resolve(sourceRoot, need.conformancePath), "utf8").catch(() => undefined);
   const base = {
     schema: "urn:usf:implementation-conformance-evidence:1" as const,
     version: 1 as const,
@@ -192,7 +208,7 @@ export async function runCapabilityConformance(
   // The module is compiled on its own as soon as it exists. A module that does
   // not compile is a fact worth recording before a test is ever written against
   // it: writing one would spend a dispatch describing code that cannot run.
-  const moduleOnly = await typecheck(repositoryRoot, [need.modulePath]);
+  const moduleOnly = await typecheck(repositoryRoot, [need.modulePath], sourceRoot);
   if (!moduleOnly.clean) {
     return Object.freeze({
       ...refused("the implementation module does not typecheck, so no behaviour can be observed"),
@@ -206,7 +222,7 @@ export async function runCapabilityConformance(
     });
   }
 
-  const compiled = await typecheck(repositoryRoot, [need.modulePath, need.conformancePath]);
+  const compiled = await typecheck(repositoryRoot, [need.modulePath, need.conformancePath], sourceRoot);
   if (!compiled.clean) {
     return Object.freeze({
       ...refused("the implementation does not typecheck, so no behaviour can be observed"),
@@ -214,19 +230,19 @@ export async function runCapabilityConformance(
     });
   }
 
-  const scratch = resolve(repositoryRoot, ".usf", "hermes", "conformance-scratch");
+  const scratch = resolve(sourceRoot, ".usf", "hermes", "conformance-scratch");
   await rm(scratch, { recursive: true, force: true });
   await mkdir(scratch, { recursive: true, mode: 0o700 });
   const command = Object.freeze(["node", "--test", "--test-isolation=none", need.conformancePath]);
   const launch = confinedNodeTestLaunch(
-    repositoryRoot, scratch,
+    sourceRoot, scratch,
     [resolve(repositoryRoot, "node_modules"), resolve(repositoryRoot, ".usf", "cache")],
     command,
   );
   if (launch === null) {
     return Object.freeze({ ...refused("the repository confinement is unavailable, so the test was not executed"), typecheck: compiled });
   }
-  const result = await runChild(launch.executable, launch.arguments, repositoryRoot, conformanceTimeoutMs);
+  const result = await runChild(launch.executable, launch.arguments, sourceRoot, conformanceTimeoutMs);
   await rm(scratch, { recursive: true, force: true });
   if (!result.launched) {
     return Object.freeze({ ...refused("the confined test process could not be launched"), typecheck: compiled, confined: true });

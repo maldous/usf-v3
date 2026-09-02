@@ -1,0 +1,155 @@
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:canonicalName> "analyze" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/features/analyze" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:objective> "The inspection journey: supply an artefact, see what it says, how it is built and whether it will scan." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:payloadclassification> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:qrdecoding> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:structuralinspection> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:analyze> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:boot> <urn:usf:predicate:canonicalName> "boot" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:boot> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/boot" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:boot> <urn:usf:predicate:objective> "Application bootstrap and advertising initialisation. It starts the product; it is not an outcome a user receives, and advertising is a revenue mechanism rather than a product capability." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:boot> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:not-claimed> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:boot> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:content> <urn:usf:predicate:canonicalName> "content" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:content> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/content" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:content> <urn:usf:predicate:objective> "Generated gallery content demonstrating the capability surface." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:content> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:content> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:content> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:gallery> <urn:usf:predicate:canonicalName> "gallery" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:gallery> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/features/gallery" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:gallery> <urn:usf:predicate:objective> "The demonstration journey: see what the product can produce and start from an example." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:gallery> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:gallery> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:gallery> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:canonicalName> "generator" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/features/generator" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:objective> "The primary creation journey: state a payload, customise it, watch the preview, then export or share." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:animatedartefact> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:artefactexport> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:brandoverlay> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:outputrendering> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:qrartwork> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:generator> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:canonicalName> "i18n" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/i18n" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:objective> "Language resolution, translated interface strings, translated static content, direction and script typography." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:localenegotiation> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:localetypography> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:i18n> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:lib> <urn:usf:predicate:canonicalName> "lib" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:lib> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/lib" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:lib> <urn:usf:predicate:objective> "Shared utilities with no independent user outcome. They are realisation detail beneath the surfaces that do have owners." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:lib> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:not-claimed> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:lib> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:onboarding> <urn:usf:predicate:canonicalName> "onboarding" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:onboarding> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/features/onboarding" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:onboarding> <urn:usf:predicate:objective> "The first-session journey: reach a usable artefact without instruction." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:onboarding> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:onboarding> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:onboarding> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:routing> <urn:usf:predicate:canonicalName> "routing" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:routing> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/routing" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:routing> <urn:usf:predicate:objective> "Resolution of a location to a surface and a page type, including the locale-qualified routes." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:routing> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:routing> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:routing> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:routing> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:search> <urn:usf:predicate:canonicalName> "search" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:search> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/search" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:search> <urn:usf:predicate:objective> "In-surface search over options and content, so a user can find a control by name rather than by hunting." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:search> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:search> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:accessibleinteraction> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:search> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:search> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:seo> <urn:usf:predicate:canonicalName> "seo" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:seo> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/seo" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:seo> <urn:usf:predicate:objective> "Canonical and alternate language references so each localised page is discoverable in its own language." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:seo> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:seo> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:seo> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:shell> <urn:usf:predicate:canonicalName> "shell" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:shell> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/shell" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:shell> <urn:usf:predicate:objective> "The frame every journey runs inside: navigation, header, layout and surface switching." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:shell> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:shell> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:accessibleinteraction> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:shell> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:shell> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:state> <urn:usf:predicate:canonicalName> "state" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:state> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/state" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:state> <urn:usf:predicate:objective> "The configuration store behind the creation journey, including payload serialisation for share representations." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:state> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:state> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:state> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:state> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:staticpages> <urn:usf:predicate:canonicalName> "staticpages" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:staticpages> <urn:usf:predicate:evidenceSourceLocator> "apps/web/src/pages" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:staticpages> <urn:usf:predicate:objective> "The reading journey: guide, examples, learn, about, privacy, terms and contact, rendered in the active locale." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:staticpages> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:staticpages> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:staticpages> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:product-ui-surface:staticpages> <urn:usf:predicate:type> <urn:usf:type:ProductUiSurface> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:apikeyspersonalaccesstokensuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:authenticationplatformuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:enduserprofileandpreferencesselfserviceuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:analyze> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:boot> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:content> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:gallery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:generator> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:i18n> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:lib> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:onboarding> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:routing> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:search> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:seo> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:shell> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:state> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:staticpages> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:nonClaim> "Core declared five UI requirements profile-supplied. This revision answers all five: two are supplied, two are deferred with the capability that would need them, and one pair is not claimed because anonymity makes them meaningless. Answering is not satisfying." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:nonClaim> "Every UI surface has an owning capability or an explicit disposition. A surface is evidence that a capability was realised for a user; it is never the capability itself, and no layout is modelled here." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:usf:predicate:canonicalName> "apidocsdeveloperportalsdksratelimitsuisemantics" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:usf:predicate:coversSubject> <urn:usf:delivery-facet:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:usf:predicate:foundationDependencyReason> "ANQR publishes and maintains its public HTTP and MCP documentation as part of its current claim, so it supplies this UI semantic model." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:usf:predicate:type> <urn:usf:type:ProfileUiSupply> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apikeyspersonalaccesstokensuisemantics> <urn:usf:predicate:canonicalName> "apikeyspersonalaccesstokensuisemantics" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apikeyspersonalaccesstokensuisemantics> <urn:usf:predicate:coversSubject> <urn:usf:delivery-facet:apikeyspersonalaccesstokensuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apikeyspersonalaccesstokensuisemantics> <urn:usf:predicate:foundationDependencyReason> "ANQR issues no keys or tokens today because its surfaces are anonymous. Deferred with authenticated service consumption." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apikeyspersonalaccesstokensuisemantics> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:deferred> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apikeyspersonalaccesstokensuisemantics> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:apikeyspersonalaccesstokensuisemantics> <urn:usf:predicate:type> <urn:usf:type:ProfileUiSupply> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:authenticationplatformuisemantics> <urn:usf:predicate:canonicalName> "authenticationplatformuisemantics" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:authenticationplatformuisemantics> <urn:usf:predicate:coversSubject> <urn:usf:delivery-facet:authenticationplatformuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:authenticationplatformuisemantics> <urn:usf:predicate:foundationDependencyReason> "ANQR authenticates nobody today. Deferred with authenticated service consumption, and deliberately not answered by pretending an anonymous surface has a sign-in." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:authenticationplatformuisemantics> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:deferred> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:authenticationplatformuisemantics> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:authenticationplatformuisemantics> <urn:usf:predicate:type> <urn:usf:type:ProfileUiSupply> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:enduserprofileandpreferencesselfserviceuisemantics> <urn:usf:predicate:canonicalName> "enduserprofileandpreferencesselfserviceuisemantics" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:enduserprofileandpreferencesselfserviceuisemantics> <urn:usf:predicate:coversSubject> <urn:usf:delivery-facet:enduserprofileandpreferencesselfserviceuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:enduserprofileandpreferencesselfserviceuisemantics> <urn:usf:predicate:foundationDependencyReason> "ANQR holds no end-user profile, because anonymous generation is a claimed capability. There is no profile to self-serve, and supplying this UI would contradict the anonymity claim." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:enduserprofileandpreferencesselfserviceuisemantics> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:not-claimed> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:enduserprofileandpreferencesselfserviceuisemantics> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:enduserprofileandpreferencesselfserviceuisemantics> <urn:usf:predicate:type> <urn:usf:type:ProfileUiSupply> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:usf:predicate:canonicalName> "notificationdeliveryandpreferencesandchannelsuisemantics" <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:usf:predicate:coversSubject> <urn:usf:delivery-facet:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:usf:predicate:foundationDependencyReason> "ANQR sends no notifications and has no addressable user to send them to. Not claimed rather than deferred, because it follows from anonymity rather than from sequencing." <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:not-claimed> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:usf:predicate:suppliedByCapability> <urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:graph:ui-ownership> .
+<urn:anqr:profile-ui-supply:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:usf:predicate:type> <urn:usf:type:ProfileUiSupply> <urn:anqr:graph:ui-ownership> .

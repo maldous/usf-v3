@@ -50,6 +50,7 @@ interface ParsedArguments {
   readonly dispatchLimit: number;
   readonly concurrency: number;
   readonly onlyCapability: string | null;
+  readonly manifest: string;
 }
 
 function parse(args: readonly string[]): ParsedArguments {
@@ -58,9 +59,9 @@ function parse(args: readonly string[]): ParsedArguments {
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
     if (option === "--apply") { apply = true; continue; }
-    if (!["--env-file", "--limit", "--concurrency", "--capability"].includes(option) || values.has(option)) {
+    if (!["--env-file", "--limit", "--concurrency", "--capability", "--manifest"].includes(option) || values.has(option)) {
       throw new UsfError("HERMES_IMPLEMENT_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT,
-        "Implement accepts only --apply, --env-file, --limit, --concurrency and --capability.", { option });
+        "Implement accepts only --apply, --env-file, --limit, --concurrency, --capability and --manifest.", { option });
     }
     const value = args[++index];
     if (value === undefined || value.length === 0 || value.startsWith("--")) {
@@ -80,6 +81,10 @@ function parse(args: readonly string[]): ParsedArguments {
     apply, envFile: values.get("--env-file") ?? null,
     dispatchLimit: Number(limitText), concurrency: Number(concurrencyText),
     onlyCapability: values.get("--capability") ?? null,
+    // Which profile's capabilities form the frontier. USF's own delivery
+    // authority is the default; a product profile selects its own manifest, and
+    // the two never mix because a manifest declares exactly one convention.
+    manifest: values.get("--manifest") ?? deliveryManifest,
   });
 }
 
@@ -175,10 +180,44 @@ interface Accepted {
   readonly preimageDigest: string | null;
 }
 
+/**
+ * Resolve the on-disk root of a declared product repository.
+ *
+ * The graph declares a product repository by identity and layout; where it sits
+ * on this machine is ignored operator state, exactly as credentials are. The
+ * root is authenticated before it is returned, so realising into a product can
+ * never become a way to write outside a declared, verified checkout.
+ */
+async function resolveProductRealisationRoot(
+  repositoryRoot: string,
+  graph: SemanticGraph,
+  repository: string,
+): Promise<string> {
+  const { authenticateProductRepositoryRoot, readProductRepositories } =
+    await import("../core/product-repository.ts");
+  const declared = readProductRepositories(graph).find((entry) => entry.repository === repository);
+  if (declared === undefined) {
+    throw new UsfError("HERMES_IMPLEMENT_REPOSITORY_UNKNOWN", exitCodes.DOMAIN_FAILURE,
+      "The implementation convention names a product repository the selected manifest does not declare.",
+      { repository });
+  }
+  return authenticateProductRepositoryRoot(repositoryRoot, declared);
+}
+
+function localName(iri: string): string {
+  return iri.split(":").slice(-2, -1)[0] ?? iri.split(":").pop() ?? iri;
+}
+
 export async function implementCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const parsed = parse(args);
-  const graph: SemanticGraph = loadSemanticGraph(repositoryRoot, deliveryManifest);
+  const graph: SemanticGraph = loadSemanticGraph(repositoryRoot, parsed.manifest);
   const convention = readImplementationConvention(graph);
+  // Paths the convention derives are relative to the repository that owns the
+  // realisation, which is USF itself unless the convention names a product
+  // repository. Resolving it here keeps every downstream read, preimage and
+  // write on the same root rather than silently mixing two repositories.
+  const realisationRoot = convention.productRepository === null ? repositoryRoot
+    : await resolveProductRealisationRoot(repositoryRoot, graph, convention.productRepository);
   const conformanceRule = readConformanceRule(graph);
   const policyDigest = canonicalDigest(graph.graphDigests ?? {});
   const allNeeds = deriveCapabilityImplementationNeeds(graph, convention);
@@ -189,7 +228,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       "No capability with outstanding implementation requirements carries that canonical name.", { capability: parsed.onlyCapability });
   }
 
-  const present = await presentPaths(repositoryRoot, needs);
+  const present = await presentPaths(realisationRoot, needs);
 
   // Conformance execution is independent of dispatch: any capability whose
   // module and test both exist but whose behaviour has not been observed under
@@ -259,7 +298,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   // dispatched, so it always runs before anything is sent to a provider.
   const conformanceResults: Array<Readonly<Record<string, unknown>>> = [];
   for (const need of awaitingCheck.slice(0, maximumConformanceRuns)) {
-    const run = await runCapabilityConformance(repositoryRoot, need, policyDigest);
+    const run = await runCapabilityConformance(repositoryRoot, need, policyDigest, realisationRoot);
     const path = await recordConformanceRun(repositoryRoot, run);
     conformanceResults.push(Object.freeze({
       capability: need.canonicalName, evidencePath: path, executed: run.executed,
@@ -303,9 +342,9 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   for (const unit of selected) {
     // The artefact being rewritten is shown whole; the module a test binds to
     // is shown whole too, because a test cannot bind to a surface it cannot see.
-    const existingTarget = await inspectRepositoryFile(repositoryRoot, unit.targetPath, maximumRewriteBytes);
+    const existingTarget = await inspectRepositoryFile(realisationRoot, unit.targetPath, maximumRewriteBytes);
     const moduleSource = unit.stage === "conformance"
-      ? await inspectRepositoryFile(repositoryRoot, unit.need.modulePath, maximumRewriteBytes) : null;
+      ? await inspectRepositoryFile(realisationRoot, unit.need.modulePath, maximumRewriteBytes) : null;
     if (unit.stage === "conformance" && moduleSource === null) continue;
     const specifier = importSpecifierFor(unit.need);
     const priorFailure = candidateFailures[unit.need.capability];
@@ -319,7 +358,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       ? deriveImplementationPrompt(unit.need, convention, Object.freeze({
           existingTarget,
           moduleSource: null,
-          siblingModule: await siblingModule(repositoryRoot, needs, present, unit.need.modulePath),
+          siblingModule: await siblingModule(realisationRoot, needs, present, unit.need.modulePath),
         }), carried)
       : deriveConformancePrompt(unit.need, moduleSource!, specifier, unit.repairs, existingTarget);
     // Existing source is part of identity: a changed module must not reuse a
@@ -342,7 +381,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
         await recordSemanticReuse(repositoryRoot, lookup.entry);
         accepted.push(Object.freeze({
           path: unit.targetPath, content: checked.content,
-          preimageDigest: await preimageDigestOf(repositoryRoot, unit.targetPath),
+          preimageDigest: await preimageDigestOf(realisationRoot, unit.targetPath),
         }));
         outcomes.push(Object.freeze({ unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "reused" }));
         continue;
@@ -424,7 +463,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       await storeSemanticResult(repositoryRoot, identity, checked.content, evidenceDigest);
       accepted.push(Object.freeze({
         path: unit.targetPath, content: checked.content,
-        preimageDigest: await preimageDigestOf(repositoryRoot, unit.targetPath),
+        preimageDigest: await preimageDigestOf(realisationRoot, unit.targetPath),
       }));
       outcomes.push(Object.freeze({
         unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName, outcome: "accepted",
@@ -455,7 +494,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     const byPath = new Map(accepted.map((entry) => [entry.path, entry] as const));
     const proposal = Object.freeze({
       schema: "urn:usf:semantic-transaction-proposal:1" as const,
-      intent: `Land ${byPath.size} independent ANQR implementation results derived from outstanding facet requirements.`,
+      intent: `Land ${byPath.size} independent implementation results derived from outstanding facet requirements of ${convention.convention}.`,
       declaredAffectedPaths: Object.freeze([...byPath.keys()].sort()),
       operations: Object.freeze([...byPath.values()]
         .sort((left, right) => left.path.localeCompare(right.path))
@@ -465,7 +504,12 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     });
     const directory = resolve(repositoryRoot, ".usf", "proposals");
     await mkdir(directory, { recursive: true, mode: 0o700 });
-    proposalPath = ".usf/proposals/implementation-realisation.json";
+    // One proposal per owning convention. A product realisation and USF's own
+    // must never overwrite each other's pending results, and the reader needs
+    // to know which repository the paths inside are relative to.
+    proposalPath = convention.productRepository === null
+      ? ".usf/proposals/implementation-realisation.json"
+      : `.usf/proposals/implementation-realisation-${localName(convention.productRepository)}.json`;
     await writeFile(resolve(repositoryRoot, proposalPath), `${JSON.stringify(proposal, null, 2)}\n`, { mode: 0o600 });
   }
 
@@ -474,6 +518,8 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       ...plan,
       conformanceRuns: Object.freeze(conformanceResults),
       repairExhaustedCapabilities: Object.freeze(exhausted.map((need) => need.canonicalName)),
+      targetRepository: convention.productRepository,
+      realisationRoot: convention.productRepository === null ? "." : realisationRoot,
       dispatchedUnits: pending.length,
       modelInvocations: dispatched,
       cacheHits,

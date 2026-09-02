@@ -34,6 +34,8 @@ function localName(iri: string): string {
 export interface ImplementationConvention {
   readonly convention: string;
   readonly realisationRoot: string;
+  /** Set when the owning repository is a product repository resolved by locator. */
+  readonly productRepository: string | null;
   readonly modulePathPattern: string;
   readonly conformancePathPattern: string;
   readonly pathDerivation: string;
@@ -57,7 +59,17 @@ export function readImplementationConvention(graph: SemanticGraph): Implementati
   }
   const convention = subjects[0]!;
   const repository = one(graph, convention, "ownedByRepository");
-  const realisationRoot = repository === null ? null : one(graph, repository, "realisationRoot");
+  // A convention may be owned by USF itself, which declares its realisation
+  // root in the graph, or by a product repository, which deliberately does not:
+  // where a product sits on a given machine is operator state, so the graph
+  // names the repository by identity and the root is resolved from the locator
+  // at execution time. Both cases produce repository-relative paths; they
+  // differ only in which repository those paths are relative to.
+  const productRepository = repository !== null
+    && one(graph, repository, "type") === "urn:usf:type:ProductRepository"
+    ? repository : null;
+  const realisationRoot = repository === null ? null
+    : productRepository !== null ? "." : one(graph, repository, "realisationRoot");
   const moduleRule = one(graph, convention, "implementationPathRule");
   const conformanceRule = one(graph, convention, "conformancePathRule");
   const modulePathPattern = moduleRule === null ? null : one(graph, moduleRule, "pathPattern");
@@ -68,7 +80,7 @@ export function readImplementationConvention(graph: SemanticGraph): Implementati
       { realisationRoot, modulePathPattern, conformancePathPattern });
   }
   return Object.freeze({
-    convention, realisationRoot, modulePathPattern, conformancePathPattern,
+    convention, realisationRoot, productRepository, modulePathPattern, conformancePathPattern,
     pathDerivation: one(graph, convention, "pathDerivation") ?? "",
     cohesionRule: one(graph, convention, "cohesionRule") ?? "",
     dependencyDerivationRule: one(graph, convention, "dependencyDerivationRule") ?? "",
@@ -140,12 +152,18 @@ export function deriveCapabilityImplementationNeeds(
   const domainOf = new Map<string, string>();
   const runtimeDependencies = new Map<string, string[]>();
   const capabilityName = new Map<string, string>();
+  // A capability is recognised by its declared type, never by the namespace its
+  // IRI happens to sit in. Keying this on "urn:usf:delivery-capability:" made
+  // every capability a product profile declares invisible to the frontier while
+  // its facets, contract and paths were all perfectly well formed, so the
+  // profile mechanism could describe work that could never be selected.
+  const declaredCapabilities = new Set(subjectsOfType(graph, "urn:usf:type:DeliveryCapability"));
   for (const quad of graph.quads) {
     if (quad.predicate === `${P}inDomain`) domainOf.set(quad.subject, quad.object);
     if (quad.predicate === `${P}productRuntimeDependency`) {
       runtimeDependencies.set(quad.subject, [...(runtimeDependencies.get(quad.subject) ?? []), quad.object]);
     }
-    if (quad.predicate === `${P}canonicalName` && quad.subject.startsWith("urn:usf:delivery-capability:")) {
+    if (quad.predicate === `${P}canonicalName` && declaredCapabilities.has(quad.subject)) {
       capabilityName.set(quad.subject, quad.object);
     }
   }

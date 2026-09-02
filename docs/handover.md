@@ -1,6 +1,195 @@
 # USF V3 handover
 
-## Current live boundary — product implementation realization is wired and executable
+## Current live boundary — ANQR has a product semantic denominator, and Hermes realises it into the ANQR repository
+
+Prepared 2026-09-02. Read current Git and remote state rather than trusting any
+identifier here.
+
+Branch `v3-authority-transition`. The Core/Profile mechanism was proved but
+ANQR had no semantics: `urn:anqr:profile-revision:1` was an immutable *empty*
+revision whose own nonClaim said it declared no capability, facet or
+requirement. USF could realise USF, and nothing could realise ANQR.
+
+That gap is now closed. `urn:anqr:profile-revision:2` supersedes revision 1 —
+revision 1 is untouched and still declares nothing, so no identifier changed
+meaning.
+
+### What the denominator contains
+
+44 capabilities across 10 domains, 180 facets, landed through `usf transact`
+(append-only, zero owned integrity violations). Each capability states
+`userOutcome`, `targetUser`, `businessValue`, `applicableInterface`,
+`applicableRuntime`, `capabilityInput`, `observableOutput`,
+`productConstraint`, `satisfactionCondition`, `productScopeDisposition` and
+`justifiedByEvidenceSource`.
+
+Domains: creation, payload, presentation, analysis, distribution,
+**localisation**, experience, trust, quality, enterprise.
+
+Localisation is a domain rather than a feature because the evidence says so:
+89 interface locales at 1 676 keys, 87 locales × 9 static page types at 22 MB,
+declared direction per locale, a per-script font map, an alias-driven
+negotiation order, hreflang alternates across the whole set, and a *separate
+public translation repository* (`github.com/maldous/anqr-i18n`) with a
+browser-based contribution route published on all 87 localised pages.
+
+Dispositions are real, not decorative: 39 capabilities are `current` or
+`experimental`, and 5 are `deferred`/`reserved` (mobile application,
+authenticated service consumption, self-hosted operation, policy boundary
+control, platform parity). Payment payload representation is `experimental`:
+21 schemes are declared, and the profile states that declared breadth is
+evidence of intent rather than proof any scheme conforms to its published
+standard.
+
+Every facet carries `satisfactionStatus: not-assessed`. The profile claims
+outcomes; it asserts no satisfaction.
+
+### What it deliberately excludes
+
+14 `ProductExclusion` records, each with its reason. Eight are the old
+Harness/Symphony concerns — provider routing, worker scheduling, autonomous
+issue handling, worktree orchestration, evidence admission, integration
+orchestration, self-feeding loops, host supervision — recorded as superseded by
+USF and Hermes rather than as ANQR capabilities. Four are QR implementation
+mathematics: Reed-Solomon and finite-field arithmetic, matrix placement, mask
+scoring, bit packing. Two are boundary claims ANQR must never make: validating
+what a payload refers to, and assessing the safety of a payload destination.
+
+The contract states observable invariants — an artefact decodes to the payload
+requested; customisation stays inside a declared scan-safety acceptance — and
+prescribes no algorithm for either.
+
+### The V1 finding
+
+The directive expected recoverable V1 ANQR semantics. There are none.
+`grep -ril anqr` over the whole pinned USF V1 checkout at `028a9f96`, and over
+V2, returns **zero** matches. V1's 68 capabilities are USF's own platform
+semantics and are already in Core, exactly as `semantic-recovery-sources.json`
+classifies them (`historical-usf-repository`). Recorded as
+`urn:anqr:evidence-source:usf-v1-absence` so the absence is a finding rather
+than an omission. The retained V1 value ANQR consumes is the **port set**, as
+foundation, not as re-expressed product semantics.
+
+### Foundation reuse is resource-scoped
+
+`urn:anqr:profile-foundation-binding:2` binds `urn:usf:foundation-revision:v3:1`
+through the `v3-delivery` authority manifest **named by path, never imported**.
+11 seeds expand to a 22-resource closure: 7 `CapabilityPort`s the product
+actually needs (apiruntime, observabilitysink, cacheprovider, secretresolver,
+configlayerprovider, guardrailport, objectstore) plus the core surface policy,
+implementation convention and conformance rule.
+
+Ten `ProfileFoundationDependency` records each state the product reason that
+requires the port. Three are `deferred` (identityprovider,
+backuprestoreprovider, resourcelifecycleport) and are declared but **not
+seeded** — deferring a capability defers its infrastructure. No provider
+technology appears as an ANQR capability, and a test enforces that.
+
+Three injected-and-reverted proofs:
+
+| injection | result |
+| --- | --- |
+| `capability-port:cacheprovider` (inside closure) | `stale`, naming exactly that resource with recorded vs current digests |
+| `capability-port:notificationprovider` (outside closure) | `current` |
+| `pnpm-lock.yaml` (external fact) | `current`, reporting `externalFactDrift: [dependency-lock]` |
+
+### Hermes selects from the ANQR profile and lands in the ANQR repository
+
+`usf hermes implement --manifest graph/products/anqr/manifest.json` projects
+**39 capabilities, 171 requirements, 78 units** through
+`urn:anqr:capability-implementation-convention:v1:1`. The Core frontier is
+unchanged at 64 capabilities and 553 requirements through its own convention.
+The two share no capability.
+
+Deferred and reserved capabilities produce **no work at all**, because their
+facets are `NOT_APPLICABLE`. An aspiration cannot be dispatched.
+
+One bounded proof unit was carried end to end:
+
+1. `localenegotiation` implementation unit → `groq/compound` via
+   `vercel-ai-sdk`, 2 419 output tokens;
+2. landed by `usf transact --repository urn:anqr:repository:main` at
+   `src/capabilities/localisation/localenegotiation.ts` **in the ANQR
+   repository**, resolved through the operator locator (`.usf/repositories.json`
+   maps `anqr-main` to `../anqr`). USF Core has no `localisation` capability
+   directory at all;
+3. conformance unit → a behavioural test at
+   `tests/conformance/localisation/localenegotiation.conformance.test.ts`,
+   also in the ANQR repository;
+4. executed inside the repository confinement against ANQR source:
+   **4 facets executed, 4 passed, 0 unobserved**, exit code 0, `confined: true`.
+
+The evidence record names `urn:anqr:delivery-capability:localenegotiation` and
+one subtest per ANQR facet. ANQR satisfaction is derived from ANQR evidence.
+
+### Three generic Core improvements this required
+
+None is ANQR-specific and all are covered by tests:
+
+1. **`deriveCapabilityImplementationNeeds` keyed capability names on the
+   `urn:usf:delivery-capability:` IRI prefix.** Any product profile's
+   capabilities were therefore invisible to the frontier while their facets,
+   contract and paths were perfectly well formed — the profile mechanism could
+   describe work that could never be selected. Now keyed on the declared type.
+2. **`readImplementationConvention` required `realisationRoot` on the owning
+   repository.** A `ProductRepository` deliberately has none, because where it
+   sits is operator state. A convention owned by one now resolves its root
+   through the locator and authenticates it before any write.
+3. **`hermes implement` was hard-bound to `graph/manifests/v3-delivery.json`.**
+   It now takes `--manifest`, and the conformance runner takes a source root so
+   product evidence executes against product source while the compiler stays
+   USF's — which is why a product repository can remain a plain checkout with no
+   toolchain of its own.
+
+### Isolation regression found and fixed mid-flight
+
+Making the product-profile vocabulary layer import `v3-convention.json` pulled
+`v3-execution` → `self-host` behind it, so the ANQR overlay absorbed five USF
+self-host contracts and moved the self-host profile's composed scoped digest.
+`tests/unit/graph/product-overlays.test.ts` caught it as a computed-vs-computed
+difference, not a stale pin. The vocabulary layer now imports nothing: the
+`undeclared-type` invariant is enforced over the transacting corpus, not over a
+product overlay, so a product overlay never needed Core's convention source.
+All 8 overlay tests pass, including *a versioned profile selects an exact
+closure and unrelated product overlays do not stale it*.
+
+### Where the semantics live
+
+| path | contains |
+| --- | --- |
+| `graph/products/anqr/profile-revision-2.nq` | revision, binding, 10 domains, 44 capabilities, 180 facets, 14 exclusions, 18 evidence sources |
+| `graph/products/anqr/opportunities.nq` | 16 product opportunities, every one `reserved` |
+| `graph/products/anqr/ui-ownership.nq` | 14 UI surfaces owned or dispositioned; all 5 Core `PROFILE_SUPPLIED` UI facets answered |
+| `graph/products/anqr/realisation-convention.nq` | ANQR's own convention, path rules and conformance rule |
+| `graph/product-profile-vocabulary.nq` | generic Core grammar: 5 types, 29 predicates, 6 scope dispositions. Names no product |
+| `tests/integration/anqr-profile-isolation.test.ts` | 13 tests over isolation, closure, dispositions and exclusions |
+
+### Opportunities are recorded, not scoped
+
+16 opportunities, each `reserved`, each carrying the evidence that already
+exists, the new semantic requirement it would need, the foundation ports that
+would make it cheap, the additional service commitment it implies, and its
+value. Two stand out as needing no new capability: agent-native generation
+(MCP is already served) and localisation as a contributed platform asset. The
+most commonly paid-for QR feature in the market — managed dynamic destinations
+— is recorded honestly as absent, and as implying a redirect service whose
+uptime becomes a customer promise.
+
+### Gap register
+
+- `usf hermes start` and `run` still operate the Core manifest only;
+  `--manifest` was added to `implement`, not yet threaded through the
+  supervisor, so unattended ANQR BAU is not yet available.
+- The ANQR repository has no `node_modules`; the conformance cage works because
+  ANQR modules are self-contained by convention. A capability needing a runtime
+  dependency would need that boundary reconsidered.
+- 38 of the 39 ready ANQR units are undispatched. Only `localenegotiation` has
+  been carried end to end.
+- `typecheckCandidateModule` still compiles candidates in USF's scratch. That is
+  sound while the output rule holds the module to the Node standard library, and
+  it is an assumption rather than an enforced boundary.
+
+## Previous boundary — product implementation realization is wired and executable
 
 Prepared 2026-09-02. Read current Git and remote state rather than trusting any
 identifier here.

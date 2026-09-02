@@ -1,0 +1,76 @@
+<urn:usf:predicate:additionalServiceRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:applicableInterface> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:applicableRuntime> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:authorisesRealisation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:businessValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:capabilityInput> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:coversSubject> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:declaresExclusion> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:declaresOpportunity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:declaresUiSupply> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:declaresUiSurface> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:dispositionMeaning> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:enablingFoundationCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:evidenceSourceKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:evidenceSourceLocator> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:excludedConcern> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:exclusionReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:foundationDependencyReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:justifiedByEvidenceSource> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:newSemanticRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:observableOutput> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:opportunityEvidence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:opportunityValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:productConstraint> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:productScopeDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:requiresFoundationPort> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:satisfactionCondition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:supersedesProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:suppliedByCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:targetProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:targetUser> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:userOutcome> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-profile-vocabulary-policy:v1:1> <urn:usf:predicate:canonicalName> "v1" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-profile-vocabulary-policy:v1:1> <urn:usf:predicate:nonClaim> "A disposition is a stance, never evidence. Marking a capability current does not assert that it is satisfied; satisfaction is decided from executed evidence alone." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-profile-vocabulary-policy:v1:1> <urn:usf:predicate:nonClaim> "This vocabulary is Core grammar and names no product. It declares no ANQR capability and is usable by any profile realised against this foundation." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-profile-vocabulary-policy:v1:1> <urn:usf:predicate:objective> "Supply the grammar a product profile needs to state why a capability exists, who it is for, what it observably produces, what would satisfy it and whether the product claims it today." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-profile-vocabulary-policy:v1:1> <urn:usf:predicate:ownerAuthorityRule> "Core owns the grammar for product meaning; a profile owns every instance stated in it. Core declares no capability of its own here." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-profile-vocabulary-policy:v1:1> <urn:usf:predicate:type> <urn:usf:type:CoreSurfacePolicy> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:current> <urn:usf:predicate:authorisesRealisation> "true" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:current> <urn:usf:predicate:canonicalName> "current" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:current> <urn:usf:predicate:dispositionMeaning> "Required by the profile now. The product claims it, and its satisfaction condition is answerable from current evidence." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:current> <urn:usf:predicate:type> <urn:usf:type:ProductScopeDisposition> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:deferred> <urn:usf:predicate:authorisesRealisation> "false" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:deferred> <urn:usf:predicate:canonicalName> "deferred" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:deferred> <urn:usf:predicate:dispositionMeaning> "Real, applicable and deliberately postponed beyond this profile revision." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:deferred> <urn:usf:predicate:type> <urn:usf:type:ProductScopeDisposition> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:experimental> <urn:usf:predicate:authorisesRealisation> "false" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:experimental> <urn:usf:predicate:canonicalName> "experimental" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:experimental> <urn:usf:predicate:dispositionMeaning> "Present in some form but not yet a claim. Evidence exists and is insufficient to make it required." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:experimental> <urn:usf:predicate:type> <urn:usf:type:ProductScopeDisposition> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:not-claimed> <urn:usf:predicate:authorisesRealisation> "false" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:not-claimed> <urn:usf:predicate:canonicalName> "not-claimed" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:not-claimed> <urn:usf:predicate:dispositionMeaning> "Explicitly excluded from the profile claim. Naming it prevents an aspiration being read as delivery." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:not-claimed> <urn:usf:predicate:type> <urn:usf:type:ProductScopeDisposition> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:planned> <urn:usf:predicate:authorisesRealisation> "true" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:planned> <urn:usf:predicate:canonicalName> "planned" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:planned> <urn:usf:predicate:dispositionMeaning> "Intended for this profile and not yet realised. It is a commitment, not a claim of delivery." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:planned> <urn:usf:predicate:type> <urn:usf:type:ProductScopeDisposition> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:reserved> <urn:usf:predicate:authorisesRealisation> "false" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:reserved> <urn:usf:predicate:canonicalName> "reserved" <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:reserved> <urn:usf:predicate:dispositionMeaning> "The profile reserves the concept so a later revision can claim it without renaming. Nothing is promised." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:product-scope-disposition:reserved> <urn:usf:predicate:type> <urn:usf:type:ProductScopeDisposition> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:EvidenceSource> <urn:usf:predicate:objective> "One bounded source of product evidence a semantic statement was justified against." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:EvidenceSource> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProductExclusion> <urn:usf:predicate:objective> "A concern a profile explicitly declines to own, with its reason." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProductExclusion> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProductOpportunity> <urn:usf:predicate:objective> "A credible product opportunity recorded without being promoted into required scope." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProductOpportunity> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProductScopeDisposition> <urn:usf:predicate:objective> "A named product-scope stance a profile may take on a capability." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProductScopeDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProductUiSurface> <urn:usf:predicate:objective> "One rendered surface of a product, bound to the capabilities it realises for a user, or explicitly dispositioned as not a product capability." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProductUiSurface> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProfileFoundationDependency> <urn:usf:predicate:objective> "One resource-scoped dependency from a product profile onto a foundation port, with the product reason that requires it." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProfileFoundationDependency> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProfileUiSupply> <urn:usf:predicate:objective> "A profile's answer to a UI requirement the foundation declared profile-supplied." <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:ProfileUiSupply> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .

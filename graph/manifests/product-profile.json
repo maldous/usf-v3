@@ -1,0 +1,14 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [],
+  "sources": [
+    {
+      "path": "graph/product-profile-vocabulary.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:product-profile-vocabulary",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

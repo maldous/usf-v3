@@ -1,0 +1,259 @@
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:additionalServiceRequirement> "None beyond the delivered surface." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:canonicalName> "agent-native-generation" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:newSemanticRequirement> "Agent-facing description of payload kinds so an agent can select one without guessing." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:opportunityEvidence> "Two MCP tools, a prompt and a capabilities resource are already published and served." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:opportunityValue> "ANQR already serves agents through MCP. Being the default QR tool inside assistants is a category position nobody else is contesting yet." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:targetProfileRevision> <urn:anqr:profile-revision:2> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:title> "MCP and agent-native QR generation" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:agent-native-generation> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:additionalServiceRequirement> "Aggregate traffic measurement that retains no payload and no personal identifier." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:canonicalName> "anonymous-global-acquisition" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:analyticseventstore> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:newSemanticRequirement> "Attribution of an arriving user to the locale and page that brought them, without identifying the user." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:opportunityEvidence> "Anonymous generation, 89 interface locales and 87 locales of static content are already delivered." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:opportunityEvidence> "Multilingual discoverability already publishes alternates across the declared locale set." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:opportunityValue> "The free, anonymous, fully localised generator is the top of every funnel ANQR could build. It is already delivered, so the opportunity is to treat it deliberately as acquisition rather than as the whole product." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:targetProfileRevision> <urn:anqr:profile-revision:2> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:title> "Anonymous global QR creation as the acquisition surface" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:additionalServiceRequirement> "Event ingestion and aggregation, with a privacy posture stated before any event is collected." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:canonicalName> "campaign-scan-analytics" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:analyticseventstore> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:eventbus> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:tenantscopedrepository> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:newSemanticRequirement> "Scan events attributed to an artefact, aggregated without identifying the scanner." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:opportunityEvidence> "No scan-side evidence exists today. This depends entirely on managed destinations existing first." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:opportunityValue> "Scan analytics is what makes a dynamic QR worth a subscription rather than a one-off fee." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:title> "Campaign and scan analytics" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:campaign-scan-analytics> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:additionalServiceRequirement> "Authentication, per-consumer rate limiting and usage metering." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:canonicalName> "enterprise-generation-api" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:identityprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:tenantscopedrepository> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:newSemanticRequirement> "Per-consumer identity, quota and usage accounting." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:opportunityEvidence> "The public HTTP and MCP surfaces are delivered and already support programmatic use." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:opportunityValue> "The API exists and is anonymous. Adding identity and metering converts a cost centre into revenue without new product capability." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:title> "Metered enterprise generation API" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:enterprise-generation-api> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:additionalServiceRequirement> "Durable persistence and a redirect service whose uptime becomes a customer promise, which is a materially larger operational commitment than generation." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:canonicalName> "managed-dynamic-destinations" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:cacheprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:tenantscopedrepository> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:newSemanticRequirement> "A durable mapping from a stable artefact URL to a mutable destination." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:newSemanticRequirement> "Redirect serving with its own availability commitment." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:opportunityEvidence> "Short link and UTM link payload kinds already exist, which is the shape of the feature without the service behind it." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:opportunityValue> "A dynamic QR whose destination can change after printing is the single most commonly paid-for QR feature in the market, and ANQR does not offer it." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:title> "Managed dynamic QR destinations" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:additionalServiceRequirement> "None. The point of the opportunity is that it needs no service." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:canonicalName> "offline-mobile-generation" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:mobileapplication> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:newSemanticRequirement> "On-device generation with no network dependency, and parity with the web surface." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:opportunityEvidence> "Android and iOS repository roots exist and are explicitly not evidence of delivery." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:opportunityEvidence> "Mobile application delivery is a deferred capability in this revision." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:opportunityValue> "Generation entirely on device is the strongest possible answer to payload confidentiality, and it is a claim no hosted competitor can make." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:title> "Mobile and offline private generation" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:offline-mobile-generation> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:additionalServiceRequirement> "Per-organisation storage, identity and policy evaluation." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:canonicalName> "organisation-brand-templates" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:brandoverlay> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:policyboundarycontrol> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:configlayerprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:guardrailport> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:identityprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:tenantscopedrepository> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:newSemanticRequirement> "A template that fixes some options and leaves others free." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:newSemanticRequirement> "Enforcement that a produced artefact conformed to its template." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:opportunityEvidence> "The full customisation surface exists, and share configurations already carry a complete reproducible configuration." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:opportunityValue> "An organisation that can constrain what its people produce buys seats rather than a subscription. It also makes the policy boundary capability worth building." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:title> "Brand templates and organisation-controlled production" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:organisation-brand-templates> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:additionalServiceRequirement> "Versioned per-scheme rule sets that can be updated without redeploying the product." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:canonicalName> "payment-qr-validation-service" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:payloadclassification> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:configlayerprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:newSemanticRequirement> "A verdict distinguishing lexically well-formed from standard-conformant." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:newSemanticRequirement> "Per-scheme conformance vectors derived from each published standard." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:opportunityEvidence> "21 payment payload kinds are already declared in the generation contract." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:opportunityEvidence> "Classification already recognises several payment schemes on the analysis side." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:opportunityValue> "No general QR tool covers 16 national payment schemes. Validation against published standards is worth more than generation, and merchants will pay for the assurance rather than the image." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:title> "Payment QR generation and validation across national standards" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:payment-qr-validation-service> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:additionalServiceRequirement> "Deployment, upgrade, rollback and backup, all reused from the foundation rather than restated." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:canonicalName> "private-deployment" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:selfhostedoperation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:backuprestoreprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:configlayerprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:resourcelifecycleport> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:secretresolver> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:newSemanticRequirement> "A deployable unit, and a supported upgrade and rollback path." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:opportunityEvidence> "Payload confidentiality is already a declared capability with explicit constraints." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:opportunityValue> "Payload confidentiality is the main enterprise objection. Self-hosting converts that objection into a licence." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:title> "Private and self-hosted deployment" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:private-deployment> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:additionalServiceRequirement> "Durable catalogue storage and batch production." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:canonicalName> "product-identity-supply-chain" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:objectstore> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:tenantscopedrepository> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:newSemanticRequirement> "Bulk generation for a product catalogue." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:newSemanticRequirement> "Validation of Digital Link structure against the GS1 convention." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:opportunityEvidence> "The gs1_digital_link payload kind is already declared." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:opportunityValue> "Product identity moves QR from marketing into compliance, where budgets are larger and switching is rarer." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:title> "GS1 product identity and supply-chain use" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:product-identity-supply-chain> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:additionalServiceRequirement> "Durable per-customer storage of brand configurations." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:additionalServiceRequirement> "Entitlement evaluation at the point of generation." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:canonicalName> "professional-branded-generation" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:animatedartefact> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:brandoverlay> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:qrartwork> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:identityprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:objectstore> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:tenantscopedrepository> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:newSemanticRequirement> "A saved brand configuration that can be reapplied across artefacts." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:newSemanticRequirement> "An entitlement boundary distinguishing free from professional output." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:opportunityEvidence> "18 overlay modes, watermarks, artwork rendering and animation are already in the generation contract." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:opportunityEvidence> "Scan-safety acceptance already exists to make heavy customisation trustworthy." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:opportunityValue> "Branded and animated artefacts are the clearest paid tier in this category, and ANQR already produces both. The opportunity is packaging, not capability." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:title> "Professional branded and animated generation" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:professional-branded-generation> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:additionalServiceRequirement> "Bounded upload handling, since accepting user images is a wider attack surface than accepting text." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:canonicalName> "qr-analysis-api" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:payloadclassification> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:qrdecoding> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:structuralinspection> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:guardrailport> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:newSemanticRequirement> "An analysis route on the public HTTP surface, with an image upload boundary." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:opportunityEvidence> "A public HTTP surface is already delivered for generation." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:opportunityEvidence> "Decode, structural inspection and classification contracts already exist." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:opportunityValue> "Decoding and structural inspection have standalone value to developers who generate QR elsewhere. It reaches a market that would never use ANQR as a generator." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:title> "QR analysis and inspection API" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:qr-analysis-api> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:additionalServiceRequirement> "Per-user persistence, which also introduces the first identity requirement and must not withdraw the anonymous route." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:canonicalName> "reusable-asset-library" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:artefactexport> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:identityprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:objectstore> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:tenantscopedrepository> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:newSemanticRequirement> "Durable per-user storage of configurations and produced artefacts." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:opportunityEvidence> "Share configurations already reconstruct a complete artefact, so the library is storage over an existing representation." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:opportunityValue> "A user who stores artefacts in ANQR returns to ANQR. It is the cheapest available retention mechanism." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:title> "Reusable QR asset libraries" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:reusable-asset-library> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:additionalServiceRequirement> "Durable evidence retention with an audit trail, since a certificate is a claim someone may later dispute." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:canonicalName> "scan-safety-certification" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:structuralinspection> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:auditledger> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:identityprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:objectstore> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:newSemanticRequirement> "A durable, referenceable certification record for an artefact at a point in time." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:newSemanticRequirement> "A published acceptance definition a third party can rely on." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:opportunityEvidence> "Scan-safety validation and unsafe-customisation diagnosis are already declared capabilities." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:opportunityEvidence> "Structural inspection already measures quiet zone, contrast, geometry and capacity." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:opportunityValue> "A brand printing a million artefacts wants a defensible statement that they will scan. ANQR already measures this and nobody sells it. It is the highest-margin use of an existing capability." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:title> "Scan-safety certification as a service" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:scan-safety-certification> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:additionalServiceRequirement> "Coverage computation over the translation assets; no new runtime dependency in the product itself." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:canonicalName> "translation-community-platform" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:objectstore> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:newSemanticRequirement> "Automated preservation checks for placeholder and link tokens on a proposal." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:newSemanticRequirement> "Visible translation coverage per locale, so a contributor can see where they would help most." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:opportunityEvidence> "87 locales of long-form static content are already translated and served." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:opportunityEvidence> "A separate public translation repository already exists with a published browser-based contribution route." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:opportunityValue> "89 locales maintained by a community is a moat that cannot be bought and compounds with search reach. Investing in the contribution experience is cheaper than any paid translation and produces a defensible asset." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:targetProfileRevision> <urn:anqr:profile-revision:2> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:title> "Localisation as a contributed platform asset" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:translation-community-platform> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:additionalServiceRequirement> "Configuration only. No new runtime service is implied." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:canonicalName> "vertical-offerings" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:coversSubject> <urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:enablingFoundationCapability> <urn:usf:capability-port:configlayerprovider> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:newSemanticRequirement> "Per-vertical curated defaults and templates." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:opportunityEvidence> "Payload breadth already covers payments, events, contact, product identity and links." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:opportunityEvidence> "The gallery already demonstrates capability by example, which is the shape of a vertical starting point." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:opportunityValue> "A vertical package sells the same capability at a higher price by removing the configuration burden. ANQR already has the breadth each vertical needs." <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:reserved> <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:targetProfileRevision> "a later ANQR profile revision, not this one" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:title> "Vertical offerings for retail, payments, events, hospitality and logistics" <urn:anqr:graph:opportunities> .
+<urn:anqr:product-opportunity:vertical-offerings> <urn:usf:predicate:type> <urn:usf:type:ProductOpportunity> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:agent-native-generation> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:campaign-scan-analytics> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:enterprise-generation-api> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:offline-mobile-generation> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:organisation-brand-templates> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:payment-qr-validation-service> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:private-deployment> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:product-identity-supply-chain> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:professional-branded-generation> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:qr-analysis-api> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:reusable-asset-library> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:scan-safety-certification> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:translation-community-platform> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:vertical-offerings> <urn:anqr:graph:opportunities> .
+<urn:anqr:profile-revision:2> <urn:usf:predicate:nonClaim> "An opportunity is a recorded proposal, never scope. Every opportunity carries the reserved disposition, so nothing here can be read as a capability the product claims or as work that has been authorised." <urn:anqr:graph:opportunities> .
