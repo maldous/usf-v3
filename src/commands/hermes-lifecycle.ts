@@ -625,6 +625,10 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
           alreadySatisfiedCount: artefact.alreadySatisfiedCount,
         }),
         transactions: Object.freeze(transactions.map((entry) => Object.freeze({
+          // Which repository the landing targeted. Omitting it made a correctly
+          // routed product transaction indistinguishable from a foundation one
+          // in every projection built on this record.
+          repository: entry.repository ?? null,
           lane: entry.lane, applied: entry.applied ?? false,
           transactionDigest: entry.transactionDigest ?? null,
           pathCount: Array.isArray(entry.derivedAffectedPaths) ? entry.derivedAffectedPaths.length : 0,
