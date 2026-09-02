@@ -243,6 +243,13 @@
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:derivedOnlyType> <urn:usf:type:CatalogueClassification> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:derivedOnlyType> <urn:usf:type:ExecutionResult> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:derivedOnlyType> <urn:usf:type:ReadinessProjection> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:functionalPredicate> <urn:usf:predicate:artefactKind> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:functionalPredicate> <urn:usf:predicate:canonicalPath> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:functionalPredicate> <urn:usf:predicate:pathPattern> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:functionalPredicate> <urn:usf:predicate:realisationRoot> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:functionalPredicate> <urn:usf:predicate:realizationMechanism> <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:functionalPredicateExclusionReason> "selectedModel is deliberately excluded. A host-agent transport serves several models under one subscription, each with its own quota, so a transport declares one candidate per model and a single exhausted model no longer removes the whole subscription from the pool. Several values are the intended state and the reason each is declared is recorded on the transport itself, so constraining the predicate to one value would contradict a measured routing correction rather than catch an error." <urn:usf:graph:v3-convention> .
+<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:functionalPredicateRule> "A functional predicate states exactly one value for a subject, so a second value is a contradiction rather than extra information. This set is the corpus's own declaration of which predicates carry that constraint; the runtime reads it and falls back to its compiled set only when no declaration exists." <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:rule> "Structural invariants apply to every graph. Local-name style and the state-reason convention apply only where declared, so history is not rewritten to satisfy a convention declared later." <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:stateReasonGraph> <urn:usf:graph:v3-convention> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:stateReasonGraph> <urn:usf:graph:v3-execution> <urn:usf:graph:v3-convention> .

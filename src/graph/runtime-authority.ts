@@ -14,6 +14,7 @@ export interface RuntimeAuthority {
   readonly conventionExemptGraphs: readonly string[];
   readonly stateReasonGraphs: readonly string[];
   readonly derivedOnlyTypes: readonly string[];
+  readonly functionalPredicates: readonly string[];
   /** Explicit so an empty scope is never ambiguous with an absent declaration. */
   readonly declared: boolean;
 }
@@ -29,11 +30,13 @@ export function readRuntimeAuthority(quads: readonly Quad[]): RuntimeAuthority {
   const conventionExemptGraphs = values(quads, integrityScopeIri, "conventionExemptGraph");
   const stateReasonGraphs = values(quads, integrityScopeIri, "stateReasonGraph");
   const derivedOnlyTypes = values(quads, integrityScopeIri, "derivedOnlyType");
+  const functionalPredicates = values(quads, integrityScopeIri, "functionalPredicate");
   return Object.freeze({
     authorizedPathPrefixes,
     conventionExemptGraphs,
     stateReasonGraphs,
     derivedOnlyTypes,
+    functionalPredicates,
     declared: authorizedPathPrefixes.length > 0 && conventionExemptGraphs.length > 0,
   });
 }

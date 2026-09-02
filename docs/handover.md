@@ -3,7 +3,7 @@
 ## Authority boundary 2026-09-03 — capture remainders assessed
 
 One bounded semantic transaction landed against `graph/v3-delivery.nq`,
-uncommitted in the working tree. It is purely additive: 50 quads, 0 deletions.
+committed at `14f5778`. It is purely additive: 50 quads, 0 deletions.
 
 - Proposal `sha256:1903fd34…`, transaction `sha256:8dfd6c89…`,
   preimage `sha256:c8d96b37…` → postimage `sha256:e1d73f40…`. Corpus
@@ -59,26 +59,63 @@ not applicable, with per-control justification — covers 48 of 93 in a separate
 `alignmentOnly` artefact that disclaims completeness. Capture would convert an
 absent control set into an undecided one.
 
+## Authority boundary 2026-09-03 — the integrity gate conforms
+
+The `gateConforming: false` condition recorded at the housekeeping boundary is
+resolved. The gate now reads **`legacyGraphViolationCount` 24 against
+`acceptedLegacyDebtCount` 24, `ownedGraphViolationCount` 0,
+`gateConforming: true`, `scopeFromGraphAuthority: true`** — and the debt constant
+was **not** raised. It is now simply truthful.
+
+Operator directive: declare the arity in the graph, rather than raise the debt
+constant, exempt the predicate in code, or remodel the declarations. The 27
+violations were 24 `multiple-type-declaration` plus exactly 3
+`functional-predicate-conflict`, the three being the host-CLI transports
+(`antigravity-cli`, `codex-cli`, `claude-cli`) that declare several models each.
+Those several values are intended state: one candidate per declared model, so a
+single exhausted quota cannot remove a whole subscription from the pool. Raising
+the constant would have recorded a measured routing correction as legacy debt.
+
+Landed in two halves, since a graph-declared scope is inert until the runtime
+reads it:
+
+- **Graph half** — one bounded transaction appending a `functionalPredicate` set
+  plus its rule and exclusion reason to `urn:usf:integrity-scope:corpus:1` in
+  `graph/v3-convention.nq`, deliberately omitting `selectedModel`. 7 quads,
+  transaction `sha256:700c16db…`, corpus 24 690 → 24 697. That subject is
+  referenced by nothing as an object, so it sits outside every resource closure;
+  measured in a lane at `14f5778`, all eight profile projections were
+  byte-identical even though `v3-convention.nq` is upstream of both the delivery
+  and ANQR manifests.
+- **Code half** — `readRuntimeAuthority` now reads `functionalPredicate`,
+  `IntegrityOptions` carries the declared set, and `checkIntegrity` prefers it
+  over its compiled constant, threaded through both consumers
+  (`graph-integrity.ts` and `transact.ts`). The compiled list is retained and
+  redocumented as the fallback for a corpus that has not declared its own,
+  matching the existing `derivedOnlyTypes` shape.
+
+No write-owner primitive was created, and the earlier plan for one is withdrawn.
+Those three files are runtime readers, and the transaction authority states
+plainly that "source code is not semantic authority and is deliberately
+excluded: the runtime reads authority, it is not authority." Modelling a runtime
+reader as owned semantic authority would contradict that; the gate for changing
+one is the check suite, not a graph grant.
+
+Verification: typecheck clean, **406/406 tests pass** (404 plus two new), and the
+new coverage is planted-defect proven — reverting the one-line wiring at the
+check site fails exactly one test. Both facet verdict digests are **unchanged**
+across the whole boundary, `sha256:92a7e6a4…` for the realise lane and
+`sha256:e958768a…` for implement, with 575 SATISFIED and
+UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 and 64 capabilities fully
+satisfied. `readRuntimeAuthority` had no test coverage at all before this; it
+now has the reciprocal case.
+
 Next safe actions, in order of independence:
 
-1. **Multi-valued `selectedModel` directive — decided, not yet landed.** The
-   gate's 27 legacy violations are 24 `multiple-type-declaration` plus 3
-   `functional-predicate-conflict`, and `acceptedLegacyDebtCount` is exactly 24,
-   so the three excess are precisely the host-CLI transports declaring several
-   models each. Operator decision: **declare the arity in the graph** rather than
-   raise the debt constant, exempt the predicate in code, or remodel the
-   declaration. The graph half adds a `functionalPredicate` set to
-   `urn:usf:integrity-scope:corpus:1` (omitting `selectedModel`) and is
-   transactable; it is **inert until the reader is taught the predicate**, so it
-   changes no gate result on its own. The code half —
-   `src/graph/runtime-authority.ts`, `src/graph/integrity.ts`,
-   `src/commands/graph-integrity.ts` — is owned by no work or contract and sits
-   outside transact's authorized prefixes by design, so it needs the staged chain
-   and a real write owner. That owner is the one genuine missing primitive.
-2. **`event-vocabulary` (50 declared domain events) is unaccounted.** None of the
+1. **`event-vocabulary` (50 declared domain events) is unaccounted.** None of the
    ten facet kinds covers domain events. It is the only remainder neither
    superseded nor evidenced as a real gap; it needs a decision, not an assertion.
-3. **The statement of applicability needs governance judgement**, not model work:
+2. **The statement of applicability needs governance judgement**, not model work:
    deciding 45 undecided controls and reconciling the 48 already assessed.
 
 Recorded CLI observability gaps, both from this session:

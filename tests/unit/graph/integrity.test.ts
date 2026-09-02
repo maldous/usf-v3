@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { checkIntegrity, derivedOnlyTypes, terminalIdentifierKinds } from "../../../src/graph/integrity.ts";
+import { readRuntimeAuthority } from "../../../src/graph/runtime-authority.ts";
 import { canonicalQuadLine, type Quad } from "../../../src/graph/nquads.ts";
 
 const graph = "urn:usf:graph:test";
@@ -156,6 +157,54 @@ test("a functional predicate may not carry two values", () => {
     quad("urn:usf:widget:alpha", "urn:usf:predicate:realizationMechanism", "EXTERNAL_TOOL", "literal"),
   ]);
   assert.equal(single.violations.some((v) => v.code === "functional-predicate-conflict"), false);
+});
+
+test("the declared functional-predicate set narrows the compiled fallback", () => {
+  // The corpus states which predicates carry the single-value constraint. A
+  // predicate whose several values are the intended state -- a transport's
+  // selectedModel, one candidate per model so one exhausted quota cannot remove
+  // the whole subscription -- is excluded there, and declaring the set must
+  // actually stop the gate constraining it. Both directions are asserted,
+  // because a reader that ignored the option would still pass the first.
+  const twoModels = [
+    metaType,
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:selectedModel", "model-a", "literal"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:selectedModel", "model-b", "literal"),
+  ];
+  const conflictCode = (report: { violations: readonly { code: string }[] }): boolean =>
+    report.violations.some((v) => v.code === "functional-predicate-conflict");
+
+  // Declared set omits selectedModel: several values are authority, not a defect.
+  assert.equal(conflictCode(checkIntegrity(twoModels, {
+    functionalPredicates: ["urn:usf:predicate:realizationMechanism"],
+  })), false);
+  // No declaration: the compiled fallback still constrains it.
+  assert.equal(conflictCode(checkIntegrity(twoModels)), true);
+  // A predicate that is in the declared set is still constrained.
+  assert.equal(conflictCode(checkIntegrity([
+    metaType,
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:beta", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:widget:beta", "urn:usf:predicate:realizationMechanism", "A", "literal"),
+    quad("urn:usf:widget:beta", "urn:usf:predicate:realizationMechanism", "B", "literal"),
+  ], { functionalPredicates: ["urn:usf:predicate:realizationMechanism"] })), true);
+  // An empty declared set is not an absent one and constrains nothing.
+  assert.equal(conflictCode(checkIntegrity(twoModels, { functionalPredicates: [] })), false);
+});
+
+test("the runtime reads the functional-predicate set from graph authority", () => {
+  // The scope is a graph fact the runtime reads; it does not carry a second copy.
+  const declared = readRuntimeAuthority([
+    quad("urn:usf:integrity-scope:corpus:1", "urn:usf:predicate:functionalPredicate", "urn:usf:predicate:pathPattern"),
+    quad("urn:usf:integrity-scope:corpus:1", "urn:usf:predicate:functionalPredicate", "urn:usf:predicate:artefactKind"),
+    quad("urn:usf:integrity-scope:other:1", "urn:usf:predicate:functionalPredicate", "urn:usf:predicate:ignored"),
+  ]);
+  assert.deepEqual(declared.functionalPredicates,
+    ["urn:usf:predicate:artefactKind", "urn:usf:predicate:pathPattern"]);
+  // Absent is distinguishable from empty, so a caller can fall back deliberately.
+  assert.deepEqual(readRuntimeAuthority([]).functionalPredicates, []);
 });
 
 test("violations are deterministically ordered so two runs agree", () => {

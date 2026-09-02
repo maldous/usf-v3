@@ -32,6 +32,7 @@ export function integrityScopes(quads: readonly Quad[] = []): Readonly<{
   conventionExemptGraphs: readonly string[];
   stateReasonGraphs: readonly string[];
   derivedOnlyTypes: readonly string[] | undefined;
+  functionalPredicates: readonly string[] | undefined;
   fromGraphAuthority: boolean;
 }> {
   const declared = readRuntimeAuthority(quads);
@@ -39,6 +40,7 @@ export function integrityScopes(quads: readonly Quad[] = []): Readonly<{
     conventionExemptGraphs: declared.conventionExemptGraphs.length > 0 ? declared.conventionExemptGraphs : conventionExemptGraphs,
     stateReasonGraphs: declared.stateReasonGraphs.length > 0 ? declared.stateReasonGraphs : stateReasonGraphs,
     derivedOnlyTypes: declared.derivedOnlyTypes.length > 0 ? declared.derivedOnlyTypes : undefined,
+    functionalPredicates: declared.functionalPredicates.length > 0 ? declared.functionalPredicates : undefined,
     fromGraphAuthority: declared.conventionExemptGraphs.length > 0,
   });
 }
@@ -71,6 +73,7 @@ export async function graphIntegrityCommand(repositoryRoot: string, args: readon
     conventionExemptGraphs: exemptGraphs,
     stateReasonGraphs: reasonGraphs,
     derivedOnlyTypes: declared.derivedOnlyTypes.length > 0 ? declared.derivedOnlyTypes : undefined,
+    functionalPredicates: declared.functionalPredicates.length > 0 ? declared.functionalPredicates : undefined,
   });
   const report = checkIntegrity(quads, options);
   const ownedViolations = report.violations.filter(

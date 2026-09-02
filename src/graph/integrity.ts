@@ -70,6 +70,12 @@ export const derivedOnlyTypes: readonly string[] = Object.freeze([
  * Predicates that state exactly one value for a subject. Two values is not extra
  * information; it is a contradiction, and a reader that resolves it by taking
  * the first or by defaulting will silently do the wrong thing.
+ *
+ * Fallback used only when no graph-declared set is supplied. Graph authority is
+ * the source; this exists so the suite is still safe on a corpus that has not
+ * yet declared its functional predicates. Note that the declared set is
+ * deliberately narrower than this one: a predicate whose several values are the
+ * intended state, such as a transport's `selectedModel`, is excluded there.
  */
 export const functionalPredicates: readonly string[] = Object.freeze([
   "urn:usf:predicate:realizationMechanism",
@@ -116,6 +122,13 @@ export interface IntegrityOptions {
   readonly stateReasonGraphs?: readonly string[];
   /** Derived-only types, declared by graph authority rather than by code. */
   readonly derivedOnlyTypes?: readonly string[];
+  /**
+   * Functional predicates, declared by graph authority rather than by code. A
+   * predicate is absent from the declared set when several values are its
+   * intended state, so constraining it would contradict authority rather than
+   * catch an error.
+   */
+  readonly functionalPredicates?: readonly string[];
 }
 
 export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions = {}): IntegrityReport {
@@ -123,6 +136,7 @@ export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions
   const stateReasonScope = new Set(options.stateReasonGraphs ?? []);
   const terminalKinds = new Set(terminalIdentifierKinds);
   const derivedOnly = new Set(options.derivedOnlyTypes ?? derivedOnlyTypes);
+  const functional = new Set(options.functionalPredicates ?? functionalPredicates);
   const violations: IntegrityViolation[] = [];
   const add = (code: IntegrityCode, subject: string, detail: string, graph: string): void => {
     violations.push(Object.freeze({ code, subject, detail, graph }));
@@ -245,7 +259,7 @@ export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions
   // 12. A functional predicate carries exactly one value per subject.
   const functionalSeen = new Map<string, Set<string>>();
   for (const quad of quads) {
-    if (!functionalPredicates.includes(quad.predicate)) continue;
+    if (!functional.has(quad.predicate)) continue;
     const key = `${quad.subject}\u0000${quad.predicate}`;
     const values = functionalSeen.get(key) ?? new Set<string>();
     values.add(quad.object);

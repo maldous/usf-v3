@@ -259,9 +259,9 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
   }
   // Scopes are read from the resulting corpus, so a transaction that changes a
   // scope is validated against the scope it establishes.
-  const { conventionExemptGraphs, stateReasonGraphs, derivedOnlyTypes } = await import("./graph-integrity.ts")
+  const { conventionExemptGraphs, stateReasonGraphs, derivedOnlyTypes, functionalPredicates } = await import("./graph-integrity.ts")
     .then((module) => module.integrityScopes(resultingQuads));
-  const integrity = checkIntegrity(resultingQuads, { conventionExemptGraphs, stateReasonGraphs, derivedOnlyTypes });
+  const integrity = checkIntegrity(resultingQuads, { conventionExemptGraphs, stateReasonGraphs, derivedOnlyTypes, functionalPredicates });
   const ownedViolations = integrity.violations.filter(
     (violation) => violation.graph.length > 0 && !conventionExemptGraphs.includes(violation.graph),
   );
