@@ -259,12 +259,17 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       "No capability with outstanding implementation requirements carries that canonical name.", { capability: parsed.onlyCapability });
   }
 
+  // A record's paths are relative to the repository that produced it. This
+  // profile's records resolve under its realisation root; anything else is USF's.
+  const sourceRootFor = (repository: string | null): string =>
+    repository !== null && repository === convention.productRepository ? realisationRoot : repositoryRoot;
+
   const present = await presentPaths(realisationRoot, needs);
 
   // Conformance execution is independent of dispatch: any capability whose
   // module and test both exist but whose behaviour has not been observed under
   // the current bytes is a check waiting to run.
-  const evidenceBefore = await loadConformanceEvidence(repositoryRoot);
+  const evidenceBefore = await loadConformanceEvidence(repositoryRoot, sourceRootFor);
   // A module alone is enough to check: compiling it is the cheapest way to
   // learn whether a test written against it could ever run.
   const awaitingCheck = needs.filter((need) =>
@@ -325,7 +330,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       runtimeComposed: false,
       validatorOutcomes: Object.freeze([] as readonly string[]),
       proofOutcomes: Object.freeze([] as readonly string[]),
-      conformanceOutcomes: await loadConformanceEvidence(repositoryRoot),
+      conformanceOutcomes: await loadConformanceEvidence(repositoryRoot, sourceRootFor),
     })));
 
   if (!parsed.apply) {
@@ -349,7 +354,8 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   // dispatched, so it always runs before anything is sent to a provider.
   const conformanceResults: Array<Readonly<Record<string, unknown>>> = [];
   for (const need of awaitingCheck.slice(0, maximumConformanceRuns)) {
-    const run = await runCapabilityConformance(repositoryRoot, need, policyDigest, realisationRoot);
+    const run = await runCapabilityConformance(
+      repositoryRoot, need, policyDigest, convention.productRepository, realisationRoot);
     const path = await recordConformanceRun(repositoryRoot, run);
     conformanceResults.push(Object.freeze({
       capability: need.canonicalName, evidencePath: path, executed: run.executed,

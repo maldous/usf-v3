@@ -44,6 +44,13 @@ export interface ConformanceRun {
   readonly version: 1;
   readonly outcomeClass: ConformanceOutcomeClass;
   readonly capability: string;
+  /**
+   * The product repository the observed paths are relative to, or null for USF
+   * itself. Without it a reader cannot know which root to resolve them against,
+   * and resolving a product's paths under USF makes every product observation
+   * permanently stale.
+   */
+  readonly sourceRepository: string | null;
   readonly modulePath: string;
   readonly modulePathDigest: string;
   readonly conformancePath: string;
@@ -166,6 +173,8 @@ export async function runCapabilityConformance(
   repositoryRoot: string,
   need: CapabilityImplementationNeed,
   authoritySnapshot: string,
+  /** The product repository owning the source, or null when USF owns it. */
+  sourceRepository: string | null = null,
   /**
    * Where the capability source lives. USF realises its own capabilities into
    * itself, so this defaults to the USF root; a product profile realises into
@@ -181,6 +190,7 @@ export async function runCapabilityConformance(
     schema: "urn:usf:implementation-conformance-evidence:1" as const,
     version: 1 as const,
     capability: need.capability,
+    sourceRepository,
     modulePath: need.modulePath,
     modulePathDigest: moduleBytes === undefined ? "" : canonicalDigest(moduleBytes),
     conformancePath: need.conformancePath,
@@ -308,12 +318,12 @@ export const conformanceEvidenceDirectory = ".usf/conformance-evidence";
  * evidence written before it.
  */
 async function inadmissibleFacetsOf(
-  repositoryRoot: string,
+  sourceRoot: string,
   record: ConformanceRun,
 ): Promise<ReadonlySet<string>> {
   const outcomes = record.outcomes ?? [];
   if (outcomes.length === 0) return new Set();
-  const bytes = await readFile(resolve(repositoryRoot, record.conformancePath), "utf8").catch(() => undefined);
+  const bytes = await readFile(resolve(sourceRoot, record.conformancePath), "utf8").catch(() => undefined);
   if (bytes === undefined) return new Set();
   const subtests = classifySubtests(bytes, outcomes.map((outcome) => outcome.facetName));
   return new Set(outcomes
@@ -356,15 +366,26 @@ export async function typecheckCandidateModule(
  */
 export async function loadConformanceEvidence(
   repositoryRoot: string,
+  /**
+   * Where a record's paths resolve, given the repository that produced it.
+   *
+   * Core and product observations share one directory and are relative to
+   * different roots. Resolving them all under USF made every product record
+   * permanently stale: the file simply was not there, so its digest read null
+   * and never matched. A record that names no repository predates this and is
+   * USF's, which is what the default preserves.
+   */
+  sourceRootFor: (repository: string | null) => string = () => repositoryRoot,
 ): Promise<ReadonlyMap<string, ConformanceEvidenceEntry>> {
   const directory = resolve(repositoryRoot, conformanceEvidenceDirectory);
   const names = (await readdir(directory).catch(() => [] as string[])).filter((name) => name.endsWith(".json")).sort();
   const currentDigest = new Map<string, string | null>();
-  const digestOf = async (path: string): Promise<string | null> => {
-    if (currentDigest.has(path)) return currentDigest.get(path)!;
-    const bytes = await readFile(resolve(repositoryRoot, path), "utf8").catch(() => undefined);
+  const digestOf = async (root: string, path: string): Promise<string | null> => {
+    const key = `${root}\u0000${path}`;
+    if (currentDigest.has(key)) return currentDigest.get(key)!;
+    const bytes = await readFile(resolve(root, path), "utf8").catch(() => undefined);
     const digest = bytes === undefined ? null : canonicalDigest(bytes);
-    currentDigest.set(path, digest);
+    currentDigest.set(key, digest);
     return digest;
   };
   const entries = new Map<string, ConformanceEvidenceEntry>();
@@ -376,15 +397,16 @@ export async function loadConformanceEvidence(
     if (record.schema !== "urn:usf:implementation-conformance-evidence:1") continue;
     // A module-only observation binds no test. It stops describing the current
     // repository the moment either the module changes or a test appears.
-    const currentTest = await digestOf(record.conformancePath);
+    const sourceRoot = sourceRootFor(record.sourceRepository ?? null);
+    const currentTest = await digestOf(sourceRoot, record.conformancePath);
     // Admissibility is evaluated against the test as it stands now, not against
     // whatever the rule was when the record was written. A record produced
     // before this rule existed carries no admissible flag, and re-deriving it
     // here applies the rule to every landed test immediately rather than
     // waiting for bytes to change and trigger a re-check that may never come.
-    const currentInadmissible = await inadmissibleFacetsOf(repositoryRoot, record);
+    const currentInadmissible = await inadmissibleFacetsOf(sourceRoot, record);
     const moduleOnly = record.conformancePathDigest.length === 0;
-    const stale = await digestOf(record.modulePath) !== record.modulePathDigest
+    const stale = await digestOf(sourceRoot, record.modulePath) !== record.modulePathDigest
       || (moduleOnly ? currentTest !== null : currentTest !== record.conformancePathDigest);
     // A run that could not execute is retained as a blocked observation. It
     // satisfies nothing, but it is the difference between "this capability is
