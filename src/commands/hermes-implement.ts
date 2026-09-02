@@ -7,6 +7,7 @@ import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import {
   loadConformanceEvidence, recordConformanceRun, runCapabilityConformance, typecheckCandidateModule,
 } from "../providers/implementation-conformance.ts";
+import { evaluateFacets, summariseFacets } from "../providers/facet-evaluation.ts";
 import {
   deriveCapabilityImplementationNeeds, deriveConformancePrompt, deriveImplementationPrompt,
   deriveImplementationWorkUnits, importSpecifierFor, inspectRepositoryFile, maximumRepairRounds,
@@ -278,10 +279,24 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     repairExhausted: exhausted.length,
   });
 
+  // Facet satisfaction is a property of the selected profile, not of the
+  // artefact lane that used to compute it. A product supervisor does not run
+  // that lane at all, so deriving it here is what lets a profile see its own
+  // truth. Only executed behavioural outcomes are supplied, because every
+  // product facet is evidenced by implementation conformance.
+  const facetSummary = summariseFacets(evaluateFacets(graph, Object.freeze({
+    realizedArtefacts: new Map<string, string>(),
+    runtimeComposed: false,
+    validatorOutcomes: Object.freeze([] as readonly string[]),
+    proofOutcomes: Object.freeze([] as readonly string[]),
+    conformanceOutcomes: await loadConformanceEvidence(repositoryRoot),
+  })));
+
   if (!parsed.apply) {
     return {
       output: Object.freeze({
         ...plan,
+        facets: facetSummary,
         frontier: Object.freeze(ready.slice(0, 24).map((unit) => Object.freeze({
           unit: unit.unit, stage: unit.stage, capability: unit.need.canonicalName,
           targetPath: unit.targetPath, requirements: unit.need.requirements.length,
@@ -518,6 +533,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       ...plan,
       conformanceRuns: Object.freeze(conformanceResults),
       repairExhaustedCapabilities: Object.freeze(exhausted.map((need) => need.canonicalName)),
+      facets: facetSummary,
       targetRepository: convention.productRepository,
       realisationRoot: convention.productRepository === null ? "." : realisationRoot,
       dispatchedUnits: pending.length,

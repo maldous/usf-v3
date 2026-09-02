@@ -38,6 +38,8 @@ export interface HermesSupervisorRecord {
   readonly supervisorId: string;
   readonly startedAt: string;
   readonly process: ProcessIdentity;
+  /** The profile manifest every cycle of this supervisor selects work from. */
+  readonly manifest: string;
   readonly envFile: string;
   readonly pauseSeconds: number;
   readonly concurrency: number;
@@ -51,6 +53,7 @@ function invalid(message: string, details?: Record<string, unknown>): never {
 }
 
 interface LifecycleArguments {
+  readonly manifest: string;
   readonly envFile: string;
   readonly pauseSeconds: number;
   readonly concurrency: number;
@@ -62,7 +65,7 @@ function parse(args: readonly string[]): LifecycleArguments {
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
-    if (!["--env-file", "--pause-seconds", "--concurrency", "--limit", "--wait-ms"].includes(option) || values.has(option)) {
+    if (!["--env-file", "--pause-seconds", "--concurrency", "--limit", "--wait-ms", "--manifest"].includes(option) || values.has(option)) {
       invalid("Hermes lifecycle options must be unique and explicit.", { option });
     }
     const value = args[++index];
@@ -76,6 +79,10 @@ function parse(args: readonly string[]): LifecycleArguments {
     return Number(text);
   };
   return Object.freeze({
+    // Which profile the supervisor operates. USF's own delivery authority is
+    // the default; selecting a product manifest makes every cycle that
+    // profile's cycle, and USF's own capabilities are then left alone.
+    manifest: values.get("--manifest") ?? deliveryManifest,
     envFile: values.get("--env-file") ?? ".usf/credentials/providers.env",
     pauseSeconds: bounded("--pause-seconds", defaultPauseSeconds, maximumPauseSeconds),
     concurrency: bounded("--concurrency", 6, 16),
@@ -128,9 +135,9 @@ export async function observeSupervisor(repositoryRoot: string): Promise<Readonl
   return Object.freeze({ liveness: same ? "live" as const : "stale" as const, record });
 }
 
-function authorityIdentity(repositoryRoot: string): string {
+function authorityIdentity(repositoryRoot: string, manifest: string = deliveryManifest): string {
   try {
-    const graph = loadSemanticGraph(repositoryRoot, deliveryManifest);
+    const graph = loadSemanticGraph(repositoryRoot, manifest);
     return canonicalDigest(graph.graphDigests ?? {});
   } catch {
     return "unavailable";
@@ -315,7 +322,11 @@ export async function hermesLifecycleStatusCommand(repositoryRoot: string, args:
   const { implementCommand } = await import("./hermes-implement.ts");
   const authority = await hermesCommand(repositoryRoot, ["status", ...args])
     .then((result) => result.output as Record<string, unknown>, () => null);
-  const work = await implementCommand(repositoryRoot, [])
+  // Status must describe the profile the supervisor is actually operating. Read
+  // back its recorded manifest rather than defaulting to the foundation, or a
+  // product supervisor would be reported against work it never selected.
+  const selectedManifest = observed.record?.manifest ?? deliveryManifest;
+  const work = await implementCommand(repositoryRoot, ["--manifest", selectedManifest])
     .then((result) => result.output as Record<string, unknown>, () => null);
   const evidence = await latestConformanceEvidence(repositoryRoot);
 
@@ -329,7 +340,8 @@ export async function hermesLifecycleStatusCommand(repositoryRoot: string, args:
       pid: observed.liveness === "live" ? observed.record!.process.pid : null,
       startedAt: observed.record?.startedAt ?? null,
       stopRequested: stopRequest !== null,
-      authorityIdentity: observed.record?.authorityIdentity ?? authorityIdentity(repositoryRoot),
+      manifest: selectedManifest,
+      authorityIdentity: observed.record?.authorityIdentity ?? authorityIdentity(repositoryRoot, selectedManifest),
       currentCycle: cycle === null ? null : cycle.cycle ?? null,
       lastObservedAt: cycle === null ? null : cycle.observedAt ?? null,
       lastReason: cycle === null ? "no cycle has run under a supervisor yet"
@@ -404,6 +416,10 @@ interface CycleProjection {
   readonly cycle: number;
   readonly observedAt: string;
   readonly implementation: Record<string, unknown> | null;
+  /** The profile manifest this cycle selected work from. */
+  readonly manifest: string;
+  /** Whether the foundation artefact lane applies to the selected profile. */
+  readonly artefactLane: string;
   readonly artefact: Record<string, unknown> | null;
   readonly transactions: readonly Record<string, unknown>[];
   readonly facets: Record<string, unknown> | null;
@@ -443,11 +459,12 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
     supervisorId: canonicalDigest({ process: identity, startedAt: new Date().toISOString() }).slice("sha256:".length, 32),
     startedAt: new Date().toISOString(),
     process: identity,
+    manifest: parsed.manifest,
     envFile: parsed.envFile,
     pauseSeconds: parsed.pauseSeconds,
     concurrency: parsed.concurrency,
     dispatchLimit: parsed.dispatchLimit,
-    authorityIdentity: authorityIdentity(repositoryRoot),
+    authorityIdentity: authorityIdentity(repositoryRoot, parsed.manifest),
   });
   await writeJson(repositoryRoot, supervisorRecord, record);
 
@@ -477,7 +494,7 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
 
       // Product implementation first: it is the work the phase exists for.
       const implementation = await implementCommand(repositoryRoot, [
-        "--apply", "--env-file", parsed.envFile,
+        "--apply", "--env-file", parsed.envFile, "--manifest", parsed.manifest,
         "--limit", String(parsed.dispatchLimit), "--concurrency", String(parsed.concurrency),
       ]).then((result) => result.output as Record<string, unknown>,
         (error: unknown) => {
@@ -486,16 +503,28 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
         });
       const implementationProposal = implementation?.proposalPath;
       if (typeof implementationProposal === "string") {
+        // Results are relative to whichever repository owns the realisation, so
+        // the transaction must be told which one. Without this the paths would
+        // be written into USF itself, which is precisely the confusion the
+        // product profile exists to prevent.
+        const targetRepository = implementation?.targetRepository;
+        const repositoryArguments = typeof targetRepository === "string"
+          ? ["--repository", targetRepository, "--manifest", parsed.manifest] : [];
         // A transaction is never interrupted by a stop request: it is atomic and
         // completing it is cheaper and safer than abandoning it.
-        transactions.push(await transactCommand(repositoryRoot, ["--proposal", implementationProposal])
+        transactions.push(await transactCommand(repositoryRoot, ["--proposal", implementationProposal, ...repositoryArguments])
           .then((result) => Object.freeze({ lane: "implementation", ...(result.output as Record<string, unknown>) }),
             (error: unknown) => Object.freeze({ lane: "implementation", refused: error instanceof Error ? error.message.slice(0, 300) : "unknown" })));
       }
 
-      // The artefact lane continues to run: it is independent, and one lane
-      // making no progress must not stop the other.
-      const artefact = await realisePlanCommand(repositoryRoot, ["--apply", "--env-file", parsed.envFile])
+      // The artefact lane realises USF's own delivery artefacts, and only those.
+      // A supervisor operating a product profile must not run it: doing so would
+      // spend the cycle realising foundation capabilities merely because they
+      // are available, which is the opposite of selecting a profile. The lane is
+      // recorded as deliberately not applicable rather than silently skipped.
+      const artefactLaneApplies = parsed.manifest === deliveryManifest;
+      const artefact = !artefactLaneApplies ? null
+        : await realisePlanCommand(repositoryRoot, ["--apply", "--env-file", parsed.envFile])
         .then((result) => result.output as Record<string, unknown>,
           (error: unknown) => {
             blockers.push(Object.freeze({ lane: "artefact", reason: error instanceof Error ? error.message.slice(0, 300) : "unknown" }));
@@ -537,6 +566,8 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
           acceptedResults: implementation.acceptedResults,
           conformanceRuns: implementation.conformanceRuns,
         }),
+        manifest: parsed.manifest,
+        artefactLane: artefactLaneApplies ? "applicable" : "not-applicable-under-a-product-profile",
         artefact: artefact === null ? null : Object.freeze({
           readyFrontier: artefact.readyFrontier,
           realizedCount: artefact.realizedCount,
@@ -548,7 +579,10 @@ export async function hermesSuperviseCommand(repositoryRoot: string, args: reado
           pathCount: Array.isArray(entry.derivedAffectedPaths) ? entry.derivedAffectedPaths.length : 0,
           refused: entry.refused ?? null,
         }))),
-        facets: (artefact?.facets ?? null) as Record<string, unknown> | null,
+        // The implementation lane derives facet satisfaction from the selected
+        // profile, so it is the truthful source whether or not the artefact
+        // lane ran at all.
+        facets: (implementation?.facets ?? artefact?.facets ?? null) as Record<string, unknown> | null,
         blockers: Object.freeze(blockers.slice(0, 24)),
         providerActivity: Object.freeze(outcomes
           .filter((outcome) => outcome.outcome === "accepted")
