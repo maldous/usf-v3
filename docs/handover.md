@@ -1,6 +1,49 @@
 # USF V3 handover
 
-## Current live boundary — unattended long-run convergence; resume from here
+## Wrap-up 2026-09-02 — directive complete; supervisor intentionally stopped
+
+The operator directed the supervisor wrapped up and the remainder completed by
+hand. Supervisor fb06a4176966fd1029889c7e3 drained cleanly (`usf hermes stop`,
+outcome drained) and was deliberately not restarted; the restart command in the
+section below remains correct if a future directive needs it.
+
+Completion condition from the boundary below, measured after the work:
+implementation-conformance facets read UNSATISFIED 0, NOT_ASSESSED 0, BLOCKED 0,
+STALE 0 on `graph/manifests/v3-delivery.json` (64/64 capabilities fully
+satisfied), `graph/products/anqr/manifest.json` (39/39, denominator fully
+assessed, including qrartefactcreation) and the composed
+`graph/manifests/anqr-with-foundation.json` (103/103); remaining work reads 0
+in every lane. The realise lane assesses the 27 realized-artefact facets
+against real artefacts: NOT_ASSESSED 0 there too.
+
+What closed the tail, in order:
+
+- Host-CLI transport misclassification fixed (commit ff61175): a refused turn
+  is classified from the CLI's own report, a subscription/quota limit defers as
+  TRANSPORT_USAGE_LIMIT_EXCEEDED with the provider-stated reset, an unknown
+  model defers a day as TRANSPORT_MODEL_NOT_ACCEPTED, and attempt records
+  retain the redacted refusal detail. The Gemini pool was repaired through one
+  conforming transaction (dead gemini-3.1-pro-medium removed,
+  gemini-3.8-flash-low declared).
+- The last blocker was the regenerated customdomainsdnsownershiptlscanonical
+  permissions test asserting both an empty list and PERMISSION_DENIED for
+  equally ungranted tenants — unsatisfiable by any tenant-scoped fail-closed
+  module; two whole-module repair rounds were spent on it. The facet statement
+  decides it: isolation is proven on a granted tenant, fail-closed assertions
+  unchanged, suite 9/9 against the incumbent module (transaction applied, then
+  checkpoint commit 7d573d6 landed the drained cycle work).
+- The standing "19 capabilities with remaining work" was a projection defect,
+  not a backlog: the implementation lane reported facets it deliberately loads
+  no evidence for as NOT_ASSESSED. An evaluation now declares its loaded
+  evidence classes and such facets read OTHER_LANE, excluded from the lane's
+  denominator and explicitly not a satisfaction claim (commit e179497). No
+  supervisor cycle count would ever have moved those 27; gates on
+  NOT_ASSESSED=0 in that lane are now satisfiable and truthful.
+
+Next safe action: none required. The section below is retained as the
+historical live boundary this wrap-up closed.
+
+## Historical boundary (closed by the wrap-up above) — unattended long-run convergence
 
 Prepared 2026-09-02, written for continuation after the supervising session
 halts on quota. Everything below is resumable from documents plus the graph;
