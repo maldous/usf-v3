@@ -1,5 +1,100 @@
 # USF V3 handover
 
+## Authority boundary 2026-09-03 — capture remainders assessed
+
+One bounded semantic transaction landed against `graph/v3-delivery.nq`,
+uncommitted in the working tree. It is purely additive: 50 quads, 0 deletions.
+
+- Proposal `sha256:1903fd34…`, transaction `sha256:8dfd6c89…`,
+  preimage `sha256:c8d96b37…` → postimage `sha256:e1d73f40…`. Corpus
+  24 640 → 24 690 quads, `ownedGraphViolationCount` 0, `conforming: true`.
+- **Measured zero blast radius** before applying. A standalone `--no-hardlinks`
+  clone detached at `f330c15`, bootstrapped offline, reproduced the recorded
+  provider-lane digest `sha256:aea7ac1b…` and the
+  `WORK_DEPENDENCY_MISSING:config/semantic-recovery-inventory.json` refusal.
+  Eight profile/manifest `usf work` projections were **byte-identical** before
+  and after, and the lane's facet verdict digest was unchanged. After applying
+  to the primary, the realise-lane facet verdict digest reads
+  `sha256:92a7e6a4…`, identical to its pre-change value, with 575 SATISFIED and
+  UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0.
+
+What it records: four of the six V1 capture remainders — state-machine-content,
+assurance-content, validator-rules and realisation-bindings, **846 of the 1 082
+enumerated declarations** — guard invariants V3 satisfies by a different
+mechanism, namely executed behavioural conformance subtests and graph-derived
+module paths rather than carried V1 declarations. Each now carries a
+`MechanismAssessmentItem` with verdict `INVARIANT_RETAINED_MECHANISM_SUPERSEDED`,
+the same idiom already used for `spec-validation-workflow` and
+`validator-manifest`. Their `captureStatus "not-captured"` was deliberately left
+in place: it is a true statement about V1's declarations, and only its reading as
+a work backlog was wrong.
+
+Two corrections to earlier analysis in this session, both evidenced:
+
+- An earlier claim that the statement-of-applicability blocker **misattributed**
+  its input to V1 was **wrong and is retracted**. V1 defines the classes itself
+  (`bak/usf/graph/ontology.ttl:1335-1341`) and holds exactly 93
+  `usf:FrameworkControl` and 93 `usf:ApplicabilityDecision` instances in
+  `bak/usf/graph/assurance/enterprise.trig` at the pinned recovery revision
+  `028a9f96`. The blocker text is accurate as written. The error came from
+  reading the disposition ledger's `generation: "v2"` as V2-only; the ledger
+  records where a concept was encoded for disposition, and V2 separately reused
+  the name `ApplicabilityDecision` for the ANQR route-credibility ceremony,
+  which is the collision the OBSOLETE disposition describes.
+- `.usf/hermes/candidate-failures.json` is last-failure-per-capability history
+  and is never cleared on success. Its nine entries were read as live blockers;
+  both lane derivations report `readyFrontier: 0`, `repairExhausted: 0` and all
+  64 capabilities fully satisfied. Derive the frontier from
+  `hermes implement`/`hermes realise`, never from that file.
+
+New evidence on the governance remainder, recorded as
+`mechanism-assessment-item:governance-capture-feasibility` (verdict unchanged at
+`SURVIVING_INVARIANT_NOT_YET_SATISFIED`): the V1 layer names ISO/IEC 27001:2022
+Annex A and carries the complete 93-control set, licensed for reviewed
+re-expression, so capture is mechanically feasible. But all 93 applicability
+decisions hold the identical `pendingassessment` status with one boilerplate
+rationale under a `draft` statement of applicability, the controls carry no
+titles anywhere on disk, and the only decided applicability — 43 applicable, 5
+not applicable, with per-control justification — covers 48 of 93 in a separate
+`alignmentOnly` artefact that disclaims completeness. Capture would convert an
+absent control set into an undecided one.
+
+Next safe actions, in order of independence:
+
+1. **Multi-valued `selectedModel` directive — decided, not yet landed.** The
+   gate's 27 legacy violations are 24 `multiple-type-declaration` plus 3
+   `functional-predicate-conflict`, and `acceptedLegacyDebtCount` is exactly 24,
+   so the three excess are precisely the host-CLI transports declaring several
+   models each. Operator decision: **declare the arity in the graph** rather than
+   raise the debt constant, exempt the predicate in code, or remodel the
+   declaration. The graph half adds a `functionalPredicate` set to
+   `urn:usf:integrity-scope:corpus:1` (omitting `selectedModel`) and is
+   transactable; it is **inert until the reader is taught the predicate**, so it
+   changes no gate result on its own. The code half —
+   `src/graph/runtime-authority.ts`, `src/graph/integrity.ts`,
+   `src/commands/graph-integrity.ts` — is owned by no work or contract and sits
+   outside transact's authorized prefixes by design, so it needs the staged chain
+   and a real write owner. That owner is the one genuine missing primitive.
+2. **`event-vocabulary` (50 declared domain events) is unaccounted.** None of the
+   ten facet kinds covers domain events. It is the only remainder neither
+   superseded nor evidenced as a real gap; it needs a decision, not an assertion.
+3. **The statement of applicability needs governance judgement**, not model work:
+   deciding 45 undecided controls and reconciling the 48 already assessed.
+
+Recorded CLI observability gaps, both from this session:
+
+- `transact --dry-run` reports `conforming: true`, which is **not** a staleness
+  answer — it validates the resulting corpus and is silent on whether any
+  completion goes stale. Answering that by hand required a clone, the hermetic
+  inputs and a profile-set loop, which is exactly the ad hoc harness that must
+  not become the operator interface. `transact` already holds every postimage in
+  memory and needs no clone; `drift` (planned) is the alternative home.
+- No registered command answers "who may write path X, by which mechanism".
+  Resolving it required grepping `permitsWrite`, `writePath` and
+  `authorizedPathPrefix` across every source, and produced one confident wrong
+  conclusion first: contract/work ownership governs only the staged contribution
+  chain, while `transact` authorizes by prefix and already covers `graph/`.
+
 ## Housekeeping boundary 2026-09-03 — release candidate prepared
 
 A post-realisation housekeeping pass prepared the wrap-up boundary below as a
