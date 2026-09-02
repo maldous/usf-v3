@@ -36,8 +36,10 @@ changed. What was done, all evidence-backed:
 - **ANQR repository**: the final supervisor cycle's post-checkpoint output
   (repaired payloadclassification and qrartefactcreation module/test pairs)
   was checkpointed as `1cf44ce`; the 39/39 verdict binds those exact bytes.
-  The repository is clean. It still has **no remote**: until one is added, the
-  realised product exists only on this machine.
+  The repository is clean. (Resolved after the proof: by operator direction it
+  now pushes to the new private `github.com/maldous/anqr-v3` — the legacy
+  `maldous/anqr` repository holds unrelated pre-V3 history and was left
+  untouched.)
 - **Interface hygiene**: `scripts/hermes-bau.sh` (superseded external driver
   with a hard-coded machine path; graph-undeclared) removed. README's
   "Current claim" was two boundaries stale and now states the realisation
@@ -108,7 +110,13 @@ tracked) and the repository locator. Optional pinned historical sources (V1 at
 028a9f96, V2 at 2d7eb31) are re-audit inputs only and are not needed for any
 build, test, evaluation or realisation step above.
 
-Next safe action: tag the release commit (this section's own commit).
+Released 2026-09-03: annotated tag `semantic-realisation-1` identifies
+usf-v3 `76b7dfd` and anqr `1cf44ce`, both pushed. `v3-authority-transition`
+now tracks `origin/v3-authority-transition`; anqr's `main` tracks the new
+private `github.com/maldous/anqr-v3` (operator-directed; the legacy
+`maldous/anqr` holds unrelated pre-V3 history and was left untouched).
+
+Next safe action: none required.
 
 ## Wrap-up 2026-09-02 — directive complete; supervisor intentionally stopped
 
