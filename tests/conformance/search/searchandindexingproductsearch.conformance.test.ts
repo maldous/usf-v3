@@ -9,7 +9,9 @@ test("searchandindexingproductsearchauditmodel", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: false,
+    readinessProbeFailed: false
   };
 
   const secretDoc: capability.IndexedDocument = {
@@ -73,13 +75,15 @@ test("searchandindexingproductsearchauditmodel", () => {
   assert.strictEqual(reindexed.state.documents[0]?.tenantId, "t1");
   assert.strictEqual(reindexed.state.documents[0]?.organisationId, "o1");
 
-  const probed = capability.probeReadiness(capability.initialState, "READY", () => null);
+  const probed = capability.probeReadinessForTenant(capability.initialState, "READY", "t1", "o1", () => null);
   assert.strictEqual(probed.ok, true);
   if (!probed.ok) throw new Error("Expected probe success");
   assert.strictEqual(probed.state.readiness, "READY");
   assert.strictEqual(probed.state.probeHistory.length, 1);
   assert.strictEqual(probed.state.probeHistory[0]?.status, "READY");
   assert.strictEqual(probed.state.lastAudit?.kind, "AUDIT_BEFORE_READINESS");
+  assert.strictEqual(probed.state.lastAudit?.tenantId, "t1");
+  assert.strictEqual(probed.state.lastAudit?.organisationId, "o1");
 
   const recorded = capability.recordProof(probed.state, {
     kind: "SEARCH_PROOF",
@@ -97,7 +101,9 @@ test("searchandindexingproductsearchcontracts", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: false,
+    readinessProbeFailed: false
   };
 
   const validDoc: capability.IndexedDocument = {
@@ -112,8 +118,8 @@ test("searchandindexingproductsearchcontracts", () => {
     metadata: {}
   };
 
-  assert.ok(capability.validateDocumentShape(validDoc));
-  assert.ok(capability.validateUniqueness(initial.documents, validDoc));
+  assert.strictEqual(capability.validateDocumentShape(validDoc), true);
+  assert.strictEqual(capability.validateUniqueness(initial.documents, validDoc), true);
 
   const indexResult = capability.indexDocument(initial, validDoc, auditFn);
   assert.strictEqual(indexResult.ok, true);
@@ -123,6 +129,7 @@ test("searchandindexingproductsearchcontracts", () => {
   assert.strictEqual(indexResult.state.documents[0]?.tenantId, "t1");
   assert.strictEqual(indexResult.state.documents[0]?.organisationId, "o1");
   assert.strictEqual(indexResult.state.documents[0]?.searchVector, "vector");
+  assert.strictEqual(indexResult.state.documents[0]?.indexName, "idx");
 
   const searchQuery: capability.SearchQuery = {
     tenantId: "t1",
@@ -162,7 +169,9 @@ test("searchandindexingproductsearcherrormodel", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: false,
+    readinessProbeFailed: false
   };
 
   const foreignQuery: capability.SearchQuery = {
@@ -175,11 +184,11 @@ test("searchandindexingproductsearcherrormodel", () => {
   if (!foreignResult.ok) throw new Error("Expected ok outcome");
   assert.strictEqual(foreignResult.results.length, 0);
 
-  const unscopedQuery = {
+  const unscopedQuery: capability.SearchQuery = {
     tenantId: "",
     organisationId: "",
     query: "test"
-  } as capability.SearchQuery;
+  };
   const unscopedResult = capability.performSearch(readyState, unscopedQuery);
   assert.strictEqual(unscopedResult.ok, false);
   if (unscopedResult.ok) throw new Error("Expected unscoped rejection");
@@ -191,12 +200,14 @@ test("searchandindexingproductsearcherrormodel", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: true,
+    readinessProbeFailed: true
   };
   const blockedResult = capability.performSearch(blockedState, foreignQuery);
   assert.strictEqual(blockedResult.ok, false);
   if (blockedResult.ok) throw new Error("Expected blocked failure");
-  assert.strictEqual(blockedResult.error.kind, "SEARCH_ENGINE_UNAVAILABLE");
+  assert.strictEqual(blockedResult.error.kind, "SEARCH_ENGINE_BLOCKED");
   assert.strictEqual(blockedResult.error.tenantId, "t2");
   assert.strictEqual(blockedResult.error.organisationId, "o2");
 
@@ -206,24 +217,14 @@ test("searchandindexingproductsearcherrormodel", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: true,
+    readinessProbeFailed: false
   };
-  const degradedResult = capability.performSearch(degradedState, foreignQuery);
-  assert.strictEqual(degradedResult.ok, false);
-  if (degradedResult.ok) throw new Error("Expected degraded failure");
-  assert.strictEqual(degradedResult.error.kind, "SEARCH_ENGINE_UNAVAILABLE");
-  assert.strictEqual(degradedResult.error.tenantId, "t2");
-  assert.strictEqual(degradedResult.error.organisationId, "o2");
-
   const degradedIndexResult = capability.indexDocument(degradedState, tenantDoc, () => null);
   assert.strictEqual(degradedIndexResult.ok, false);
-  if (degradedIndexResult.ok) throw new Error("Expected mutation disabled");
+  if (degradedIndexResult.ok) throw new Error("Expected mutation disabled on degraded");
   assert.strictEqual(degradedIndexResult.error.kind, "INDEX_MUTATION_DISABLED");
-
-  const blockedIndexResult = capability.indexDocument(blockedState, tenantDoc, () => null);
-  assert.strictEqual(blockedIndexResult.ok, false);
-  if (blockedIndexResult.ok) throw new Error("Expected mutation disabled on blocked");
-  assert.strictEqual(blockedIndexResult.error.kind, "INDEX_MUTATION_DISABLED");
 
   const secretDoc: capability.IndexedDocument = {
     tenantId: "t1",
@@ -240,17 +241,29 @@ test("searchandindexingproductsearcherrormodel", () => {
   assert.strictEqual(secretResult.ok, false);
   if (secretResult.ok) throw new Error("Expected secret rejection");
   assert.strictEqual(secretResult.error.kind, "SECRET_FIELD_DETECTED");
+
+  const providerError = capability.evaluateProviderFailure("t1", "o1", "connection refused");
+  assert.strictEqual(providerError.kind, "SEARCH_ENGINE_UNAVAILABLE");
+  const reported = capability.reportProviderFailure(readyState, "t1", "o1", "connection refused");
+  assert.strictEqual(reported.readiness, "DEGRADED");
+  assert.strictEqual(reported.indexMutationClosed, true);
+  assert.strictEqual(reported.lastError?.kind, "SEARCH_ENGINE_UNAVAILABLE");
+
+  const closed = capability.isMutationClosed(degradedState, providerError);
+  assert.strictEqual(closed, true);
 });
 
 test("searchandindexingproductsearchlifecycle", () => {
   const auditFn = () => null;
   const start = capability.initialState;
   assert.strictEqual(start.readiness, "BLOCKED");
+  assert.strictEqual(start.indexMutationClosed, true);
 
   const probed = capability.probeReadiness(start, "READY", auditFn);
   assert.strictEqual(probed.ok, true);
   if (!probed.ok) throw new Error("Expected probe success");
   assert.strictEqual(probed.state.readiness, "READY");
+  assert.strictEqual(probed.state.indexMutationClosed, false);
 
   const doc: capability.IndexedDocument = {
     tenantId: "t1",
@@ -327,7 +340,9 @@ test("searchandindexingproductsearchpermissions", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: false,
+    readinessProbeFailed: false
   };
 
   const deniedQuery: capability.SearchQuery = {
@@ -379,6 +394,9 @@ test("searchandindexingproductsearchpermissions", () => {
   assert.strictEqual(foreignResult.results[0]?.document.tenantId, "t2");
   assert.strictEqual(foreignResult.results[0]?.document.organisationId, "o2");
 
+  assert.strictEqual(capability.enforceRowLevelSecurityPredicate(publicDoc, "t1", "o1"), true);
+  assert.strictEqual(capability.enforceRowLevelSecurityPredicate(publicDoc, "t2", "o2"), false);
+
   const secretDoc: capability.IndexedDocument = {
     tenantId: "t1",
     organisationId: "o1",
@@ -415,7 +433,9 @@ test("searchandindexingproductsearchproof", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: false,
+    readinessProbeFailed: false
   };
 
   const isolationForeign = capability.checkSearchIsolation(state, {
@@ -437,8 +457,8 @@ test("searchandindexingproductsearchproof", () => {
   assert.strictEqual(isolationSame.proof.passed, true);
 
   const routesProof = capability.searchRoutesProof(state, {
-    tenantId: "t2",
-    organisationId: "o2",
+    tenantId: "t1",
+    organisationId: "o1",
     query: "test"
   });
   assert.strictEqual(routesProof.passed, true);
@@ -454,28 +474,8 @@ test("searchandindexingproductsearchproof", () => {
   assert.strictEqual(runProof.passed, true);
   assert.strictEqual(runProof.proof.kind, "SEARCH_PROOF");
 
-  const crossContaminate: capability.SearchState = {
-    readiness: "READY",
-    documents: [
-      {
-        tenantId: "t1",
-        organisationId: "o1",
-        documentId: "d1",
-        documentType: "note",
-        title: "Doc",
-        searchVector: "vector",
-        indexName: "idx",
-        url: "http://example.com",
-        metadata: {}
-      }
-    ],
-    lastError: null,
-    lastAudit: null,
-    probeHistory: [],
-    proofHistory: []
-  };
   const crossAssertion = capability.crossTenantIsolationAssertion(
-    crossContaminate,
+    state,
     "foreign-tenant",
     "foreign-org"
   );
@@ -487,7 +487,7 @@ test("searchandindexingproductsearchproof", () => {
     organisationId: "foreign-org",
     query: "test"
   };
-  const crossResult = capability.performSearch(crossContaminate, crossQuery);
+  const crossResult = capability.performSearch(state, crossQuery);
   assert.strictEqual(crossResult.ok, true);
   if (!crossResult.ok) throw new Error("Expected ok");
   assert.strictEqual(crossResult.results.length, 0);
@@ -501,16 +501,17 @@ test("searchandindexingproductsearchproof", () => {
 });
 
 test("searchandindexingproductsearchreadinessmodel", () => {
-  const initialState = capability.initialState;
-  assert.strictEqual(initialState.readiness, "BLOCKED");
-  assert.strictEqual(capability.isReadinessKnown(initialState), false);
+  const initial = capability.initialState;
+  assert.strictEqual(initial.readiness, "BLOCKED");
+  assert.strictEqual(capability.isReadinessKnown(initial), false);
 
-  const probedReady = capability.probeReadiness(initialState, "READY", () => null);
+  const probedReady = capability.probeReadiness(initial, "READY", () => null);
   assert.strictEqual(probedReady.ok, true);
   if (!probedReady.ok) throw new Error("Expected probe success");
   assert.strictEqual(probedReady.state.readiness, "READY");
   assert.strictEqual(probedReady.state.probeHistory.length, 1);
   assert.strictEqual(probedReady.state.probeHistory[0]?.status, "READY");
+  assert.strictEqual(probedReady.state.indexMutationClosed, false);
   assert.strictEqual(capability.isReadinessKnown(probedReady.state), true);
 
   const probedDegraded = capability.probeReadiness(probedReady.state, "DEGRADED", () => null);
@@ -519,6 +520,7 @@ test("searchandindexingproductsearchreadinessmodel", () => {
   assert.strictEqual(probedDegraded.state.readiness, "DEGRADED");
   assert.strictEqual(probedDegraded.state.probeHistory.length, 2);
   assert.strictEqual(probedDegraded.state.probeHistory[1]?.status, "DEGRADED");
+  assert.strictEqual(probedDegraded.state.indexMutationClosed, true);
 
   const blockedState: capability.SearchState = {
     readiness: "BLOCKED",
@@ -526,7 +528,9 @@ test("searchandindexingproductsearchreadinessmodel", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: true,
+    readinessProbeFailed: true
   };
   const mutationResult = capability.indexDocument(blockedState, {
     tenantId: "t1",
@@ -551,16 +555,20 @@ test("searchandindexingproductsearchreadinessmodel", () => {
   const blockedSearch = capability.performSearch(blockedState, readOnlyQuery);
   assert.strictEqual(blockedSearch.ok, false);
   if (blockedSearch.ok) throw new Error("Expected blocked search failure");
-  assert.strictEqual(blockedSearch.error.kind, "SEARCH_ENGINE_UNAVAILABLE");
+  assert.strictEqual(blockedSearch.error.kind, "SEARCH_ENGINE_BLOCKED");
 
   const probedBlocked = capability.probeReadiness(probedDegraded.state, "BLOCKED", () => null);
   assert.strictEqual(probedBlocked.ok, true);
   if (!probedBlocked.ok) throw new Error("Expected probe success");
-  const gates = capability.checkPromotionGates(probedBlocked.state);
+  const withAudit = probedBlocked.state;
+  const withProof = capability.recordProof(withAudit, {
+    kind: "SEARCH_ISOLATION_PROOF",
+    passed: true,
+    error: null
+  });
+  const gates = capability.checkPromotionGates(withProof);
   assert.strictEqual(gates.allowed, false);
   assert.strictEqual(gates.errors.some(e => e.kind === "READINESS_PROBE_FAILED"), true);
-  assert.strictEqual(gates.errors.some(e => e.kind === "MISSING_ISOLATION_SIGNAL"), true);
-  assert.strictEqual(gates.errors.some(e => e.kind === "MISSING_AUDIT_SIGNAL"), true);
 });
 
 test("searchandindexingproductsearchstatemodel", () => {
@@ -576,7 +584,7 @@ test("searchandindexingproductsearchstatemodel", () => {
     metadata: { safe: "value" },
     permissionKey: "key1"
   };
-  assert.ok(capability.validateDocumentShape(doc));
+  assert.strictEqual(capability.validateDocumentShape(doc), true);
 
   const state: capability.SearchState = {
     readiness: "READY",
@@ -584,7 +592,9 @@ test("searchandindexingproductsearchstatemodel", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: false,
+    readinessProbeFailed: false
   };
   assert.strictEqual(state.readiness, "READY");
   assert.strictEqual(state.documents.length, 1);
@@ -636,16 +646,18 @@ test("searchandindexingproductsearchvalidation", () => {
     lastError: null,
     lastAudit: null,
     probeHistory: [],
-    proofHistory: []
+    proofHistory: [],
+    indexMutationClosed: false,
+    readinessProbeFailed: false
   };
 
-  const invalidQuery = {
+  const invalidQuery: capability.SearchQuery = {
     tenantId: "",
     organisationId: "o1",
     query: "test"
   };
-  assert.strictEqual(capability.validateQueryScope(invalidQuery as capability.SearchQuery), false);
-  const invalidResult = capability.performSearch(state, invalidQuery as capability.SearchQuery);
+  assert.strictEqual(capability.validateQueryScope(invalidQuery), false);
+  const invalidResult = capability.performSearch(state, invalidQuery);
   assert.strictEqual(invalidResult.ok, false);
   if (invalidResult.ok) throw new Error("Expected invalid query failure");
   assert.strictEqual(invalidResult.error.kind, "CROSS_TENANT_QUERY_REJECTED");

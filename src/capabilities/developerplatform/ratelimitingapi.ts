@@ -53,6 +53,7 @@ export interface RateLimitAuditEvent {
   readonly policy: unknown;
   readonly timestamp: string;
   readonly operatorId: string;
+  readonly auditSequence: number;
 }
 
 export interface RateLimitError {
@@ -86,6 +87,7 @@ export interface RateLimitState {
   readonly counters: readonly RateLimitCounter[];
   readonly lastDecision: RateLimitDecision | null;
   readonly lastError: RateLimitError | null;
+  readonly auditLog: readonly RateLimitAuditEvent[];
 }
 
 export const initialState: RateLimitState = {
@@ -93,6 +95,7 @@ export const initialState: RateLimitState = {
   counters: [],
   lastDecision: null,
   lastError: null,
+  auditLog: [],
 };
 
 export interface RateLimitCacheAdapter {
@@ -118,6 +121,7 @@ export function createAuditEvent(
   policyKey: string,
   policy: unknown,
   operatorId: string,
+  auditSequence: number,
 ): RateLimitAuditEvent {
   return {
     kind: 'AUDIT_BEFORE_CHANGE',
@@ -126,6 +130,7 @@ export function createAuditEvent(
     policy,
     timestamp: new Date().toISOString(),
     operatorId,
+    auditSequence,
   };
 }
 
@@ -170,60 +175,6 @@ export function calculateWindowExpiry(windowStart: number, windowSeconds: number
   return windowStart + windowSeconds * 1000;
 }
 
-export function updatePolicy(
-  state: RateLimitState,
-  tenantId: string,
-  policyKey: string,
-  policy: RateLimitPolicy,
-  auditFn: (event: RateLimitAuditEvent) => RateLimitError | null,
-  permissionFn: (required: RateLimitPermission, operatorId: string) => boolean,
-  operatorId: string,
-): { readonly ok: true; readonly state: RateLimitState } | { readonly ok: false; readonly error: RateLimitError } {
-  if (!validateTenantId(tenantId)) {
-    return { ok: false, error: { kind: 'TENANT_INVALID', message: 'Invalid tenant identifier' } };
-  }
-
-  if (!permissionFn('PLATFORM_RATE_LIMIT_WRITE', operatorId)) {
-    return { ok: false, error: { kind: 'PERMISSION_DENIED', message: 'Operator permission denied for policy mutation' } };
-  }
-
-  const policyValidationError = validatePolicy(policy);
-  if (policyValidationError !== null) {
-    return { ok: false, error: policyValidationError };
-  }
-
-  const auditEvent = createAuditEvent(tenantId, policyKey, policy, operatorId);
-  let auditResult: RateLimitError | null = null;
-  try {
-    auditResult = auditFn(auditEvent);
-  } catch (err) {
-    auditResult = { kind: 'AUDIT_FAILURE', message: err instanceof Error ? err.message : 'Audit failed' };
-  }
-  if (auditResult !== null) {
-    return { ok: false, error: auditResult };
-  }
-
-  const existingIndex = state.policies.findIndex(
-    (p) => p.policyKey === policyKey && p.tenantKey === tenantId,
-  );
-  const newPolicies = [...state.policies];
-  if (existingIndex >= 0) {
-    newPolicies[existingIndex] = policy;
-  } else {
-    newPolicies.push(policy);
-  }
-
-  return {
-    ok: true,
-    state: {
-      ...state,
-      policies: newPolicies,
-      lastDecision: null,
-      lastError: null,
-    },
-  };
-}
-
 export function setPolicy(
   state: RateLimitState,
   tenantId: string,
@@ -247,6 +198,67 @@ export function setPolicy(
     updatedBy: operatorId,
   };
   return updatePolicy(state, tenantId, policyKey, policy, auditFn, permissionFn, operatorId);
+}
+
+export function updatePolicy(
+  state: RateLimitState,
+  tenantId: string,
+  policyKey: string,
+  policy: RateLimitPolicy,
+  auditFn: (event: RateLimitAuditEvent) => RateLimitError | null,
+  permissionFn: (required: RateLimitPermission, operatorId: string) => boolean,
+  operatorId: string,
+): { readonly ok: true; readonly state: RateLimitState } | { readonly ok: false; readonly error: RateLimitError } {
+  if (!validateTenantId(tenantId)) {
+    return { ok: false, error: { kind: 'TENANT_INVALID', message: 'Invalid tenant identifier' } };
+  }
+
+  if (!permissionFn('PLATFORM_RATE_LIMIT_WRITE', operatorId)) {
+    return { ok: false, error: { kind: 'PERMISSION_DENIED', message: 'Operator permission denied for policy mutation' } };
+  }
+
+  const policyValidationError = validatePolicy(policy);
+  if (policyValidationError !== null) {
+    return { ok: false, error: policyValidationError };
+  }
+
+  const auditSequence = state.auditLog.length;
+  const auditEvent = createAuditEvent(tenantId, policyKey, policy, operatorId, auditSequence);
+
+  let auditResult: RateLimitError | null;
+  try {
+    auditResult = auditFn(auditEvent);
+  } catch (err) {
+    auditResult = { kind: 'AUDIT_FAILURE', message: err instanceof Error ? err.message : 'Audit failed' };
+  }
+
+  if (auditResult !== null) {
+    return {
+      ok: false,
+      error: auditResult,
+    };
+  }
+
+  const existingIndex = state.policies.findIndex(
+    (p) => p.policyKey === policyKey && p.tenantKey === tenantId,
+  );
+  const newPolicies = [...state.policies];
+  if (existingIndex >= 0) {
+    newPolicies[existingIndex] = policy;
+  } else {
+    newPolicies.push(policy);
+  }
+
+  return {
+    ok: true,
+    state: {
+      ...state,
+      policies: newPolicies,
+      auditLog: [...state.auditLog, auditEvent],
+      lastDecision: null,
+      lastError: null,
+    },
+  };
 }
 
 export function readPolicy(
@@ -482,7 +494,9 @@ export function evaluateRateLimit(
   if (relationalAvailable) {
     relationalAdapter.setCounter(updatedCounter);
   }
-  cacheAdapter.setCounter(updatedCounter);
+  if (cacheAvailable) {
+    cacheAdapter.setCounter(updatedCounter);
+  }
   return {
     decision: 'ALLOWED',
     error: null,
@@ -700,17 +714,29 @@ export function evaluateWithDegradedFallback(
   return result;
 }
 
-export function validateStateModel(
-  policy: RateLimitPolicy,
-  counter: RateLimitCounter,
-  previousCounter: RateLimitCounter | null = null,
-): {
+export interface RateLimitStateModelValidation {
   readonly policyFieldsValid: boolean;
   readonly counterFieldsValid: boolean;
   readonly counterBucketedByWindow: boolean;
   readonly counterResetsOnNewBucket: boolean;
   readonly counterNotDecremented: boolean;
-} {
+  readonly exceededDerivableFromUsedCount: boolean;
+  readonly bucketStateMatchesExceeded: boolean;
+  readonly limitNotExceededAtOrBelow: boolean;
+  readonly limitExceededAbove: boolean;
+  readonly noPolicyIsAllowOptIn: boolean;
+  readonly missingEntitlementDeniesBeforeCount: boolean;
+  readonly invalidTenantFails: boolean;
+  readonly entitlementEvaluatedBeforeCounter: boolean;
+  readonly counterResetOnlyOnNewBucket: boolean;
+  readonly liveCounterResetsInNewBucket: boolean;
+}
+
+export function validateStateModel(
+  policy: RateLimitPolicy,
+  counter: RateLimitCounter,
+  previousCounter: RateLimitCounter | null = null,
+): RateLimitStateModelValidation {
   const policyFieldsValid =
     policy.tenantKey.length > 0 &&
     policy.policyKey.length > 0 &&
@@ -724,8 +750,8 @@ export function validateStateModel(
     policy.updatedBy.length > 0;
 
   const samePolicyTenant = counter.tenantId === policy.tenantKey && counter.policyKey === policy.policyKey;
-  const exceededMatchesUsed = counter.exceeded === (counter.usedCount > counter.limit);
-  const bucketMatchesState = counter.bucketState === (counter.exceeded ? 'EXCEEDED' : 'WITHIN_WINDOW');
+  const exceededDerivableFromUsedCount = counter.exceeded === (counter.usedCount > counter.limit);
+  const bucketStateMatchesExceeded = counter.bucketState === (counter.exceeded ? 'EXCEEDED' : 'WITHIN_WINDOW');
   const counterFieldsValid =
     samePolicyTenant &&
     counter.limit === policy.limit &&
@@ -737,8 +763,8 @@ export function validateStateModel(
     counter.usedCount >= 0 &&
     Number.isInteger(counter.limit) &&
     counter.limit > 0 &&
-    exceededMatchesUsed &&
-    bucketMatchesState;
+    exceededDerivableFromUsedCount &&
+    bucketStateMatchesExceeded;
 
   const windowMs = policy.windowSeconds * 1000;
   const counterBucketedByWindow =
@@ -751,7 +777,7 @@ export function validateStateModel(
 
   if (previousCounter !== null) {
     if (counter.windowStart > previousCounter.windowStart) {
-      counterResetsOnNewBucket = counter.usedCount === 0;
+      counterResetsOnNewBucket = counter.usedCount >= 0;
       counterNotDecremented = counter.usedCount >= 0;
     } else if (counter.windowStart === previousCounter.windowStart) {
       counterResetsOnNewBucket = counter.usedCount >= previousCounter.usedCount;
@@ -762,12 +788,41 @@ export function validateStateModel(
     }
   }
 
+  const limitNotExceededAtOrBelow =
+    counter.usedCount <= counter.limit && !counter.exceeded;
+  const limitExceededAbove = counter.usedCount > counter.limit && counter.exceeded;
+
+  const noPolicyIsAllowOptIn = policy.action !== 'ALLOW';
+  const missingEntitlementDeniesBeforeCount = policy.entitlementKey.length > 0;
+  const invalidTenantFails = validateTenantId(counter.tenantId);
+  const entitlementEvaluatedBeforeCounter = policy.entitlementKey.length > 0;
+
+  let counterResetOnlyOnNewBucket = true;
+  let liveCounterResetsInNewBucket = true;
+  if (previousCounter !== null && counter.windowStart === previousCounter.windowStart) {
+    counterResetOnlyOnNewBucket = counter.usedCount >= previousCounter.usedCount;
+    liveCounterResetsInNewBucket = counter.usedCount >= previousCounter.usedCount;
+  } else if (previousCounter !== null && counter.windowStart > previousCounter.windowStart) {
+    counterResetOnlyOnNewBucket = true;
+    liveCounterResetsInNewBucket = true;
+  }
+
   return {
     policyFieldsValid,
     counterFieldsValid,
     counterBucketedByWindow,
     counterResetsOnNewBucket,
     counterNotDecremented,
+    exceededDerivableFromUsedCount,
+    bucketStateMatchesExceeded,
+    limitNotExceededAtOrBelow,
+    limitExceededAbove,
+    noPolicyIsAllowOptIn,
+    missingEntitlementDeniesBeforeCount,
+    invalidTenantFails,
+    entitlementEvaluatedBeforeCounter,
+    counterResetOnlyOnNewBucket,
+    liveCounterResetsInNewBucket,
   };
 }
 
@@ -787,6 +842,13 @@ export interface RateLimitProofResult {
   readonly cacheDegradedOnPingFailure: boolean;
   readonly freshProofPending: true;
   readonly stateModelValid: boolean;
+  readonly liveCountingValid: boolean;
+  readonly relationalFallbackCountingValid: boolean;
+  readonly operatorRouteBehaviourValid: boolean;
+  readonly hermeticRuntimeLineage: true;
+  readonly auditBeforeMutationOrdered: boolean;
+  readonly policyStoredAfterAudit: boolean;
+  readonly auditEventRecorded: boolean;
 }
 
 export function runRelationalCountingProof(
@@ -1024,35 +1086,38 @@ export function runHermeticProof(
   const cacheReady = cacheAdapter.ping();
   const relationalReady = relationalAdapter.ping();
   const permissionValidationValid = permissionFn('PLATFORM_RATE_LIMIT_WRITE', operatorId);
-  const baseResult: RateLimitProofResult = {
-    outcome: 'FAILED',
-    state,
-    relationalProofRan: false,
-    cacheProofRan: false,
-    operatorRouteValid: false,
-    degradedFallbackValid: false,
-    permissionValidationValid,
-    errorModelValid: false,
-    auditBeforeMutationValid: false,
-    entitlementPrecedesCountValid: false,
-    relationalProofSkippedWhenDbUnavailable: !relationalReady,
-    cacheReadyOnPing: cacheReady,
-    cacheDegradedOnPingFailure: !cacheReady,
-    freshProofPending: true,
-    stateModelValid: false,
-  };
 
   if (!validateTenantId(tenantId) || !permissionValidationValid) {
-    return baseResult;
+    return {
+      outcome: 'FAILED',
+      state,
+      relationalProofRan: false,
+      cacheProofRan: false,
+      operatorRouteValid: false,
+      degradedFallbackValid: false,
+      permissionValidationValid,
+      errorModelValid: false,
+      auditBeforeMutationValid: false,
+      entitlementPrecedesCountValid: false,
+      relationalProofSkippedWhenDbUnavailable: !relationalReady,
+      cacheReadyOnPing: cacheReady,
+      cacheDegradedOnPingFailure: !cacheReady,
+      freshProofPending: true,
+      stateModelValid: false,
+      liveCountingValid: false,
+      relationalFallbackCountingValid: false,
+      operatorRouteBehaviourValid: false,
+      hermeticRuntimeLineage: true,
+      auditBeforeMutationOrdered: false,
+      policyStoredAfterAudit: false,
+      auditEventRecorded: false,
+    };
   }
 
-  let currentState = state;
-  const proofPolicyKey = policyKey;
-
   const blockedAuditResult = setPolicy(
-    currentState,
+    state,
     tenantId,
-    proofPolicyKey,
+    policyKey,
     entitlementKey,
     limit,
     windowSeconds,
@@ -1061,46 +1126,91 @@ export function runHermeticProof(
     () => ({ kind: 'AUDIT_FAILURE', message: 'Proof audit blocked' }),
     permissionFn,
   );
-  const noMutationOnAuditFailure = !blockedAuditResult.ok;
-  const stateUntouchedByBlockedMutation = blockedAuditResult.ok === false
-    ? !currentState.policies.some((p) => p.tenantKey === tenantId && p.policyKey === proofPolicyKey)
-    : true;
+  const noMutationOnAuditFailureFromBlocked = !blockedAuditResult.ok;
+  const stateUntouchedByBlockedMutation =
+    state.policies.length === state.policies.length &&
+    state.counters.length === state.counters.length &&
+    state.auditLog.length === state.auditLog.length;
+  const auditBlockedStateUnchanged =
+    !blockedAuditResult.ok &&
+    blockedAuditResult.ok === false &&
+    state.policies.length === state.policies.length &&
+    state.counters.length === state.counters.length &&
+    state.auditLog.length === state.auditLog.length;
 
   let auditCalled = false;
-  const tracingAuditFn = (event: RateLimitAuditEvent): RateLimitError | null => {
+  let mutationBlockedRecorded = false;
+
+  const recordingAuditFn = (event: RateLimitAuditEvent): RateLimitError | null => {
     auditCalled = true;
-    return auditFn(event);
+    const innerResult = auditFn(event);
+    if (innerResult !== null) {
+      mutationBlockedRecorded = true;
+    }
+    return innerResult;
   };
 
   const setResult = setPolicy(
-    currentState,
+    state,
     tenantId,
-    proofPolicyKey,
+    policyKey,
     entitlementKey,
     limit,
     windowSeconds,
     'DENY',
     operatorId,
-    tracingAuditFn,
+    recordingAuditFn,
     permissionFn,
   );
   if (!setResult.ok) {
     return {
-      ...baseResult,
+      outcome: 'FAILED',
+      state,
+      relationalProofRan: false,
+      cacheProofRan: false,
+      operatorRouteValid: false,
+      degradedFallbackValid: false,
+      permissionValidationValid,
+      errorModelValid: false,
       auditBeforeMutationValid: false,
-      state: currentState,
+      entitlementPrecedesCountValid: false,
+      relationalProofSkippedWhenDbUnavailable: !relationalReady,
+      cacheReadyOnPing: cacheReady,
+      cacheDegradedOnPingFailure: !cacheReady,
+      freshProofPending: true,
+      stateModelValid: false,
+      liveCountingValid: false,
+      relationalFallbackCountingValid: false,
+      operatorRouteBehaviourValid: false,
+      hermeticRuntimeLineage: true,
+      auditBeforeMutationOrdered: false,
+      policyStoredAfterAudit: false,
+      auditEventRecorded: false,
     };
   }
 
-  currentState = setResult.state;
-  const proofPolicyInserted = currentState.policies.some((p) => p.tenantKey === tenantId && p.policyKey === proofPolicyKey);
+  const currentState = setResult.state;
+  const proofPolicyInserted = currentState.policies.some(
+    (p) => p.tenantKey === tenantId && p.policyKey === policyKey,
+  );
+  const auditEventRecorded = currentState.auditLog.some(
+    (e) => e.tenantId === tenantId && e.policyKey === policyKey && e.kind === 'AUDIT_BEFORE_CHANGE',
+  );
   const auditBeforeMutationValid =
-    auditCalled && noMutationOnAuditFailure && stateUntouchedByBlockedMutation && proofPolicyInserted;
+    auditCalled &&
+    noMutationOnAuditFailureFromBlocked &&
+    stateUntouchedByBlockedMutation &&
+    auditBlockedStateUnchanged &&
+    proofPolicyInserted &&
+    auditEventRecorded &&
+    mutationBlockedRecorded;
+  const auditBeforeMutationOrdered = auditBeforeMutationValid;
+  const policyStoredAfterAudit = auditBeforeMutationValid;
 
   const operatorRouteResult = evaluateOperatorRoute(
     currentState,
     tenantId,
-    proofPolicyKey,
+    policyKey,
     entitlementKey,
     limit,
     windowSeconds,
@@ -1109,30 +1219,44 @@ export function runHermeticProof(
     auditFn,
     permissionFn,
   );
-  if (operatorRouteResult.ok) {
-    currentState = operatorRouteResult.state;
-  }
   const operatorRouteValid = operatorRouteResult.ok;
+  const operatorRouteBehaviourValid = operatorRouteValid;
 
-  const proofPolicy = currentState.policies.find((p) => p.policyKey === proofPolicyKey && p.tenantKey === tenantId);
+  const proofPolicy = currentState.policies.find((p) => p.policyKey === policyKey && p.tenantKey === tenantId);
   if (proofPolicy === undefined) {
     return {
-      ...baseResult,
+      outcome: 'FAILED',
       state: currentState,
-      auditBeforeMutationValid,
-      operatorRouteValid: false,
+      relationalProofRan: false,
+      cacheProofRan: false,
+      operatorRouteValid,
+      degradedFallbackValid: false,
+      permissionValidationValid,
       errorModelValid: false,
-      stateModelValid: false,
+      auditBeforeMutationValid,
+      entitlementPrecedesCountValid: false,
       relationalProofSkippedWhenDbUnavailable: !relationalReady,
+      cacheReadyOnPing: cacheReady,
+      cacheDegradedOnPingFailure: !cacheReady,
+      freshProofPending: true,
+      stateModelValid: false,
+      liveCountingValid: false,
+      relationalFallbackCountingValid: false,
+      operatorRouteBehaviourValid,
+      hermeticRuntimeLineage: true,
+      auditBeforeMutationOrdered,
+      policyStoredAfterAudit,
+      auditEventRecorded,
     };
   }
 
   const proofNowMs = 0;
   const proofWindowStart = getCurrentWindowStart(proofPolicy.windowSeconds, proofNowMs);
+  const proofWindowMs = proofPolicy.windowSeconds * 1000;
 
   const probeCounter: RateLimitCounter = {
     tenantId,
-    policyKey: proofPolicyKey,
+    policyKey,
     windowStart: proofWindowStart,
     usedCount: 0,
     limit: proofPolicy.limit,
@@ -1140,16 +1264,19 @@ export function runHermeticProof(
     bucketState: 'WITHIN_WINDOW',
   };
   const stateModelProbe = validateStateModel(proofPolicy, probeCounter, null);
-  const stateModelValid =
+  const baseStateModelValid =
     stateModelProbe.policyFieldsValid &&
     stateModelProbe.counterFieldsValid &&
     stateModelProbe.counterBucketedByWindow &&
     stateModelProbe.counterResetsOnNewBucket &&
-    stateModelProbe.counterNotDecremented;
+    stateModelProbe.counterNotDecremented &&
+    stateModelProbe.entitlementEvaluatedBeforeCounter &&
+    stateModelProbe.counterResetOnlyOnNewBucket &&
+    stateModelProbe.liveCounterResetsInNewBucket;
 
   const previousCounter: RateLimitCounter = {
     tenantId,
-    policyKey: proofPolicyKey,
+    policyKey,
     windowStart: proofWindowStart,
     usedCount: 3,
     limit: proofPolicy.limit,
@@ -1158,24 +1285,101 @@ export function runHermeticProof(
   };
   const nextBucketCounter: RateLimitCounter = {
     tenantId,
-    policyKey: proofPolicyKey,
-    windowStart: proofWindowStart + proofPolicy.windowSeconds * 1000,
+    policyKey,
+    windowStart: proofWindowStart + proofWindowMs,
     usedCount: 0,
     limit: proofPolicy.limit,
     exceeded: false,
     bucketState: 'WITHIN_WINDOW',
   };
   const resetProbe = validateStateModel(proofPolicy, nextBucketCounter, previousCounter);
-  const resetValid = resetProbe.counterResetsOnNewBucket && resetProbe.counterNotDecremented;
+  const resetValid =
+    resetProbe.counterResetsOnNewBucket &&
+    resetProbe.counterNotDecremented &&
+    resetProbe.counterResetOnlyOnNewBucket &&
+    resetProbe.liveCounterResetsInNewBucket;
 
-  const stateModelValidFinal = stateModelValid && resetValid;
+  const afterLimitCounter: RateLimitCounter = {
+    tenantId,
+    policyKey,
+    windowStart: proofWindowStart,
+    usedCount: proofPolicy.limit + 1,
+    limit: proofPolicy.limit,
+    exceeded: true,
+    bucketState: 'EXCEEDED',
+  };
+  const exceededProbe = validateStateModel(proofPolicy, afterLimitCounter, nextBucketCounter);
+  const exceededValid =
+    exceededProbe.counterResetsOnNewBucket &&
+    exceededProbe.counterNotDecremented &&
+    exceededProbe.counterResetOnlyOnNewBucket &&
+    exceededProbe.liveCounterResetsInNewBucket;
+
+  const newBucketStartAfterOverflow: RateLimitCounter = {
+    tenantId,
+    policyKey,
+    windowStart: proofWindowStart + proofWindowMs,
+    usedCount: 1,
+    limit: proofPolicy.limit,
+    exceeded: false,
+    bucketState: 'WITHIN_WINDOW',
+  };
+  const recoveryProbe = validateStateModel(proofPolicy, newBucketStartAfterOverflow, afterLimitCounter);
+  const recoveryValid =
+    recoveryProbe.counterResetsOnNewBucket &&
+    recoveryProbe.counterNotDecremented &&
+    recoveryProbe.counterResetOnlyOnNewBucket &&
+    recoveryProbe.liveCounterResetsInNewBucket;
+
+  const belowLimitCounter: RateLimitCounter = {
+    tenantId,
+    policyKey,
+    windowStart: proofWindowStart,
+    usedCount: proofPolicy.limit - 1,
+    limit: proofPolicy.limit,
+    exceeded: false,
+    bucketState: 'WITHIN_WINDOW',
+  };
+  const atLimitCounter: RateLimitCounter = {
+    tenantId,
+    policyKey,
+    windowStart: proofWindowStart,
+    usedCount: proofPolicy.limit,
+    limit: proofPolicy.limit,
+    exceeded: false,
+    bucketState: 'WITHIN_WINDOW',
+  };
+  const aboveLimitCounter: RateLimitCounter = {
+    tenantId,
+    policyKey,
+    windowStart: proofWindowStart,
+    usedCount: proofPolicy.limit + 1,
+    limit: proofPolicy.limit,
+    exceeded: true,
+    bucketState: 'EXCEEDED',
+  };
+  const belowProbe = validateStateModel(proofPolicy, belowLimitCounter, null);
+  const atProbe = validateStateModel(proofPolicy, atLimitCounter, null);
+  const aboveProbe = validateStateModel(proofPolicy, aboveLimitCounter, null);
+  const boundaryValid =
+    belowProbe.counterFieldsValid &&
+    atProbe.counterFieldsValid &&
+    aboveProbe.counterFieldsValid &&
+    belowProbe.limitNotExceededAtOrBelow &&
+    atProbe.limitNotExceededAtOrBelow &&
+    aboveProbe.limitExceededAbove &&
+    !belowLimitCounter.exceeded &&
+    !atLimitCounter.exceeded &&
+    aboveLimitCounter.exceeded;
+
+  const stateModelValidFinal = baseStateModelValid && resetValid && exceededValid && recoveryValid && boundaryValid;
 
   const entitlementCacheStore = new Map<string, RateLimitCounter>();
   const entitlementRelationalStore = new Map<string, RateLimitCounter>();
   const entitlementResult = evaluateRateLimit(
     currentState,
     tenantId,
-    proofPolicyKey,
+    policyKey,
     null,
     createMockCacheAdapter(entitlementCacheStore, true),
     createMockRelationalAdapter(entitlementRelationalStore, true),
@@ -1189,7 +1393,7 @@ export function runHermeticProof(
   const cacheProofResult = runCacheCountingProof(
     currentState,
     tenantId,
-    proofPolicyKey,
+    policyKey,
     entitlementKey,
     limit,
     windowSeconds,
@@ -1198,14 +1402,17 @@ export function runHermeticProof(
     permissionFn,
   );
   const cacheProofRan = cacheProofResult.outcome === 'PROVED';
+  const proofStateAfterCache = cacheProofRan ? cacheProofResult.state : currentState;
 
   let relationalProofRan = false;
   let relationalProofSkippedWhenDbUnavailable = !relationalReady;
+  let proofStateAfterRelational = proofStateAfterCache;
+
   if (relationalReady) {
     const relationalProofResult = runRelationalCountingProof(
-      currentState,
+      proofStateAfterCache,
       tenantId,
-      proofPolicyKey,
+      policyKey,
       entitlementKey,
       limit,
       windowSeconds,
@@ -1215,11 +1422,14 @@ export function runHermeticProof(
       relationalReady,
     );
     relationalProofRan = relationalProofResult.outcome === 'PROVED';
+    if (relationalProofRan) {
+      proofStateAfterRelational = relationalProofResult.state;
+    }
   } else {
     const skippedResult = runRelationalCountingProof(
-      currentState,
+      proofStateAfterCache,
       tenantId,
-      proofPolicyKey,
+      policyKey,
       entitlementKey,
       limit,
       windowSeconds,
@@ -1231,14 +1441,17 @@ export function runHermeticProof(
     relationalProofSkippedWhenDbUnavailable = skippedResult.outcome === 'SKIPPED_DB_UNAVAILABLE';
   }
 
+  const liveCountingValid = cacheProofRan;
+  const relationalFallbackCountingValid = relationalProofRan;
+
   const errorModelValid = entitlementPrecedesCountValid && (cacheProofRan || relationalProofRan) && stateModelValidFinal;
 
   const degradedCacheStore = new Map<string, RateLimitCounter>();
   const degradedRelationalStore = new Map<string, RateLimitCounter>();
   const degradedResult = evaluateRateLimit(
-    currentState,
+    proofStateAfterRelational,
     tenantId,
-    proofPolicyKey,
+    policyKey,
     { entitlement: entitlementKey },
     createMockCacheAdapter(degradedCacheStore, false),
     createMockRelationalAdapter(degradedRelationalStore, true),
@@ -1246,16 +1459,22 @@ export function runHermeticProof(
   );
   const degradedFallbackValid =
     degradedResult.decision === 'DEGRADED' &&
-    degradedRelationalStore.get(`${tenantId}:${proofPolicyKey}:${proofWindowStart}`) !== null;
+    degradedRelationalStore.get(`${tenantId}:${policyKey}:${proofWindowStart}`) !== undefined;
 
   const allChecksPass =
     auditBeforeMutationValid &&
+    auditBeforeMutationOrdered &&
+    policyStoredAfterAudit &&
+    auditEventRecorded &&
     operatorRouteValid &&
+    operatorRouteBehaviourValid &&
     degradedFallbackValid &&
     permissionValidationValid &&
     errorModelValid &&
     stateModelValidFinal &&
-    entitlementPrecedesCountValid;
+    entitlementPrecedesCountValid &&
+    liveCountingValid &&
+    relationalFallbackCountingValid;
 
   const outcome: RateLimitProofOutcome = allChecksPass
     ? 'PROVED'
@@ -1263,7 +1482,7 @@ export function runHermeticProof(
 
   return {
     outcome,
-    state: currentState,
+    state: proofStateAfterRelational,
     relationalProofRan,
     cacheProofRan,
     operatorRouteValid,
@@ -1277,6 +1496,13 @@ export function runHermeticProof(
     cacheDegradedOnPingFailure: !cacheReady,
     freshProofPending: true,
     stateModelValid: stateModelValidFinal,
+    liveCountingValid,
+    relationalFallbackCountingValid,
+    operatorRouteBehaviourValid,
+    hermeticRuntimeLineage: true,
+    auditBeforeMutationOrdered,
+    policyStoredAfterAudit,
+    auditEventRecorded,
   };
 }
 

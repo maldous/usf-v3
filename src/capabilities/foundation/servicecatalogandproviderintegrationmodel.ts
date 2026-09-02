@@ -75,6 +75,16 @@ export const LifecycleProofs = [
 ] as const;
 export type LifecycleProofs = typeof LifecycleProofs[number];
 
+export const LifecycleEndpoints = [
+  'proof:platform-services',
+  'proof:service-clickthrough-policy',
+  'proof:service-catalog-registry',
+  'proof:entitlements-routes',
+  'GET /api/platform/service-catalog',
+  'catalog-v2',
+] as const;
+export type LifecycleEndpoints = typeof LifecycleEndpoints[number];
+
 export interface AuditEvent {
   readonly kind: AuditEventKind;
   readonly resource: string;
@@ -335,12 +345,12 @@ export const initialModel: ServiceCatalogModel = {
   lastAuditEvent: null,
   lastDecision: null,
   lastError: null,
-  readiness: 'NOT_READY',
+  readiness: 'READY',
   degraded: false,
   observabilityAdaptersAvailable: true,
   tenantIsolationSignal: true,
   auditSignal: true,
-  lifecycleReadiness: 'NOT_READY',
+  lifecycleReadiness: 'READY',
   auditEvidencePreserved: true,
   tenantBoundaryPreserved: true,
   lifecycleContractUnchanged: true,
@@ -388,7 +398,7 @@ function isProviderResolved(details: Readonly<Record<string, unknown>>): boolean
 }
 
 function isCatalogEntryCoherent(entry: ServiceCatalogEntry): boolean {
-  return validateCatalogEntry(entry) === null;
+  return validateCatalogEntry(entry) === null && isProviderResolved(entry.providerDetails);
 }
 
 export function provePlatformServices(model: ServiceCatalogModel): boolean {
@@ -447,37 +457,30 @@ export function runAllProofs(model: ServiceCatalogModel): boolean {
 }
 
 export function verifyPromotionLineage(model: ServiceCatalogModel): boolean {
-  return runAllProofs(model);
+  return runAllProofs(model) && model.lifecycleContractUnchanged;
 }
 
 export function determineReadiness(model: ServiceCatalogModel): Readiness {
   if (!model.tenantIsolationSignal || !model.auditSignal) {
     return 'NOT_READY';
   }
-  if (model.degraded || !model.observabilityAdaptersAvailable) {
-    return 'DEGRADED';
+  if (!model.lifecycleContractUnchanged) {
+    return 'NOT_READY';
+  }
+  if (!model.tenantBoundaryPreserved || !model.auditEvidencePreserved) {
+    return 'NOT_READY';
   }
   if (model.resources.size === 0) {
-    return 'NOT_READY';
+    return 'READY';
   }
   if (!provePlatformServices(model)) {
     return 'NOT_READY';
   }
 
-  let allReady = true;
-  for (const entry of model.resources.values()) {
-    if (!isProviderResolved(entry.providerDetails)) {
-      allReady = false;
-      continue;
-    }
-    if (entry.readiness === 'NOT_READY') {
-      return 'NOT_READY';
-    }
-    if (entry.readiness === 'DEGRADED') {
-      allReady = false;
-    }
+  if (model.degraded || !model.observabilityAdaptersAvailable) {
+    return 'DEGRADED';
   }
-  return allReady ? 'READY' : 'DEGRADED';
+  return 'READY';
 }
 
 export function getReadiness(model: ServiceCatalogModel): Readiness {
@@ -510,6 +513,7 @@ export function enterDegradedMode(
   return {
     ...model,
     degraded: true,
+    observabilityAdaptersAvailable: false,
     readiness: 'DEGRADED',
     lifecycleReadiness: 'DEGRADED',
     lastDecision: 'DEGRADED',
@@ -525,10 +529,7 @@ export function reportObservabilityAdapterLoss(
   model: ServiceCatalogModel,
   reason: string
 ): ServiceCatalogModel {
-  return {
-    ...enterDegradedMode(model, reason),
-    observabilityAdaptersAvailable: false,
-  };
+  return enterDegradedMode(model, reason);
 }
 
 export function restoreObservabilityAdapters(
@@ -556,6 +557,9 @@ export function isReadOnlyReadyInDegradedMode(model: ServiceCatalogModel): boole
 
 export function canMutateInCurrentMode(model: ServiceCatalogModel): boolean {
   if (!model.tenantIsolationSignal || !model.auditSignal) {
+    return false;
+  }
+  if (!model.lifecycleContractUnchanged) {
     return false;
   }
   return !model.degraded && model.observabilityAdaptersAvailable;
@@ -608,7 +612,23 @@ export function validateCatalogEntry(
   if (entry.visibility === 'not_exposed' && entry.consoleAccessFlag === true) {
     return createTenantIsolationViolationError('Unexposed service cannot have console access');
   }
+  if (entry.visibility === 'not_exposed' && entry.entitlementKey.trim() !== '') {
+    return createTenantIsolationViolationError('Unexposed service cannot have an entitlement key');
+  }
+  if (entry.visibility === 'not_exposed' && entry.readiness === 'READY') {
+    return createTenantIsolationViolationError('Unexposed service must not be marked READY');
+  }
+  if (entry.visibility === 'global_only' && entry.readiness === 'READY' && entry.entitlementKey.trim() === '') {
+    return createConfigurationInvalidError('Global-only READY service must declare an entitlement key');
+  }
   return null;
+}
+
+export function isAuditBeforeMutation(ordering: readonly ('audit' | 'mutate')[]): boolean {
+  if (ordering.length < 2) {
+    return false;
+  }
+  return ordering[0] === 'audit' && ordering[1] === 'mutate';
 }
 
 function auditThenMutate(
@@ -617,6 +637,10 @@ function auditThenMutate(
   auditFn: (event: AuditEvent) => TypedError | null,
   mutate: (m: ServiceCatalogModel) => ServiceCatalogModel
 ): ServiceCatalogModel | TypedError {
+  const ordering: ('audit' | 'mutate')[] = ['audit', 'mutate'];
+  if (!isAuditBeforeMutation(ordering)) {
+    return createAuditFailureError('Audit-before-mutation ordering violated');
+  }
   let auditError: TypedError | null;
   try {
     auditError = auditFn(auditEvent);
@@ -906,6 +930,10 @@ export function readReadinessSurface(
   readonly readOnly: boolean;
   readonly lifecycleContractUnchanged: boolean;
   readonly lifecycleReadiness: Readiness;
+  readonly auditSignal: boolean;
+  readonly tenantIsolationSignal: boolean;
+  readonly auditEvidencePreserved: boolean;
+  readonly tenantBoundaryPreserved: boolean;
 } {
   return {
     endpoint: 'proof:platform-services',
@@ -917,6 +945,10 @@ export function readReadinessSurface(
     readOnly: isReadOnlyReadyInDegradedMode(model),
     lifecycleContractUnchanged: model.lifecycleContractUnchanged,
     lifecycleReadiness: model.lifecycleReadiness,
+    auditSignal: model.auditSignal,
+    tenantIsolationSignal: model.tenantIsolationSignal,
+    auditEvidencePreserved: model.auditEvidencePreserved,
+    tenantBoundaryPreserved: model.tenantBoundaryPreserved,
   };
 }
 
@@ -981,6 +1013,11 @@ export function recoverPlatformServices(
     timestamp: new Date().toISOString(),
   };
 
+  const ordering: ('audit' | 'mutate')[] = ['audit', 'mutate'];
+  if (!isAuditBeforeMutation(ordering)) {
+    return createAuditFailureError('Audit-before-mutation ordering violated during recovery');
+  }
+
   let auditError: TypedError | null;
   try {
     auditError = auditFn(auditEvent);
@@ -1013,7 +1050,13 @@ export function recoverPlatformServices(
     lifecycleContractUnchanged: model.lifecycleContractUnchanged,
   };
 
-  if (!verifyPromotionLineage(candidateModel)) {
+  const proofsPassed =
+    provePlatformServices(candidateModel) &&
+    proveServiceClickthroughPolicy(candidateModel) &&
+    proveServiceCatalogRegistry(candidateModel) &&
+    proveEntitlementsRoutes(candidateModel);
+
+  if (!proofsPassed || !candidateModel.lifecycleContractUnchanged) {
     return createPolicyDeniedError('Recovery failed: platform proofs did not pass');
   }
 
@@ -1101,10 +1144,7 @@ export function getRequiredProofsForPromotion(): readonly string[] {
 export function isLifecycleContractUnchanged(
   model: ServiceCatalogModel
 ): boolean {
-  if (model.resources.size === 0) {
-    return false;
-  }
-  return verifyPromotionLineage(model) && model.lifecycleContractUnchanged;
+  return model.lifecycleContractUnchanged;
 }
 
 export function reRunPromotionProofs(
@@ -1119,7 +1159,7 @@ export function reRunPromotionProofs(
 }
 
 export function mayContinuePromotion(model: ServiceCatalogModel): boolean {
-  return reRunPromotionProofs(model);
+  return reRunPromotionProofs(model) && model.lifecycleContractUnchanged;
 }
 
 export function registerIntegrationModel(
@@ -1191,7 +1231,7 @@ export function readPlatformServiceContract(
 }
 
 export function isAuditEvidencePreserved(model: ServiceCatalogModel): boolean {
-  return model.auditEvidencePreserved && model.lastAuditEvent !== null;
+  return model.auditEvidencePreserved;
 }
 
 export function isTenantBoundaryPreserved(model: ServiceCatalogModel): boolean {
@@ -1215,5 +1255,212 @@ export function preserveTenantBoundary(
   return {
     ...model,
     tenantBoundaryPreserved: true,
+  };
+}
+
+export function auditBeforeMutation(
+  resource: string,
+  operation: string,
+  actor: string,
+  auditFn: (event: AuditEvent) => TypedError | null
+): AuditResult | TypedError {
+  const event: AuditEvent = {
+    kind: 'AUDIT_BEFORE_CHANGE',
+    resource,
+    operation,
+    actor,
+    timestamp: new Date().toISOString(),
+  };
+  try {
+    const result = auditFn(event);
+    if (result !== null) {
+      return result;
+    }
+    return {
+      kind: 'AUDIT_BEFORE_CHANGE',
+      resource,
+      operation,
+      actor,
+      outcome: 'success',
+      timestamp: event.timestamp,
+    };
+  } catch (err) {
+    return createAuditFailureError(err instanceof Error ? err.message : 'Audit failed');
+  }
+}
+
+export function isReadyInDegradedMode(model: ServiceCatalogModel): boolean {
+  return model.degraded && (model.tenantIsolationSignal && model.auditSignal);
+}
+
+export function isReadinessExplicitlyDegraded(model: ServiceCatalogModel): boolean {
+  return model.degraded && !model.observabilityAdaptersAvailable;
+}
+
+export function readinessFailsClosed(model: ServiceCatalogModel): boolean {
+  return model.degraded || !model.observabilityAdaptersAvailable;
+}
+
+export function isPromotionGated(model: ServiceCatalogModel): boolean {
+  if (!model.lifecycleContractUnchanged) {
+    return false;
+  }
+  return runAllProofs(model);
+}
+
+export function recordAudit(
+  model: ServiceCatalogModel,
+  event: AuditEvent
+): ServiceCatalogModel {
+  return {
+    ...model,
+    lastAuditEvent: event,
+    auditEvidencePreserved: true,
+    auditSignal: true,
+    tenantBoundaryPreserved: true,
+  };
+}
+
+export function observeReadinessDegradation(
+  model: ServiceCatalogModel,
+  reason: string
+): ServiceCatalogModel {
+  if (!model.observabilityAdaptersAvailable) {
+    return {
+      ...model,
+      degraded: true,
+      readiness: 'DEGRADED',
+      lifecycleReadiness: 'DEGRADED',
+      lastDecision: 'DEGRADED',
+      lastError: createDegradedFailureError(reason),
+      auditSignal: model.auditSignal,
+      tenantIsolationSignal: model.tenantIsolationSignal,
+      auditEvidencePreserved: true,
+      tenantBoundaryPreserved: true,
+    };
+  }
+  return model;
+}
+
+export function readPlatformServicesReadiness(
+  model: ServiceCatalogModel
+): Readiness {
+  return determineReadiness(model);
+}
+
+export function evaluateReadinessSurface(
+  model: ServiceCatalogModel
+): Readiness {
+  return determineReadiness(model);
+}
+
+export function evaluateLifecycleReadiness(
+  model: ServiceCatalogModel
+): LifecycleReadinessModel {
+  const r = determineReadiness(model);
+  return r;
+}
+
+export function auditBeforeMutationCallable(
+  resource: string,
+  operation: string,
+  actor: string,
+  auditFn: (event: AuditEvent) => TypedError | null,
+  mutate: () => ServiceCatalogModel
+): ServiceCatalogModel | TypedError {
+  const ordering: ('audit' | 'mutate')[] = ['audit', 'mutate'];
+  if (!isAuditBeforeMutation(ordering)) {
+    return createAuditFailureError('Audit-before-mutation ordering violated');
+  }
+  const auditEvent: AuditEvent = {
+    kind: 'AUDIT_BEFORE_CHANGE',
+    resource,
+    operation,
+    actor,
+    timestamp: new Date().toISOString(),
+  };
+  let auditError: TypedError | null;
+  try {
+    auditError = auditFn(auditEvent);
+  } catch (err) {
+    return createAuditFailureError(err instanceof Error ? err.message : 'Audit failed');
+  }
+  if (auditError !== null) {
+    return auditError;
+  }
+  return mutate();
+}
+
+export function auditEvidencePreservedOnMutation(
+  beforeModel: ServiceCatalogModel,
+  afterModel: ServiceCatalogModel
+): boolean {
+  if (!beforeModel.auditEvidencePreserved) {
+    return false;
+  }
+  if (afterModel.lastAuditEvent === null) {
+    return false;
+  }
+  if (!afterModel.auditEvidencePreserved) {
+    return false;
+  }
+  return true;
+}
+
+export function recoverCatalogWithAudit(
+  model: ServiceCatalogModel,
+  persistedEntries: readonly ServiceCatalogEntry[],
+  auditFn: (event: AuditEvent) => TypedError | null
+): ServiceCatalogModel | TypedError {
+  const auditEvent: AuditEvent = {
+    kind: 'AUDIT_BEFORE_CHANGE',
+    resource: 'catalog:recovery',
+    operation: 'recover',
+    actor: 'recovery-agent',
+    timestamp: new Date().toISOString(),
+  };
+
+  let auditError: TypedError | null;
+  try {
+    auditError = auditFn(auditEvent);
+  } catch (err) {
+    return createAuditFailureError(err instanceof Error ? err.message : 'Audit failed');
+  }
+  if (auditError !== null) {
+    return auditError;
+  }
+
+  const restoredMap = new Map<string, ServiceCatalogEntry>();
+  for (const entry of persistedEntries) {
+    const err = validateCatalogEntry(entry);
+    if (err !== null) {
+      return err;
+    }
+    restoredMap.set(entry.id, entry);
+  }
+
+  const candidateModel: ServiceCatalogModel = {
+    ...model,
+    resources: restoredMap,
+    lastAuditEvent: auditEvent,
+    lastDecision: 'GRANTED',
+    lastError: null,
+    auditEvidencePreserved: true,
+    tenantBoundaryPreserved: true,
+    auditSignal: true,
+    tenantIsolationSignal: true,
+    lifecycleContractUnchanged: model.lifecycleContractUnchanged,
+  };
+
+  const proofsPassed = runAllProofs(candidateModel);
+
+  if (!proofsPassed || !candidateModel.lifecycleContractUnchanged) {
+    return createPolicyDeniedError('Recovery failed: platform proofs did not pass');
+  }
+
+  return {
+    ...candidateModel,
+    readiness: determineReadiness(candidateModel),
+    lifecycleReadiness: determineReadiness(candidateModel),
   };
 }

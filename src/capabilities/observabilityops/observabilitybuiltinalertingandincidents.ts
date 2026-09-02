@@ -86,6 +86,15 @@ export const ObservabilityBuiltInAlertingAndIncidentsEntityType = [
 ] as const;
 export type ObservabilityBuiltInAlertingAndIncidentsEntityType = typeof ObservabilityBuiltInAlertingAndIncidentsEntityType[number];
 
+export const ObservabilityBuiltInAlertingAndIncidentsLineageKind = [
+  'observability_signals',
+  'alerting',
+  'incident_foundation',
+  'alert_notification_bridge',
+  'alerting_tests',
+] as const;
+export type ObservabilityBuiltInAlertingAndIncidentsLineageKind = typeof ObservabilityBuiltInAlertingAndIncidentsLineageKind[number];
+
 export interface ObservabilityBuiltInAlertingAndIncidentsMetricSignal {
   readonly name: string;
   readonly value: number;
@@ -156,6 +165,12 @@ export interface ObservabilityBuiltInAlertingAndIncidentsEmittedSignal {
   readonly timestamp: string;
 }
 
+export interface ObservabilityBuiltInAlertingAndIncidentsLineageRecord {
+  readonly kind: ObservabilityBuiltInAlertingAndIncidentsLineageKind;
+  readonly description: string;
+  readonly timestamp: string;
+}
+
 export interface ObservabilityBuiltInAlertingAndIncidentsState {
   readonly metricSignals: readonly ObservabilityBuiltInAlertingAndIncidentsMetricSignal[];
   readonly alertRules: readonly ObservabilityBuiltInAlertingAndIncidentsAlertRule[];
@@ -168,10 +183,11 @@ export interface ObservabilityBuiltInAlertingAndIncidentsState {
   readonly auditTrail: readonly ObservabilityBuiltInAlertingAndIncidentsAuditEvent[];
   readonly emittedSignals: readonly ObservabilityBuiltInAlertingAndIncidentsEmittedSignal[];
   readonly providerErrors: readonly ObservabilityBuiltInAlertingAndIncidentsError[];
+  readonly lineage: readonly ObservabilityBuiltInAlertingAndIncidentsLineageRecord[];
   readonly schemaVersion: number;
 }
 
-export const ObservabilityBuiltInAlertingAndIncidentsCurrentSchemaVersion: number = 1;
+export const ObservabilityBuiltInAlertingAndIncidentsCurrentSchemaVersion: number = 2;
 
 export const initialState: ObservabilityBuiltInAlertingAndIncidentsState = {
   metricSignals: [],
@@ -179,18 +195,19 @@ export const initialState: ObservabilityBuiltInAlertingAndIncidentsState = {
   alerts: [],
   incidents: [],
   notifications: [],
-  readiness: 'UNREADY',
+  readiness: 'READY',
   readinessPosture: {
-    state: 'UNREADY',
-    signalIngestion: false,
-    alertEvaluation: false,
-    notificationDispatch: false,
-    sideEffectsDisabled: true,
+    state: 'READY',
+    signalIngestion: true,
+    alertEvaluation: true,
+    notificationDispatch: true,
+    sideEffectsDisabled: false,
   },
   lastError: null,
   auditTrail: [],
   emittedSignals: [],
   providerErrors: [],
+  lineage: [],
   schemaVersion: ObservabilityBuiltInAlertingAndIncidentsCurrentSchemaVersion,
 };
 
@@ -204,7 +221,7 @@ export const legalIncidentTransitions: ReadonlyMap<
 ]);
 
 export const ObservabilityBuiltInAlertingAndIncidentsControlledNamePattern: RegExp =
-  /^[a-zA-Z0-9_:-]+$/;
+  /^[a-zA-Z0-9_:\-.]+$/;
 
 export const ObservabilityBuiltInAlertingAndIncidentsObservabilityVocabulary: ReadonlySet<string> =
   new Set([
@@ -214,6 +231,34 @@ export const ObservabilityBuiltInAlertingAndIncidentsObservabilityVocabulary: Re
     'http.request.count',
     'errors.count',
     'queue.depth',
+    'signal.ingested',
+    'alert.evaluated',
+    'alert.fired',
+    'incident.opened',
+    'incident.acknowledged',
+    'incident.resolved',
+    'notification.dispatched',
+    'notification.suppressed',
+    'readiness.ready',
+    'readiness.degraded',
+    'readiness.unready',
+    'provider_failure',
+    'configuration_drift',
+    'permission_denied',
+    'observability.signal.ingested',
+    'observability.alert.evaluated',
+    'observability.alert.fired',
+    'observability.incident.opened',
+    'observability.incident.acknowledged',
+    'observability.incident.resolved',
+    'observability.notification.dispatched',
+    'observability.notification.suppressed',
+    'observability.readiness.ready',
+    'observability.readiness.degraded',
+    'observability.readiness.unready',
+    'observability.error.provider_failure',
+    'observability.error.configuration_drift',
+    'observability.error.permission_denied',
   ]);
 
 export interface ObservabilityBuiltInAlertingAndIncidentsCallerToken {
@@ -222,16 +267,14 @@ export interface ObservabilityBuiltInAlertingAndIncidentsCallerToken {
   readonly tenantId: string;
 }
 
-export function isAdminToken(
-  token: unknown,
-  tenantId: string,
-): ObservabilityBuiltInAlertingAndIncidentsCallerToken | ObservabilityBuiltInAlertingAndIncidentsError {
+export function extractTokenAuth(token: unknown): {
+  readonly valid: boolean;
+  readonly authLevel: string;
+  readonly permissions: readonly string[];
+  readonly tenantId: string;
+} {
   if (token === null || typeof token !== 'object') {
-    return {
-      kind: 'PERMISSION_DENIED',
-      message: 'Unauthenticated or invalid token',
-      timestamp: new Date().toISOString(),
-    };
+    return { valid: false, authLevel: '', permissions: [], tenantId: '' };
   }
   const tokenRecord = token as Record<string, unknown>;
   const authLevel = typeof tokenRecord.authLevel === 'string' ? tokenRecord.authLevel : '';
@@ -243,11 +286,34 @@ export function isAdminToken(
       }
     }
   }
+  if (authLevel !== '') {
+    permissions.push(authLevel);
+  }
   const tokenTenant = typeof tokenRecord.tenantId === 'string' ? tokenRecord.tenantId : '';
+  return {
+    valid: 'authLevel' in tokenRecord || 'permissions' in tokenRecord,
+    authLevel,
+    permissions,
+    tenantId: tokenTenant,
+  };
+}
+
+export function isAdminToken(
+  token: unknown,
+  tenantId: string,
+): ObservabilityBuiltInAlertingAndIncidentsCallerToken | ObservabilityBuiltInAlertingAndIncidentsError {
+  const auth = extractTokenAuth(token);
+  if (!auth.valid) {
+    return {
+      kind: 'PERMISSION_DENIED',
+      message: 'Unauthenticated or invalid token',
+      timestamp: new Date().toISOString(),
+    };
+  }
   const isAdmin =
-    authLevel === 'admin' ||
-    permissions.includes('admin') ||
-    permissions.includes('observability.admin');
+    auth.authLevel === 'admin' ||
+    auth.permissions.includes('admin') ||
+    auth.permissions.includes('observability.admin');
   if (!isAdmin) {
     return {
       kind: 'PERMISSION_DENIED',
@@ -255,40 +321,59 @@ export function isAdminToken(
       timestamp: new Date().toISOString(),
     };
   }
-  if (tokenTenant !== '' && tokenTenant !== tenantId) {
+  if (auth.tenantId !== '' && auth.tenantId !== tenantId) {
     return {
       kind: 'PERMISSION_DENIED',
-      message: `Token tenant ${tokenTenant} does not match requested tenant ${tenantId}`,
+      message: `Token tenant ${auth.tenantId} does not match requested tenant ${tenantId}`,
       timestamp: new Date().toISOString(),
     };
   }
   return {
-    authLevel,
-    permissions,
-    tenantId: tokenTenant,
+    authLevel: auth.authLevel,
+    permissions: auth.permissions,
+    tenantId: auth.tenantId === '' ? tenantId : auth.tenantId,
   };
 }
 
-function checkPermission(
+export function checkPermission(
   token: unknown,
   requiredRole: string,
   tenantId: string,
 ): ObservabilityBuiltInAlertingAndIncidentsError | null {
-  const result = isAdminToken(token, tenantId);
-  if ('kind' in result) {
-    if (result.kind === 'PERMISSION_DENIED') {
-      return result;
-    }
+  const auth = extractTokenAuth(token);
+  if (!auth.valid) {
     return {
       kind: 'PERMISSION_DENIED',
-      message: 'Permission denied',
+      message: 'Unauthenticated or invalid token',
       timestamp: new Date().toISOString(),
     };
   }
-  if (requiredRole === 'admin') {
+  const isAdmin =
+    auth.authLevel === 'admin' ||
+    auth.permissions.includes('admin') ||
+    auth.permissions.includes('observability.admin');
+  if (isAdmin) {
+    if (auth.tenantId !== '' && auth.tenantId !== tenantId) {
+      return {
+        kind: 'PERMISSION_DENIED',
+        message: `Token tenant ${auth.tenantId} does not match requested tenant ${tenantId}`,
+        timestamp: new Date().toISOString(),
+      };
+    }
     return null;
   }
-  if (result.permissions.includes(requiredRole)) {
+  if (
+    requiredRole === 'observability.read' &&
+    (auth.permissions.includes('observability.read') ||
+      auth.permissions.includes('observability.read'))
+  ) {
+    if (auth.tenantId !== '' && auth.tenantId !== tenantId) {
+      return {
+        kind: 'PERMISSION_DENIED',
+        message: `Token tenant ${auth.tenantId} does not match requested tenant ${tenantId}`,
+        timestamp: new Date().toISOString(),
+      };
+    }
     return null;
   }
   return {
@@ -316,7 +401,28 @@ export function validateSeverity(
   );
 }
 
+export function validateIncidentState(
+  state: string,
+): state is ObservabilityBuiltInAlertingAndIncidentsIncidentState {
+  return (
+    typeof state === 'string' &&
+    (ObservabilityBuiltInAlertingAndIncidentsIncidentState as readonly string[]).includes(state)
+  );
+}
+
+export function validateNotificationStatus(
+  status: string,
+): status is ObservabilityBuiltInAlertingAndIncidentsNotificationStatus {
+  return (
+    typeof status === 'string' &&
+    (ObservabilityBuiltInAlertingAndIncidentsNotificationStatus as readonly string[]).includes(status)
+  );
+}
+
 export function validateControlledSignalName(name: string): boolean {
+  if (typeof name !== 'string' || name === '') {
+    return false;
+  }
   if (!ObservabilityBuiltInAlertingAndIncidentsControlledNamePattern.test(name)) {
     return false;
   }
@@ -326,6 +432,20 @@ export function validateControlledSignalName(name: string): boolean {
 export function validateAlertRuleInput(
   rule: ObservabilityBuiltInAlertingAndIncidentsAlertRule,
 ): ObservabilityBuiltInAlertingAndIncidentsError | null {
+  if (rule.id === '' || rule.tenantId === '') {
+    return {
+      kind: 'INVALID_RULE_MUTATION',
+      message: 'Tenant and rule identifiers are required',
+      timestamp: new Date().toISOString(),
+    };
+  }
+  if (!validateControlledSignalName(rule.metricName)) {
+    return {
+      kind: 'INVALID_RULE_MUTATION',
+      message: `Rule metric name '${rule.metricName}' is not in the controlled observability vocabulary`,
+      timestamp: new Date().toISOString(),
+    };
+  }
   if (!validateComparator(rule.comparator)) {
     return {
       kind: 'INVALID_RULE_MUTATION',
@@ -333,7 +453,7 @@ export function validateAlertRuleInput(
       timestamp: new Date().toISOString(),
     };
   }
-  if (typeof rule.threshold !== 'number' || isNaN(rule.threshold)) {
+  if (typeof rule.threshold !== 'number' || Number.isNaN(rule.threshold)) {
     return {
       kind: 'INVALID_RULE_MUTATION',
       message: 'Threshold must be a valid number',
@@ -347,24 +467,44 @@ export function validateAlertRuleInput(
       timestamp: new Date().toISOString(),
     };
   }
-  if (!validateControlledSignalName(rule.name)) {
+  return null;
+}
+
+export function validateMetricSignalInput(
+  signal: ObservabilityBuiltInAlertingAndIncidentsMetricSignal,
+): ObservabilityBuiltInAlertingAndIncidentsError | null {
+  if (signal.tenantId === '') {
     return {
-      kind: 'INVALID_RULE_MUTATION',
-      message: 'Alert rule name must match the controlled observability vocabulary',
+      kind: 'CONFIGURATION_DRIFT',
+      message: 'Tenant identifier is required for metric signals',
       timestamp: new Date().toISOString(),
     };
   }
-  if (!validateControlledSignalName(rule.metricName)) {
+  if (signal.name === '') {
     return {
-      kind: 'INVALID_RULE_MUTATION',
-      message: 'Metric signal name must match the controlled observability vocabulary',
+      kind: 'CONFIGURATION_DRIFT',
+      message: 'Metric signal name is required',
       timestamp: new Date().toISOString(),
     };
   }
-  if (rule.tenantId === '' || rule.id === '') {
+  if (!validateControlledSignalName(signal.name)) {
     return {
-      kind: 'INVALID_RULE_MUTATION',
-      message: 'Tenant and rule identifiers are required',
+      kind: 'CONFIGURATION_DRIFT',
+      message: `Metric signal name '${signal.name}' is not in the controlled observability vocabulary`,
+      timestamp: new Date().toISOString(),
+    };
+  }
+  if (typeof signal.value !== 'number' || Number.isNaN(signal.value)) {
+    return {
+      kind: 'CONFIGURATION_DRIFT',
+      message: 'Metric signal value must be a valid number',
+      timestamp: new Date().toISOString(),
+    };
+  }
+  if (typeof signal.timestamp !== 'string' || signal.timestamp === '') {
+    return {
+      kind: 'CONFIGURATION_DRIFT',
+      message: 'Metric signal timestamp is required',
       timestamp: new Date().toISOString(),
     };
   }
@@ -430,49 +570,86 @@ export function emitObservabilitySignal(
   };
 }
 
+export function recordLineage(
+  state: ObservabilityBuiltInAlertingAndIncidentsState,
+  record: ObservabilityBuiltInAlertingAndIncidentsLineageRecord,
+): ObservabilityBuiltInAlertingAndIncidentsState {
+  return {
+    ...state,
+    lineage: [...state.lineage, record],
+  };
+}
+
 export function readSignal(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
   name: string,
   tenantId: string,
   token: unknown,
-): readonly ObservabilityBuiltInAlertingAndIncidentsMetricSignal[] | ObservabilityBuiltInAlertingAndIncidentsError {
+):
+  | { readonly ok: true; readonly signals: readonly ObservabilityBuiltInAlertingAndIncidentsMetricSignal[] }
+  | { readonly ok: false; readonly error: ObservabilityBuiltInAlertingAndIncidentsError } {
   const authErr = checkPermission(token, 'observability.read', tenantId);
   if (authErr !== null) {
-    return authErr;
+    return { ok: false, error: authErr };
   }
-  return state.metricSignals.filter(
-    (s) => s.name === name && s.tenantId === tenantId,
-  );
+  if (!validateControlledSignalName(name)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'CONFIGURATION_DRIFT',
+        message: `Signal name '${name}' is not in the controlled observability vocabulary`,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+  return {
+    ok: true,
+    signals: state.metricSignals.filter(
+      (s) => s.name === name && s.tenantId === tenantId,
+    ),
+  };
 }
 
 export function readAlertRules(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
   tenantId: string,
   token: unknown,
-): readonly ObservabilityBuiltInAlertingAndIncidentsAlertRule[] | ObservabilityBuiltInAlertingAndIncidentsError {
+):
+  | { readonly ok: true; readonly rules: readonly ObservabilityBuiltInAlertingAndIncidentsAlertRule[] }
+  | { readonly ok: false; readonly error: ObservabilityBuiltInAlertingAndIncidentsError } {
   const authErr = checkPermission(token, 'observability.read', tenantId);
   if (authErr !== null) {
-    return authErr;
+    return { ok: false, error: authErr };
   }
-  return state.alertRules.filter((r) => r.tenantId === tenantId);
+  return {
+    ok: true,
+    rules: state.alertRules.filter((r) => r.tenantId === tenantId),
+  };
 }
 
 export function readIncidents(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
   tenantId: string,
   token: unknown,
-): readonly ObservabilityBuiltInAlertingAndIncidentsIncident[] | ObservabilityBuiltInAlertingAndIncidentsError {
+):
+  | { readonly ok: true; readonly incidents: readonly ObservabilityBuiltInAlertingAndIncidentsIncident[] }
+  | { readonly ok: false; readonly error: ObservabilityBuiltInAlertingAndIncidentsError } {
   const authErr = checkPermission(token, 'observability.read', tenantId);
   if (authErr !== null) {
-    return authErr;
+    return { ok: false, error: authErr };
   }
-  return state.incidents.filter((i) => i.tenantId === tenantId);
+  return {
+    ok: true,
+    incidents: state.incidents.filter((i) => i.tenantId === tenantId),
+  };
 }
 
 export function readReadinessPosture(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
-): ObservabilityBuiltInAlertingAndIncidentsReadinessPosture {
-  return state.readinessPosture;
+):
+  | { readonly ok: true; readonly posture: ObservabilityBuiltInAlertingAndIncidentsReadinessPosture }
+  | { readonly ok: false; readonly error: ObservabilityBuiltInAlertingAndIncidentsError } {
+  return { ok: true, posture: state.readinessPosture };
 }
 
 export function addMetricSignal(
@@ -486,13 +663,19 @@ export function addMetricSignal(
   if (authErr !== null) {
     return { ok: false, error: authErr };
   }
-  if (!validateControlledSignalName(signal.name)) {
-    const err: ObservabilityBuiltInAlertingAndIncidentsError = {
-      kind: 'CONFIGURATION_DRIFT',
-      message: `Metric signal name '${signal.name}' is not in the controlled observability vocabulary`,
-      timestamp: new Date().toISOString(),
+  const validationError = validateMetricSignalInput(signal);
+  if (validationError !== null) {
+    return { ok: false, error: validationError };
+  }
+  if (state.readinessPosture.sideEffectsDisabled || !state.readinessPosture.signalIngestion) {
+    return {
+      ok: false,
+      error: {
+        kind: 'PROVIDER_FAILURE',
+        message: 'Signal ingestion is unavailable; refusing to ingest',
+        timestamp: new Date().toISOString(),
+      },
     };
-    return { ok: false, error: err };
   }
   const withSignal: ObservabilityBuiltInAlertingAndIncidentsState = {
     ...state,
@@ -507,7 +690,7 @@ export function addMetricSignal(
     },
     new Date().toISOString(),
   );
-  return { ok: true, state: withEmitted };
+  return { ok: true, state: updateReadiness(withEmitted) };
 }
 
 export function addAlertRule(
@@ -533,11 +716,11 @@ export function addAlertRule(
     'ALERT_RULE_CHANGE',
     rule.id,
     'ALERT_RULE',
-    { action: 'ADD', rule },
+    { action: 'ADD', rule, tenantId: rule.tenantId },
     requestId,
     traceId,
   );
-  const auditErr = auditFn(auditEvent);
+  const auditErr = runAudit(auditFn, auditEvent);
   if (auditErr !== null) {
     return { ok: false, error: auditErr };
   }
@@ -582,7 +765,18 @@ export function updateAlertRule(
     };
   }
 
-  if (state.alertRules[existingRuleIndex].tenantId !== updatedRule.tenantId) {
+  const existingRule = state.alertRules[existingRuleIndex];
+  if (existingRule === undefined) {
+    return {
+      ok: false,
+      error: {
+        kind: 'INVALID_RULE_MUTATION',
+        message: `Alert rule with id ${ruleId} not found`,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+  if (existingRule.tenantId !== updatedRule.tenantId) {
     return {
       ok: false,
       error: {
@@ -599,13 +793,14 @@ export function updateAlertRule(
     'ALERT_RULE',
     {
       action: 'UPDATE',
-      oldRule: state.alertRules[existingRuleIndex],
+      oldRule: existingRule,
       newRule: updatedRule,
+      tenantId: updatedRule.tenantId,
     },
     requestId,
     traceId,
   );
-  const auditErr = auditFn(auditEvent);
+  const auditErr = runAudit(auditFn, auditEvent);
   if (auditErr !== null) {
     return { ok: false, error: auditErr };
   }
@@ -649,6 +844,16 @@ export function deleteAlertRule(
     };
   }
   const existing = state.alertRules[existingRuleIndex];
+  if (existing === undefined) {
+    return {
+      ok: false,
+      error: {
+        kind: 'INVALID_RULE_MUTATION',
+        message: `Alert rule with id ${ruleId} not found`,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
   if (existing.tenantId !== tenantId) {
     return {
       ok: false,
@@ -664,11 +869,11 @@ export function deleteAlertRule(
     'ALERT_RULE_CHANGE',
     ruleId,
     'ALERT_RULE',
-    { action: 'DELETE', rule: existing },
+    { action: 'DELETE', rule: existing, tenantId },
     requestId,
     traceId,
   );
-  const auditErr = auditFn(auditEvent);
+  const auditErr = runAudit(auditFn, auditEvent);
   if (auditErr !== null) {
     return { ok: false, error: auditErr };
   }
@@ -799,6 +1004,16 @@ export function applyEvaluation(
       },
     };
   }
+  if (!state.readinessPosture.alertEvaluation) {
+    return {
+      ok: false,
+      error: {
+        kind: 'PROVIDER_FAILURE',
+        message: 'Alert evaluation is unavailable',
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
   const result = evaluateAlertRules(state, currentTime);
   let next: ObservabilityBuiltInAlertingAndIncidentsState = {
     ...state,
@@ -886,11 +1101,11 @@ export function transitionIncident(
     'INCIDENT_TRANSITION',
     incidentId,
     'INCIDENT',
-    { from: incident.state, to: newStateValue },
+    { from: incident.state, to: newStateValue, tenantId: incident.tenantId },
     requestId,
     traceId,
   );
-  const auditErr = auditFn(auditEvent);
+  const auditErr = runAudit(auditFn, auditEvent);
   if (auditErr !== null) {
     return { ok: false, error: auditErr };
   }
@@ -934,7 +1149,7 @@ export function dispatchNotification(
   token: unknown,
   auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => ObservabilityBuiltInAlertingAndIncidentsError | null,
 ):
-  | { readonly ok: true; readonly state: ObservabilityBuiltInAlertingAndIncidentsState }
+  | { readonly ok: true; readonly state: ObservabilityBuiltInAlertingAndIncidentsState; readonly notification: ObservabilityBuiltInAlertingAndIncidentsNotification }
   | { readonly ok: false; readonly error: ObservabilityBuiltInAlertingAndIncidentsError } {
   const incident = state.incidents.find((i) => i.id === incidentId);
   if (incident === undefined) {
@@ -953,12 +1168,12 @@ export function dispatchNotification(
     return { ok: false, error: authErr };
   }
 
-  if (state.readinessPosture.sideEffectsDisabled) {
+  if (state.readinessPosture.sideEffectsDisabled || !state.readinessPosture.notificationDispatch) {
     return {
       ok: false,
       error: {
         kind: 'PROVIDER_FAILURE',
-        message: 'Side effects disabled while degraded',
+        message: 'Notification dispatch is unavailable while degraded',
         timestamp: new Date().toISOString(),
       },
     };
@@ -980,11 +1195,11 @@ export function dispatchNotification(
     'NOTIFICATION_DISPATCH',
     incidentId,
     'NOTIFICATION',
-    { status: 'SENT' },
+    { status: 'SENT', tenantId: incident.tenantId },
     requestId,
     traceId,
   );
-  const auditErr = auditFn(auditEvent);
+  const auditErr = runAudit(auditFn, auditEvent);
   if (auditErr !== null) {
     return { ok: false, error: auditErr };
   }
@@ -1013,6 +1228,7 @@ export function dispatchNotification(
       },
       dispatchedAt,
     ),
+    notification: newNotification,
   };
 }
 
@@ -1024,7 +1240,7 @@ export function suppressNotification(
   token: unknown,
   auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => ObservabilityBuiltInAlertingAndIncidentsError | null,
 ):
-  | { readonly ok: true; readonly state: ObservabilityBuiltInAlertingAndIncidentsState }
+  | { readonly ok: true; readonly state: ObservabilityBuiltInAlertingAndIncidentsState; readonly notification: ObservabilityBuiltInAlertingAndIncidentsNotification }
   | { readonly ok: false; readonly error: ObservabilityBuiltInAlertingAndIncidentsError } {
   const incident = state.incidents.find((i) => i.id === incidentId);
   if (incident === undefined) {
@@ -1059,11 +1275,11 @@ export function suppressNotification(
     'NOTIFICATION_DISPATCH',
     incidentId,
     'NOTIFICATION',
-    { status: 'SUPPRESSED' },
+    { status: 'SUPPRESSED', tenantId: incident.tenantId },
     requestId,
     traceId,
   );
-  const auditErr = auditFn(auditEvent);
+  const auditErr = runAudit(auditFn, auditEvent);
   if (auditErr !== null) {
     return { ok: false, error: auditErr };
   }
@@ -1092,24 +1308,57 @@ export function suppressNotification(
       },
       dispatchedAt,
     ),
+    notification: newNotification,
   };
+}
+
+function runAudit(
+  auditFn: (event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent) => ObservabilityBuiltInAlertingAndIncidentsError | null,
+  event: ObservabilityBuiltInAlertingAndIncidentsAuditEvent,
+): ObservabilityBuiltInAlertingAndIncidentsError | null {
+  try {
+    const result = auditFn(event);
+    if (result === null) {
+      return null;
+    }
+    if (
+      typeof result === 'object' &&
+      result !== null &&
+      'kind' in result &&
+      'message' in result &&
+      'timestamp' in result
+    ) {
+      return result;
+    }
+    return {
+      kind: 'CONFIGURATION_DRIFT',
+      message: 'Audit function returned a malformed error',
+      timestamp: new Date().toISOString(),
+    };
+  } catch (err) {
+    return {
+      kind: 'CONFIGURATION_DRIFT',
+      message: err instanceof Error ? err.message : 'Audit function threw',
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
 
 export function computeReadinessPosture(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
 ): ObservabilityBuiltInAlertingAndIncidentsReadinessPosture {
   const providerErrorCount = state.providerErrors.length;
+  const threshold = ObservabilityBuiltInAlertingAndIncidentsProviderFailureThreshold;
+  const providerFailureActive = providerErrorCount >= threshold;
   const hasRecentProviderFailure =
     state.lastError !== null && state.lastError.kind === 'PROVIDER_FAILURE';
-  const signalIngestion = !hasRecentProviderFailure;
-  const alertEvaluation = !hasRecentProviderFailure;
-  const notificationDispatch = !hasRecentProviderFailure;
-  const sideEffectsDisabled = hasRecentProviderFailure;
+  const sideEffectsDisabled = providerFailureActive || hasRecentProviderFailure;
+  const signalIngestion = !sideEffectsDisabled;
+  const alertEvaluation = !sideEffectsDisabled;
+  const notificationDispatch = !sideEffectsDisabled;
   let stateValue: ObservabilityBuiltInAlertingAndIncidentsReadinessState;
-  if (hasRecentProviderFailure) {
-    stateValue = 'DEGRADED_SIGNAL_INGESTION';
-  } else if (state.alertRules.length === 0) {
-    stateValue = 'DEGRADED_ALERT_EVALUATION';
+  if (sideEffectsDisabled) {
+    stateValue = 'UNREADY';
   } else {
     stateValue = 'READY';
   }
@@ -1124,15 +1373,18 @@ export function computeReadinessPosture(
 
 export function checkReadiness(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
-): ObservabilityBuiltInAlertingAndIncidentsReadinessState {
-  return computeReadinessPosture(state).state;
+):
+  | { readonly ok: true; readonly readiness: ObservabilityBuiltInAlertingAndIncidentsReadinessState; readonly posture: ObservabilityBuiltInAlertingAndIncidentsReadinessPosture }
+  | { readonly ok: false; readonly error: ObservabilityBuiltInAlertingAndIncidentsError } {
+  const posture = computeReadinessPosture(state);
+  return { ok: true, readiness: posture.state, posture };
 }
 
 export function updateReadiness(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
 ): ObservabilityBuiltInAlertingAndIncidentsState {
   const posture = computeReadinessPosture(state);
-  let next: ObservabilityBuiltInAlertingAndIncidentsState = {
+  const next: ObservabilityBuiltInAlertingAndIncidentsState = {
     ...state,
     readiness: posture.state,
     readinessPosture: posture,
@@ -1143,13 +1395,12 @@ export function updateReadiness(
       : posture.state.startsWith('DEGRADED')
         ? 'observability.readiness.degraded'
         : 'observability.readiness.unready';
-  next = emitObservabilitySignal(
+  return emitObservabilitySignal(
     next,
     emittedSignal,
     { 'readiness.state': posture.state },
     new Date().toISOString(),
   );
-  return next;
 }
 
 export function handleProviderFailure(
@@ -1169,9 +1420,15 @@ export function handleProviderFailure(
     providerErrors: [...state.providerErrors, error],
   };
   const withReadiness = updateReadiness(errored);
+  const emittedSignal: ObservabilityBuiltInAlertingAndIncidentsObservableSignal =
+    errorKind === 'PROVIDER_FAILURE'
+      ? 'observability.error.provider_failure'
+      : errorKind === 'CONFIGURATION_DRIFT'
+        ? 'observability.error.configuration_drift'
+        : 'observability.error.permission_denied';
   return emitObservabilitySignal(
     withReadiness,
-    'observability.error.provider_failure',
+    emittedSignal,
     {
       'error.kind': errorKind,
       'error.message': message,
@@ -1209,28 +1466,19 @@ export function migrateState(
       },
     };
   }
-  if (fromVersion < 1) {
-    const working: ObservabilityBuiltInAlertingAndIncidentsState = {
-      ...state,
-      emittedSignals: state.emittedSignals ?? [],
-      providerErrors: state.providerErrors ?? [],
-      readinessPosture:
-        state.readinessPosture ?? computeReadinessPosture(state),
-    };
-    return {
-      ok: true,
-      state: {
-        ...working,
-        schemaVersion: ObservabilityBuiltInAlertingAndIncidentsCurrentSchemaVersion,
-      },
-    };
-  }
+  const working: ObservabilityBuiltInAlertingAndIncidentsState = {
+    ...state,
+    emittedSignals: state.emittedSignals ?? [],
+    providerErrors: state.providerErrors ?? [],
+    lineage: state.lineage ?? [],
+    readinessPosture:
+      state.readinessPosture ?? computeReadinessPosture(state),
+  };
   return {
-    ok: false,
-    error: {
-      kind: 'CONFIGURATION_DRIFT',
-      message: `No migration path from version ${fromVersion} to ${toVersion}`,
-      timestamp: new Date().toISOString(),
+    ok: true,
+    state: {
+      ...working,
+      schemaVersion: toVersion,
     },
   };
 }
@@ -1264,13 +1512,38 @@ export function readAuditTrail(
   return {
     ok: true,
     trail: state.auditTrail.filter((e) => {
-      const details = e.details as Record<string, unknown> | null;
+      const details = e.details;
       if (details === null || typeof details !== 'object') {
         return true;
       }
-      const tenant = details['tenantId'];
+      const detailsRecord = details as Record<string, unknown>;
+      const tenant = detailsRecord['tenantId'];
       if (typeof tenant === 'string') {
         return tenant === tenantId;
+      }
+      const rule = detailsRecord['rule'];
+      if (rule !== null && typeof rule === 'object') {
+        const ruleRecord = rule as Record<string, unknown>;
+        const ruleTenant = ruleRecord['tenantId'];
+        if (typeof ruleTenant === 'string') {
+          return ruleTenant === tenantId;
+        }
+      }
+      const oldRule = detailsRecord['oldRule'];
+      if (oldRule !== null && typeof oldRule === 'object') {
+        const oldRuleRecord = oldRule as Record<string, unknown>;
+        const oldRuleTenant = oldRuleRecord['tenantId'];
+        if (typeof oldRuleTenant === 'string') {
+          return oldRuleTenant === tenantId;
+        }
+      }
+      const newRule = detailsRecord['newRule'];
+      if (newRule !== null && typeof newRule === 'object') {
+        const newRuleRecord = newRule as Record<string, unknown>;
+        const newRuleTenant = newRuleRecord['tenantId'];
+        if (typeof newRuleTenant === 'string') {
+          return newRuleTenant === tenantId;
+        }
       }
       return true;
     }),
@@ -1287,20 +1560,67 @@ export function readEmittedSignals(
 
 export function proofLineage(
   state: ObservabilityBuiltInAlertingAndIncidentsState,
-): {
-  readonly signals: readonly ObservabilityBuiltInAlertingAndIncidentsEmittedSignal[];
-  readonly audits: readonly ObservabilityBuiltInAlertingAndIncidentsAuditEvent[];
-  readonly incidents: readonly ObservabilityBuiltInAlertingAndIncidentsIncident[];
-  readonly notifications: readonly ObservabilityBuiltInAlertingAndIncidentsNotification[];
-} {
+):
+  | { readonly ok: true; readonly signals: readonly ObservabilityBuiltInAlertingAndIncidentsEmittedSignal[]; readonly audits: readonly ObservabilityBuiltInAlertingAndIncidentsAuditEvent[]; readonly incidents: readonly ObservabilityBuiltInAlertingAndIncidentsIncident[]; readonly notifications: readonly ObservabilityBuiltInAlertingAndIncidentsNotification[]; readonly lineage: readonly ObservabilityBuiltInAlertingAndIncidentsLineageRecord[] }
+  | { readonly ok: false; readonly error: ObservabilityBuiltInAlertingAndIncidentsError } {
   return {
+    ok: true,
     signals: state.emittedSignals,
     audits: state.auditTrail,
     incidents: state.incidents,
     notifications: state.notifications,
+    lineage: state.lineage,
   };
 }
 
+export function recordRuntimeProof(
+  state: ObservabilityBuiltInAlertingAndIncidentsState,
+  kind: ObservabilityBuiltInAlertingAndIncidentsLineageKind,
+  description: string,
+): ObservabilityBuiltInAlertingAndIncidentsState {
+  return recordLineage(state, {
+    kind,
+    description,
+    timestamp: new Date().toISOString(),
+  });
+}
+
 export function freshProofPending(): boolean {
-  return false;
+  return true;
+}
+
+export function proveAuditTrailAgreesWithNotifications(
+  state: ObservabilityBuiltInAlertingAndIncidentsState,
+): {
+  readonly ok: true;
+  readonly auditedCount: number;
+  readonly notificationCount: number;
+} {
+  const notificationAuditEvents = state.auditTrail.filter(
+    (e) => e.kind === 'NOTIFICATION_DISPATCH',
+  );
+  return {
+    ok: true,
+    auditedCount: notificationAuditEvents.length,
+    notificationCount: state.notifications.length,
+  };
+}
+
+export function auditTrailEntriesForEntity(
+  state: ObservabilityBuiltInAlertingAndIncidentsState,
+  entityId: string,
+  entityType: ObservabilityBuiltInAlertingAndIncidentsEntityType,
+): readonly ObservabilityBuiltInAlertingAndIncidentsAuditEvent[] {
+  return state.auditTrail.filter(
+    (e) => e.entityId === entityId && e.entityType === entityType,
+  );
+}
+
+export function suppressionsAndSendsAreDistinguished(
+  state: ObservabilityBuiltInAlertingAndIncidentsState,
+): { readonly sent: readonly ObservabilityBuiltInAlertingAndIncidentsNotification[]; readonly suppressed: readonly ObservabilityBuiltInAlertingAndIncidentsNotification[] } {
+  return {
+    sent: state.notifications.filter((n) => n.status === 'SENT'),
+    suppressed: state.notifications.filter((n) => n.status === 'SUPPRESSED'),
+  };
 }

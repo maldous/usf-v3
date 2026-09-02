@@ -434,9 +434,10 @@ function buildSuccess(
   tenant: TenantResolvedContext | null,
   warnings: readonly TenantHostIdentityResolutionWarning[],
   state: TenantHostIdentityResolutionState,
-  proofStatus: TenantHostIdentityResolutionProofStatus = 'VALIDATED',
-  proofLineage: TenantHostIdentityResolutionLineage = 'hermetic',
-  proofDetails: readonly string[] = ['Resolution derived successfully from classify-then-resolve lifecycle'],
+  proofStatus: TenantHostIdentityResolutionProofStatus = 'PENDING',
+  proofLineage: TenantHostIdentityResolutionLineage = 'runtime',
+  proofDetails: readonly string[] = [],
+  matrixValidationPassed: boolean = false,
 ): TenantHostIdentityResolutionSuccess {
   return {
     success: true,
@@ -445,7 +446,7 @@ function buildSuccess(
     warnings,
     state,
     error: null,
-    proof: buildProof(proofStatus, proofLineage, true, proofDetails),
+    proof: buildProof(proofStatus, proofLineage, matrixValidationPassed, proofDetails),
   };
 }
 
@@ -532,7 +533,7 @@ export function classifyThenResolve(
           isTrusted: false,
         },
         'finalize',
-        'VALIDATED',
+        'PENDING',
       ),
       'PENDING',
       'runtime',
@@ -555,8 +556,11 @@ export function classifyThenResolve(
           isTrusted: false,
         },
         'finalize',
-        'VALIDATED',
+        'PENDING',
       ),
+      'PENDING',
+      'runtime',
+      ['Apex host: serves global context with no tenant'],
     );
   }
 
@@ -580,8 +584,11 @@ export function classifyThenResolve(
           isTrusted: false,
         },
         'finalize',
-        'VALIDATED',
+        'PENDING',
       ),
+      'PENDING',
+      'runtime',
+      ['Reserved subdomain: serves global context with no tenant'],
     );
   }
 
@@ -605,8 +612,11 @@ export function classifyThenResolve(
           isTrusted: false,
         },
         'finalize',
-        'VALIDATED',
+        'PENDING',
       ),
+      'PENDING',
+      'runtime',
+      ['Invalid subdomain: serves global context with no tenant'],
     );
   }
 
@@ -669,7 +679,16 @@ export function classifyThenResolve(
         'finalize',
         'VALIDATED',
       );
-      return buildSuccess('tenant_slug', tenantContext, warnings, resolvedState);
+      return buildSuccess(
+        'tenant_slug',
+        tenantContext,
+        warnings,
+        resolvedState,
+        'VALIDATED',
+        'runtime',
+        ['Tenant slug resolution validated'],
+        true,
+      );
     }
 
     warnings.push({
@@ -687,7 +706,7 @@ export function classifyThenResolve(
         isTrusted: false,
       },
       'finalize',
-      'VALIDATED',
+      'PENDING',
     );
     return buildSuccess('tenant_slug', null, warnings, failClosedState);
   }
@@ -749,7 +768,16 @@ export function classifyThenResolve(
           'finalize',
           'VALIDATED',
         );
-        return buildSuccess('possible_custom_domain', tenantContext, warnings, resolvedState);
+        return buildSuccess(
+          'possible_custom_domain',
+          tenantContext,
+          warnings,
+          resolvedState,
+          'VALIDATED',
+          'runtime',
+          ['Active custom domain resolution validated'],
+          true,
+        );
       }
 
       let warnKind: TenantHostIdentityResolutionWarningKind = 'FAILED_RESOLUTION';
@@ -776,7 +804,7 @@ export function classifyThenResolve(
           isTrusted: false,
         },
         'finalize',
-        'VALIDATED',
+        'PENDING',
       );
       return buildSuccess('possible_custom_domain', null, warnings, unresolvedState);
     }
@@ -796,7 +824,7 @@ export function classifyThenResolve(
         isTrusted: false,
       },
       'finalize',
-      'VALIDATED',
+      'PENDING',
     );
     return buildSuccess('possible_custom_domain', null, warnings, unresolvedDomainState);
   }
@@ -896,18 +924,18 @@ export function validateRuntimeProof(
   if (!config.substrateAvailable) {
     return {
       status: 'PENDING',
-      lineage: 'runtime',
+      lineage: 'hermetic',
       matrixValidationPassed: false,
       details: ['Substrate is not yet initialized or pending fresh proof validation'],
     };
   }
 
-  if (config.seededOrganizations.length === 0) {
+  if (config.seededOrganizations.length === 0 && config.seededDomains.length === 0) {
     return {
       status: 'SKIPPED',
       lineage: 'runtime',
       matrixValidationPassed: false,
-      details: ['Skipped live resolution validation honestly because no seeded organization exists'],
+      details: ['Skipped live resolution validation honestly because no seeded organization or custom domain exists'],
     };
   }
 
@@ -935,6 +963,8 @@ export function validateRuntimeProof(
   }
   details.push('Domain-identity matrix validated across all host classes');
 
+  let allValid = true;
+
   for (const seededOrg of config.seededOrganizations) {
     if (seededOrg.slug === '') {
       continue;
@@ -944,69 +974,74 @@ export function validateRuntimeProof(
       registry,
       resolverConfig,
     );
+
     if (!slugRes.success) {
-      return {
-        status: 'PENDING',
-        lineage: 'runtime',
-        matrixValidationPassed: false,
-        details: [...details, `Registry dependency blocked seeded slug validation for ${seededOrg.slug}`],
-      };
+      allValid = false;
+      details.push(`Registry dependency blocked seeded slug validation for ${seededOrg.slug}`);
+      continue;
     }
 
     if (seededOrg.active) {
       if (slugRes.tenant === null || slugRes.tenant.organizationId !== seededOrg.organizationId) {
-        return {
-          status: 'PENDING',
-          lineage: 'runtime',
-          matrixValidationPassed: false,
-          details: [...details, `Seeded slug resolution failed for ${seededOrg.slug}`],
-        };
+        allValid = false;
+        details.push(`Seeded slug resolution failed for ${seededOrg.slug}`);
+        continue;
       }
-    } else if (slugRes.tenant !== null) {
-      return {
-        status: 'PENDING',
-        lineage: 'runtime',
-        matrixValidationPassed: false,
-        details: [...details, `Inactive seeded slug unexpectedly resolved for ${seededOrg.slug}`],
-      };
+      if (slugRes.proof.status !== 'VALIDATED') {
+        allValid = false;
+        details.push(`Seeded slug resolution proof not validated for ${seededOrg.slug}`);
+        continue;
+      }
+      details.push(`Tenant slug resolution proof validated for slug ${seededOrg.slug}`);
+    } else {
+      if (slugRes.tenant !== null) {
+        allValid = false;
+        details.push(`Inactive seeded slug unexpectedly resolved for ${seededOrg.slug}`);
+        continue;
+      }
+      details.push(`Inactive seeded slug correctly unresolved for ${seededOrg.slug}`);
     }
-    details.push(`Tenant slug resolution proof validated for slug ${seededOrg.slug}`);
   }
 
   for (const seededDomain of config.seededDomains) {
     const domainRes = classifyThenResolve({ host: seededDomain.domain }, registry, resolverConfig);
 
     if (!domainRes.success) {
-      return {
-        status: 'PENDING',
-        lineage: 'runtime',
-        matrixValidationPassed: false,
-        details: [...details, `Registry dependency blocked seeded custom-domain validation for ${seededDomain.domain}`],
-      };
+      allValid = false;
+      details.push(`Registry dependency blocked seeded custom-domain validation for ${seededDomain.domain}`);
+      continue;
     }
 
     if (seededDomain.status === 'active') {
       if (domainRes.tenant === null || domainRes.tenant.organizationId !== seededDomain.organizationId) {
-        return {
-          status: 'PENDING',
-          lineage: 'runtime',
-          matrixValidationPassed: false,
-          details: [...details, `Active custom domain resolution failed for ${seededDomain.domain}`],
-        };
+        allValid = false;
+        details.push(`Active custom domain resolution failed for ${seededDomain.domain}`);
+        continue;
+      }
+      if (domainRes.proof.status !== 'VALIDATED') {
+        allValid = false;
+        details.push(`Active custom domain resolution proof not validated for ${seededDomain.domain}`);
+        continue;
       }
       details.push(`Active custom domain proof validated for ${seededDomain.domain}`);
       continue;
     }
 
     if (domainRes.tenant !== null) {
-      return {
-        status: 'PENDING',
-        lineage: 'runtime',
-        matrixValidationPassed: false,
-        details: [...details, `Non-active custom domain unexpectedly resolved tenant for ${seededDomain.domain}`],
-      };
+      allValid = false;
+      details.push(`Non-active custom domain unexpectedly resolved tenant for ${seededDomain.domain}`);
+      continue;
     }
-    details.push(`Non-active custom domain proof validated for ${seededDomain.domain}`);
+    details.push(`Non-active custom domain (${seededDomain.status}) correctly unresolved for ${seededDomain.domain}`);
+  }
+
+  if (!allValid) {
+    return {
+      status: 'PENDING',
+      lineage: 'runtime',
+      matrixValidationPassed: false,
+      details,
+    };
   }
 
   return {

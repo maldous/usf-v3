@@ -15,6 +15,9 @@ export const BrandingAndThemingErrorKind = [
   'NON_OVERRIDABLE',
   'CONFIGURATION_ERROR',
   'AUDIT_FAILURE',
+  'THEME_READ_FAILURE',
+  'TENANT_RESOLUTION_FAILURE',
+  'PERSISTENCE_UNAVAILABLE',
 ] as const;
 export type BrandingAndThemingErrorKind = typeof BrandingAndThemingErrorKind[number];
 
@@ -91,10 +94,20 @@ export const BrandingAndThemingStateKind = [
 ] as const;
 export type BrandingAndThemingStateKind = typeof BrandingAndThemingStateKind[number];
 
+export const BrandingAndThemingErrorPath = ['BOOTSTRAP', 'MANAGEMENT'] as const;
+export type BrandingAndThemingErrorPath = typeof BrandingAndThemingErrorPath[number];
+
+export const BrandingAndThemingErrorMode = ['FAIL_OPEN', 'FAIL_CLOSED'] as const;
+export type BrandingAndThemingErrorMode = typeof BrandingAndThemingErrorMode[number];
+
 export interface BrandingAndThemingError {
   readonly kind: BrandingAndThemingErrorKind;
   readonly message: string;
+  readonly path: BrandingAndThemingErrorPath;
+  readonly mode: BrandingAndThemingErrorMode;
   readonly statusCode?: number;
+  readonly tenantId?: string;
+  readonly key?: string;
 }
 
 export interface DefaultTheme {
@@ -166,6 +179,8 @@ export interface BrandingAndThemingState {
     | Readonly<Record<string, string>>;
   readonly nonOverridableTenants?: ReadonlySet<string> | readonly string[];
   readonly nonOverridableKeys?: ReadonlySet<string> | readonly string[];
+  readonly persistenceReachable?: boolean;
+  readonly tenantResolverAvailable?: boolean;
   readonly lastError?: BrandingAndThemingError | null;
   readonly readiness: BrandingAndThemingReadiness;
 }
@@ -187,6 +202,8 @@ export const initialState: BrandingAndThemingState = {
     applicationNameType: 'string',
     themeSelectionSet: [...BrandingAndThemingThemeSelection],
   },
+  persistenceReachable: true,
+  tenantResolverAvailable: true,
   lastError: null,
   readiness: 'READY',
 };
@@ -257,7 +274,7 @@ export type BrandingValidationSuccess = {
 };
 
 export type BrandingValidationFailure = {
-  readonly kind: 'VALIDATION_ERROR' | 'VALIDATION';
+  readonly kind: 'VALIDATION_ERROR';
   readonly valid: false;
   readonly message: string;
   readonly error: BrandingAndThemingError;
@@ -309,6 +326,17 @@ export interface BrandingAndThemingStateModelDescription {
   readonly bootstrapThemeStateDistinct: boolean;
   readonly editableBrandingRegistryState: boolean;
   readonly stateKinds: readonly BrandingAndThemingStateKind[];
+}
+
+export interface BrandingAndThemingErrorModelSummary {
+  readonly path: BrandingAndThemingErrorPath;
+  readonly mode: BrandingAndThemingErrorMode;
+  readonly defaultKinds: readonly BrandingAndThemingErrorKind[];
+  readonly configurationKinds: readonly BrandingAndThemingErrorKind[];
+  readonly bootstrapFailsOpen: boolean;
+  readonly managementFailsClosed: boolean;
+  readonly nonBlocking: boolean;
+  readonly errorKinds: readonly BrandingAndThemingErrorKind[];
 }
 
 export interface ConfigurationStorePort {
@@ -418,7 +446,7 @@ function getBrandingDefinitionFromState(
   if (defs instanceof Map) {
     return defs.get(tenantId);
   }
-  if (typeof defs === 'object' && defs !== null) {
+  if (defs && typeof defs === 'object') {
     return (defs as Readonly<Record<string, BrandingDefinition>>)[tenantId];
   }
   return undefined;
@@ -432,7 +460,7 @@ function hasBrandingDefinitionInState(
   if (defs instanceof Map) {
     return defs.has(tenantId);
   }
-  if (typeof defs === 'object' && defs !== null) {
+  if (defs && typeof defs === 'object') {
     return Object.prototype.hasOwnProperty.call(defs, tenantId);
   }
   return false;
@@ -507,6 +535,9 @@ export function mapErrorToStatusCode(error: BrandingAndThemingError): number {
       return 409;
     case 'AUDIT_FAILURE':
     case 'CONFIGURATION_ERROR':
+    case 'PERSISTENCE_UNAVAILABLE':
+    case 'TENANT_RESOLUTION_FAILURE':
+    case 'THEME_READ_FAILURE':
     default:
       return 500;
   }
@@ -524,6 +555,9 @@ export function resolveTenantFromHost(
   host: string | null | undefined,
   state: BrandingAndThemingState = initialState,
 ): string | null {
+  if (state.tenantResolverAvailable === false) {
+    return null;
+  }
   if (typeof host !== 'string' || host.trim() === '') {
     return null;
   }
@@ -535,7 +569,7 @@ export function resolveTenantFromHost(
       const mapped = mappings.get(cleanHost);
       return typeof mapped === 'string' ? mapped : null;
     }
-    if (typeof mappings === 'object' && mappings !== null && cleanHost in mappings) {
+    if (mappings && typeof mappings === 'object' && cleanHost in mappings) {
       const mapped = (mappings as Record<string, string>)[cleanHost];
       return typeof mapped === 'string' ? mapped : null;
     }
@@ -547,7 +581,7 @@ export function resolveTenantFromHost(
       const mapped = mappings.get(cleanHost);
       return typeof mapped === 'string' ? mapped : null;
     }
-    if (typeof mappings === 'object' && mappings !== null && cleanHost in mappings) {
+    if (mappings && typeof mappings === 'object' && cleanHost in mappings) {
       const mapped = (mappings as Record<string, string>)[cleanHost];
       return typeof mapped === 'string' ? mapped : null;
     }
@@ -579,6 +613,8 @@ export function checkBrandingPermission(
       error: {
         kind: 'FORBIDDEN',
         message: 'Tenant-scoped permission required',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 403,
       },
     };
@@ -593,6 +629,8 @@ export function checkBrandingPermission(
       error: {
         kind: 'FORBIDDEN',
         message: 'Tenant-scoped permission required',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 403,
       },
     };
@@ -644,6 +682,8 @@ export function checkBrandingPermission(
         error: {
           kind: 'FORBIDDEN',
           message: 'Configuration read permission required',
+          path: 'MANAGEMENT',
+          mode: 'FAIL_CLOSED',
           statusCode: 403,
         },
       };
@@ -659,6 +699,8 @@ export function checkBrandingPermission(
         error: {
           kind: 'FORBIDDEN',
           message: 'Configuration write permission required',
+          path: 'MANAGEMENT',
+          mode: 'FAIL_CLOSED',
           statusCode: 403,
         },
       };
@@ -672,6 +714,8 @@ export function checkBrandingPermission(
     error: {
       kind: 'FORBIDDEN',
       message: 'Unknown operation for permission check',
+      path: 'MANAGEMENT',
+      mode: 'FAIL_CLOSED',
       statusCode: 403,
     },
   };
@@ -693,49 +737,56 @@ export function validateBrandingDefinition(
   definition: unknown,
 ): BrandingValidationResult {
   if (definition === null || typeof definition !== 'object') {
-    const error: BrandingAndThemingError = {
+    const err: BrandingAndThemingError = {
       kind: 'VALIDATION_ERROR',
       message: 'Branding definition must be an object',
+      path: 'MANAGEMENT',
+      mode: 'FAIL_CLOSED',
       statusCode: 400,
     };
     return {
       kind: 'VALIDATION_ERROR',
       valid: false,
-      message: error.message,
-      error,
+      message: err.message,
+      error: err,
     };
   }
 
   const def = definition as Record<string, unknown>;
 
-  if (typeof def.applicationName !== 'string') {
-    const error: BrandingAndThemingError = {
+  if (!('applicationName' in def) || typeof def.applicationName !== 'string') {
+    const err: BrandingAndThemingError = {
       kind: 'VALIDATION_ERROR',
       message: 'applicationName must be a string',
+      path: 'MANAGEMENT',
+      mode: 'FAIL_CLOSED',
       statusCode: 400,
     };
     return {
       kind: 'VALIDATION_ERROR',
       valid: false,
-      message: error.message,
-      error,
+      message: err.message,
+      error: err,
     };
   }
 
   if (
+    !('themeSelection' in def) ||
     typeof def.themeSelection !== 'string' ||
     !(BrandingAndThemingThemeSelection as readonly string[]).includes(def.themeSelection)
   ) {
-    const error: BrandingAndThemingError = {
+    const err: BrandingAndThemingError = {
       kind: 'VALIDATION_ERROR',
       message: 'themeSelection must be one of system, light, dark',
+      path: 'MANAGEMENT',
+      mode: 'FAIL_CLOSED',
       statusCode: 400,
     };
     return {
       kind: 'VALIDATION_ERROR',
       valid: false,
-      message: error.message,
-      error,
+      message: err.message,
+      error: err,
     };
   }
 
@@ -779,6 +830,18 @@ export function resolveEffectiveTheme(
   };
 }
 
+export function buildThemeReadError(
+  message: string,
+  kind: BrandingAndThemingErrorKind = 'THEME_READ_FAILURE',
+): BrandingAndThemingError {
+  return {
+    kind,
+    message,
+    path: 'BOOTSTRAP',
+    mode: 'FAIL_OPEN',
+  };
+}
+
 export function getEffectiveTheme(
   arg1: string | BrandingAndThemingState,
   arg2?: string | BrandingAndThemingState,
@@ -807,6 +870,20 @@ export function getEffectiveTheme(
   const baseDefault = state && state.bootstrapTheme && state.bootstrapTheme.defaultTheme ? state.bootstrapTheme.defaultTheme : fallbackDefault;
 
   try {
+    if (state.persistenceReachable === false || state.tenantResolverAvailable === false) {
+      const theme = { ...baseDefault };
+      return {
+        kind: 'FALLBACK',
+        theme,
+        primaryColor: theme.primaryColor,
+        secondaryColor: theme.secondaryColor,
+        backgroundColor: theme.backgroundColor,
+        textColor: theme.textColor,
+        isDefault: true,
+        fallback: true,
+      };
+    }
+
     const tenantId = resolveTenantFromHost(host, state);
     if (tenantId === null) {
       const theme = { ...baseDefault };
@@ -934,12 +1011,16 @@ export function runAudit(
     return {
       kind: auditError.kind ?? 'AUDIT_FAILURE',
       message: auditError.message ?? 'Audit execution rejected change',
+      path: 'MANAGEMENT',
+      mode: 'FAIL_CLOSED',
       statusCode: auditError.statusCode ?? 403,
     };
   } catch (err) {
     return {
       kind: 'AUDIT_FAILURE',
       message: err instanceof Error ? err.message : 'Audit execution failed',
+      path: 'MANAGEMENT',
+      mode: 'FAIL_CLOSED',
       statusCode: 403,
     };
   }
@@ -996,6 +1077,8 @@ export function createBrandingDefinition(
       error: {
         kind: 'NON_OVERRIDABLE',
         message: 'Branding definition is non-overridable for tenant',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 409,
       },
     };
@@ -1013,6 +1096,8 @@ export function createBrandingDefinition(
       error: {
         kind: 'NON_OVERRIDABLE',
         message: 'Branding definition already exists for tenant',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 409,
       },
     };
@@ -1093,6 +1178,8 @@ export function patchBrandingDefinition(
       error: {
         kind: 'NON_OVERRIDABLE',
         message: 'Branding definition is non-overridable for tenant',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 409,
       },
     };
@@ -1105,6 +1192,8 @@ export function patchBrandingDefinition(
       error: {
         kind: 'UNKNOWN_KEY',
         message: 'No branding definition exists for tenant',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 404,
       },
     };
@@ -1116,6 +1205,40 @@ export function patchBrandingDefinition(
       error: {
         kind: 'VALIDATION_ERROR',
         message: 'Partial definition must be an object',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
+        statusCode: 400,
+      },
+    };
+  }
+
+  const partialDef = partialDefinition as Record<string, unknown>;
+
+  if ('applicationName' in partialDef && typeof partialDef.applicationName !== 'string') {
+    return {
+      kind: 'ERROR',
+      error: {
+        kind: 'VALIDATION_ERROR',
+        message: 'applicationName must be a string',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
+        statusCode: 400,
+      },
+    };
+  }
+
+  if (
+    'themeSelection' in partialDef &&
+    (typeof partialDef.themeSelection !== 'string' ||
+      !(BrandingAndThemingThemeSelection as readonly string[]).includes(partialDef.themeSelection))
+  ) {
+    return {
+      kind: 'ERROR',
+      error: {
+        kind: 'VALIDATION_ERROR',
+        message: 'themeSelection must be one of system, light, dark',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 400,
       },
     };
@@ -1123,12 +1246,13 @@ export function patchBrandingDefinition(
 
   const mergedDefinition: BrandingDefinition = {
     applicationName:
-      partialDefinition.applicationName !== undefined
-        ? partialDefinition.applicationName
+      typeof partialDef.applicationName === 'string'
+        ? partialDef.applicationName
         : currentDef.applicationName,
     themeSelection:
-      partialDefinition.themeSelection !== undefined
-        ? partialDefinition.themeSelection
+      typeof partialDef.themeSelection === 'string' &&
+      (BrandingAndThemingThemeSelection as readonly string[]).includes(partialDef.themeSelection)
+        ? (partialDef.themeSelection as BrandingAndThemingThemeSelection)
         : currentDef.themeSelection,
   };
 
@@ -1208,6 +1332,8 @@ export function deleteBrandingDefinition(
       error: {
         kind: 'NON_OVERRIDABLE',
         message: 'Branding definition is non-overridable for tenant',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 409,
       },
     };
@@ -1220,6 +1346,8 @@ export function deleteBrandingDefinition(
       error: {
         kind: 'UNKNOWN_KEY',
         message: 'No branding definition exists for tenant',
+        path: 'MANAGEMENT',
+        mode: 'FAIL_CLOSED',
         statusCode: 404,
       },
     };
@@ -1248,6 +1376,148 @@ export function deleteBrandingDefinition(
   };
 }
 export const deleteDefinition = deleteBrandingDefinition;
+
+export function mapConfigurationErrorKind(
+  kind: string,
+): BrandingAndThemingErrorKind {
+  switch (kind) {
+    case 'VALIDATION_ERROR':
+    case 'VALIDATION':
+    case 'FORBIDDEN':
+    case 'UNKNOWN_KEY':
+    case 'NON_OVERRIDABLE':
+    case 'CONFIGURATION_ERROR':
+    case 'AUDIT_FAILURE':
+      return kind;
+    case 'PERSISTENCE_UNAVAILABLE':
+    case 'TENANT_RESOLUTION_FAILURE':
+    case 'THEME_READ_FAILURE':
+      return kind;
+    default:
+      return 'CONFIGURATION_ERROR';
+  }
+}
+
+export function createConfigurationError(
+  kind: BrandingAndThemingErrorKind,
+  message: string,
+  path: BrandingAndThemingErrorPath = 'MANAGEMENT',
+  mode: BrandingAndThemingErrorMode = 'FAIL_CLOSED',
+  statusCode?: number,
+  tenantId?: string,
+  key?: string,
+): BrandingAndThemingError {
+  const base: BrandingAndThemingError = {
+    kind,
+    message,
+    path,
+    mode,
+  };
+  let err: BrandingAndThemingError = base;
+  if (statusCode !== undefined) {
+    err = { ...err, statusCode };
+  }
+  if (tenantId !== undefined) {
+    err = { ...err, tenantId };
+  }
+  if (key !== undefined) {
+    err = { ...err, key };
+  }
+  return err;
+}
+
+export function mapBrandingErrorKind(
+  error: BrandingAndThemingError,
+): BrandingAndThemingErrorKind {
+  return mapConfigurationErrorKind(error.kind);
+}
+
+export function isBrandingManagementError(
+  error: BrandingAndThemingError,
+): boolean {
+  switch (error.kind) {
+    case 'VALIDATION_ERROR':
+    case 'VALIDATION':
+    case 'FORBIDDEN':
+    case 'UNKNOWN_KEY':
+    case 'NON_OVERRIDABLE':
+    case 'CONFIGURATION_ERROR':
+    case 'AUDIT_FAILURE':
+    case 'PERSISTENCE_UNAVAILABLE':
+      return true;
+    default:
+      return false;
+  }
+}
+
+export function isBrandingBootstrapError(
+  error: BrandingAndThemingError,
+): boolean {
+  return error.path === 'BOOTSTRAP';
+}
+
+export function isBootstrapErrorKind(
+  kind: BrandingAndThemingErrorKind,
+): boolean {
+  switch (kind) {
+    case 'THEME_READ_FAILURE':
+    case 'TENANT_RESOLUTION_FAILURE':
+    case 'PERSISTENCE_UNAVAILABLE':
+      return true;
+    default:
+      return false;
+  }
+}
+
+export function isManagementErrorKind(
+  kind: BrandingAndThemingErrorKind,
+): boolean {
+  switch (kind) {
+    case 'VALIDATION_ERROR':
+    case 'VALIDATION':
+    case 'FORBIDDEN':
+    case 'UNKNOWN_KEY':
+    case 'NON_OVERRIDABLE':
+    case 'CONFIGURATION_ERROR':
+    case 'AUDIT_FAILURE':
+      return true;
+    default:
+      return false;
+  }
+}
+
+export function describeErrorModel(
+  state?: BrandingAndThemingState,
+): BrandingAndThemingErrorModelSummary {
+  const configurationKinds: BrandingAndThemingErrorKind[] = [
+    'VALIDATION_ERROR',
+    'VALIDATION',
+    'FORBIDDEN',
+    'UNKNOWN_KEY',
+    'NON_OVERRIDABLE',
+    'CONFIGURATION_ERROR',
+    'AUDIT_FAILURE',
+  ];
+  const defaultKinds: BrandingAndThemingErrorKind[] = [
+    'THEME_READ_FAILURE',
+    'TENANT_RESOLUTION_FAILURE',
+    'PERSISTENCE_UNAVAILABLE',
+  ];
+  const persistenceReachable = state ? state.persistenceReachable !== false : true;
+  const tenantResolverAvailable = state ? state.tenantResolverAvailable !== false : true;
+  const degraded = !persistenceReachable || !tenantResolverAvailable;
+  return {
+    path: 'BOOTSTRAP',
+    mode: 'FAIL_OPEN',
+    defaultKinds,
+    configurationKinds,
+    bootstrapFailsOpen: true,
+    managementFailsClosed: true,
+    nonBlocking: true,
+    errorKinds: [...configurationKinds, ...defaultKinds],
+  };
+}
+export const checkErrorModel = describeErrorModel;
 
 export function createConfigurationStoreAdapter(
   initialAdapterState: BrandingAndThemingState = initialState,

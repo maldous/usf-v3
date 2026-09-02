@@ -1,6 +1,3 @@
-// ANQR capability module: searchandindexingproductsearch
-// Domain: search
-
 export const SearchReadiness = ['READY', 'DEGRADED', 'BLOCKED'] as const;
 export type SearchReadiness = typeof SearchReadiness[number];
 
@@ -18,6 +15,8 @@ export const SearchErrorKind = [
   'MISSING_ISOLATION_SIGNAL',
   'MISSING_AUDIT_SIGNAL',
   'PERMISSION_DENIED',
+  'SEARCH_ENGINE_DEGRADED',
+  'SEARCH_ENGINE_BLOCKED',
 ] as const;
 export type SearchErrorKind = typeof SearchErrorKind[number];
 
@@ -100,6 +99,8 @@ export interface SearchState {
   readonly lastAudit: SearchAuditEvent | null;
   readonly probeHistory: readonly SearchEngineProbe[];
   readonly proofHistory: readonly SearchProofResult[];
+  readonly indexMutationClosed: boolean;
+  readonly readinessProbeFailed: boolean;
 }
 
 export type SearchOutcome =
@@ -289,24 +290,12 @@ export function indexDocument(
     };
   }
 
-  if (state.readiness === 'BLOCKED') {
+  if (state.indexMutationClosed || state.readiness !== 'READY') {
     return {
       ok: false,
       error: makeError(
         'INDEX_MUTATION_DISABLED',
-        `Search engine is BLOCKED; index mutations disabled`,
-        document.tenantId,
-        document.organisationId
-      )
-    };
-  }
-
-  if (state.readiness === 'DEGRADED') {
-    return {
-      ok: false,
-      error: makeError(
-        'INDEX_MUTATION_DISABLED',
-        `Search engine is DEGRADED; index mutations disabled`,
+        `Search engine is ${state.readiness}; index mutations disabled`,
         document.tenantId,
         document.organisationId
       )
@@ -347,28 +336,12 @@ export function performSearch(
     };
   }
 
-  if (state.readiness === 'BLOCKED') {
-    const auditEvent: SearchAuditEvent = {
-      kind: 'AUDIT_BEFORE_SEARCH',
-      tenantId: query.tenantId,
-      organisationId: query.organisationId,
-      operation: 'perform_search',
-      timestamp: new Date().toISOString(),
-      span: 'route/use-case/provider'
-    };
-
-    if (auditFn !== undefined) {
-      const auditError = auditSearchOperation(auditEvent, auditFn);
-      if (auditError !== null) {
-        return { ok: false, error: auditError };
-      }
-    }
-
+  if (state.readiness === 'BLOCKED' || state.readinessProbeFailed) {
     return {
       ok: false,
       error: makeError(
-        'SEARCH_ENGINE_UNAVAILABLE',
-        'Search engine is BLOCKED; cannot serve results',
+        'SEARCH_ENGINE_BLOCKED',
+        `Search engine is BLOCKED; cannot serve results`,
         query.tenantId,
         query.organisationId
       )
@@ -376,47 +349,33 @@ export function performSearch(
   }
 
   if (state.readiness === 'DEGRADED') {
-    const auditEvent: SearchAuditEvent = {
-      kind: 'AUDIT_BEFORE_SEARCH',
-      tenantId: query.tenantId,
-      organisationId: query.organisationId,
-      operation: 'perform_search',
-      timestamp: new Date().toISOString(),
-      span: 'route/use-case/provider'
-    };
-
-    if (auditFn !== undefined) {
-      const auditError = auditSearchOperation(auditEvent, auditFn);
-      if (auditError !== null) {
-        return { ok: false, error: auditError };
-      }
-    }
-
     return {
       ok: false,
       error: makeError(
-        'SEARCH_ENGINE_UNAVAILABLE',
-        'Search engine is DEGRADED; cannot serve results',
+        'SEARCH_ENGINE_DEGRADED',
+        `Search engine is DEGRADED; cannot serve results`,
         query.tenantId,
         query.organisationId
       )
     };
   }
 
-  let auditEvent: SearchAuditEvent | null = null;
+  const auditEvent: SearchAuditEvent = {
+    kind: 'AUDIT_BEFORE_SEARCH',
+    tenantId: query.tenantId,
+    organisationId: query.organisationId,
+    operation: 'perform_search',
+    timestamp: new Date().toISOString(),
+    span: 'route/use-case/provider'
+  };
+
+  let recordedState: SearchState = state;
   if (auditFn !== undefined) {
-    auditEvent = {
-      kind: 'AUDIT_BEFORE_SEARCH',
-      tenantId: query.tenantId,
-      organisationId: query.organisationId,
-      operation: 'perform_search',
-      timestamp: new Date().toISOString(),
-      span: 'route/use-case/provider'
-    };
     const auditError = auditSearchOperation(auditEvent, auditFn);
     if (auditError !== null) {
       return { ok: false, error: auditError };
     }
+    recordedState = { ...state, lastAudit: auditEvent };
   }
 
   const tenantDocs = state.documents.filter(doc =>
@@ -437,7 +396,7 @@ export function performSearch(
   return {
     ok: true,
     results: grantedResults,
-    state: auditEvent !== null ? { ...state, lastAudit: auditEvent } : state
+    state: recordedState
   };
 }
 
@@ -460,24 +419,12 @@ export function reindexTenant(
     };
   }
 
-  if (state.readiness === 'BLOCKED') {
+  if (state.indexMutationClosed || state.readiness !== 'READY') {
     return {
       ok: false,
       error: makeError(
         'INDEX_MUTATION_DISABLED',
-        `Search engine is BLOCKED; index mutations disabled`,
-        tenantId,
-        organisationId
-      )
-    };
-  }
-
-  if (state.readiness === 'DEGRADED') {
-    return {
-      ok: false,
-      error: makeError(
-        'INDEX_MUTATION_DISABLED',
-        `Search engine is DEGRADED; index mutations disabled`,
+        `Search engine is ${state.readiness}; index mutations disabled`,
         tenantId,
         organisationId
       )
@@ -584,6 +531,8 @@ export function probeReadiness(
     state: {
       ...state,
       readiness: engineStatus,
+      indexMutationClosed: engineStatus !== 'READY',
+      readinessProbeFailed: engineStatus === 'BLOCKED',
       probeHistory: [...state.probeHistory, probe],
       lastAudit: auditEvent
     }
@@ -621,6 +570,8 @@ export function probeReadinessForTenant(
     state: {
       ...state,
       readiness: engineStatus,
+      indexMutationClosed: engineStatus !== 'READY',
+      readinessProbeFailed: engineStatus === 'BLOCKED',
       probeHistory: [...state.probeHistory, probe],
       lastAudit: auditEvent
     }
@@ -822,11 +773,242 @@ export function crossTenantIsolationAssertion(
   return { isolated: true, error: null };
 }
 
+export function evaluateProviderFailure(
+  tenantId: string,
+  organisationId: string,
+  providerMessage: string
+): SearchError {
+  return makeError(
+    'SEARCH_ENGINE_UNAVAILABLE',
+    `Provider failure: ${providerMessage}`,
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateReadinessBlockedFailure(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'SEARCH_ENGINE_BLOCKED',
+    'Readiness probe reports BLOCKED status; cannot serve results',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateReadinessDegradedFailure(
+  tenantId: string,
+  organisationId: string,
+  details?: string
+): SearchError {
+  return makeError(
+    'SEARCH_ENGINE_DEGRADED',
+    details === undefined
+      ? 'Readiness probe reports DEGRADED status; cannot serve results'
+      : `Readiness probe reports DEGRADED status; cannot serve results: ${details}`,
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluatePermissionKeyRequired(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'PERMISSION_KEY_REQUIRED',
+    'Query missing required permission key for tenant-scoped documents',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateMissingIsolationSignal(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'MISSING_ISOLATION_SIGNAL',
+    'Isolation signal missing for tenant scope',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateMissingAuditSignal(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'MISSING_AUDIT_SIGNAL',
+    'Audit signal missing for tenant scope',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluatePermissionDenied(
+  tenantId: string,
+  organisationId: string,
+  documentId: string
+): SearchError {
+  return makeError(
+    'PERMISSION_DENIED',
+    `Permission denied for document ${documentId} in tenant scope`,
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateReadinessProbeFailure(
+  tenantId: string,
+  organisationId: string,
+  details?: string
+): SearchError {
+  return makeError(
+    'READINESS_PROBE_FAILED',
+    details === undefined
+      ? 'Readiness probe failed'
+      : `Readiness probe failed: ${details}`,
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateIndexMutationDisabled(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'INDEX_MUTATION_DISABLED',
+    'Index mutation disabled; readiness is not READY',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateDocumentValidationFailure(
+  tenantId: string,
+  organisationId: string,
+  details?: string
+): SearchError {
+  return makeError(
+    'DOCUMENT_VALIDATION_FAILURE',
+    details === undefined
+      ? 'Document shape validation failed'
+      : `Document shape validation failed: ${details}`,
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateUniquenessViolation(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'UNIQUENESS_VIOLATION',
+    'Document violates uniqueness on tenant/type/documentId',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateSecretFieldDetected(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'SECRET_FIELD_DETECTED',
+    'Secret field detected in document metadata',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateTenantIsolationViolation(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'TENANT_ISOLATION_VIOLATION',
+    'Document does not belong to specified tenant scope',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateCrossTenantQueryRejected(
+  tenantId: string,
+  organisationId: string
+): SearchError {
+  return makeError(
+    'CROSS_TENANT_QUERY_REJECTED',
+    'Cross-tenant or unscoped query rejected',
+    tenantId,
+    organisationId
+  );
+}
+
+export function evaluateAuditFailure(
+  tenantId: string,
+  organisationId: string,
+  details?: string
+): SearchError {
+  return makeError(
+    'AUDIT_FAILURE',
+    details === undefined
+      ? 'Audit failure'
+      : `Audit failure: ${details}`,
+    tenantId,
+    organisationId
+  );
+}
+
+export function isMutationClosed(
+  state: SearchState,
+  error: SearchError
+): boolean {
+  if (error.kind === 'SEARCH_ENGINE_UNAVAILABLE' ||
+      error.kind === 'SEARCH_ENGINE_DEGRADED' ||
+      error.kind === 'SEARCH_ENGINE_BLOCKED' ||
+      error.kind === 'READINESS_PROBE_FAILED' ||
+      error.kind === 'INDEX_MUTATION_DISABLED') {
+    return state.readiness !== 'READY' || state.indexMutationClosed;
+  }
+  return false;
+}
+
+export function reportProviderFailure(
+  state: SearchState,
+  tenantId: string,
+  organisationId: string,
+  providerMessage: string
+): SearchState {
+  const error = evaluateProviderFailure(tenantId, organisationId, providerMessage);
+  return {
+    ...state,
+    readiness: 'DEGRADED',
+    indexMutationClosed: true,
+    readinessProbeFailed: false,
+    lastError: error,
+    probeHistory: [...state.probeHistory, {
+      status: 'DEGRADED',
+      timestamp: new Date().toISOString(),
+      details: providerMessage
+    }]
+  };
+}
+
 export const initialState: SearchState = {
   readiness: 'BLOCKED',
   documents: [],
   lastError: null,
   lastAudit: null,
   probeHistory: [],
-  proofHistory: []
+  proofHistory: [],
+  indexMutationClosed: true,
+  readinessProbeFailed: true
 };
