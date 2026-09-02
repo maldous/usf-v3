@@ -1,6 +1,78 @@
 # USF V3 handover
 
-## Current live boundary — composed realisation, admission-ranked routing, and measurable satisfaction
+## Current live boundary — unattended long-run convergence; resume from here
+
+Prepared 2026-09-02, written for continuation after the supervising session
+halts on quota. Everything below is resumable from documents plus the graph;
+nothing depends on the halted conversation.
+
+### The one command that continues the work
+
+    ./bin/usf hermes start --manifest graph/manifests/anqr-with-foundation.json \
+      --env-file .usf/credentials/providers.env --limit 12 --concurrency 8 --pause-seconds 60
+
+The supervisor is detached from any session and survives it. `usf hermes status`
+reports liveness, the selected manifest, per-cycle and cumulative tokens split
+kept/wasted, cache reads, concurrency observed/target/utilisation, and facet
+satisfaction. If it is already running, leave it running.
+
+### Where the work stands
+
+Both denominators are fully landed (every module, every conformance test) and
+converging on executed verdicts. At writing: ANQR 36/39 capabilities fully
+satisfied (94% of facets, denominator fully assessed); Core 38/64 (88%), with a
+check backlog draining at 24 per cycle. Completion condition for the operator
+directive (task: drive defined scope to done): UNSATISFIED 0 and NOT_ASSESSED 0
+on both `graph/manifests/v3-delivery.json` and `graph/products/anqr/manifest.json`
+under `usf hermes implement --manifest <m>` evaluation. UI and other undefined
+scope deliberately waits; it is recorded as dispositions and opportunities in
+the ANQR profile, not as pending work.
+
+### The machinery the run relies on (all committed, all tested)
+
+- admission-ranked routing with spend-per-acceptance tiebreak; output-
+  unproductive stand-down at 12 fruitless verdicts; surface-preservation gate on
+  repairs; truncation named at admission; repair context that survives to the
+  round that needs it; no cache reuse of bytes already landed.
+- prefix-stable prompts and 4-unit burst rotation so provider prompt caches have
+  something to hit; cacheReadTokens measured per cycle (baseline was under 1%).
+- dynamic invocation timeouts: API routes 150s floor, host-agent CLIs 420s,
+  3x a route's own mean latency, 600s absolute ceiling.
+- subscription CLIs each pin model AND effort so worker turns never inherit the
+  supervising configuration: claude-cli pins the declared Haiku worker model
+  (graph: selectedModel on the transport), codex pins model_reasoning_effort
+  low, antigravity declares low-tier model names. Quota exhaustion self-defers
+  6h and self-expires; no manual re-enable is ever needed.
+- the operator's Claude session is admitted (policyActive false on
+  urn:usf:provider-execution-policy:operator-reserved-claude-oauth:1); set it
+  back to "true" by one-quad transaction to reserve it again.
+
+### Watch conditions for whoever resumes
+
+1. A capability at repair round 5 twice in a row despite genuine byte changes:
+   read its latest conformance evidence before touching anything; the proven
+   remedies are (a) exact-diagnosis context reseed, (b) git-revert of a
+   collapsed pair to last good committed bytes, (c) removal of a degenerate
+   artefact so the frontier rebuilds it fresh. All three are in this file's
+   history and in the session memory.
+2. Waste above 50% for 3+ consecutive cycles: decompose per route; a route
+   producing inadmissible output stands itself down at the ceiling -- the two
+   high-waste cycles that preceded the last stand-down were the tariff of
+   measuring it, and they self-resolved.
+3. When UNSATISFIED and NOT_ASSESSED reach zero on both manifests: drain the
+   supervisor, checkpoint both repositories, record the completion boundary
+   here, and only then consider new definition work (UI semantics being the
+   named next candidate, currently dispositioned deferred/reserved).
+
+### Checkpoint discipline
+
+Cycle-landed files are checkpointed at drain boundaries, never mid-run (a
+transact can race a mid-cycle commit). Both repositories were checkpointed at
+this boundary; anything dirty on resume is post-checkpoint cycle output and is
+checkpointed the same way.
+
+
+## Previous boundary — composed realisation, admission-ranked routing, and measurable satisfaction
 
 Prepared 2026-09-02, after the profile breakthrough was consolidated. Read
 current Git and supervisor state rather than trusting any identifier here.
