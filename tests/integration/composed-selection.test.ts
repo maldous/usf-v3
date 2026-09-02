@@ -7,7 +7,7 @@ import {
   deriveCapabilityImplementationNeeds,
   readImplementationConventions,
 } from "../../src/providers/implementation-work.ts";
-import { evaluateFacets } from "../../src/providers/facet-evaluation.ts";
+import { allEvidenceClasses, evaluateFacets } from "../../src/providers/facet-evaluation.ts";
 
 /**
  * Three selections, three results.
@@ -108,6 +108,7 @@ test("a product's own UI facets are its requirements, never handed back to the p
     validatorOutcomes: [],
     proofOutcomes: [],
     conformanceOutcomes: new Map(),
+    suppliedEvidenceClasses: allEvidenceClasses,
   });
   const supplied = verdicts.filter((verdict) => verdict.state === "PROFILE_SUPPLIED");
   assert.ok(supplied.length > 0, "Core must still hand its own UI requirements to the profile");
@@ -136,6 +137,7 @@ test("blocked evidence surfaces as BLOCKED, never as never-assessed", () => {
     realizedArtefacts: new Map(), runtimeComposed: false,
     validatorOutcomes: [], proofOutcomes: [],
     conformanceOutcomes: new Map([[facet, outcome]]) as never,
+    suppliedEvidenceClasses: allEvidenceClasses,
   });
   const verdict = verdicts.find((v) => v.facet === facet)!;
   assert.equal(verdict.state, "BLOCKED");

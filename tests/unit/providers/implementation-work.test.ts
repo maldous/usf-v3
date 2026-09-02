@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { SemanticGraph } from "../../../src/graph/index.ts";
 import { canonicalQuadLine, type Quad } from "../../../src/graph/nquads.ts";
-import { evaluateFacets, type EvidenceIndex } from "../../../src/providers/facet-evaluation.ts";
+import { allEvidenceClasses, evaluateFacets, type EvidenceIndex } from "../../../src/providers/facet-evaluation.ts";
 import { parseSpecOutcomes } from "../../../src/providers/implementation-conformance.ts";
 import {
   deriveCapabilityImplementationNeeds, deriveConformancePrompt, deriveImplementationPrompt,
@@ -196,10 +196,13 @@ test("a failed subtest's assertion is captured, so repair aims at the real gap",
 });
 
 function evidenceWith(entries: EvidenceIndex["conformanceOutcomes"]): EvidenceIndex {
+  // A full-evidence lane: every class is loaded, so nothing reads OTHER_LANE
+  // and the assertions below exercise the per-class verdicts themselves.
   return Object.freeze({
     realizedArtefacts: new Map(), runtimeComposed: false,
     validatorOutcomes: Object.freeze([]), proofOutcomes: Object.freeze([]),
     conformanceOutcomes: entries,
+    suppliedEvidenceClasses: allEvidenceClasses,
   });
 }
 
@@ -244,6 +247,29 @@ test("an implementation-conformance facet is satisfied only by an executed behav
   const verdict = blocked.find((entry) => entry.facet === behaviour)!;
   assert.equal(verdict.state, "BLOCKED");
   assert.match(verdict.reason, /does not typecheck/u);
+});
+
+test("a facet whose evidence class this lane does not load is OTHER_LANE, never never-assessed", () => {
+  // The implementation lane loads executed behavioural outcomes only. Its
+  // realized-artefact facets sat NOT_ASSESSED for an entire supervisor run,
+  // reading as a nineteen-capability backlog no unit of that lane could ever
+  // assess. The verdict must name the lane boundary, not an absence.
+  const graph = graphOf([...conventionQuads(), ...capabilityQuads()]);
+  const artefactFacet = "urn:usf:delivery-facet:policygatecontract";
+
+  const conformanceOnly = evaluateFacets(graph, Object.freeze({
+    ...evidenceWith(new Map()),
+    suppliedEvidenceClasses: new Set(["implementation-conformance"]),
+  }));
+  assert.equal(conformanceOnly.find((v) => v.facet === artefactFacet)!.state, "OTHER_LANE");
+  // A behavioural facet in the same lane still evaluates normally.
+  assert.equal(conformanceOnly.find((v) => v.facet === "urn:usf:delivery-facet:policygatebehaviour")!.state,
+    "NOT_ASSESSED");
+
+  // The full-evidence lane keeps owning the verdict: with no artefact realized
+  // it is genuinely not assessed there.
+  const fullLane = evaluateFacets(graph, evidenceWith(new Map()));
+  assert.equal(fullLane.find((v) => v.facet === artefactFacet)!.state, "NOT_ASSESSED");
 });
 
 test("a failing behavioural check produces bounded alternating repair work, then stops", () => {

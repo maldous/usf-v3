@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { canonicalQuadLine } from "../graph/nquads.ts";
 import { validateArtefactOutput } from "../providers/artefact-validation.ts";
-import { evaluateFacets, summariseFacets, type EvidenceIndex } from "../providers/facet-evaluation.ts";
+import { allEvidenceClasses, evaluateFacets, summariseFacets, type EvidenceIndex } from "../providers/facet-evaluation.ts";
 import { loadConformanceEvidence } from "../providers/implementation-conformance.ts";
 import { deterministicGenerators, projectByFormat, validateGeneratedFormat } from "../providers/delivery-generators.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
@@ -348,6 +348,8 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     runtimeComposed: [...realizedArtefacts.keys()].some((path) => path.endsWith("/runtime/compose.json")),
     validatorOutcomes: Object.freeze([...new Set(validatorOutcomes)].sort()),
     proofOutcomes: Object.freeze([]),
+    // The artefact lane loads every evidence class, so nothing reads OTHER_LANE here.
+    suppliedEvidenceClasses: allEvidenceClasses,
   });
   const facets = summariseFacets(evaluateFacets(graph, evidence));
 

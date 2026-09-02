@@ -13,7 +13,7 @@ import type { SemanticGraph } from "../graph/index.ts";
 const P = "urn:usf:predicate:";
 
 export type FacetState =
-  | "NOT_ASSESSED" | "SATISFIED" | "UNSATISFIED" | "BLOCKED" | "STALE"
+  | "NOT_ASSESSED" | "SATISFIED" | "UNSATISFIED" | "BLOCKED" | "STALE" | "OTHER_LANE"
   | "NOT_APPLICABLE"
   /**
    * Real, applicable, and not Core's to satisfy. USF Core is surface-agnostic:
@@ -100,7 +100,22 @@ export interface EvidenceIndex {
   readonly proofOutcomes: readonly string[];
   /** Executed behavioural outcomes, keyed by the facet IRI they were named for. */
   readonly conformanceOutcomes: ReadonlyMap<string, ConformanceEvidenceEntry>;
+  /**
+   * The evidence classes this evaluation lane actually loaded. A facet
+   * admitting a class outside this set is another lane's to assess and reads
+   * OTHER_LANE, never NOT_ASSESSED: the implementation lane deliberately loads
+   * no artefact evidence, and reporting its realized-artefact facets as
+   * never-assessed put a standing false backlog of nineteen capabilities into
+   * every projection of an otherwise complete run. The field is required so a
+   * lane states what it loaded rather than inheriting a silent default.
+   */
+  readonly suppliedEvidenceClasses: ReadonlySet<string>;
 }
+
+/** Every evidence class the evaluator can read; a full-evidence lane supplies all of them. */
+export const allEvidenceClasses: ReadonlySet<string> = Object.freeze(new Set([
+  "implementation-conformance", "realized-artefact", "runtime-composition", "validator-outcome",
+]));
 
 function values(graph: SemanticGraph, subject: string, predicate: string): readonly string[] {
   return Object.freeze(graph.quads
@@ -186,6 +201,16 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
     // it. An artefact cannot evidence a behavioural, state, audit or
     // authorization requirement.
     const declaredEvidence = values(graph, facet, "admissibleEvidenceClass")[0] ?? null;
+    // A lane can judge only the evidence classes it loaded. A facet admitting a
+    // class this lane deliberately does not load is real, applicable and
+    // another lane's to assess; it is not an absence of evidence, and counting
+    // it as one made finished work read as a permanent backlog.
+    if (declaredEvidence !== null && !evidence.suppliedEvidenceClasses.has(declaredEvidence)) {
+      return Object.freeze({
+        facet, facetKind: kind, capability, state: "OTHER_LANE" as const, evidence: Object.freeze([]),
+        reason: `This requirement admits ${declaredEvidence} evidence, which this evaluation lane does not load. The lane that produces that evidence class owns the verdict; this is not a claim that it is satisfied.`,
+      });
+    }
     if (declaredEvidence === "implementation-conformance") {
       // Only an executed behavioural outcome can evidence a behaviour, state,
       // audit or authorization requirement. A realized specification artefact
@@ -328,7 +353,7 @@ export interface FacetSummary {
 export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary {
   const stateCounts: Record<FacetState, number> = {
     NOT_ASSESSED: 0, SATISFIED: 0, UNSATISFIED: 0, BLOCKED: 0, STALE: 0,
-    NOT_APPLICABLE: 0, PROFILE_SUPPLIED: 0,
+    NOT_APPLICABLE: 0, PROFILE_SUPPLIED: 0, OTHER_LANE: 0,
   };
   const byKind: Record<string, Record<string, number>> = {};
   const byCapability = new Map<string, { total: number; satisfied: number }>();
@@ -341,9 +366,11 @@ export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary
     // A capability is complete when every applicable requirement is satisfied.
     // An inapplicable requirement is excluded from the denominator rather than
     // counted as satisfied.
-    // Neither an inapplicable requirement nor one the profile owns belongs in
-    // Core's completion denominator.
-    if (verdict.state === "NOT_APPLICABLE" || verdict.state === "PROFILE_SUPPLIED") continue;
+    // Neither an inapplicable requirement, one the profile owns, nor one whose
+    // evidence class belongs to a different evaluation lane belongs in this
+    // lane's completion denominator.
+    if (verdict.state === "NOT_APPLICABLE" || verdict.state === "PROFILE_SUPPLIED"
+      || verdict.state === "OTHER_LANE") continue;
     const entry = byCapability.get(verdict.capability) ?? { total: 0, satisfied: 0 };
     entry.total += 1;
     if (verdict.state === "SATISFIED") entry.satisfied += 1;
@@ -365,6 +392,7 @@ export function summariseFacets(verdicts: readonly FacetVerdict[]): FacetSummary
       "BLOCKED means the required evidence class must be produced by running a check and cannot be authored.",
       "NOT_APPLICABLE is authored authority recovered from V1, not an absence of evidence, and is excluded from the completion denominator rather than counted as satisfied.",
       "PROFILE_SUPPLIED means the requirement is real and applicable but belongs to a product profile rather than to Core. It is excluded from Core's denominator and is not a claim that any profile has satisfied it.",
+      "OTHER_LANE means the requirement is real and applicable but admits an evidence class this evaluation lane does not load. The lane that produces that class owns the verdict; it is excluded from this lane's denominator and is not a claim that it is satisfied.",
     ]),
   });
 }

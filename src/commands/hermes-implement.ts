@@ -344,6 +344,12 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   // summary taken before this invocation's own conformance runs is a cycle
   // behind, which reported SATISFIED 0 for a capability whose four subtests had
   // just passed.
+  //
+  // This lane loads executed behavioural outcomes only, and it says so:
+  // realized-artefact facets in a composed selection are the artefact lane's
+  // to assess and read OTHER_LANE here. Leaving them NOT_ASSESSED instead put
+  // a standing false backlog of nineteen capabilities into every projection of
+  // an otherwise complete run.
   const summariseCurrentFacets = async (): Promise<ReturnType<typeof summariseFacets>> =>
     summariseFacets(evaluateFacets(graph, Object.freeze({
       realizedArtefacts: new Map<string, string>(),
@@ -351,6 +357,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       validatorOutcomes: Object.freeze([] as readonly string[]),
       proofOutcomes: Object.freeze([] as readonly string[]),
       conformanceOutcomes: await loadConformanceEvidence(repositoryRoot, sourceRootFor),
+      suppliedEvidenceClasses: new Set(["implementation-conformance"]),
     })));
 
   if (!parsed.apply) {
