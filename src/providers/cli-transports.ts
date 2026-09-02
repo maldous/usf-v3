@@ -28,6 +28,9 @@ export interface CliInvocationResult {
   readonly inputTokens: number | null;
   readonly outputTokens: number | null;
   readonly totalTokens: number | null;
+  /** Prompt-cache activity, when the transport reports it. */
+  readonly cacheReadTokens: number | null;
+  readonly cacheWriteTokens: number | null;
   /** Cost the transport itself reports, on a list basis, when exposed. */
   readonly transportReportedCostUsd: number | null;
   readonly latencyMsReported: number | null;
@@ -41,14 +44,34 @@ function integerOrNull(value: unknown): number | null {
 }
 
 /** Claude CLI: one bounded non-interactive turn with structured JSON output. */
+/**
+ * The exact argv for one bounded Claude CLI worker turn.
+ *
+ * Two flags matter and were missing. Without --model the CLI inherits the
+ * operator's interactive default -- at the time of writing a heavyweight
+ * reasoning configuration -- so worker units drew the supervisor's own model
+ * and died at the timeout; both recorded failures of this route were exactly
+ * that. And --max-turns 1 bounds the CLI's agentic loop to a single answer: a
+ * worker unit needs one generation, not a session.
+ */
+export function claudeCliArguments(prompt: string, model: string | null): readonly string[] {
+  return Object.freeze([
+    "-p", prompt,
+    "--output-format", "json",
+    "--max-turns", "1",
+    ...(model === null || model.length === 0 ? [] : ["--model", model]),
+  ]);
+}
+
 export async function invokeClaudeCli(
   prompt: string,
   timeoutMs: number,
+  model: string | null = null,
   executable = "claude",
 ): Promise<CliInvocationResult> {
   let stdout: string;
   try {
-    const produced = await runFile(executable, ["-p", prompt, "--output-format", "json"], {
+    const produced = await runFile(executable, [...claudeCliArguments(prompt, model)], {
       timeout: timeoutMs,
       maxBuffer: maximumOutputBytes,
       encoding: "utf8",
@@ -76,10 +99,16 @@ export async function invokeClaudeCli(
   const models = Object.keys(modelUsage).sort();
   const inputTokens = integerOrNull(usage.input_tokens);
   const outputTokens = integerOrNull(usage.output_tokens);
+  // Claude Code prompt-caches its own API calls and reports the split, which is
+  // exactly the measurement the prefix-stable prompt layout exists to feed.
+  const cacheReadTokens = integerOrNull(usage.cache_read_input_tokens);
+  const cacheWriteTokens = integerOrNull(usage.cache_creation_input_tokens);
   return Object.freeze({
     transport: "claude-cli" as const,
     outcome: "ok" as const,
     reasonCode: "INVOCATION_OK",
+    cacheReadTokens,
+    cacheWriteTokens,
     text: typeof parsed.result === "string" ? parsed.result : null,
     // The CLI may use several models in one turn; report the exact set it named.
     actualModel: models.length === 0 ? null : models.join("+"),
@@ -104,6 +133,8 @@ function frozenRefusal(
     transport,
     outcome: "refused" as const,
     reasonCode,
+    cacheReadTokens: null,
+    cacheWriteTokens: null,
     text: null,
     actualModel: null,
     invocationIdentity: null,
@@ -202,6 +233,8 @@ export async function invokeCodexCli(
       transport: "codex-cli" as const,
       outcome: "ok" as const,
       reasonCode: "INVOCATION_OK",
+      cacheReadTokens: null,
+      cacheWriteTokens: null,
       text,
       // Codex exec does not report the resolved underlying model identity.
       actualModel: null,
@@ -320,6 +353,7 @@ export async function invokeAntigravityCli(
   return Object.freeze({
     transport: "antigravity-cli" as const,
     outcome: "ok" as const,
+    cacheReadTokens: null, cacheWriteTokens: null,
     reasonCode: "INVOCATION_OK",
     text,
     // Provider-reported, never the configured default.

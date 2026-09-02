@@ -42,6 +42,29 @@ const hardMaximumConcurrency = 16;
 // productive one, and eight attempts at four minutes each would let one work
 // unit consume an entire operating cycle.
 const invocationTimeoutMs = 150_000;
+const hostAgentTimeoutFloorMs = 420_000;
+const invocationTimeoutCeilingMs = 600_000;
+
+/**
+ * How long one invocation may run.
+ *
+ * A fixed two-and-a-half minutes treated every route as an instruct endpoint,
+ * and heavy thinking is legitimate work: one accepted unit came back at 119.2
+ * seconds of a 120-second budget, and reasoning transports were being killed
+ * mid-thought and recorded as failures. Host-agent CLIs get a higher floor
+ * because an agent turn is not a completion, and any route with measured
+ * history gets headroom above its own mean latency. The ceiling still bounds a
+ * runaway absolutely, and slowness stays priced: latency is an ordering
+ * tiebreak, so a slow route earns patience, never preference.
+ */
+function invocationTimeoutFor(
+  candidate: Readonly<{ transport: string; candidateId: string }>,
+  productivity: ReadonlyMap<string, Readonly<{ meanLatencyMs: number }>>,
+): number {
+  const floor = candidate.transport === "vercel-ai-sdk" ? invocationTimeoutMs : hostAgentTimeoutFloorMs;
+  const measured = productivity.get(candidate.candidateId)?.meanLatencyMs ?? 0;
+  return Math.min(invocationTimeoutCeilingMs, Math.max(floor, Math.round(measured * 3)));
+}
 // The candidate universe is deep and one refusal is an availability fact, not a
 // terminal state, so a unit walks further down its diversified order before it
 // gives up. The bound keeps a single unit from consuming a whole cycle.
@@ -419,13 +442,14 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
       try {
         if (candidate.transport === "claude-cli" || candidate.transport === "codex-cli"
           || candidate.transport === "antigravity-cli") {
+          const hostTimeoutMs = invocationTimeoutFor(candidate, productivity);
           const produced = candidate.transport === "claude-cli"
-            ? await invokeClaudeCli(unit.prompt, invocationTimeoutMs)
+            ? await invokeClaudeCli(unit.prompt, hostTimeoutMs, candidate.model)
             : candidate.transport === "codex-cli"
-              ? await invokeCodexCli(unit.prompt, invocationTimeoutMs, candidate.model)
+              ? await invokeCodexCli(unit.prompt, hostTimeoutMs, candidate.model)
               // Antigravity requires an explicit model identity; the candidate
               // carries none until its catalogue can be enumerated.
-              : await invokeAntigravityCli(unit.prompt, candidate.model ?? "", invocationTimeoutMs);
+              : await invokeAntigravityCli(unit.prompt, candidate.model ?? "", hostTimeoutMs);
           const elapsed = Math.round(performance.now() - attemptStarted);
           attempts.push(Object.freeze({
             candidateId: candidate.candidateId, transport: candidate.transport, provider: candidate.provider,
@@ -445,7 +469,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
               invocationIdentity: produced.invocationIdentity, text: produced.text,
               usage: Object.freeze({
                 inputTokens: produced.inputTokens, outputTokens: produced.outputTokens, totalTokens: produced.totalTokens,
-                cacheReadTokens: null, cacheWriteTokens: null,
+                cacheReadTokens: produced.cacheReadTokens, cacheWriteTokens: produced.cacheWriteTokens,
               }),
               transportReportedCostUsd: produced.transportReportedCostUsd,
               startedAtMs, endedAtMs: Date.now(),
@@ -468,7 +492,7 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
           model: model as Parameters<typeof generateText>[0]["model"],
           prompt: unit.prompt,
           maxOutputTokens: unit.maximumOutputTokens,
-          abortSignal: AbortSignal.timeout(invocationTimeoutMs),
+          abortSignal: AbortSignal.timeout(invocationTimeoutFor(candidate, productivity)),
         });
         const elapsed = Math.round(performance.now() - attemptStarted);
         // A 200 that carries no text is a vacuous answer, not a result. It must
