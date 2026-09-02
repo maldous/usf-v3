@@ -7,6 +7,7 @@ import {
   deriveCapabilityImplementationNeeds,
   readImplementationConventions,
 } from "../../src/providers/implementation-work.ts";
+import { evaluateFacets } from "../../src/providers/facet-evaluation.ts";
 
 /**
  * Three selections, three results.
@@ -90,4 +91,31 @@ test("routing survives the two conventions sharing a path pattern", () => {
   }
   // No two capabilities may claim the same path, whichever repository they are in.
   for (const [path, owners] of byPath) assert.equal(owners.size, 1, `${path} is claimed by two repositories`);
+});
+
+test("a product's own UI facets are its requirements, never handed back to the profile", () => {
+  // Core's surface policy says a rendered surface is the product's to supply.
+  // Under a composed selection that sentence swallowed the product's own UI
+  // facets -- ANQR is the profile, so classifying its uisemantics facets
+  // PROFILE_SUPPLIED excluded seventeen of its requirements from its own
+  // denominator. And the first guard keyed on the declaresCapability predicate
+  // alone, which Core's capability set also uses, erasing Core's five
+  // profile-supplied verdicts instead. Both edges are pinned here.
+  const graph = loadSemanticGraph(canonicalRoot, composedManifest);
+  const verdicts = evaluateFacets(graph, {
+    realizedArtefacts: new Map(),
+    runtimeComposed: false,
+    validatorOutcomes: [],
+    proofOutcomes: [],
+    conformanceOutcomes: new Map(),
+  });
+  const supplied = verdicts.filter((verdict) => verdict.state === "PROFILE_SUPPLIED");
+  assert.ok(supplied.length > 0, "Core must still hand its own UI requirements to the profile");
+  assert.ok(supplied.every((verdict) => verdict.facet.startsWith("urn:usf:")),
+    "a facet of a profile-declared capability must never be profile-supplied");
+  const anqrUi = verdicts.filter((verdict) =>
+    verdict.facet.startsWith("urn:anqr:") && (verdict.facetKind ?? "") === "uisemantics");
+  assert.ok(anqrUi.length > 0);
+  assert.ok(anqrUi.every((verdict) => verdict.state !== "PROFILE_SUPPLIED"),
+    "the product's own UI facets count in the product's denominator");
 });

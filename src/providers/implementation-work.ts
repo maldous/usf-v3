@@ -177,9 +177,13 @@ export function deriveCapabilityImplementationNeeds(
   // own. Resolving it this way keeps the rule in the graph rather than in an
   // IRI-prefix guess, which is the same mistake that once made every product
   // capability invisible.
+  const profileRevisions = new Set(subjectsOfType(graph, "urn:usf:type:ProductProfileRevision"));
   const repositoryOfCapability = new Map<string, string>();
   for (const quad of graph.quads) {
-    if (quad.predicate !== `${P}declaresCapability`) continue;
+    // declaresCapability is shared with Core's own capability set, so only a
+    // product profile revision may claim a capability for a repository. The
+    // productRepository null-check alone was protecting this by accident.
+    if (quad.predicate !== `${P}declaresCapability` || !profileRevisions.has(quad.subject)) continue;
     const repository = one(graph, quad.subject, "productRepository");
     if (repository !== null) repositoryOfCapability.set(quad.object, repository);
   }

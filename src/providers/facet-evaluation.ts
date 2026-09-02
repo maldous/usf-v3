@@ -134,6 +134,24 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
     .map((quad) => quad.object));
   const surfacePolicyReason = graph.quads
     .find((quad) => surfacePolicies.includes(quad.subject) && quad.predicate === `${P}ownerAuthorityRule`)?.object ?? null;
+  // The surface policy says a rendered surface is the product's to supply. That
+  // sentence is written from Core's side, so it applies to capabilities no
+  // profile declares. A capability a product profile declares IS the product
+  // supplying it: handing its UI facets back to "the profile" would exclude the
+  // product's own UI requirements from the product's own denominator, which is
+  // what happened the first time a composed selection put both sets in one
+  // graph -- PROFILE_SUPPLIED jumped from 5 to 22 and seventeen ANQR facets
+  // stopped counting toward ANQR.
+  // declaresCapability is also how Core's own capability set enumerates its
+  // members, so the subject must be a product profile revision -- keying on the
+  // predicate alone silently classified all 67 Core capabilities as
+  // profile-declared and erased Core's own profile-supplied verdicts.
+  const profileRevisions = new Set(graph.quads
+    .filter((quad) => quad.predicate === `${P}type` && quad.object === "urn:usf:type:ProductProfileRevision")
+    .map((quad) => quad.subject));
+  const profileDeclaredCapabilities = new Set(graph.quads
+    .filter((quad) => quad.predicate === `${P}declaresCapability` && profileRevisions.has(quad.subject))
+    .map((quad) => quad.object));
 
   const facets = graph.quads
     .filter((quad) => quad.predicate === `${P}type` && quad.object === "urn:usf:type:DeliveryFacet")
@@ -148,6 +166,7 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
     // A requirement Core hands to the profile is not retracted, and its
     // recovered applicability is left exactly as V1 recorded it.
     if (kindIri !== null && profileSuppliedKinds.has(kindIri)
+      && (capability === null || !profileDeclaredCapabilities.has(capability))
       && values(graph, facet, "facetApplicability")[0] === "APPLICABLE") {
       return Object.freeze({
         facet, facetKind: kind, capability, state: "PROFILE_SUPPLIED" as const, evidence: Object.freeze([]),
