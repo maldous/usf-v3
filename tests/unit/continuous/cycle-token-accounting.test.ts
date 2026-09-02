@@ -67,3 +67,16 @@ test("an empty cycle reports zero rather than nothing", () => {
   assert.equal(summary.totalTokens, 0);
   assert.equal(summary.invocationsCounted, 0);
 });
+
+test("provider cache reads are counted when reported and zero when not", () => {
+  // Provider prompt caching was invisible: the SDK reports cacheReadTokens and
+  // the extraction dropped it, so whether repair rounds were benefiting from
+  // same-model prefix caching was unknowable. Host-CLI transports report no
+  // detail and must contribute zero rather than poisoning the count.
+  const summary = summariseTokenUsage([
+    { outcome: "accepted", usage: { inputTokens: 5_000, outputTokens: 500, totalTokens: 5_500, cacheReadTokens: 4_000 } },
+    { outcome: "accepted", usage: { inputTokens: 1_000, outputTokens: 100, totalTokens: 1_100, cacheReadTokens: null } },
+  ]);
+  assert.equal(summary.cacheReadTokens, 4_000);
+  assert.equal(summary.totalTokens, 6_600);
+});

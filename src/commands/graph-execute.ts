@@ -185,7 +185,11 @@ interface UnitOutcome {
   readonly actualModel: string | null;
   readonly invocationIdentity: string | null;
   readonly text: string | null;
-  readonly usage: Readonly<{ inputTokens: number | null; outputTokens: number | null; totalTokens: number | null }> | null;
+  readonly usage: Readonly<{
+    inputTokens: number | null; outputTokens: number | null; totalTokens: number | null;
+    /** Provider-side prompt-cache activity, when the transport reports it. */
+    cacheReadTokens: number | null; cacheWriteTokens: number | null;
+  }> | null;
   readonly transportReportedCostUsd: number | null;
   readonly startedAtMs: number;
   readonly endedAtMs: number;
@@ -436,7 +440,10 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
               unit, candidatesConsidered: universe.candidates.length, attempts: Object.freeze(attempts),
               status: "ok" as const, selected: candidate, actualModel: produced.actualModel,
               invocationIdentity: produced.invocationIdentity, text: produced.text,
-              usage: Object.freeze({ inputTokens: produced.inputTokens, outputTokens: produced.outputTokens, totalTokens: produced.totalTokens }),
+              usage: Object.freeze({
+                inputTokens: produced.inputTokens, outputTokens: produced.outputTokens, totalTokens: produced.totalTokens,
+                cacheReadTokens: null, cacheWriteTokens: null,
+              }),
               transportReportedCostUsd: produced.transportReportedCostUsd,
               startedAtMs, endedAtMs: Date.now(),
             });
@@ -511,6 +518,11 @@ export async function graphExecuteCommand(repositoryRoot: string, args: readonly
             inputTokens: produced.usage?.inputTokens ?? null,
             outputTokens: produced.usage?.outputTokens ?? null,
             totalTokens: produced.usage?.totalTokens ?? null,
+            // Provider prompt caching is a real economy on this workload --
+            // repair rounds re-send a large stable prefix to the same model --
+            // and it was invisible: the SDK reports it and it was dropped here.
+            cacheReadTokens: produced.usage?.inputTokenDetails?.cacheReadTokens ?? null,
+            cacheWriteTokens: produced.usage?.inputTokenDetails?.cacheWriteTokens ?? null,
           }),
           transportReportedCostUsd: null,
           startedAtMs, endedAtMs: Date.now(),

@@ -222,7 +222,10 @@ async function resolveProductRealisationRoot(
 export function summariseTokenUsage(
   outcomes: readonly Readonly<Record<string, unknown>>[],
 ): Readonly<Record<string, number>> {
-  const total = { inputTokens: 0, outputTokens: 0, totalTokens: 0, acceptedTokens: 0, refusedTokens: 0, invocationsCounted: 0 };
+  const total = {
+    inputTokens: 0, outputTokens: 0, totalTokens: 0, acceptedTokens: 0, refusedTokens: 0,
+    cacheReadTokens: 0, invocationsCounted: 0,
+  };
   for (const outcome of outcomes) {
     const usage = outcome.usage as Readonly<Record<string, unknown>> | null | undefined;
     if (usage === null || usage === undefined) continue;
@@ -231,6 +234,7 @@ export function summariseTokenUsage(
       return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
     };
     const totalTokens = number("totalTokens");
+    total.cacheReadTokens += number("cacheReadTokens");
     total.inputTokens += number("inputTokens");
     total.outputTokens += number("outputTokens");
     total.totalTokens += totalTokens;
