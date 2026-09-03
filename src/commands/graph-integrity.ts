@@ -45,6 +45,8 @@ export function integrityScopes(quads: readonly Quad[] = []): Readonly<{
   });
 }
 
+const fixtureDirectoryName = "fixtures";
+
 export async function graphIntegrityCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
   const strict = args.includes("--strict");
   if (args.some((argument) => argument !== "--strict")) {
@@ -52,7 +54,22 @@ export async function graphIntegrityCommand(repositoryRoot: string, args: readon
       "Graph integrity accepts only --strict.");
   }
   const directory = resolve(repositoryRoot, "graph");
-  const names = (await readdir(directory).catch(() => [] as string[])).filter((name) => name.endsWith(".nq")).sort();
+  // Authored graph sources live at the graph root and under product overlays.
+  // Fixtures are synthetic test inputs in their own urn:fixture: namespace and
+  // are deliberately not corpus authority, so they never gate it.
+  const names = (await (async function walk(dir: string, prefix: string): Promise<readonly string[]> {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+    const found: string[] = [];
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (entry.name === fixtureDirectoryName) continue;
+        found.push(...await walk(resolve(dir, entry.name), `${prefix}${entry.name}/`));
+      } else if (entry.name.endsWith(".nq")) {
+        found.push(`${prefix}${entry.name}`);
+      }
+    }
+    return found;
+  })(directory, "")).slice().sort();
   const quads: Quad[] = [];
   const unparsed: string[] = [];
   for (const name of names) {

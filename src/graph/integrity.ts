@@ -24,7 +24,10 @@ export type IntegrityCode =
   | "superseded-still-referenced-as-current"
   | "state-missing-reason"
   | "duplicate-quad"
-  | "functional-predicate-conflict";
+  | "functional-predicate-conflict"
+  | "undeclared-predicate"
+  | "untyped-subject"
+  | "disconnected-graph";
 
 export interface IntegrityViolation {
   readonly code: IntegrityCode;
@@ -40,6 +43,8 @@ export interface IntegrityReport {
   readonly evaluated: true;
   readonly quadCount: number;
   readonly subjectCount: number;
+  readonly predicateCount: number;
+  readonly componentCount: number;
   readonly checkedCodes: readonly IntegrityCode[];
   readonly violations: readonly IntegrityViolation[];
   readonly conforming: boolean;
@@ -49,6 +54,7 @@ export interface IntegrityReport {
 
 const typePredicate = "urn:usf:predicate:type";
 const supersedesPredicate = "urn:usf:predicate:supersedes";
+const semanticPredicateType = "urn:usf:type:SemanticPredicate";
 const dependencyPredicates = Object.freeze([
   "urn:usf:predicate:dependsOn",
   "urn:usf:predicate:requires",
@@ -279,11 +285,81 @@ export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions
     if (count > 1) add("duplicate-quad", canonical.split(" ")[0]!.replace(/[<>]/gu, ""), `asserted ${count} times`, "");
   }
 
+  // 14. A predicate the corpus uses is a predicate the corpus defines. V1 and V2
+  //      both accumulated vocabulary faster than they declared it; 126 predicates
+  //      were in use here without a declaration when this check was written.
+  const declaredPredicates = new Set(quads
+    .filter((quad) => quad.predicate === typePredicate && quad.object === semanticPredicateType)
+    .map((quad) => quad.subject));
+  const reportedPredicate = new Set<string>();
+  for (const quad of quads) {
+    if (!quad.predicate.startsWith("urn:usf:predicate:")) continue;
+    if (declaredPredicates.has(quad.predicate) || reportedPredicate.has(quad.predicate)) continue;
+    reportedPredicate.add(quad.predicate);
+    add("undeclared-predicate", quad.predicate, "used as a predicate but never declared as a SemanticPredicate", quad.graph);
+  }
+
+  // 15. Every subject states what it is. An untyped subject cannot be validated
+  //     against a required field set, so it is unreachable by every later rule.
+  const typedSubjects = new Set(quads.filter((quad) => quad.predicate === typePredicate).map((quad) => quad.subject));
+  for (const subject of definedSubjects) {
+    if (typedSubjects.has(subject)) continue;
+    add("untyped-subject", subject, "defined as a subject but never states a type", "");
+  }
+
+  // 16. The corpus is one graph, not several. A separate component is a set of
+  //     resources nothing in the corpus can reach: documentation that looks like
+  //     authority. Four such subjects existed when this check was written.
+  const adjacency = new Map<string, Set<string>>();
+  const link = (from: string, to: string): void => {
+    const set = adjacency.get(from) ?? new Set<string>();
+    set.add(to);
+    adjacency.set(from, set);
+  };
+  const componentNodes = new Set<string>();
+  for (const quad of quads) {
+    componentNodes.add(quad.subject);
+    if (quad.objectKind !== "iri" || !definedSubjects.has(quad.object)) continue;
+    componentNodes.add(quad.object);
+    link(quad.subject, quad.object);
+    link(quad.object, quad.subject);
+  }
+  const visited = new Set<string>();
+  const components: string[][] = [];
+  for (const node of componentNodes) {
+    if (visited.has(node)) continue;
+    const component: string[] = [];
+    const pending = [node];
+    visited.add(node);
+    while (pending.length > 0) {
+      const current = pending.pop()!;
+      component.push(current);
+      for (const next of adjacency.get(current) ?? []) {
+        if (visited.has(next)) continue;
+        visited.add(next);
+        pending.push(next);
+      }
+    }
+    components.push(component);
+  }
+  if (components.length > 1) {
+    // Largest first, then by smallest member IRI. Size alone is not a total
+    // order, and two components of equal size must not swap between runs.
+    const labelled = components.map((component) => Object.freeze({ component, first: [...component].sort()[0]! }));
+    const sorted = [...labelled].sort((left, right) =>
+      right.component.length - left.component.length || left.first.localeCompare(right.first));
+    for (const entry of sorted.slice(1)) {
+      add("disconnected-graph", entry.first,
+        `in a component of ${entry.component.length} unreachable from the main component of ${sorted[0]!.component.length}`, "");
+    }
+  }
+
   const checkedCodes: readonly IntegrityCode[] = Object.freeze([
     "undeclared-type", "dangling-reference", "multiple-type-declaration", "self-dependency",
     "type-local-name-style", "predicate-local-name-style", "instance-local-name-style",
     "iri-segment-shape", "derived-type-authored", "superseded-still-referenced-as-current",
     "state-missing-reason", "duplicate-quad", "functional-predicate-conflict",
+    "undeclared-predicate", "untyped-subject", "disconnected-graph",
   ]);
 
   return Object.freeze({
@@ -292,6 +368,8 @@ export function checkIntegrity(quads: readonly Quad[], options: IntegrityOptions
     evaluated: true as const,
     quadCount: quads.length,
     subjectCount: definedSubjects.size,
+    predicateCount: new Set(quads.map((quad) => quad.predicate)).size,
+    componentCount: components.length,
     checkedCodes,
     violations: Object.freeze([...violations].sort((left, right) =>
       left.code.localeCompare(right.code) || left.subject.localeCompare(right.subject))),

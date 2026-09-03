@@ -14,10 +14,16 @@ function quad(subject: string, predicate: string, object: string, objectKind: "i
 // it every fixture would trip undeclared-type on urn:usf:type:SemanticType.
 const metaType = quad("urn:usf:type:SemanticType", "urn:usf:predicate:type", "urn:usf:type:SemanticType");
 const declareType = (t: string) => quad(t, "urn:usf:predicate:type", "urn:usf:type:SemanticType");
+const declarePredicate = (p: string) => quad(p, "urn:usf:predicate:type", "urn:usf:type:SemanticPredicate");
+// A fixture that asserts conformance must declare the vocabulary it uses, for
+// the same reason the corpus does: a predicate the corpus uses is a predicate
+// the corpus defines. These three quads are the smallest self-describing
+// vocabulary -- the predicate meta-type, and `type` declaring itself.
+const vocabulary = [metaType, declareType("urn:usf:type:SemanticPredicate"), declarePredicate("urn:usf:predicate:type")];
 
 test("a conforming corpus yields zero violations and says so explicitly", () => {
   const report = checkIntegrity([
-    metaType,
+    ...vocabulary,
     declareType("urn:usf:type:Widget"),
     quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
   ]);
@@ -25,7 +31,7 @@ test("a conforming corpus yields zero violations and says so explicitly", () => 
   assert.deepEqual(report.violations, []);
   // An empty violation list must never be ambiguous with "not evaluated".
   assert.equal(report.evaluated, true);
-  assert.equal(report.checkedCodes.length, 13);
+  assert.equal(report.checkedCodes.length, 16);
 });
 
 test("a phantom type is refused: no typo may invent a class", () => {
@@ -47,7 +53,8 @@ test("a dangling reference is refused, but a terminal runtime identifier is not"
   // An output-schema identifier denotes a runtime value and is intentionally terminal.
   assert.ok(terminalIdentifierKinds.includes("cli-error"));
   const terminal = checkIntegrity([
-    metaType,
+    ...vocabulary,
+    declarePredicate("urn:usf:predicate:errorSchema"),
     declareType("urn:usf:type:Widget"),
     quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
     quad("urn:usf:widget:alpha", "urn:usf:predicate:errorSchema", "urn:usf:cli-error:1"),
@@ -205,6 +212,89 @@ test("the runtime reads the functional-predicate set from graph authority", () =
     ["urn:usf:predicate:artefactKind", "urn:usf:predicate:pathPattern"]);
   // Absent is distinguishable from empty, so a caller can fall back deliberately.
   assert.deepEqual(readRuntimeAuthority([]).functionalPredicates, []);
+});
+
+test("vocabulary the corpus uses is vocabulary the corpus declares", () => {
+  // 126 predicates were in use without a declaration when this check landed.
+  const report = checkIntegrity([
+    ...vocabulary,
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:undeclaredProbe", "x", "literal"),
+  ]);
+  assert.equal(report.conforming, false);
+  assert.ok(report.violations.some((v) =>
+    v.code === "undeclared-predicate" && v.subject === "urn:usf:predicate:undeclaredProbe"));
+  // One violation per predicate, not one per use.
+  const second = checkIntegrity([
+    ...vocabulary,
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:undeclaredProbe", "x", "literal"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:undeclaredProbe", "y", "literal"),
+  ]);
+  assert.equal(second.violations.filter((v) => v.code === "undeclared-predicate").length, 1);
+});
+
+test("every subject states what it is, and an isolated subject is refused", () => {
+  // Four definition-only subjects sat in the corpus untyped and unreachable:
+  // documentation shaped like authority. An untyped literal-only subject is
+  // both untyped and its own component, so the two codes appear together.
+  const report = checkIntegrity([
+    ...vocabulary,
+    declarePredicate("urn:usf:predicate:definition"),
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:stub:orphan", "urn:usf:predicate:definition", "a definition and nothing else", "literal"),
+  ]);
+  assert.equal(report.conforming, false);
+  assert.ok(report.violations.some((v) => v.code === "untyped-subject" && v.subject === "urn:usf:stub:orphan"));
+  assert.ok(report.violations.some((v) => v.code === "disconnected-graph" && v.subject === "urn:usf:stub:orphan"));
+});
+
+test("a declared type connects its instances, so only untyped subjects can island", () => {
+  // Type-declaration edges make the corpus connected by construction: an
+  // instance reaches its type, its type reaches the meta-type, and the
+  // meta-type is in the vocabulary. A typed subject therefore cannot be an
+  // island however little else references it, which is worth asserting because
+  // it bounds what disconnected-graph can ever mean.
+  const connected = checkIntegrity([
+    ...vocabulary,
+    declarePredicate("urn:usf:predicate:dependsOn"),
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:remote:a", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:remote:a", "urn:usf:predicate:dependsOn", "urn:usf:remote:b"),
+    quad("urn:usf:remote:b", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+  ]);
+  assert.equal(connected.componentCount, 1);
+  assert.equal(connected.violations.filter((v) => v.code === "disconnected-graph").length, 0);
+
+  // Two untyped subjects linked only to each other are one island, reported
+  // once by their smallest member rather than once per member.
+  const island = checkIntegrity([
+    ...vocabulary,
+    declarePredicate("urn:usf:predicate:dependsOn"),
+    declareType("urn:usf:type:Widget"),
+    quad("urn:usf:widget:alpha", "urn:usf:predicate:type", "urn:usf:type:Widget"),
+    quad("urn:usf:island:b", "urn:usf:predicate:dependsOn", "urn:usf:island:a"),
+    quad("urn:usf:island:a", "urn:usf:predicate:dependsOn", "urn:usf:island:b"),
+  ]);
+  const reported = island.violations.filter((v) => v.code === "disconnected-graph");
+  assert.equal(reported.length, 1, "one violation per extra component, not per member");
+  assert.equal(reported[0]!.subject, "urn:usf:island:a");
+  assert.equal(island.componentCount, 2);
+  assert.equal(island.violations.filter((v) => v.code === "untyped-subject").length, 2);
+});
+
+test("component reporting is a total order, so equal-sized islands never swap", () => {
+  const quads = [
+    quad("urn:usf:widget:b", "urn:usf:predicate:type", "urn:usf:type:Missing"),
+    quad("urn:usf:widget:a", "urn:usf:predicate:type", "urn:usf:type:AlsoMissing"),
+  ];
+  const first = checkIntegrity(quads).violations.filter((v) => v.code === "disconnected-graph");
+  const second = checkIntegrity([...quads].reverse()).violations.filter((v) => v.code === "disconnected-graph");
+  assert.deepEqual(first.map((v) => v.subject), second.map((v) => v.subject));
 });
 
 test("violations are deterministically ordered so two runs agree", () => {

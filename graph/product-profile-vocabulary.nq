@@ -1,14 +1,18 @@
+<urn:usf:predicate:activationPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:additionalServiceRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:applicableInterface> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:applicableRuntime> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:authorisesRealisation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:businessValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:capabilityInput> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:coreManifest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:coreProfile> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:coversSubject> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:declaresExclusion> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:declaresOpportunity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:declaresUiSupply> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:declaresUiSurface> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:defaultThrough> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:dispositionMeaning> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:enablingFoundationCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:evidenceSourceKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
@@ -17,13 +21,22 @@
 <urn:usf:predicate:exclusionReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:foundationDependencyReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:justifiedByEvidenceSource> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:lifecycleInstance> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:managementContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:managementProfile> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:newSemanticRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:observableOutput> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:operatingIntent> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:opportunityEvidence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:opportunityValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:optimizerPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:productConstraint> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:productManifest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:productProfile> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:productScopeDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:providerSelectionPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:requiresFoundationPort> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:predicate:requiresPermission> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:satisfactionCondition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:supersedesProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:predicate:suppliedByCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-profile-vocabulary> .
@@ -62,6 +75,7 @@
 <urn:usf:product-scope-disposition:reserved> <urn:usf:predicate:type> <urn:usf:type:ProductScopeDisposition> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:type:EvidenceSource> <urn:usf:predicate:objective> "One bounded source of product evidence a semantic statement was justified against." <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:type:EvidenceSource> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
+<urn:usf:type:OperatingIntent> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:type:ProductExclusion> <urn:usf:predicate:objective> "A concern a profile explicitly declines to own, with its reason." <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:type:ProductExclusion> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-profile-vocabulary> .
 <urn:usf:type:ProductOpportunity> <urn:usf:predicate:objective> "A credible product opportunity recorded without being promoted into required scope." <urn:usf:graph:product-profile-vocabulary> .
