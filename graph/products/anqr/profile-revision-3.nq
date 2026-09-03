@@ -1,0 +1,237 @@
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:accessibleinteraction> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:animatedartefact> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:artefactexport> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:brandoverlay> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:localenegotiation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:localetypography> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:mobileapplication> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:outputrendering> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:payloadclassification> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:performancebudget> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:policyboundarycontrol> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:qrartwork> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:qrdecoding> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:selfhostedoperation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:structuralinspection> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:analysis> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:creation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:distribution> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:enterprise> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:experience> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:localisation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:payload> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:presentation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:quality> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresDomain> <urn:anqr:delivery-domain:trust> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:destination-safety> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:harness-evidence-admission> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:harness-host-supervision> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:harness-integration-orchestration> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:harness-issue-handling> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:harness-provider-routing> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:harness-self-feeding-loops> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:harness-worker-scheduling> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:harness-worktree-orchestration> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:payload-referent-validation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:qr-bit-packing> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:qr-error-correction-algebra> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:qr-mask-scoring> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:product-exclusion:qr-matrix-placement> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:agent-native-generation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:anonymous-global-acquisition> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:campaign-scan-analytics> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:enterprise-generation-api> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:managed-dynamic-destinations> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:offline-mobile-generation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:organisation-brand-templates> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:payment-qr-validation-service> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:private-deployment> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:product-identity-supply-chain> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:professional-branded-generation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:qr-analysis-api> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:reusable-asset-library> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:scan-safety-certification> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:translation-community-platform> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresOpportunity> <urn:anqr:product-opportunity:vertical-offerings> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:apidocsdeveloperportalsdksratelimitsuisemantics> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:apikeyspersonalaccesstokensuisemantics> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:authenticationplatformuisemantics> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:enduserprofileandpreferencesselfserviceuisemantics> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSupply> <urn:anqr:profile-ui-supply:notificationdeliveryandpreferencesandchannelsuisemantics> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:analyze> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:boot> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:content> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:gallery> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:generator> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:i18n> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:lib> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:onboarding> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:routing> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:search> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:seo> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:shell> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:state> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresUiSurface> <urn:anqr:product-ui-surface:staticpages> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:accessentitlement> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:abusecontrol> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:accessauditing> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:installableoffline> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresCapability> <urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:type> <urn:usf:type:ProductProfileRevision> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:canonicalName> "3" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:version> "3" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:title> "ANQR product profile revision 3" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:product> <urn:anqr:product:platform> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:productRepository> <urn:anqr:repository:main> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:supersedesProfileRevision> <urn:anqr:profile-revision:2> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:authorisesRealisation> <urn:anqr:capability-implementation-convention:v1:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:objective> "The application denominator, reconciled against the whole legacy application rather than against the part already modelled. Revision 2's forty-four capabilities were correct and incomplete: fourteen behaviours the application demonstrably had were owned by no capability, so at capability level they were invisible." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:objectiveEvidence> "Reconciliation inputs: 126 legacy store actions over 284 state keys, 185 public API query parameters, 33 payload serialisers, 12 client routes, 4 serverless functions, 1 edge function, an MCP server with two tools one prompt and one resource, 88 locale files of which 86 are locales at 1676 keys each, an installable manifest and a service worker, and a 60 kilobyte published OpenAPI document." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:denominatorChangeReason> "A whole creation panel and eight API parameters write title, author, copyright, licence, time and custom pairs into the container's own metadata chunks. No capability claimed provenance travelling inside the file." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:denominatorChangeReason> "The legacy store activates and checks a premium entitlement, carries a tier, and the creation surface has a request-access route and a tier-gated payload category. No capability claimed tiering." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:denominatorChangeReason> "Advertising facades, a page ad rail, a gallery interstitial and an allowlisted advertising origin in the delivered header policy. No capability claimed the revenue model of a free product." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:denominatorChangeReason> "A consent platform, its autoblocking, a privacy-string stub and four allowlisted consent origins in the header policy. No capability claimed the precondition of the advertising it gates." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:denominatorChangeReason> "A dedicated background render function, an animated render queue and a full-render request flag, documented in the published API as an asynchronous helper. No capability claimed the slow path." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:denominatorChangeReason> "A cache store, a declared non-cache parameter set, disabled-store sentinels and a once-only degradation marker. No capability claimed that a public render API is only affordable when cached." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:denominatorChangeReason> "Per-route rate limiters for the render and agent surfaces, plus declared bounds on overlay bytes, pixels, redirects, frames, duration and payload length. No capability claimed bounding an unauthenticated service." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:denominatorChangeReason> "An audit store, event types, an outcome taxonomy and a route policy, written for authorised and refused requests alike. No capability claimed the record enterprise consumption depends on." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:denominatorChangeReason> "A seventy-four-file observability package of logging, telemetry and error-reporting facades. The existing performance-budget capability states a budget; nothing claimed emitting what would show the budget was met." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:denominatorChangeReason> "An edge function injecting per-page metadata, canonical URLs, alternate-language links and preview images ahead of the static response. Multilingual discoverability claims localised pages are findable; nothing claimed the mechanism that makes a client-rendered application readable at all." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:denominatorChangeReason> "An installable application manifest with display, scope and orientation, and a service worker in the built output. Responsive web delivery claims the browser; nothing claimed the installed, network-less case." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:denominatorChangeReason> "A place lookup and a plus-code display in the location payload panel, consulting a service outside the product. No capability claimed it, and it is the product's only external service dependency in the creation path." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:denominatorChangeReason> "A search provider, context and label highlighting inside the creation feature, over a surface of 185 parameters. Multilingual discoverability is about search engines; nothing claimed a user finding a control." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:denominatorChangeReason> "Camera acquisition in both the creation overlay picker and the analysis input cards, with downscaling and three distinct classified refusal causes. Shared by two features, so it belongs to neither." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:predicate:denominatorChangeReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-ast-and-density-audit> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-ast-and-density-audit> <urn:usf:predicate:canonicalName> "harness-ast-and-density-audit" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-ast-and-density-audit> <urn:usf:predicate:objective> "Source-structure auditing of the repository itself." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-ast-and-density-audit> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-ast-and-density-audit> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-contract-and-docs-checks> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-contract-and-docs-checks> <urn:usf:predicate:canonicalName> "harness-contract-and-docs-checks" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-contract-and-docs-checks> <urn:usf:predicate:objective> "Repository documentation and contract linting." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-contract-and-docs-checks> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-contract-and-docs-checks> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-issue-tracker-integration> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-issue-tracker-integration> <urn:usf:predicate:canonicalName> "harness-issue-tracker-integration" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-issue-tracker-integration> <urn:usf:predicate:objective> "Export, reconciliation and guardianship against an external issue tracker." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-issue-tracker-integration> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-issue-tracker-integration> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-notification-routing> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-notification-routing> <urn:usf:predicate:canonicalName> "harness-notification-routing" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-notification-routing> <urn:usf:predicate:objective> "Chat and email routing of automation outcomes." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-notification-routing> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-notification-routing> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-model-proxying> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-model-proxying> <urn:usf:predicate:canonicalName> "harness-model-proxying" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-model-proxying> <urn:usf:predicate:objective> "Local proxies placing model traffic in front of providers." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-model-proxying> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-model-proxying> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-symphony-orchestration> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-symphony-orchestration> <urn:usf:predicate:canonicalName> "harness-symphony-orchestration" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-symphony-orchestration> <urn:usf:predicate:objective> "Scheduler, router and executor units dispatching automation work." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-symphony-orchestration> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-symphony-orchestration> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-evidence-closure-gates> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-evidence-closure-gates> <urn:usf:predicate:canonicalName> "harness-evidence-closure-gates" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-evidence-closure-gates> <urn:usf:predicate:objective> "Scripts auditing, finding, forcing and closing evidence completeness. The existence of a force-close script is itself the reason this is not product behaviour." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-evidence-closure-gates> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-evidence-closure-gates> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-nightly-operations> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-nightly-operations> <urn:usf:predicate:canonicalName> "harness-nightly-operations" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-nightly-operations> <urn:usf:predicate:objective> "Unattended repository maintenance passes." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-nightly-operations> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-nightly-operations> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-provider-probing> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-provider-probing> <urn:usf:predicate:canonicalName> "harness-provider-probing" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-provider-probing> <urn:usf:predicate:objective> "Provider availability and capability probing." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-provider-probing> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-provider-probing> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-temp-and-archive-maintenance> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-temp-and-archive-maintenance> <urn:usf:predicate:canonicalName> "harness-temp-and-archive-maintenance" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-temp-and-archive-maintenance> <urn:usf:predicate:objective> "Scratch cleanup and completed-work archival units." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-temp-and-archive-maintenance> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-temp-and-archive-maintenance> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-testing-infrastructure> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-testing-infrastructure> <urn:usf:predicate:canonicalName> "harness-testing-infrastructure" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-testing-infrastructure> <urn:usf:predicate:objective> "Non-runtime testing contracts and fixtures, which support proving the product and are not part of it." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-testing-infrastructure> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-testing-infrastructure> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-asset-tooling> <urn:usf:predicate:type> <urn:usf:type:ProductExclusion> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-asset-tooling> <urn:usf:predicate:canonicalName> "harness-asset-tooling" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-asset-tooling> <urn:usf:predicate:objective> "Build-time tooling generating gallery, locale and platform assets. Its outputs are product; the tooling is not." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:exclusion:harness-asset-tooling> <urn:anqr:predicate:actionDisposition> <urn:anqr:action-disposition:excluded-harness> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:declaresExclusion> <urn:anqr:exclusion:harness-asset-tooling> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:nonClaim> "The historical harness is evidence about how ANQR behaved and is not a capability to recreate. Twelve harness areas are named and excluded rather than left unmentioned, because an unmentioned area and an excluded one are indistinguishable from outside." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:nonClaim> "QR mathematics is deliberately not modelled. The five algebra exclusions carried from revision 2 stand: the graph states the capability and the observable behaviour, and the existing codec is behavioural reference and implementation evidence." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:nonClaim> "Revision 2 is immutable and superseded rather than corrected. Completions recorded against it were recorded against a denominator of forty-four and remain exactly as valid as they were; rewriting it would retroactively change what they claimed." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:nonClaim> "Every capability in this revision carries realisationStatus not-started and satisfactionStatus not-assessed for its facets. A larger denominator is a larger obligation, not a larger achievement." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:usf:predicate:nonClaim> "Fifty-eight is the count reconciliation reached from the evidence available in the legacy tree and the published API contract. It is not proof that no fifty-ninth behaviour exists; it is the complete set that the enumerated evidence supports." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:type> <urn:usf:type:ProfileFoundationBinding> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:canonicalName> "3" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:boundProfileRevision> <urn:anqr:profile-revision:3> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:boundFoundationRevision> <urn:usf:foundation-revision:v3:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationAuthorityManifest> "graph/manifests/v3-delivery.json" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:realisationRecordRoot> ".usf/profile" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-implementation-convention:v1:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:core-surface-policy:v1:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:implementation-conformance-rule:v1:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:objectstore> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:auditledger> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:operationaljobport> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:secretresolver> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:configlayerprovider> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:analyticseventstore> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:contract:delivery-environment:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:realisation-identity:v2:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:delivery-binding-model:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:evidence-environment-pinning-rule:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:externalFactSource> "models.dev catalogue projection" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:externalFactSource> "installed provider adapter versions" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:externalFactSource> "the delivery provider's own platform behaviour" <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:objective> "The adoption edge. Revision 3 is realised against Foundation revision v3.1 and this exact seed closure; a later Foundation revision does not reach this product revision until a new binding adopts it deliberately." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:nonClaim> "Composition is not authority merger. This binding names Foundation authority by path and imports none of it, so Foundation movement outside the seed closure leaves the product current." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:nonClaim> "Adoption is a decision, not a consequence. A future Foundation release cannot move the meaning of this revision; adopting changed Foundation semantics requires a new binding and re-evaluation of the dependent closure." <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-revision:3> <urn:anqr:predicate:declaresActionModel> <urn:anqr:application-action-model:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:application-action-model:1> <urn:anqr:predicate:bindsProfileRevision> <urn:anqr:profile-revision:3> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:predicate:declaresActionModel> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:profile-revision-3> .

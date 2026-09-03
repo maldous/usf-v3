@@ -1,0 +1,333 @@
+<urn:usf:predicate:rungOrder> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:promotesTo> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:promotedFrom> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:belongsToRung> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:admitsProviderRealism> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:mutationPosture> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:requiresEvidenceClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:requiresHumanApproval> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:evidenceIsolationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:deliveryRungOf> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:pinsEnvironment> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:pinsRealisationBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:pinsSourceIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:pinsBuildIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:pinsProductProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:pinsFoundationBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:inadmissibleWhen> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:gateFrom> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:gateTo> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:requiresRungReady> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:requiresEvidenceClosure> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:approvalAuthority> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:deliveryRequirementKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:providerNeutralContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:requiresDeliveryContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:explicitlyNotRequired> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:notRequiredReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:satisfiedByPort> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:bindingEdge> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:vendorFactLocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:basisAxis> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:axisInvalidates> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:axisSource> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:viewportClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:evidenceClassPurpose> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:cannotProve> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:doesNotDuplicate> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:objectiveEvidence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:declaresInvariant> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:declaresPromotionGate> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:declaresRealisationIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:declaresBindingModel> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:coversRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:predicate:requiresDeliveryPort> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:DeliveryRung> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:ProviderRealism> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:MutationPosture> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:EvidenceClass> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:ViewportClass> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:SemanticInvariant> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:PromotionGate> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:ApprovalAuthority> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:DeliveryRequirementKind> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:DeliveryBindingModel> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:DeliveryBindingHop> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:RealisationIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:BasisAxis> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:SourceIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:BuildArtefact> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:EnvironmentBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:ConfigurationIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:EvidenceSet> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:ExternalFactSnapshot> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:DependencyClosure> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:GraphManifest> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:type:ProductDeliveryRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:type> <urn:usf:type:DeliveryRung> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:canonicalName> "development" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:rungOrder> "1" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:objective> "Hermetic and local. Fixtures stand in for every external service, and no claim about a provider, a deployment or a live runtime may originate here." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:admitsProviderRealism> <urn:usf:provider-realism:synthetic> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:mutationPosture> <urn:usf:mutation-posture:unrestricted> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:realized-artefact> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:requiresHumanApproval> "false" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:promotesTo> <urn:usf:delivery-rung:testing> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:promotedFrom> <urn:usf:delivery-rung:development> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:type> <urn:usf:type:DeliveryRung> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:canonicalName> "testing" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:rungOrder> "2" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:objective> "The composed application against real service contracts, exercised as an integration rather than a unit. Nothing is inherited from development: a requirement evaluated at both rungs carries two verdicts." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:admitsProviderRealism> <urn:usf:provider-realism:composed> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:mutationPosture> <urn:usf:mutation-posture:unrestricted> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:realized-artefact> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:requiresHumanApproval> "false" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:promotesTo> <urn:usf:delivery-rung:staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:promotedFrom> <urn:usf:delivery-rung:testing> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:type> <urn:usf:type:DeliveryRung> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:canonicalName> "staging" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:rungOrder> "3" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:objective> "The intended production delivery topology, bound to real environment resources, mutated only in ways that are safe to rehearse. Staging is where deployment and rollback are proven before they are relied upon." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:admitsProviderRealism> <urn:usf:provider-realism:production-shaped> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:mutationPosture> <urn:usf:mutation-posture:non-destructive-rehearsal> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:realized-artefact> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:deployment-observation> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:browser-render> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:human-review> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:requiresHumanApproval> "false" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:promotesTo> <urn:usf:delivery-rung:production> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:promotedFrom> <urn:usf:delivery-rung:staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:type> <urn:usf:type:DeliveryRung> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:canonicalName> "production" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:rungOrder> "4" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:objective> "The live delivery binding. Evidence is bounded and non-destructive, provenance is exact, and mutation requires an approval that no machine verdict can supply." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:admitsProviderRealism> <urn:usf:provider-realism:live> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:mutationPosture> <urn:usf:mutation-posture:bounded-read-only> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:deployment-observation> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:release-provenance> <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:requiresHumanApproval> "true" <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:nonClaim> "A passing development rung says the application is internally correct at this source identity. It says nothing about whether the application deploys, reaches a runtime, or behaves against a real provider." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:nonClaim> "Staging proves the production delivery shape. It is not production evidence: the binding, the data, the traffic and the blast radius all differ, and a staging success may never be read as a production claim." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:nonClaim> "Production-ready is not production-deployed. This rung is satisfied only by an actual authorised deployment and a live bounded verification of it." <urn:usf:graph:delivery-environment> .
+<urn:usf:provider-realism:synthetic> <urn:usf:predicate:type> <urn:usf:type:ProviderRealism> <urn:usf:graph:delivery-environment> .
+<urn:usf:provider-realism:synthetic> <urn:usf:predicate:canonicalName> "synthetic" <urn:usf:graph:delivery-environment> .
+<urn:usf:provider-realism:composed> <urn:usf:predicate:type> <urn:usf:type:ProviderRealism> <urn:usf:graph:delivery-environment> .
+<urn:usf:provider-realism:composed> <urn:usf:predicate:canonicalName> "composed" <urn:usf:graph:delivery-environment> .
+<urn:usf:provider-realism:production-shaped> <urn:usf:predicate:type> <urn:usf:type:ProviderRealism> <urn:usf:graph:delivery-environment> .
+<urn:usf:provider-realism:production-shaped> <urn:usf:predicate:canonicalName> "production-shaped" <urn:usf:graph:delivery-environment> .
+<urn:usf:provider-realism:live> <urn:usf:predicate:type> <urn:usf:type:ProviderRealism> <urn:usf:graph:delivery-environment> .
+<urn:usf:provider-realism:live> <urn:usf:predicate:canonicalName> "live" <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:unrestricted> <urn:usf:predicate:type> <urn:usf:type:MutationPosture> <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:unrestricted> <urn:usf:predicate:canonicalName> "unrestricted" <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:unrestricted> <urn:usf:predicate:objective> "Any mutation is permitted; nothing outside the rung is affected." <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:non-destructive-rehearsal> <urn:usf:predicate:type> <urn:usf:type:MutationPosture> <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:non-destructive-rehearsal> <urn:usf:predicate:canonicalName> "non-destructive-rehearsal" <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:non-destructive-rehearsal> <urn:usf:predicate:objective> "Mutation is permitted only where it can be repeated and reversed without external consequence." <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:bounded-read-only> <urn:usf:predicate:type> <urn:usf:type:MutationPosture> <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:bounded-read-only> <urn:usf:predicate:canonicalName> "bounded-read-only" <urn:usf:graph:delivery-environment> .
+<urn:usf:mutation-posture:bounded-read-only> <urn:usf:predicate:objective> "Verification may read and may not mutate. An adversarial plant is prohibited at this posture." <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:hermetic> <urn:usf:predicate:belongsToRung> <urn:usf:delivery-rung:development> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:hermetic> <urn:usf:predicate:canonicalName> "hermetic" <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:hermetic> <urn:usf:predicate:objective> "No network, no ambient tool, no external fact. The strictest development posture and the one a clean clone must satisfy." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:deliveryRungOf> <urn:usf:environment:hermetic> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:localdev> <urn:usf:predicate:belongsToRung> <urn:usf:delivery-rung:development> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:localdev> <urn:usf:predicate:canonicalName> "localdev" <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:localdev> <urn:usf:predicate:objective> "A developer's own machine, where ambient tools may exist and must not be depended upon." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:development> <urn:usf:predicate:deliveryRungOf> <urn:usf:environment:localdev> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:ci> <urn:usf:predicate:belongsToRung> <urn:usf:delivery-rung:testing> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:ci> <urn:usf:predicate:canonicalName> "ci" <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:ci> <urn:usf:predicate:objective> "Automated execution of the canonical validation chain on a clean checkout, where the absence of a developer's machine is the point." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:deliveryRungOf> <urn:usf:environment:ci> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:integrationtest> <urn:usf:predicate:belongsToRung> <urn:usf:delivery-rung:testing> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:integrationtest> <urn:usf:predicate:canonicalName> "integrationtest" <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:integrationtest> <urn:usf:predicate:objective> "The composed application against real service contracts, with providers realised rather than mocked." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:testing> <urn:usf:predicate:deliveryRungOf> <urn:usf:environment:integrationtest> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:productionshaped> <urn:usf:predicate:belongsToRung> <urn:usf:delivery-rung:staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:productionshaped> <urn:usf:predicate:canonicalName> "productionshaped" <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:productionshaped> <urn:usf:predicate:objective> "The production topology without production consequence: real bindings, rehearsal-safe mutation." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:deliveryRungOf> <urn:usf:environment:productionshaped> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:staging> <urn:usf:predicate:belongsToRung> <urn:usf:delivery-rung:staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:staging> <urn:usf:predicate:canonicalName> "staging" <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:staging> <urn:usf:predicate:objective> "The named pre-production environment, deployed the way production is deployed." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:staging> <urn:usf:predicate:deliveryRungOf> <urn:usf:environment:staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:productionlive> <urn:usf:predicate:belongsToRung> <urn:usf:delivery-rung:production> <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:productionlive> <urn:usf:predicate:canonicalName> "productionlive" <urn:usf:graph:delivery-environment> .
+<urn:usf:environment:productionlive> <urn:usf:predicate:objective> "The live environment serving real users. Bounded verification only." <urn:usf:graph:delivery-environment> .
+<urn:usf:delivery-rung:production> <urn:usf:predicate:deliveryRungOf> <urn:usf:environment:productionlive> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:implementation-conformance> <urn:usf:predicate:type> <urn:usf:type:EvidenceClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:implementation-conformance> <urn:usf:predicate:canonicalName> "implementation-conformance" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:implementation-conformance> <urn:usf:predicate:evidenceClassPurpose> "An executed behavioural check named for the requirement it discharges." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:implementation-conformance> <urn:usf:predicate:proves> "that the implementation behaves as the requirement states, at the source identity the check ran against" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:implementation-conformance> <urn:usf:predicate:cannotProve> "that the implementation was deployed, reachable, or observed by a user" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:realized-artefact> <urn:usf:predicate:type> <urn:usf:type:EvidenceClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:realized-artefact> <urn:usf:predicate:canonicalName> "realized-artefact" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:realized-artefact> <urn:usf:predicate:evidenceClassPurpose> "A produced artefact whose identity is derived from its bytes." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:realized-artefact> <urn:usf:predicate:proves> "that the declared artefact exists and has this exact digest" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:realized-artefact> <urn:usf:predicate:cannotProve> "that the artefact was deployed or is the artefact a runtime is serving" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:deployment-observation> <urn:usf:predicate:type> <urn:usf:type:EvidenceClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:deployment-observation> <urn:usf:predicate:canonicalName> "deployment-observation" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:deployment-observation> <urn:usf:predicate:evidenceClassPurpose> "An observation that a named artefact was deployed to a named environment." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:deployment-observation> <urn:usf:predicate:proves> "that a deployment of this exact artefact digest to this environment completed" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:deployment-observation> <urn:usf:predicate:cannotProve> "that the deployed application works; reachability and behaviour are separate classes" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:runtime-observation> <urn:usf:predicate:type> <urn:usf:type:EvidenceClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:runtime-observation> <urn:usf:predicate:canonicalName> "runtime-observation" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:runtime-observation> <urn:usf:predicate:evidenceClassPurpose> "A bounded observation of a running instance: reachability, health, readiness, or a smoke check." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:runtime-observation> <urn:usf:predicate:proves> "that the instance responded as stated at the observed time" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:runtime-observation> <urn:usf:predicate:cannotProve> "anything about a different instance, a later deployment, or an unobserved code path" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:browser-render> <urn:usf:predicate:type> <urn:usf:type:EvidenceClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:browser-render> <urn:usf:predicate:canonicalName> "browser-render" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:browser-render> <urn:usf:predicate:evidenceClassPurpose> "A rendered-surface observation at a named viewport class, carrying DOM, accessibility and image evidence." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:browser-render> <urn:usf:predicate:proves> "that the surface rendered these semantics at this viewport in this browser build" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:browser-render> <urn:usf:predicate:cannotProve> "that the rendering is of good visual quality; that is a human-review claim" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:human-review> <urn:usf:predicate:type> <urn:usf:type:EvidenceClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:human-review> <urn:usf:predicate:canonicalName> "human-review" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:human-review> <urn:usf:predicate:evidenceClassPurpose> "A recorded human judgement about something no machine check decides." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:human-review> <urn:usf:predicate:proves> "that a named person judged the stated property acceptable at a named build" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:human-review> <urn:usf:predicate:cannotProve> "any machine-checkable property, and it may never substitute for a failed machine verdict" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:release-provenance> <urn:usf:predicate:type> <urn:usf:type:EvidenceClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:release-provenance> <urn:usf:predicate:canonicalName> "release-provenance" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:release-provenance> <urn:usf:predicate:evidenceClassPurpose> "The exact chain from source to running instance: source, lock, build command, build digest, basis, binding, configuration identity." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:release-provenance> <urn:usf:predicate:proves> "that the running artefact is attributable to this exact source and build" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:release-provenance> <urn:usf:predicate:cannotProve> "that the release is correct; provenance is identity, not quality" <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:compact> <urn:usf:predicate:type> <urn:usf:type:ViewportClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:compact> <urn:usf:predicate:canonicalName> "compact" <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:compact> <urn:usf:predicate:objective> "A narrow viewport where the control surface must collapse rather than clip." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:browser-render> <urn:usf:predicate:viewportClass> <urn:usf:viewport-class:compact> <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:regular> <urn:usf:predicate:type> <urn:usf:type:ViewportClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:regular> <urn:usf:predicate:canonicalName> "regular" <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:regular> <urn:usf:predicate:objective> "A mid viewport: the common tablet and small-laptop case." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:browser-render> <urn:usf:predicate:viewportClass> <urn:usf:viewport-class:regular> <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:wide> <urn:usf:predicate:type> <urn:usf:type:ViewportClass> <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:wide> <urn:usf:predicate:canonicalName> "wide" <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:wide> <urn:usf:predicate:objective> "A wide viewport where the surface must use the space without stranding the primary action." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-class:browser-render> <urn:usf:predicate:viewportClass> <urn:usf:viewport-class:wide> <urn:usf:graph:delivery-environment> .
+<urn:usf:viewport-class:compact> <urn:usf:predicate:nonClaim> "A viewport class is an evidence fixture, not a device. No phone, browser build or screen size is semantic authority, and evidence captured on one device does not narrow the class it belongs to." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:type> <urn:usf:type:SemanticInvariant> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:canonicalName> "evidence-environment-pinning" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:objective> "Make every verdict name the environment that produced it, so a lower rung cannot quietly satisfy a higher one. The same requirement may be evaluated at several rungs; each evaluation is a separate verdict with its own environment, basis and build." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:pinsEnvironment> "the environment the observation was made in" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:pinsRealisationBasis> "the realisation basis the observation was made against" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:pinsSourceIdentity> "the exact application source identity" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:pinsBuildIdentity> "the exact build artefact identity" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:pinsProductProfileRevision> "the product profile revision in force" <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:pinsFoundationBinding> "the product-to-foundation binding in force" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-environment-absent> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-environment-absent> <urn:usf:predicate:canonicalName> "evidence-environment-absent" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-environment-absent> <urn:usf:predicate:refusalClass> "EVIDENCE_ENVIRONMENT_ABSENT" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-environment-absent> <urn:usf:predicate:objective> "The evidence names no environment. It is inadmissible rather than assumed to be development: an unnamed environment is the shape a promoted-by-accident verdict takes." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-environment-absent> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-environment-below-requirement> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-environment-below-requirement> <urn:usf:predicate:canonicalName> "evidence-environment-below-requirement" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-environment-below-requirement> <urn:usf:predicate:refusalClass> "EVIDENCE_ENVIRONMENT_BELOW_REQUIREMENT" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-environment-below-requirement> <urn:usf:predicate:objective> "The evidence was produced at a rung below the one the requirement is being evaluated at. Lower-rung evidence establishes a prerequisite and never makes the higher claim." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-environment-below-requirement> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-basis-stale> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-basis-stale> <urn:usf:predicate:canonicalName> "evidence-basis-stale" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-basis-stale> <urn:usf:predicate:refusalClass> "EVIDENCE_BASIS_STALE" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-basis-stale> <urn:usf:predicate:objective> "The realisation basis the evidence was produced against is no longer current along an axis this evidence's closure includes." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-basis-stale> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-source-mismatch> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-source-mismatch> <urn:usf:predicate:canonicalName> "evidence-source-mismatch" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-source-mismatch> <urn:usf:predicate:refusalClass> "EVIDENCE_SOURCE_MISMATCH" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-source-mismatch> <urn:usf:predicate:objective> "The evidence names a different application source identity than the one under evaluation." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-source-mismatch> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-build-mismatch> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-build-mismatch> <urn:usf:predicate:canonicalName> "evidence-build-mismatch" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-build-mismatch> <urn:usf:predicate:refusalClass> "EVIDENCE_BUILD_MISMATCH" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-build-mismatch> <urn:usf:predicate:objective> "The evidence names a different build artefact than the one deployed or under evaluation." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-build-mismatch> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-profile-revision-mismatch> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-profile-revision-mismatch> <urn:usf:predicate:canonicalName> "evidence-profile-revision-mismatch" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-profile-revision-mismatch> <urn:usf:predicate:refusalClass> "EVIDENCE_PROFILE_REVISION_MISMATCH" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-profile-revision-mismatch> <urn:usf:predicate:objective> "The evidence was produced against a different product profile revision, so its denominator is not this denominator." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-profile-revision-mismatch> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-foundation-binding-mismatch> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-foundation-binding-mismatch> <urn:usf:predicate:canonicalName> "evidence-foundation-binding-mismatch" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-foundation-binding-mismatch> <urn:usf:predicate:refusalClass> "EVIDENCE_FOUNDATION_BINDING_MISMATCH" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:evidence-foundation-binding-mismatch> <urn:usf:predicate:objective> "The evidence was produced against a different product-to-foundation binding, so the Foundation semantics it assumed are not the ones in force." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-foundation-binding-mismatch> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:approval-required-not-present> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:approval-required-not-present> <urn:usf:predicate:canonicalName> "approval-required-not-present" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:approval-required-not-present> <urn:usf:predicate:refusalClass> "APPROVAL_REQUIRED_NOT_PRESENT" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:approval-required-not-present> <urn:usf:predicate:objective> "A rung requiring human approval has none recorded. No aggregate report, machine verdict or prior approval at a lower rung substitutes for it." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:approval-required-not-present> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:approval-substituted-for-machine-evidence> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:approval-substituted-for-machine-evidence> <urn:usf:predicate:canonicalName> "approval-substituted-for-machine-evidence" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:approval-substituted-for-machine-evidence> <urn:usf:predicate:refusalClass> "APPROVAL_SUBSTITUTED_FOR_MACHINE_EVIDENCE" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:approval-substituted-for-machine-evidence> <urn:usf:predicate:objective> "A human approval was offered where a machine verdict is required and failing. Approval authorises; it does not verify." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:approval-substituted-for-machine-evidence> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:aggregate-without-constituents> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:aggregate-without-constituents> <urn:usf:predicate:canonicalName> "aggregate-without-constituents" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:aggregate-without-constituents> <urn:usf:predicate:refusalClass> "AGGREGATE_WITHOUT_CONSTITUENTS" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:aggregate-without-constituents> <urn:usf:predicate:objective> "A composite verdict was offered whose constituent evidence is missing. A green summary computed over absent members is the failure this code exists to name." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:aggregate-without-constituents> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:forced-promotion-attempted> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:forced-promotion-attempted> <urn:usf:predicate:canonicalName> "forced-promotion-attempted" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:forced-promotion-attempted> <urn:usf:predicate:refusalClass> "FORCED_PROMOTION_ATTEMPTED" <urn:usf:graph:delivery-environment> .
+<urn:usf:refusal-reason:forced-promotion-attempted> <urn:usf:predicate:objective> "Promotion was attempted with an override rather than an evidence closure. No flag, receipt copy or profile change manufactures readiness." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:forced-promotion-attempted> <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:inadmissibleWhen> "Evidence is reused across a rung boundary in either direction." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:inadmissibleWhen> "A report claims more than the raw evidence it aggregates." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:inadmissibleWhen> "A required human approval is synthesised, inferred or defaulted." <urn:usf:graph:delivery-environment> .
+<urn:usf:evidence-environment-pinning-rule:1> <urn:usf:predicate:nonClaim> "This rule constrains admission, not production. Producing evidence at a low rung is exactly right; what is forbidden is letting it answer a question asked at a higher one." <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:type> <urn:usf:type:PromotionGate> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:canonicalName> "development-to-testing" <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:gateFrom> <urn:usf:delivery-rung:development> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:gateTo> <urn:usf:delivery-rung:testing> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:requiresRungReady> <urn:usf:delivery-rung:development> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:requiresEvidenceClosure> "The development rung is ready and every testing-rung evidence class has a current verdict at testing." <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:evidenceIsolationRule> <urn:usf:evidence-environment-pinning-rule:1> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:requiresHumanApproval> "false" <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:aggregate-without-constituents> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:forced-promotion-attempted> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:development-to-testing> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-environment-below-requirement> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:type> <urn:usf:type:PromotionGate> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:canonicalName> "testing-to-staging" <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:gateFrom> <urn:usf:delivery-rung:testing> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:gateTo> <urn:usf:delivery-rung:staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:requiresRungReady> <urn:usf:delivery-rung:testing> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:requiresEvidenceClosure> "The testing rung is ready and every staging-rung evidence class has a current verdict at staging, including a rehearsed deployment and a rehearsed rollback." <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:evidenceIsolationRule> <urn:usf:evidence-environment-pinning-rule:1> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:requiresHumanApproval> "false" <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:aggregate-without-constituents> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:forced-promotion-attempted> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:testing-to-staging> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-environment-below-requirement> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:type> <urn:usf:type:PromotionGate> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:canonicalName> "staging-to-production" <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:gateFrom> <urn:usf:delivery-rung:staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:gateTo> <urn:usf:delivery-rung:production> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:requiresRungReady> <urn:usf:delivery-rung:staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:requiresEvidenceClosure> "The staging rung is ready, every production-rung evidence class has a current verdict, and an explicit human approval for production mutation is recorded against this exact basis and build." <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:evidenceIsolationRule> <urn:usf:evidence-environment-pinning-rule:1> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:requiresHumanApproval> "true" <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:approvalAuthority> <urn:usf:approval-authority:operator> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:aggregate-without-constituents> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:forced-promotion-attempted> <urn:usf:graph:delivery-environment> .
+<urn:usf:promotion-gate:staging-to-production> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:evidence-environment-below-requirement> <urn:usf:graph:delivery-environment> .
+<urn:usf:approval-authority:operator> <urn:usf:predicate:type> <urn:usf:type:ApprovalAuthority> <urn:usf:graph:delivery-environment> .
+<urn:usf:approval-authority:operator> <urn:usf:predicate:canonicalName> "operator" <urn:usf:graph:delivery-environment> .
+<urn:usf:approval-authority:operator> <urn:usf:predicate:objective> "A named human who authorises production mutation against an exact basis and build." <urn:usf:graph:delivery-environment> .
+<urn:usf:approval-authority:operator> <urn:usf:predicate:nonClaim> "The authority is a person, not a role held by a process. Hermes may request approval and may never record one." <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:canonicalName> "delivery-environment" <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:version> "1" <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:objective> "Give the environment ladder semantic meaning, pin every verdict to the environment that produced it, and add the nine delivery obligations the existing sixty-seven do not express, so that a product's route to production is derivable rather than narrated." <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:objectiveEvidence> "The seven environments existed as bare type assertions with no posture, ordering or evidence requirements, and their applicability records carried only \"required\" or \"reserved\". Nothing prevented a development verdict from answering a production question because nothing said the rungs differed." <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:constructionRouteConstraint> "Local, hermetic and deterministic. This contract declares vocabulary and invariants only: it contacts no provider, reads no credential, provisions no resource and names no vendor." <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:declaresInvariant> <urn:usf:evidence-environment-pinning-rule:1> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:declaresInvariant> <urn:usf:secret-modelling-rule:1> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:declaresPromotionGate> <urn:usf:promotion-gate:development-to-testing> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:declaresPromotionGate> <urn:usf:promotion-gate:testing-to-staging> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:declaresPromotionGate> <urn:usf:promotion-gate:staging-to-production> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:declaresRealisationIdentity> <urn:usf:realisation-identity:v2:1> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:declaresBindingModel> <urn:usf:delivery-binding-model:1> <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:nonClaim> "This contract selects no vendor, provisions nothing and deploys nothing. It makes the difference between rungs checkable; instantiating any environment is separate work with separate evidence." <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:nonClaim> "Sixty-seven delivery contracts already existed. Nine were added because reconciliation found nothing covering static asset serving, edge execution, public ingress, response-header policy, CDN cache policy, health and readiness, deployment, rollback or release provenance. The other three candidates were dropped as duplicates." <urn:usf:graph:delivery-environment> .
+<urn:usf:contract:delivery-environment:1> <urn:usf:predicate:nonClaim> "Giving the rungs meaning does not create a promotion platform. A gate is a predicate over evidence, evaluated where the evidence already lives." <urn:usf:graph:delivery-environment> .

@@ -1,0 +1,487 @@
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:background-system> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:enforce-request-rate-limit> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:background-system> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:integrationtest> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:audit-authenticated-request> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:auditledger> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:activate-premium-access> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:request-professional-access> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:no-direct-surface> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:display-advertisement> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:responseheaderpolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:animate-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:render-artefact-in-background> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:healthreadiness> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:objectstore> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:animatedartefact> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:operationaljobport> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:integrationtest> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:operate-offline> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactexport> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactexport> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactexport> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactexport> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:choose-output-form> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactexport> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:export-analysis> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactexport> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:export-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactexport> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:attach-artefact-metadata> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:background-system> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:render-artefact-in-background> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:healthreadiness> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:objectstore> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:operationaljobport> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:api-integration> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:audit-authenticated-request> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-generate-advanced-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-generate-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:auditledger> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:switch-interface-language> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:brandoverlay> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:brandoverlay> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:brandoverlay> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:brandoverlay> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:apply-artwork-overlay> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:brandoverlay> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:apply-watermark> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:brandoverlay> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:browse-capability-gallery> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:open-gallery-example> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:contribute-translation> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:search-control-surface> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:background-system> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:present-to-crawler> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:edgeruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:describe-payload> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:import-analysis-to-creation> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:open-gallery-example> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:select-payload-kind> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:background-system> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:cache-rendered-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:generate-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:objectstore> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:acquire-overlay-from-camera> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:analyse-from-camera> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:adjust-encoding> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:productOwnership> "external-through-USF-contract" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:run-geo-lookup> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:complete-guided-onboarding> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:api-render-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:api-render-contract-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:copy-embed-html> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:install-application> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:operate-offline> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:switch-interface-language> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localenegotiation> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localenegotiation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localenegotiation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localenegotiation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:switch-interface-language> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localenegotiation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localetypography> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localetypography> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localetypography> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localetypography> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:switch-interface-language> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localetypography> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:read-localised-static-page> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:api-integration> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-generate-advanced-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-generate-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-guided-generate> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-read-capabilities> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:auditledger> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mobileapplication> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mobileapplication> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mobileapplication> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mobileapplication> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:share-natively> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:mobileapplication> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:present-to-crawler> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:read-localised-static-page> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:edgeruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:api-render-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:choose-output-form> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:preview-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:outputrendering> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadclassification> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadclassification> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadclassification> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadclassification> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:classify-decoded-payload> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadclassification> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:select-payload-kind> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadclassification> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:record-tracking-consent> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:responseheaderpolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:describe-payload> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:performancebudget> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:performancebudget> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:background-system> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:performancebudget> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:performancebudget> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:emit-runtime-telemetry> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:performancebudget> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:healthreadiness> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:performancebudget> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:releaseprovenance> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:performancebudget> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:describe-payload> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:api-render-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:api-render-contract-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:copy-direct-link> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:api-integration> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:api-render-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:generate-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-generate-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:auditledger> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:acquire-overlay-from-camera> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:acquire-overlay-from-file> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:acquire-overlay-from-url> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:apply-artwork-overlay> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-generate-advanced-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrartwork> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:auditledger> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrdecoding> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrdecoding> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrdecoding> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrdecoding> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:analyse-from-camera> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrdecoding> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:analyse-from-file> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrdecoding> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:analyse-from-url> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrdecoding> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:import-analysis-to-creation> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:qrdecoding> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:record-tracking-consent> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:responseheaderpolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:acquire-overlay-from-url> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:analyse-from-url> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:guard-remote-asset-fetch> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:background-system> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:cache-rendered-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:objectstore> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:navigate-application-route> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:serve-application-shell> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:responseheaderpolicy> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:customdomainsdnsownershiptlscanonical> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:reproduce-analysed-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:background-system> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:emit-runtime-telemetry> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:healthreadiness> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:releaseprovenance> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:enforce-scan-safety> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:export-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:enforce-scan-safety> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:hermetic> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:copy-direct-link> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:copy-embed-html> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:share-natively> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuralinspection> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuralinspection> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuralinspection> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuralinspection> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:export-analysis> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuralinspection> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:inspect-artefact-quality> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuralinspection> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:inspect-artefact-structure> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuralinspection> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:run-matrix-diagnostics> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuralinspection> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:classify-decoded-payload> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:describe-payload> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:predicate:productOwnership> "ANQR-local" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:ci> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:inspect-artefact-quality> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:run-matrix-diagnostics> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:predicate:deliveryPosture> "no-delivery-requirement" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:productOwnership> "USF-backed" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:experiencePosture> <urn:anqr:experience-exposure:user-visible> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:evidencePosture> <urn:usf:environment:productionshaped> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:mcp-generate-advanced-artefact> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:realisedByAction> <urn:anqr:application-action:style-modules> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:auditledger> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:predicate:productOwnership> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:predicate:experiencePosture> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:predicate:evidencePosture> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:predicate:realisedByAction> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:predicate:deliveryPosture> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:usf:predicate:type> <urn:usf:type:ProductDeliveryRequirement> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:usf:predicate:canonicalName> "1" <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:usf:predicate:objective> "What ANQR requires from delivery, and what it explicitly does not. Derived from the actions: a requirement appears here only because an action declares it." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:staticassetruntime> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:staticassetruntime> <urn:usf:predicate:coversRequirement> "The application is a client-routed single page with built assets and a document fallback." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:edgeruntime> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:edgeruntime> <urn:usf:predicate:coversRequirement> "Per-page metadata must be injected ahead of the static response for consumers that do not execute scripts." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:networkingress> <urn:usf:predicate:coversRequirement> "Four request-scoped routes and one edge route must be publicly reachable." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:responseheaderpolicy> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:responseheaderpolicy> <urn:usf:predicate:coversRequirement> "The delivered document's content-security policy is what makes remote artwork, advertising and consent origins safe to allow." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:cdncachepolicy> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:cdncachepolicy> <urn:usf:predicate:coversRequirement> "Asset classes have different freshness, and rendered artefacts are cacheable by parameter identity." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:customdomainsdnsownershiptlscanonical> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:coversRequirement> "Every declared name is served over TLS; the camera routes require a secure context to work at all." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:healthreadiness> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:coversRequirement> "The background render runtime and the edge transform must be observable independently of the static runtime." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:deploymentmechanism> <urn:usf:predicate:coversRequirement> "An exact built artefact must be movable into an environment." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:rollbackmechanism> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:rollbackmechanism> <urn:usf:predicate:coversRequirement> "A release must be reversible to a previous artefact identity without rebuilding." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:releaseprovenance> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:releaseprovenance> <urn:usf:predicate:coversRequirement> "A running instance must be attributable to its exact source and build." <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:coversRequirement> "A declared name, its zone and its canonical form." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:serverlessfunctionruntime> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:serverlessfunctionruntime> <urn:usf:predicate:coversRequirement> "The render, contract-render, agent and background routes are request-scoped handlers." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:objectstorageandtenantprefixesandsignedurls> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:coversRequirement> "Rendered artefacts are cached as objects keyed by parameter identity." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:backgroundworkersjobrunner> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:backgroundworkersjobrunner> <urn:usf:predicate:coversRequirement> "A render exceeding the synchronous bound completes out of band." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:runtimesecretsmanagement> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:runtimesecretsmanagement> <urn:usf:predicate:coversRequirement> "The agent surface verifies a credential whose value must never enter authority or a build." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:configurationregistryandhistory> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:configurationregistryandhistory> <urn:usf:predicate:coversRequirement> "Non-secret configuration identity must be knowable per environment." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:ratelimitingapi> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:ratelimitingapi> <urn:usf:predicate:coversRequirement> "Two public routes are unauthenticated and must be bounded." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:auditofprivilegedaccess> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:auditofprivilegedaccess> <urn:usf:predicate:coversRequirement> "Authorised and refused agent requests are both recorded." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:metricsandtraces> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:metricsandtraces> <urn:usf:predicate:coversRequirement> "A deployed instance must be observable without a user reporting it." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:logsaggregationandtenantscopedsearch> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:logsaggregationandtenantscopedsearch> <urn:usf:predicate:coversRequirement> "Runtime failures must be findable after the request has ended." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:i18nruntimeandvalidation> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:i18nruntimeandvalidation> <urn:usf:predicate:coversRequirement> "Eighty-six locale resources must be negotiated, loaded and validated." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:accessibilitya11ygate> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:accessibilitya11ygate> <urn:usf:predicate:coversRequirement> "Accessibility is a declared product capability and must gate release." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:openapidrifthardgate> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:openapidrifthardgate> <urn:usf:predicate:coversRequirement> "A published API contract exists and must not drift from the implementation." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:environmentregistryandbootstrap> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:environmentregistryandbootstrap> <urn:usf:predicate:coversRequirement> "Four rungs must be nameable and instantiable." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:entitlementengine> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:entitlementengine> <urn:usf:predicate:coversRequirement> "A tier gates capabilities and must be resolvable." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:relationalstorageandmigrationsandrls> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:relationalstorageandmigrationsandrls> <urn:usf:predicate:notRequiredReason> "The product stores nothing between requests. Creation is client-side and the only server state is a regenerable cache, so there is no schema to migrate and no row to isolate." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:authenticationplatform> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:authenticationplatform> <urn:usf:predicate:notRequiredReason> "No user account exists. The journey requires anonymity, and the only credential in the product authorises a machine consumer, not a person." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:useridentityandtenantmembership> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:useridentityandtenantmembership> <urn:usf:predicate:notRequiredReason> "There is no user record to belong to anything. The journey requires anonymity, so identity is not merely absent from the implementation, it is a product commitment the model would contradict." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:rbacrolesandpermissions> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:rbacrolesandpermissions> <urn:usf:predicate:notRequiredReason> "With no accounts there are no roles to assign, and nothing in the product varies by who is asking. The one credential that exists authorises a machine to call one surface, which is an entitlement rather than a role." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:abacpolicydecisionpoint> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:abacpolicydecisionpoint> <urn:usf:predicate:notRequiredReason> "There is no subject, resource or environment tuple to decide about." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:suborganisations> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:suborganisations> <urn:usf:predicate:notRequiredReason> "Nothing is organised into anything. There is no account tree, no parent-child relationship and no scope that a sub-organisation would narrow." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenantgroups> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenantgroups> <urn:usf:predicate:notRequiredReason> "There are no tenants, so there is nothing to group. Every visitor is anonymous and every API consumer is authorised by one operator-provisioned credential rather than by membership of anything." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenantisolationproof> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenantisolationproof> <urn:usf:predicate:notRequiredReason> "There is nothing to isolate, and claiming isolation over an empty set would be the emptiest possible proof." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenantlifecycleprovisionsuspenddeleteexport> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:notRequiredReason> "No tenant is provisioned, so none can be suspended, deleted or exported. The lifecycle this contract manages has no subject in a product where every visitor arrives with no prior state." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenantdataimportexport> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenantdataimportexport> <urn:usf:predicate:notRequiredReason> "No tenant data exists. Artefact export is a product capability and is not this." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenantcanonicaldomainsetunset> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenantcanonicaldomainsetunset> <urn:usf:predicate:notRequiredReason> "The product has one canonical domain, set once, not per tenant." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenanthostidentityresolution> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenanthostidentityresolution> <urn:usf:predicate:notRequiredReason> "One host resolves to one product. There is no mapping from an incoming hostname to a tenant identity because no such identity exists." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenantidentityrecordandfqdn> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenantidentityrecordandfqdn> <urn:usf:predicate:notRequiredReason> "There is no tenant identity record to hold, and no fully-qualified name is assigned per customer. The product has one name that belongs to the product." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenantdomainactivationauthclient> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenantdomainactivationauthclient> <urn:usf:predicate:notRequiredReason> "No per-tenant authentication client exists, because there is no tenant and no authentication. The product serves one canonical domain and identifies nobody." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:tenantserviceclickthroughpolicy> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:tenantserviceclickthroughpolicy> <urn:usf:predicate:notRequiredReason> "No per-tenant policy is presented, because there is no tenant to present it to. The policies the product does present are its own terms and privacy pages, served as localised static content." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:delegatedadministrationroles> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:delegatedadministrationroles> <urn:usf:predicate:notRequiredReason> "There is no administration to delegate. The two administrative actions the product has are performed by whoever controls the deployment, which is a deployment fact rather than a role in the product." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:supportmodebreakglassaccess> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:supportmodebreakglassaccess> <urn:usf:predicate:notRequiredReason> "There is no user data to break glass into. Payload content stays on the client and is never transmitted, so an emergency access path would reach nothing that belongs to anyone." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:eventbusdurablequeuesdlqredrive> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:notRequiredReason> "The one asynchronous path is a single render job addressed by identity, not a stream needing ordering, retry or a dead-letter path." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:workflowenginescheduledjobsapprovals> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:workflowenginescheduledjobsapprovals> <urn:usf:predicate:notRequiredReason> "No product behaviour is a multi-step workflow. The one asynchronous path is a single render job addressed by its own identity, with no state machine, no approval step and nothing to resume." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:scheduledjobsbuiltinontheeventsubstrate> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:predicate:notRequiredReason> "Nothing in the product runs on a clock. Every server-side action is triggered by a request, and the one background job is started by the request that exceeded the synchronous bound rather than by a schedule." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:searchandindexingproductsearch> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:searchandindexingproductsearch> <urn:usf:predicate:notRequiredReason> "Search is over the product's own control surface and content, resolved on the client. No server index exists." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:notificationdeliveryandpreferencesandchannels> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:notRequiredReason> "The product notifies nobody because it has nobody to notify. With no accounts there is no address to reach, no preference to respect and no channel to choose." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:webhooksdeveloperfacing> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:webhooksdeveloperfacing> <urn:usf:predicate:notRequiredReason> "The API is request-response and holds no consumer registration. Nothing is delivered back because there is no consumer record to deliver to and no event that outlives its request." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:backupandrestore> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:backupandrestore> <urn:usf:predicate:notRequiredReason> "The only server-side state is a cache derived from its own key. Losing it costs time, never data, so backing it up would protect nothing." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:pitrretentionlegalholddataresidency> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:pitrretentionlegalholddataresidency> <urn:usf:predicate:notRequiredReason> "There is no retained personal data to hold, reside or recover to a point in time." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:predicate:notRequiredReason> "The product deliberately holds no personal data; payload content stays on the client. Consent is required for advertising and is modelled as its own capability." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:usagemeteringandmetereventingestion> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:usagemeteringandmetereventingestion> <urn:usf:predicate:notRequiredReason> "Nothing is metered. The tier is an entitlement that is either active or not, deliberately rather than incidentally: metering anonymous use would require identifying it." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:subscriptionsinvoicespaymentmethodsdunning> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:notRequiredReason> "No billing runs inside the product; an entitlement arrives already paid for." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:productcatalogplansprices> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:productcatalogplansprices> <urn:usf:predicate:notRequiredReason> "One free tier and one gated tier, declared as an entitlement rather than a catalogue." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:supportticketscustomerhealthannouncements> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:supportticketscustomerhealthannouncements> <urn:usf:predicate:notRequiredReason> "Support is a contact route on a static page. With no accounts there is no customer record to attach a ticket to, no health signal to compute and no audience to announce to." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:compliancereportsaccessreviewsevidencepacks> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:notRequiredReason> "There is no access to review, because there are no accounts, no roles and no personal data. The audit record the product does keep is about machine requests to one surface and is modelled as its own capability." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:apikeyspersonalaccesstokens> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:apikeyspersonalaccesstokens> <urn:usf:predicate:notRequiredReason> "The agent surface verifies one operator-provisioned credential; there are no per-user keys to issue or rotate." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:historyreadmodelreadonlyprojection> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:historyreadmodelreadonlyprojection> <urn:usf:predicate:notRequiredReason> "Nothing is written, so nothing has a history to project. The only server-side state is a regenerable cache whose past values carry no meaning." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:enduserprofileandpreferencesselfservice> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:enduserprofileandpreferencesselfservice> <urn:usf:predicate:notRequiredReason> "Preferences are device-local, because there is no profile to hold them." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:explicitlyNotRequired> <urn:usf:delivery-contract:brandingandtheming> <urn:anqr:graph:delivery-posture> .
+<urn:usf:delivery-contract:brandingandtheming> <urn:usf:predicate:notRequiredReason> "The product has one identity. A user brands their artefact, not the application." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:usf:predicate:nonClaim> "Twenty-four requirements and thirty-five explicit non-requirements. One candidate requirement was withdrawn during reconciliation because a separate TLS contract duplicated the existing custom-domains contract, which already owns the name, the zone and the certificate together. The remaining contracts are foundation-internal concerns with no product-facing obligation." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:usf:predicate:nonClaim> "A stated non-requirement is a commitment, not a gap. If the product later grows accounts, the honest route is a new revision that moves the contract from one list to the other, not a quiet reinterpretation of this one." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-requirement-set:1> <urn:anqr:predicate:bindsProfileRevision> <urn:anqr:profile-revision:3> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:predicate:bindsProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:delivery-posture> .

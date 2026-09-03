@@ -1,0 +1,31 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/self-host.json",
+    "graph/manifests/profile-authority.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/delivery-environment.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:delivery-environment",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/delivery-contracts.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:delivery-contracts",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/realisation-basis.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:realisation-basis",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

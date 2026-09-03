@@ -1,0 +1,52 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/anqr-experience.json",
+    "graph/manifests/delivery-environment.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/products/anqr/application-actions.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:application-actions",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/capabilities-revision-3.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:capabilities-revision-3",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/profile-revision-3.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:profile-revision-3",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/delivery-posture.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:delivery-posture",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/environment-bindings.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:environment-bindings",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/application-profile.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:application-profile",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

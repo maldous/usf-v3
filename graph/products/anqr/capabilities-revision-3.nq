@@ -1,0 +1,993 @@
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:usf:predicate:canonicalName> "artefactmetadataembedding" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:usf:predicate:title> "Artefact metadata embedding" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:usf:predicate:objective> "Carry authorship, licence and provenance inside the artefact file rather than beside it." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:trust> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:userOutcome> "A user's artefact says who made it and under what terms, wherever the file travels." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:targetUser> "Designers, agencies and publishers who need attribution to survive redistribution." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:businessValue> "Attribution that travels with the file is the difference between a shared asset and an orphaned one." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:capabilityInput> "A title, description, author, copyright, licence, creation time, arbitrary key-value pairs and a physical resolution." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:observableOutput> "An artefact file whose own metadata chunks carry the declared values." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:observableOutput> "A stated refusal where the chosen container cannot carry metadata." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:productConstraint> "Metadata is written into the container's native metadata mechanism, never appended as trailing bytes." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:productConstraint> "A container that cannot carry metadata refuses rather than silently discarding it." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:satisfactionCondition> "Every declared metadata value is recoverable from the produced file by a reader that knows only the format." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:satisfactionCondition> "Physical resolution is expressed in the container's own units." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:applicableInterface> "http-api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:applicableInterface> "mcp" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:applicableRuntime> "api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:artefactmetadataembedding> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:netlify-functions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:contracts-generator> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:usf:predicate:canonicalName> "artefactmetadataembedding" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:usf:predicate:objective> "What artefactmetadataembedding must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:artefactmetadataembedding> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:usf:predicate:canonicalName> "artefactmetadataembeddingcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:anqr:predicate:facetStatement> "The set of metadata fields, their types and which containers can carry each." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:artefactmetadataembeddingcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:usf:predicate:canonicalName> "artefactmetadataembeddingerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:anqr:predicate:facetStatement> "A container that cannot carry a declared field refuses with the field and the container named." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:artefactmetadataembeddingerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:usf:predicate:canonicalName> "artefactmetadataembeddingvalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:anqr:predicate:facetStatement> "Produced files are re-read and every declared value is recovered." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:artefactmetadataembeddingvalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:usf:predicate:canonicalName> "artefactmetadataembeddinguisemantics" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:uisemantics> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:anqr:predicate:facetStatement> "Metadata entry is a disclosed section, not a default-visible one, and states which fields the chosen container will keep." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:anqr:predicate:requirementClass> "interface" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:artefactmetadataembedding> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:artefactmetadataembeddinguisemantics> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:usf:predicate:canonicalName> "accessentitlement" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:usf:predicate:title> "Access entitlement" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:usf:predicate:objective> "Gate the capabilities a tier reserves, without gating the product's central outcome." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:trust> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:userOutcome> "A user can always create and export; paying unlocks more rather than unlocking anything." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:targetUser> "Individuals who need one advanced capability and organisations that need many." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:businessValue> "The free tier is the acquisition channel, so the gate must never touch the core journey." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:capabilityInput> "An entitlement token and the tier it grants." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:observableOutput> "The active tier and its expiry." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:observableOutput> "A stated route to request a tier the user does not hold." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:productConstraint> "The anonymous creation and export journey is never gated." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:productConstraint> "An absent, malformed or expired entitlement degrades to the free tier and never to a failure." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:satisfactionCondition> "The core journey completes with no entitlement present." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:satisfactionCondition> "A gated capability states the tier it needs rather than failing opaquely." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:accessentitlement> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:generator-state> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessentitlement> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:payload-types> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:usf:predicate:canonicalName> "accessentitlement" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:usf:predicate:objective> "What accessentitlement must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:accessentitlement> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:usf:predicate:canonicalName> "accessentitlementcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:anqr:predicate:facetStatement> "The tier set, what each grants, and the invariant that the core journey is ungated." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:accessentitlementcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:usf:predicate:canonicalName> "accessentitlementstatemodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:statemodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:anqr:predicate:facetStatement> "Tier state is device-local, has an expiry, and its absence is the default rather than an error." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:accessentitlementstatemodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:usf:predicate:canonicalName> "accessentitlementerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:anqr:predicate:facetStatement> "An expired or malformed entitlement is distinguishable from an absent one." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:accessentitlementerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:usf:predicate:canonicalName> "accessentitlementpermissions" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:permissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:anqr:predicate:facetStatement> "No tier can be granted by the client asserting it; the entitlement is the only route." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessentitlementpermissions> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessentitlement> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:accessentitlementpermissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:usf:predicate:canonicalName> "advertisingmonetisation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:usf:predicate:title> "Advertising monetisation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:usf:predicate:objective> "Fund a product that charges nothing, without degrading the product that is funded." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:distribution> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:userOutcome> "A user gets the whole product free and is not ambushed by what pays for it." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:targetUser> "Every anonymous visitor." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:businessValue> "Advertising is the revenue for the free tier and the reason anonymity can be preserved." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:capabilityInput> "A slot identity and a consent state." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:observableOutput> "A rendered advertisement in a declared slot." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:observableOutput> "A collapsed slot where consent or network is absent." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:productConstraint> "No slot appears inside the creation control surface or over the artefact preview." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:productConstraint> "A slot that cannot fill collapses rather than reserving empty space." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:productConstraint> "No advertising script loads before a consent decision exists where consent is required." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:satisfactionCondition> "The creation journey completes with every slot collapsed." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:satisfactionCondition> "No third-party advertising request is made before consent." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:advertisingmonetisation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:analytics-package> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:netlify-headers> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:usf:predicate:canonicalName> "advertisingmonetisation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:usf:predicate:objective> "What advertisingmonetisation must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:advertisingmonetisation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:usf:predicate:canonicalName> "advertisingmonetisationcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:anqr:predicate:facetStatement> "The declared slots, their positions, and where a slot may never appear." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:advertisingmonetisationcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:usf:predicate:canonicalName> "advertisingmonetisationpermissions" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:permissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:anqr:predicate:facetStatement> "Loading is conditional on consent, and the condition is evaluated before the request." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:advertisingmonetisationpermissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:usf:predicate:canonicalName> "advertisingmonetisationuisemantics" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:uisemantics> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:anqr:predicate:facetStatement> "A collapsed slot occupies no space and is not announced to assistive technology." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:anqr:predicate:requirementClass> "interface" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:advertisingmonetisationuisemantics> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:usf:predicate:canonicalName> "advertisingmonetisationvalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:anqr:predicate:facetStatement> "The core journey is exercised with advertising blocked and completes unchanged." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:advertisingmonetisation> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:advertisingmonetisationvalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:usf:predicate:canonicalName> "regulatoryconsent" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:usf:predicate:title> "Regulatory consent" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:usf:predicate:objective> "Ask before anything follows the user, and make the answer enforceable rather than recorded." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:trust> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:userOutcome> "A user's choice about tracking is honoured by the product, not just stored by it." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:targetUser> "Visitors in jurisdictions with consent requirements, which the product cannot detect reliably enough to skip." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:businessValue> "Consent is the precondition of advertising revenue and the boundary that keeps anonymity credible." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:capabilityInput> "A consent decision per purpose category." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:observableOutput> "A retained consent state." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:observableOutput> "A blocked or permitted third-party load, per category." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:productConstraint> "Third-party scripts are blocked until a decision exists, not merely un-fired." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:productConstraint> "A consent platform that fails to load leaves tracking blocked, never permitted." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:satisfactionCondition> "With no decision recorded, no third-party tracking request is made." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:satisfactionCondition> "Withdrawing consent stops subsequent loads without reloading the application." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:regulatoryconsent> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:netlify-headers> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:analytics-package> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:usf:predicate:canonicalName> "regulatoryconsent" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:usf:predicate:objective> "What regulatoryconsent must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:regulatoryconsent> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:usf:predicate:canonicalName> "regulatoryconsentcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:anqr:predicate:facetStatement> "The purpose categories, what each permits, and the fail-closed default." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:regulatoryconsentcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:usf:predicate:canonicalName> "regulatoryconsentpermissions" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:permissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:anqr:predicate:facetStatement> "Blocking is the default state and is enforced before the script tag is evaluated." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:regulatoryconsentpermissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:usf:predicate:canonicalName> "regulatoryconsenterrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:anqr:predicate:facetStatement> "A consent platform failure is distinguishable from a refusal and both block." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:regulatoryconsenterrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:usf:predicate:canonicalName> "regulatoryconsentauditmodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:auditmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:anqr:predicate:facetStatement> "A consent decision and its later withdrawal are both observable." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:regulatoryconsent> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:regulatoryconsentauditmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:usf:predicate:canonicalName> "asynchronousrendering" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:usf:predicate:title> "Asynchronous rendering" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:usf:predicate:objective> "Complete a render that cannot finish inside one request, without making the caller hang." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:creation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:userOutcome> "A user asking for an expensive animated artefact gets it, rather than a timeout." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:targetUser> "Anyone using the full overlay and animation surface, where a render is seconds not milliseconds." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:businessValue> "The most valuable visual capabilities are the slowest, so the slow path must exist for them to be sellable." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:capabilityInput> "A parsed render request that exceeded the synchronous bound." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:observableOutput> "An artefact retrievable by its parameter identity once complete." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:observableOutput> "An immediate placeholder response that states it is one." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:productConstraint> "The synchronous path never blocks waiting for the asynchronous one." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:productConstraint> "A placeholder is distinguishable from a finished artefact by the caller." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:satisfactionCondition> "A request over the bound returns promptly with a stated placeholder." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:satisfactionCondition> "The same request after completion returns the finished artefact." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:applicableInterface> "http-api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:applicableRuntime> "api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:asynchronousrendering> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:netlify-functions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:usf:predicate:canonicalName> "asynchronousrendering" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:usf:predicate:objective> "What asynchronousrendering must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:asynchronousrendering> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:usf:predicate:canonicalName> "asynchronousrenderingcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:anqr:predicate:facetStatement> "The synchronous bound, the placeholder response, and the retrieval identity." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:asynchronousrenderingcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:usf:predicate:canonicalName> "asynchronousrenderingreadinessmodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:readinessmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:anqr:predicate:facetStatement> "The background runtime's presence is observable independently of the synchronous route." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:asynchronousrenderingreadinessmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:usf:predicate:canonicalName> "asynchronousrenderingerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:anqr:predicate:facetStatement> "A failed or over-bound job is reported rather than leaving a permanent placeholder." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:asynchronousrenderingerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:usf:predicate:canonicalName> "asynchronousrenderingvalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:anqr:predicate:facetStatement> "A request over the bound is answered promptly and the artefact appears afterwards." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:asynchronousrendering> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:asynchronousrenderingvalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:usf:predicate:canonicalName> "renderedartefactcaching" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:usf:predicate:title> "Rendered artefact caching" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:usf:predicate:objective> "Never render the same artefact twice, and never serve a different artefact from the same key." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:creation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:userOutcome> "A repeated request is fast, and a changed request is not silently answered with the old result." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:targetUser> "Every API and embed consumer, where the same image is requested repeatedly." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:businessValue> "Caching is what makes a public unauthenticated render API affordable to operate." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:capabilityInput> "A rendered artefact and the cache-significant subset of its parameters." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:observableOutput> "A cache hit for an identical request." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:observableOutput> "A miss and a fresh render for any different request." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:productConstraint> "The key is derived from the cache-significant parameters only, and the excluded ones are declared." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:productConstraint> "An unavailable store degrades to uncached rendering and is recorded once, not per request." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:satisfactionCondition> "Two identical requests produce byte-identical responses and one render." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:satisfactionCondition> "Changing any cache-significant parameter produces a miss." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:applicableInterface> "http-api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:applicableRuntime> "api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:renderedartefactcaching> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:netlify-functions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:usf:predicate:canonicalName> "renderedartefactcaching" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:usf:predicate:objective> "What renderedartefactcaching must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:renderedartefactcaching> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:usf:predicate:canonicalName> "renderedartefactcachingcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:anqr:predicate:facetStatement> "Which parameters are cache-significant, which are excluded, and why each exclusion is safe." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:renderedartefactcachingcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:usf:predicate:canonicalName> "renderedartefactcachingstatemodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:statemodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:anqr:predicate:facetStatement> "Cache state is derived and disposable; losing it costs time and never correctness." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:renderedartefactcachingstatemodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:usf:predicate:canonicalName> "renderedartefactcachingerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:anqr:predicate:facetStatement> "Store unavailability is degradation, not failure, and is not logged per request." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:renderedartefactcachingerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:usf:predicate:canonicalName> "renderedartefactcachingvalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:anqr:predicate:facetStatement> "An excluded parameter provably cannot change the rendered bytes." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:renderedartefactcaching> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:renderedartefactcachingvalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:usf:predicate:canonicalName> "abusecontrol" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:usf:predicate:title> "Abuse control" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:usf:predicate:objective> "Keep one consumer from consuming a service that asks nobody to identify themselves." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:trust> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:userOutcome> "The service stays available to everyone because it is available without limit to no one." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:targetUser> "Every anonymous and programmatic consumer." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:businessValue> "An unauthenticated public API is only operable at all if it is bounded." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:capabilityInput> "A request's origin, route and arrival time." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:observableOutput> "Passage, or a refusal carrying a retry signal." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:productConstraint> "A route fails closed when the limiter's own state is unavailable." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:productConstraint> "Limits are declared per route rather than globally, because the render route and the agent route cost differently." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:satisfactionCondition> "Requests beyond the declared rate are refused with the declared code." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:satisfactionCondition> "A refusal happens before any rendering work is done." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:applicableInterface> "http-api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:applicableInterface> "mcp" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:applicableRuntime> "api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:abusecontrol> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:netlify-functions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:abusecontrol> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:platform-node> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:usf:predicate:canonicalName> "abusecontrol" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:usf:predicate:objective> "What abusecontrol must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:abusecontrol> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:usf:predicate:canonicalName> "abusecontrolcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:anqr:predicate:facetStatement> "The per-route limits, the refusal code and the retry signal." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:abusecontrolcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:usf:predicate:canonicalName> "abusecontrolerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:anqr:predicate:facetStatement> "A rate refusal is distinguishable from an authorisation refusal and from a render failure." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:abusecontrolerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:usf:predicate:canonicalName> "abusecontrolpermissions" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:permissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:anqr:predicate:facetStatement> "The limit is enforced before the handler does work, not after." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolpermissions> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:abusecontrolpermissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:usf:predicate:canonicalName> "abusecontrolvalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:anqr:predicate:facetStatement> "Exceeding a declared limit is refused, and the refusal costs no render." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:abusecontrolvalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:abusecontrol> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:abusecontrolvalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:usf:predicate:canonicalName> "accessauditing" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:usf:predicate:title> "Access auditing" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:usf:predicate:objective> "Keep a durable record of who asked an authenticated surface for what, and what happened." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:trust> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:userOutcome> "An organisation consuming ANQR under an identity can answer what that identity did." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:targetUser> "Enterprises consuming the agent and API surfaces under a credential." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:businessValue> "Auditability is a precondition of enterprise consumption, not a feature of it." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:capabilityInput> "A request identity, route and outcome." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:observableOutput> "An appended audit event per authenticated request, including refusals." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:productConstraint> "An unauthorised request is audited before it is rejected, not instead of." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:productConstraint> "An unavailable audit store does not change the request's own outcome, and the gap is itself recorded." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:satisfactionCondition> "Every authenticated outcome class produces exactly one audit event." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:satisfactionCondition> "A refused request is present in the record." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:applicableInterface> "mcp" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:applicableInterface> "http-api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:applicableRuntime> "api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:accessauditing> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:accessauditing> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:platform-node> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:usf:predicate:canonicalName> "accessauditing" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:usf:predicate:objective> "What accessauditing must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:accessauditing> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:usf:predicate:canonicalName> "accessauditingcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:anqr:predicate:facetStatement> "The event shape, the outcome classes and the retention posture." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:accessauditingcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:usf:predicate:canonicalName> "accessauditingauditmodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:auditmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:anqr:predicate:facetStatement> "Every outcome class is represented, and a missing store is itself an auditable event." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingauditmodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:accessauditingauditmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:usf:predicate:canonicalName> "accessauditingpermissions" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:permissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:anqr:predicate:facetStatement> "Audit writing is not conditional on the request succeeding." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingpermissions> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:accessauditingpermissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:usf:predicate:canonicalName> "accessauditingvalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:anqr:predicate:facetStatement> "Each outcome class is exercised and produces its event." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:accessauditingvalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:accessauditing> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:accessauditingvalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:usf:predicate:canonicalName> "runtimeobservability" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:usf:predicate:title> "Runtime observability" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:usf:predicate:objective> "Know that the deployed product is working, without the product depending on being watched." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:quality> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:userOutcome> "A user is not the monitoring system: a failure is known before it is reported." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:targetUser> "The operator of any deployed instance." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:businessValue> "An unobserved deployment cannot be operated, and an unoperable deployment cannot be sold." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:capabilityInput> "A runtime event and its context." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:observableOutput> "An event delivered to a sink outside the product." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:observableOutput> "A health and readiness answer for each runtime." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:productConstraint> "An unreachable sink never changes the product's own behaviour." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:productConstraint> "No payload content is emitted, because what a user encodes is theirs." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:satisfactionCondition> "Each declared runtime answers health and readiness distinguishably." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:satisfactionCondition> "Telemetry contains no payload content." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:applicableInterface> "http-api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:applicableInterface> "mcp" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:applicableRuntime> "api" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:runtimeobservability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:observability-package> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:netlify-functions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:usf:predicate:canonicalName> "runtimeobservability" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:usf:predicate:objective> "What runtimeobservability must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:runtimeobservability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:usf:predicate:canonicalName> "runtimeobservabilitycontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:anqr:predicate:facetStatement> "The event taxonomy, the sink contract and the health and readiness answers." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:runtimeobservabilitycontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:usf:predicate:canonicalName> "runtimeobservabilityreadinessmodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:readinessmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:anqr:predicate:facetStatement> "Presence and readiness are separately observable per runtime." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:runtimeobservabilityreadinessmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:usf:predicate:canonicalName> "runtimeobservabilityerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:anqr:predicate:facetStatement> "Sink unavailability degrades silently to the user and visibly to the operator." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:runtimeobservabilityerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:usf:predicate:canonicalName> "runtimeobservabilityauditmodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:auditmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:anqr:predicate:facetStatement> "No emitted event contains payload content." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:runtimeobservability> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:runtimeobservabilityauditmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:usf:predicate:canonicalName> "crawlablepresentation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:usf:predicate:title> "Crawlable presentation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:usf:predicate:objective> "Be readable by something that will not run the application." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:distribution> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:userOutcome> "A page shared or indexed shows the right title, description and preview without executing scripts." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:targetUser> "Search engines, social platforms and anyone pasting a link." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:businessValue> "A client-rendered application is invisible to crawlers unless something answers for it." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:capabilityInput> "A document request path and its negotiated locale." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:observableOutput> "A document carrying page metadata, canonical URL, alternate-language links and a preview image." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:productConstraint> "The transform runs ahead of the static response and never replaces it on failure." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:productConstraint> "Alternate-language links cover exactly the locales that have resources." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:satisfactionCondition> "A crawler request receives per-page metadata without executing scripts." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:satisfactionCondition> "A transform failure serves the unmodified document rather than an error." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:crawlablepresentation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:netlify-edge-functions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:seo-module> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:usf:predicate:canonicalName> "crawlablepresentation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:usf:predicate:objective> "What crawlablepresentation must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:crawlablepresentation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:usf:predicate:canonicalName> "crawlablepresentationcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:anqr:predicate:facetStatement> "The per-page metadata set, the canonical rule and the alternate-language rule." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:crawlablepresentationcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:usf:predicate:canonicalName> "crawlablepresentationerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:anqr:predicate:facetStatement> "A failed transform falls through to the static document." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:crawlablepresentationerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:usf:predicate:canonicalName> "crawlablepresentationvalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:anqr:predicate:facetStatement> "Each page path yields its own metadata with scripts disabled." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:crawlablepresentationvalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:usf:predicate:canonicalName> "crawlablepresentationreadinessmodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:readinessmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:anqr:predicate:facetStatement> "The edge transform's presence is observable independently of the static runtime." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:crawlablepresentation> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:crawlablepresentationreadinessmodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:usf:predicate:canonicalName> "installableoffline" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:usf:predicate:title> "Installable and offline operation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:usf:predicate:objective> "Keep the product on the device, and keep the core outcome working without a network." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:distribution> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:userOutcome> "A user who installed ANQR can still make a QR code on a train." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:targetUser> "Mobile and repeat users, for whom a round trip is the slowest part of the product." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:businessValue> "Offline capability is what makes a browser product feel like an application." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:capabilityInput> "An installation request, or a request made with no network." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:observableOutput> "An installed application." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:observableOutput> "A locally produced artefact with no network available." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:productConstraint> "The core creation and export journey works with no network." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:productConstraint> "A capability that genuinely needs the network refuses distinguishably from a failure." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:satisfactionCondition> "Creation and export complete with the network disabled." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:satisfactionCondition> "A network-dependent capability states that it needs one." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:installableoffline> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:public-manifest> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:installableoffline> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:service-worker> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:usf:predicate:canonicalName> "installableoffline" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:usf:predicate:objective> "What installableoffline must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:installableoffline> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:usf:predicate:canonicalName> "installableofflinecontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:anqr:predicate:facetStatement> "The installable manifest, the cached scope, and which capabilities are offline-capable." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinecontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:installableofflinecontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:usf:predicate:canonicalName> "installableofflinestatemodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:statemodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:anqr:predicate:facetStatement> "Offline is a runtime condition rather than a mode the user selects." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinestatemodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:installableofflinestatemodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:usf:predicate:canonicalName> "installableofflineerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:anqr:predicate:facetStatement> "A network-dependent refusal while offline is distinguishable from an error." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflineerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:installableofflineerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:usf:predicate:canonicalName> "installableofflinevalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:anqr:predicate:facetStatement> "The core journey completes with the network disabled." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:installableofflinevalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:installableoffline> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:installableofflinevalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:usf:predicate:canonicalName> "geolocationassistance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:usf:predicate:title> "Geolocation assistance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:usf:predicate:objective> "Turn a place into coordinates so a user does not have to know them." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:payload> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:userOutcome> "A user encoding a location types a place, not a latitude." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:targetUser> "Anyone encoding a physical location: events, venues, deliveries." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:businessValue> "Coordinate entry is the point where a location payload is abandoned." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:capabilityInput> "A place description, or coordinates." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:observableOutput> "Coordinates, and their plus-code form." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:productConstraint> "Manual coordinate entry is always available, so the external service is an assist and never a dependency." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:productConstraint> "The place description is not retained after the lookup." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:satisfactionCondition> "A lookup failure leaves manual entry fully usable." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:satisfactionCondition> "The encoded payload is identical whether coordinates were typed or looked up." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:geolocationassistance> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:generator-sections> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:usf:predicate:canonicalName> "geolocationassistance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:usf:predicate:objective> "What geolocationassistance must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:geolocationassistance> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:usf:predicate:canonicalName> "geolocationassistancecontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:anqr:predicate:facetStatement> "The lookup contract, the plus-code derivation and the manual fallback." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:geolocationassistancecontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:usf:predicate:canonicalName> "geolocationassistanceerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:anqr:predicate:facetStatement> "Service unavailability and place-not-found are distinguishable, and both leave manual entry." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:geolocationassistanceerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:usf:predicate:canonicalName> "geolocationassistancepermissions" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:permissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:anqr:predicate:facetStatement> "No place description is retained or transmitted beyond the lookup." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:geolocationassistancepermissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:usf:predicate:canonicalName> "geolocationassistancevalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:anqr:predicate:facetStatement> "The payload produced by lookup equals the payload produced by manual entry." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:geolocationassistance> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:geolocationassistancevalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:usf:predicate:canonicalName> "controlsurfacesearch" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:usf:predicate:title> "Control surface search" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:usf:predicate:objective> "Let a user find one control among hundreds by name." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:experience> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:userOutcome> "A user who knows what they want does not have to know which panel it lives in." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:targetUser> "Every user of the advanced surface, which is where the product's value is." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:businessValue> "A capability nobody can find is a capability nobody buys." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:capabilityInput> "A search term." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:observableOutput> "The matching controls, revealed and highlighted in place." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:productConstraint> "Searching reveals controls rather than replacing the surface, so context is not lost." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:productConstraint> "A term with no match states the absence rather than emptying the surface." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:satisfactionCondition> "Every declared control is reachable by searching its own label." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:satisfactionCondition> "A no-match term leaves the surface intact." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:controlsurfacesearch> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:generator-search> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:web-search> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:usf:predicate:canonicalName> "controlsurfacesearch" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:usf:predicate:objective> "What controlsurfacesearch must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:controlsurfacesearch> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:usf:predicate:canonicalName> "controlsurfacesearchcontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:anqr:predicate:facetStatement> "What is searchable, and the rule that results are revealed in place." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:controlsurfacesearchcontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:usf:predicate:canonicalName> "controlsurfacesearchuisemantics" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:uisemantics> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:anqr:predicate:facetStatement> "A revealed control keeps its panel context and its highlight is announced." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:anqr:predicate:requirementClass> "interface" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:controlsurfacesearchuisemantics> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:usf:predicate:canonicalName> "controlsurfacesearcherrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:anqr:predicate:facetStatement> "A no-match term is stated, not silent." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:controlsurfacesearcherrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:usf:predicate:canonicalName> "controlsurfacesearchvalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:anqr:predicate:facetStatement> "Every declared control is found by its own label." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:controlsurfacesearch> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:controlsurfacesearchvalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:usf:predicate:canonicalName> "deviceimagecapture" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:usf:predicate:title> "Device image capture" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:usf:predicate:objective> "Use what the camera sees, for artwork or for analysis, with each refusal cause distinguishable." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:inDomain> <urn:anqr:delivery-domain:analysis> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:userOutcome> "A user can point the camera at a code, or use a photo as artwork, and understand any refusal." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:targetUser> "Mobile users, for whom the camera is the natural input." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:businessValue> "The camera is the difference between analysing a code and typing a URL about one." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:capabilityInput> "A captured frame." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:observableOutput> "A downscaled image usable as an overlay source or a decode subject." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:productConstraint> "Permission denied, no device present and an insecure context are three distinct outcomes, not one failure." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:productConstraint> "A captured frame is downscaled before use and is not transmitted." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:satisfactionCondition> "Each refusal cause is reported distinguishably." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:satisfactionCondition> "The other input routes remain available after any camera refusal." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:applicableInterface> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:applicableRuntime> "web" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:captureStatus> "specified" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:realisationStatus> "not-started" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:specifiedByContract> <urn:anqr:delivery-contract:deviceimagecapture> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:analyze-components> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:predicate:justifiedByEvidenceSource> <urn:anqr:evidence-source:generator-sections> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:usf:predicate:canonicalName> "deviceimagecapture" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:usf:predicate:objective> "What deviceimagecapture must do and what would make it wrong, as distinct from how it is built." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:anqr:predicate:definesCompletionFor> <urn:anqr:delivery-capability:deviceimagecapture> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:usf:predicate:canonicalName> "deviceimagecapturecontracts" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:anqr:predicate:facetStatement> "The capture contract, the downscale bound and the three refusal causes." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:deviceimagecapturecontracts> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:usf:predicate:canonicalName> "deviceimagecaptureerrormodel" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:anqr:predicate:facetStatement> "Permission, device and context refusals are separately identifiable." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:deviceimagecaptureerrormodel> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:usf:predicate:canonicalName> "deviceimagecapturepermissions" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:permissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:anqr:predicate:facetStatement> "A captured frame is not transmitted and is not retained after use." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:anqr:predicate:requirementClass> "structural" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:deviceimagecapturepermissions> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:usf:predicate:canonicalName> "deviceimagecapturevalidation" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:anqr:predicate:facetStatement> "Each refusal cause is exercised and reported distinguishably." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:anqr:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:anqr:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:anqr:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:anqr:predicate:specificationStatus> "complete" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:anqr:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:delivery-contract:deviceimagecapture> <urn:anqr:predicate:declaresFacet> <urn:anqr:delivery-facet:deviceimagecapturevalidation> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-state> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-state> <urn:usf:predicate:canonicalName> "generator-state" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-state> <urn:usf:predicate:objective> "The legacy central creation store: 126 actions over 284 keys." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:payload-types> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:payload-types> <urn:usf:predicate:canonicalName> "payload-types" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:payload-types> <urn:usf:predicate:objective> "The legacy payload type helpers and serialisers: 33 kinds." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:analytics-package> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:analytics-package> <urn:usf:predicate:canonicalName> "analytics-package" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:analytics-package> <urn:usf:predicate:objective> "The legacy analytics and advertising facades." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:netlify-headers> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:netlify-headers> <urn:usf:predicate:canonicalName> "netlify-headers" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:netlify-headers> <urn:usf:predicate:objective> "The legacy response header and content-security policy declarations." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:netlify-edge-functions> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:netlify-edge-functions> <urn:usf:predicate:canonicalName> "netlify-edge-functions" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:netlify-edge-functions> <urn:usf:predicate:objective> "The legacy edge function that answers document requests ahead of the static response." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:seo-module> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:seo-module> <urn:usf:predicate:canonicalName> "seo-module" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:seo-module> <urn:usf:predicate:objective> "The legacy canonical, alternate-language and preview-image module." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:observability-package> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:observability-package> <urn:usf:predicate:canonicalName> "observability-package" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:observability-package> <urn:usf:predicate:objective> "The legacy logging, telemetry and error-reporting facades." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:public-manifest> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:public-manifest> <urn:usf:predicate:canonicalName> "public-manifest" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:public-manifest> <urn:usf:predicate:objective> "The legacy installable application manifest." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:service-worker> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:service-worker> <urn:usf:predicate:canonicalName> "service-worker" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:service-worker> <urn:usf:predicate:objective> "The legacy service worker present in the built output." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-sections> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-sections> <urn:usf:predicate:canonicalName> "generator-sections" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-sections> <urn:usf:predicate:objective> "The legacy creation panels, including camera acquisition and place lookup." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-search> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-search> <urn:usf:predicate:canonicalName> "generator-search" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:generator-search> <urn:usf:predicate:objective> "The legacy control-surface search within the creation feature." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:web-search> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:web-search> <urn:usf:predicate:canonicalName> "web-search" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:web-search> <urn:usf:predicate:objective> "The legacy application-level search provider." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:analyze-components> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:analyze-components> <urn:usf:predicate:canonicalName> "analyze-components" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:analyze-components> <urn:usf:predicate:objective> "The legacy analysis input cards, including the camera route." <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:platform-node> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:platform-node> <urn:usf:predicate:canonicalName> "platform-node" <urn:anqr:graph:capabilities-revision-3> .
+<urn:anqr:evidence-source:platform-node> <urn:usf:predicate:objective> "The legacy server platform adapters: authorisation, rate limiting and audit." <urn:anqr:graph:capabilities-revision-3> .

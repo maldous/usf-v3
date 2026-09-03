@@ -1,0 +1,158 @@
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:type> <urn:usf:type:RealisationIdentity> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:canonicalName> "v2.1" <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:version> "1" <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:supersedes> <urn:usf:realisation-identity:v1:1> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:declaredBy> <urn:usf:contract:delivery-environment:1> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:objective> "One resolvable answer to what is being realised, so a supervisor never infers the current combination of foundation, product, experience, implementation, build and environment. Revision 1 stays as it is: its four members were the identity of a realisation with no delivery axis, and completions recorded against it remain valid." <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:usf-foundation-revision> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:usf-foundation-revision> <urn:usf:predicate:canonicalName> "usf-foundation-revision" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:usf-foundation-revision> <urn:usf:predicate:axisSource> <urn:usf:type:FoundationRevision> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:usf-foundation-revision> <urn:usf:predicate:objective> "Moving this axis changes the Foundation semantics the product was realised against." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:usf-foundation-revision> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "usf-foundation-revision" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-realisation-profile> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-realisation-profile> <urn:usf:predicate:canonicalName> "core-realisation-profile" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-realisation-profile> <urn:usf:predicate:axisSource> <urn:usf:type:RealisationProfile> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-realisation-profile> <urn:usf:predicate:objective> "Moving this axis changes which Foundation contracts are in construction scope." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:core-realisation-profile> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "core-realisation-profile" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-manifest-digest> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-manifest-digest> <urn:usf:predicate:canonicalName> "core-manifest-digest" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-manifest-digest> <urn:usf:predicate:axisSource> <urn:usf:type:GraphManifest> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-manifest-digest> <urn:usf:predicate:objective> "Moving this axis changes which Foundation graph sources are loaded." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:core-manifest-digest> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "core-manifest-digest" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-profile-revision> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-profile-revision> <urn:usf:predicate:canonicalName> "product-profile-revision" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-profile-revision> <urn:usf:predicate:axisSource> <urn:usf:type:ProductProfileRevision> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-profile-revision> <urn:usf:predicate:objective> "Moving this axis changes the product capability denominator." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:product-profile-revision> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "product-profile-revision" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-realisation-profile> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-realisation-profile> <urn:usf:predicate:canonicalName> "product-realisation-profile" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-realisation-profile> <urn:usf:predicate:axisSource> <urn:usf:type:RealisationProfile> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-realisation-profile> <urn:usf:predicate:objective> "Moving this axis changes which contracts are in scope for product work." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:product-realisation-profile> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "product-realisation-profile" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-manifest-digest> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-manifest-digest> <urn:usf:predicate:canonicalName> "product-manifest-digest" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-manifest-digest> <urn:usf:predicate:axisSource> <urn:usf:type:GraphManifest> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-manifest-digest> <urn:usf:predicate:objective> "Moving this axis changes which product graph sources are loaded." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:product-manifest-digest> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "product-manifest-digest" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-foundation-binding> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-foundation-binding> <urn:usf:predicate:canonicalName> "profile-foundation-binding" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-foundation-binding> <urn:usf:predicate:axisSource> <urn:usf:type:ProfileFoundationBinding> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-foundation-binding> <urn:usf:predicate:objective> "Moving this axis changes the adoption edge between the product revision and the Foundation revision." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:profile-foundation-binding> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "profile-foundation-binding" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:experience-revision> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:experience-revision> <urn:usf:predicate:canonicalName> "experience-revision" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:experience-revision> <urn:usf:predicate:axisSource> <urn:usf:type:ExperienceProfileRevision> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:experience-revision> <urn:usf:predicate:objective> "Moving this axis changes the journeys, states, actions and roles the product exposes." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:experience-revision> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "experience-revision" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:selected-pattern-versions> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:selected-pattern-versions> <urn:usf:predicate:canonicalName> "selected-pattern-versions" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:selected-pattern-versions> <urn:usf:predicate:axisSource> <urn:usf:type:FutureUsePattern> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:selected-pattern-versions> <urn:usf:predicate:objective> "Moving this axis changes which reusable interaction patterns the experience selected, at which versions." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:selected-pattern-versions> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "selected-pattern-versions" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:application-source-identity> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:application-source-identity> <urn:usf:predicate:canonicalName> "application-source-identity" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:application-source-identity> <urn:usf:predicate:axisSource> <urn:usf:type:SourceIdentity> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:application-source-identity> <urn:usf:predicate:objective> "Moving this axis changes the exact product source under realisation." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:application-source-identity> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "application-source-identity" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:implementation-binding-identity> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:implementation-binding-identity> <urn:usf:predicate:canonicalName> "implementation-binding-identity" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:implementation-binding-identity> <urn:usf:predicate:axisSource> <urn:usf:type:ImplementationBinding> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:implementation-binding-identity> <urn:usf:predicate:objective> "Moving this axis changes which module renders or performs each declared action." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:implementation-binding-identity> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "implementation-binding-identity" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:build-artefact-digest> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:build-artefact-digest> <urn:usf:predicate:canonicalName> "build-artefact-digest" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:build-artefact-digest> <urn:usf:predicate:axisSource> <urn:usf:type:BuildArtefact> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:build-artefact-digest> <urn:usf:predicate:objective> "Moving this axis changes the exact bytes a deployment would move." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:build-artefact-digest> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "build-artefact-digest" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:canonicalName> "environment" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:axisSource> <urn:usf:type:Environment> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:objective> "Moving this axis changes the rung, provider realism and mutation posture in force." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:environment> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "environment" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:delivery-binding-revision> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:delivery-binding-revision> <urn:usf:predicate:canonicalName> "delivery-binding-revision" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:delivery-binding-revision> <urn:usf:predicate:axisSource> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:delivery-binding-revision> <urn:usf:predicate:objective> "Moving this axis changes which real resources the delivery contracts resolve to." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:delivery-binding-revision> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "delivery-binding-revision" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment-configuration-identity> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment-configuration-identity> <urn:usf:predicate:canonicalName> "environment-configuration-identity" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment-configuration-identity> <urn:usf:predicate:axisSource> <urn:usf:type:ConfigurationIdentity> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment-configuration-identity> <urn:usf:predicate:objective> "Moving this axis changes the non-secret configuration a runtime was given." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:environment-configuration-identity> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "environment-configuration-identity" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:evidence-set-identity> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:evidence-set-identity> <urn:usf:predicate:canonicalName> "evidence-set-identity" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:evidence-set-identity> <urn:usf:predicate:axisSource> <urn:usf:type:EvidenceSet> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:evidence-set-identity> <urn:usf:predicate:objective> "Moving this axis changes which verdicts are currently admitted." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:evidence-set-identity> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "evidence-set-identity" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:external-fact-snapshot> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:external-fact-snapshot> <urn:usf:predicate:canonicalName> "external-fact-snapshot" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:external-fact-snapshot> <urn:usf:predicate:axisSource> <urn:usf:type:ExternalFactSnapshot> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:external-fact-snapshot> <urn:usf:predicate:objective> "Moving this axis changes facts observed outside the repository, which drift and never stale a basis." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:external-fact-snapshot> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "external-fact-snapshot" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-core-dependency-closure> <urn:usf:predicate:type> <urn:usf:type:BasisAxis> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-core-dependency-closure> <urn:usf:predicate:canonicalName> "profile-core-dependency-closure" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-core-dependency-closure> <urn:usf:predicate:axisSource> <urn:usf:type:DependencyClosure> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-core-dependency-closure> <urn:usf:predicate:objective> "Moving this axis changes the resolved transitive closure the product actually depends on." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:basisAxis> <urn:usf:basis-axis:profile-core-dependency-closure> <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:member> "profile-core-dependency-closure" <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:usf-foundation-revision> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-realisation-profile> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-profile-revision> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-profile-revision> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:realized-artefact> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-realisation-profile> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-foundation-binding> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:experience-revision> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:browser-render> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:experience-revision> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:human-review> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:selected-pattern-versions> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:browser-render> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:application-source-identity> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:application-source-identity> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:realized-artefact> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:implementation-binding-identity> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:implementation-binding-identity> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:browser-render> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:build-artefact-digest> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:deployment-observation> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:build-artefact-digest> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:runtime-observation> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:build-artefact-digest> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:browser-render> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:build-artefact-digest> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:release-provenance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:deployment-observation> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:runtime-observation> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:browser-render> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:human-review> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:release-provenance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:delivery-binding-revision> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:deployment-observation> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:delivery-binding-revision> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:runtime-observation> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:delivery-binding-revision> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:release-provenance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment-configuration-identity> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:runtime-observation> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:environment-configuration-identity> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:release-provenance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:profile-core-dependency-closure> <urn:usf:predicate:axisInvalidates> <urn:usf:evidence-class:implementation-conformance> <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:external-fact-snapshot> <urn:usf:predicate:nonClaim> "An external fact snapshot invalidates nothing. A realisation produced against a different catalogue or lockfile was produced against different facts; it was not wrong, and reproving it would be theatre." <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:core-manifest-digest> <urn:usf:predicate:nonClaim> "Manifest movement stales only work whose read closure includes a moved source. A manifest is source selection, so a source the work never reads cannot stale it." <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:product-manifest-digest> <urn:usf:predicate:nonClaim> "Same rule as the core manifest axis: selection is not dependency. This is why a new manifest lane can be added beside an existing one without staling its cohort." <urn:usf:graph:realisation-basis> .
+<urn:usf:basis-axis:evidence-set-identity> <urn:usf:predicate:nonClaim> "The evidence set is an output of the basis, not an input to it. It moves whenever a verdict is admitted, and invalidating evidence because evidence changed would never terminate." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:nonClaim> "Narrow invalidation is the point. Invalidating every verdict whenever any axis moves would be easier to implement and would make reproving meaningless, because a verdict that is always stale is never trusted." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:nonClaim> "The identity is resolvable, not stored. Every member is derived from tracked authority or from an observed artefact, so a stale copy of the basis cannot become the basis." <urn:usf:graph:realisation-basis> .
+<urn:usf:realisation-identity:v2:1> <urn:usf:predicate:nonClaim> "Resolving a basis grants no authority. It says what is being realised; whether any work may proceed is still decided by construction eligibility, evidence and proof." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:SourceIdentity> <urn:usf:predicate:objective> "The exact commit and tree of a product repository under realisation." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:BuildArtefact> <urn:usf:predicate:objective> "A built output set identified by the digest of its bytes." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:EnvironmentBinding> <urn:usf:predicate:objective> "The vendor-specific resolution of delivery contracts for one environment." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:ConfigurationIdentity> <urn:usf:predicate:objective> "The digest of the non-secret configuration given to a runtime." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:EvidenceSet> <urn:usf:predicate:objective> "The set of verdicts admitted against one basis." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:ExternalFactSnapshot> <urn:usf:predicate:objective> "Facts observed outside the repository at a point in time." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:DependencyClosure> <urn:usf:predicate:objective> "A resolved transitive resource closure." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:BasisAxis> <urn:usf:predicate:objective> "One independently movable dimension of a realisation basis." <urn:usf:graph:realisation-basis> .
+<urn:usf:type:GraphManifest> <urn:usf:predicate:objective> "A declared selection of graph sources, with its imports." <urn:usf:graph:realisation-basis> .

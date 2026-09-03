@@ -1,0 +1,148 @@
+<urn:usf:delivery-contract:staticassetruntime> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:staticassetruntime> <urn:usf:predicate:canonicalName> "staticassetruntime" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:staticassetruntime> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:runtime> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:staticassetruntime> <urn:usf:predicate:objective> "Serve an immutable set of built assets over HTTP with per-path cache policy, and serve one document for every unmatched path so a client-routed application resolves its own routes." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:staticassetruntime> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:staticassetruntime> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:staticassetruntime> <urn:usf:predicate:doesNotDuplicate> "serverlessfunctionruntime is a request-scoped handler with a server runtime; this serves bytes and has none" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:edgeruntime> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:edgeruntime> <urn:usf:predicate:canonicalName> "edgeruntime" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:edgeruntime> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:runtime> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:edgeruntime> <urn:usf:predicate:objective> "Execute a bounded request transform close to the client, ahead of the static response, with no host filesystem and no server runtime API." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:edgeruntime> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:edgeruntime> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:edgeruntime> <urn:usf:predicate:doesNotDuplicate> "serverlessfunctionruntime assumes a server runtime this deliberately lacks" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:networkingress> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:networkingress> <urn:usf:predicate:canonicalName> "networkingress" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:networkingress> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:network> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:networkingress> <urn:usf:predicate:objective> "Accept public traffic on a stable address and route it to the declared runtimes by path." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:networkingress> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:networkingress> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:networkingress> <urn:usf:predicate:doesNotDuplicate> "customdomainsdnsownershiptlscanonical owns the name and the certificate; this owns what the name points at" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:responseheaderpolicy> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:responseheaderpolicy> <urn:usf:predicate:canonicalName> "responseheaderpolicy" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:responseheaderpolicy> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:integrity> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:responseheaderpolicy> <urn:usf:predicate:objective> "Attach a declared set of response headers per path class, including the content-security policy that decides what a delivered document may load and execute." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:responseheaderpolicy> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:responseheaderpolicy> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:responseheaderpolicy> <urn:usf:predicate:doesNotDuplicate> "codequalityandsecretanddependencyscanning inspects the source; this constrains the delivered response" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:cdncachepolicy> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:cdncachepolicy> <urn:usf:predicate:canonicalName> "cdncachepolicy" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:cdncachepolicy> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:runtime> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:cdncachepolicy> <urn:usf:predicate:objective> "Cache responses by path class with declared freshness, and invalidate on release." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:cdncachepolicy> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:cdncachepolicy> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:cdncachepolicy> <urn:usf:predicate:doesNotDuplicate> "objectstorageandtenantprefixesandsignedurls stores artefacts; this caches responses" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:canonicalName> "healthreadiness" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:observability> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:objective> "Expose whether a deployed runtime is present and ready, distinguishably from whether it is merely reachable." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:doesNotDuplicate> "internalservicecatalogandreadiness is a catalogue of services; this is one runtime answering for itself" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:healthreadiness> <urn:usf:predicate:doesNotDuplicate> "metricsandtraces reports how a running instance behaves; this reports whether it is ready to" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:deploymentmechanism> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:deploymentmechanism> <urn:usf:predicate:canonicalName> "deploymentmechanism" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:deploymentmechanism> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:lifecycle> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:deploymentmechanism> <urn:usf:predicate:objective> "Move an exact built artefact into an environment and report the identity of what is now running." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:deploymentmechanism> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:deploymentmechanism> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:deploymentmechanism> <urn:usf:predicate:doesNotDuplicate> "environmentregistryandbootstrap records that an environment exists; this puts something in it" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:rollbackmechanism> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:rollbackmechanism> <urn:usf:predicate:canonicalName> "rollbackmechanism" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:rollbackmechanism> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:lifecycle> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:rollbackmechanism> <urn:usf:predicate:objective> "Return an environment to a previously deployed artefact identity without rebuilding it." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:rollbackmechanism> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:rollbackmechanism> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:rollbackmechanism> <urn:usf:predicate:doesNotDuplicate> "backupandrestore recovers data; this recovers the running artefact, and a rebuild is not a rollback" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:releaseprovenance> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:releaseprovenance> <urn:usf:predicate:canonicalName> "releaseprovenance" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:releaseprovenance> <urn:usf:predicate:deliveryRequirementKind> <urn:usf:delivery-requirement-kind:lifecycle> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:releaseprovenance> <urn:usf:predicate:objective> "Bind a running instance to the exact source, dependency lock, build command, build digest, semantic basis, environment binding and configuration identity that produced it." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:releaseprovenance> <urn:usf:predicate:providerNeutralContract> "Stated as a requirement on behaviour, not on a vendor. A vendor's name, region, plan, quota or resource identifier is a binding fact and belongs at the environment binding, never here." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:releaseprovenance> <urn:usf:predicate:vendorFactLocation> <urn:usf:type:EnvironmentBinding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-contract:releaseprovenance> <urn:usf:predicate:doesNotDuplicate> "compliancereportsaccessreviewsevidencepacks packages evidence; this is the identity chain the evidence is about" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:runtime> <urn:usf:predicate:type> <urn:usf:type:DeliveryRequirementKind> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:runtime> <urn:usf:predicate:canonicalName> "runtime" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:runtime> <urn:usf:predicate:objective> "Something that executes or serves." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:network> <urn:usf:predicate:type> <urn:usf:type:DeliveryRequirementKind> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:network> <urn:usf:predicate:canonicalName> "network" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:network> <urn:usf:predicate:objective> "Something that makes a runtime reachable under a name or address." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:integrity> <urn:usf:predicate:type> <urn:usf:type:DeliveryRequirementKind> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:integrity> <urn:usf:predicate:canonicalName> "integrity" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:integrity> <urn:usf:predicate:objective> "Something that constrains what a delivered response may do." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:observability> <urn:usf:predicate:type> <urn:usf:type:DeliveryRequirementKind> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:observability> <urn:usf:predicate:canonicalName> "observability" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:observability> <urn:usf:predicate:objective> "Something that makes a running instance's state knowable." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:lifecycle> <urn:usf:predicate:type> <urn:usf:type:DeliveryRequirementKind> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:lifecycle> <urn:usf:predicate:canonicalName> "lifecycle" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-requirement-kind:lifecycle> <urn:usf:predicate:objective> "Something that moves, identifies or reverses a release." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:type> <urn:usf:type:DeliveryBindingModel> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:canonicalName> "1" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:objective> "Resolve a product's delivery need to a real resource in four hops, so a vendor decision changes exactly one of them: product delivery requirement, generic contract or port, environment binding, runtime resource." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:product-delivery-requirement> <urn:usf:predicate:type> <urn:usf:type:DeliveryBindingHop> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:product-delivery-requirement> <urn:usf:predicate:canonicalName> "product-delivery-requirement" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:product-delivery-requirement> <urn:usf:predicate:rungOrder> "1" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:product-delivery-requirement> <urn:usf:predicate:objective> "Owned by the product; holds what the product needs in behavioural terms, and the evidence that says so." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:bindingEdge> <urn:usf:delivery-binding-hop:product-delivery-requirement> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:delivery-contract-or-port> <urn:usf:predicate:type> <urn:usf:type:DeliveryBindingHop> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:delivery-contract-or-port> <urn:usf:predicate:canonicalName> "delivery-contract-or-port" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:delivery-contract-or-port> <urn:usf:predicate:rungOrder> "2" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:delivery-contract-or-port> <urn:usf:predicate:objective> "Owned by the foundation; holds the generic obligation, with no vendor fact in it." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:bindingEdge> <urn:usf:delivery-binding-hop:delivery-contract-or-port> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:environment-binding> <urn:usf:predicate:type> <urn:usf:type:DeliveryBindingHop> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:environment-binding> <urn:usf:predicate:canonicalName> "environment-binding" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:environment-binding> <urn:usf:predicate:rungOrder> "3" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:environment-binding> <urn:usf:predicate:objective> "Owned by the environment; holds the vendor, the account, the resource identifiers and the configuration identity." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:bindingEdge> <urn:usf:delivery-binding-hop:environment-binding> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:runtime-resource> <urn:usf:predicate:type> <urn:usf:type:DeliveryBindingHop> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:runtime-resource> <urn:usf:predicate:canonicalName> "runtime-resource" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:runtime-resource> <urn:usf:predicate:rungOrder> "4" <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-hop:runtime-resource> <urn:usf:predicate:objective> "Owned by the provider; holds the thing that actually exists and can be observed." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:bindingEdge> <urn:usf:delivery-binding-hop:runtime-resource> <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:nonClaim> "A declared requirement is not a provisioned resource. Every hop after the first is a separate claim needing its own evidence, and a complete requirement set with no environment binding delivers nothing." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:nonClaim> "Declaring a delivery contract does not mean a product needs it. A product must state what it requires and also what it explicitly does not, because from outside, an unstated requirement and an unnecessary one look identical." <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-requirement-uncontracted> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-requirement-uncontracted> <urn:usf:predicate:canonicalName> "delivery-requirement-uncontracted" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-requirement-uncontracted> <urn:usf:predicate:refusalClass> "DELIVERY_REQUIREMENT_UNCONTRACTED" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-requirement-uncontracted> <urn:usf:predicate:objective> "A product delivery requirement resolves to no generic delivery contract or capability port." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-requirement-uncontracted> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-contract-unbound> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-contract-unbound> <urn:usf:predicate:canonicalName> "delivery-contract-unbound" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-contract-unbound> <urn:usf:predicate:refusalClass> "DELIVERY_CONTRACT_UNBOUND" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-contract-unbound> <urn:usf:predicate:objective> "An environment declares no binding for a delivery contract the product requires there." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-contract-unbound> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-binding-incomplete> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-binding-incomplete> <urn:usf:predicate:canonicalName> "delivery-binding-incomplete" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-binding-incomplete> <urn:usf:predicate:refusalClass> "DELIVERY_BINDING_INCOMPLETE" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:delivery-binding-incomplete> <urn:usf:predicate:objective> "An environment binding omits a resource identifier or configuration identity the contract needs." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:secret-requirement-unresolved> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:secret-requirement-unresolved> <urn:usf:predicate:canonicalName> "secret-requirement-unresolved" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:secret-requirement-unresolved> <urn:usf:predicate:refusalClass> "SECRET_REQUIREMENT_UNRESOLVED" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:secret-requirement-unresolved> <urn:usf:predicate:objective> "A declared secret requirement has no resolver in this environment. A secret's value is never the fix: the resolver is." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:secret-requirement-unresolved> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:secret-value-in-authority> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:secret-value-in-authority> <urn:usf:predicate:canonicalName> "secret-value-in-authority" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:secret-value-in-authority> <urn:usf:predicate:refusalClass> "SECRET_VALUE_IN_AUTHORITY" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:secret-value-in-authority> <urn:usf:predicate:objective> "A secret value appears as a semantic literal, a build artefact or repository evidence. Only requirements and identifiers may be modelled." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:secret-value-in-authority> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:vendor-fact-in-generic-contract> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:vendor-fact-in-generic-contract> <urn:usf:predicate:canonicalName> "vendor-fact-in-generic-contract" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:vendor-fact-in-generic-contract> <urn:usf:predicate:refusalClass> "VENDOR_FACT_IN_GENERIC_CONTRACT" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:vendor-fact-in-generic-contract> <urn:usf:predicate:objective> "A vendor name, region, plan or resource identifier appears in a generic delivery contract instead of at its binding." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:vendor-fact-in-generic-contract> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:runtime-identity-mismatch> <urn:usf:predicate:type> <urn:usf:type:RefusalReason> <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:runtime-identity-mismatch> <urn:usf:predicate:canonicalName> "runtime-identity-mismatch" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:runtime-identity-mismatch> <urn:usf:predicate:refusalClass> "RUNTIME_IDENTITY_MISMATCH" <urn:usf:graph:delivery-contracts> .
+<urn:usf:refusal-reason:runtime-identity-mismatch> <urn:usf:predicate:objective> "The artefact identity a runtime reports differs from the artefact identity that was authorised." <urn:usf:graph:delivery-contracts> .
+<urn:usf:delivery-binding-model:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:runtime-identity-mismatch> <urn:usf:graph:delivery-contracts> .
+<urn:usf:secret-modelling-rule:1> <urn:usf:predicate:type> <urn:usf:type:SemanticInvariant> <urn:usf:graph:delivery-contracts> .
+<urn:usf:secret-modelling-rule:1> <urn:usf:predicate:canonicalName> "secret-modelling" <urn:usf:graph:delivery-contracts> .
+<urn:usf:secret-modelling-rule:1> <urn:usf:predicate:objective> "Model that a secret is required, what resolves it, and what breaks without it. Never model its value. A secret requirement is a name, a resolver and a consequence; a secret value is a liability authority must not be able to hold." <urn:usf:graph:delivery-contracts> .
+<urn:usf:secret-modelling-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:secret-value-in-authority> <urn:usf:graph:delivery-contracts> .
+<urn:usf:secret-modelling-rule:1> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:secret-requirement-unresolved> <urn:usf:graph:delivery-contracts> .
+<urn:usf:secret-modelling-rule:1> <urn:usf:predicate:nonClaim> "This rule cannot detect a secret that was never declared. It constrains what declared authority may contain, and a scanner over the corpus is what makes it load-bearing." <urn:usf:graph:delivery-contracts> .
+<urn:usf:secret-modelling-rule:1> <urn:usf:predicate:declaredBy> <urn:usf:contract:delivery-environment:1> <urn:usf:graph:delivery-contracts> .
+<urn:usf:predicate:declaredBy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-contracts> .
+<urn:usf:predicate:refusalReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:delivery-contracts> .
