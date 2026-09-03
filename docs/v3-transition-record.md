@@ -1,7 +1,14 @@
 # V3 authority transition record
 
+Classification: USF-PROVENANCE-DOCUMENT. This record accounts for how V3
+superseded its predecessors. It describes lineage and transition, not current
+runtime architecture, and nothing in V3 reads it at build, test, validation,
+realisation or runtime. It names historical locations because the accounting is
+the evidence; the containment validation exempts it on that basis and requires
+this classification line to be present.
+
 Completed 2026-09-01. Branch `v3-authority-transition`, commits `618cb5c` and
-`5042cc0`. Not pushed.
+`5042cc0`.
 
 ## Legacy authority superseded
 
@@ -181,3 +188,77 @@ through the same mechanism returned a byte-equivalent projection.
   dispatch, `all-work-terminal`; re-run `idle-no-pending-work` with 0 cycles.
 - Fresh clone: `usf init` rc=0, catalogue refresh, integrity conforming,
   dependency derivation and a validated transaction all from tracked authority.
+
+## Historical runtime plane retired — 2026-09-03
+
+V3 was already hermetic against everything below: the containment validation
+passed before the retirement, no tracked runtime-bearing file named any of these
+paths, and the three facet verdict digests were byte-identical before and after.
+This section is transition accounting, not a dependency record. Nothing here was
+ever a V3 dependency; it was the surviving V1/V2 operational plane running
+beside V3 on the same host.
+
+### What was running
+
+| Unit | Bound to | Disposition |
+|---|---|---|
+| `actions.runner.maldous-usf.usf-linux-x64-controller-01` | GitHub `maldous/usf` (V1) | deregistered, stopped, disabled, removed |
+| `actions.runner.maldous-usf-graph.usf-factory-host-20260723` | GitHub `maldous/usf-graph` (V2) | deregistered, stopped, disabled, removed |
+| `usf-proof-cockpit.service` | `/opt/usf/staging-proof-cockpit`, `USF_DEPLOYMENT_ID=pr-242-self-hosted-preview` | stopped, disabled, removed |
+| `usf-runner-watchdog.timer` / `.service` | runner listener healing | stopped, disabled, removed |
+| `usf-graph-ownership.socket` / `@.service` | V2 graph ownership diagnostic | stopped, disabled, removed |
+| `usf-graph-runtime.socket` / `@.service` | V2 graph runtime reconciliation | stopped, disabled, removed |
+| `usf-graph-validation-mcp.socket` / `@.service` | V2 graph validation MCP | stopped, disabled, removed |
+| `usf-semantic-mcp.socket` / `@.service` | V2 semantic MCP, query-only | stopped, disabled, removed |
+| `usf-operator-broker.service` (user) | `/usr/local/lib/usf-operator/current` | stopped; unit file was already absent |
+| `usf-operator-health.timer` / `.service` (user) | V2 operator health snapshot | stopped; unit files were already absent |
+
+The two GitHub runners were deregistered through the API before removal, so no
+offline registration is left behind: both repositories now report zero
+self-hosted runners. `usf-v3` has no `.github` directory and never had a
+workflow, so no V3 CI depended on either runner.
+
+### What was removed from the filesystem
+
+| Path | Bytes | What it was |
+|---|---|---|
+| `/opt/usf` | 1 065 431 669 | V2 staging proof cockpit deployment |
+| `/opt/usf-github-runner` | 1 362 694 820 | V1 runner installation |
+| `/opt/usf-graph-github-runner` | 1 462 786 112 | V2 runner installation |
+| `/opt/stardog` | 510 074 525 | Stardog install; V2 authority topology, explicitly rejected by V3 |
+| `/usr/local/lib/usf-operator` | 15 682 172 | V2 operator release tree, the broker's `current` symlink target |
+| `/var/lib/usf-github-runner` | 3 703 535 746 | V1 runner work folder |
+| `/var/lib/usf-graph-github-runner` | 949 684 120 | V2 runner work folder |
+
+Total 9 069 889 164 bytes. Also cleared: 100 `/tmp/usf-cache-*` temporary
+extraction directories, the cockpit's systemd private tmp tree, and the loose
+V1-extraction and ANQR-query scratch files under `/tmp`.
+
+### What was deliberately left
+
+- **The historical checkouts under the operator's backup area.** They are
+  convenience copies of material whose durable location is GitHub, and V3
+  requires none of them. See the availability table in
+  `docs/historical-inventory.md`.
+- **`~/.local/share/usf-operator`** (6.2 MB, inert). It is the evidence path the
+  Gate 0 inventory names for the V2 operator, it is not a Git repository and has
+  no remote, and nothing executes from it now that the broker is stopped.
+  Removing it would destroy the only copy of an inventoried evidence path to no
+  containment benefit.
+- **`~/.local/share/usf-proof-cockpit`** (empty). Retained so the inventory's
+  "resolved as vacuous" finding stays reproducible.
+- **The `ods-*` container stack**, including `ods-hermes`. It is the operator's
+  own AI-ops infrastructure, unrelated to USF V1/V2, and V3's `usf hermes` is an
+  unrelated in-repository command that shares only the name.
+
+### Ambient environment
+
+`STARDOG_SERVER`, `STARDOG_TOKEN`, `STARDOG_PASSWORD`, `STARDOG_DATABASE`,
+`STARDOG_USERNAME` and `LINEAR_USF_KEY` are present in the session environment
+and `/opt/stardog/bin` was on `PATH`. None is set by any shell profile,
+`/etc/environment`, pam, or systemd user environment in this host; they are
+injected by the session launcher. V3 reads none of them: `STARDOG_*` appears in
+tracked content only as credential *names* in the historical denominator
+`config/provider-legacy-observations.json`, where every row is recorded as
+excluded and unqualified, and as one comment in `src/graph/integrity.ts`
+describing what V3 replaced. No V3 code path reads a `STARDOG_*` value.

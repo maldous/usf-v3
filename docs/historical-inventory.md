@@ -1,8 +1,15 @@
 # Gate 0 historical inventory
 
-Observed read-only on 2026-08-30 as ordinary user `user`. This is provenance
-orientation, not current semantic authority or a runtime dependency. Secret
-values were neither read nor copied.
+Classification: USF-PROVENANCE-DOCUMENT. This record describes lineage. It is
+not current runtime architecture, not semantic authority, and nothing in V3
+reads it at build, test, validation, realisation or runtime. It names historical
+locations because naming them is the evidence; the containment validation
+exempts it on that basis and requires this classification line to be present.
+
+Observed read-only on 2026-08-30 as ordinary user `user`. Secret values were
+neither read nor copied. Two entries recorded as unresolved on that date were
+resolved on 2026-09-03 under operator-authorized elevation; each is marked
+below and the original finding is retained rather than overwritten.
 
 ## Starting state
 
@@ -84,16 +91,26 @@ values were neither read nor copied.
 ## USF V2 Factory
 
 - Mandated evidence path: `/home/user/src/bak/v2/root/usf-factory`.
-- Availability: inaccessible. Parent `/home/user/src/bak/v2/root` is mode
-  `0700`, owned by `nobody:nogroup`; the ordinary user cannot establish whether
-  the child is a repository or inspect identity, state, licence, or source.
-- Operator clarification: this exact path contains the intended Factory files
-  and requires root because it came from a chroot environment.
-- A later operator-authorized read-only `sudo -n` attempt could not elevate:
-  this container has `no new privileges`, and its preserved `/etc/sudo.conf`
-  ownership is not accepted by `sudo`.
-- Disposition: unresolved evidence under the effective host boundary. A
-  differently located Factory-looking copy was not substituted.
+- Availability on 2026-08-30: inaccessible. Parent `/home/user/src/bak/v2/root`
+  is mode `0700`, owned by `nobody:nogroup`; the ordinary user could not
+  establish whether the child was a repository or inspect identity, state,
+  licence, or source. A read-only `sudo -n` attempt could not elevate: the
+  container had `no new privileges`, and its preserved `/etc/sudo.conf`
+  ownership was not accepted by `sudo`.
+- **Resolved 2026-09-03** under operator-authorized elevation. The path is a Git
+  repository: `maldous/usf-factory`, branch `factory/v2-bau-protected-e67aa4e`,
+  HEAD `e67aa4e77c1c0691fd2a66b0204d6b20278094a3`.
+- It contains both pinned Factory revisions declared in
+  `config/semantic-recovery-sources.json`, verified by object lookup:
+  `61ebde784d7b20be1cf890843e86fc290d454512` and
+  `6d5a7fa11ba05580b51450af9c294fe602e50846` both resolve as commits.
+- Licence: `LICENSE-NOTICE.md` is present at the repository root, which is the
+  `evidencePath` the pinned source set names. The recorded reuse boundary —
+  behavioural qualification and inventory metadata only — is unchanged.
+- Disposition: resolved. The operator clarification recorded on 2026-08-30 (that
+  this exact path holds the intended Factory files and needs root because it came
+  from a chroot environment) is confirmed. No Factory source or corpus bytes have
+  been incorporated; see `provenance/reuse.json`.
 
 ## USF V2 operator
 
@@ -118,11 +135,18 @@ values were neither read nor copied.
 ## USF V2 proof cockpit
 
 - Mandated evidence path: `/home/user/.local/share/usf-proof-cockpit`.
-- Availability: inaccessible. It is `nobody:nogroup`, mode `0700` in this
-  preserved environment; ordinary-user access failed and an operator-authorized
-  `sudo -n` read-only attempt was prevented by `no new privileges`.
-- Disposition: identity, purpose, Git state, licence, reuse candidates, and
-  coupling remain unresolved. No reuse decision is permitted from silence.
+- Availability on 2026-08-30: inaccessible. It was `nobody:nogroup`, mode `0700`
+  in this preserved environment; ordinary-user access failed and an
+  operator-authorized `sudo -n` read-only attempt was prevented by
+  `no new privileges`.
+- **Resolved 2026-09-03** under operator-authorized elevation: the directory is
+  **empty**. It is `root:root`, mode `0700`, and contains zero entries at any
+  depth.
+- Disposition: resolved as vacuous. The earlier entry was right to refuse a reuse
+  decision from silence; the finding is that there was nothing there to decide
+  about, not that a decision was made. The running V2 cockpit deployment lived at
+  `/opt/usf/staging-proof-cockpit` instead, and was retired on 2026-09-03 — see
+  `docs/v3-transition-record.md`.
 
 ## Gate 0 reuse decision
 
@@ -130,3 +154,38 @@ No historical implementation bytes are incorporated. V3 presently reuses only
 programme-authorized ideas expressed as fresh, minimal code and records no
 historical component entry in `provenance/reuse.json`. Exact source reuse stays
 blocked until its licence, scope, provenance, and removed coupling are verified.
+
+## Historical source availability — 2026-09-03
+
+The pinned historical sources are identified by revision and tree digest in
+`config/semantic-recovery-sources.json`, never by filesystem path. That is what
+makes them re-obtainable rather than depended upon: any checkout of the named
+revision satisfies the pin, and no particular copy is privileged.
+
+Each historical repository was confirmed present on GitHub under the `maldous`
+owner, and each pin was checked against it:
+
+| Source | Remote | Visibility | State | Pin status |
+|---|---|---|---|---|
+| USF V1 | `maldous/usf` | public | archived | `main` HEAD is exactly the pinned `028a9f96` |
+| USF V2 | `maldous/usf-graph` | public | archived | pinned `2d7eb31f` present |
+| V2 Factory | `maldous/usf-factory` | private | archived | both pinned revisions present |
+| ANQR 1.0 | `maldous/anqr` | private | archived | pre-V3 product history, unrelated to USF V1/V2 |
+
+All four were archived on 2026-09-03, so each is read-only at the remote: no
+push, no new issue, no workflow run. The two current repositories,
+`maldous/usf-v3` and `maldous/anqr-v3`, are deliberately not archived. Before
+archiving, the self-hosted runners registered to `maldous/usf` and
+`maldous/usf-graph` were deregistered, so neither archive carries a stale runner.
+
+The remotes are the durable location of this material. Local checkouts under the
+operator's own backup area are convenience copies: V3 requires none of them, and
+the containment validation refuses any tracked runtime-bearing file that names
+one. A third party reproducing a historical claim supplies the pinned sources
+themselves; a third party running V3 supplies nothing.
+
+This is a provenance statement, not an authority one. GitHub is carrier and
+history. Currentness and acceptance bind to content, tree, semantic, inventory
+and scoped dependency digests inside this repository, and no build, test, graph
+inspection, runtime, BAU, currentness or acceptance step contacts GitHub or
+reads a historical checkout.

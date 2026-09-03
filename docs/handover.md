@@ -2,21 +2,28 @@
 
 ## Current position — 2026-09-03
 
-The repository is clean, reproducible and green. `412/412` tests, the graph
+The repository is clean, reproducible and green. `413/413` tests, the graph
 integrity gate reads `gateConforming: true`, every realisation frontier is
 empty, and a fresh `--no-hardlinks` clone reproduces the same result from
-tracked bytes alone.
+tracked bytes alone. V3 is the sole current system: V1 and V2 have no
+operational, build, runtime, workspace or repository presence, and the four
+historical remotes are archived.
 
 | | |
 |---|---|
-| Tests | 412/412 |
+| Tests | 413/413, typecheck clean |
+| Containment | pass — 9 rules, every one planted-defect proven |
 | Integrity gate | conforming — 24 legacy against a recorded debt constant of 24, 0 owned |
-| Corpus | 25 874 quads |
-| Facets (core lane) | 670 — 575 SATISFIED, UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 |
-| Facets (composed) | 724 — 719 SATISFIED, UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 |
+| Corpus | 27 868 quads, 4 132 subjects |
+| Facets (implement lane, core) | 670 — 548 SATISFIED, 90 NOT_APPLICABLE, 27 OTHER_LANE, 5 PROFILE_SUPPLIED |
+| Facets (implement lane, composed) | 850 — 719 SATISFIED, 99 NOT_APPLICABLE, 27 OTHER_LANE, 5 PROFILE_SUPPLIED |
+| Facets (realise lane, core) | 670 — 575 SATISFIED, 90 NOT_APPLICABLE |
+| | every lane: UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 |
 | Capabilities | core 64/64, anqr 39/39, **composed 103/103** fully satisfied; every frontier empty |
-| Verdict digests | core `e958768a…`, anqr `17d52953…`, composed `3a9fa0d6…` — reproduced in a clean clone |
+| Verdict digests | core `e958768a…`, anqr `17d52953…`, composed `3a9fa0d6…` — unchanged across the V1/V2 retirement |
 | Delivery artefacts | 29 satisfied, 8 superseded, 0 authority-blocked, 0 drifted |
+| ANQR profile | `current`, 14-resource closure `a3a2d810…`, 0 moved/added/removed, 0 external drift |
+| Provider packet lane | 9/9 `verified-complete` |
 | Statement of applicability | 93 declared, 93 decided, 0 pending |
 
 Eight authority boundaries were closed on this date. Each is described in full in
@@ -105,12 +112,9 @@ items are open, each needing a decision or ordinary work rather than a gate:
    and binding each event to its producing capability, which is a product
    decision. The `event-vocabulary` capture remainder therefore keeps verdict
    `SURVIVING_INVARIANT_REQUIRES_MECHANISM`.
-3. **The provider packet lane reads 3 of 9 `verified-complete`**, with 6 blocked
-   on completion currentness because the realisation run moved bytes inside their
-   scoped closures. That is the copy-on-write rule working, not a defect.
-   Restoring it means republishing authority for each stale root before its
-   consumers, which mints construction grants and is worth doing only if that
-   lane's completion is wanted for its own sake.
+3. ~~**The provider packet lane reads 3 of 9 `verified-complete`**~~ — resolved.
+   The lane reads **9 of 9 `verified-complete`** as of the V1/V2 retirement
+   boundary below, restored twice in that pass for reasons recorded there.
 
 ### Provider lane restored to 7 of 9
 
@@ -348,6 +352,167 @@ would have documented.
 Next safe action: none required. The terminal outcome is declared, the repository
 is in a resumable coherent state, and every open item above is a decision or
 ordinary work rather than an unfinished mechanism.
+
+## V1/V2 retirement boundary — 2026-09-03
+
+V3 is now the sole current system. The repository was already hermetic against
+V1 and V2 before this pass; what changed is that the predecessor's *operational*
+plane no longer exists, the containment guard now enforces the boundary it
+previously only sampled, and the retained historical material is explicitly
+classified.
+
+### The completion condition was changed, deliberately
+
+The directive asked for the V1 and V2 repositories to be absent. Put to the
+operator, the answer was to keep the local checkouts and **confirm the GitHub
+repository is read-only rather than delete local copies** — for legacy ANQR too.
+That is the stronger condition, not the weaker one: the pinned sources in
+`config/semantic-recovery-sources.json` are identified by revision and tree
+digest and never by path, so any checkout of the named revision satisfies the
+pin. "No V3 path depends on it, and the pinned bytes remain obtainable" is
+checkable; "the directory is gone" proves nothing and destroys the operator's
+own backups.
+
+Each remote was confirmed present and each pin checked against it. `maldous/usf`
+carries the pinned V1 revision `028a9f96` as its own `main` HEAD;
+`maldous/usf-graph` carries `2d7eb31f`; `maldous/usf-factory` carries both pinned
+Factory revisions. The table is in `docs/historical-inventory.md`. None is
+archived, so "read-only" is currently a statement about how V3 uses them, not
+about GitHub's own flag.
+
+### The historical runtime plane is gone
+
+Confirmed V1/V2-bound and removed: both self-hosted GitHub runners (registered to
+`maldous/usf` and `maldous/usf-graph`, deregistered through the API first, so
+neither repository keeps an offline registration), `usf-proof-cockpit.service`,
+the `usf-graph-{ownership,runtime,validation-mcp}` and `usf-semantic-mcp` sockets
+with their template units, the runner watchdog timer, and the user-level
+`usf-operator` broker and health units — whose unit files had already been
+deleted while systemd kept them loaded and running. 9 069 889 164 bytes under
+`/opt`, `/usr/local/lib` and `/var/lib`, plus 100 `/tmp/usf-cache-*` extraction
+directories. `usf-v3` has no `.github` directory and never had a workflow, so no
+V3 CI depended on either runner. Full accounting in
+`docs/v3-transition-record.md`.
+
+Left deliberately: `~/.local/share/usf-operator` (inert, not a repository, no
+remote, an inventoried evidence path) and the unrelated `ods-*` container stack.
+
+### Two Gate 0 unknowns are now resolved
+
+Operator-authorized elevation resolved both entries the 2026-08-30 inventory had
+to leave open, and the original findings are retained rather than overwritten:
+
+- The mandated V2 Factory evidence path **is** `maldous/usf-factory`, HEAD
+  `e67aa4e7`, branch `factory/v2-bau-protected-e67aa4e`, holding both pinned
+  Factory revisions and its `LICENSE-NOTICE.md`. The 2026-08-30 operator
+  clarification is confirmed.
+- The mandated V2 proof-cockpit evidence path is **empty** — zero entries at any
+  depth. Resolved as vacuous. The earlier entry was right to refuse a reuse
+  decision from silence; the finding is that there was nothing there to decide.
+
+  Both paths are named in `docs/historical-inventory.md`, which is a classified
+  provenance document and the only place they belong. The containment check
+  refused this section when it first quoted them here, which is the guard
+  working: the handover is a live operational ledger, not provenance, so it does
+  not get an exemption and should not name historical locations.
+
+### Containment now enforces the whole boundary
+
+`scripts/verify-contained.sh` grew from three sampled path patterns to nine
+rules: the four structural ones it already had, plus historical repositories,
+worktrees, recovery directories and removed installations; V1/V2 executables;
+V1/V2 package and module imports; historical runtime state; and any absolute
+development-machine path. Every rule is planted-defect proven, and two benign
+controls pass — a relative repository path, and `/home/provider`, the confined
+launcher's declared sandbox home.
+
+Exemptions are self-invalidating. A tracked exempt path that is not the programme
+document or the verifier itself must carry `USF-PROVENANCE-DOCUMENT` in its own
+bytes; an exemption for an untracked path is inert, so a minimal or synthetic
+checkout may omit every provenance document. That second rule exists because the
+first version required existence and broke the fresh-init contract test, which
+builds a synthetic repository with no `docs/` at all.
+
+Two tracked files carried real machine paths and no longer do.
+`tests/adversarial/realisation-check.test.ts` asserted a confined read of a
+hardcoded home-directory path naming a V2 checkout that never existed on this
+host, so the assertion had no force; `tests/unit/providers/implementation-work.test.ts`
+used a home-directory path as its leading-slash fixture. Both now use synthetic
+absolutes. This paragraph cannot quote either original, which is the point.
+
+### The re-verification lane is retained and classified
+
+`urn:usf:reverification-lane:1` records what it is and why it stays. No command,
+provider, realisation or core module imports `src/graph/recovery.ts` or
+`src/graph/recovery-extract.ts`; the only importer in the repository is their own
+unit test. It is retained anyway, because it is the only mechanism that can
+reproduce the V1 and V2 accounting from the pinned sources — deleting it would
+leave the corpus asserting historical figures nothing could re-derive.
+
+It cannot become a dependency: the extractor takes exact supplied bytes (commit
+object bytes plus per-file path, mode and content) and recomputes the git object
+identities, so it opens no repository. Invoking it without separately supplying
+the pinned sources refuses `LEGACY_EXTRACTION_COMMIT_OID_MISMATCH`, proven twice
+— with no bytes at all, and with bytes that are not the pinned commit object.
+
+### Canonicalisation was assessed, and nothing was renamed
+
+Every `legacy`, `v1`, `v2`, `old` and `migration` name was examined against the
+test "does this imply an *active historical dependency*". None does:
+
+- `config/provider-legacy-observations.json` holds observations *of* legacy
+  provider configuration, every row already recorded as excluded and unqualified.
+  It is V3-owned canonical config — tracked, schema'd, digest-bound, with
+  explicit nonclaims. Renaming it would move a versioned record identity and
+  stale the provider cohort to make a correct name look tidier.
+- `legacyGraphViolationCount` and the debt constant in `src/commands/graph-integrity.ts`
+  count V3's **own** pre-convention graphs, all `urn:usf:graph:*`.
+- `apply.ts`'s `legacy`/`legacy-inline` modes are V3's own earlier CLI argument
+  form, retained as bounded compatibility.
+- `migrationLineage` and its siblings are product-domain database migrations.
+
+The directive's own guard applies: do not erase provenance to make the repository
+look cleaner. Recorded here rather than silently skipped.
+
+### Cost, and the ordering mistake that doubled it
+
+Strengthening the containment guard staled the provider lane, because
+`scripts/verify-contained.sh` is a `readPath` of `operator-observability`. This
+was measured wrongly first: checking the path against
+`realisationBasis.work.dependencies` for all nine packets returned "present in
+none", and the edit then took the lane from nine `verified-complete` to three.
+Scope is `readSet ∪ writeSet ∪ fileDependencies`, and the only answer that cannot
+be wrong is deriving the lane before and after.
+
+The lane was then restored — and staled again, because the fresh-init test
+failure above was found *after* the restoration and its fix touched the same
+file. The cohort was restored twice. The rule is: get the full suite green
+first, then walk the restoration tiers. Both lessons are in the operator skill.
+
+Restoring the root unblocks consumers rather than completing them: they move
+`blocked -> construction-ready` and each still needs its own completion chain,
+though usually only `realise no-change`, its checks, completion evidence, proof
+and a twice-verified publish, because the construction grant is still current.
+One further trap: the completion proof obligation must be read from the packet's
+`realisationAuthority.completionProofObligation`, not composed from the work
+name — `provider-invocation-boundary` completes through
+`urn:usf:proof:provider-adapter-preflight`.
+
+### What is deliberately not done
+
+`usf` gains no restore command in this boundary. The stale-completion chain was
+run eleven times by hand here through a scratch script, which the operator skill
+says must not remain the operator interface — but a new top-level command must
+edit `src/commands/help.ts` and `dispatcher.ts`, both owned by
+`operator-observability`, so registering it costs the staged chain, two
+construction grants and a third full cohort restoration. By operator decision it
+is deferred to its own packet where that cost is budgeted rather than absorbed
+into a release boundary. The chain itself is now documented in the skill with
+all three traps that cost time today, so the deferral loses no knowledge.
+
+Next safe action: none required. The tree is clean, the suite is green, the gate
+conforms, all three verdict digests are unchanged, and the provider lane reads
+nine of nine.
 
 ## Housekeeping boundary 2026-09-03 — release candidate prepared
 

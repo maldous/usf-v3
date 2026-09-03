@@ -124,7 +124,7 @@ test("module output is admitted structurally and refuses smuggled dependencies",
   assert.equal(validateImplementationOutput('import { createHash } from "crypto";\nexport const a = 1;').accepted, true);
   // An idiomatic docblock opening is not a path; an actual path-like opening is.
   assert.equal(validateImplementationOutput("/** doc */\nexport const a = 1;").accepted, true);
-  assert.equal(validateImplementationOutput("/home/user/x.ts\nexport const a = 1;").code, "leading-slash");
+  assert.equal(validateImplementationOutput("/absolute/x.ts\nexport const a = 1;").code, "leading-slash");
   assert.equal(validateImplementationOutput("   ").code, "empty-output");
   assert.equal(validateImplementationOutput("export function f(x: any) { return x; }").code, "any-type");
   // Prose mentioning the word must not cost a whole dispatch.

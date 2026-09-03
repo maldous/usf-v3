@@ -75,6 +75,42 @@ printf '%s\n' '{' ' "schema": "urn:usf:repository-locators:1",' ' "repositories"
 Product evidence executes against that checkout inside USF's confinement; the
 product repository needs no toolchain of its own.
 
+## Relationship to V1 and V2
+
+**V3 is the current system.** USF V1 (`maldous/usf`) and USF V2
+(`maldous/usf-graph`), together with the V2 Factory (`maldous/usf-factory`) and
+the pre-V3 product repository (`maldous/anqr`), are history. All four are
+archived and read-only. None is an architectural plane, a runtime dependency, a
+build input or a fallback, and no V3 path imports, invokes, reads or contacts
+any of them.
+
+What V3 keeps from them is evidence, held entirely inside this repository and
+classified as provenance rather than architecture:
+
+| Retained | Why it is kept |
+|---|---|
+| `config/semantic-recovery-sources.json` | Pins each historical source by revision and tree digest, with its licence boundary. Read by no runtime path. |
+| `docs/historical-inventory.md` | What was inspected at Gate 0, and what each evidence path turned out to be. |
+| `docs/semantic-disposition-ledger.json`, `docs/v1-v2-lessons.md` | The disposition decisions and the reasoning that produced them. |
+| `docs/v3-transition-record.md` | How V3 superseded its predecessors, and the accounting for retiring their operational plane. |
+| `src/graph/recovery.ts`, `src/graph/recovery-extract.ts` | The re-verification lane. |
+
+The re-verification lane is the one piece that looks like code and is not
+architecture. It exists so the retained V1 and V2 accounting stays *checkable*
+rather than merely asserted, and it is deliberately isolated:
+`urn:usf:reverification-lane:1` classifies it, no command or runtime module
+imports it, it is required by no build, test or realisation, and its extractor
+takes exact supplied bytes rather than opening any repository. Invoking
+historical re-verification without separately supplying the pinned sources
+refuses with `LEGACY_EXTRACTION_COMMIT_OID_MISMATCH`.
+
+`scripts/verify-contained.sh` enforces the boundary rather than asserting it. It
+refuses any tracked runtime-bearing file that names a historical repository,
+worktree, recovery directory or removed installation, a V1/V2 executable or
+module import, historical runtime state, or any absolute development-machine
+path. Five provenance documents are exempt, and each must exist and declare
+itself as one.
+
 ## Current claim
 
 The terminal outcome in `GOAL.md` § 25 is **declared reached on 2026-09-03**:

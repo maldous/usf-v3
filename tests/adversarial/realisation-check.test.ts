@@ -24,7 +24,11 @@ async function assertConfinedNetworkNamespace(): Promise<void> {
   assert.equal(routes.length, 1, "the focused child network namespace exposes no route");
   await assert.rejects(() => readFile("/etc/passwd", "utf8"), { code: "ENOENT" }, "an unmounted host path remains absent");
   const repositoryRoot = process.env.USF_REPOSITORY_ROOT!;
-  for (const path of [join(repositoryRoot, ".env"), join(repositoryRoot, ".usf/home"), "/home/user/src/usf-v2/GOAL.md"]) {
+  // The first two exist outside the cage and prove the refusal has force. The
+  // third is a synthetic absolute root standing for any historical checkout: it
+  // must be unreachable whether or not it exists, and naming a real development
+  // machine path here would itself be the dependency the containment check bans.
+  for (const path of [join(repositoryRoot, ".env"), join(repositoryRoot, ".usf/home"), "/usf-historical-source/GOAL.md"]) {
     await assert.rejects(
       () => readFile(path, "utf8"),
       (error: unknown) => error instanceof Error && "code" in error && ["ENOENT", "ERR_ACCESS_DENIED"].includes(String(error.code)),

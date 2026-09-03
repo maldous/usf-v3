@@ -1,10 +1,14 @@
 {
   "$schema": "urn:usf:reuse-provenance:1",
+  "classification": "USF-PROVENANCE-DOCUMENT",
+  "classificationNote": "This file records what was and was not reused from historical sources. It is provenance, not current runtime architecture, and nothing in V3 reads it at build, test, validation, realisation or runtime.",
   "entries": [],
   "nonclaims": [
     "Historical inspection does not authorize copying unlicensed source.",
     "No historical component source or corpus bytes have been incorporated through the provider-qualification slice.",
     "The inspected V2 Factory release carries an all-rights-reserved LICENSE-NOTICE; no V2 Factory source or corpus bytes have been incorporated.",
-    "Design inspection and documented behavioural lessons are not incorporated code or source reuse."
+    "Design inspection and documented behavioural lessons are not incorporated code or source reuse.",
+    "Confirming that a historical repository exists on GitHub is a provenance observation about where the pinned bytes remain obtainable. It does not make GitHub an authority, and no build, test, graph inspection, runtime, BAU, currentness or acceptance step contacts it.",
+    "Retiring the surviving V1/V2 operational plane on 2026-09-03 removed deployments and runners that ran beside V3; none was ever a V3 dependency, and the retirement is accounted for in docs/v3-transition-record.md rather than claimed as a reuse decision."
   ]
 }

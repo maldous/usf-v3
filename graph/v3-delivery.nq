@@ -11304,6 +11304,18 @@
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:nonClaim> "An outcome records that a named behavioural test executed against the capability module and what each facet-named subtest returned. It does not claim the test is a complete characterization of the facet statement." <urn:usf:graph:v3-delivery> .
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:type> <urn:usf:type:ImplementationConformanceRule> <urn:usf:graph:v3-delivery> .
 <urn:usf:implementation-conformance-rule:v1:1> <urn:usf:predicate:validationPath> "src/providers/implementation-conformance.ts" <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:consent> <urn:usf:predicate:canonicalName> "consent" <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:consent> <urn:usf:predicate:type> <urn:usf:type:LawfulBasis> <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:contract> <urn:usf:predicate:canonicalName> "contract" <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:contract> <urn:usf:predicate:type> <urn:usf:type:LawfulBasis> <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:legal-obligation> <urn:usf:predicate:canonicalName> "legal-obligation" <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:legal-obligation> <urn:usf:predicate:type> <urn:usf:type:LawfulBasis> <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:legitimate-interests> <urn:usf:predicate:canonicalName> "legitimate-interests" <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:legitimate-interests> <urn:usf:predicate:type> <urn:usf:type:LawfulBasis> <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:public-task> <urn:usf:predicate:canonicalName> "public-task" <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:public-task> <urn:usf:predicate:type> <urn:usf:type:LawfulBasis> <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:vital-interests> <urn:usf:predicate:canonicalName> "vital-interests" <urn:usf:graph:v3-delivery> .
+<urn:usf:lawful-basis:vital-interests> <urn:usf:predicate:type> <urn:usf:type:LawfulBasis> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-assurance-content> <urn:usf:predicate:assessedCaptureRemainder> <urn:usf:delivery-capture-remainder:assurance-content> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-assurance-content> <urn:usf:predicate:bottleneckRisk> "None. The remainder's captureStatus remains a true statement about V1's declarations and is not a work backlog." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-assurance-content> <urn:usf:predicate:classification> "SUPERSEDED_V1_CAPTURE_MECHANISM" <urn:usf:graph:v3-delivery> .
@@ -11521,8 +11533,24 @@
 <urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:v3Mechanism> "Nothing in V3 provides a package manifest for the product workspace." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:appliesToCapability> <urn:usf:delivery-capability:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:canonicalName> "v1" <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:controllerRole> "The tenant is the data controller and determines the lawful basis for processing its personal data. This platform is the processor: it records the basis the tenant asserts for a processing purpose and never determines one on the tenant's behalf." <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:declaresLawfulBasis> <urn:usf:lawful-basis:consent> <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:declaresLawfulBasis> <urn:usf:lawful-basis:contract> <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:declaresLawfulBasis> <urn:usf:lawful-basis:legal-obligation> <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:declaresLawfulBasis> <urn:usf:lawful-basis:legitimate-interests> <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:declaresLawfulBasis> <urn:usf:lawful-basis:public-task> <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:declaresLawfulBasis> <urn:usf:lawful-basis:vital-interests> <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:nonClaim> "a-recorded-basis-is-a-tenant-assertion-not-a-platform-lawfulness-conclusion" <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:nonClaim> "declaring-the-basis-vocabulary-is-not-a-claim-that-any-tenant-has-asserted-one" <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:recordingRule> "A basis is recorded per tenant and per processing purpose, as an assertion attributable to the tenant that made it, alongside the data-subject-request and classification evidence the governance capability already carries. A recorded basis is a statement about what the tenant asserted, never a platform conclusion that the processing is lawful." <urn:usf:graph:v3-delivery> .
+<urn:usf:processing-basis-model:v1:1> <urn:usf:predicate:type> <urn:usf:type:ProcessingBasisModel> <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:addressesCaptureRemainder> <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:canonicalName> "v1" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:closureMechanism> "CLOSED_BY_DECLARATION_NOT_BY_ENUMERATION" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:closureNonClaim> "a-closed-mechanism-is-not-a-claim-that-the-declared-set-is-the-products-complete-event-surface" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:closureRule> "The vocabulary is closed by construction rather than by enumeration. An event named in a facet statement must be declared here as a product event carrying a delivery guarantee, and a capability may name a producer binding. The declared set stays small and grows as events are declared; what it may not do is leave an event asserted in prose and undeclared as a resource, which is the condition that made this remainder a gap." <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:completenessRule> "This vocabulary is open, not closed. It declares only the canonical product events the delivery facets already name, so that an event the corpus asserts in prose is also stated as a resource. It is not a claim that these are the product's only events, and it does not yet constrain anything: the event substrate types an event as a free-form string, so an undeclared event is still accepted at runtime. Closing the vocabulary means deciding the product event set and binding each event to its producing capability, which is a product decision rather than a derivation." <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaredEventCount> "2" <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:report-run> <urn:usf:graph:v3-delivery> .
@@ -11563,6 +11591,8 @@
 <urn:usf:retention-finding:consent-basis> <urn:usf:predicate:historicalConcept> "usf:ConsentBasis" <urn:usf:graph:v3-delivery> .
 <urn:usf:retention-finding:consent-basis> <urn:usf:predicate:ledgerDisposition> "MERGE" <urn:usf:graph:v3-delivery> .
 <urn:usf:retention-finding:consent-basis> <urn:usf:predicate:reason> "Recorded as an open gap rather than re-dispositioned. Re-labelling it to make the retention count clean would assert coverage that does not exist, which is the failure mode the whole verification exists to catch. It is also more visible than before rather than less: the applicability decision for the privacy and personal-information control cites a consent-proof semantics document as evidence, and that document does not exist in this repository." <urn:usf:graph:v3-delivery> .
+<urn:usf:retention-finding:consent-basis> <urn:usf:predicate:resolution> "Resolved 2026-09-03 by operator decision on the controller question. The tenant is controller and determines lawful basis; the platform is processor and records the basis the tenant asserts. urn:usf:processing-basis-model:v1:1 declares the six lawful bases and the recording rule, so the concept is now represented in V3 as the platform's actual obligation rather than as an absence. The finding is retained rather than deleted: it records that the gap was real and how it closed." <urn:usf:graph:v3-delivery> .
+<urn:usf:retention-finding:consent-basis> <urn:usf:predicate:resolvedDisposition> "REPRESENTED_AS_PROCESSOR_RECORDING_OBLIGATION" <urn:usf:graph:v3-delivery> .
 <urn:usf:retention-finding:consent-basis> <urn:usf:predicate:type> <urn:usf:type:RetentionFinding> <urn:usf:graph:v3-delivery> .
 <urn:usf:retention-finding:consent-basis> <urn:usf:predicate:v3Mechanism> "None. The data-governance capability fulfils data-subject requests against durable evidence and carries classification and lineage, but it models no lawful basis for processing. Request fulfilment and lawful basis are different obligations, and the declared merge target carries resource digests rather than consent semantics." <urn:usf:graph:v3-delivery> .
 <urn:usf:retention-finding:consent-basis> <urn:usf:predicate:verifiedDisposition> "OPEN_GAP" <urn:usf:graph:v3-delivery> .
@@ -11723,6 +11753,8 @@
 <urn:usf:type:ApplicabilityDecision> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:DeliveryLayerComparison> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:FrameworkControl> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
+<urn:usf:type:LawfulBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
+<urn:usf:type:ProcessingBasisModel> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:ProductEvent> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:ProductEventVocabulary> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:RetentionFinding> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
