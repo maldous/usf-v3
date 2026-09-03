@@ -31,6 +31,8 @@ const fallbackAuthorizedPathPrefixes: readonly string[] = Object.freeze([
   "graph/", "schemas/", "config/", "docs/",
 ]);
 
+const graphFixtureDirectoryName = "fixtures";
+
 export type OperationKind = "append-quads" | "write-file" | "derive-economics-projection";
 
 interface ProposedOperation {
@@ -239,7 +241,25 @@ export async function transactCommand(repositoryRoot: string, args: readonly str
 
   // Graph postimages must parse and the resulting corpus must satisfy integrity.
   const graphDirectory = resolve(canonicalRoot, "graph");
-  const graphFiles = (await readdir(graphDirectory).catch(() => [] as string[])).filter((name) => name.endsWith(".nq")).sort();
+  // Recursive, so a product-overlay postimage is parsed and the resulting
+  // corpus that integrity sees is the whole corpus. A non-recursive read
+  // validated 14 of 21 sources and would have let a transaction write an
+  // overlay path without ever checking the bytes it produced. Fixtures are
+  // synthetic test input and are excluded here for the same reason the gate
+  // excludes them.
+  const graphFiles = (await (async function walk(dir: string, prefix: string): Promise<readonly string[]> {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+    const found: string[] = [];
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (entry.name === graphFixtureDirectoryName) continue;
+        found.push(...await walk(resolve(dir, entry.name), `${prefix}${entry.name}/`));
+      } else if (entry.name.endsWith(".nq")) {
+        found.push(`${prefix}${entry.name}`);
+      }
+    }
+    return found;
+  })(graphDirectory, "")).slice().sort();
   const resultingQuads: Quad[] = [];
   for (const name of graphFiles) {
     const path = `graph/${name}`;

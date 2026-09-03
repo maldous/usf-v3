@@ -62,6 +62,27 @@
 <urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:objective> "Deterministically admit completion for one exact work only after a registered integration-transition verifier binds the original construction RealisationBasis, exact candidate and lineage, integrated tree postimage, independently rederived postimage RealisationBasis and exact postimage validation results." <urn:usf:graph:foundation> .
 <urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:ProofAlgorithm> <urn:usf:graph:foundation> .
 <urn:usf:proof-algorithm:semantic-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:canonicalName> "realisation-lane-census" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:coveredManifest> "graph/manifests/self-host-provider-v3.json" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:coveredProfile> <urn:usf:profile:v3-self-host:3> <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:derivation> "Reproduce by deriving usf status --profile P --manifest M --detail full for the cross product of every declared RealisationProfile and every graph manifest, and reading publicationPolicyCoverage. The census is a projection of committed authority and stores no verdict of its own." <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:finding> "Of 34 resolving manifest-by-profile lanes across 12 manifests and 9 profiles, exactly one has full publication-policy coverage: graph/manifests/self-host-provider-v3.json bound to urn:usf:profile:v3-self-host:3, which reads nine of nine verified-complete. 184 of 208 work slots across the remaining lanes are uncovered. Four works carry no publication policy anywhere in the corpus and are therefore uncompletable under every profile that selects them." <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:laneCount> "34" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:manifestCount> "12" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:nonClaim> "a-census-is-a-point-in-time-derivation-and-changes-no-authority" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:nonClaim> "an-uncovered-lane-is-not-a-superseded-lane-each-needs-its-own-recorded-disposition" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:nonClaim> "policy-coverage-is-not-completion-the-covered-lane-still-had-to-earn-its-nine-completions" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:observedAt> "2026-09-03" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:policyCoveredLaneCount> "1" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:profileCount> "9" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:rule> "Policy admission is a precondition for construction authority and for completion: zero covering policies refuse CONSTRUCTION_WORK_NOT_ELIGIBLE and WORK_COMPLETION_NOT_ELIGIBLE. A lane whose works carry no covering policy therefore cannot complete under any amount of work, and its packets reading blocked or construction-ready is a structural fact rather than a backlog." <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:type> <urn:usf:type:RealisationLaneCensus> <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:uncoveredWork> <urn:usf:work:foreground-lifecycle> <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:uncoveredWork> <urn:usf:work:realisation-basis-chain> <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:uncoveredWork> <urn:usf:work:semantic-first-eligibility> <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:uncoveredWork> <urn:usf:work:semantic-first-lifecycle-admission> <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:workSlotCount> "208" <urn:usf:graph:foundation> .
+<urn:usf:realisation-lane-census:1> <urn:usf:predicate:workSlotsAtRisk> "184" <urn:usf:graph:foundation> .
 <urn:usf:schema:admitted-integration-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:foundation> .
 <urn:usf:schema:admitted-integration-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:foundation> .
 <urn:usf:stage:activated-contract> <urn:usf:predicate:order> "5" <urn:usf:graph:foundation> .
