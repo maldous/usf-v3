@@ -37,6 +37,16 @@ its own commit message, which is where that detail now lives:
   facets name in prose are stated as resources.
 - `136985b` the 45 undecided controls decided against declared ISMS scope facts,
   plus two real defects fixed in the realisation path.
+- `1c2766e` the GOAL § 25 terminal outcome declared reached, criterion by
+  criterion, with two readings of GOAL's own wording put to the operator and
+  recorded rather than absorbed.
+- `e2dc18a` hermes dispatch concurrency derived from declared authority. The
+  graph declared a default of 4 and the supervisor hardcoded 6, contradicting
+  its own corpus with nothing detecting it. The default is now **5** — the
+  highest concurrency with a live measurement above the repository's own 0.60
+  efficiency floor (measured utilisation 0.664, speedup 3.318 at peak 5) — with
+  that basis recorded on the constraint, and an explicit value above the
+  declared ceiling refuses rather than clamps.
 
 Three lessons from those boundaries that change how the next one should be run:
 
@@ -51,6 +61,13 @@ Three lessons from those boundaries that change how the next one should be run:
 - **Presence is not satisfaction for a derived artefact.** Fixed here, but the
   general form applies: anything projected from authority must be re-derived and
   compared, or it drifts silently from the thing it projects.
+- **Authority declared but not read is the recurring defect of this corpus.**
+  It appeared three times in one session: the functional-predicate set, derived
+  artefact drift, and a dispatch concurrency the graph declared and the
+  supervisor overrode. The corpus is emphatic that verdicts are derived and
+  never stored; the same discipline has to reach every constant a runtime
+  carries. When a value exists in both the graph and the code, assume they
+  disagree until measured.
 
 ### The terminal outcome is declared reached
 
