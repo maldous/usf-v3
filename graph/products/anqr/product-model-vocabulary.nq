@@ -1,0 +1,193 @@
+<urn:anqr:product-model-vocabulary:1> <urn:usf:predicate:canonicalName> "anqr-product-model-vocabulary" <urn:anqr:graph:product-model-vocabulary> .
+<urn:anqr:product-model-vocabulary:1> <urn:usf:predicate:nonClaim> "No experience vocabulary is declared here. Experience travels through the existing uisemantics facet kind, of which the released product lane already satisfies seventeen; inventing a parallel experience layer would be exactly the duplication the ownership rule forbids." <urn:anqr:graph:product-model-vocabulary> .
+<urn:anqr:product-model-vocabulary:1> <urn:usf:predicate:nonClaim> "ProductLifecycleStage is a deployment activity, not a second Semantic Build lifecycle. Each of its four values carries a semanticStage edge to the Foundation stage it belongs to, so build and deploy are realisation, and validate and operate are validation." <urn:anqr:graph:product-model-vocabulary> .
+<urn:anqr:product-model-vocabulary:1> <urn:usf:predicate:objective> "Vocabulary for ANQR's own product model. It declares only what the corpus does not already carry, and instantiates rather than duplicates the Foundation's Semantic Build lifecycle, environments and facet machinery." <urn:anqr:graph:product-model-vocabulary> .
+<urn:anqr:product-model-vocabulary:1> <urn:usf:predicate:type> <urn:usf:type:ProductModelDeclaration> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:animation> <urn:usf:predicate:dispositionMeaning> "Temporal behaviour and animated output." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:animation> <urn:usf:predicate:type> <urn:usf:type:ArtefactParameterFamily> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:artwork> <urn:usf:predicate:dispositionMeaning> "Image overlay, dithering, halftone and artistic treatment." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:artwork> <urn:usf:predicate:type> <urn:usf:type:ArtefactParameterFamily> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:colour> <urn:usf:predicate:dispositionMeaning> "Foreground, background, gradient and palette." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:colour> <urn:usf:predicate:type> <urn:usf:type:ArtefactParameterFamily> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:encoding> <urn:usf:predicate:dispositionMeaning> "How the payload becomes codewords: mode, version, error correction, mask." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:encoding> <urn:usf:predicate:type> <urn:usf:type:ArtefactParameterFamily> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:output> <urn:usf:predicate:dispositionMeaning> "The produced artefact file: format, dimensions, margin, frame, watermark." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:output> <urn:usf:predicate:type> <urn:usf:type:ArtefactParameterFamily> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:presentation> <urn:usf:predicate:dispositionMeaning> "How modules and their eyes are drawn." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:presentation> <urn:usf:predicate:type> <urn:usf:type:ArtefactParameterFamily> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:safety> <urn:usf:predicate:dispositionMeaning> "Whether the produced artefact remains scannable and honest." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:safety> <urn:usf:predicate:type> <urn:usf:type:ArtefactParameterFamily> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:structure> <urn:usf:predicate:dispositionMeaning> "Structural treatment of the module grid while preserving decodability." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:artefact-parameter-family:structure> <urn:usf:predicate:type> <urn:usf:type:ArtefactParameterFamily> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:available-in-foundation> <urn:usf:predicate:dispositionMeaning> "The Foundation declares and realises it. This alone implies nothing further." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:available-in-foundation> <urn:usf:predicate:type> <urn:usf:type:CapabilityOperationalState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:bound-to-runtime> <urn:usf:predicate:dispositionMeaning> "A runtime provider is bound for it." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:bound-to-runtime> <urn:usf:predicate:type> <urn:usf:type:CapabilityOperationalState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:exposed-by-product> <urn:usf:predicate:dispositionMeaning> "Some actor can reach it through the product." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:exposed-by-product> <urn:usf:predicate:type> <urn:usf:type:CapabilityOperationalState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:operational> <urn:usf:predicate:dispositionMeaning> "It actually runs in some environment." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:operational> <urn:usf:predicate:type> <urn:usf:type:CapabilityOperationalState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:selected-by-profile> <urn:usf:predicate:dispositionMeaning> "A product profile selects it." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:selected-by-profile> <urn:usf:predicate:type> <urn:usf:type:CapabilityOperationalState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:verified> <urn:usf:predicate:dispositionMeaning> "Executed evidence shows it behaving as declared." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:capability-operational-state:verified> <urn:usf:predicate:type> <urn:usf:type:CapabilityOperationalState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:administrator-exposed> <urn:usf:predicate:dispositionMeaning> "Reached by a product administrator for a defined administrative purpose." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:administrator-exposed> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:api-only> <urn:usf:predicate:dispositionMeaning> "Reachable programmatically through a delivery surface, with no rendered interface." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:api-only> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:automation-only> <urn:usf:predicate:dispositionMeaning> "Consumed by validation, build or release automation with no human surface." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:automation-only> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:direct-user-exposed> <urn:usf:predicate:dispositionMeaning> "An ordinary product user reaches this capability directly through a journey." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:direct-user-exposed> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:internal> <urn:usf:predicate:dispositionMeaning> "Consumed inside the implementation; no actor reaches it and none should know it exists." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:internal> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:not-selected-by-anqr> <urn:usf:predicate:dispositionMeaning> "The product does not select this Foundation capability at all, with a stated reason." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:not-selected-by-anqr> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:operator-exposed> <urn:usf:predicate:dispositionMeaning> "Reached by whoever operates the product's infrastructure, not by its users." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:operator-exposed> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:product-mediated> <urn:usf:predicate:dispositionMeaning> "Reached only through product language and journeys, never as itself." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:product-mediated> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:constrains> <urn:usf:predicate:dispositionMeaning> "The antecedent narrows the consequent's admissible domain." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:constrains> <urn:usf:predicate:type> <urn:usf:type:JoinRuleKind> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:consumes-budget> <urn:usf:predicate:dispositionMeaning> "The antecedent spends error-correction budget the consequent also draws on." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:consumes-budget> <urn:usf:predicate:type> <urn:usf:type:JoinRuleKind> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:defaults-with> <urn:usf:predicate:dispositionMeaning> "The antecedent changes the consequent's default without forbidding an override." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:defaults-with> <urn:usf:predicate:type> <urn:usf:type:JoinRuleKind> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:excludes> <urn:usf:predicate:dispositionMeaning> "The antecedent makes the consequent inadmissible." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:excludes> <urn:usf:predicate:type> <urn:usf:type:JoinRuleKind> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:requires> <urn:usf:predicate:dispositionMeaning> "The antecedent makes the consequent mandatory." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:join-rule-kind:requires> <urn:usf:predicate:type> <urn:usf:type:JoinRuleKind> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:admissibleValue> <urn:usf:predicate:objective> "One admissible value of an enumerated domain." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:admissibleValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:claimsLocale> <urn:usf:predicate:objective> "One locale the model claims." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:claimsLocale> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:classifiesCapability> <urn:usf:predicate:objective> "The capability a classification record is about." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:classifiesCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:domainKind> <urn:usf:predicate:objective> "Whether a domain is an enumeration, an integer range, a colour, a string or a list." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:domainKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:exposureDisposition> <urn:usf:predicate:objective> "The exposure disposition a classification assigns." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:exposureDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:exposureReason> <urn:usf:predicate:objective> "Why that disposition was assigned." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:exposureReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:hostingDetermined> <urn:usf:predicate:objective> "Whether the hosting and deployment target for this environment is decided." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:hostingDetermined> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinAntecedent> <urn:usf:predicate:objective> "The parameter that triggers a join rule." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinAntecedent> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinAntecedentValue> <urn:usf:predicate:objective> "The antecedent value that triggers the rule when it is value-conditional." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinAntecedentValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinConsequent> <urn:usf:predicate:objective> "The parameter the rule constrains." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinConsequent> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinRuleKind> <urn:usf:predicate:objective> "The kind of relationship a join rule asserts." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinRuleKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinRuleReason> <urn:usf:predicate:objective> "Why the rule exists, in product terms." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:joinRuleReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:legacyParameterName> <urn:usf:predicate:objective> "The name this parameter carried in the pre-semantic product, retained for migration only." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:legacyParameterName> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:lifecycleStage> <urn:usf:predicate:objective> "The deployment lifecycle stage a requirement applies at." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:lifecycleStage> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:localeCode> <urn:usf:predicate:objective> "The BCP-47-shaped code of a locale." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:localeCode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:maximumValue> <urn:usf:predicate:objective> "Inclusive upper bound of a numeric domain." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:maximumValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:minimumValue> <urn:usf:predicate:objective> "Inclusive lower bound of a numeric domain." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:minimumValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:operationalState> <urn:usf:predicate:objective> "A separately observed operational state, never implied by availability." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:operationalState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parameterDomain> <urn:usf:predicate:objective> "The admissible value space of a parameter." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parameterDomain> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parameterFamily> <urn:usf:predicate:objective> "The family a parameter belongs to." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parameterFamily> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parityAcrossSurface> <urn:usf:predicate:objective> "One surface a parity obligation binds." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parityAcrossSurface> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parityObligationScope> <urn:usf:predicate:objective> "What a parity or visibility statement covers." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parityObligationScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:paritySubject> <urn:usf:predicate:objective> "The behaviour a parity obligation covers." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:paritySubject> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parityValidation> <urn:usf:predicate:objective> "How a parity obligation is mechanically decided." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:parityValidation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:permutationAssignment> <urn:usf:predicate:objective> "One name=value assignment of a permutation." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:permutationAssignment> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:permutationNarrative> <urn:usf:predicate:objective> "What the permutation demonstrates in product language." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:permutationNarrative> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:permutationParameter> <urn:usf:predicate:objective> "One parameter set by a permutation." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:permutationParameter> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:realisationRequirement> <urn:usf:predicate:objective> "What must hold, stated so it can be decided." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:realisationRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:referenceLocale> <urn:usf:predicate:objective> "The locale whose key set defines parity." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:referenceLocale> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:requiredInEnvironment> <urn:usf:predicate:objective> "The Foundation environment a requirement applies in." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:requiredInEnvironment> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:requirementValidation> <urn:usf:predicate:objective> "The command or check that decides the requirement." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:requirementValidation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:sharesPrimitiveLayer> <urn:usf:predicate:objective> "The primitive implementation layer a surface must consume rather than reimplement." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:sharesPrimitiveLayer> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:surfaceRealisationState> <urn:usf:predicate:objective> "Whether a surface is realised, planned, deferred or reserved." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:surfaceRealisationState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:surfaceRuntime> <urn:usf:predicate:objective> "The runtime a surface executes in." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:surfaceRuntime> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:writingDirection> <urn:usf:predicate:objective> "The locale's text direction." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:predicate:writingDirection> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:build> <urn:usf:predicate:dispositionMeaning> "Producing the artefacts the environment will run." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:build> <urn:usf:predicate:semanticStage> <urn:usf:stage:realisation> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:build> <urn:usf:predicate:type> <urn:usf:type:ProductLifecycleStage> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:deploy> <urn:usf:predicate:dispositionMeaning> "Placing them in the environment." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:deploy> <urn:usf:predicate:semanticStage> <urn:usf:stage:realisation> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:deploy> <urn:usf:predicate:type> <urn:usf:type:ProductLifecycleStage> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:operate> <urn:usf:predicate:dispositionMeaning> "Running and observing them there." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:operate> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:operate> <urn:usf:predicate:type> <urn:usf:type:ProductLifecycleStage> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:validate> <urn:usf:predicate:dispositionMeaning> "Deciding whether those artefacts satisfy their obligations." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:validate> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:product-lifecycle-stage:validate> <urn:usf:predicate:type> <urn:usf:type:ProductLifecycleStage> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:surface-realisation-state:deferred> <urn:usf:predicate:dispositionMeaning> "Intended but sequenced behind other work." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:surface-realisation-state:deferred> <urn:usf:predicate:type> <urn:usf:type:SurfaceRealisationState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:surface-realisation-state:planned> <urn:usf:predicate:dispositionMeaning> "Selected and specified, not yet built." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:surface-realisation-state:planned> <urn:usf:predicate:type> <urn:usf:type:SurfaceRealisationState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:surface-realisation-state:realised> <urn:usf:predicate:dispositionMeaning> "The surface exists and is exercised by executed evidence." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:surface-realisation-state:realised> <urn:usf:predicate:type> <urn:usf:type:SurfaceRealisationState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:surface-realisation-state:reserved> <urn:usf:predicate:dispositionMeaning> "Identity reserved so nothing else claims it; no commitment made." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:surface-realisation-state:reserved> <urn:usf:predicate:type> <urn:usf:type:SurfaceRealisationState> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactParameter> <urn:usf:predicate:objective> "One named parameter of artefact production, bound to its family and the capability it serves." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactParameter> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactParameterDomain> <urn:usf:predicate:objective> "The admissible value space of one parameter." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactParameterDomain> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactParameterFamily> <urn:usf:predicate:objective> "A group of artefact parameters governing one concern." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactParameterFamily> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactParameterJoinRule> <urn:usf:predicate:objective> "A conditional-joining rule between parameters." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactParameterJoinRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactPermutation> <urn:usf:predicate:objective> "One named joined configuration of parameters, serving as a worked example and a validation vector." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ArtefactPermutation> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:CapabilityOperationalState> <urn:usf:predicate:objective> "A separately observed selection, binding, operation, exposure or verification state." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:CapabilityOperationalState> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:DeliverySurface> <urn:usf:predicate:objective> "One realisation surface through which the product is delivered." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:DeliverySurface> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:EnvironmentRealisationRequirement> <urn:usf:predicate:objective> "What the product must satisfy in one environment at one lifecycle stage, and how that is decided." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:EnvironmentRealisationRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ExposureDisposition> <urn:usf:predicate:objective> "How, if at all, a capability is reachable by some actor of the product." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ExposureDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:FoundationExposureClassification> <urn:usf:predicate:objective> "One Foundation capability's explicit exposure disposition within a product, with its reason." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:FoundationExposureClassification> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:JoinRuleKind> <urn:usf:predicate:objective> "The kind of relationship a join rule asserts." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:JoinRuleKind> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:LocaleParityObligation> <urn:usf:predicate:objective> "An obligation that every claimed locale carries the reference locale's key set." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:LocaleParityObligation> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:LocalisationModel> <urn:usf:predicate:objective> "The product's complete language denominator with its parity and direction obligations." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:LocalisationModel> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ProductCapabilityExposure> <urn:usf:predicate:objective> "One product capability's explicit journey-visibility disposition." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ProductCapabilityExposure> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ProductLifecycleStage> <urn:usf:predicate:objective> "A deployment activity the product passes through in an environment, each bound to the Semantic Build stage it belongs to." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ProductLifecycleStage> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ProductModelDeclaration> <urn:usf:predicate:objective> "The root of one product-model source, carrying its objective and its nonclaims." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:ProductModelDeclaration> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:SupportedLocale> <urn:usf:predicate:objective> "One locale the product claims to support." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:SupportedLocale> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:SurfaceParityObligation> <urn:usf:predicate:objective> "An obligation that a named behaviour is identical across a set of surfaces." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:SurfaceParityObligation> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:SurfaceRealisationState> <urn:usf:predicate:objective> "Whether a surface is realised, planned, deferred or reserved." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:SurfaceRealisationState> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:WritingDirection> <urn:usf:predicate:objective> "Text direction of a locale." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:type:WritingDirection> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:writing-direction:ltr> <urn:usf:predicate:dispositionMeaning> "Left to right." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:writing-direction:ltr> <urn:usf:predicate:type> <urn:usf:type:WritingDirection> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:writing-direction:rtl> <urn:usf:predicate:dispositionMeaning> "Right to left." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:writing-direction:rtl> <urn:usf:predicate:type> <urn:usf:type:WritingDirection> <urn:anqr:graph:product-model-vocabulary> .

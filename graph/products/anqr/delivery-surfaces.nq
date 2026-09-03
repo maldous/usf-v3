@@ -1,0 +1,85 @@
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:canonicalName> "anqr-delivery-surface-model" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:nonClaim> "Hosting and deployment targets are deliberately undetermined at this revision. A surface's realisation state says whether the surface exists, never where it runs." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:nonClaim> "One surface is realised. Parity obligations are declared across all five so that adding a surface cannot quietly diverge, but a parity obligation over a single realised surface is trivially satisfied and proves nothing yet." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:objective> "Every surface through which ANQR is or will be delivered, and the obligation that each is a thin adapter over one shared primitive layer rather than a separate implementation of the product." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:android> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:http-api> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:ios> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:mcp> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:web> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface-model:1> <urn:usf:predicate:type> <urn:usf:type:ProductModelDeclaration> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:android> <urn:usf:predicate:canonicalName> "android" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:android> <urn:usf:predicate:componentLocation> "apps/android/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:android> <urn:usf:predicate:objective> "An Android shell over the same primitives." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:android> <urn:usf:predicate:sharesPrimitiveLayer> "packages/artefact/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:android> <urn:usf:predicate:surfaceRealisationState> <urn:usf:surface-realisation-state:deferred> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:android> <urn:usf:predicate:surfaceRuntime> "mobile" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:android> <urn:usf:predicate:type> <urn:usf:type:DeliverySurface> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:http-api> <urn:usf:predicate:canonicalName> "http-api" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:http-api> <urn:usf:predicate:componentLocation> "apps/api/src/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:http-api> <urn:usf:predicate:objective> "The public HTTP surface over the same primitives." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:http-api> <urn:usf:predicate:sharesPrimitiveLayer> "packages/artefact/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:http-api> <urn:usf:predicate:surfaceRealisationState> <urn:usf:surface-realisation-state:planned> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:http-api> <urn:usf:predicate:surfaceRuntime> "server" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:http-api> <urn:usf:predicate:type> <urn:usf:type:DeliverySurface> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:ios> <urn:usf:predicate:canonicalName> "ios" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:ios> <urn:usf:predicate:componentLocation> "apps/ios/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:ios> <urn:usf:predicate:objective> "An iOS shell over the same primitives." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:ios> <urn:usf:predicate:sharesPrimitiveLayer> "packages/artefact/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:ios> <urn:usf:predicate:surfaceRealisationState> <urn:usf:surface-realisation-state:deferred> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:ios> <urn:usf:predicate:surfaceRuntime> "mobile" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:ios> <urn:usf:predicate:type> <urn:usf:type:DeliverySurface> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:mcp> <urn:usf:predicate:canonicalName> "mcp" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:mcp> <urn:usf:predicate:componentLocation> "apps/mcp/src/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:mcp> <urn:usf:predicate:objective> "The Model Context Protocol surface, so an agent produces artefacts identical to the browser's." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:mcp> <urn:usf:predicate:sharesPrimitiveLayer> "packages/artefact/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:mcp> <urn:usf:predicate:surfaceRealisationState> <urn:usf:surface-realisation-state:planned> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:mcp> <urn:usf:predicate:surfaceRuntime> "server" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:mcp> <urn:usf:predicate:type> <urn:usf:type:DeliverySurface> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:web> <urn:usf:predicate:canonicalName> "web" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:web> <urn:usf:predicate:componentLocation> "apps/web/src/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:web> <urn:usf:predicate:objective> "The rendered browser experience, and the first surface realised." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:web> <urn:usf:predicate:sharesPrimitiveLayer> "packages/artefact/" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:web> <urn:usf:predicate:surfaceRealisationState> <urn:usf:surface-realisation-state:realised> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:web> <urn:usf:predicate:surfaceRuntime> "browser" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:delivery-surface:web> <urn:usf:predicate:type> <urn:usf:type:DeliverySurface> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:canonicalName> "artefact-identity" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:android> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:http-api> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:ios> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:mcp> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:web> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:paritySubject> "The same artefact specification produces a byte-identical artefact on every realised surface." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:parityValidation> "Compare produced artefact digests for a shared specification set across surfaces." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:servesCapability> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:artefact-identity> <urn:usf:predicate:type> <urn:usf:type:SurfaceParityObligation> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:canonicalName> "parameter-vocabulary" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:android> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:http-api> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:ios> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:mcp> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:web> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:paritySubject> "Every surface accepts the same canonical parameter names, domains and join rules." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:parityValidation> "Derive each surface's accepted parameter set from source and compare it to the declared model." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:servesCapability> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:parameter-vocabulary> <urn:usf:predicate:type> <urn:usf:type:SurfaceParityObligation> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:canonicalName> "refusal-behaviour" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:android> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:http-api> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:ios> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:mcp> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:web> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:paritySubject> "An inadmissible combination is refused with the same reason code on every surface." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:parityValidation> "Exercise the declared inadmissible permutations against each surface and compare reason codes." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:servesCapability> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:refusal-behaviour> <urn:usf:predicate:type> <urn:usf:type:SurfaceParityObligation> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:canonicalName> "scan-safety-verdict" <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:android> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:http-api> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:ios> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:mcp> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:parityAcrossSurface> <urn:anqr:delivery-surface:web> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:paritySubject> "A given artefact receives the same scan-safety verdict on every surface." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:parityValidation> "Compare verdicts for a shared specification set." <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:servesCapability> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:delivery-surfaces> .
+<urn:anqr:surface-parity-obligation:scan-safety-verdict> <urn:usf:predicate:type> <urn:usf:type:SurfaceParityObligation> <urn:anqr:graph:delivery-surfaces> .

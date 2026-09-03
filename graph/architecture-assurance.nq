@@ -1,0 +1,212 @@
+<urn:usf:architecture-assurance-invariant:architecture-evolves-semantics-first> <urn:usf:predicate:canonicalName> "architecture-evolves-semantics-first" <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:architecture-evolves-semantics-first> <urn:usf:predicate:invariant> "Architecture changes by changing the model first, then the required verifications, then enforcement, then implementation, and finally by new evidence and proof." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:architecture-evolves-semantics-first> <urn:usf:predicate:nonClaim> "An implementation change that violates a declared rule is a violation, never a redefinition of the intended architecture." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:architecture-evolves-semantics-first> <urn:usf:predicate:type> <urn:usf:type:IntegrityInvariant> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:evidence-must-be-attributable> <urn:usf:predicate:canonicalName> "evidence-must-be-attributable" <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:evidence-must-be-attributable> <urn:usf:predicate:invariant> "A passing tool invocation is proof only when its evidence carries the requirement identity, the source revision, the verification mechanism, the tool and version, the effective configuration digest, the invocation, the result and its own evidence digest." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:evidence-must-be-attributable> <urn:usf:predicate:nonClaim> "The existence of a configuration file is not proof that continuous integration executed it, and a green tool run with no link to a requirement proves nothing about that requirement." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:evidence-must-be-attributable> <urn:usf:predicate:type> <urn:usf:type:IntegrityInvariant> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:mandatory-failure-blocks-realisation> <urn:usf:predicate:canonicalName> "mandatory-failure-blocks-realisation" <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:mandatory-failure-blocks-realisation> <urn:usf:predicate:invariant> "A build is not realised merely because it compiles and its tests pass. If a requirement the model marks mandatory fails its verification, that requirement is unsatisfied and realisation fails." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:mandatory-failure-blocks-realisation> <urn:usf:predicate:nonClaim> "A mandatory requirement may not carry advisory severity. Recording a violation as informational to obtain a green build is a defect in the assurance model, not a dispensation." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:mandatory-failure-blocks-realisation> <urn:usf:predicate:type> <urn:usf:type:IntegrityInvariant> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:requirement-must-project-to-work> <urn:usf:predicate:canonicalName> "requirement-must-project-to-work" <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:requirement-must-project-to-work> <urn:usf:predicate:invariant> "A mandatory requirement is complete only when an unbroken attributable path exists from the model assertion through a recognised obligation, a contract, derived work, a realised artifact, a validation, evidence and proof, to a conformance state." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:requirement-must-project-to-work> <urn:usf:predicate:nonClaim> "A requirement that generates no work while unsatisfied is a projection defect, and a validation result that cannot be traced to the requirement it verifies is an assurance defect. Existing in the graph is not completion." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:requirement-must-project-to-work> <urn:usf:predicate:type> <urn:usf:type:IntegrityInvariant> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:tools-are-not-requirements> <urn:usf:predicate:canonicalName> "tools-are-not-requirements" <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:tools-are-not-requirements> <urn:usf:predicate:invariant> "A requirement states the property that must hold, independently of whichever mechanism proves it. A named tool enters the model only where use of that exact tool is itself normative." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:tools-are-not-requirements> <urn:usf:predicate:nonClaim> "Today's tooling choice must never define tomorrow's semantic model." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:tools-are-not-requirements> <urn:usf:predicate:type> <urn:usf:type:IntegrityInvariant> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:verification-must-be-verified> <urn:usf:predicate:canonicalName> "verification-must-be-verified" <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:verification-must-be-verified> <urn:usf:predicate:invariant> "For every boundary the model marks mandatory, a planted representative violation must be shown to fail its verification, and then be removed." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:verification-must-be-verified> <urn:usf:predicate:nonClaim> "Without this, permanently green output is indistinguishable from a verification that observes nothing." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance-invariant:verification-must-be-verified> <urn:usf:predicate:type> <urn:usf:type:IntegrityInvariant> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:canonicalName> "architecture-assurance" <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:invariantProtected> <urn:usf:architecture-assurance-invariant:architecture-evolves-semantics-first> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:invariantProtected> <urn:usf:architecture-assurance-invariant:evidence-must-be-attributable> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:invariantProtected> <urn:usf:architecture-assurance-invariant:mandatory-failure-blocks-realisation> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:invariantProtected> <urn:usf:architecture-assurance-invariant:requirement-must-project-to-work> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:invariantProtected> <urn:usf:architecture-assurance-invariant:tools-are-not-requirements> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:invariantProtected> <urn:usf:architecture-assurance-invariant:verification-must-be-verified> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:nonClaim> "Only two assurance axes are new: severity and verification class. Everything else an architectural fitness function needs is already carried by DeliveryFacet, which states the invariant, its applicability, its admissible evidence class and its requirement class." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:nonClaim> "Reuse is deliberate and load-bearing. Requirement, SemanticContract, DeliveryContract, DeliveryFacet, Evidence, EvidenceRequirement, ProofObligation, ProofAlgorithm, ProofResult, RealisationPermission, ValidationEvidenceModel, IntegrityInvariant, WorkPacket, invariant, declaresPort, fulfilsPort, servedByAdapter, verificationMethod, dependsOn and the eight Environment resources already exist and are not restated." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:nonClaim> "This extension adds no lifecycle. MODEL, EVIDENCE, PROOF, CONTRACT, REALISATION and VALIDATION are the existing urn:usf:stage resources, and architecture is a dimension travelling through them rather than a parallel layer." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:objective> "Generic vocabulary for stating an architecture as verifiable semantics and for carrying architecture, build and assurance requirements through the Semantic Build lifecycle USF already owns. Product-neutral, and naming no tool." <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:evidence> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:proof> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:realisation> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:remodel-currentness> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:semantic-model> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:architecture-assurance> .
+<urn:usf:architecture-assurance:1> <urn:usf:predicate:type> <urn:usf:type:SemanticFoundationExtension> <urn:usf:graph:architecture-assurance> .
+<urn:usf:dependency-rule-kind:forbids> <urn:usf:predicate:dispositionMeaning> "The edge is a violation wherever it appears." <urn:usf:graph:architecture-assurance> .
+<urn:usf:dependency-rule-kind:forbids> <urn:usf:predicate:type> <urn:usf:type:DependencyRuleKind> <urn:usf:graph:architecture-assurance> .
+<urn:usf:dependency-rule-kind:permits> <urn:usf:predicate:dispositionMeaning> "The edge is allowed." <urn:usf:graph:architecture-assurance> .
+<urn:usf:dependency-rule-kind:permits> <urn:usf:predicate:type> <urn:usf:type:DependencyRuleKind> <urn:usf:graph:architecture-assurance> .
+<urn:usf:dependency-rule-kind:requires> <urn:usf:predicate:dispositionMeaning> "The edge must exist; its absence is a violation." <urn:usf:graph:architecture-assurance> .
+<urn:usf:dependency-rule-kind:requires> <urn:usf:predicate:type> <urn:usf:type:DependencyRuleKind> <urn:usf:graph:architecture-assurance> .
+<urn:usf:facet-kind:architecture> <urn:usf:predicate:objective> "Structural correctness of the realised implementation: dependency direction, boundaries, ports and adapters, cycles, resolution and declaration integrity." <urn:usf:graph:architecture-assurance> .
+<urn:usf:facet-kind:architecture> <urn:usf:predicate:type> <urn:usf:type:FacetKind> <urn:usf:graph:architecture-assurance> .
+<urn:usf:port-direction:inbound> <urn:usf:predicate:dispositionMeaning> "The component is driven through this port from outside it." <urn:usf:graph:architecture-assurance> .
+<urn:usf:port-direction:inbound> <urn:usf:predicate:type> <urn:usf:type:PortDirection> <urn:usf:graph:architecture-assurance> .
+<urn:usf:port-direction:outbound> <urn:usf:predicate:dispositionMeaning> "The component drives something outside itself through this port." <urn:usf:graph:architecture-assurance> .
+<urn:usf:port-direction:outbound> <urn:usf:predicate:type> <urn:usf:type:PortDirection> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:adapterImplementsPort> <urn:usf:predicate:objective> "A port this adapter implements." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:adapterImplementsPort> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:adversarialTarget> <urn:usf:predicate:objective> "The requirement whose verification an adversarial check tests." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:adversarialTarget> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:architecturalStyle> <urn:usf:predicate:objective> "The architectural style a product declares." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:architecturalStyle> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:boundaryForbids> <urn:usf:predicate:objective> "What may not cross the boundary." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:boundaryForbids> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:boundaryScope> <urn:usf:predicate:objective> "The package, module or namespace a boundary rule applies to." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:boundaryScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:componentLocation> <urn:usf:predicate:objective> "The repository-relative location that constitutes the component." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:componentLocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:cyclePolicyScope> <urn:usf:predicate:objective> "The scope a cycle policy covers." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:cyclePolicyScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:cyclesPermitted> <urn:usf:predicate:objective> "Whether cycles are permitted in that scope." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:cyclesPermitted> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:dependencyFrom> <urn:usf:predicate:objective> "The depending layer or component." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:dependencyFrom> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:dependencyRuleKind> <urn:usf:predicate:objective> "Whether the rule permits, forbids or requires the dependency." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:dependencyRuleKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:dependencyRuleReason> <urn:usf:predicate:objective> "Why the architecture takes this position." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:dependencyRuleReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:dependencyTo> <urn:usf:predicate:objective> "The depended-upon layer or component." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:dependencyTo> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:developmentDependencyRule> <urn:usf:predicate:objective> "What the scope may depend on for development only." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:developmentDependencyRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:driftCheckFor> <urn:usf:predicate:objective> "The enforcement binding whose configuration a drift check guards." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:driftCheckFor> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:driftCheckMethod> <urn:usf:predicate:objective> "How equivalence between semantics and configuration is decided." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:driftCheckMethod> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcementConfiguration> <urn:usf:predicate:objective> "The configuration path or digest the invocation used." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcementConfiguration> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcementGenerated> <urn:usf:predicate:objective> "Whether the configuration is generated from the semantics or hand-maintained." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcementGenerated> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcementInvocation> <urn:usf:predicate:objective> "The exact invocation." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcementInvocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcementTool> <urn:usf:predicate:objective> "The tool performing the enforcement." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcementTool> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcesRequirement> <urn:usf:predicate:objective> "The semantic requirement an enforcement binding proves." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:enforcesRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:expectedDetection> <urn:usf:predicate:objective> "The failure the planted violation must produce." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:expectedDetection> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:expectedResult> <urn:usf:predicate:objective> "The result that counts as satisfaction." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:expectedResult> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:frameworkIsolatedLayer> <urn:usf:predicate:objective> "A layer that must contain no framework import." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:frameworkIsolatedLayer> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:generatedCodeConsumerRule> <urn:usf:predicate:objective> "What may depend on generated code." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:generatedCodeConsumerRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:generatedCodeLocation> <urn:usf:predicate:objective> "Where generated code lives." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:generatedCodeLocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:hasComponent> <urn:usf:predicate:objective> "A component of this architecture." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:hasComponent> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:hasLayer> <urn:usf:predicate:objective> "A layer of this architecture." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:hasLayer> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:inLayer> <urn:usf:predicate:objective> "The single layer a component belongs to." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:inLayer> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:isolatedFromTechnology> <urn:usf:predicate:objective> "A technology that must not appear in the isolated layers." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:isolatedFromTechnology> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:layerOrdinal> <urn:usf:predicate:objective> "The layer's position from the centre outward, lower being more central." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:layerOrdinal> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:plantedViolation> <urn:usf:predicate:objective> "The representative violation planted." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:plantedViolation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:portContractLocation> <urn:usf:predicate:objective> "Where the port's interface must be declared." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:portContractLocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:portDirection> <urn:usf:predicate:objective> "Whether the port is inbound or outbound." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:portDirection> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:requirementScope> <urn:usf:predicate:objective> "The code or artefact scope the requirement is evaluated over." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:requirementScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:requirementSeverity> <urn:usf:predicate:objective> "Whether failing this requirement blocks realisation." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:requirementSeverity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:runtimeDependencyRule> <urn:usf:predicate:objective> "What the scope may depend on at runtime." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:runtimeDependencyRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:semanticStage> <urn:usf:predicate:objective> "A Semantic Build lifecycle stage this resource participates in." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:semanticStage> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:styleRule> <urn:usf:predicate:objective> "One rule that constitutes the style, stated so it can be verified." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:styleRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:testClass> <urn:usf:predicate:objective> "The class of test a boundary rule governs." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:testClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:testMayImport> <urn:usf:predicate:objective> "What that test class may import." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:testMayImport> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:testMayNotImport> <urn:usf:predicate:objective> "What that test class may not import." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:testMayNotImport> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:verificationClass> <urn:usf:predicate:objective> "The class of deterministic proof that decides this requirement." <urn:usf:graph:architecture-assurance> .
+<urn:usf:predicate:verificationClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-assurance> .
+<urn:usf:requirement-severity:advisory> <urn:usf:predicate:dispositionMeaning> "Failure is recorded and does not block. A requirement the model calls mandatory may never carry this." <urn:usf:graph:architecture-assurance> .
+<urn:usf:requirement-severity:advisory> <urn:usf:predicate:type> <urn:usf:type:RequirementSeverity> <urn:usf:graph:architecture-assurance> .
+<urn:usf:requirement-severity:blocking> <urn:usf:predicate:dispositionMeaning> "Failure means the requirement is unsatisfied and realisation fails." <urn:usf:graph:architecture-assurance> .
+<urn:usf:requirement-severity:blocking> <urn:usf:predicate:type> <urn:usf:type:RequirementSeverity> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:AdversarialVerification> <urn:usf:predicate:objective> "A planted representative violation proving a verification actually observes what it claims." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:AdversarialVerification> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalAdapter> <urn:usf:predicate:objective> "An implementation of one or more outbound ports, living outside the layers it serves." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalAdapter> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalComponent> <urn:usf:predicate:objective> "One owned unit of code assigned to exactly one layer, at a declared location." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalComponent> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalLayer> <urn:usf:predicate:objective> "One layer of an architecture, ordered from the centre outward." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalLayer> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalPort> <urn:usf:predicate:objective> "An interface a component declares: inbound to be driven, outbound to drive something else." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalPort> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalStyle> <urn:usf:predicate:objective> "A named intended topology, stated as its rules rather than only as its name." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ArchitecturalStyle> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:CircularDependencyPolicy> <urn:usf:predicate:objective> "The policy on dependency cycles at a stated scope." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:CircularDependencyPolicy> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:DependencyDirectionRule> <urn:usf:predicate:objective> "A permitted, forbidden or required dependency between layers or components." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:DependencyDirectionRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:DependencyRuleKind> <urn:usf:predicate:objective> "Whether a dependency rule permits, forbids or requires the edge." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:DependencyRuleKind> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:DependencyScopeRule> <urn:usf:predicate:objective> "A constraint separating runtime dependencies from development-only ones." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:DependencyScopeRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:EnforcementBinding> <urn:usf:predicate:objective> "The link from a semantic requirement through a named tool invocation to machine-readable evidence." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:EnforcementBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:EnforcementDriftCheck> <urn:usf:predicate:objective> "A deterministic check that hand-maintained enforcement configuration still matches the authoritative semantics." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:EnforcementDriftCheck> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:FrameworkIsolationRule> <urn:usf:predicate:objective> "A requirement that named layers contain no framework or host-technology import." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:FrameworkIsolationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:GeneratedCodeBoundary> <urn:usf:predicate:objective> "Where generated code may live and what may depend on it." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:GeneratedCodeBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ModuleBoundaryRule> <urn:usf:predicate:objective> "A constraint on what may cross a package, module or namespace boundary." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:ModuleBoundaryRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:PortDirection> <urn:usf:predicate:objective> "Whether a port is inbound or outbound relative to its declaring component." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:PortDirection> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:RequirementSeverity> <urn:usf:predicate:objective> "Whether failing a requirement blocks realisation or only informs." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:RequirementSeverity> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:SemanticFoundationExtension> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:TestBoundaryRule> <urn:usf:predicate:objective> "What a class of test may import, so a test cannot quietly redefine the architecture." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:TestBoundaryRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:VerificationClass> <urn:usf:predicate:objective> "The class of deterministic proof a requirement's verification performs." <urn:usf:graph:architecture-assurance> .
+<urn:usf:type:VerificationClass> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:accessibility-conformance> <urn:usf:predicate:dispositionMeaning> "Decides that an interface satisfies its declared accessibility obligations." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:accessibility-conformance> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:build-correctness> <urn:usf:predicate:dispositionMeaning> "Decides that the declared build produces its artefacts." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:build-correctness> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:circular-dependency> <urn:usf:predicate:dispositionMeaning> "Decides absence of dependency cycles." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:circular-dependency> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:component-behaviour> <urn:usf:predicate:dispositionMeaning> "Decides rendered component or system behaviour." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:component-behaviour> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:contract-compatibility> <urn:usf:predicate:dispositionMeaning> "Decides that a published contract has not broken compatibility." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:contract-compatibility> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:dependency-boundary> <urn:usf:predicate:dispositionMeaning> "Decides whether dependency direction and boundary rules hold." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:dependency-boundary> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:dependency-declaration-integrity> <urn:usf:predicate:dispositionMeaning> "Decides that declared, installed and imported dependencies agree." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:dependency-declaration-integrity> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:import-resolution> <urn:usf:predicate:dispositionMeaning> "Decides that every import resolves and no module is unreachable." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:import-resolution> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:integration-behaviour> <urn:usf:predicate:dispositionMeaning> "Decides behaviour across a real boundary." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:integration-behaviour> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:interface-conformance> <urn:usf:predicate:dispositionMeaning> "Decides that declared ports have conforming implementations." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:interface-conformance> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:reproducible-build> <urn:usf:predicate:dispositionMeaning> "Decides that repeating a build reproduces the same artefact identity." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:reproducible-build> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:security-static-analysis> <urn:usf:predicate:dispositionMeaning> "Decides absence of the security defects the scope declares in scope." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:security-static-analysis> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:static-analysis> <urn:usf:predicate:dispositionMeaning> "Decides lint and static-analysis correctness." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:static-analysis> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:static-type> <urn:usf:predicate:dispositionMeaning> "Decides static type correctness." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:static-type> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:unit-behaviour> <urn:usf:predicate:dispositionMeaning> "Decides unit-level behaviour." <urn:usf:graph:architecture-assurance> .
+<urn:usf:verification-class:unit-behaviour> <urn:usf:predicate:type> <urn:usf:type:VerificationClass> <urn:usf:graph:architecture-assurance> .

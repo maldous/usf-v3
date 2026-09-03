@@ -1,0 +1,97 @@
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:canonicalName> "anqr-environment-realisation-model" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:nonClaim> "Hosting and deployment targets are undetermined. Requirements in staging and the two production environments state what must hold once a target exists; none of them is claimed to be operational, and each records that its hosting is undecided." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:nonClaim> "Reusing the Foundation's environments is deliberate. localdev is development; ci, integrationtest and the two hermetic environments are test; staging and productionshaped are staging; productionlive is production." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:objective> "What ANQR must satisfy in each Foundation environment at each lifecycle stage, and how each requirement is decided. Development, test, staging and production are expressed through the eight environments the Foundation already declares rather than a parallel set." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:bootstrap-carrier-no-network> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:ci> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:hermetic> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:integrationtest> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:localdev> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:productionshaped> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:staging> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-model:1> <urn:usf:predicate:type> <urn:usf:type:ProductModelDeclaration> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:bootstrap-carrier-no-network-validate> <urn:usf:predicate:canonicalName> "bootstrap-carrier-no-network-validate" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:bootstrap-carrier-no-network-validate> <urn:usf:predicate:hostingDetermined> "true" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:bootstrap-carrier-no-network-validate> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:validate> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:bootstrap-carrier-no-network-validate> <urn:usf:predicate:realisationRequirement> "The artefact primitives, including the codec, run with no network and no third-party runtime dependency." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:bootstrap-carrier-no-network-validate> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:bootstrap-carrier-no-network> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:bootstrap-carrier-no-network-validate> <urn:usf:predicate:requirementValidation> "The domain unit and round-trip validation commands." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:bootstrap-carrier-no-network-validate> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-build> <urn:usf:predicate:canonicalName> "ci-build" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-build> <urn:usf:predicate:hostingDetermined> "true" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-build> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:build> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-build> <urn:usf:predicate:realisationRequirement> "Every declared delivery surface builds from a clean checkout with a locked dependency set." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-build> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:ci> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-build> <urn:usf:predicate:requirementValidation> "The declared build command per surface." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-build> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-validate> <urn:usf:predicate:canonicalName> "ci-validate" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-validate> <urn:usf:predicate:hostingDetermined> "true" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-validate> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:validate> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-validate> <urn:usf:predicate:realisationRequirement> "Every blocking fitness function executes and its evidence is retained with requirement attribution." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-validate> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:ci> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-validate> <urn:usf:predicate:requirementValidation> "The declared validation command over the whole fitness set." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:ci-validate> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:hermetic-validate> <urn:usf:predicate:canonicalName> "hermetic-validate" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:hermetic-validate> <urn:usf:predicate:hostingDetermined> "true" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:hermetic-validate> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:validate> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:hermetic-validate> <urn:usf:predicate:realisationRequirement> "The whole product derives, builds and validates with no network and no material copied from a development tree." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:hermetic-validate> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:hermetic> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:hermetic-validate> <urn:usf:predicate:requirementValidation> "A clean clone with an empty ignored state." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:hermetic-validate> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:integrationtest-validate> <urn:usf:predicate:canonicalName> "integrationtest-validate" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:integrationtest-validate> <urn:usf:predicate:hostingDetermined> "true" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:integrationtest-validate> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:validate> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:integrationtest-validate> <urn:usf:predicate:realisationRequirement> "Artefact production is exercised through real adapters, and a produced artefact is decoded rather than assumed." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:integrationtest-validate> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:integrationtest> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:integrationtest-validate> <urn:usf:predicate:requirementValidation> "The integration validation command." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:integrationtest-validate> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-build> <urn:usf:predicate:canonicalName> "localdev-build" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-build> <urn:usf:predicate:hostingDetermined> "true" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-build> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:build> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-build> <urn:usf:predicate:realisationRequirement> "The web surface builds and serves from a clean clone with only declared dependencies, with no network access beyond the package registry." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-build> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:localdev> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-build> <urn:usf:predicate:requirementValidation> "The declared development build command." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-build> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-validate> <urn:usf:predicate:canonicalName> "localdev-validate" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-validate> <urn:usf:predicate:hostingDetermined> "true" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-validate> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:validate> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-validate> <urn:usf:predicate:realisationRequirement> "Unit and architectural fitness functions run locally and fail the same way they fail in continuous integration." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-validate> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:localdev> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-validate> <urn:usf:predicate:requirementValidation> "The declared validation command." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:localdev-validate> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-deploy> <urn:usf:predicate:canonicalName> "productionlive-deploy" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-deploy> <urn:usf:predicate:hostingDetermined> "false" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-deploy> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:deploy> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-deploy> <urn:usf:predicate:realisationRequirement> "The web surface is deployed to its canonical domain with TLS and localised discoverability intact." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-deploy> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-deploy> <urn:usf:predicate:requirementValidation> "The declared production deployment command." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-deploy> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-operate> <urn:usf:predicate:canonicalName> "productionlive-operate" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-operate> <urn:usf:predicate:hostingDetermined> "false" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-operate> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:operate> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-operate> <urn:usf:predicate:realisationRequirement> "Operator observability, alerting and rate limiting are active, and no payload is retained or logged." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-operate> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-operate> <urn:usf:predicate:requirementValidation> "The operator readiness projection." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionlive-operate> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionshaped-validate> <urn:usf:predicate:canonicalName> "productionshaped-validate" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionshaped-validate> <urn:usf:predicate:hostingDetermined> "false" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionshaped-validate> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:validate> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionshaped-validate> <urn:usf:predicate:realisationRequirement> "Performance budget and deterministic-artefact checks run against production-shaped configuration." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionshaped-validate> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:productionshaped> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionshaped-validate> <urn:usf:predicate:requirementValidation> "The performance and determinism validation commands." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:productionshaped-validate> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-deploy> <urn:usf:predicate:canonicalName> "staging-deploy" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-deploy> <urn:usf:predicate:hostingDetermined> "false" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-deploy> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:deploy> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-deploy> <urn:usf:predicate:realisationRequirement> "The web surface is deployed at a stable address with production-shaped configuration and no production data." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-deploy> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:staging> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-deploy> <urn:usf:predicate:requirementValidation> "The declared deployment command." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-deploy> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-validate> <urn:usf:predicate:canonicalName> "staging-validate" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-validate> <urn:usf:predicate:hostingDetermined> "false" <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-validate> <urn:usf:predicate:lifecycleStage> <urn:usf:product-lifecycle-stage:validate> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-validate> <urn:usf:predicate:realisationRequirement> "Browser and accessibility conformance run against the deployed surface rather than a local build." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-validate> <urn:usf:predicate:requiredInEnvironment> <urn:usf:environment:staging> <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-validate> <urn:usf:predicate:requirementValidation> "The browser conformance command against the staging address." <urn:anqr:graph:environment-realisation> .
+<urn:anqr:environment-realisation-requirement:staging-validate> <urn:usf:predicate:type> <urn:usf:type:EnvironmentRealisationRequirement> <urn:anqr:graph:environment-realisation> .

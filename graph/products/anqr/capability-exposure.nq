@@ -1,0 +1,313 @@
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:canonicalName> "anqr-capability-exposure-classification" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:accessibleinteraction> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:animatedartefact> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:artefactexport> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:brandoverlay> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:localenegotiation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:localetypography> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:mobileapplication> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:outputrendering> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:payloadclassification> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:performancebudget> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:policyboundarycontrol> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:qrartwork> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:qrdecoding> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:selfhostedoperation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:structuralinspection> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:nonClaim> "Absence of a rendered interface is a recorded decision in every case. A capability with no screen is either journey-supporting, an API surface, internal, or deferred with a reason; none is absent by accident." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:nonClaim> "The released product lane counts 39; 44 are declared. The 5 outside it are the deferred and reserved ones, named individually here rather than dropped from the denominator." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:objective> "An explicit journey-visibility disposition for every one of the 44 ANQR capabilities declared at profile revision 2." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure-classification:1> <urn:usf:predicate:type> <urn:usf:type:ProductModelDeclaration> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:accessibleinteraction> <urn:usf:predicate:canonicalName> "accessibleinteraction" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:accessibleinteraction> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:accessibleinteraction> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:accessibleinteraction> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:accessibleinteraction> <urn:usf:predicate:exposureReason> "Every journey is operable by keyboard and announced correctly; it is a property of all surfaces rather than a screen of its own." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:accessibleinteraction> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:accessibleinteraction> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:animatedartefact> <urn:usf:predicate:canonicalName> "animatedartefact" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:animatedartefact> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:animatedartefact> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:animatedartefact> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:animatedartefact> <urn:usf:predicate:exposureReason> "A user chooses animation and sees it in the preview before export." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:animatedartefact> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:animatedartefact> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:anonymousgeneration> <urn:usf:predicate:canonicalName> "anonymousgeneration" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:anonymousgeneration> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:anonymousgeneration> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:anonymousgeneration> <urn:usf:predicate:exposureReason> "The absence of a sign-in is the feature. It is visible as the fact that no journey ever asks who you are." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:anonymousgeneration> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:anonymousgeneration> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:artefactexport> <urn:usf:predicate:canonicalName> "artefactexport" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:artefactexport> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:artefactexport> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:artefactexport> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:artefactexport> <urn:usf:predicate:exposureReason> "The user takes the artefact away in a chosen format." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:artefactexport> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:artefactexport> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:canonicalName> "authenticatedserviceconsumption" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:exposureReason> "Deferred at profile revision 2. Nothing in the current experience depends on it." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:bidirectionaltextsupport> <urn:usf:predicate:canonicalName> "bidirectionaltextsupport" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:bidirectionaltextsupport> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:bidirectionaltextsupport> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:bidirectionaltextsupport> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:bidirectionaltextsupport> <urn:usf:predicate:exposureReason> "The seven right-to-left locales mirror the whole interface, not only its text." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:bidirectionaltextsupport> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:bidirectionaltextsupport> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:brandoverlay> <urn:usf:predicate:canonicalName> "brandoverlay" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:brandoverlay> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:brandoverlay> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:brandoverlay> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:brandoverlay> <urn:usf:predicate:exposureReason> "A user places a logo or label over the artefact and is told when it threatens scannability." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:brandoverlay> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:brandoverlay> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:capabilitygallery> <urn:usf:predicate:canonicalName> "capabilitygallery" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:capabilitygallery> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:capabilitygallery> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:capabilitygallery> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:capabilitygallery> <urn:usf:predicate:exposureReason> "The gallery demonstrates the product's full permutation range and is the entry point for starting from an example." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:capabilitygallery> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:capabilitygallery> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:communitytranslationcontribution> <urn:usf:predicate:canonicalName> "communitytranslationcontribution" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:communitytranslationcontribution> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:communitytranslationcontribution> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:communitytranslationcontribution> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:communitytranslationcontribution> <urn:usf:predicate:exposureReason> "A speaker of a claimed locale can improve it, which is how eighty-six languages stay current." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:communitytranslationcontribution> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:communitytranslationcontribution> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:custompayloaddefinition> <urn:usf:predicate:canonicalName> "custompayloaddefinition" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:custompayloaddefinition> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:custompayloaddefinition> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:custompayloaddefinition> <urn:usf:predicate:exposureReason> "A user defines a payload shape the product does not already model." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:custompayloaddefinition> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:custompayloaddefinition> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:deterministicoutput> <urn:usf:predicate:canonicalName> "deterministicoutput" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:deterministicoutput> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:deterministicoutput> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:product-mediated> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:deterministicoutput> <urn:usf:predicate:exposureReason> "The user never asks for determinism; they rely on the same inputs producing the same artefact, and every surface depends on it for parity." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:deterministicoutput> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:deterministicoutput> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:encodingcontrolsurface> <urn:usf:predicate:canonicalName> "encodingcontrolsurface" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:encodingcontrolsurface> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:encodingcontrolsurface> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:encodingcontrolsurface> <urn:usf:predicate:exposureReason> "Version, error-correction level and mask are offered as product choices with their consequences stated." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:encodingcontrolsurface> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:encodingcontrolsurface> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:guidedonboarding> <urn:usf:predicate:canonicalName> "guidedonboarding" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:guidedonboarding> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:guidedonboarding> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:guidedonboarding> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:guidedonboarding> <urn:usf:predicate:exposureReason> "A first-time user reaches a usable artefact without instruction." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:guidedonboarding> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:guidedonboarding> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:httpapidelivery> <urn:usf:predicate:canonicalName> "httpapidelivery" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:httpapidelivery> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:httpapidelivery> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:httpapidelivery> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:api-only> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:httpapidelivery> <urn:usf:predicate:exposureReason> "A programmatic caller reaches the same primitives with no rendered interface." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:httpapidelivery> <urn:usf:predicate:parityObligationScope> "api-or-automation-surface" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:httpapidelivery> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:interfacelocalisation> <urn:usf:predicate:canonicalName> "interfacelocalisation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:interfacelocalisation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:interfacelocalisation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:interfacelocalisation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:interfacelocalisation> <urn:usf:predicate:exposureReason> "The interface appears in the user's language across every journey." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:interfacelocalisation> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:interfacelocalisation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localenegotiation> <urn:usf:predicate:canonicalName> "localenegotiation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localenegotiation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:localenegotiation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localenegotiation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:product-mediated> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localenegotiation> <urn:usf:predicate:exposureReason> "The product resolves a language from the request; the user only notices when it is wrong." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localenegotiation> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localenegotiation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localetypography> <urn:usf:predicate:canonicalName> "localetypography" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localetypography> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:localetypography> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localetypography> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localetypography> <urn:usf:predicate:exposureReason> "Scripts receive fonts and metrics that render them correctly rather than approximately." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localetypography> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localetypography> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localisedstaticcontent> <urn:usf:predicate:canonicalName> "localisedstaticcontent" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localisedstaticcontent> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:localisedstaticcontent> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localisedstaticcontent> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localisedstaticcontent> <urn:usf:predicate:exposureReason> "Guide, examples and legal pages exist in the active locale." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localisedstaticcontent> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:localisedstaticcontent> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mcpdelivery> <urn:usf:predicate:canonicalName> "mcpdelivery" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mcpdelivery> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:mcpdelivery> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mcpdelivery> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:api-only> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mcpdelivery> <urn:usf:predicate:exposureReason> "An agent reaches the same primitives, which is why the primitive layer is shared rather than per-surface." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mcpdelivery> <urn:usf:predicate:parityObligationScope> "api-or-automation-surface" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mcpdelivery> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:canonicalName> "mobileapplication" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:mobileapplication> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:exposureReason> "Deferred at profile revision 2. The architecture reserves Android and iOS delivery surfaces so the centre stays reusable." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:multilingualdiscoverability> <urn:usf:predicate:canonicalName> "multilingualdiscoverability" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:multilingualdiscoverability> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:multilingualdiscoverability> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:multilingualdiscoverability> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:product-mediated> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:multilingualdiscoverability> <urn:usf:predicate:exposureReason> "Each localised page is discoverable in its own language through canonical and alternate references the user never sees." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:multilingualdiscoverability> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:multilingualdiscoverability> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:outputrendering> <urn:usf:predicate:canonicalName> "outputrendering" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:outputrendering> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:outputrendering> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:outputrendering> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:outputrendering> <urn:usf:predicate:exposureReason> "The rendered preview and the exported file are the same rendering." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:outputrendering> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:outputrendering> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadclassification> <urn:usf:predicate:canonicalName> "payloadclassification" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadclassification> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:payloadclassification> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadclassification> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadclassification> <urn:usf:predicate:exposureReason> "The inspection journey tells a user what a payload says." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadclassification> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadclassification> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadconfidentiality> <urn:usf:predicate:canonicalName> "payloadconfidentiality" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadconfidentiality> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:payloadconfidentiality> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadconfidentiality> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:product-mediated> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadconfidentiality> <urn:usf:predicate:exposureReason> "A payload is never persisted, logged or transmitted beyond what production requires; the user's assurance is that nothing leaves." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadconfidentiality> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:payloadconfidentiality> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:paymentpayloadrepresentation> <urn:usf:predicate:canonicalName> "paymentpayloadrepresentation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:paymentpayloadrepresentation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:paymentpayloadrepresentation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:paymentpayloadrepresentation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:paymentpayloadrepresentation> <urn:usf:predicate:exposureReason> "Payment payload syntax is represented and labelled. Experimental, and explicitly not a claim that any transaction is valid or safe." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:paymentpayloadrepresentation> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:paymentpayloadrepresentation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:performancebudget> <urn:usf:predicate:canonicalName> "performancebudget" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:performancebudget> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:performancebudget> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:performancebudget> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:product-mediated> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:performancebudget> <urn:usf:predicate:exposureReason> "Interaction stays within a declared budget, proven in validation rather than by watching users." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:performancebudget> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:performancebudget> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:canonicalName> "platformparity" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:exposureReason> "Reserved at profile revision 2. The surface-parity fitness function is where it becomes mechanical once a second surface is realised." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:policyboundarycontrol> <urn:usf:predicate:canonicalName> "policyboundarycontrol" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:policyboundarycontrol> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:policyboundarycontrol> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:policyboundarycontrol> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:administrator-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:policyboundarycontrol> <urn:usf:predicate:exposureReason> "Reserved. It would let an operator bound what payloads and remote assets are admissible." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:policyboundarycontrol> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:policyboundarycontrol> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:productidentitypayload> <urn:usf:predicate:canonicalName> "productidentitypayload" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:productidentitypayload> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:productidentitypayload> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:productidentitypayload> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:productidentitypayload> <urn:usf:predicate:exposureReason> "Product identity payload shapes are offered as a payload kind." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:productidentitypayload> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:productidentitypayload> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:programmaticgeneration> <urn:usf:predicate:canonicalName> "programmaticgeneration" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:programmaticgeneration> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:programmaticgeneration> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:programmaticgeneration> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:api-only> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:programmaticgeneration> <urn:usf:predicate:exposureReason> "Generation without a rendered interface, shared with HTTP and MCP delivery." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:programmaticgeneration> <urn:usf:predicate:parityObligationScope> "api-or-automation-surface" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:programmaticgeneration> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartefactcreation> <urn:usf:predicate:canonicalName> "qrartefactcreation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartefactcreation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartefactcreation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartefactcreation> <urn:usf:predicate:exposureReason> "The central outcome: a real QR artefact that decodes to the requested payload." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartefactcreation> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartefactcreation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartwork> <urn:usf:predicate:canonicalName> "qrartwork" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartwork> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:qrartwork> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartwork> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartwork> <urn:usf:predicate:exposureReason> "The artistic treatments, including deliberately induced module errors within the correction budget." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartwork> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrartwork> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrdecoding> <urn:usf:predicate:canonicalName> "qrdecoding" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrdecoding> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:qrdecoding> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrdecoding> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrdecoding> <urn:usf:predicate:exposureReason> "Decoding is both an inspection outcome and the mechanism that makes every scan-safety claim honest." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrdecoding> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:qrdecoding> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:remoteassetsafety> <urn:usf:predicate:canonicalName> "remoteassetsafety" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:remoteassetsafety> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:remoteassetsafety> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:remoteassetsafety> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:product-mediated> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:remoteassetsafety> <urn:usf:predicate:exposureReason> "A supplied remote image is bounded and checked before it is drawn." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:remoteassetsafety> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:remoteassetsafety> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:responsivewebdelivery> <urn:usf:predicate:canonicalName> "responsivewebdelivery" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:responsivewebdelivery> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:responsivewebdelivery> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:responsivewebdelivery> <urn:usf:predicate:exposureReason> "Every journey works from a narrow phone to a wide desktop, preserving state across the change." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:responsivewebdelivery> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:responsivewebdelivery> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:roundtripcorrectness> <urn:usf:predicate:canonicalName> "roundtripcorrectness" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:roundtripcorrectness> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:roundtripcorrectness> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:product-mediated> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:roundtripcorrectness> <urn:usf:predicate:exposureReason> "Every produced artefact is proven to decode to its requested payload. The user sees it as a scan-safety verdict." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:roundtripcorrectness> <urn:usf:predicate:parityObligationScope> "journey-supporting" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:roundtripcorrectness> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafeoutput> <urn:usf:predicate:canonicalName> "scansafeoutput" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafeoutput> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafeoutput> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafeoutput> <urn:usf:predicate:exposureReason> "The product refuses to present an artefact it knows will not scan." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafeoutput> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafeoutput> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafetyvalidation> <urn:usf:predicate:canonicalName> "scansafetyvalidation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafetyvalidation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafetyvalidation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafetyvalidation> <urn:usf:predicate:exposureReason> "The explicit verdict, with a reason, on whether this artefact will scan." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafetyvalidation> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:scansafetyvalidation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:canonicalName> "selfhostedoperation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:selfhostedoperation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:exposureReason> "Deferred at profile revision 2; hosting is undetermined." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:shareablerepresentation> <urn:usf:predicate:canonicalName> "shareablerepresentation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:shareablerepresentation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:shareablerepresentation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:shareablerepresentation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:shareablerepresentation> <urn:usf:predicate:exposureReason> "A configuration becomes a link that reproduces it exactly, which depends on deterministic output." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:shareablerepresentation> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:shareablerepresentation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuralinspection> <urn:usf:predicate:canonicalName> "structuralinspection" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuralinspection> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:structuralinspection> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuralinspection> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuralinspection> <urn:usf:predicate:exposureReason> "How an artefact is built: version, level, mask, module count and damage margin." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuralinspection> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuralinspection> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuredpayloadrepresentation> <urn:usf:predicate:canonicalName> "structuredpayloadrepresentation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuredpayloadrepresentation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:structuredpayloadrepresentation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuredpayloadrepresentation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuredpayloadrepresentation> <urn:usf:predicate:exposureReason> "Wi-Fi, contact, calendar and similar payloads are composed from fields rather than typed as raw text." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuredpayloadrepresentation> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:structuredpayloadrepresentation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:unsafecustomisationdiagnosis> <urn:usf:predicate:canonicalName> "unsafecustomisationdiagnosis" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:unsafecustomisationdiagnosis> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:unsafecustomisationdiagnosis> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:unsafecustomisationdiagnosis> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:unsafecustomisationdiagnosis> <urn:usf:predicate:exposureReason> "When customisation has broken scannability the product says which choice did it." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:unsafecustomisationdiagnosis> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:unsafecustomisationdiagnosis> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:visualcustomisation> <urn:usf:predicate:canonicalName> "visualcustomisation" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:visualcustomisation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:visualcustomisation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:direct-user-exposed> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:visualcustomisation> <urn:usf:predicate:exposureReason> "Colour, module shape, eyes and gradient, bounded by contrast requirements." <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:visualcustomisation> <urn:usf:predicate:parityObligationScope> "directly-journey-visible" <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:visualcustomisation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .

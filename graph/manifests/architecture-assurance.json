@@ -1,0 +1,16 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/v3-delivery.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/architecture-assurance.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:architecture-assurance",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

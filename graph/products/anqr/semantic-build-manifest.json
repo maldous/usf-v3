@@ -1,0 +1,66 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/products/anqr/manifest.json",
+    "graph/manifests/architecture-assurance.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/products/anqr/product-model-vocabulary.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:product-model-vocabulary",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/architecture.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:architecture",
+      "role": "product-contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/foundation-exposure.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:foundation-exposure",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/capability-exposure.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:capability-exposure",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/artefact-parameter-model.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:artefact-parameter-model",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/delivery-surfaces.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:delivery-surfaces",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/localisation-model.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:localisation-model",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/environment-realisation.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:environment-realisation",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
