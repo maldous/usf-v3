@@ -6,12 +6,6 @@
 <urn:usf:acceptance:operator-observability> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:acceptance:repository-path-vectors> <urn:usf:predicate:text> "Positive file/directory vectors and planted absolute, traversal, glob, control, and prefix-confusion defects pass with deterministic results." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:acceptance:repository-path-vectors> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:acceptance:validation-scratch-confinement> <urn:usf:predicate:text> "Inside the hermetic cage the validation creates and removes ephemeral state beneath the launcher-supplied scratch root, a planted write elsewhere in the confined tree fails closed with ERR_ACCESS_DENIED, and the coverage that needs unscoped filesystem capability is explicitly skipped in the cage and asserted in the outer authoritative lane." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:acceptance:validation-scratch-confinement> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:algorithm:validation-scratch-confinement-construction-authority-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:algorithm:validation-scratch-confinement-construction-authority-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:algorithm:validation-scratch-confinement-construction-authority-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:algorithm:validation-scratch-confinement-construction-authority-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:command:status:1> <urn:usf:predicate:authorityEffect> "Read-only local observation; no semantic mutation, commit, push, provider contact or authority effect." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:command:status:1> <urn:usf:predicate:availability> "implemented" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:command:status:1> <urn:usf:predicate:commandGroup> "inspect" <urn:usf:graph:usf-bootstrap> .
@@ -306,29 +300,6 @@
 <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:predicate:text> "Require the exact current profile, path grammar, containment policy, declared read/write set, applicability and acceptance/refusal semantics before any repository-path implementation write." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:evidence-requirement:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:evidence:construction:f0b87a41997c1ec056255197ce3c803cc33c849251e74c4aabc9146f89e533be> <urn:usf:predicate:contentDigest> "sha256:adbd3ac8d361b490979c951d454288cb6e5d12b2c86fa4a9bbfa31cf1837998b" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:evidence:construction:f0b87a41997c1ec056255197ce3c803cc33c849251e74c4aabc9146f89e533be> <urn:usf:predicate:forWork> <urn:usf:work:validation-scratch-confinement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:evidence:construction:f0b87a41997c1ec056255197ce3c803cc33c849251e74c4aabc9146f89e533be> <urn:usf:predicate:realisationBasisDigest> "sha256:b1a71917ee9bfe100dfaf660c314952005308bd5dfd2cd96bcf7c5710807a6fa" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:evidence:construction:f0b87a41997c1ec056255197ce3c803cc33c849251e74c4aabc9146f89e533be> <urn:usf:predicate:satisfiesEvidenceRequirement> <urn:usf:evidence-requirement:provider-semantic-qualification> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:evidence:construction:f0b87a41997c1ec056255197ce3c803cc33c849251e74c4aabc9146f89e533be> <urn:usf:predicate:scopedDependencyDigest> "sha256:ce3dc6b2f34b2609b3c85cde0d687f45c8d2e148695d55ef73e22ee8843c921d" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:evidence:construction:f0b87a41997c1ec056255197ce3c803cc33c849251e74c4aabc9146f89e533be> <urn:usf:predicate:type> <urn:usf:type:Evidence> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:evidence:construction:f0b87a41997c1ec056255197ce3c803cc33c849251e74c4aabc9146f89e533be> <urn:usf:predicate:validationResultDigest> "sha256:56457490b3fb92fd265258acf75b8c0b0dad11c67c8ac7f7684b30d5125d2e1a" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:activationState> <urn:usf:contract-state:active> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:authorityManifestPath> "graph/manifests/self-host-hermes.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:authorityProfile> <urn:usf:profile:v3-self-host-hermes:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:contentDigest> "sha256:563f29908178cb7bd6f01a1265cc8edb77c0f080fdd3cbf3f6d63a939dfee1bd" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:evidence> <urn:usf:evidence:construction:f0b87a41997c1ec056255197ce3c803cc33c849251e74c4aabc9146f89e533be> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:evidenceDigest> "sha256:adbd3ac8d361b490979c951d454288cb6e5d12b2c86fa4a9bbfa31cf1837998b" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:forPermission> <urn:usf:permission:provider-semantic-qualification> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:forWork> <urn:usf:work:validation-scratch-confinement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:proofDigest> "sha256:0d891ada1373e98238dcd3a35d3d3638622948e0abc55a7bc12052f6c24cf96e" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:proofResult> <urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:publicationIntentDigest> "sha256:c0ab8f3f1f17d52eceaaf186dccfd317805d285a9ed02b1efb87db2d5aa3ff47" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:realisationBasisDigest> "sha256:b1a71917ee9bfe100dfaf660c314952005308bd5dfd2cd96bcf7c5710807a6fa" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:scopedDependencyDigest> "sha256:ce3dc6b2f34b2609b3c85cde0d687f45c8d2e148695d55ef73e22ee8843c921d" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:grant:construction-authority:c0be6ff3bebac447a8ef9a50de29c3bc0cfcb29a82963f1014e9f480d1caf31f> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityGrant> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:permission:file-asset-index> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:file-asset-index-tests> <urn:usf:graph:usf-bootstrap> .
@@ -383,15 +354,6 @@
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:profile:v3-self-host:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:contentDigest> "sha256:0d891ada1373e98238dcd3a35d3d3638622948e0abc55a7bc12052f6c24cf96e" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:evidenceDigest> "sha256:adbd3ac8d361b490979c951d454288cb6e5d12b2c86fa4a9bbfa31cf1837998b" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:forObligation> <urn:usf:proof:provider-semantic-qualification:construction-authority> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:forWork> <urn:usf:work:validation-scratch-confinement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:outcome> "pass" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:realisationBasisDigest> "sha256:b1a71917ee9bfe100dfaf660c314952005308bd5dfd2cd96bcf7c5710807a6fa" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:scopedDependencyDigest> "sha256:ce3dc6b2f34b2609b3c85cde0d687f45c8d2e148695d55ef73e22ee8843c921d" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof-result:construction:0e3291a4a3b288d5f3d994402b18a78c7c40b618a647207538e33d5104006712> <urn:usf:predicate:type> <urn:usf:type:ProofResult> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:proof:file-asset-index:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:file-asset-index> <urn:usf:graph:usf-bootstrap> .
@@ -444,11 +406,6 @@
 <urn:usf:proof:repository-path-scope> <urn:usf:predicate:text> "The isolated focused check passes every declared lexical scope and permission vector over the exact candidate bytes." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:proof:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:proof:repository-path-scope> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof:validation-scratch-confinement> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof:validation-scratch-confinement> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof:validation-scratch-confinement> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof:validation-scratch-confinement> <urn:usf:predicate:text> "Prove only that the declared ephemeral write effect is honoured beneath the scratch root and refused outside it; no repository, semantic, evidence or candidate path becomes writable." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:proof:validation-scratch-confinement> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:provider-operation:registration-feature-operations-key:1> <urn:usf:predicate:currentnessRule> "The digest identifies the feature itself, so it is stable across the operator-predecessor basis change that separates the preliminary from the final candidate. Candidate identity deliberately differs across that seam and is never the equality key." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:provider-operation:registration-feature-operations-key:1> <urn:usf:predicate:declaresDigestName> "registrationFeatureOperationsDigest" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:provider-operation:registration-feature-operations-key:1> <urn:usf:predicate:digestAlgorithm> "sha256-usf-canonical-json-v1" <urn:usf:graph:usf-bootstrap> .
@@ -480,38 +437,6 @@
 <urn:usf:provider-operation:registration-feature-postimage-key:1> <urn:usf:predicate:nonClaim> "Equal postimage digests prove an identical resulting footprint across the declared scope, not provider contact, activation or operational admission." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:provider-operation:registration-feature-postimage-key:1> <urn:usf:predicate:type> <urn:usf:type:CanonicalKeyedMemberDigestProtocol> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:provider-operation:registration-feature-postimage-key:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable policy plus the exact declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work, so it can never stale a sibling cohort, and no pre-existing policy is widened to admit that work." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:validation-scratch-confinement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:construction-evidence-candidate:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/construction-authority/" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:nonClaim> "The grant permits only the exact selected work ceiling and is not provider qualification, contact, runtime or semantic completion." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:construction-proof-bundle:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:validation-scratch-confinement-construction-authority-publication:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/construction-authority/" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:construction-authority-publication-result:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-construction:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-construction:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-construction-authority:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/self-host-hermes.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:usf-bootstrap> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/usf-bootstrap.nq" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/construction-authority.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:toolPath> "src/realisation/construction-authority.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:publication-policy:validation-scratch-confinement-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:registration-feature-operation:1> <urn:usf:predicate:closedRecord> "true" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:registration-feature-operation:1> <urn:usf:predicate:contentDigestRule> "SHA-256 of the exact resulting UTF-8 bytes for a write, and null for a delete. Inline content, transport encoding and media type never appear." <urn:usf:graph:usf-bootstrap> .
 <urn:usf:registration-feature-operation:1> <urn:usf:predicate:requiredFieldSet> "[kind,path,contentDigest]" <urn:usf:graph:usf-bootstrap> .
@@ -659,12 +584,6 @@
 <urn:usf:validation-runtime-closure:semantic-first-focused:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:semantic-first-focused:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:semantic-first-focused:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation-runtime-closure:validation-scratch-confinement:1> <urn:usf:predicate:authorityRule> "Supply the two repository files the confined config validation reaches through src/providers/config.ts but that fall outside this work scope: the narrow schema validator it value-imports and the provider-config schema it reads during module evaluation. The relation is inbound, so admitting this closure does not rewrite the validation resource identity or the work packet that selected it, and it grants only read access." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation-runtime-closure:validation-scratch-confinement:1> <urn:usf:predicate:forValidation> <urn:usf:validation:validation-scratch-confinement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation-runtime-closure:validation-scratch-confinement:1> <urn:usf:predicate:repositoryReadFile> "schemas/provider-config.schema.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation-runtime-closure:validation-scratch-confinement:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation-runtime-closure:validation-scratch-confinement:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation-runtime-closure:validation-scratch-confinement:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:file-asset-index-tests> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:file-asset-index-tests> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/core/asset-index.test.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:file-asset-index-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
@@ -687,13 +606,6 @@
 <urn:usf:validation:repository-path-tests> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:repository-path-tests> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation:repository-path-tests> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation:validation-scratch-confinement> <urn:usf:predicate:applicability> "required" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation:validation-scratch-confinement> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/providers/config.test.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation:validation-scratch-confinement> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation:validation-scratch-confinement> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation:validation-scratch-confinement> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation:validation-scratch-confinement> <urn:usf:predicate:nonClaim> "Proving the declared ephemeral write boundary is not provider, credential, network or repository mutation authority." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:validation:validation-scratch-confinement> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:acceptance> <urn:usf:acceptance:file-asset-index> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:contract> <urn:usf:contract:file-asset-index:1> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:file-asset-index> <urn:usf:predicate:dependsOn> <urn:usf:work:repository-path-scope> <urn:usf:graph:usf-bootstrap> .
@@ -783,16 +695,3 @@
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:validation> <urn:usf:validation:repository-path-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:writePath> "src/core/scope.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:writePath> "tests/unit/core/scope.test.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:acceptance> <urn:usf:acceptance:validation-scratch-confinement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:contract> <urn:usf:contract:provider-semantic-qualification:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:objective> "Parameterize the one hermetic validation file that computes its ephemeral write root from the repository root so it resolves the launcher-supplied scratch root instead, keep the fs.symlink refusal in the ordinary outer carrier lane behind an explicit guard, and prove from both sides that a declared scratch write succeeds while every other path in the confined tree stays unwritable." <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:proof> <urn:usf:proof:validation-scratch-confinement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:readPath> "src/providers/config.ts" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:validation> <urn:usf:validation:validation-scratch-confinement> <urn:usf:graph:usf-bootstrap> .
-<urn:usf:work:validation-scratch-confinement> <urn:usf:predicate:writePath> "tests/unit/providers/config.test.ts" <urn:usf:graph:usf-bootstrap> .
