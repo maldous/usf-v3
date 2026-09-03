@@ -317,3 +317,57 @@ test("the live selected closure is cross-checked against the filesystem and the 
     }
   }
 });
+
+test("write authority distinguishes the transaction prefix from staged-chain ownership", async (t) => {
+  if (childProcessUnavailable(t)) return;
+  // Two mechanisms authorize writes and they answer differently. Resolving
+  // ownership without asking which one applies produces a confident wrong
+  // answer: "no work owns this graph path" reads as a missing owner when the
+  // path was prefix-authorized for usf transact all along.
+  const { writeAuthority } = await import("../../src/commands/status.ts");
+  const P = "urn:usf:predicate:";
+  const quad = (subject: string, predicate: string, object: string, objectKind: "iri" | "literal" = "literal") =>
+    ({ subject, predicate: `${P}${predicate}`, object, objectKind, graph: "urn:fixture:graph", canonical: `${subject} ${predicate} ${object}` });
+  const graphOf = (quads: readonly ReturnType<typeof quad>[]) => ({
+    manifest: { schema: "urn:usf:graph-manifest:2" as const, version: 2 as const, imports: [], sources: [] },
+    quads: [...quads], semanticDigest: `sha256:${"0".repeat(64)}`, graphDigests: {}, sourceDigests: {}, repositoryRoot: "/nonexistent-fixture-root",
+  });
+  const authority = "urn:usf:transaction-authority:v3:1";
+
+  const declared = writeAuthority(graphOf([
+    quad(authority, "authorizedPathPrefix", "graph/"),
+    quad(authority, "authorizedPathPrefix", "docs/"),
+    quad(authority, "rule", "A semantic transaction may write only paths under these prefixes."),
+    // Owned by the staged chain and also under a transaction prefix.
+    quad("urn:fixture:contract:one", "permitsWrite", "graph/foundation.nq"),
+    quad("urn:fixture:work:one", "writePath", "graph/foundation.nq"),
+    // Owned by the staged chain but outside every transaction prefix.
+    quad("urn:fixture:contract:one", "permitsWrite", "src/commands/dispatcher.ts"),
+  ])) as unknown as Record<string, { [k: string]: unknown }>;
+  const transaction = declared.transaction as unknown as Record<string, unknown>;
+  assert.equal(transaction.declared, true);
+  assert.deepEqual(transaction.pathPrefixes, ["docs/", "graph/"]);
+  assert.equal(transaction.note, undefined, "a declared authority needs no absence note");
+
+  const paths = (declared.stagedChain as unknown as { paths: { path: string; contracts: string[]; works: string[]; alsoTransactable: boolean }[] }).paths;
+  const graphPath = paths.find((row) => row.path === "graph/foundation.nq")!;
+  assert.deepEqual(graphPath.contracts, ["urn:fixture:contract:one"]);
+  assert.deepEqual(graphPath.works, ["urn:fixture:work:one"]);
+  assert.equal(graphPath.alsoTransactable, true);
+  // Source code is deliberately outside the prefixes: the runtime reads
+  // authority, it is not authority.
+  assert.equal(paths.find((row) => row.path === "src/commands/dispatcher.ts")!.alsoTransactable, false);
+  // A prefix nothing declares a staged owner for is still writable, and saying so
+  // is the whole point of the projection.
+  assert.deepEqual(declared.transactableWithNoStagedOwner, ["docs/"]);
+
+  // An authority outside the selected closure is absent, not empty. Reporting an
+  // empty prefix list unqualified would read as "nothing is transactable".
+  const absent = writeAuthority(graphOf([
+    quad("urn:fixture:contract:one", "permitsWrite", "graph/foundation.nq"),
+  ])) as unknown as Record<string, { [k: string]: unknown }>;
+  const absentTransaction = absent.transaction as unknown as Record<string, unknown>;
+  assert.equal(absentTransaction.declared, false);
+  assert.deepEqual(absentTransaction.pathPrefixes, []);
+  assert.match(String(absentTransaction.note), /absent declaration, not an empty one/u);
+});

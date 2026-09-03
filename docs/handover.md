@@ -1,5 +1,45 @@
 # USF V3 handover
 
+## Authority boundary 2026-09-03 — write authority is a registered projection
+
+`usf status` now carries a `writeAuthority` projection, registered as
+`urn:usf:status-projection:write-authority:1`. It closes the first of the two
+CLI gaps recorded below: nothing answered "who may write path X, by which
+mechanism", and resolving it by hand across `permitsWrite`, `writePath` and
+`authorizedPathPrefix` produced a confident wrong four-part authority plan
+earlier in this session.
+
+It states both mechanisms side by side, because they authorize differently: a
+semantic transaction matches the declared prefix set, so any path under one is
+writable by `usf transact` whatever the ownership rows say, while contract
+`permitsWrite` and work `writePath` govern only the staged contribution chain.
+Each declared staged path reports its owning contracts and works and whether a
+transaction prefix also covers it, and every prefix with no staged owner is
+named. An authority outside the selected manifest closure reports
+`declared: false` with a note, because an unqualified empty prefix list reads as
+"nothing is transactable" — the exact confusion the projection exists to remove.
+
+Two things worth carrying forward from building it:
+
+- **I applied a graph registration without measuring it first**, on the reasoning
+  that it was trivially additive, and then misdiagnosed the resulting red gate as
+  that change staling a packet. It had not: the failure was my own new test.
+  Measure before applying even when the change looks free, and bisect before
+  attributing.
+- The failing test was `CHECK_FAILED` inside the confined lane while passing
+  outside it. `src/commands/status.ts` statically imports `node:child_process`,
+  which the cage denies, so every sibling test in that file opens with
+  `if (childProcessUnavailable(t)) return;` before its dynamic import. Mine did
+  not. That guard is the file's convention, not an optional nicety.
+
+`src/commands/status.ts` is a `writePath` of `urn:usf:work:operator-observability`,
+so unlike the unowned runtime readers changed at `10379e2` this file does have a
+staged-chain owner. Read back after the edit, the provider lane is unchanged at
+3 verified-complete and 6 blocked, with `operator-observability` already among
+the blocked six from the realisation run. No new staleness was introduced.
+
+407/407 tests, gate conforming, corpus 25 839 quads.
+
 ## Authority boundary 2026-09-03 — governance captured, every remainder assessed
 
 The statement of applicability is realised and all six capture remainders now

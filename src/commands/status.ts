@@ -17,6 +17,7 @@ const statusNonclaims = Object.freeze([
   "carrier-observation-covers-exactly-this-checkout-not-sibling-clones",
   "closure-satisfiability-is-file-presence-not-byte-authentication",
   "blast-radius-is-a-projection-not-a-performed-policy-change",
+  "a-writable-path-is-not-an-authorized-change-the-mechanism-still-gates-it",
 ] as const);
 
 interface StatusArguments {
@@ -65,6 +66,7 @@ const completionPolicyType = "urn:usf:type:NoChangeWorkCompletionPublicationPoli
 const maxClosures = 64;
 const maxClosureMembers = 256;
 const maxPolicies = 128;
+const maxStagedPaths = 256;
 
 function subjectsOfType(graph: SemanticGraph, type: string): string[] {
   return [...new Set(graph.quads
@@ -201,6 +203,74 @@ export function publicationPolicyCoverage(graph: SemanticGraph, packets: readonl
  * work it does not enumerate, and a work's own completion policy is not always
  * inside its closure. Only the closure decides what a digest move stales.
  */
+/**
+ * Which mechanism may write a path, and by what authority. The repository has
+ * two and they authorize differently: a semantic transaction matches declared
+ * path prefixes, while contract permitsWrite and work writePath govern only the
+ * staged contribution chain. Resolving ownership without first asking which
+ * mechanism applies produces a confident wrong answer -- "no work owns this
+ * graph path" reads as a missing owner when the path was prefix-authorized all
+ * along -- so this states both side by side rather than leaving it to a grep.
+ */
+export function writeAuthority(graph: SemanticGraph): Readonly<Record<string, unknown>> {
+  const literals = (subject: string, name: string): string[] => [...new Set(
+    objectsFor(graph, subject, graphPredicate(name))
+      .filter((quad) => quad.objectKind === "literal")
+      .map((quad) => quad.object))].sort();
+
+  const authorityIri = "urn:usf:transaction-authority:v3:1";
+  const prefixes = literals(authorityIri, "authorizedPathPrefix");
+  // An authority outside the selected manifest's closure is absent, not empty.
+  // Reporting no prefixes for it would read as "nothing is transactable", which
+  // is the confusion this projection exists to remove.
+  const authorityDeclared = graph.quads.some((quad) => quad.subject === authorityIri);
+  const owners = new Map<string, { contracts: Set<string>; works: Set<string> }>();
+  const record = (path: string, kind: "contracts" | "works", owner: string): void => {
+    const entry = owners.get(path) ?? { contracts: new Set<string>(), works: new Set<string>() };
+    entry[kind].add(owner);
+    owners.set(path, entry);
+  };
+  for (const quad of graph.quads) {
+    if (quad.objectKind !== "literal") continue;
+    if (quad.predicate === graphPredicate("permitsWrite")) record(quad.object, "contracts", quad.subject);
+    else if (quad.predicate === graphPredicate("writePath")) record(quad.object, "works", quad.subject);
+  }
+
+  const covered = (path: string): boolean => prefixes.some((prefix) => path.startsWith(prefix));
+  const staged = [...owners.entries()].sort(([left], [right]) => left.localeCompare(right)).slice(0, maxStagedPaths);
+  return Object.freeze({
+    status: "observed",
+    transaction: Object.freeze({
+      mechanism: "usf transact",
+      authorizedBy: authorityIri,
+      declared: authorityDeclared,
+      pathPrefixes: Object.freeze(prefixes),
+      match: "prefix",
+      rule: literals(authorityIri, "rule")[0] ?? null,
+      ...(authorityDeclared ? {} : {
+        note: "The transaction authority is not in this manifest's closure, so no prefix is listed here. That is an absent declaration, not an empty one: select a manifest whose closure includes the graph declaring it before concluding a path is not transactable.",
+      }),
+    }),
+    stagedChain: Object.freeze({
+      mechanism: "usf call -> resolve -> apply -> check -> integrate",
+      authorizedBy: "contract permitsWrite and work writePath",
+      match: "exact path, or prefix when the declared value ends in /",
+      declaredPathCount: owners.size,
+      paths: Object.freeze(staged.map(([path, entry]) => Object.freeze({
+        path,
+        contracts: Object.freeze([...entry.contracts].sort()),
+        works: Object.freeze([...entry.works].sort()),
+        alsoTransactable: covered(path),
+      }))),
+      truncated: owners.size > staged.length,
+    }),
+    // The two sets genuinely differ, and that difference is the whole point.
+    transactableWithNoStagedOwner: Object.freeze(prefixes.filter(
+      (prefix) => ![...owners.keys()].some((path) => path.startsWith(prefix)))),
+    nonClaim: "a-writable-path-is-not-an-authorized-change-the-mechanism-still-gates-it",
+  });
+}
+
 export function policyBlastRadius(graph: SemanticGraph, packets: readonly WorkPacket[]): Readonly<Record<string, unknown>> {
   const policies = [...new Set([...subjectsOfType(graph, constructionPolicyType), ...subjectsOfType(graph, completionPolicyType)])].sort().slice(0, maxPolicies);
   const rows = policies.map((policy) => {
@@ -400,7 +470,7 @@ async function broadStatus(repositoryRoot: string, args: readonly string[]): Pro
     : deriveWork(selectedGraph, { selector: `profile:${parsed.profile!}`, maxItems: parsed.maxItems }).items ?? [];
   const notSelected = Object.freeze({ status: "not-selected", reasonCode: "STATUS_PROFILE_NOT_SELECTED", selectionRequired: ["--profile", "--manifest"] });
   const unobserved = [
-    ...(semantic.status === "not-selected" ? ["semantic", "work", "closure-satisfiability", "publication-policy-coverage", "policy-blast-radius"] : []),
+    ...(semantic.status === "not-selected" ? ["semantic", "work", "closure-satisfiability", "publication-policy-coverage", "policy-blast-radius", "write-authority"] : []),
     "active-chains",
     "eligible-routes",
     "throughput",
@@ -419,6 +489,7 @@ async function broadStatus(repositoryRoot: string, args: readonly string[]): Pro
     closureSatisfiability: selectedGraph === null ? notSelected : closureSatisfiability(selectedGraph, repositoryRoot),
     publicationPolicyCoverage: selectedGraph === null ? notSelected : publicationPolicyCoverage(selectedGraph, selectedPackets),
     policyBlastRadius: selectedGraph === null ? notSelected : policyBlastRadius(selectedGraph, selectedPackets),
+    writeAuthority: selectedGraph === null ? notSelected : writeAuthority(selectedGraph),
     lifecycle,
     providers,
     metrics,
