@@ -109,9 +109,10 @@ No global tool is required; `tsc` absent from `PATH` does not affect it.
 
 ## 11. Adversarial proof
 
-Eighty-two planted and control cases across five files. Each runs known-good →
-plant → fail for the intended reason → restore → pass. All twelve required
-categories are covered:
+Fifty cases across the three adversarial files — 38 planted, 4 blind-spot, 3
+control and 5 real-repository — plus three prohibited-combination cases in the
+parameter-join tests. Each planted case runs known-good → plant → fail for the
+intended reason → restore → pass. All twelve required categories are covered:
 
 | required case | where | observed failure |
 |---|---|---|
