@@ -3,99 +3,112 @@
 ## Current position — 2026-09-03
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.
-Successor work has begun on the ANQR semantic build: the product's architecture,
-assurance and feature semantics are declared on new lanes, and a real QR codec
-now exists in the product repository.
+The successor line has closed the transaction-integrity defect and carries the
+ANQR semantic build model plus a real QR codec.
 
 | | |
 |---|---|
-| USF carrier | `c10e2a2` on `anqr-experience-realisation`, clean, **not pushed** |
+| USF carrier | `fbddf7b` on `anqr-experience-realisation`, clean, **not pushed** |
 | ANQR carrier | `c65426db7` on `anqr-experience-realisation`, clean, **not pushed** |
 | Release boundary | `hermetic-release-1` = `9e6239e`, annotated, reachable, untouched |
-| Tests | USF 421/421, typecheck clean; ANQR codec 11/11 |
+| Tests | USF 433/433, containment pass; ANQR codec 11/11 |
 | Integrity gate | conforming — 16 invariants, 0 owned violations, legacy 24 against a constant of 24 |
-| Corpus | 30 sources, 36 788 quads, 5 428 subjects, 1 356 predicates, **1 connected component** |
+| Corpus | 32 sources, 36 995 quads, **1 connected component** |
 | Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — all **byte-identical** to the release |
-| New lane verdict | `6ad5df33` on `graph/products/anqr/semantic-build-manifest.json` |
-| New lane | 104 capabilities, 739 requirements, `architecture` 15 NOT_ASSESSED, ready 1, awaiting conformance 8 |
+| Live provider lane | 9/9 `verified-complete`, semantic digest `2e6a4780`, **unchanged throughout** |
+| Semantic build lane | 104 capabilities, 739 requirements, `architecture` 15 NOT_ASSESSED, verdict `6ad5df33` |
 | Hermes | not running |
 
-### What was established
+### Transaction integrity is repaired
 
-**The QR codec is real.** `urn:anqr:known-limitation:qrartefactcreation-codec`
-recorded that the capability could not be satisfied because a bounded worker
-repeatedly produced an option surface around a codec decoding to the empty
-string, accepted as a documented hard tail on 2026-09-02. `packages/artefact` in
-the ANQR repository now implements it clean-room against ISO/IEC 18004 with no
-third-party dependency: 160 of 160 version-by-level pairs round-trip with zero
-corrections required, none skipped, all eight masks and all three implemented
-modes round-trip, and planted damage inside the correction budget still yields
-the exact payload. Two defects that produced plausible wrong answers rather than
-crashes were found by assertions a weaker test would not have made: Forney
-omitted the location factor, and the placement cursor revisited column 4 while
-never reaching column 0, corruption that error correction silently repaired.
+`usf transact` guarantees that the resulting corpus satisfies every integrity
+invariant before any path is written. Two defects broke that, and both are now
+fixed, landed through the ordinary staged chain and adversarially proven.
 
-**Placement follows the Semantic Build ownership rule.** USF already owns the
-whole lifecycle — the seven `urn:usf:stage` resources are exactly the canonical
-stages, and Requirement, DeliveryFacet, Evidence, ProofObligation,
-RealisationPermission, ValidationEvidenceModel and WorkPacket already implement
-them. Architecture and experience are therefore dimensions inside that
-lifecycle. A parallel experience vocabulary was drafted and **discarded**:
-experience travels through the existing `uisemantics` facet kind, of which the
-released lane already satisfies seventeen. Architecture added one facet kind and
-a topology vocabulary; assurance added exactly two axes, severity and
-verification class.
+**Novelty.** Discovery walked the on-disk graph tree and substituted postimages
+only for files it had found, so a transaction that *created* a graph source
+never parsed or checked the bytes it produced. Measured: a transaction creating
+nine sources carrying 3 611 quads reported `graphFilesParsed: 21` and
+`resultingQuadCount: 33 177`, the pre-transaction corpus, and applied
+successfully. The earlier recursion repair fixed depth, not novelty, and its
+regression test could not catch this because it appends to an overlay that
+already exists.
 
-**Projection is proven, not asserted.** The fifteen ANQR architecture
-requirements are DeliveryFacets attached to the capabilities whose realisation
-they constrain, so they enter the existing implementation-conformance path: the
-new lane counts 739 requirements against the released 724, reports
-`architecture: 15 NOT_ASSESSED`, brings `platformparity` into the denominator
-with a ready implementation unit, and moves eight existing capabilities to
-awaiting-conformance-check. A requirement that generated no work would have been
-a projection defect by this model's own invariant.
+**Attribution.** Owned violations were filtered on `graph.length > 0`, and
+`undeclared-type` reports with an *empty* graph label, so every corpus-level
+violation was silently excused. A transaction introducing an undeclared type
+was accepted while `usf graph integrity` called the same corpus non-conforming.
+This was found by planting the violation, which is the whole point of planting
+it.
+
+Demonstrated after the repair: a creating transaction reports 33 sources against
+32 on disk and 36 998 quads against 36 995. Adversarially: reverting the fix
+makes 5 of the 7 end-to-end cases fail, and the two that pass either way are the
+controls. Without the fix a syntactically invalid created source was **written**.
+
+### Ownership was created by measurement, not by preference
+
+No work owned `src/commands/transact.ts`; sibling commands are owned file by
+file and no contract permits an `src/commands/` prefix. Two cheaper routes were
+authored, applied, measured and reverted, each taking the live provider lane
+from nine `verified-complete` packets to nine `blocked` with all nine scoped
+dependency digests moved: appending four ownership quads to
+`graph/semantic-first.nq`, and selecting an overlay source into
+`graph/manifests/self-host.json`. That source and that manifest are each in
+those packets' candidate scope. Creating a manifest that *imports* another was
+measured separately and is free.
+
+The repair therefore runs from a self-contained authority island in new files
+under a new manifest — contract, proofblocked permission, work owning exactly
+two paths, hermetic validation, evidence requirements, proof obligations, a
+disjoint construction-authority policy enumerating one work, its reciprocal
+publication algorithm, and a profile. Construction authority was granted the way
+all nine completed packets got theirs, and the chain ran in full:
+`work -> contribution -> resolve -> apply -> check -> integrate`, with the
+confined check passing and a durable receipt.
+
+Three derivation refusals shaped the island, each read from the packet:
+`REALISATION_PROFILE_PRODUCT_TYPE_INVALID`, `WORK_PACKET_ENVIRONMENT_IRI_INVALID`
+and a grant that projected as inapplicable until the permission itself declared
+`activationDerivationRule`.
+
+The validation cannot drive `usf transact` end to end inside the cage at all:
+transact requires its proposal to resolve inside the repository and the cage
+grants one scoped write root. So the repair is reachable through two exported
+pure functions the confined lane asserts with no filesystem, while the
+write-dependent cases are guarded by `process.permission` and asserted in the
+outer carrier lane. Coverage rose from 7 cases to 12.
 
 ### Next safe actions, in order
 
-1. **Fix the `usf transact` novelty blind spot.** Its guarantee is that the
-   resulting corpus satisfies every invariant before any path is written, but its
-   validation walks the on-disk `graph/` tree and substitutes postimages only for
-   files it found, so a transaction that *creates* a graph source never parses or
-   checks the bytes it produces. The semantic-build transaction reported
-   `graphFilesParsed: 21` and `resultingQuadCount: 33 177` while creating nine
-   sources carrying 3 611 quads; both real defects in them were caught only by
-   running `usf graph integrity` afterwards. Same family as the flat-`readdir`
-   blind spot — that repair fixed recursion but not novelty. Needs the staged
-   chain, because `src/commands/` is outside transact's authorized prefixes.
-2. **Bind enforcement to the fifteen architecture facets.** Each needs a named
-   tool, invocation and configuration digest, then an adversarial verification
-   showing a planted violation failing. Until then none is proof, by the
-   `verification-must-be-verified` invariant.
-3. **Realise the nine unrealised architecture components**, starting with
-   `artefact-ports` and `artefact-application`, so the declared topology stops
-   being aspirational.
-4. **Author the experience dimension as `uisemantics` facets** on the journeys
-   the exposure classification marks directly-journey-visible, then the design
-   tokens and the Preact web surface bound through an implementation pack.
+1. **Priority 2 — ANQR clean-clone build assurance.** `typecheck` is declared in
+   `package.json` but TypeScript is not a declared dependency and
+   `node_modules` is absent, so the released product repository's own typecheck
+   script has never run from a clean clone. Fix that first, then `install`,
+   `typecheck`, architecture checks, `test` and `build` must all run from a
+   fresh clone with no developer-machine residue.
+2. **Priority 2 — enforcement for the 15 architecture facets.** Select the
+   minimum mechanisms from the requirements, bind each facet to a named tool,
+   invocation and configuration digest, then plant a representative violation
+   per boundary and show the verifier failing. Until then none is proof and the
+   facets must stay honestly NOT_ASSESSED.
+3. **Priority 3 — the Preact vertical slice**, using the semantics already
+   established rather than a second UI ontology.
 
 ### Open and honestly unfinished
 
 - Fifteen architecture facets are declared blocking and **none is enforced**.
 - One of ten declared architecture components is realised; four of five delivery
-  surfaces are unrealised, so the parity obligations are trivially satisfied and
-  prove nothing yet.
+  surfaces are unrealised, so the parity obligations prove nothing yet.
+- ANQR `typecheck` remains unexecutable from a clean clone.
 - The 86-locale claim is a denominator with a blocking parity obligation, not an
-  assertion that any translation is reviewed. Observed at the legacy source:
-  `en-US` carried 1994 interface keys while the template and every other locale
-  carried 1676, and the legacy guard tolerated the gap.
-- ANQR `typecheck` is still unexecutable from a clean clone because TypeScript is
-  not a declared dependency and `node_modules` is absent, so the released
-  product repository's own typecheck script has never run. Codec evidence comes
-  from `node --test`, which needs no dependency.
-- Hosting and deployment targets are undetermined; every staging and production
-  requirement records that.
-- No experience profile, design profile, implementation pack, experience binding
-  or coverage evaluator exists yet, and no vertical slice is rendered.
+  assertion that any translation is reviewed.
+- Hosting and deployment targets are undetermined.
+- No experience profile, design profile, implementation pack, experience
+  binding, coverage evaluator or rendered slice exists.
+- No graph source created by an earlier transaction is retroactively validated
+  by this repair; the ANQR semantic build sources were validated by the
+  `usf graph integrity` run that followed them.
 
 ## Closed boundaries
 
