@@ -91,6 +91,33 @@ spent no tokens, because there is no work to dispatch.
 `./bin/usf hermes stop` requests an orderly drain at a cycle boundary and is
 idempotent.
 
+### Adversarial verification passed
+
+The release evidence was re-tested as a claim to falsify. The candidate survived
+with **no release-blocking defect**, and the verdict is **READY_TO_TAG**,
+deliberately not tagged.
+
+The material weakness in the earlier proofs was that each one *copied*
+`.usf/cache` and `.usf/catalog` from the canonical tree, which is not a fresh
+machine. This exercise copied nothing: it cloned from the remote into an empty
+directory and bootstrapped over the network. The refetched catalogue **does not
+match** the recorded one — models.dev has moved to 212 provider routes and 7 495
+model routes with different digests — and every semantic identity still
+reproduced, which is the strongest available demonstration that the catalogue is
+an external fact rather than a semantic input.
+
+One controlled Hermes perturbation, deleting a product capability's conformance
+evidence, was detected precisely (38/39, one capability, five facets), repaired
+autonomously with zero provider contact and zero tokens, and returned the verdict
+digest to exactly its canonical value with no unrelated mutation. Seven negative
+perturbations were each rejected for the correct reason; notably the flat
+graph-source loader reports `gateConforming: true` over 14 of 21 sources, so only
+the regression test catches it.
+
+Full evidence, including the dependency classification and the recovery
+read-back proof, is appended to
+[`acceptance/2026-09-03-hermetic-release-proof.md`](acceptance/2026-09-03-hermetic-release-proof.md).
+
 ## Closed boundaries
 
 Each boundary below is complete. Its reasoning lives in the commit message named

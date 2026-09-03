@@ -252,3 +252,191 @@ reason recorded.
 - Nothing here claims staging, production, live external provider behaviour, or
   terminal proof beyond the separately recorded declaration.
 - This record does not tag. The release remains an explicit final decision.
+
+---
+
+# Adversarial release-candidate verification — 2026-09-03
+
+The evidence above was treated as a claim to falsify, not an assumption to
+inherit. The candidate survived. **No release-blocking defect was found.**
+
+The material weakness in the evidence above was that every clean-clone proof
+**copied** `.usf/cache` and `.usf/catalog` from the canonical working directory.
+That is not a fresh machine. This exercise copied nothing.
+
+## Candidate identity, re-fixed
+
+| | |
+|---|---|
+| Branch / HEAD | `v3-authority-transition` / `61073d49f1a8dced2cb072b10d2155a46d9333d5` |
+| Tree | `5f33c72d94320558dd9bbab904c036b0d9696924` |
+| Local == remote | yes, 0 ahead, 0 behind |
+| Tracked tree | clean; 0 staged, 0 unstaged, 0 untracked |
+| Worktrees / submodules | 1 / 0 |
+| Tools | git 2.43.0, node v24.16.0, corepack 0.35.0, pnpm 11.24.0 pinned, bubblewrap 0.9.0, flock 2.39.3 |
+| Corpus | 21 sources, 33 177 quads, 4 751 subjects, 1 291 predicates, 1 component, 16 invariants, 0 owned |
+
+## Hygiene: every dependency classified
+
+| Item | Class |
+|---|---|
+| `.usf/cache` (pnpm store) | **1 — declared reproducible.** Rebuilt from the lockfile over the network on a fresh machine. |
+| `.usf/catalog` (models.dev snapshot) | **1 — declared reproducible.** Refetched by `models refresh`; digest-bound and drift-reported, not required to match. |
+| `.usf/credentials/providers.env` | **2 — operator.** Never tracked; an empty mode-0600 file suffices for every gate. |
+| `.usf/repositories.json` | **2 — operator.** Product checkout locator; the README gives the exact command. |
+| Everything else under `.usf/` | **1 — ignored disposable state.** Regenerable; proven by the perturbation drill below. |
+| `refs/usf/integration/*` (28) | **1.** Written by integration, never read as a precondition. The remote advertises none and a fresh clone fetches none. |
+| Branch `main` | **2.** Retained deliberately at the last remote-verified boundary. |
+| `/usr/bin/flock`, bubblewrap, Node ≥ 22, Corepack | **2 — host, declared** in the README. |
+| Tracked symlinks / dangling symlinks | none / none |
+| Sockets, PIDs | none; two zero-byte lock files under ignored state |
+| **Category 3 (release defect)** | **none found** |
+
+## Fresh-machine simulation — nothing copied
+
+Cloned from `git@github.com:maldous/usf-v3.git` at the candidate SHA and
+`maldous/anqr-v3` at `1cf44ce`, into a directory containing nothing else. No
+`.usf`, no `node_modules`, no `refs/usf/*`. Bootstrapped only through
+`./scripts/bootstrap.sh`, which installed from the registry and refetched the
+catalogue over the network.
+
+**The refetched catalogue does not match the recorded one.** models.dev has
+moved: 212 provider routes against 211, 7 495 model routes against 7 488, and
+different digests (`d3664a80…` against `9c9be3f3…`). That is the sharpest
+available falsification test, and the candidate passes it:
+
+| Property | Fresh clone | Canonical | |
+|---|---|---|---|
+| Sources / quads / subjects / predicates | 21 / 33 177 / 4 751 / 1 291 | identical | MATCH |
+| Components / invariants / owned violations | 1 / 16 / 0 | identical | MATCH |
+| Gate conforming | true | true | MATCH |
+| Manifest derivation | 15/15 | 15/15 | MATCH |
+| Live lane | 9/9 `verified-complete`, `sha256:2e6a4780…` | identical | MATCH |
+| Tests | 421/421 | 421/421 | MATCH |
+| Verdict digests (all three) | identical | identical | MATCH |
+| Product-neutrality | 0 `urn:anqr:` quads in three core manifests; 3 948 in the product manifest | identical | MATCH |
+
+Conformance evidence regenerated from tracked bytes in five cage cycles with
+nothing dispatched to any provider. **The catalogue is genuinely an external
+fact, not a semantic input.**
+
+Two apparent discrepancies were chased and are not defects:
+
+- `installedAdapterPackages` reads 8 on the fresh clone against 2 on canonical
+  with byte-identical `node_modules`. It is derived from the catalogue's own
+  adapter-package names, so it moves when the catalogue moves.
+- `normalizedDigest` matches neither the normalized file's bytes nor
+  `canonicalDigest` of its text. It is `canonicalDigest` of the *parsed* basis,
+  deliberately stable across formatting. `rawDigest` **is** the file's byte
+  digest and matches the recorded value exactly.
+
+## Operational smoke test
+
+Every command below was run and its output inspected.
+
+```sh
+./bin/usf graph lanes                # 15 manifests, 9 profiles, 34 lanes, 1 policy-covered
+./bin/usf profile status  --manifest graph/products/anqr/manifest.json
+./bin/usf profile closure --manifest graph/products/anqr/manifest.json    # 14 resources
+./bin/usf query --manifest graph/manifests/v3-delivery.json --iri urn:usf:product-event:approval-granted
+./bin/usf help review --json         # availability: superseded
+./bin/usf review                     # COMMAND_NOT_IMPLEMENTED, exit 2
+./bin/usf restore                    # COMMAND_UNKNOWN, exit 2
+```
+
+All nine declared product events resolve to a carrying capability and a facet
+evidence statement; eight name a producing capability and
+`tenant-config-changed` carries an explicit `producerUndeclaredReason` instead.
+`review-diverse` is a documented `--strategy` value on `usf route`, implemented
+with cross-provider-family **and** cross-model-family selection. The three
+retired commands report `superseded` in both the JSON help and the listing, and
+refuse `COMMAND_NOT_IMPLEMENTED` when invoked — they do not pretend to work.
+`usf restore` is absent, and `urn:usf:cli-decision:restore-chain-operator-driven:1`
+states why.
+
+## Hermes behavioural proof
+
+**Stable case.** Cycle advanced 8 → 9 with the tracked tree, the concatenated
+graph bytes and the concatenated evidence bytes all byte-identical, 0 ready, 0
+blockers, 0 tokens, 0 provider activity.
+
+**Controlled perturbation.** One capability's conformance evidence was deleted —
+`urn:anqr:delivery-capability:qrdecoding`, a product capability, so the drill
+exercises the ANQR half.
+
+| Required property | Observed |
+|---|---|
+| Notices the deficiency | anqr lane fell to 38/39, `remaining=1`, 5 NOT_ASSESSED facets, verdict digest moved to `84aefded…` |
+| Derives appropriate work, not arbitrary | exactly one capability; `awaitingConformanceCheck` 1 |
+| Routes only what is required | `cumulativeTokens` 0, provider activity 0 |
+| Validates the resulting postimage | conformance re-executed in the cage, evidence record rewritten |
+| Reaches the correct terminal state | 39/39, `remaining=0`, all states 0 |
+| Returns to deterministic idle | ready 0, awaitingConformanceCheck 0, blockers 0 |
+| Leaves no unrelated mutation | tracked tree, graph bytes, gate identities and lane digest all exactly restored |
+
+The repaired evidence lands under a different content-digest filename, and the
+**verdict digest returns to exactly `sha256:17d52953…`** — regeneration is
+deterministic in what it means, not in which file holds it. The backup taken
+before the drill was never used.
+
+Hermes was then stopped cleanly: `outcome: drained`, `waitedMs: 501`, liveness
+`absent`.
+
+## Negative testing
+
+Each historical failure mode was reintroduced and removed.
+
+| Perturbation | Rejected by | Detail |
+|---|---|---|
+| Flat, non-recursive graph source discovery | `tests/contract/graph-source-discovery.test.ts` | the gate reports **`gateConforming: true` over 14 sources and 29 186 quads** — silently conforming over two thirds of the corpus. Only the regression test catches it. |
+| Unchecked transaction postimage | same test | the overlay postimage is neither parsed nor counted |
+| Product resource in the foundation graph | `tests/unit/graph/product-overlays.test.ts` | product-neutrality invariant refuses a core graph naming `urn:anqr:` |
+| Dangling external symlink | hygiene sweep (`find -xtype l`) | detected; zero present in the candidate |
+| Historical path in a runtime-bearing file | `scripts/verify-contained.sh` | exit 5, names the file and the offending line |
+| Undeclared predicate | `undeclared-predicate` | gate false, names the predicate |
+| Event relation naming a nonexistent capability | `dangling-reference` | gate false, names the capability |
+
+## Restore/recovery safety
+
+The documented chain was walked in an isolated clone.
+
+- Out-of-order steps refuse: `CONSTRUCTION_BUNDLE_SET_INVALID`,
+  `WORK_COMPLETION_OPTION_REQUIRED`, `WORK_COMPLETION_REALISATION_REFUSED`.
+- `publish --verify` is genuinely observational: two runs **byte-identical**,
+  tracked tree unchanged, `publicationState: verified-without-publication`, and
+  it projects `baseSemanticDigest`, `resultingSemanticDigest` and
+  `receiptDigest` — the read-backs an operator must compare.
+- `--apply` reports `created`. **Re-applying the same bundle reports
+  `matching`** with `authorityEffect: existing-copy-on-write-construction-authority-authenticated`,
+  the same receipt digest, and writes no second grant. Idempotent by content
+  authentication rather than by refusal.
+- No single command collapses the chain: `usf restore` is `COMMAND_UNKNOWN`.
+
+One incidental discovery, and it is the guard working rather than a defect:
+publication refuses `CONSTRUCTION_PRIVATE_PATH_UNSAFE` when `.usf` private-state
+ancestry is not owner-contained. It fired because the drill pre-created
+`.usf/candidates` from a shell with `umask 022`. The CLI creates that path itself
+with `mkdir(mode: 0o700)`, so the documented flow is unaffected; hand-creating
+private state with a permissive umask is refused rather than proceeding unsafely.
+
+## Final state
+
+Hermes stopped and drained. Both test clones removed. No usf or hermes process
+of this repository remains. Zero dangling symlinks under the repository and zero
+under `.usf/cache`. No residual `/tmp` state. Canonical tree clean at
+`5f33c72d…`, remote HEAD unchanged at `61073d4`, no tag at HEAD.
+
+Release gate rerun after every exercise: containment pass, gate conforming over
+21 sources and 33 177 quads with one component and 16 invariants, 15/15
+manifests, 34 lanes with 1 policy-covered, doctor ok, **421/421 tests**, and all
+three verdict digests at their canonical values.
+
+## Verdict
+
+The candidate survived the fresh-clone, operational, negative, recovery, Hermes,
+reproducibility and hygiene exercises with no unexplained dependency and no
+unexplained mutation.
+
+**READY_TO_TAG** — and deliberately not tagged. ANQR is not yet fully modelled;
+this candidate is a clean starting line, and its three open surfaces are recorded
+decisions rather than conformance debt.
