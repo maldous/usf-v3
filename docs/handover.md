@@ -3,22 +3,49 @@
 ## Current position — 2026-09-04
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.
-The **first semantic experience is realised**: a user can carry out the whole
-create-and-export journey in a rendered Preact surface, and every visible
-behaviour traces to declared authority in both directions.
+The **ANQR application denominator is established and Hermes derives work from
+one resolvable realisation basis.** Deployment stops at the environment
+boundary: staging and production are unbound and need an authority this
+repository does not have.
 
 | | |
 |---|---|
-| USF carrier | `d6f8426` on `anqr-experience-realisation`, clean, **not pushed** |
-| ANQR carrier | `f7c92a58c` on `anqr-experience-realisation`, clean, **not pushed** |
+| USF carrier | `anqr-experience-realisation`, clean, **not pushed** |
+| ANQR carrier | `dde40c738` on `anqr-experience-realisation`, clean, **not pushed** |
 | Release boundary | `hermetic-release-1` = `9e6239e`, annotated, reachable, untouched |
-| USF | 442/442 tests, gate conforming, containment pass over 9 rules |
-| ANQR clean clone | `npm ci` → typecheck 0 → **289/289 three times** → architecture conforming → build → `validate` exit 0 |
-| Architecture | **0 blocking violations**; 8 satisfied, 0 violated, 8 honestly undecidable, 16 facets |
-| Source accounting | 121 = 32 assigned + 89 declared-excluded + **0 unaccounted** |
-| Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — re-verified byte-identical |
-| Live provider lane | digest `2e6a4780`, construct and integrate frontiers both 0 |
-| Next | **stop and inspect.** Broader UI coverage is deliberately not started. |
+| USF | 470/470 tests |
+| ANQR | 297/297 ×3, typecheck 0, architecture conforming, `validate` exit 0, CI automated |
+| Denominator | **58 capabilities** (revision 3), **60 application actions**, zero unclassified |
+| Delivery | 24 required, 35 explicitly not required, 9 new generic contracts |
+| Environments | 4 rungs, 7 environments; dev and test **bound**, staging and production **unresolved** |
+| Realisation basis | `realisation-identity:v2:1`, 18 axes, narrow per-axis invalidation |
+| Hermes | 104 capabilities, 922 facets, 72 NOT_ASSESSED, frontier 1 |
+| Source accounting | 122 = 32 + 90 + **0 unaccounted** |
+| Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — byte-identical |
+| Live provider lane | `2e6a4780`, both frontiers 0 |
+| Next | **eleven external decisions.** See the acceptance record, §36. |
+
+### The denominator is the deliverable
+
+Reconciliation against the whole legacy application — 126 store actions, 185
+API parameters, 33 payload serialisers, 12 routes, 5 functions, 86 locales, a
+published OpenAPI document — found fourteen behaviours owned by no capability.
+Revision 3 declares 58; revision 2 stays immutable at 44. An action denominator
+beneath capabilities immediately earned itself by exposing two admin behaviours
+that capability-level coverage could not show.
+
+Two directive premises turned out to be wrong and are recorded as such: USF
+already had 67 delivery contracts and 25 capability ports, so only nine were
+genuinely absent; and the seven environments already existed, but as bare type
+assertions with no posture, ordering or evidence requirements.
+
+### Where it stops
+
+Semantics, classification, enforcement and work derivation are complete and
+checked. **No capability is implemented against revision 3**, the
+integration-test environment is not instantiated, and staging and production
+are unbound. Production-ready is not production-deployed, and neither is
+claimed.
 
 ### The first experience is a chain, not a screen
 
@@ -88,8 +115,11 @@ before computing any verdict.
 
 ### Next work item
 
-**Inspection of the first semantic experience**, before it becomes the template
-for the rest of ANQR. The directive stops here deliberately.
+**Eleven external decisions**, listed in
+[`acceptance/2026-09-04-anqr-full-realisation.md`](acceptance/2026-09-04-anqr-full-realisation.md)
+§36. Until staging has an account, a site and a credential, no rung above
+testing can produce a verdict. Implementation work against revision 3 can
+proceed in parallel and does not need them.
 
 ### Open and honestly unfinished
 
@@ -123,6 +153,7 @@ ledger, which is the live operational state and not an archive.
 
 | Closed | Boundary | Detail |
 |---|---|---|
+| 2026-09-04 | ANQR application denominator, delivery semantics and environment ladder | [`acceptance/2026-09-04-anqr-full-realisation.md`](acceptance/2026-09-04-anqr-full-realisation.md) |
 | 2026-09-04 | First semantic experience realised in Preact; profiles documented | `c0dbf8f`, [`acceptance/2026-09-04-first-semantic-experience.md`](acceptance/2026-09-04-first-semantic-experience.md), [`profiles.md`](profiles.md) |
 | 2026-09-04 | Test suite made order-independent; real-tree planting isolated | ANQR `f7c92a58c` |
 | 2026-09-03 | Artefact output boundary closed; five adapters and the image-source port implemented | `8030d9d`, [`acceptance/2026-09-03-anqr-architecture-enforcement.md`](acceptance/2026-09-03-anqr-architecture-enforcement.md) |
