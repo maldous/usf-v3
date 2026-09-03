@@ -123,7 +123,7 @@ ledger, which is the live operational state and not an archive.
 
 | Closed | Boundary | Detail |
 |---|---|---|
-| 2026-09-04 | First semantic experience realised in Preact; profiles documented | `docs/profiles.md` |
+| 2026-09-04 | First semantic experience realised in Preact; profiles documented | `c0dbf8f`, [`acceptance/2026-09-04-first-semantic-experience.md`](acceptance/2026-09-04-first-semantic-experience.md), [`profiles.md`](profiles.md) |
 | 2026-09-04 | Test suite made order-independent; real-tree planting isolated | ANQR `f7c92a58c` |
 | 2026-09-03 | Artefact output boundary closed; five adapters and the image-source port implemented | `8030d9d`, [`acceptance/2026-09-03-anqr-architecture-enforcement.md`](acceptance/2026-09-03-anqr-architecture-enforcement.md) |
 | 2026-09-03 | Programme directive split by topic; self-host profile lineage declared | `b58213d` |
