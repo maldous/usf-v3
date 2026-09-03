@@ -2,151 +2,100 @@
 
 ## Current position — 2026-09-03
 
-V3 is the sole current system. V1 and V2 have no operational, build, runtime,
-workspace or repository presence; the four historical remotes are archived and
-read-only; and the retained historical material is provenance and
-re-verification only, classified as such and enforced by the containment
-validation rather than asserted.
+`hermetic-release-1` is the immutable release boundary and remains untouched.
+Successor work has begun on the ANQR semantic build: the product's architecture,
+assurance and feature semantics are declared on new lanes, and a real QR codec
+now exists in the product repository.
 
 | | |
 |---|---|
-| Carrier | `f049355` on `v3-authority-transition`, clean, **pushed** |
-| Tests | 421/421, typecheck clean |
-| Containment | pass — 9 rules, every one planted-defect proven, plus two exemption guards |
-| Integrity gate | conforming — **16 invariants**, 0 owned violations, 24 legacy against a constant of 24 |
-| Corpus | 21 sources, 33 177 quads, 4 751 subjects, 1 291 predicates, 13 773 edges, **1 connected component** |
-| Manifests | 15 of 15 derive; none refuses |
-| Realisation lanes | 34 total; **1** policy-covered (`self-host-provider-v3` x `v3-self-host:3`) at 9/9 `verified-complete` |
-| Capabilities | core 64/64, anqr 39/39, **composed 103/103**; every frontier empty |
-| Facets | UNSATISFIED / BLOCKED / STALE / NOT_ASSESSED all 0 in every lane |
-| Verdict digests | core `e958768a…`, anqr `17d52953…`, composed `3a9fa0d6…` — unchanged across the whole V1/V2 retirement |
-| Delivery artefacts | 29 satisfied, 8 superseded, 0 authority-blocked, 0 drifted |
-| ANQR profile | `current`, 14-resource closure, 0 moved/added/removed, 0 external drift |
-| Hermes | not running; ready 0, no blockers, no work graphs |
-| Statement of applicability | 93 declared, 93 decided, 0 pending |
+| USF carrier | `c10e2a2` on `anqr-experience-realisation`, clean, **not pushed** |
+| ANQR carrier | `c65426db7` on `anqr-experience-realisation`, clean, **not pushed** |
+| Release boundary | `hermetic-release-1` = `9e6239e`, annotated, reachable, untouched |
+| Tests | USF 421/421, typecheck clean; ANQR codec 11/11 |
+| Integrity gate | conforming — 16 invariants, 0 owned violations, legacy 24 against a constant of 24 |
+| Corpus | 30 sources, 36 788 quads, 5 428 subjects, 1 356 predicates, **1 connected component** |
+| Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — all **byte-identical** to the release |
+| New lane verdict | `6ad5df33` on `graph/products/anqr/semantic-build-manifest.json` |
+| New lane | 104 capabilities, 739 requirements, `architecture` 15 NOT_ASSESSED, ready 1, awaiting conformance 8 |
+| Hermes | not running |
 
-The programme directive is an index at `GOAL.md` carrying the terminal criteria
-and the nonclaims, with its remaining sections one file each under
-[`docs/goal/`](goal/), numbering unchanged and citations repointed in the graph.
+### What was established
 
-### What remains
+**The QR codec is real.** `urn:anqr:known-limitation:qrartefactcreation-codec`
+recorded that the capability could not be satisfied because a bounded worker
+repeatedly produced an option surface around a codec decoding to the empty
+string, accepted as a documented hard tail on 2026-09-02. `packages/artefact` in
+the ANQR repository now implements it clean-room against ISO/IEC 18004 with no
+third-party dependency: 160 of 160 version-by-level pairs round-trip with zero
+corrections required, none skipped, all eight masks and all three implemented
+modes round-trip, and planted damage inside the correction budget still yields
+the exact payload. Two defects that produced plausible wrong answers rather than
+crashes were found by assertions a weaker test would not have made: Forney
+omitted the location factor, and the placement cursor revisited column 4 while
+never reaching column 0, corruption that error correction silently repaired.
 
-Nothing blocks build, test, containment, integrity, realisation or Hermes. Three
-surfaces are open, and all three are recorded decisions rather than debt:
-33 of 34 lanes are policy-uncovered by design, four works are uncoverable under
-any profile, and 24 legacy integrity violations sit at an unchanged recorded
-constant of 24. Each is stated with its evidence in
-[`acceptance/2026-09-03-hermetic-release-proof.md`](acceptance/2026-09-03-hermetic-release-proof.md).
+**Placement follows the Semantic Build ownership rule.** USF already owns the
+whole lifecycle — the seven `urn:usf:stage` resources are exactly the canonical
+stages, and Requirement, DeliveryFacet, Evidence, ProofObligation,
+RealisationPermission, ValidationEvidenceModel and WorkPacket already implement
+them. Architecture and experience are therefore dimensions inside that
+lifecycle. A parallel experience vocabulary was drafted and **discarded**:
+experience travels through the existing `uisemantics` facet kind, of which the
+released lane already satisfies seventeen. Architecture added one facet kind and
+a topology vocabulary; assurance added exactly two axes, severity and
+verification class.
 
-Four surfaces that were open are now closed by explicit decision: the six
-profile dispositions, derived from the contract-selection lattice; the three
-planned command retirements; the product-event vocabulary, closed at nine
-events; and the CLI packet — `usf graph lanes` delivered, the restoration chain
-decided against because a single invocation would hide the between-step digest
-read-backs that make it safe.
+**Projection is proven, not asserted.** The fifteen ANQR architecture
+requirements are DeliveryFacets attached to the capabilities whose realisation
+they constrain, so they enter the existing implementation-conformance path: the
+new lane counts 739 requirements against the released 724, reports
+`architecture: 15 NOT_ASSESSED`, brings `platformparity` into the denominator
+with a ready implementation unit, and moves eight existing capabilities to
+awaiting-conformance-check. A requirement that generated no work would have been
+a projection defect by this model's own invariant.
 
-**V3 is technically ready to tag and is not tagged.** The canonical branch is
-pushed and remote HEAD equals local HEAD.
+### Next safe actions, in order
 
-### Graph correctness
+1. **Fix the `usf transact` novelty blind spot.** Its guarantee is that the
+   resulting corpus satisfies every invariant before any path is written, but its
+   validation walks the on-disk `graph/` tree and substitutes postimages only for
+   files it found, so a transaction that *creates* a graph source never parses or
+   checks the bytes it produces. The semantic-build transaction reported
+   `graphFilesParsed: 21` and `resultingQuadCount: 33 177` while creating nine
+   sources carrying 3 611 quads; both real defects in them were caught only by
+   running `usf graph integrity` afterwards. Same family as the flat-`readdir`
+   blind spot — that repair fixed recursion but not novelty. Needs the staged
+   chain, because `src/commands/` is outside transact's authorized prefixes.
+2. **Bind enforcement to the fifteen architecture facets.** Each needs a named
+   tool, invocation and configuration digest, then an adversarial verification
+   showing a planted violation failing. Until then none is proof, by the
+   `verification-must-be-verified` invariant.
+3. **Realise the nine unrealised architecture components**, starting with
+   `artefact-ports` and `artefact-application`, so the declared topology stops
+   being aspirational.
+4. **Author the experience dimension as `uisemantics` facets** on the journeys
+   the exposure classification marks directly-journey-visible, then the design
+   tokens and the Preact web surface bound through an implementation pack.
 
-The USF and ANQR graphs were exercised structurally on 2026-09-03. The gate read
-its directory non-recursively and checked 14 of 21 authored sources, so the whole
-ANQR product graph had never been integrity-checked; `usf transact` had the same
-loader, so its guarantee about the resulting corpus was true of 14 of 21 sources
-in the write path. Both recurse now, excluding fixtures. Three invariants were
-added, 126 undeclared predicates were declared, and four untyped unreachable
-subjects were typed and connected.
+### Open and honestly unfinished
 
-The corpus is now one connected component of 4 700 subjects and 13 593 edges,
-every subject typed, every predicate declared, out-degree minimum 1 with zero
-sinks, dependency edges acyclic, 16 invariants, 0 owned violations. Full figures,
-proofs and nonclaims:
-[`acceptance/2026-09-03-graph-correctness-proof.md`](acceptance/2026-09-03-graph-correctness-proof.md).
-
-### Hermes is running
-
-The BAU supervisor is live on the composed ANQR+USF manifest.
-
-| | |
-|---|---|
-| Supervisor | `e044d931ac704d9e6aa26ab39` |
-| Manifest | `graph/manifests/anqr-with-foundation.json` |
-| Concurrency / dispatch limit / pause | 5 / 12 / 60 s |
-| Denominator | 103 capabilities, 724 requirements |
-| Modules landed / conformance tests landed | 103 / 103 |
-| Ready / blocked-on-predecessor / awaiting check | 0 / 0 / 0 |
-| Blockers | 0 |
-| Cumulative tokens / provider activity | 0 / none |
-| Last reason | `no ready implementation work remains` |
-
-It cycles and finds nothing to do, which is the intended terminal state rather
-than an idle failure: every capability has a landed module and a landed
-conformance test, and no requirement is awaiting a check. Observed across four
-cycles it mutates nothing — the working tree stays clean, the corpus stays at
-33 177 quads, the gate stays conforming, the live lane stays 9/9 and both
-realisation frontiers stay empty. It has dispatched nothing to any provider and
-spent no tokens, because there is no work to dispatch.
-
-`./bin/usf hermes stop` requests an orderly drain at a cycle boundary and is
-idempotent.
-
-### Adversarial verification passed
-
-The release evidence was re-tested as a claim to falsify. The candidate survived
-with **no release-blocking defect**, and the verdict is **READY_TO_TAG**,
-deliberately not tagged.
-
-The material weakness in the earlier proofs was that each one *copied*
-`.usf/cache` and `.usf/catalog` from the canonical tree, which is not a fresh
-machine. This exercise copied nothing: it cloned from the remote into an empty
-directory and bootstrapped over the network. The refetched catalogue **does not
-match** the recorded one — models.dev has moved to 212 provider routes and 7 495
-model routes with different digests — and every semantic identity still
-reproduced, which is the strongest available demonstration that the catalogue is
-an external fact rather than a semantic input.
-
-One controlled Hermes perturbation, deleting a product capability's conformance
-evidence, was detected precisely (38/39, one capability, five facets), repaired
-autonomously with zero provider contact and zero tokens, and returned the verdict
-digest to exactly its canonical value with no unrelated mutation. Seven negative
-perturbations were each rejected for the correct reason; notably the flat
-graph-source loader reports `gateConforming: true` over 14 of 21 sources, so only
-the regression test catches it.
-
-Full evidence, including the dependency classification and the recovery
-read-back proof, is appended to
-[`acceptance/2026-09-03-hermetic-release-proof.md`](acceptance/2026-09-03-hermetic-release-proof.md).
-
-### Released: hermetic-release-1
-
-The certified candidate `9e6239e` is tagged. `hermetic-release-1` is an
-annotated tag object `1daecb23b949a5d341821cc7f557925a43af06b0` targeting that
-commit; only the tag was pushed, no branch moved and no release commit was
-introduced.
-
-The tag was then treated as the authority. Cloned by tag from the remote into an
-empty directory with nothing copied — no `.usf`, no package store, no generated
-state, no integration refs — and bootstrapped only through
-`./scripts/bootstrap.sh`, it reproduced every deterministic semantic identity:
-21 sources, 33 177 quads, 4 751 subjects, 1 291 predicates, one component, 16
-invariants, 15/15 manifests, 421/421 tests, the live lane at 9/9 with an
-identical semantic digest, all three verdict digests, and the ANQR closure
-digest with zero drift.
-
-The provider catalogue moved twice during the session and differed again at
-tagged reproduction — 212 provider routes against the recorded 211, and a
-different raw and normalized identity. No semantic identity moved with it, which
-is what classifies models.dev as external runtime discovery rather than semantic
-authority.
-
-Hermes started from the tag with the **same authority identity** as the canonical
-run, reported 103 capabilities with 103 landed modules and 103 landed conformance
-tests, ready 0 and blockers 0, cycled stably with zero provider contact and zero
-tokens, mutated neither the tracked tree nor the corpus, and drained cleanly.
-
-Verdict: **TAGGED_RELEASE_REPRODUCED**. Evidence in
-[`acceptance/2026-09-03-hermetic-release-proof.md`](acceptance/2026-09-03-hermetic-release-proof.md).
+- Fifteen architecture facets are declared blocking and **none is enforced**.
+- One of ten declared architecture components is realised; four of five delivery
+  surfaces are unrealised, so the parity obligations are trivially satisfied and
+  prove nothing yet.
+- The 86-locale claim is a denominator with a blocking parity obligation, not an
+  assertion that any translation is reviewed. Observed at the legacy source:
+  `en-US` carried 1994 interface keys while the template and every other locale
+  carried 1676, and the legacy guard tolerated the gap.
+- ANQR `typecheck` is still unexecutable from a clean clone because TypeScript is
+  not a declared dependency and `node_modules` is absent, so the released
+  product repository's own typecheck script has never run. Codec evidence comes
+  from `node --test`, which needs no dependency.
+- Hosting and deployment targets are undetermined; every staging and production
+  requirement records that.
+- No experience profile, design profile, implementation pack, experience binding
+  or coverage evaluator exists yet, and no vertical slice is rendered.
 
 ## Closed boundaries
 
