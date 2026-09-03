@@ -112,6 +112,61 @@ items are open, each needing a decision or ordinary work rather than a gate:
    consumers, which mints construction grants and is worth doing only if that
    lane's completion is wanted for its own sake.
 
+### Outstanding work cleared
+
+Four items from the outstanding list are resolved, and two findings came out of
+doing it.
+
+**A regression I introduced is fixed.** Retiring four recovery works recorded a
+`retirementDisposition` the deriver had never been taught, so they went on
+projecting as `blocked`. Blocked means cannot proceed yet; retired means will
+not proceed and that is the decision, and reporting the second as the first
+reads as a backlog — precisely the misreading the capture-remainder work existed
+to remove, reappearing in my own change. `work.ts` now derives a `retired`
+stage, and it displaces only `blocked`: a retired work that is somehow
+actionable or complete keeps that stage so an inconsistency surfaces rather than
+being hidden by the label. The recovery lane now reads four retired, two blocked
+on completion currentness, three construction-ready. Planted-defect proven.
+
+**The three planned commands are assessed rather than built.** None was ever
+graph-declared as a `RegisteredCliCommand`, so by the corpus's own rule — help
+text alone is not command authority — they were never properly registered.
+`drift` is superseded: `usf profile status` compares recorded against current
+foundation digests and reports currentness, external-fact drift and the moved,
+added and removed resource sets, without repair, which is drift's entire
+declared purpose under a better-scoped name. `observe` is superseded: six
+commands already observe their own domain with their own identity binding, and a
+unifying command would add a second path to facts that each have exactly one
+owner. `review` keeps verdict `SURVIVING_INVARIANT_REQUIRES_MECHANISM`: the
+cross-family half is implemented as the `review-diverse` routing strategy, but
+the declared shape excludes the route that produced a candidate, and a candidate
+carries no producer identity — deliberately, since actual identity lives in
+execution evidence, which is ignored disposable state and may never be selection
+authority. Implementing it as declared needs a candidate-envelope change, not a
+wrapper.
+
+I tried removing the three from the help surface and reverted it. A test
+asserts that one static registry covers parsing and every self-describing help
+topic, and the corpus requires that registry be reserved once as a closed
+machine-readable set and stay immutable to later packets. Removing entries broke
+that invariant, so the help listing stands and the graph now records why the
+three will not arrive.
+
+**The disposition ledger carries a verification note**, added without
+reordering the file: one line stating the 87-of-90 result, the two
+mis-dispositioned concepts, the one genuine gap, and that only 19 of the 29
+integrity branches land in the suite their shared reason claims.
+
+**A bound was mis-calibrated and is recalibrated.** The graph loader refused with
+`MANIFEST_SOURCE_TOO_LARGE` once `graph/v3-delivery.nq` reached 2 100 737 bytes
+against a hardcoded 2 MiB. At that figure the guard was refusing the
+repository's own largest authored source rather than protecting against a
+malformed one, so it is now 4 MiB in both the graph loader and the semantic
+store, which had to move together or the store would refuse what the loader
+accepts. The aggregate 64 MiB bound is unchanged and the quad count is 26 068 of
+100 000, so loading stays bounded. A single source approaching 4 MiB again is a
+signal to split the graph rather than raise the guard twice.
+
 ### Historical knowledge confirmed, historical dependency retired
 
 **Confirmed: 87 of the 90 concepts the disposition ledger committed to

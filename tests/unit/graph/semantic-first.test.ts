@@ -410,3 +410,34 @@ test("the immutable packet core and persisted construction basis rederive exactl
   const rederived = await deriveCurrentRealisationBasis(repositoryRoot, current.realisationBasis);
   assert.equal(rederived.basisDigest, current.realisationBasis.basisDigest);
 });
+
+test("a retired work projects as retired, never as blocked", () => {
+  // Blocked means "cannot proceed yet"; retired means "will not proceed, and
+  // that is the decision". Reporting the second as the first reads as a
+  // backlog, which is the exact misreading the capture-remainder assessment
+  // existed to remove -- and it reappeared here the moment four works were
+  // retired without the deriver being taught the predicate.
+  const graph = loadSemanticGraph(repositoryRoot, "graph/manifests/self-host-semantic-recovery.json");
+  const result = deriveWork(graph, { selector: "profile:urn:usf:profile:v3-semantic-recovery:1", maxItems: 20 });
+  assert.equal(result.status, "ok");
+  const byId = new Map((result.items ?? []).map((packet) => [packet.id, packet]));
+
+  // The four retired works carry a retirementDisposition and none may read blocked.
+  for (const name of ["semantic-graph-exchange", "semantic-recovery-inventory",
+    "semantic-factory-qualification", "semantic-recovery-acceptance"]) {
+    const packet = byId.get(`urn:usf:work:${name}`);
+    assert.ok(packet, `${name} must still be derived: retirement is a disposition, not a deletion`);
+    assert.equal(packet!.realisationStage?.stage, "retired", name);
+    assert.equal(packet!.realisationStage?.actionable, false, `${name} must not be actionable`);
+  }
+
+  // The two whose declared outputs all landed are blocked on completion
+  // currentness, not retired. Retirement must not swallow them.
+  for (const name of ["semantic-manifest-store", "semantic-recovery-tooling"]) {
+    assert.equal(byId.get(`urn:usf:work:${name}`)?.realisationStage?.stage, "blocked", name);
+  }
+
+  // And the lane derives at all. Before the phantom readPaths were dropped it
+  // refused outright with WORK_DEPENDENCY_MISSING, so no state was visible.
+  assert.ok((result.items ?? []).length >= 9);
+});

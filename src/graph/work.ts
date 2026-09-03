@@ -118,7 +118,7 @@ export interface WorkEligibilityProjection {
 }
 
 export interface WorkRealisationStageProjection {
-  stage: "construction-ready" | "checked-awaiting-integration" | "verified-complete" | "blocked";
+  stage: "construction-ready" | "checked-awaiting-integration" | "verified-complete" | "blocked" | "retired";
   actionable: boolean;
   stageAuthorityDigest: string;
   completion: {
@@ -1805,13 +1805,24 @@ function materializePacket(
     && receiptMember.basisDigest === basis.basisDigest
     && receiptMember.scopedDependencyDigest === basis.work.scopedDependencyDigest
     && receiptMember.workDigest === basis.work.resourceDigest;
+  // A work the corpus has retired must not project as blocked. Blocked means
+  // "cannot proceed yet"; retired means "will not proceed, and that is the
+  // decision". Reporting the second as the first reads as a backlog, which is
+  // exactly the misreading the capture-remainder work existed to remove.
+  // Retirement only displaces blocked: a retired work that is somehow
+  // actionable or complete keeps that stage, so an inconsistency surfaces
+  // rather than being hidden by the label.
+  const retired = graph.quads.some((quad) =>
+    quad.subject === id && quad.predicate === predicate("retirementDisposition"));
   let stage: WorkRealisationStageProjection["stage"] = completion.verified
     ? "verified-complete"
     : checkedCurrent
       ? "checked-awaiting-integration"
       : derivation.packet.eligibility?.construction.eligible === true
         ? "construction-ready"
-        : "blocked";
+        : retired
+          ? "retired"
+          : "blocked";
   if (stage === "construction-ready" && derivation.packet.eligibility?.construction.eligible !== true) stage = "blocked";
   const realisationStage: WorkRealisationStageProjection = {
     stage,
