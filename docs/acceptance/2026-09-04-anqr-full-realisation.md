@@ -374,6 +374,12 @@ still stand.
   internal error." It is recorded rather than fixed because `src/` is outside
   the transaction's authorised paths and the repair belongs in its own packet.
 - **No screenshot or human-review evidence exists**, by choice.
+- **A timed integration test became marginal because of this work.** The
+  loaded corpus grew from about 33 000 quads to about 41 700; a profile-bound
+  provider census measures 2.9 to 3.1 seconds and its five-second hang guard
+  intermittently failed under parallel load. The guard was raised to twenty
+  seconds with the measurement recorded, because the cause was headroom rather
+  than a regression. Four consecutive clean runs afterwards.
 - Nothing is pushed.
 
 ## 35. Repository and worktree cleanliness

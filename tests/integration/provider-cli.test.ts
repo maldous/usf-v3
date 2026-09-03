@@ -39,8 +39,20 @@ const trackedQualificationAuthority = Object.freeze({
   policy: createQualificationPolicy(trackedQualificationConfig.policy),
 });
 
+/**
+ * A hang guard, not a performance budget.
+ *
+ * Five seconds was sized when the loaded corpus was about 33 000 quads. It is
+ * now about 41 700, a profile-bound census measures 2.9 to 3.1 seconds on its
+ * own, and under parallel test load that intermittently crossed five. The
+ * failure was real and its cause was headroom, so the guard moves rather than
+ * the measurement being explained away. Nothing here asserts speed; if a
+ * command genuinely hangs, twenty seconds still catches it.
+ */
+const COMMAND_HANG_GUARD_MS = 20_000;
+
 function invoke(args: readonly string[], input?: string, extraEnvironment: NodeJS.ProcessEnv = {}, cwd = repositoryRoot): Record<string, unknown> {
-  const result = spawnSync(usf, args, { cwd, encoding: "utf8", input, timeout: 5_000, env: { ...process.env, ...extraEnvironment, GIT_TERMINAL_PROMPT: "0" } });
+  const result = spawnSync(usf, args, { cwd, encoding: "utf8", input, timeout: COMMAND_HANG_GUARD_MS, env: { ...process.env, ...extraEnvironment, GIT_TERMINAL_PROMPT: "0" } });
   assert.equal(result.error, undefined, `command timed out: ${args.join(" ")}`);
   assert.equal(result.stderr, "", `command wrote stderr: ${result.stderr}`);
   assert.equal(result.status, 0, `command failed: ${result.stdout}`);
@@ -236,7 +248,7 @@ test("registered provider CLI evaluates semantic inputs and routes fixture facts
 
 test("availability requires explicit zero-paid contact controls and help describes the subcommands", (t: TestContext) => {
   if (childProcessUnavailable(t)) return;
-  const result = spawnSync(usf, ["probe", "availability"], { cwd: repositoryRoot, encoding: "utf8", timeout: 5_000 });
+  const result = spawnSync(usf, ["probe", "availability"], { cwd: repositoryRoot, encoding: "utf8", timeout: COMMAND_HANG_GUARD_MS });
   assert.equal(result.status, 2);
   const refusal = JSON.parse(String(result.stderr).trim()) as Record<string, unknown>;
   assert.equal(refusal.reasonCode, "PROBE_ARGUMENTS_INVALID");
@@ -281,7 +293,7 @@ test("availability rejects self-authored account evidence under a sanitized Git 
   ], {
     cwd: repositoryRoot,
     encoding: "utf8",
-    timeout: 5_000,
+    timeout: COMMAND_HANG_GUARD_MS,
     input: JSON.stringify({
       providerId: "groq",
       requestedModelId: "qwen/qwen3.6-27b",
@@ -316,7 +328,7 @@ test("availability containment refusals retain exit 5 before any provider contac
     "--economics", "outside.json",
     "--allow-inference",
     "--max-cost-usd", "0",
-  ], { cwd: repositoryRoot, encoding: "utf8", timeout: 5_000 });
+  ], { cwd: repositoryRoot, encoding: "utf8", timeout: COMMAND_HANG_GUARD_MS });
   assert.equal(result.status, 5);
   assert.equal(result.stdout, "");
   const refusal = JSON.parse(String(result.stderr).trim()) as Record<string, unknown>;
@@ -328,7 +340,7 @@ test("the shell launcher passes --env-file to USF instead of Node", (t: TestCont
   const result = spawnSync(usf, ["help", "--env-file", "/definitely/not/a/usf-env-file"], {
     cwd: repositoryRoot,
     encoding: "utf8",
-    timeout: 5_000,
+    timeout: COMMAND_HANG_GUARD_MS,
   });
   assert.equal(result.error, undefined);
   assert.equal(result.status, 2);
