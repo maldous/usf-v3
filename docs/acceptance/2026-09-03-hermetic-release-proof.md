@@ -440,3 +440,205 @@ unexplained mutation.
 **READY_TO_TAG** — and deliberately not tagged. ANQR is not yet fully modelled;
 this candidate is a clean starting line, and its three open surfaces are recorded
 decisions rather than conformance debt.
+
+---
+
+# Release finalisation — 2026-09-03
+
+The historical proofs above are unchanged. This section records tagging and
+independent reproduction from the tag, in four distinct stages.
+
+## 1. Certified pre-tag candidate
+
+Reconfirmed before anything was created.
+
+| | |
+|---|---|
+| Local HEAD | `9e6239e35dd1eebd50e8d381928a6329064b3145` |
+| Remote branch HEAD | identical |
+| Tree | `90a327dfa7c6d6beed68cf90ecdd9865fe324a44` |
+| Tracked tree | clean — 0 staged, 0 unstaged, 0 untracked |
+| Worktrees | 1 |
+| Hermes | stopped, liveness `absent`, 0 processes |
+| Dangling symlinks / temp state / test clones | 0 / 0 / 0 |
+| Acceptance record at the certified commit | 442 lines, adversarial section present, `READY_TO_TAG` verdict present |
+
+The candidate identity had not changed, so tagging proceeded.
+
+## 2. Tag creation
+
+The convention was read from practice rather than assumed: the repository has no
+declared tag policy, `package.json` is `0.0.0` and private, and the one existing
+tag is the annotated `semantic-realisation-1` — a kebab-case
+`<milestone>-<sequence>` name with an annotation carrying completion state,
+verdict digests and a pointer to the proof record. This boundary is named
+"Hermetic V3 release proof" by the repository itself, so the tag follows as
+`hermetic-release-1`.
+
+| | |
+|---|---|
+| Tag name | `hermetic-release-1` |
+| Object type | annotated tag object |
+| Tag object digest | `1daecb23b949a5d341821cc7f557925a43af06b0` |
+| Tagged commit | `9e6239e35dd1eebd50e8d381928a6329064b3145` |
+| Tagger | maldous, 2026-09-03T19:44:30+10:00 |
+| Remote ref | `refs/tags/hermetic-release-1` → `1daecb23…`, object type `tag`, target `9e6239e…` |
+
+**Only the tag was pushed.** No branch moved, no commit was amended, no source
+changed, no semantic artefact was regenerated and no release commit was
+introduced. The established mechanics required none: the annotated tag is the
+release object. The branch head was verified still at `9e6239e` after the push.
+
+## 3. Clean tag reproduction
+
+A new empty directory, `git clone --branch hermetic-release-1` from the remote,
+and a separate clone of the product repository at `1cf44ce`. Nothing was copied
+from the canonical checkout — no `.usf`, no `node_modules`, no package store, no
+generated state, no worktree, no semantic artefact, no historical integration
+refs (the clone fetched zero `refs/usf/*`). Bootstrapped only through
+`./scripts/bootstrap.sh`.
+
+`git describe --tags --exact-match` reports `hermetic-release-1`, HEAD is the
+certified commit and the tree digest matches.
+
+### Three identity classes, deliberately separated
+
+| Class | At the tag | Recorded during development | Verdict |
+|---|---|---|---|
+| **Raw external catalogue** | `sha256:a5f72158214ee23f7751e290829085706a53a392282431abc00ea5bcf369484c`, 212 provider routes, 7 495 model routes | `sha256:9c9be3f3…`, 211 / 7 488 | **differs — expected** |
+| **Normalized catalogue basis** | `sha256:25ab00464728b47b590a290cc9622adf5c8b66abb7e0fed21f2dcc6e6994fde9` | `sha256:f54dc34e…` | **differs — expected** |
+| **Semantic identities** | see below | | **all identical** |
+
+models.dev moved twice within this session's window — during adversarial
+verification it read `sha256:d3664a80…`, and at tagged reproduction
+`sha256:a5f72158…`. Both differ from development, and no semantic identity moved
+in either case.
+
+**This is external runtime and provider discovery, not semantic authority.** The
+catalogue is refetched at bootstrap, digest-recorded for attribution, and read as
+an external fact; its movement is reported as drift and never as staleness. It is
+classified as such here because the semantic identities below are unchanged. Its
+current or historical digest is deliberately not a release requirement.
+
+### Semantic identities reproduced from the tag
+
+| Property | Required | Observed | |
+|---|---|---|---|
+| Semantic sources | 21 | 21 | MATCH |
+| Quads | 33 177 | 33 177 | MATCH |
+| Subjects | 4 751 | 4 751 | MATCH |
+| Predicates | 1 291 | 1 291 | MATCH |
+| Connected components | 1 | 1 | MATCH |
+| Invariants / owned violations | 16 / 0 | 16 / 0 | MATCH |
+| Legacy debt / constant | 24 / 24 | 24 / 24 | MATCH |
+| Gate conforming | true | true | MATCH |
+| Manifests | 15/15 | 15/15 | MATCH |
+| Tests | 421/421 | 421/421 | MATCH |
+| Live lane | 9/9 `verified-complete` | 9/9 | MATCH |
+| Lane semantic digest | `sha256:2e6a4780…` | identical | MATCH |
+| Verdict digest, core | `sha256:e958768a…` | identical | MATCH |
+| Verdict digest, anqr | `sha256:17d52953…` | identical | MATCH |
+| Verdict digest, composed | `sha256:3a9fa0d6…` | identical | MATCH |
+| Facet states, all lanes | U0 B0 S0 N0 | U0 B0 S0 N0 | MATCH |
+| USF artefacts | 29 satisfied, 0 drifted, frontier 0 | identical | MATCH |
+| ANQR closure digest | `sha256:a3a2d810…` | identical, `current`, 0 drift | MATCH |
+| Containment | pass, 9 rules | pass | MATCH |
+
+Recursive source discovery confirmed **active**: 21 authored `.nq` files exist
+excluding fixtures, a root-only read would find 14, and the gate reports 21 with
+7 product-overlay sources inside the corpus. Product neutrality holds one-way:
+four core manifests contain 0 `urn:anqr:` quads, the product manifest contains
+3 948. Conformance evidence regenerated from tracked bytes in five cage cycles
+with nothing dispatched to any provider.
+
+### One reproduction failure, diagnosed to the environment
+
+The first full-suite run from the tag reported **420/421**.
+`tests/integration/publish-transition.test.ts:115` asserts a published receipt is
+mode `0644` and observed `0600`. The cause was the reproduction shell's
+`umask 077`, which I had set earlier to satisfy the private-state ancestry
+requirement; `src/commands/publish.ts` requests `atomicCreate(..., 0o644)` and
+the umask masked it down. Rerun under the operator default umask the same test
+passes and the suite reports **421/421**. Recorded rather than omitted: the
+release's receipt mode is umask-derived, and the test asserts the code's intent
+under a normal umask.
+
+## 4. Final operational smoke proof
+
+From the tagged checkout only.
+
+```sh
+./scripts/bootstrap.sh                                     # offline install + catalogue refresh
+./bin/usf graph integrity                                  # 21 sources, 33 177 quads, gate true
+./bin/usf graph lanes                                      # 15 manifests, 9 profiles, 34 lanes, 1 covered
+./bin/usf work --manifest graph/manifests/anqr-with-foundation.json --max-items 1
+./bin/usf hermes implement --manifest graph/manifests/anqr-with-foundation.json
+./bin/usf profile status --manifest graph/products/anqr/manifest.json
+./bin/usf help review --json                               # availability: superseded
+./bin/usf restore                                          # COMMAND_UNKNOWN
+```
+
+The composed USF/ANQR manifest resolves to `sha256:0666476e…`. Capability,
+module and conformance relationships are inspectable: 103 capabilities, 724
+requirements, 103 landed modules, 103 landed conformance tests, 0 awaiting a
+check, and all 103 carry an evidenced module-and-conformance pair — for example
+`urn:anqr:delivery-capability:qrdecoding` binding
+`src/capabilities/analysis/qrdecoding.ts` to
+`tests/conformance/analysis/qrdecoding.conformance.test.ts`.
+
+`review`, `observe` and `drift` each report availability `superseded` and refuse
+`COMMAND_NOT_IMPLEMENTED`. **`usf restore` remains `COMMAND_UNKNOWN`.**
+
+The documented recovery verification path was exercised: with one packet staled,
+`publish construction-authority --verify` ran twice byte-identically, left the
+tracked tree unchanged, reported `verified-without-publication`, and projected
+the three read-backs an operator must compare — `baseSemanticDigest`,
+`resultingSemanticDigest` and `receiptDigest`. No hidden single-command restore
+path has appeared. The probe was reverted to zero diff.
+
+### Hermes from the tag
+
+Started against the tagged composed manifest as supervisor
+`4e1621263a1bf49f4ea2cc864` with **authority identity
+`sha256:19789067565af8195dffc5066a29c62b572b2f4caaceadd940217cc1a6a0dbf5` —
+identical to the canonical run**, concurrency 5, dispatch limit 12.
+
+| Required | Observed |
+|---|---|
+| Capabilities | 103 |
+| Landed modules | 103 |
+| Landed conformance tests | 103 |
+| Ready | 0 |
+| Blocked on predecessor | 0 |
+| Awaiting conformance check | 0 |
+| Blockers | 0 |
+| Provider contact | 0 |
+| Token consumption | 0 |
+| Repeated stable cycles | cycles 1 → 2 observed across four samples |
+| Tracked-tree mutation | none — tree `90a327df…` unchanged |
+| Semantic-corpus mutation | none — graph bytes and 33 177 quads unchanged |
+
+Drained at a cycle boundary: `outcome: drained`, `drained: true`,
+`waitedMs: 501`, `terminationSignal: null`, liveness `absent`.
+
+The adversarial perturbation was **not** repeated. It was already certified
+against this exact commit and the tagged checkout behaved identically to the
+certified candidate.
+
+## Release hygiene
+
+Reproduction checkout removed. No usf or Hermes process remains. Canonical
+environment clean at `9e6239e`, tree `90a327df…`, 1 worktree, Hermes stopped,
+zero dangling symlinks, zero temporary release state. Remote branch head still
+`9e6239e`. Remote tag `hermetic-release-1` resolves to annotated tag object
+`1daecb23…` whose target is the certified commit. Two tags exist on the remote:
+`semantic-realisation-1` and `hermetic-release-1`.
+
+## Verdict
+
+The remote tag, checked out into an empty environment with nothing copied and
+bootstrapped only through documented mechanisms, independently reproduced every
+deterministic semantic identity of the certified release while the mutable
+provider catalogue moved beneath it.
+
+**TAGGED_RELEASE_REPRODUCED**

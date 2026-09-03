@@ -118,6 +118,36 @@ Full evidence, including the dependency classification and the recovery
 read-back proof, is appended to
 [`acceptance/2026-09-03-hermetic-release-proof.md`](acceptance/2026-09-03-hermetic-release-proof.md).
 
+### Released: hermetic-release-1
+
+The certified candidate `9e6239e` is tagged. `hermetic-release-1` is an
+annotated tag object `1daecb23b949a5d341821cc7f557925a43af06b0` targeting that
+commit; only the tag was pushed, no branch moved and no release commit was
+introduced.
+
+The tag was then treated as the authority. Cloned by tag from the remote into an
+empty directory with nothing copied — no `.usf`, no package store, no generated
+state, no integration refs — and bootstrapped only through
+`./scripts/bootstrap.sh`, it reproduced every deterministic semantic identity:
+21 sources, 33 177 quads, 4 751 subjects, 1 291 predicates, one component, 16
+invariants, 15/15 manifests, 421/421 tests, the live lane at 9/9 with an
+identical semantic digest, all three verdict digests, and the ANQR closure
+digest with zero drift.
+
+The provider catalogue moved twice during the session and differed again at
+tagged reproduction — 212 provider routes against the recorded 211, and a
+different raw and normalized identity. No semantic identity moved with it, which
+is what classifies models.dev as external runtime discovery rather than semantic
+authority.
+
+Hermes started from the tag with the **same authority identity** as the canonical
+run, reported 103 capabilities with 103 landed modules and 103 landed conformance
+tests, ready 0 and blockers 0, cycled stably with zero provider contact and zero
+tokens, mutated neither the tracked tree nor the corpus, and drained cleanly.
+
+Verdict: **TAGGED_RELEASE_REPRODUCED**. Evidence in
+[`acceptance/2026-09-03-hermetic-release-proof.md`](acceptance/2026-09-03-hermetic-release-proof.md).
+
 ## Closed boundaries
 
 Each boundary below is complete. Its reasoning lives in the commit message named
