@@ -14,6 +14,12 @@
 <urn:anqr:architectural-adapter:png-container> <urn:usf:predicate:inLayer> <urn:anqr:architectural-layer:adapters> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-adapter:png-container> <urn:usf:predicate:objective> "Rasterises and encodes a single-frame PNG." <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-adapter:png-container> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalAdapter> <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-adapter:png-image-source> <urn:usf:predicate:adapterImplementsPort> <urn:anqr:architectural-port:image-source> <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-adapter:png-image-source> <urn:usf:predicate:canonicalName> "png-image-source" <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-adapter:png-image-source> <urn:usf:predicate:fulfilsPort> <urn:anqr:architectural-port:image-source> <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-adapter:png-image-source> <urn:usf:predicate:inLayer> <urn:anqr:architectural-layer:adapters> <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-adapter:png-image-source> <urn:usf:predicate:objective> "Decodes a supplied PNG into pixels for overlay treatment. PNG only, because its filters are reversible and its compression is zlib from the standard library; a lossy format would require a discrete cosine transform implementation and is refused rather than approximated." <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-adapter:png-image-source> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalAdapter> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-adapter:svg-container> <urn:usf:predicate:adapterImplementsPort> <urn:anqr:architectural-port:container-encoder> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-adapter:svg-container> <urn:usf:predicate:canonicalName> "svg-container" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-adapter:svg-container> <urn:usf:predicate:fulfilsPort> <urn:anqr:architectural-port:container-encoder> <urn:anqr:graph:architecture> .
@@ -135,6 +141,7 @@
 <urn:anqr:architectural-port:image-source> <urn:usf:predicate:objective> "Decode a supplied image into pixels for overlay treatment." <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-port:image-source> <urn:usf:predicate:portContractLocation> "packages/artefact/src/ports/image-source.ts" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-port:image-source> <urn:usf:predicate:portDirection> <urn:usf:port-direction:outbound> <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-port:image-source> <urn:usf:predicate:servedByAdapter> <urn:anqr:architectural-adapter:png-image-source> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-port:image-source> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalPort> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-port:inspect-artefact> <urn:usf:predicate:canonicalName> "inspect-artefact" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-port:inspect-artefact> <urn:usf:predicate:objective> "Take an artefact or payload and return its classification, structure and scan safety." <urn:anqr:graph:architecture> .
@@ -569,6 +576,13 @@
 <urn:anqr:generated-code-boundary:product> <urn:usf:predicate:generatedCodeConsumerRule> "Generated code may be imported by the delivery and adapter layers only. No domain, port or application module may depend on it, so regeneration can never change product meaning." <urn:anqr:graph:architecture> .
 <urn:anqr:generated-code-boundary:product> <urn:usf:predicate:generatedCodeLocation> "Any path whose name declares it generated, and localised content resources produced by the translation pipeline." <urn:anqr:graph:architecture> .
 <urn:anqr:generated-code-boundary:product> <urn:usf:predicate:type> <urn:usf:type:GeneratedCodeBoundary> <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:boundaryForbids> "No module of a declared architectural component may import from packages/architecture/ or from any test location. Assurance code observes the architecture and must never become something the architecture depends on." <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:boundaryScope> "packages/architecture/ and packages/artefact/tests/ in the ANQR product repository." <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:boundaryScope> <urn:anqr:architecture:1> <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:canonicalName> "assurance-and-test-tooling" <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:dependencyRuleReason> "Enforcement machinery and tests are owned code that belongs to no layer of the product. Naming them as an excluded scope means every source is attributable: assigned to a component, or covered by a declared exclusion. Without it the honest count of unaccounted sources cannot be asserted to be zero, and an unaccounted source is a hiding place." <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:nonClaim> "Exclusion from the component model is not exemption from checking. Sources in these scopes are still enumerated, still parsed for imports, and still subject to every rule that does not depend on component assignment." <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:type> <urn:usf:type:ModuleBoundaryRule> <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:released-capability-convention> <urn:usf:predicate:boundaryForbids> "No module of a declared architectural component may import from src/capabilities/ or tests/conformance/. Those paths are the released one-module-per-capability convention, which predates this architecture and is deliberately outside the hexagonal component model; letting a component depend on them would make the released convention load-bearing for the new topology." <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:released-capability-convention> <urn:usf:predicate:boundaryScope> "src/capabilities/ and tests/conformance/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:released-capability-convention> <urn:usf:predicate:boundaryScope> <urn:anqr:architecture:1> <urn:anqr:graph:architecture> .
