@@ -10,11 +10,11 @@ validation rather than asserted.
 
 | | |
 |---|---|
-| Carrier | `v3-authority-transition`, clean |
-| Tests | 417/417, typecheck clean |
+| Carrier | `f049355` on `v3-authority-transition`, clean, **pushed** |
+| Tests | 421/421, typecheck clean |
 | Containment | pass — 9 rules, every one planted-defect proven, plus two exemption guards |
 | Integrity gate | conforming — **16 invariants**, 0 owned violations, 24 legacy against a constant of 24 |
-| Corpus | 21 sources, 32 681 quads, 4 700 subjects, 1 283 predicates, **1 connected component** |
+| Corpus | 21 sources, 33 177 quads, 4 751 subjects, 1 291 predicates, 13 773 edges, **1 connected component** |
 | Manifests | 15 of 15 derive; none refuses |
 | Realisation lanes | 34 total; **1** policy-covered (`self-host-provider-v3` x `v3-self-host:3`) at 9/9 `verified-complete` |
 | Capabilities | core 64/64, anqr 39/39, **composed 103/103**; every frontier empty |
@@ -31,39 +31,22 @@ and the nonclaims, with its remaining sections one file each under
 
 ### What remains
 
-Nothing blocks ordinary operation and nothing gates the terminal outcome. Three
-items are open, each a decision rather than unfinished work. Two former items
-are resolved by the lane census below.
+Nothing blocks build, test, containment, integrity, realisation or Hermes. Three
+surfaces are open, and all three are recorded decisions rather than debt:
+33 of 34 lanes are policy-uncovered by design, four works are uncoverable under
+any profile, and 24 legacy integrity violations sit at an unchanged recorded
+constant of 24. Each is stated with its evidence in
+[`acceptance/2026-09-03-hermetic-release-proof.md`](acceptance/2026-09-03-hermetic-release-proof.md).
 
-1. **A registered restore command, and a corpus lane projection.** The
-   stale-completion chain has been run by hand more than twenty times through a
-   scratch script, and the lane census had to be assembled by iterating
-   `usf status` over the cross product of manifests and profiles. Both belong in
-   the CLI, and both need `src/commands/help.ts` and `dispatcher.ts`, which
-   `operator-observability` owns — so registering either costs the staged chain,
-   two construction grants and a full cohort restoration. Deferred by operator
-   decision to its own packet where that cost is budgeted rather than absorbed
-   into a release. The chain and its traps are in the operator skill, so the
-   deferral loses no knowledge.
-2. **Six profiles still have no declared disposition.** `v3-self-host` is
-   declared — revision 3 current, revisions 1 and 2 closed. The hermes,
-   semantic-first, semantic-recovery and three ANQR profiles are not. The
-   evidence is now derived rather than absent: the census shows each of their
-   lanes is policy-uncovered and therefore uncompletable, so the choice is
-   between declaring each closed and giving it a policy pair. That is a
-   decision, and an uncovered lane is deliberately not asserted to be a
-   superseded one.
-3. **`usf review` remains `planned`, and the product-event vocabulary is open.**
-   The review command is declared registered surface that has not landed; the
-   cross-provider mechanism it would wrap is implemented and tested, so this is
-   registered-surface debt. The event vocabulary declares the two events the
-   facets name; closing it means deciding the product event set, which is a
-   product decision.
+Four surfaces that were open are now closed by explicit decision: the six
+profile dispositions, derived from the contract-selection lattice; the three
+planned command retirements; the product-event vocabulary, closed at nine
+events; and the CLI packet — `usf graph lanes` delivered, the restoration chain
+decided against because a single invocation would hide the between-step digest
+read-backs that make it safe.
 
-Resolved by `urn:usf:realisation-lane-census:1`: the four works carrying no
-publication policy anywhere are now named on that record as structurally
-uncoverable, and the 33 lanes reporting outstanding work are explained as a
-policy-admission fact rather than a backlog.
+**V3 is technically ready to tag and is not tagged.** The canonical branch is
+pushed and remote HEAD equals local HEAD.
 
 ### Graph correctness
 

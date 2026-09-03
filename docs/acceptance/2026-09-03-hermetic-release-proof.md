@@ -1,0 +1,254 @@
+# Hermetic V3 release proof — 2026-09-03
+
+This is a status record. `GOAL.md` remains the normative directive.
+
+USF V3 is hermetic. V1 and V2 are historical provenance only. ANQR sits inside
+the same validated semantic authority and realisation methodology as USF. A
+clean clone independently reproduces the build, the tests, the graph invariants
+and every deterministic identity. The canonical branch is pushed. The working
+tree is clean.
+
+**V3 is technically ready to tag. This record does not tag it.**
+
+## Release identity
+
+| | |
+|---|---|
+| HEAD | `f049355048355ed0cc04ad188fa336ea7daa6483` |
+| Tree | `dd59d55a4296244a7e0a0238510d441a0259b4a9` |
+| Branch | `v3-authority-transition` |
+| Remote | `github.com/maldous/usf-v3`, ref sha equals local HEAD, 0 ahead |
+| Working tree | clean, 0 entries, 1 worktree |
+| Product repository | `maldous/anqr-v3` `main` at `1cf44ce093028f77bbf6a4db67ae1d0600570283`, clean, 0 ahead |
+
+27 commits were pushed. The range was inspected in full: one author and one
+committer throughout, zero merge commits, the remote an ancestor of local HEAD
+so the push was a fast-forward with no history rewritten, and every touched path
+inside the repository tree. Ten commits are from this boundary; seventeen were
+already unpushed before it.
+
+## Corpus
+
+| | |
+|---|---|
+| Authored graph sources | **21** (recursive; `graph/fixtures/` deliberately excluded) |
+| Quads | **33 177** |
+| Subjects | **4 751** |
+| Predicates | **1 291** |
+| Edges between defined subjects | **13 773** |
+| Weakly connected components | **1** |
+| Out-degree minimum / sinks | **1 / 0** |
+
+## Gate
+
+| | |
+|---|---|
+| Invariants checked | **16** |
+| Violations in owned graphs | **0** |
+| Legacy violations / accepted constant | **24 / 24** |
+| `gateConforming` | **true** |
+| Unparsed sources | **0** |
+| Undeclared predicates | **0** of 1 291 |
+| Untyped subjects | **0** of 4 751 |
+| Undeclared types | **0** |
+| Dependency edges / cycle | 260 / **none** |
+
+## Build, test, containment, derivation
+
+| | |
+|---|---|
+| Build | offline frozen-lockfile bootstrap, no network fetch, catalogue at the exact recorded digests |
+| Tests | **421/421**, typecheck clean |
+| Containment | **pass**, 9 rules |
+| Manifest derivation | **15/15** |
+| Transaction postimage validation | 21 sources, 33 177 quads, 16 invariants, conforming |
+
+## Deterministic evidence
+
+| Lane | Capabilities | UNSATISFIED / BLOCKED / STALE / NOT_ASSESSED | Verdict digest |
+|---|---|---|---|
+| core | 64/64 | 0 / 0 / 0 / 0 | `sha256:e958768a3ba88f5e2efb45c983668fb4e7dce3c1d5deb95f6397bb8412d7f306` |
+| anqr | 39/39 | 0 / 0 / 0 / 0 | `sha256:17d52953f7217e8acb6d9818c67c45eedef40e92d7e2963140925f5284df09cf` |
+| composed | 103/103 | 0 / 0 / 0 / 0 | `sha256:3a9fa0d63031954f8f701f1aa0ae3694390315fa9a46bebdb16afefba674f0ac` |
+
+Semantic authority identity of the live lane:
+`sha256:2e6a4780d3dc17df860f226093622aacf7dc2c220ccf87a68de734f9d1a5bf9f`.
+ANQR closure identity:
+`sha256:a3a2d8103e71ff0502a4230308e4b94b167900cf7f309e97f9261310c1eb3b52`.
+
+## Realisation
+
+| | |
+|---|---|
+| USF realisation | 29 artefacts satisfied, 8 superseded, 0 authority-blocked, 0 drifted, frontier 0 |
+| ANQR realisation | `current`, 14-resource closure, 0 moved/added/removed, 0 external drift |
+| Hermes | not running; ready 0, blockers 0, work graphs 0, awaiting conformance check 0 |
+
+## Clean-clone proof
+
+A private standalone lane held `--no-hardlinks` clones of both repositories,
+usf-v3 detached at the release commit and anqr at `1cf44ce`, given only the
+hermetic inputs a third party supplies: the pnpm store and frozen catalogue
+beneath the ignored runtime root, the repository locator, and an empty mode-0600
+env file. `FORCE_COLOR` was unset. The environment had no V1 repository, no V2
+repository, no historical worktree, no historical build product, no historical
+runtime state, no external source tree and, after one removal described below,
+no developer-local symlink.
+
+Every step passed in the clone: offline bootstrap, `usf init`, containment,
+421/421 tests with typecheck clean, graph integrity, 15/15 manifest derivation,
+transaction postimage validation over a product-overlay path, conformance
+evidence regenerated from tracked bytes in five cage cycles with nothing
+dispatched to any provider, USF realisation, ANQR realisation, and Hermes
+readiness. The clone tree stayed clean at the exact commit throughout, and was
+removed once this record was written.
+
+**29 deterministic identities were compared clone against canonical. 0 differ.**
+Source, quad, subject, predicate and component counts; owned, legacy and
+accepted violation counts; the invariant count; all three verdict digests; all
+three capability ratios; all twelve facet state counts; and the lane semantic
+digest.
+
+### One real finding, fixed rather than excused
+
+The proof environment initially contained a developer-local symlink: an
+untracked, **dangling** pnpm-store project link pointing at
+`/tmp/usf-carrier-…/repository`, a carrier lane deleted long ago. It was inert
+and the build succeeded either way, but it is exactly the class of leftover the
+proof environment must not contain. It was removed from the lane and from the
+canonical ignored cache, and the offline build was re-run to confirm nothing
+depended on it. Zero dangling links remain in either.
+
+## Historical independence
+
+Each proposition below is proven twice: statically against the canonical
+checkout, and dynamically by the clean clone completing that step with no
+historical material reachable.
+
+| Proposition | Result |
+|---|---|
+| V1 required to build | **no** |
+| V2 required to build | **no** |
+| V1 required to test | **no** |
+| V2 required to test | **no** |
+| V1 required at runtime | **no** |
+| V2 required at runtime | **no** |
+| V1 required by Hermes | **no** |
+| V2 required by Hermes | **no** |
+| V1 required to realise USF | **no** |
+| V2 required to realise USF | **no** |
+| V1 required to realise ANQR | **no** |
+| V2 required to realise ANQR | **no** |
+
+Static evidence: exactly four tracked files name a historical path, and all four
+are the containment-exempt provenance documents — the containment guard refuses
+any other. No source, test, script or configuration imports a V1 or V2 module or
+package. No build or test script references a historical path; the only matches
+are the containment guard's own prohibition patterns. No code reads a historical
+environment variable. The pinned sources in
+`config/semantic-recovery-sources.json` carry a revision and a tree digest and
+**no filesystem path field at all**, which is what makes them re-obtainable
+rather than depended upon. No Hermes module references historical material.
+
+Retained V3-owned provenance is untouched: the pinned source set, the historical
+inventory, the disposition ledger, the transition record, and the
+re-verification lane. None is a dependency; the lane's extractor takes exact
+supplied bytes and refuses `LEGACY_EXTRACTION_COMMIT_OID_MISMATCH` when the
+pinned sources are not supplied.
+
+## The repaired validation boundary
+
+Each repair retains a planted-defect regression proof.
+
+| Property | Regression proof |
+|---|---|
+| Graph source discovery is recursive | asserts the exact source count derived from the filesystem at run time; a flat `readdir` lands on the root-only figure and fails |
+| Every authored source is parsed | asserts `unparsedFiles` is empty over all 21 |
+| ANQR product graphs cannot bypass integrity | the same count assertion; the overlay is inside it |
+| Transaction postimages cannot bypass validation | a no-op append to a product-overlay path must report 21 sources parsed |
+| Every used predicate is declared | `undeclared-predicate`, planted, reported once per predicate |
+| Every subject is typed | `untyped-subject`, planted |
+| The corpus is one graph | `disconnected-graph`, planted, one violation per component |
+| Integrity output is deterministically ordered | two runs over reversed input agree, including component ordering |
+
+Reverting both loaders to the flat `readdir` that caused the original defect
+fails both discovery tests; restoring the repairs passes both. That was executed,
+not assumed.
+
+## Reference exceptions
+
+20 IRI references resolve to no subject. They are out-of-model **by design** and
+were deliberately not "fixed" to reach zero.
+
+- **11 named-graph labels** (`urn:usf:graph:*`). A named graph is the fourth
+  component of a quad. It is never a subject, so referencing one through
+  `conventionExemptGraph`, `targetNamedGraph`, `admissionGraph` or
+  `stateReasonGraph` is correct and complete.
+- **9 wire schema identities** (`urn:usf:cli-error:1`, `urn:usf:contribution:1`,
+  `urn:usf:lane-census-result:1` and six more). These are the `"schema"` string
+  in a JSON payload, not a graph resource. The declared `urn:usf:schema:*`
+  resources point at them through `schemaIdentity`, so the graph resource and
+  the wire identifier are deliberately distinct identities.
+
+Both classes are registered in `terminalIdentifierKinds`, so the gate treats
+them as terminal rather than dangling — and an unregistered one still fails.
+Registering `usf graph lanes` proved that: its output schema was refused as a
+dangling reference until it joined the list.
+
+**Single-component connectivity is not strong evidence and is not claimed as
+such.** Type-declaration edges connect the corpus by construction: an instance
+reaches its type, its type reaches the meta-type, and the meta-type is in the
+vocabulary. A typed subject therefore cannot be an island however little else
+references it, so only untyped subjects, or subjects whose type is undeclared,
+ever could be. The metric's real value is that it caught four untyped
+definition-only subjects; beyond that it is close to tautological, and a test
+asserts the bound so the number is not over-read.
+
+## Open decision surfaces
+
+These are **deferred product and operational decisions, not hidden release
+failures**. Each is recorded in the graph with its evidence, and none blocks
+build, test, containment, integrity, realisation or Hermes.
+
+1. **33 of 34 realisation lanes are policy-uncovered — 184 of 208 work slots.**
+   Publication-policy admission is a precondition for construction authority and
+   completion, so an uncovered lane cannot complete under any amount of work.
+   This is structural inadmissibility under current policy, recorded on
+   `urn:usf:realisation-lane-census:1`, and it is explicitly **not**
+   implementation backlog. Giving any lane a disjoint policy pair is a decision
+   available at any time; nothing forces it.
+2. **Four works carry no publication policy anywhere in the corpus** —
+   `foreground-lifecycle`, `semantic-first-eligibility`,
+   `realisation-basis-chain`, `semantic-first-lifecycle-admission`. They are
+   reachable only from dispositioned lanes and are named on the census as
+   uncoverable. Recorded rather than repaired: giving them policies would assert
+   authority at a boundary the corpus deliberately moved past.
+3. **24 accepted legacy integrity violations**, all `multiple-type-declaration`
+   on subjects typed in both `urn:usf:graph:integration` and
+   `urn:usf:graph:profile-authority`. The recorded debt constant is 24 and has
+   not been raised. Remodelling those declarations, or exempting the pair
+   explicitly, is a semantic decision.
+
+Four surfaces that were open before this boundary are now closed by explicit
+decision rather than deferred: the six profile dispositions, the three planned
+command retirements, the product-event vocabulary at nine events, and the CLI
+packet — half delivered as `usf graph lanes`, half decided against with the
+reason recorded.
+
+## Nonclaims
+
+- A conforming gate means these 16 invariants hold over these 33 177 quads. It
+  is not a claim of semantic completeness, that unlisted invariants hold, or
+  that the modelling is the best available.
+- Structural correctness is not semantic correctness. Zero dangling references
+  says every reference resolves, not that any statement is true.
+- 29 matching identities prove reproducibility of *derivation* from tracked
+  bytes. They do not prove the derived verdicts are the right verdicts.
+- Excluding `graph/fixtures/` is a deliberate scope decision. Fixture defects
+  are real defects in fixtures and are not corpus defects.
+- Pushing establishes durability, not authority. Git remains carrier and
+  history; currentness binds to content, tree, semantic, inventory and scoped
+  dependency digests inside the repository.
+- Nothing here claims staging, production, live external provider behaviour, or
+  terminal proof beyond the separately recorded declaration.
+- This record does not tag. The release remains an explicit final decision.
