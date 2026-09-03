@@ -1,12 +1,16 @@
 # USF V3 execution shim
 
 `GOAL.md` is the single durable programme directive and semantic precedence
-source for this repository. Read it completely before substantial work. Do not
-create a competing plan, constitution, North Light, or hidden state model.
+source for this repository. It is an index carrying the terminal criteria and
+the nonclaims; its remaining sections are one file each under `docs/goal/`, in
+directive order with their numbering unchanged. Read the directive completely
+before substantial work. Do not create a competing plan, constitution, North
+Light, or hidden state model.
 
 Resolve the repository root with `git rev-parse --show-toplevel`. Keep all
 mutable runtime state under `.usf/`; tracked code and tests must work without
-the historical source paths named in `GOAL.md`.
+the historical source paths named in
+[`docs/goal/03-starting-environment-and-historical-sources.md`](docs/goal/03-starting-environment-and-historical-sources.md).
 
 Historical repositories are read-only evidence. Reuse only bounded components
 with explicit provenance, licence review, removed topology coupling, and new

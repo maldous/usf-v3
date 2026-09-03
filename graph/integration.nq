@@ -641,7 +641,7 @@
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierIntent> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
-<urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:governingGoalSection> "docs/goal/23-bootstrap-self-hosting-and-terminal-proof.md#23.2" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:lineage> <urn:usf:lineage:intent:integration-toolchain-repair:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:initialAdoptionState> "not-adopted" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:integration-toolchain-repair:1> <urn:usf:predicate:adoptionStateRule> <urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:graph:integration> .
@@ -667,7 +667,7 @@
 <urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:type> <urn:usf:type:BootstrapCarrierIntent> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
-<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:governingGoalSection> "docs/goal/23-bootstrap-self-hosting-and-terminal-proof.md#23.2" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:lineage> <urn:usf:lineage:intent:bootstrap-carrier-command:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:initialAdoptionState> "not-adopted" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:bootstrap-carrier-command:1> <urn:usf:predicate:adoptionStateRule> <urn:usf:rule:bootstrap-carrier-adoption-state:1> <urn:usf:graph:integration> .
@@ -1016,7 +1016,7 @@
 <urn:usf:carrier-intent:construction-authority-cli:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:construction-authority-cli:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:construction-authority-cli:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
-<urn:usf:carrier-intent:construction-authority-cli:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:construction-authority-cli:1> <urn:usf:predicate:governingGoalSection> "docs/goal/23-bootstrap-self-hosting-and-terminal-proof.md#23.2" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:construction-authority-cli:1> <urn:usf:predicate:lineage> <urn:usf:lineage:intent:construction-authority-cli:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:construction-authority-cli:1> <urn:usf:predicate:objective> "Implement the missing registered evidence, prove and copy-on-write construction-authority publication path so subsequent V3 work can satisfy the ordinary semantic-first gate without manual evidence or in-place permission mutation." <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:construction-authority-cli:1> <urn:usf:predicate:allowedPath> "graph/integration.nq" <urn:usf:graph:integration> .
@@ -1209,7 +1209,7 @@
 <urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:authority> <urn:usf:authority:core-completion:1> <urn:usf:graph:integration> .
-<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:integration> .
+<urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:governingGoalSection> "docs/goal/23-bootstrap-self-hosting-and-terminal-proof.md#23.2" <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:lineage> <urn:usf:lineage:intent:no-change-completion-cli:1> <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:objective> "Implement the registered isolated no-change realisation, completion evidence, proof and copy-on-write publication chain so an already-correct current work scope can complete without a fabricated edit, contribution or Git integration." <urn:usf:graph:integration> .
 <urn:usf:carrier-intent:no-change-completion-cli:1> <urn:usf:predicate:allowedPath> "docs/handover.md" <urn:usf:graph:integration> .

@@ -58,7 +58,7 @@ do
 done
 
 # Provenance documents exempt from the historical-reference rules below.
-usf_verify_exempt='GOAL.md
+usf_verify_exempt='docs/goal/03-starting-environment-and-historical-sources.md
 docs/historical-inventory.md
 docs/v3-transition-record.md
 provenance/reuse.json
@@ -68,14 +68,16 @@ set -- .
 usf_verify_exempt_count=0
 for usf_verify_file in $usf_verify_exempt
 do
-  # An exemption for a path this repository does not track is inert: there is
+  # Untracked files are scanned too, so a commit that introduces a violation is
+  # refused before it lands. An exemption for a path this repository does not
+  # track is inert: there is
   # nothing to exempt, and a minimal or synthetic checkout is entitled to omit
   # every provenance document. A *tracked* exemption must justify itself.
   if ! git -C "$usf_verify_root" ls-files --error-unmatch -- "$usf_verify_file" >/dev/null 2>&1; then
     continue
   fi
   case "$usf_verify_file" in
-    GOAL.md|scripts/verify-contained.sh) ;;
+    scripts/verify-contained.sh) ;;
     *)
       if ! grep -q "$usf_verify_marker" "$usf_verify_root/$usf_verify_file"; then
         echo "Exempt file is not classified as a provenance document: $usf_verify_file" >&2
@@ -112,13 +114,13 @@ usf_verify_fail() {
 for usf_verify_rule in historical executable import state
 do
   eval "usf_verify_pattern=\$usf_verify_$usf_verify_rule"
-  usf_verify_hits=$(git -C "$usf_verify_root" grep -n -I -E "$usf_verify_pattern" -- "$@" || true)
+  usf_verify_hits=$(git -C "$usf_verify_root" grep --untracked -n -I -E "$usf_verify_pattern" -- "$@" || true)
   if [ -n "$usf_verify_hits" ]; then
     usf_verify_fail "$usf_verify_rule" "$usf_verify_hits"
   fi
 done
 
-usf_verify_hits=$(git -C "$usf_verify_root" grep -n -I -E "$usf_verify_machine" -- "$@" \
+usf_verify_hits=$(git -C "$usf_verify_root" grep --untracked -n -I -E "$usf_verify_machine" -- "$@" \
   | grep -v -F "$usf_verify_machine_allowed" || true)
 if [ -n "$usf_verify_hits" ]; then
   usf_verify_fail 'absolute development-machine path' "$usf_verify_hits"

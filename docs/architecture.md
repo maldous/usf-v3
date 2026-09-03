@@ -55,7 +55,8 @@ unlisted movement refuses.
 
 ## Host-policy adaptation
 
-`GOAL.md` shows shell-wide `HOME` redirection. Higher-precedence host safety
+[`docs/goal/04-repository-identity-and-containment.md`](goal/04-repository-identity-and-containment.md)
+§ 4.4 shows shell-wide `HOME` redirection. Higher-precedence host safety
 policy prohibits reassigning the operator shell's `HOME`, so this repository
 uses `USF_PROVIDER_HOME=.usf/home`. Provider subprocesses will receive their
 contained home explicitly through the provider invocation boundary. This keeps

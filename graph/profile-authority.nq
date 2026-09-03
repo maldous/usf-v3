@@ -1,7 +1,7 @@
 <urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapToolchainIntent> <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
-<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:governingGoalSection> "docs/goal/23-bootstrap-self-hosting-and-terminal-proof.md#23.2" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:objective> "Replace the bootstrap-only hard-coded construction and no-change completion selectors with one manifest-selected profile-scoped protocol so isolated product overlays can close exact predecessor and construction authority without mutating historical policy identities." <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "graph/manifests/profile-authority.json" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:profile-scoped-authority:1> <urn:usf:predicate:allowedPath> "graph/manifests/self-host-provider.json" <urn:usf:graph:profile-authority> .
@@ -25,8 +25,8 @@
 <urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapToolchainIntent> <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
-<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#7.4" <urn:usf:graph:profile-authority> .
-<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#21" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:governingGoalSection> "docs/goal/07-formal-semantic-model.md#7.4" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:governingGoalSection> "docs/goal/21-adversarial-bottleneck-review.md#21" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:objective> "Remove mutable operator checkpoint documents and tests outside a packet's focused validation from current realisation scopes so routine reporting and unrelated test maintenance cannot force functional reproof." <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "graph/profile-authority.nq" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:operational-document-scope-repair:1> <urn:usf:predicate:allowedPath> "graph/usf-bootstrap.nq" <urn:usf:graph:profile-authority> .
@@ -43,7 +43,7 @@
 <urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapToolchainIntent> <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
-<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#7.4" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:governingGoalSection> "docs/goal/07-formal-semantic-model.md#7.4" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:objective> "Correct the directional basis traversal so a selected work binds its exact contract and predecessor closure plus profile boundary identity, without traversing the profile's other selected contracts as content dependencies." <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:allowedPath> "graph/profile-authority.nq" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:directional-currentness-sibling-isolation:1> <urn:usf:predicate:allowedPath> "src/graph/work.ts" <urn:usf:graph:profile-authority> .
@@ -56,8 +56,8 @@
 <urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:type> <urn:usf:type:DirectBootstrapToolchainIntent> <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:profile-authority> .
-<urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#7.4" <urn:usf:graph:profile-authority> .
-<urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:governingGoalSection> "GOAL.md#23.2" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:governingGoalSection> "docs/goal/07-formal-semantic-model.md#7.4" <urn:usf:graph:profile-authority> .
+<urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:governingGoalSection> "docs/goal/23-bootstrap-self-hosting-and-terminal-proof.md#23.2" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:objective> "Align ordinary construction and completion currentness with the legacy affected-proof lesson and the V3 fine-grained dependency rule by removing global command-registration, package and sibling-directory bytes that the selected built-in-only leaf algorithms do not read." <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:allowedPath> "graph/profile-authority.nq" <urn:usf:graph:profile-authority> .
 <urn:usf:carrier-intent:scoped-tool-currentness-repair:1> <urn:usf:predicate:allowedPath> "graph/integration.nq" <urn:usf:graph:profile-authority> .

@@ -6,7 +6,9 @@ turns a versioned product profile and its bounded semantic closure into
 isolated candidate changes, deterministic observations, admitted evidence,
 proof, and coherent source checkpoints.
 
-The authoritative programme directive is [`GOAL.md`](GOAL.md). The current
+The authoritative programme directive is [`GOAL.md`](GOAL.md), an index carrying
+the terminal criteria and the nonclaims, with its remaining sections one file
+each under [`docs/goal/`](docs/goal/). The current
 bootstrap is deliberately small and will grow only along the first end-to-end
 realisation path.
 
