@@ -1,90 +1,83 @@
 # USF V3 handover
 
-## Current position — 2026-09-03
+## Current position — 2026-09-04
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.
-Transaction integrity is repaired. ANQR is independently reproducible and its
-architecture is enforced by an adversarially proven checker.
+The artefact output boundary is closed: **zero architecture violations**, proven
+adversarially and reproduced from a clean clone.
 
 | | |
 |---|---|
-| USF carrier | `192b7ea` on `anqr-experience-realisation`, clean, **not pushed** |
-| ANQR carrier | `368528853` on `anqr-experience-realisation`, clean, **not pushed** |
+| USF carrier | `8030d9d` on `anqr-experience-realisation`, clean, **not pushed** |
+| ANQR carrier | `e7a922dc8` on `anqr-experience-realisation`, clean, **not pushed** |
 | Release boundary | `hermetic-release-1` = `9e6239e`, annotated, reachable, untouched |
-| USF tests | 433/433, gate conforming, containment pass, legacy 24 against its constant |
-| ANQR clean clone | `npm ci` → typecheck 0 errors → 200/200 tests → architecture |
+| USF | 438/438 tests, gate conforming, containment pass over 9 rules, legacy 24 |
+| ANQR clean clone | `npm ci` → typecheck 0 → 233/233 tests → architecture conforming → `validate` exit 0 |
+| Architecture | **0 blocking violations**; 10 satisfied, 0 violated, 5 honestly undecidable |
+| Source accounting | 101 = 18 assigned + 83 declared-excluded + **0 unaccounted** |
 | Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — byte-identical |
-| Live provider lane | 9/9 `verified-complete`, digest `2e6a4780`, unchanged throughout |
-| Architecture facets | 9 satisfied, 1 truthfully violated, 5 undecidable |
-| Planted proofs | 18, all passing |
-| Hermes | not running |
+| Live provider lane | 9/9 `verified-complete`, digest `2e6a4780`, unchanged |
+| Preact slice | **authorised** |
 
-### ANQR is reproducible
+### The output boundary is real
 
-Four defects made the released product repository unable to validate itself:
-`typecheck` declared with no dependency at all and therefore never executed; no
-lockfile; a test script enumerating one root and hiding the eleven codec tests;
-and six ports declared at paths that did not exist. A fifth was introduced and
-caught during the work, where unquoted globs made the shell rather than Node
-expand them.
+Five declared-but-missing contracts are implemented against their ports, with
+their real capability limits preserved rather than smoothed into false
+symmetry: `svg-container` (encode, one frame, no rasteriser, row runs merged),
+`png-container` (real chunks, CRC32, fixed deflate level for reproducible
+bytes), `gif-container` (the only animated container; refuses a palette beyond
+256 colours rather than quantising), `system-clock`, and `png-image-source` (a
+real PNG decoder reversing all five filters; PNG only, because a lossy format
+needs a DCT and is refused instead of approximated).
 
-Declared now, exactly: `typescript` 7.0.2 and `@types/node` 26.4.1 with
-`package-lock.json`, and `types: ["node"]` in tsconfig. That took typecheck from
-unrunnable, to 125 errors, to 0 — the 125 almost all cascades from unresolved
-`node:` types defeating the assertion signatures on `node:assert`. One real
-error, in my own `reed-solomon.ts`. **The released capability modules and
-conformance tests needed no change.**
+End-to-end proof: a real QR symbol is rasterised, encoded to PNG, SVG and GIF,
+decoded back through the image source, resampled to a module grid, and decoded
+by the codec to the exact payload. No mocked codec, no mocked container.
 
-### Architecture is enforced, not described
+### The enforcement was worthless and is not any more
 
-`packages/architecture/rules.json` is generated from the graph; the checker knows
-how to check and never what is true; every finding carries its facet IRI. Six
-facets pass by the checker, three by the mechanisms they delegate to, one is
-truthfully violated because four adapters and the `image-source` port are
-unrealised, and five are undecidable because their subject does not exist.
-`npm run architecture` exits non-zero and is not weakened.
+Probed before implementing: the old check asked whether *any* file existed
+beneath the adapters component, so one file satisfied all six adapters, deleting
+an adapter went undetected, and an empty file passed. Now each adapter resolves
+to its own derived path, must be owned by a component in its declared layer,
+must import the contract of every port it claims, and must bind an **exported**
+annotated value — which proves the type checker is engaged, and tsc then decides
+conformance. Twelve planted proofs cover missing port, missing adapter with a
+sibling present, empty file, marker export, annotated-but-not-exported, port
+bypass, wrong component, novelty, unknown port claim, and a compiler-backed case
+where an incompatible adapter fails `tsc`.
 
-Eighteen planted-violation proofs run known-good → plant → fail for the intended
-code → restore → pass, including four aimed squarely at the Priority 1 failure
-classes: novelty, depth, unassigned-file attribution and unread import forms.
-Two proofs initially failed and the checker was right both times.
+### Drift enforcement is registered
 
-Full evidence:
-[`acceptance/2026-09-03-anqr-architecture-enforcement.md`](acceptance/2026-09-03-anqr-architecture-enforcement.md).
+`scripts/derive-anqr-architecture-rules.mjs` projects graph to product rules;
+`tests/contract/anqr-architecture-rules-drift.test.ts` is reached by `npm test`
+— placed in `tests/contract` deliberately, because `test:full` does not glob
+`tests/conformance` and putting it there would have been another enumeration
+blind spot. It fails on output drift and on authority drift, both planted, and
+the graph is what wins. ANQR additionally refuses an incoherent projection
+before computing any verdict.
 
-### Priority 1 formal completion is structural debt
+### Next work item
 
-A byte-delta completion runs through `semantic-work-completion:1`, whose
-`integrationTransitionVerifier` is `work-integration-transition` — **proofblocked
-at every declared version, 1, 2 and 3** — and `src/graph/work.ts:752` requires
-exactly that state. The only implemented route is no-change completion, which
-this work cannot claim because it changed 58 lines and added a file. Closing the
-chain would require implementing a Foundation verifier left proofblocked by
-design, or falsely asserting no-change. Both excluded, so it stays recorded as
-publication debt: repair landed, integrated and proven; formal completion not
-published.
-
-### Next safe actions
-
-1. **Realise the four container adapters and the image-source port**, which is
-   the only thing standing between the architecture checker and a clean gate,
-   and is also the artefact output layer the vertical slice needs.
-2. **Register the rules-drift check** as a recurring check rather than a manual
-   regeneration and byte comparison.
-3. **Then the Preact slice**, once the adapter gap is closed.
+**The Preact vertical slice.** The output boundary it needs now exists and is
+enforced. Nothing else blocks it.
 
 ### Open and honestly unfinished
 
-- `portimplementationconformance` violated: 4 adapters + 1 port unrealised.
-- Five facets undecidable: no build, no locale resource, no rendered surface, no
-  join-rule validator, one realised surface where parity needs two.
+- Five facets remain undecidable, unchanged and not turned green: no build, no
+  locale resource, no rendered surface, no join-rule validator, one realised
+  surface where parity needs two.
 - The architecture checker is a regex scanner, not a TypeScript AST parse. It
-  over-reports and never under-reports.
-- No continuous integration exists in the product repository, so no enforcement
-  runs automatically.
-- 81 of 93 ANQR sources belong to no declared component; reported, and the
-  module boundary makes it a named exclusion.
-- Priority 1 formal completion debt as above.
+  over-reports and never under-reports; conformance is the compiler's call.
+- ANQR's rules-integrity check cannot catch a coordinated edit that stays
+  internally consistent; only the USF-side authority comparison can.
+- No continuous integration exists in the product repository.
+- **Priority 1 publication debt stands unchanged.** The packet still reports
+  `COMPLETION_CONSTRUCTION_AUTHORITY_NOT_CURRENT` and
+  `COMPLETION_POSTIMAGE_VERIFIER_PROOFBLOCKED:work-integration-transition:1`.
+  All three declared versions of that Foundation verifier are proofblocked, so
+  the byte-delta completion route cannot be published without implementing it
+  or falsely claiming no-change. Neither was done.
 - Nothing is pushed.
 
 ## Closed boundaries
