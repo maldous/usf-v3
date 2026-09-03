@@ -112,6 +112,75 @@ items are open, each needing a decision or ordinary work rather than a gate:
    consumers, which mints construction grants and is worth doing only if that
    lane's completion is wanted for its own sake.
 
+### Historical knowledge confirmed, historical dependency retired
+
+**Confirmed: 87 of the 90 concepts the disposition ledger committed to
+retaining are present in V3** — 24 as a resource, 21 as a predicate, 19 in
+source, 12 as a type, 11 renamed. Presence in source rather than the graph is
+legitimate for a derived state: work dependency status is computed and never
+stored, which is the corpus rule.
+
+Three were absent, all under family-level ledger reasons naming no V3
+replacement — the exposure the ledger's own methodology note flags. They split
+two ways, recorded in `urn:usf:retention-verification:v1-v2:1`:
+
+- **Mis-dispositioned, not missing.** `FieldTenancyClassification` should read
+  SUPERSEDE: V3 enforces tenancy at the operation and repository boundary, not
+  by classifying fields. `TokenClaimConstraintTemplate` should read SIMPLIFY:
+  the concrete constraint survives in the authentication platform, only the
+  reusable template abstraction was dropped, and V3 declares one claim mapping
+  per platform.
+- **A genuine gap, deliberately not re-labelled.** `ConsentBasis` has no V3
+  mechanism. The data-governance capability fulfils data-subject requests
+  against durable evidence but models no lawful basis for processing, and those
+  are different obligations. Re-dispositioning it to make the retention count
+  clean would assert coverage that does not exist. It is also now more visible:
+  the applicability decision for the privacy control cites a consent-proof
+  semantics document that does not exist in this repository.
+
+The ledger is **not rewritten**. It records what was decided; the verification
+resource records what was confirmed, and states the disagreement rather than
+editing the earlier decision.
+
+A fourth finding is a documentation defect: all 29 V2 integrity branches carry
+the same reason claiming compression into the twelve-invariant suite, but only
+19 land there. The other ten are equally enforced — dependency cycles and
+unknown dependencies in the work-dependency deriver, evaluation drift in the
+core freshness check, the rest as graph policy predicates — just not where the
+ledger says. An operator reading it would run `usf graph integrity` and wrongly
+conclude those ten were unenforced.
+
+**Historical dependency is retired without losing the capability.** Four
+recovery works were unsatisfiable: `semantic-recovery-acceptance` declared two
+readPaths that have never existed and depended on two works never implemented;
+`semantic-recovery-inventory` and `semantic-factory-qualification` landed none
+of their outputs; `semantic-graph-exchange` landed four of nine. The first two
+are now superseded by the V1 and V2 specification accountings, which do their
+stated job with verified counts. The other two are retired unimplemented, with
+`factory-qualification`'s invariant satisfied by the hidden-holdout evaluator,
+the adversarial suite and planted-defect coverage across fifteen files — the
+Factory-derived form was never built and Factory's licence is restricted to
+behavioural qualification and inventory metadata anyway.
+
+The phantom readPaths are gone, so the lane stops hard-refusing and now derives
+an honest nine-item state instead of `WORK_DEPENDENCY_MISSING`.
+
+**What is kept, and why it is not a dependency.**
+`urn:usf:policy:historical-source-dependency:1` states that V1, V2 and Factory
+are optional re-verification inputs, never required, and that no build, test,
+graph inspection, runtime, BAU, currentness or acceptance may depend on their
+presence. That is enforced rather than asserted: `verify-contained.sh` refuses
+any tracked runtime-bearing content naming a historical path, exempting only
+four provenance documents, and it runs as a graph-declared validation. A fresh
+clone with no historical source present reproduces the suite and all three
+facet verdict digests byte-identically.
+
+Retained complete are the semantic manifest store and the recovery tooling,
+sixteen and seven declared outputs all landed. They are what would reproduce the
+V1 and V2 accounting from the pinned sources, so its counts stay checkable
+rather than asserted. Deleting them would make the corpus tidier and its
+historical claims weaker.
+
 ### V1 and V2 accounting is complete
 
 Every V1 capture remainder now carries a **verified** count and a determinate
