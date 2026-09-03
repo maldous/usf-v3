@@ -2,16 +2,16 @@
 
 ## Current position — 2026-09-03
 
-The repository is clean, reproducible and green. `410/410` tests, the graph
+The repository is clean, reproducible and green. `412/412` tests, the graph
 integrity gate reads `gateConforming: true`, every realisation frontier is
 empty, and a fresh `--no-hardlinks` clone reproduces the same result from
 tracked bytes alone.
 
 | | |
 |---|---|
-| Tests | 410/410 |
+| Tests | 412/412 |
 | Integrity gate | conforming — 24 legacy against a recorded debt constant of 24, 0 owned |
-| Corpus | 25 870 quads |
+| Corpus | 25 874 quads |
 | Facets (core lane) | 670 — 575 SATISFIED, UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 |
 | Facets (composed) | 724 — 719 SATISFIED, UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 |
 | Capabilities | core 64/64, anqr 39/39, **composed 103/103** fully satisfied; every frontier empty |
@@ -19,7 +19,7 @@ tracked bytes alone.
 | Delivery artefacts | 29 satisfied, 8 superseded, 0 authority-blocked, 0 drifted |
 | Statement of applicability | 93 declared, 93 decided, 0 pending |
 
-Six authority boundaries were closed on this date. Each is described in full in
+Eight authority boundaries were closed on this date. Each is described in full in
 its own commit message, which is where that detail now lives:
 
 - `14f5778` four V1 capture remainders assessed as invariants V3 satisfies by
@@ -48,7 +48,7 @@ its own commit message, which is where that detail now lives:
   that basis recorded on the constraint, and an explicit value above the
   declared ceiling refuses rather than clamps.
 
-Three lessons from those boundaries that change how the next one should be run:
+Four lessons from those boundaries that change how the next one should be run:
 
 - **`transact` authorizes by path prefix; contract `permitsWrite` and work
   `writePath` govern only the staged contribution chain.** "No work owns this
