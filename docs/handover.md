@@ -3,21 +3,50 @@
 ## Current position — 2026-09-04
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.
-The artefact output boundary is closed: **zero architecture violations**, proven
-adversarially and reproduced from a clean clone.
+The **first semantic experience is realised**: a user can carry out the whole
+create-and-export journey in a rendered Preact surface, and every visible
+behaviour traces to declared authority in both directions.
 
 | | |
 |---|---|
-| USF carrier | `8030d9d` on `anqr-experience-realisation`, clean, **not pushed** |
-| ANQR carrier | `e7a922dc8` on `anqr-experience-realisation`, clean, **not pushed** |
+| USF carrier | `HEAD` on `anqr-experience-realisation`, clean, **not pushed** |
+| ANQR carrier | `f7c92a58c` on `anqr-experience-realisation`, clean, **not pushed** |
 | Release boundary | `hermetic-release-1` = `9e6239e`, annotated, reachable, untouched |
-| USF | 438/438 tests, gate conforming, containment pass over 9 rules, legacy 24 |
-| ANQR clean clone | `npm ci` → typecheck 0 → 233/233 tests → architecture conforming → `validate` exit 0 |
-| Architecture | **0 blocking violations**; 10 satisfied, 0 violated, 5 honestly undecidable |
-| Source accounting | 101 = 18 assigned + 83 declared-excluded + **0 unaccounted** |
-| Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — byte-identical |
-| Live provider lane | 9/9 `verified-complete`, digest `2e6a4780`, unchanged |
-| Preact slice | **authorised** |
+| USF | 442/442 tests, gate conforming, containment pass over 9 rules |
+| ANQR clean clone | `npm ci` → typecheck 0 → **289/289 three times** → architecture conforming → build → `validate` exit 0 |
+| Architecture | **0 blocking violations**; 8 satisfied, 0 violated, 8 honestly undecidable, 16 facets |
+| Source accounting | 121 = 32 assigned + 89 declared-excluded + **0 unaccounted** |
+| Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — re-verified byte-identical |
+| Live provider lane | digest `2e6a4780`, construct and integrate frontiers both 0 |
+| Next | **stop and inspect.** Broader UI coverage is deliberately not started. |
+
+### The first experience is a chain, not a screen
+
+`semantic capability → experience intent → Future Use Pattern → product
+experience profile → design semantics → interaction/state contract →
+implementation binding → Preact realisation → rendered evidence → adversarial
+validation`. Preact sits at the implementation end and holds no semantic
+authority: the state machine, the permitted transitions, the design roles and
+the admissible parameter join are all framework-free and all projected from the
+graph. Replacing Preact would not touch any of them.
+
+### Profiles are documented
+
+[`profiles.md`](profiles.md) records the three distinct things called a profile
+— core realisation profiles, product realisation profiles and product profile
+revisions — with each one's exact contract selection, why revisions exist
+instead of edits, and the observed lane digests. It is a projection of the
+graph, not authority.
+
+### The suite was order-dependent and is not any more
+
+Two test files planted violations into the shared working tree. Node runs each
+test file as its own process, so the plants interleaved with the sibling file's
+known-good assertion: the same suite passed twice and failed once, and the
+failing test moved. A fresh clone showing 288/289 against the primary tree's
+289/289 is what exposed it. Planting now happens in a disposable copy of the
+real tree, with no assertion weakened. Ten consecutive clean runs in the
+primary tree, three in the clone.
 
 ### The output boundary is real
 
@@ -59,25 +88,31 @@ before computing any verdict.
 
 ### Next work item
 
-**The Preact vertical slice.** The output boundary it needs now exists and is
-enforced. Nothing else blocks it.
+**Inspection of the first semantic experience**, before it becomes the template
+for the rest of ANQR. The directive stops here deliberately.
 
 ### Open and honestly unfinished
 
-- Five facets remain undecidable, unchanged and not turned green: no build, no
-  locale resource, no rendered surface, no join-rule validator, one realised
-  surface where parity needs two.
+- **Eight facets remain undecidable and were not turned green.** Two of them
+  could have been argued and were not: `surfaceparity` has one surface where
+  parity needs two comparable subjects, and `localeparity` has no locale
+  resource — strings existing is not parity. The other six await evidence
+  classes this lane does not produce.
 - The architecture checker is a regex scanner, not a TypeScript AST parse. It
   over-reports and never under-reports; conformance is the compiler's call.
 - ANQR's rules-integrity check cannot catch a coordinated edit that stays
   internally consistent; only the USF-side authority comparison can.
-- No continuous integration exists in the product repository.
+- No continuous integration exists in the product repository, so the
+  order-dependence above was found by hand rather than by a second runner.
+- One rendered surface exists. Android, iPhone, API and MCP realisations are
+  modelled and unrealised.
 - **Priority 1 publication debt stands unchanged.** The packet still reports
   `COMPLETION_CONSTRUCTION_AUTHORITY_NOT_CURRENT` and
   `COMPLETION_POSTIMAGE_VERIFIER_PROOFBLOCKED:work-integration-transition:1`.
   All three declared versions of that Foundation verifier are proofblocked, so
   the byte-delta completion route cannot be published without implementing it
-  or falsely claiming no-change. Neither was done.
+  or falsely claiming no-change. Neither was done, and neither was worked
+  around.
 - Nothing is pushed.
 
 ## Closed boundaries
@@ -88,6 +123,9 @@ ledger, which is the live operational state and not an archive.
 
 | Closed | Boundary | Detail |
 |---|---|---|
+| 2026-09-04 | First semantic experience realised in Preact; profiles documented | `docs/profiles.md` |
+| 2026-09-04 | Test suite made order-independent; real-tree planting isolated | ANQR `f7c92a58c` |
+| 2026-09-03 | Artefact output boundary closed; five adapters and the image-source port implemented | `8030d9d`, [`acceptance/2026-09-03-anqr-architecture-enforcement.md`](acceptance/2026-09-03-anqr-architecture-enforcement.md) |
 | 2026-09-03 | Programme directive split by topic; self-host profile lineage declared | `b58213d` |
 | 2026-09-03 | `validation-scratch-confinement` relocated to the graph declaring its contract; eight manifests stopped refusing derivation | `e3ec381` |
 | 2026-09-03 | V1/V2 retirement evidence recorded | `e6274e7`, [`acceptance/2026-09-03-v1-v2-retirement.md`](acceptance/2026-09-03-v1-v2-retirement.md) |
