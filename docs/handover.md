@@ -112,6 +112,58 @@ items are open, each needing a decision or ordinary work rather than a gate:
    consumers, which mints construction grants and is worth doing only if that
    lane's completion is wanted for its own sake.
 
+### Provider lane restored to 7 of 9
+
+The lane reads **7 verified-complete**, one construction-ready and one blocked,
+against 3 at the start of the day. Two closure defects were found and fixed
+getting there, and one is left deliberately.
+
+**I staled it before restoring it.** Editing `src/graph/work.ts` for the retired
+stage took the lane from 3 verified-complete to 0, because that file sits in
+those packets' scoped dependency closures and is declared 29 times. Then editing
+a test file mid-restoration re-staled two works I had just restored. The lesson
+is ordering: **restore last, after source is stable**, or each fix undoes the
+previous restoration. Recorded in the operator skill, along with the sharper
+point that "source code is not semantic authority" and "a source change has no
+blast radius" are unrelated claims — the first is true and the second is false.
+
+Each restoration ran the full chain: construction evidence, proof, publish
+verified twice for an identical projection then applied, no-change realisation,
+every graph-required check, completion evidence, completion proof, and a
+completion publish again verified twice. The three roots could not be batched —
+`CONSTRUCTION_PUBLICATION_AUTHORITY_MIXED`, because each carries its own
+contract and publication authority — so each cost a digest move and a
+rederivation, exactly as the skill warns. Restoring a root repeatedly freed a
+consumer for nothing, also as predicted.
+
+**Two closure defects fixed.** `provider-account-tier-receipt` refused with an
+opaque `CHECK_FAILED` while its validation command passed uncaged. Its
+`ValidationRuntimeClosure` was incomplete by three members, and two of them were
+reachable only through `await import(...)` — a static from-clause scan does not
+see a dynamic import, and the skill's rule that an actually-executed dynamic
+import is a closure member is exactly the case. Adding
+`host-source-identities.ts`, `execution-economics.ts` and `transports.ts`
+completed it and the packet verified.
+
+**One left deliberately.** `provider-semantic-qualification-v2` needs **33**
+further closure members. Its validation runs eight test files spanning the whole
+provider subsystem and value-reaches 37 modules including commands and
+realisation, while the work itself declares four read/write paths. Adding 33
+members would make the packet sensitive to a third of the codebase — the
+coupling the skill explicitly says not to create, and it names a validation
+whose command opens files the work does not own as a mis-scoping defect rather
+than a sandbox fault. That defect is pre-existing and is not mine to paper over,
+so the packet keeps its construction grant and its honest state.
+`provider-parallel-execution` waits on it.
+
+**One unsound test assumption fixed.** A contract test asserted the provider
+qualification-stage order by reading quad iteration order, which N-Quads does not
+guarantee and which `transact` deliberately destroys by canonically sorting every
+line it writes. It had passed only while the file happened to sit in pipeline
+order. The graph declares the order explicitly as `sequenceIndex`, so the test now
+sorts by that and additionally asserts every stage in the sequence declares an
+index, or the sort would silently degrade to the iteration order it replaces.
+
 ### Outstanding work cleared
 
 Four items from the outstanding list are resolved, and two findings came out of

@@ -693,7 +693,18 @@ test("provider graph separates fixture capabilities from route-keyed operational
     "urn:usf:provider-stage:hidden-evaluation:1",
     "urn:usf:provider-stage:route-qualification:1",
   ];
-  assert.deepEqual(objects("urn:usf:provider-operation:qualification-sequence:1", "stage"), stages);
+  // Order comes from the declared sequenceIndex, not from quad order. N-Quads is
+  // an unordered set and the transaction writer canonicalises by sorting, so a
+  // test that reads order from iteration asserts a property the format does not
+  // provide -- it passed only while the file happened to be in pipeline order.
+  const sequenced = [...objects("urn:usf:provider-operation:qualification-sequence:1", "stage")]
+    .sort((left, right) => Number(objects(left, "sequenceIndex")[0]) - Number(objects(right, "sequenceIndex")[0]));
+  assert.deepEqual(sequenced, stages);
+  // Every stage in the sequence must actually declare an index, or the sort above
+  // would silently degrade to the iteration order it exists to replace.
+  for (const stage of sequenced) {
+    assert.match(objects(stage, "sequenceIndex")[0] ?? "", /^[1-9][0-9]*$/u, stage);
+  }
   for (const stage of stages) {
     assert.equal(objects(stage, "type").includes("urn:usf:type:RouteKeyedOperationalStage"), true);
     assert.deepEqual(objects(stage, "repositoryTracking"), ["ignored"]);
