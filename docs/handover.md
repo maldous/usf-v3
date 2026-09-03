@@ -64,6 +64,33 @@ sinks, dependency edges acyclic, 16 invariants, 0 owned violations. Full figures
 proofs and nonclaims:
 [`acceptance/2026-09-03-graph-correctness-proof.md`](acceptance/2026-09-03-graph-correctness-proof.md).
 
+### Hermes is running
+
+The BAU supervisor is live on the composed ANQR+USF manifest.
+
+| | |
+|---|---|
+| Supervisor | `e044d931ac704d9e6aa26ab39` |
+| Manifest | `graph/manifests/anqr-with-foundation.json` |
+| Concurrency / dispatch limit / pause | 5 / 12 / 60 s |
+| Denominator | 103 capabilities, 724 requirements |
+| Modules landed / conformance tests landed | 103 / 103 |
+| Ready / blocked-on-predecessor / awaiting check | 0 / 0 / 0 |
+| Blockers | 0 |
+| Cumulative tokens / provider activity | 0 / none |
+| Last reason | `no ready implementation work remains` |
+
+It cycles and finds nothing to do, which is the intended terminal state rather
+than an idle failure: every capability has a landed module and a landed
+conformance test, and no requirement is awaiting a check. Observed across four
+cycles it mutates nothing — the working tree stays clean, the corpus stays at
+33 177 quads, the gate stays conforming, the live lane stays 9/9 and both
+realisation frontiers stay empty. It has dispatched nothing to any provider and
+spent no tokens, because there is no work to dispatch.
+
+`./bin/usf hermes stop` requests an orderly drain at a cycle boundary and is
+idempotent.
+
 ## Closed boundaries
 
 Each boundary below is complete. Its reasoning lives in the commit message named
