@@ -510,6 +510,10 @@ One further trap: the completion proof obligation must be read from the packet's
 name — `provider-invocation-boundary` completes through
 `urn:usf:proof:provider-adapter-preflight`.
 
+The full evidence record for this boundary, including the clean-clone proof and
+the planted-defect table, is
+[`docs/acceptance/2026-09-03-v1-v2-retirement.md`](acceptance/2026-09-03-v1-v2-retirement.md).
+
 ### What is deliberately not done
 
 `usf` gains no restore command in this boundary. The stale-completion chain was
