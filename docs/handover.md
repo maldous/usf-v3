@@ -1,5 +1,75 @@
 # USF V3 handover
 
+## Authority boundary 2026-09-03 — the statement of applicability is complete
+
+All 93 controls are decided. The artefact reads **declared 93, decided 93,
+pending 0** — 76 applicable, 17 not applicable — in approval state
+`prepared-not-certified`. Transaction `sha256:923796c7…`.
+
+The 45 that had never been assessed were decided by the operator against four
+declared ISMS scope facts, now recorded on the statement as `soaScopeFact` so
+every exclusion names the ground it stands on:
+
+- No physical premises, offices, rooms or on-premises equipment in scope; all
+  infrastructure is cloud-hosted.
+- Sole operator; no employment or contractor relationships in scope.
+- All development in-house; none outsourced.
+- No organisation-managed endpoints and no organisation-controlled network
+  egress point in scope.
+
+Twelve exclusions follow from those facts: return of assets, the two employment
+controls, seven of the nine physical controls, web filtering and outsourced
+development. Each carries an `exclusionRule`-conformant justification naming the
+change that would make it applicable again. The two physical controls that
+survive a fully remote scope are **A.7.7 clear desk and clear screen** and
+**A.7.9 security of assets off-premises**, because the operator workstation is an
+off-premises asset holding organisation information. **A.5.3 segregation of
+duties is applicable, not excluded**: a sole operator cannot separate duties, and
+recording that as not-applicable would understate a real accepted risk, so it is
+applicable with compensating controls named. **A.8.1 user endpoint devices is
+applicable** despite there being no device management — unmanaged is an
+implementation gap, not an applicability exclusion.
+
+The five pre-existing exclusions recovered from the V1 alignment assessment are
+all physical (A.7.1, A.7.2, A.7.4, A.7.10, A.7.14) and coherent with the same
+cloud-only scope, giving 17 in total.
+
+### Two defects found and fixed in the realisation path
+
+Landing this exposed a real pair of defects in `hermes realise`, both now fixed
+with the artefact as the witness:
+
+1. **Presence was treated as satisfaction.** A realized artefact counted as
+   satisfied because the file existed at its canonical path, with no comparison
+   against what its authority now projects. So a derived artefact could never be
+   re-derived: the statement went on reporting 45 undecided controls after all 45
+   were decided. A derived artefact is now re-derived and compared, and a
+   difference is reported as `driftedArtefacts` and treated as pending. A stale
+   projection of a compliance document is worse than an absent one.
+2. **The realisation proposal always asserted absence.** Its operations carried
+   `preimageDigest: null`, which asserts the path does not exist, so a
+   re-derivation of a present artefact was correctly refused as
+   `TRANSACT_STALE_PREIMAGE`. Drift would have been detectable but unfixable
+   through the ordinary path. The proposal now carries the actual preimage digest
+   when the file exists.
+
+Coverage: the generator had none. It now has the compliance-critical invariants
+— an undecided control is counted as pending and never as excluded, controls are
+ordered so two runs agree, the projection is byte-stable under quad reordering
+(which is what drift detection rests on), and a corpus stating no control set
+refuses rather than projecting an empty statement that would read as "no controls
+apply". Planted-defect proven: counting pending as decided fails exactly one test.
+
+Blast radius measured in a clone lane at `202246d` before applying — all eight
+profile projections byte-identical. 410/410 tests, gate conforming.
+
+What this is not: applicability is not implementation. Every rationale justifies
+whether a control is in scope, not whether it is satisfied. The artefact retains
+`no-iso-certification-claim`, `no-external-auditor-acceptance-claim` and
+`prepared-is-not-certified-no-certification-audit-has-occurred`, and a control
+can be applicable while its evidence classification records a gap — the normal
+state of a prepared, uncertified ISMS.
+
 ## Authority boundary 2026-09-03 — product events are stated, not only narrated
 
 `urn:usf:product-event-vocabulary:v1:1` declares the canonical product events

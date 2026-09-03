@@ -1,13 +1,13 @@
-<urn:usf:applicability-decision:a510> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a510> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:applicabilityRationale> "Acceptable use of information and associated assets applies. The rules bind the operator and any future user of the platform." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a510> <urn:usf:predicate:canonicalName> "a510" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a510> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a510> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a510> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a510> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a510> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a511> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a511> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:applicabilityRationale> "No employment or contractor relationships are in scope, so no personnel hold organisation assets and no return-of-assets event can occur. Applicability is to be reassessed if the organisation engages staff or contractors." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a511> <urn:usf:predicate:canonicalName> "a511" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a511> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a511> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a511> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a511> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a511> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a512> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
@@ -19,16 +19,16 @@
 <urn:usf:applicability-decision:a512> <urn:usf:predicate:evidenceArtefact> "docs/architecture/persistent-object-classification-registry.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a512> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a512> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a513> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a513> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:applicabilityRationale> "Labelling of information applies. The platform classifies tenant data, including personal data, and classification without labelling cannot be acted upon." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a513> <urn:usf:predicate:canonicalName> "a513" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a513> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a513> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a513> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a513> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a513> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a514> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a514> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:applicabilityRationale> "Information transfer applies. Tenant data moves between the platform, cloud providers and external model providers." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a514> <urn:usf:predicate:canonicalName> "a514" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a514> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a514> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a514> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a514> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a514> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a515> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
@@ -87,22 +87,22 @@
 <urn:usf:applicability-decision:a51> <urn:usf:predicate:evidenceArtefact> "docs/architecture/charter.md" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a51> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a51> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a520> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a520> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:applicabilityRationale> "Information security in supplier agreements applies. Cloud hosting and external model providers are suppliers whose agreements carry the security terms." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a520> <urn:usf:predicate:canonicalName> "a520" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a520> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a520> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a520> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a520> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a520> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a521> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a521> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:applicabilityRationale> "ICT supply chain security applies, and is heightened rather than reduced by being fully cloud-hosted: the supply chain is the infrastructure." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a521> <urn:usf:predicate:canonicalName> "a521" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a521> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a521> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a521> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a521> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a521> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a522> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a522> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:applicabilityRationale> "Monitoring and change management of supplier services applies. Provider capability, pricing and model availability change independently of this organisation." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a522> <urn:usf:predicate:canonicalName> "a522" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a522> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a522> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a522> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a522> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a522> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a523> <urn:usf:predicate:applicabilityRationale> "Cloud and provider configuration and environment classification are defined semantically; live provider onboarding, hardening evidence, and operating monitoring are deferred with no live-provider claim." <urn:usf:graph:v3-delivery> .
@@ -123,22 +123,22 @@
 <urn:usf:applicability-decision:a524> <urn:usf:predicate:evidenceArtefact> "docs/architecture/operational-resilience-failure-mode-suite.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a524> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a524> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a525> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a525> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:applicabilityRationale> "Assessment and decision on information security events applies. Events must be triaged whoever operates the platform." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a525> <urn:usf:predicate:canonicalName> "a525" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a525> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a525> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a525> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a525> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a525> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a526> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a526> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:applicabilityRationale> "Response to information security incidents applies." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a526> <urn:usf:predicate:canonicalName> "a526" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a526> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a526> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a526> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a526> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a526> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a527> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a527> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:applicabilityRationale> "Learning from information security incidents applies." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a527> <urn:usf:predicate:canonicalName> "a527" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a527> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a527> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a527> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a527> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a527> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a528> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
@@ -151,10 +151,10 @@
 <urn:usf:applicability-decision:a528> <urn:usf:predicate:evidenceArtefact> "spec/instances/enterprise-evidence/repository-enterprise-evidence-model.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a528> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a528> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a529> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a529> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:applicabilityRationale> "Information security during disruption applies. A cloud-hosted platform can be disrupted by its providers as readily as by its own faults." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a529> <urn:usf:predicate:canonicalName> "a529" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a529> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a529> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a529> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a529> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a529> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a52> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
@@ -182,16 +182,16 @@
 <urn:usf:applicability-decision:a531> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a531> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a531> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a531> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a532> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a532> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:applicabilityRationale> "Intellectual property rights apply. The platform incorporates third-party dependencies under licences that must be observed, and recovered historical material under a declared reuse boundary." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a532> <urn:usf:predicate:canonicalName> "a532" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a532> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a532> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a532> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a532> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a532> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a533> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a533> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:applicabilityRationale> "Protection of records applies. Authority, provenance and evidence records are retained and must not be silently altered." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a533> <urn:usf:predicate:canonicalName> "a533" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a533> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a533> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a533> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a533> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a533> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a534> <urn:usf:predicate:applicabilityRationale> "PII governance, DSR, consent, and residency semantics are defined; operating DSR fulfilment, privacy programme governance, and regulator-facing evidence require external assessment and live-environment proof." <urn:usf:graph:v3-delivery> .
@@ -220,34 +220,34 @@
 <urn:usf:applicability-decision:a536> <urn:usf:predicate:evidenceArtefact> "tools/validate-spec/validate-spec.py" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a536> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a536> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a537> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a537> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:applicabilityRationale> "Documented operating procedures apply, and are the mechanism by which a single operator's knowledge survives absence." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a537> <urn:usf:predicate:canonicalName> "a537" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a537> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a537> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a537> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a537> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a537> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a53> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a53> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:applicabilityRationale> "Segregation of duties is applicable and cannot be achieved by separation of people, because a sole operator performs every role. It is addressed by compensating controls rather than excluded: the repository's authority model, the requirement that a semantic transaction validate the whole resulting corpus before applying, and durable provenance on every authority change. Recording it as not applicable would understate a real and accepted risk." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a53> <urn:usf:predicate:canonicalName> "a53" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a53> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a53> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a53> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a53> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a53> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a54> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a54> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:applicabilityRationale> "Management responsibilities apply. The sole operator is also the management function, so the obligation is to define and follow the ISMS rather than to direct others." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a54> <urn:usf:predicate:canonicalName> "a54" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a54> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a54> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a54> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a54> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a54> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a55> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a55> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:applicabilityRationale> "Contact with authorities applies. Breach-notification and regulator contact obligations exist independently of organisation size." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a55> <urn:usf:predicate:canonicalName> "a55" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a55> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a55> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a55> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a55> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a55> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a56> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a56> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:applicabilityRationale> "Contact with special interest groups applies as the route by which vulnerability and threat intelligence reaches a single-operator organisation." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a56> <urn:usf:predicate:canonicalName> "a56" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a56> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a56> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a56> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a56> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a56> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a57> <urn:usf:predicate:applicabilityRationale> "A threat-model and abuse-case register exists as an input, but an operating threat-intelligence process (feeds, analysis, dissemination) is not evidenced and is deferred to future enterprise-readiness work." <urn:usf:graph:v3-delivery> .
@@ -280,10 +280,10 @@
 <urn:usf:applicability-decision:a61> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a61> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a61> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a61> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a62> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a62> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:applicabilityRationale> "No employment relationships are in scope, so there are no terms and conditions of employment to carry information security responsibilities. Applicability is to be reassessed if the organisation engages staff." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a62> <urn:usf:predicate:canonicalName> "a62" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a62> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a62> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a62> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a62> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a62> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a63> <urn:usf:predicate:applicabilityRationale> "Awareness, education, and training delivery to people is an organizational programme; repository machine-actor guidance guardrails do not evidence human training records, which require external assessment." <urn:usf:graph:v3-delivery> .
@@ -300,10 +300,10 @@
 <urn:usf:applicability-decision:a64> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a64> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a64> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a64> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a65> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a65> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:applicabilityRationale> "No employment or role-change events can occur in scope, so there are no post-termination responsibilities to define. Applicability is to be reassessed if the organisation engages staff." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a65> <urn:usf:predicate:canonicalName> "a65" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a65> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a65> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a65> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a65> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a65> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a66> <urn:usf:predicate:applicabilityRationale> "Confidentiality and non-disclosure agreements are legal and HR instruments outside the repository's semantic scope and require external assessment." <urn:usf:graph:v3-delivery> .
@@ -313,10 +313,10 @@
 <urn:usf:applicability-decision:a66> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a66> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a66> <urn:usf:predicate:evidenceClassification> "external-auditor-only" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a66> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a67> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a67> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:applicabilityRationale> "Remote working applies and is load-bearing: all work is performed remotely, so the controls that would otherwise be provided by a managed office are provided here or not at all." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a67> <urn:usf:predicate:canonicalName> "a67" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a67> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a67> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a67> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a67> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a67> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a68> <urn:usf:predicate:applicabilityRationale> "Event and alerting semantics are defined; a staffed reporting channel and human reporting culture require external assessment and live-environment operation." <urn:usf:graph:v3-delivery> .
@@ -334,22 +334,22 @@
 <urn:usf:applicability-decision:a710> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a710> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a710> <urn:usf:predicate:evidenceClassification> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a710> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a711> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a711> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:applicabilityRationale> "No premises are in scope, so supporting utilities such as power and cooling are the cloud provider's responsibility." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a711> <urn:usf:predicate:canonicalName> "a711" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a711> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a711> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a711> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a711> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a711> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a712> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a712> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:applicabilityRationale> "No organisation-controlled cabling exists in scope." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a712> <urn:usf:predicate:canonicalName> "a712" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a712> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a712> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a712> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a712> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a712> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a713> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a713> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:applicabilityRationale> "No organisation-controlled equipment is operated under a maintenance regime. The single operator workstation is covered as an off-premises asset under A.7.9 rather than as maintained equipment." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a713> <urn:usf:predicate:canonicalName> "a713" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a713> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a713> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a713> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a713> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a713> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a714> <urn:usf:predicate:applicabilityRationale> "Secure disposal or re-use of physical equipment applies to the future hosting or cloud provider estate and is out of scope of this repository semantic map. This is not a Statement-of-Applicability determination." <urn:usf:graph:v3-delivery> .
@@ -373,10 +373,10 @@
 <urn:usf:applicability-decision:a72> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a72> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a72> <urn:usf:predicate:evidenceClassification> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a72> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a73> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a73> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:applicabilityRationale> "No offices, rooms or facilities are within the ISMS scope. All infrastructure is cloud-hosted and the provider's physical controls are addressed through the supplier controls in A.5.20 to A.5.22." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a73> <urn:usf:predicate:canonicalName> "a73" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a73> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a73> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a73> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a73> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a73> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a74> <urn:usf:predicate:applicabilityRationale> "Physical security monitoring applies to the future hosting or cloud provider estate and is out of scope of this repository semantic map. This is not a Statement-of-Applicability determination." <urn:usf:graph:v3-delivery> .
@@ -386,34 +386,34 @@
 <urn:usf:applicability-decision:a74> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a74> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a74> <urn:usf:predicate:evidenceClassification> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a74> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a75> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a75> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:applicabilityRationale> "No premises or organisation-sited equipment are in scope, so physical and environmental threat protection is wholly inherited from the cloud provider and assessed as a supplier control." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a75> <urn:usf:predicate:canonicalName> "a75" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a75> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a75> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a75> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a75> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a75> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a76> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a76> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:applicabilityRationale> "No secure areas exist in scope, so there are no procedures for working in them to define." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a76> <urn:usf:predicate:canonicalName> "a76" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a76> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a76> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a76> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a76> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a76> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a77> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a77> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:applicabilityRationale> "Clear desk and clear screen applies to the operator workstation, which displays and holds tenant information despite there being no office in scope." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a77> <urn:usf:predicate:canonicalName> "a77" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a77> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a77> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a77> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a77> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a77> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a78> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a78> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:applicabilityRationale> "No organisation-sited equipment exists in scope; processing equipment is the cloud provider's." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a78> <urn:usf:predicate:canonicalName> "a78" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a78> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a78> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a78> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a78> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a78> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a79> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a79> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:applicabilityRationale> "Security of assets off-premises applies, and is the physical control that survives a fully remote scope: the operator workstation is an off-premises asset holding organisation information at all times." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a79> <urn:usf:predicate:canonicalName> "a79" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a79> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a79> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a79> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a79> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a79> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a810> <urn:usf:predicate:applicabilityRationale> "Deletion, retention, and export semantics are defined; operating deletion execution and verification across live data stores are deferred." <urn:usf:graph:v3-delivery> .
@@ -425,10 +425,10 @@
 <urn:usf:applicability-decision:a810> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/tenant-lifecycle-provision-suspend-delete-export.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a810> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a810> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a811> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a811> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:applicabilityRationale> "Data masking applies. The platform handles personal data and declares classification and privacy semantics." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a811> <urn:usf:predicate:canonicalName> "a811" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a811> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a811> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a811> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a811> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a811> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a812> <urn:usf:predicate:applicabilityRationale> "No dedicated data-leakage-prevention control is evidenced; tenant-isolation and classification semantics partially bound the risk, but a DLP control is deferred to future enterprise-readiness work." <urn:usf:graph:v3-delivery> .
@@ -447,10 +447,10 @@
 <urn:usf:applicability-decision:a813> <urn:usf:predicate:evidenceArtefact> "docs/architecture/data-lifecycle-backup-bulk-migration-test-suite.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a813> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a813> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a814> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a814> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:applicabilityRationale> "Redundancy of information processing facilities applies, and is delivered through cloud provider redundancy assessed as a supplier control." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a814> <urn:usf:predicate:canonicalName> "a814" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a814> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a814> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a814> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a814> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a814> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a815> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
@@ -473,28 +473,28 @@
 <urn:usf:applicability-decision:a816> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/metrics-and-traces.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a816> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a816> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a817> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a817> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:applicabilityRationale> "Clock synchronisation applies. Ordering of audit and provenance records depends on it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a817> <urn:usf:predicate:canonicalName> "a817" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a817> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a817> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a817> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a817> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a817> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a818> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a818> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:applicabilityRationale> "Use of privileged utility programs applies. Administrative and operator tooling can bypass ordinary platform controls." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a818> <urn:usf:predicate:canonicalName> "a818" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a818> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a818> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a818> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a818> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a818> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a819> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a819> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:applicabilityRationale> "Installation of software on operational systems applies, and is governed by pinned dependencies and a frozen lockfile." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a819> <urn:usf:predicate:canonicalName> "a819" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a819> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a819> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a819> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a819> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a819> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a81> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a81> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:applicabilityRationale> "User endpoint devices apply. The operator workstation processes organisation and tenant information; the absence of centralised device management is an implementation gap rather than a reason to exclude the control." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a81> <urn:usf:predicate:canonicalName> "a81" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a81> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a81> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a81> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a81> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a81> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a820> <urn:usf:predicate:applicabilityRationale> "The compose port-exposure and hardening standard defines network posture at the dev-compose boundary; production network segmentation and perimeter controls are operating and provider activities that are deferred." <urn:usf:graph:v3-delivery> .
@@ -505,22 +505,22 @@
 <urn:usf:applicability-decision:a820> <urn:usf:predicate:evidenceArtefact> "docs/architecture/compose-port-exposure-and-hardening-standard.md" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a820> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a820> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a821> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a821> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:applicabilityRationale> "Security of network services applies to the platform's external interfaces and provider connections." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a821> <urn:usf:predicate:canonicalName> "a821" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a821> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a821> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a821> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a821> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a821> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a822> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a822> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:applicabilityRationale> "Segregation of networks applies, expressed as tenant and environment isolation rather than as physical network separation." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a822> <urn:usf:predicate:canonicalName> "a822" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a822> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a822> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a822> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a822> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a822> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a823> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a823> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:applicabilityRationale> "No organisation-managed endpoint devices and no organisation-controlled network egress point exist in scope, so there is no place at which web filtering could be applied or audited. Applicability is to be reassessed if managed devices or a controlled egress point are introduced." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a823> <urn:usf:predicate:canonicalName> "a823" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a823> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a823> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a823> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a823> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a823> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a824> <urn:usf:predicate:applicabilityRationale> "Secrets and cryptographic-material lifecycle semantics are defined; operating key management, rotation execution, and cryptographic control validation in live environments are deferred." <urn:usf:graph:v3-delivery> .
@@ -552,10 +552,10 @@
 <urn:usf:applicability-decision:a826> <urn:usf:predicate:evidenceArtefact> "docs/architecture/security-abuse-fuzzing-regression-suite.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a826> <urn:usf:predicate:evidenceClassification> "partially-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a826> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a827> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a827> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:applicabilityRationale> "Secure system architecture and engineering principles apply, and are the controls the platform's authority and validation model most directly implements." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a827> <urn:usf:predicate:canonicalName> "a827" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a827> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a827> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a827> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a827> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a827> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a828> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
@@ -588,10 +588,10 @@
 <urn:usf:applicability-decision:a82> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/support-mode-break-glass-access.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a82> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a82> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a830> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a830> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:applicabilityRationale> "All development is performed in-house; no development is outsourced to a third party. Applicability is to be reassessed if development is outsourced." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:applicabilityStatus> "not-applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a830> <urn:usf:predicate:canonicalName> "a830" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a830> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a830> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a830> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a830> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a830> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a831> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
@@ -614,10 +614,10 @@
 <urn:usf:applicability-decision:a832> <urn:usf:predicate:evidenceArtefact> "tools/validate-spec/validate-spec.py" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a832> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a832> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a833> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a833> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:applicabilityRationale> "Test information applies. Conformance suites must not carry production or personal data." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a833> <urn:usf:predicate:canonicalName> "a833" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a833> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a833> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a833> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a833> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a833> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a834> <urn:usf:predicate:applicabilityRationale> "Audit-testing safeguards such as read-only, scheduled, and scoped access are recognised but not yet evidenced as a dedicated control; deferred to future enterprise-readiness work." <urn:usf:graph:v3-delivery> .
@@ -627,16 +627,16 @@
 <urn:usf:applicability-decision:a834> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a834> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a834> <urn:usf:predicate:evidenceClassification> "future-rung" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a834> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a83> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a83> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:applicabilityRationale> "Information access restriction applies. The platform enforces tenant isolation and entitlement-scoped access." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a83> <urn:usf:predicate:canonicalName> "a83" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a83> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a83> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a83> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a83> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a83> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a84> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a84> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:applicabilityRationale> "Access to source code applies. Source is held in version control and is the substrate from which the platform is realised." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a84> <urn:usf:predicate:canonicalName> "a84" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a84> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a84> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a84> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a84> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a84> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a85> <urn:usf:predicate:applicabilityRationale> "" <urn:usf:graph:v3-delivery> .
@@ -649,10 +649,10 @@
 <urn:usf:applicability-decision:a85> <urn:usf:predicate:evidenceArtefact> "spec/instances/semantic-contract/authentication-platform.json" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a85> <urn:usf:predicate:evidenceClassification> "dev-evidenced" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a85> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a86> <urn:usf:predicate:applicabilityRationale> "Context, scope, risk and obligation assessment required before applicability is decided." <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a86> <urn:usf:predicate:applicabilityStatus> "pending-assessment" <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:applicabilityRationale> "Capacity management applies, including provider quota and token budget, which are the capacities that actually constrain operation." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:applicabilityStatus> "applicable" <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a86> <urn:usf:predicate:canonicalName> "a86" <urn:usf:graph:v3-delivery> .
-<urn:usf:applicability-decision:a86> <urn:usf:predicate:decisionBasis> "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it." <urn:usf:graph:v3-delivery> .
+<urn:usf:applicability-decision:a86> <urn:usf:predicate:decisionBasis> "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a86> <urn:usf:predicate:decisionForControl> <urn:usf:framework-control:a86> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a86> <urn:usf:predicate:type> <urn:usf:type:ApplicabilityDecision> <urn:usf:graph:v3-delivery> .
 <urn:usf:applicability-decision:a87> <urn:usf:predicate:applicabilityRationale> "Malware protection is captured only as a provider disposition matrix input; no live scanning control is evidenced and it is deferred to future provider-integration work." <urn:usf:graph:v3-delivery> .
@@ -11441,8 +11441,9 @@
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:approvalState> "prepared-not-certified" <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:canonicalName> "v3" <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:completenessRule> "A control is decided only where a recovered assessment states its applicability. The remaining controls are carried as pending-assessment and are not asserted to be either applicable or excluded. This statement is therefore complete in its control set and explicitly incomplete in its decisions." <urn:usf:graph:v3-delivery> .
-<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:decidedControlCount> "48" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:decidedControlCount> "93" <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:declaredControlCount> "93" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:exclusionRule> "Every not-applicable verdict rests on a declared scope fact recorded as a soaScopeFact, and each names the change that would make it applicable again. An exclusion that does not is not admissible." <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a510> <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a511> <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:hasApplicabilityDecision> <urn:usf:applicability-decision:a512> <urn:usf:graph:v3-delivery> .
@@ -11542,10 +11543,14 @@
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "no-statement-of-applicability-completeness-claim" <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "prepared-is-not-certified-no-certification-audit-has-occurred" <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:nonClaim> "semantic-map-is-not-control-satisfaction" <urn:usf:graph:v3-delivery> .
-<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:pendingControlCount> "45" <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:pendingControlCount> "0" <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:provenance> "Control set and undecided placeholders recovered from the pinned V1 assurance graph graph/assurance/enterprise.trig at revision 028a9f96; decided applicability recovered from that repository's ISO 27001 alignment artefact, which covers 48 of the 93 controls and declares itself alignment-only." <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:soaFrameworkEdition> "ISO/IEC 27001:2022 Annex A" <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:soaScope> "USF semantic authority, its registered command surface, the capability implementations realised from delivery authority, and the declared operational substrates." <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:soaScopeFact> "All development is performed in-house; no development is outsourced." <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:soaScopeFact> "No organisation-managed endpoint devices and no organisation-controlled network egress point exist within scope." <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:soaScopeFact> "No physical premises, offices, rooms or on-premises equipment are within the ISMS scope; all infrastructure is cloud-hosted." <urn:usf:graph:v3-delivery> .
+<urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:soaScopeFact> "The organisation is a sole operator; no employment or contractor relationships are within scope." <urn:usf:graph:v3-delivery> .
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:type> <urn:usf:type:StatementOfApplicability> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:ApplicabilityDecision> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:FrameworkControl> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .

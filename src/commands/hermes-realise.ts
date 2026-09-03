@@ -256,6 +256,8 @@ export interface RealisePlan {
   readonly deterministicCount: number;
   readonly semanticModelCount: number;
   readonly alreadySatisfiedCount: number;
+  /** Derived artefacts on disk that no longer equal what authority projects. */
+  readonly driftedArtefacts: readonly string[];
   readonly readyFrontier: number;
   readonly hardDependencyEdges: number;
   readonly integrationValidationEdges: number;
@@ -276,13 +278,27 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
   const capabilities = subjectsOfType(graph, "urn:usf:type:DeliveryCapability");
   const work = deriveArtefactWork(graph);
 
-  // Already satisfied: the artefact exists at its canonical path.
+  // Already satisfied: the artefact exists at its canonical path and, when it is
+  // derived, still equals what its authority now projects.
+  //
+  // Presence alone is not satisfaction for a derived artefact. Its authority can
+  // move after it was written, and nothing would ever re-derive it: the statement
+  // of applicability went on reporting 45 undecided controls after all 45 had
+  // been decided, because the file existed. A stale projection of a compliance
+  // document is worse than an absent one, so drift is treated as pending.
   const satisfied = new Set<string>();
+  const drifted: string[] = [];
   for (const entry of work) {
     if (entry.canonicalPath === null) continue;
     const bytes = await readFile(resolve(repositoryRoot, entry.canonicalPath), "utf8").catch(() => undefined);
-    if (bytes !== undefined) satisfied.add(entry.artefact);
+    if (bytes === undefined) continue;
+    if (entry.mechanism === "DETERMINISTIC_GENERATOR") {
+      const current = generateDeterministically(graph, entry);
+      if (current !== null && current.content !== bytes) { drifted.push(entry.artefact); continue; }
+    }
+    satisfied.add(entry.artefact);
   }
+  drifted.sort();
   const notRealizable = Object.freeze(["SUPERSEDED", "BLOCKED_ON_AUTHORITY"]);
   const pending = work.filter((entry) =>
     !satisfied.has(entry.artefact) && !notRealizable.includes(entry.mechanism));
@@ -303,6 +319,7 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     deterministicCount: deterministic.length,
     semanticModelCount: semantic.length,
     alreadySatisfiedCount: satisfied.size,
+    driftedArtefacts: Object.freeze(drifted),
     supersededCount: superseded.length,
     authorityBlockedCount: authorityBlocked.length,
     authorityBlocked: Object.freeze(authorityBlocked.map((entry) => Object.freeze({
@@ -531,9 +548,15 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
       schema: "urn:usf:semantic-transaction-proposal:1" as const,
       intent: `Realize ${postimages.length} independent delivery artefacts derived from delivery authority.`,
       declaredAffectedPaths: Object.freeze([...postimages.map((entry) => entry.path)].sort()),
-      operations: Object.freeze(postimages.map((entry) => Object.freeze({
-        kind: "write-file" as const, path: entry.path, content: entry.content, preimageDigest: null,
-      }))),
+      // A null preimage asserts absence. An artefact being re-derived because it
+      // drifted from its authority is present, so its actual digest must be
+      // carried or the transaction is correctly refused as stale and the drift
+      // becomes undetectable-and-unfixable rather than merely undetected.
+      operations: Object.freeze(await Promise.all(postimages.map(async (entry) => Object.freeze({
+        kind: "write-file" as const, path: entry.path, content: entry.content,
+        preimageDigest: await readFile(resolve(repositoryRoot, entry.path), "utf8")
+          .then((bytes) => canonicalDigest(bytes)).catch(() => null),
+      })))),
     });
     const directory = resolve(repositoryRoot, ".usf", "proposals");
     await mkdir(directory, { recursive: true, mode: 0o700 });

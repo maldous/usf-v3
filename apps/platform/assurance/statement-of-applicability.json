@@ -1,11 +1,11 @@
 {
   "approvalState": "prepared-not-certified",
   "completeness": {
-    "applicable": 43,
-    "decided": 48,
+    "applicable": 76,
+    "decided": 93,
     "declared": 93,
-    "notApplicable": 5,
-    "pending": 45
+    "notApplicable": 17,
+    "pending": 0
   },
   "completenessRule": "A control is decided only where a recovered assessment states its applicability. The remaining controls are carried as pending-assessment and are not asserted to be either applicable or excluded. This statement is therefore complete in its control set and explicitly incomplete in its decisions.",
   "controls": [
@@ -34,39 +34,39 @@
       "title": "Information security roles and responsibilities"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.3",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Segregation of duties is applicable and cannot be achieved by separation of people, because a sole operator performs every role. It is addressed by compensating controls rather than excluded: the repository's authority model, the requirement that a semantic transaction validate the whole resulting corpus before applying, and durable provenance on every authority change. Recording it as not applicable would understate a real and accepted risk.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.4",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Management responsibilities apply. The sole operator is also the management function, so the obligation is to define and follow the ISMS rather than to direct others.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.5",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Contact with authorities applies. Breach-notification and regulator contact obligations exist independently of organisation size.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.6",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Contact with special interest groups applies as the route by which vulnerability and threat intelligence reaches a single-operator organisation.",
       "title": null
     },
     {
@@ -100,21 +100,21 @@
       "title": "Inventory of information and other associated assets"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.10",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Acceptable use of information and associated assets applies. The rules bind the operator and any future user of the platform.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.5.11",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No employment or contractor relationships are in scope, so no personnel hold organisation assets and no return-of-assets event can occur. Applicability is to be reassessed if the organisation engages staff or contractors.",
       "title": null
     },
     {
@@ -130,21 +130,21 @@
       "title": "Classification of information"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.13",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Labelling of information applies. The platform classifies tenant data, including personal data, and classification without labelling cannot be acted upon.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.14",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Information transfer applies. Tenant data moves between the platform, cloud providers and external model providers.",
       "title": null
     },
     {
@@ -210,30 +210,30 @@
       "title": "Information security in supplier relationships"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.20",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Information security in supplier agreements applies. Cloud hosting and external model providers are suppliers whose agreements carry the security terms.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.21",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "ICT supply chain security applies, and is heightened rather than reduced by being fully cloud-hosted: the supply chain is the infrastructure.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.22",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Monitoring and change management of supplier services applies. Provider capability, pricing and model availability change independently of this organisation.",
       "title": null
     },
     {
@@ -261,30 +261,30 @@
       "title": "Information security incident management planning and preparation"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.25",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Assessment and decision on information security events applies. Events must be triaged whoever operates the platform.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.26",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Response to information security incidents applies.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.27",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Learning from information security incidents applies.",
       "title": null
     },
     {
@@ -301,12 +301,12 @@
       "title": "Collection of evidence"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.29",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Information security during disruption applies. A cloud-hosted platform can be disrupted by its providers as readily as by its own faults.",
       "title": null
     },
     {
@@ -331,21 +331,21 @@
       "title": "Legal, statutory, regulatory and contractual requirements"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.32",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Intellectual property rights apply. The platform incorporates third-party dependencies under licences that must be observed, and recovered historical material under a declared reuse boundary.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.33",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Protection of records applies. Authority, provenance and evidence records are retained and must not be silently altered.",
       "title": null
     },
     {
@@ -383,12 +383,12 @@
       "title": "Compliance with policies, rules and standards"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.5.37",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Documented operating procedures apply, and are the mechanism by which a single operator's knowledge survives absence.",
       "title": null
     },
     {
@@ -401,12 +401,12 @@
       "title": "Screening"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.6.2",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No employment relationships are in scope, so there are no terms and conditions of employment to carry information security responsibilities. Applicability is to be reassessed if the organisation engages staff.",
       "title": null
     },
     {
@@ -428,12 +428,12 @@
       "title": "Disciplinary process"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.6.5",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No employment or role-change events can occur in scope, so there are no post-termination responsibilities to define. Applicability is to be reassessed if the organisation engages staff.",
       "title": null
     },
     {
@@ -446,12 +446,12 @@
       "title": "Confidentiality or non-disclosure agreements"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.6.7",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Remote working applies and is load-bearing: all work is performed remotely, so the controls that would otherwise be provided by a managed office are provided here or not at all.",
       "title": null
     },
     {
@@ -484,12 +484,12 @@
       "title": "Physical entry"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.7.3",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No offices, rooms or facilities are within the ISMS scope. All infrastructure is cloud-hosted and the provider's physical controls are addressed through the supplier controls in A.5.20 to A.5.22.",
       "title": null
     },
     {
@@ -502,48 +502,48 @@
       "title": "Physical security monitoring"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.7.5",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No premises or organisation-sited equipment are in scope, so physical and environmental threat protection is wholly inherited from the cloud provider and assessed as a supplier control.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.7.6",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No secure areas exist in scope, so there are no procedures for working in them to define.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.7.7",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Clear desk and clear screen applies to the operator workstation, which displays and holds tenant information despite there being no office in scope.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.7.8",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No organisation-sited equipment exists in scope; processing equipment is the cloud provider's.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.7.9",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Security of assets off-premises applies, and is the physical control that survives a fully remote scope: the operator workstation is an off-premises asset holding organisation information at all times.",
       "title": null
     },
     {
@@ -556,30 +556,30 @@
       "title": "Storage media"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.7.11",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No premises are in scope, so supporting utilities such as power and cooling are the cloud provider's responsibility.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.7.12",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No organisation-controlled cabling exists in scope.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.7.13",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No organisation-controlled equipment is operated under a maintenance regime. The single operator workstation is covered as an off-premises asset under A.7.9 rather than as maintained equipment.",
       "title": null
     },
     {
@@ -592,12 +592,12 @@
       "title": "Secure disposal or re-use of equipment"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.1",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "User endpoint devices apply. The operator workstation processes organisation and tenant information; the absence of centralised device management is an implementation gap rather than a reason to exclude the control.",
       "title": null
     },
     {
@@ -614,21 +614,21 @@
       "title": "Privileged access rights"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.3",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Information access restriction applies. The platform enforces tenant isolation and entitlement-scoped access.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.4",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Access to source code applies. Source is held in version control and is the substrate from which the platform is realised.",
       "title": null
     },
     {
@@ -645,12 +645,12 @@
       "title": "Secure authentication"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.6",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Capacity management applies, including provider quota and token budget, which are the capacities that actually constrain operation.",
       "title": null
     },
     {
@@ -700,12 +700,12 @@
       "title": "Information deletion"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.11",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Data masking applies. The platform handles personal data and declares classification and privacy semantics.",
       "title": null
     },
     {
@@ -730,12 +730,12 @@
       "title": "Information backup"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.14",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Redundancy of information processing facilities applies, and is delivered through cloud provider redundancy assessed as a supplier control.",
       "title": null
     },
     {
@@ -765,30 +765,30 @@
       "title": "Monitoring activities"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.17",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Clock synchronisation applies. Ordering of audit and provenance records depends on it.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.18",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Use of privileged utility programs applies. Administrative and operator tooling can bypass ordinary platform controls.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.19",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Installation of software on operational systems applies, and is governed by pinned dependencies and a frozen lockfile.",
       "title": null
     },
     {
@@ -803,30 +803,30 @@
       "title": "Networks security"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.21",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Security of network services applies to the platform's external interfaces and provider connections.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.22",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Segregation of networks applies, expressed as tenant and environment isolation rather than as physical network separation.",
       "title": null
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.8.23",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "No organisation-managed endpoint devices and no organisation-controlled network egress point exist in scope, so there is no place at which web filtering could be applied or audited. Applicability is to be reassessed if managed devices or a controlled egress point are introduced.",
       "title": null
     },
     {
@@ -868,12 +868,12 @@
       "title": "Application security requirements"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.27",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Secure system architecture and engineering principles apply, and are the controls the platform's authority and validation model most directly implements.",
       "title": null
     },
     {
@@ -903,12 +903,12 @@
       "title": "Security testing in development and acceptance"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "not-applicable",
       "control": "A.8.30",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "All development is performed in-house; no development is outsourced to a third party. Applicability is to be reassessed if development is outsourced.",
       "title": null
     },
     {
@@ -938,12 +938,12 @@
       "title": "Change management"
     },
     {
-      "applicability": "pending-assessment",
+      "applicability": "applicable",
       "control": "A.8.33",
-      "decisionBasis": "Not assessed. The V1 governance layer carried this control as an undecided placeholder and no later assessment decided it.",
+      "decisionBasis": "Decided by the operator against the declared ISMS scope facts recorded on the statement of applicability. Not recovered from a historical assessment.",
       "evidence": [],
       "evidenceClassification": null,
-      "rationale": "Context, scope, risk and obligation assessment required before applicability is decided.",
+      "rationale": "Test information applies. Conformance suites must not carry production or personal data.",
       "title": null
     },
     {
