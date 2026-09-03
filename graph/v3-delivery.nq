@@ -2191,6 +2191,7 @@
 <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:captureStatus> "not-captured" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:declarationCount> "50" <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:note> "declared domain events" <urn:usf:graph:v3-delivery> .
+<urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:partiallyAddressedBy> <urn:usf:product-event-vocabulary:v1:1> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:predicate:type> <urn:usf:type:DeliveryCaptureRemainder> <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:captureNote> "All 186 declarations are captured: 93 framework controls and 93 applicability decisions. Capture preserved the decision state it found rather than inventing one, so 45 decisions remain pending-assessment." <urn:usf:graph:v3-delivery> .
 <urn:usf:delivery-capture-remainder:governance-content> <urn:usf:predicate:captureStatus> "captured" <urn:usf:graph:v3-delivery> .
@@ -11401,6 +11402,29 @@
 <urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:v3Mechanism> "Nothing in V3 provides a package manifest for the product workspace." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:workspace-manifest> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:addressesCaptureRemainder> <urn:usf:delivery-capture-remainder:event-vocabulary> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:canonicalName> "v1" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:completenessRule> "This vocabulary is open, not closed. It declares only the canonical product events the delivery facets already name, so that an event the corpus asserts in prose is also stated as a resource. It is not a claim that these are the product's only events, and it does not yet constrain anything: the event substrate types an event as a free-form string, so an undeclared event is still accepted at runtime. Closing the vocabulary means deciding the product event set and binding each event to its producing capability, which is a product decision rather than a derivation." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaredEventCount> "2" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:report-run> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:tenant-config-changed> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:type> <urn:usf:type:ProductEventVocabulary> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:vocabularyCompleteness> "open" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:report-run> <urn:usf:predicate:canonicalName> "report-run" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:report-run> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:report-run> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:report-run> <urn:usf:predicate:eventName> "report.run" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:report-run> <urn:usf:predicate:payloadKey> "reportId" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:report-run> <urn:usf:predicate:producedByCapability> <urn:usf:delivery-capability:scheduledjobsbuiltinontheeventsubstrate> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:report-run> <urn:usf:predicate:producerEvidence> "The scheduled-jobs facet states that a due tick enqueues a platform event and that an enqueued job becomes an ordinary platform_events record, naming a report.run event as its example, so the producing capability is stated rather than inferred." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:report-run> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:tenant-config-changed> <urn:usf:predicate:canonicalName> "tenant-config-changed" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:tenant-config-changed> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:tenant-config-changed> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:tenant-config-changed> <urn:usf:predicate:eventName> "tenant.config.changed" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:tenant-config-changed> <urn:usf:predicate:payloadKey> "key" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:tenant-config-changed> <urn:usf:predicate:producerUndeclaredReason> "The facet names this as a canonical product event with a strict versioned payload contract keyed on key, but states no producing capability. Binding it to the event-bus capability would confuse the substrate that carries an event with the capability that emits it, so the producer is left unstated rather than inferred." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:tenant-config-changed> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:composedreal> <urn:usf:predicate:canonicalName> "composedreal" <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:composedreal> <urn:usf:predicate:type> <urn:usf:type:ProviderMode> <urn:usf:graph:v3-delivery> .
 <urn:usf:provider-mode:hermeticmock> <urn:usf:predicate:canonicalName> "hermeticmock" <urn:usf:graph:v3-delivery> .
@@ -11525,6 +11549,8 @@
 <urn:usf:statement-of-applicability:v3:1> <urn:usf:predicate:type> <urn:usf:type:StatementOfApplicability> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:ApplicabilityDecision> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:FrameworkControl> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
+<urn:usf:type:ProductEvent> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
+<urn:usf:type:ProductEventVocabulary> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:type:StatementOfApplicability> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:antiSelfWarrant> "The evidence records that a validator ran and what it returned. It never records satisfaction. The facet evaluator derives satisfaction from this evidence, and a requirement can never be its own evidence." <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:bottleneck> "none: validation happens at the point of realization, in parallel, with no gate between producing and accepting" <urn:usf:graph:v3-delivery> .

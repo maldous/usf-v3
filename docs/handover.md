@@ -1,5 +1,47 @@
 # USF V3 handover
 
+## Authority boundary 2026-09-03 — product events are stated, not only narrated
+
+`urn:usf:product-event-vocabulary:v1:1` declares the canonical product events
+the delivery facets already named in prose, so an event the corpus asserts is
+also a resource. Transaction `sha256:5a83494e…`, 26 quads, corpus 25 865.
+
+The verified defect: no event subject was declared in **any** graph file, while
+two facets name canonical product events in their `facetStatement` text, and the
+event substrate types an event as a free-form `eventType: string`. So the corpus
+asserted events it did not state, and nothing constrained an undeclared one.
+
+Declared from facet evidence only:
+
+- `report.run`, payload key `reportId`, delivery guarantee at-least-once,
+  carried by the event-bus capability and **produced by**
+  `scheduledjobsbuiltinontheeventsubstrate`. The producer is stated because that
+  facet says a due tick enqueues a platform event and names `report.run` as its
+  example.
+- `tenant.config.changed`, payload key `key`, delivery guarantee at-least-once,
+  carried by the event-bus capability, **producer deliberately left unstated**
+  with a reason. The facet names it as a canonical product event with a strict
+  versioned payload contract but names no producer, and binding it to the
+  event-bus capability would confuse the substrate that carries an event with
+  the capability that emits it.
+
+The vocabulary declares itself **open**, with a completeness rule saying so: it
+is not a claim that these are the product's only events, and it constrains
+nothing yet, because the substrate still accepts an undeclared event. Closing it
+means deciding the product event set and binding each event to its producer,
+which is a product decision rather than a derivation — the same boundary the
+statement of applicability draws around its 45 undecided controls.
+
+This partially addresses the `event-vocabulary` remainder, whose verdict stays
+`SURVIVING_INVARIANT_REQUIRES_MECHANISM`. The delivery-guarantee half now has a
+predicate and two instances; the closed-vocabulary and full producer-binding
+half does not.
+
+Blast radius measured in a clone lane at `ca14e5c` before applying, not assumed:
+this change adds a quad whose subject is the **existing** remainder resource, so
+it is not purely additive. All eight profile projections were byte-identical and
+the facet verdict digest unchanged. 407/407 tests, gate conforming.
+
 ## Authority boundary 2026-09-03 — write authority is a registered projection
 
 `usf status` now carries a `writeAuthority` projection, registered as
