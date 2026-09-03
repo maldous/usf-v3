@@ -1,0 +1,24 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/self-host.json",
+    "graph/manifests/profile-authority.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/transact-postimage-integrity.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:transact-postimage-integrity",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/transact-postimage-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:transact-postimage-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
