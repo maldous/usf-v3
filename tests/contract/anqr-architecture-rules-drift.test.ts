@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
 const generator = "scripts/derive-anqr-architecture-rules.mjs";
+const experienceGenerator = "scripts/derive-anqr-experience.mjs";
 
 /**
  * ANQR enforces its architecture from a rules file projected out of this graph.
@@ -27,6 +28,18 @@ function productRulesPath(): string | null {
   // Sibling checkout by convention, which is how the operator maps it locally.
   const candidate = resolve(repositoryRoot, "../anqr/packages/architecture/rules.json");
   return existsSync(candidate) ? candidate : null;
+}
+
+function productExperiencePath(): string | null {
+  const candidate = resolve(repositoryRoot, "../anqr/packages/architecture/experience.json");
+  return existsSync(candidate) ? candidate : null;
+}
+
+function deriveExperience(): string {
+  return execFileSync(process.execPath, [experienceGenerator], {
+    cwd: repositoryRoot, encoding: "utf8", maxBuffer: 1 << 28,
+    env: { ...process.env, FORCE_COLOR: undefined },
+  });
 }
 
 function derive(): string {
@@ -50,7 +63,7 @@ test("the derivation covers every architecture facet the graph declares", () => 
   };
   // A projection that silently dropped a rule would let the product enforce
   // less than the graph requires, which is the failure this guards.
-  assert.equal(derived.facets.length, 15, "all fifteen architecture facets must project");
+  assert.equal(derived.facets.length, 16, "all sixteen architecture facets must project, including experience traceability");
   assert.ok(derived.components.length >= 10);
   assert.ok(derived.ports.length >= 6);
   assert.ok(derived.adapters.length >= 5);
@@ -127,6 +140,79 @@ test("planted: authority drift is detected, and the graph is what wins", (contex
 
     writeFileSync(source, graphBytes);
     assert.equal(readFileSync(path, "utf8"), derive(), "restoring the graph must return to known-good");
+  } finally {
+    writeFileSync(source, graphBytes);
+  }
+});
+
+// The experience projection is authority-derived on exactly the same terms as
+// the architecture rules, so it gets the same drift guarantee in both
+// directions. A product that could edit its own experience projection could
+// weaken its own state machine, journey and join rules.
+
+test("the experience derivation is deterministic", (context) => {
+  if (productExperiencePath() === null) {
+    context.skip("the ANQR checkout is not mapped beside this repository");
+    return;
+  }
+  assert.equal(deriveExperience(), deriveExperience());
+});
+
+test("the product's committed experience equals a fresh derivation", (context) => {
+  const path = productExperiencePath();
+  if (path === null) {
+    context.skip("the ANQR checkout is not mapped beside this repository");
+    return;
+  }
+  assert.equal(readFileSync(path, "utf8"), deriveExperience(),
+    "the committed experience projection has drifted from the graph; regenerate rather than editing it");
+});
+
+test("planted: experience output drift is detected and the restored state passes", (context) => {
+  const path = productExperiencePath();
+  if (path === null) {
+    context.skip("the ANQR checkout is not mapped beside this repository");
+    return;
+  }
+  const original = readFileSync(path, "utf8");
+  try {
+    assert.equal(original, deriveExperience(), "known-good");
+    // Widening a state's permitted actions inside the projection is the
+    // realistic attack: the product would then allow an action the graph
+    // withholds, and the state machine test compares against this file.
+    const weakened = JSON.parse(original) as { states: { name: string; permits: string[] }[] };
+    (weakened.states[0] as { permits: string[] }).permits.push("export-artefact");
+    writeFileSync(path, `${JSON.stringify(weakened, null, 2)}\n`);
+    assert.notEqual(readFileSync(path, "utf8"), deriveExperience(), "a widened state must be detected as drift");
+    writeFileSync(path, original);
+    assert.equal(readFileSync(path, "utf8"), deriveExperience(), "restoring must return to known-good");
+  } finally {
+    writeFileSync(path, original);
+  }
+});
+
+test("planted: experience authority drift is detected, and the graph wins", (context) => {
+  const path = productExperiencePath();
+  if (path === null) {
+    context.skip("the ANQR checkout is not mapped beside this repository");
+    return;
+  }
+  const source = resolve(repositoryRoot, "graph/products/anqr/experience.nq");
+  const graphBytes = readFileSync(source, "utf8");
+  const committed = readFileSync(path, "utf8");
+  try {
+    assert.equal(committed, deriveExperience(), "known-good");
+    const planted = [
+      `<urn:anqr:design-role:planted-drift> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .`,
+      `<urn:anqr:design-role:planted-drift> <urn:usf:predicate:canonicalName> "planted-drift" <urn:anqr:graph:experience> .`,
+      `<urn:anqr:design-role:planted-drift> <urn:usf:predicate:roleGoverns> "planted" <urn:anqr:graph:experience> .`,
+    ].join("\n");
+    writeFileSync(source, `${graphBytes}${planted}\n`);
+    const afterDrift = deriveExperience();
+    assert.notEqual(afterDrift, committed, "a graph change must change the derivation");
+    assert.notEqual(readFileSync(path, "utf8"), afterDrift, "the committed projection is now stale");
+    writeFileSync(source, graphBytes);
+    assert.equal(readFileSync(path, "utf8"), deriveExperience(), "restoring the graph returns to known-good");
   } finally {
     writeFileSync(source, graphBytes);
   }

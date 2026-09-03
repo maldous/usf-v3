@@ -1,0 +1,184 @@
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:canonicalName> "future-use-patterns" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:hasPattern> <urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:hasPattern> <urn:usf:future-use-pattern:export-download:1> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:hasPattern> <urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:hasPattern> <urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:hasPattern> <urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:neutralityRule> <urn:usf:pattern-neutrality-rule:1> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:nonClaim> "Containing a pattern is not selecting it. A product must select a pattern explicitly through its own experience profile; nothing is inherited by being in this catalogue." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:nonClaim> "Five patterns are declared because this catalogue's first consumer selects exactly five. A larger speculative set would look like authority while never having been exercised by a real journey." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:objective> "Reusable interaction patterns any USF product may select. A pattern says what must be experienced; it never says how, in what framework, or for which product." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:semantic-model> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:type> <urn:usf:type:FutureUsePatternCatalogue> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern-catalogue:1> <urn:usf:predicate:version> "1" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:assistiveSemantics> "The outcome is announced through a live region, with failure announced assertively and success politely." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:canonicalName> "action-result-feedback" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:focusBehaviour> "Focus is not thrown to an unrelated region when the outcome arrives." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:keyboardBehaviour> "The outcome is reachable by keyboard from the action that produced it." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:patternAnatomy> "A statement of the outcome." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:patternAnatomy> "An indication that the action is in progress." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:patternAnatomy> "For a failure, the reason and a way to proceed." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:patternPurpose> "Make the outcome of a discrete action unambiguous, including when it fails, and say what to do next." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:prohibitedShortcut> "Do not leave an action in progress with no terminal outcome." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:prohibitedShortcut> "Do not report a failure without a reason." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:prohibitedShortcut> "Do not use the same presentation for success and failure." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:acted> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:acting> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:failed> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:ready> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:responsiveBehaviour> "The outcome remains associated with its action when the layout reflows." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:type> <urn:usf:type:FutureUsePattern> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:action-result-feedback:1> <urn:usf:predicate:version> "1" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:assistiveSemantics> "Completion and failure are both announced; a delivery that only changes a visual state is silent to anyone not watching." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:canonicalName> "export-download" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:focusBehaviour> "Focus remains on the action after it completes, so a second export is possible without hunting for the control." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:keyboardBehaviour> "The action is reachable and operable by keyboard, and its accessible name says what will be produced rather than only naming the verb." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:patternAnatomy> "A choice of form, where more than one is genuinely available." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:patternAnatomy> "A statement of what was delivered." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:patternAnatomy> "An action that produces and delivers the artefact." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:patternPurpose> "Hand someone a produced artefact in a form they chose, and make clear what they received." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:prohibitedShortcut> "Do not offer a form the producer cannot actually deliver." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:prohibitedShortcut> "Do not report success before the artefact exists." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:prohibitedShortcut> "Do not silently substitute a different form from the one chosen." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:acted> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:acting> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:failed> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:ready> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:responsiveBehaviour> "The action remains reachable without horizontal scrolling at every supported width." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:type> <urn:usf:type:FutureUsePattern> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:export-download:1> <urn:usf:predicate:version> "1" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:assistiveSemantics> "The preview is announced as a live region so a change is noticed without sight, and it carries a text alternative describing what it depicts and whether it is usable." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:canonicalName> "input-and-preview" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:focusBehaviour> "Focus stays where the actor put it while the preview updates; a preview refresh must never steal or reset focus." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:keyboardBehaviour> "Every control is reachable and operable by keyboard alone, in the order the visual layout implies." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:patternAnatomy> "A place to describe the desired thing." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:patternAnatomy> "A rendering of the current consequence of that description." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:patternAnatomy> "A statement of whether the current consequence is usable." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:patternPurpose> "Let someone describe what they want and see the consequence continuously, so the result is understood before it is committed to." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:prohibitedShortcut> "Do not clear the description when the consequence fails; the actor loses the work that caused the failure." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:prohibitedShortcut> "Do not present a stale preview as current while a new one is being computed." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:prohibitedShortcut> "Do not require a submit step to see the consequence; that turns a preview into a result." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:empty> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:failed> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:input-invalid> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:ready> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:working> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:responsiveBehaviour> "The description and the preview remain simultaneously usable when they stack on a narrow viewport, and the current description survives the reflow." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:type> <urn:usf:type:FutureUsePattern> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:input-and-preview:1> <urn:usf:predicate:version> "1" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:assistiveSemantics> "The relationship between the control and the region it governs is programmatic, and the expanded state is exposed." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:canonicalName> "progressive-disclosure" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:focusBehaviour> "Disclosing moves focus into the disclosed region only when the actor asked for it; collapsing returns focus to the control." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:keyboardBehaviour> "The disclosure control is operable by keyboard and its expanded state is conveyed, not merely drawn." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:patternAnatomy> "A disclosure control whose current state is evident." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:patternAnatomy> "A primary path that works with no secondary choice made." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:patternAnatomy> "The secondary choices, once disclosed." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:patternPurpose> "Keep a secondary set of choices available without letting it compete with the primary intent." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:prohibitedShortcut> "Do not disclose by removing the control that governs the disclosure." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:prohibitedShortcut> "Do not hide anything required to complete the primary intent." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:empty> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:ready> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:responsiveBehaviour> "On a narrow viewport the secondary choices may collapse by default, and the primary path must remain complete without them." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:type> <urn:usf:type:FutureUsePattern> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:progressive-disclosure:1> <urn:usf:predicate:version> "1" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:assistiveSemantics> "The input is marked invalid programmatically and the reason is associated with it, so it is announced when the input is reached rather than only visible." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:canonicalName> "validation-feedback" <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:focusBehaviour> "Focus is not moved away from the input when it becomes invalid; the actor is mid-correction." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:keyboardBehaviour> "The reason is reachable from the input by keyboard without leaving the field." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:patternAnatomy> "An association between the reason and the input it concerns." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:patternAnatomy> "The specific reason, in the actor's terms rather than the system's." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:patternPurpose> "Tell someone precisely why what they supplied cannot be used, next to what they supplied, while it can still be corrected." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:prohibitedShortcut> "Do not report invalidity only on submit when it was knowable earlier." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:prohibitedShortcut> "Do not state that something is invalid without stating why." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:prohibitedShortcut> "Do not use colour as the only signal of invalidity." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:input-invalid> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:requiresInteractionState> <urn:usf:interaction-state:ready> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:responsiveBehaviour> "The reason stays adjacent to its input at every viewport width and is never truncated to fit." <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:type> <urn:usf:type:FutureUsePattern> <urn:usf:graph:future-use-patterns> .
+<urn:usf:future-use-pattern:validation-feedback:1> <urn:usf:predicate:version> "1" <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:acted> <urn:usf:predicate:canonicalName> "acted" <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:acted> <urn:usf:predicate:dispositionMeaning> "The action completed and the actor is told what happened." <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:acted> <urn:usf:predicate:type> <urn:usf:type:InteractionState> <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:acting> <urn:usf:predicate:canonicalName> "acting" <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:acting> <urn:usf:predicate:dispositionMeaning> "An action on the result is in flight." <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:acting> <urn:usf:predicate:type> <urn:usf:type:InteractionState> <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:empty> <urn:usf:predicate:canonicalName> "empty" <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:empty> <urn:usf:predicate:dispositionMeaning> "Nothing has been supplied yet, and the surface says what to do rather than showing an error." <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:empty> <urn:usf:predicate:type> <urn:usf:type:InteractionState> <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:failed> <urn:usf:predicate:canonicalName> "failed" <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:failed> <urn:usf:predicate:dispositionMeaning> "Something did not work, the reason is stated, and a way back is offered." <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:failed> <urn:usf:predicate:type> <urn:usf:type:InteractionState> <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:input-invalid> <urn:usf:predicate:canonicalName> "input-invalid" <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:input-invalid> <urn:usf:predicate:dispositionMeaning> "What was supplied cannot be used, and the reason is stated where the input is." <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:input-invalid> <urn:usf:predicate:type> <urn:usf:type:InteractionState> <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:ready> <urn:usf:predicate:canonicalName> "ready" <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:ready> <urn:usf:predicate:dispositionMeaning> "A result exists and can be acted on." <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:ready> <urn:usf:predicate:type> <urn:usf:type:InteractionState> <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:working> <urn:usf:predicate:canonicalName> "working" <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:working> <urn:usf:predicate:dispositionMeaning> "A request is in flight and the actor can tell." <urn:usf:graph:future-use-patterns> .
+<urn:usf:interaction-state:working> <urn:usf:predicate:type> <urn:usf:type:InteractionState> <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:canonicalName> "pattern-neutrality" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> ".ts" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "anqr" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "apps/" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "className" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "classname" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "css" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "document." <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "gif" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "innerHTML" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "jsx" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "node_modules" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "packages/" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "png" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "preact" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "qr artefact" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "qr code" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "querySelector" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "react" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "redux" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "src/" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "stylesheet" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "svelte" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "svg" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "tailwind" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "tsx" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "useEffect" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "useState" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:forbiddenSubstring> "vue" <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:invariant> "No text of a Future Use Pattern may name a product, a user-interface framework, a markup or styling language, a repository path, or a file format the pattern does not itself concern. A pattern that names its first consumer is not reusable by a second." <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:neutralityReason> "Reuse has to be a checkable property. A catalogue whose patterns quietly assume one product's nouns, one framework's components or one repository's layout is a catalogue with exactly one possible consumer, and nothing about its shape would reveal that." <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:nonClaim> "The forbidden set is deliberately blunt and case-insensitive, and it will occasionally refuse an innocent phrasing. A pattern rewritten to avoid naming a format or a framework is nearly always the clearer pattern, so the false positives are cheap and the false negatives would not be." <urn:usf:graph:future-use-patterns> .
+<urn:usf:pattern-neutrality-rule:1> <urn:usf:predicate:type> <urn:usf:type:PatternNeutralityRule> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:assistiveSemantics> <urn:usf:predicate:objective> "Required assistive-technology semantics." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:assistiveSemantics> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:focusBehaviour> <urn:usf:predicate:objective> "Required focus behaviour." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:focusBehaviour> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:forbiddenSubstring> <urn:usf:predicate:objective> "A substring whose presence in a pattern's text indicates contamination." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:forbiddenSubstring> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:hasPattern> <urn:usf:predicate:objective> "A pattern this catalogue contains." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:hasPattern> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:keyboardBehaviour> <urn:usf:predicate:objective> "Required keyboard behaviour." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:keyboardBehaviour> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:neutralityReason> <urn:usf:predicate:objective> "Why the rule exists." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:neutralityReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:neutralityRule> <urn:usf:predicate:objective> "A neutrality rule this catalogue is bound by." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:neutralityRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:patternAnatomy> <urn:usf:predicate:objective> "The parts an implementation of this pattern must present." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:patternAnatomy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:patternPurpose> <urn:usf:predicate:objective> "What the pattern is for, in terms of what an actor is trying to do." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:patternPurpose> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:prohibitedShortcut> <urn:usf:predicate:objective> "A shortcut an implementation must not take." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:prohibitedShortcut> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:requiresInteractionState> <urn:usf:predicate:objective> "A state any implementation of this pattern must implement." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:requiresInteractionState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:responsiveBehaviour> <urn:usf:predicate:objective> "Required behaviour as the viewport changes." <urn:usf:graph:future-use-patterns> .
+<urn:usf:predicate:responsiveBehaviour> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:future-use-patterns> .
+<urn:usf:type:FutureUsePattern> <urn:usf:predicate:objective> "One reusable interaction pattern: what it is for, what it must show, which states it must implement and how it must behave for keyboard and assistive technology." <urn:usf:graph:future-use-patterns> .
+<urn:usf:type:FutureUsePattern> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:future-use-patterns> .
+<urn:usf:type:FutureUsePatternCatalogue> <urn:usf:predicate:objective> "A versioned, product-neutral set of reusable interaction patterns that products select from explicitly." <urn:usf:graph:future-use-patterns> .
+<urn:usf:type:FutureUsePatternCatalogue> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:future-use-patterns> .
+<urn:usf:type:InteractionState> <urn:usf:predicate:objective> "A state an interaction can be in, named so that presentation and feedback obligations can attach to it." <urn:usf:graph:future-use-patterns> .
+<urn:usf:type:InteractionState> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:future-use-patterns> .
+<urn:usf:type:PatternNeutralityRule> <urn:usf:predicate:objective> "A checkable rule bounding what a reusable pattern may contain, so reuse is a property rather than a hope." <urn:usf:graph:future-use-patterns> .
+<urn:usf:type:PatternNeutralityRule> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:future-use-patterns> .

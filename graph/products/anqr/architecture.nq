@@ -48,19 +48,19 @@
 <urn:anqr:architectural-component:artefact-application> <urn:usf:predicate:declaresPort> <urn:anqr:architectural-port:raster-surface> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-application> <urn:usf:predicate:inLayer> <urn:anqr:architectural-layer:application> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-application> <urn:usf:predicate:objective> "Artefact production and inspection use cases." <urn:anqr:graph:architecture> .
-<urn:anqr:architectural-component:artefact-application> <urn:usf:predicate:specificationStatus> "declared-not-realised" <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-component:artefact-application> <urn:usf:predicate:specificationStatus> "realised" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-application> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalComponent> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-model> <urn:usf:predicate:canonicalName> "artefact-model" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-model> <urn:usf:predicate:componentLocation> "packages/artefact/src/model/" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-model> <urn:usf:predicate:inLayer> <urn:anqr:architectural-layer:domain> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-model> <urn:usf:predicate:objective> "The canonical parameter model, its domains and its conditional-joining rules." <urn:anqr:graph:architecture> .
-<urn:anqr:architectural-component:artefact-model> <urn:usf:predicate:specificationStatus> "declared-not-realised" <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-component:artefact-model> <urn:usf:predicate:specificationStatus> "realised" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-model> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalComponent> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-ports> <urn:usf:predicate:canonicalName> "artefact-ports" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-ports> <urn:usf:predicate:componentLocation> "packages/artefact/src/ports/" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-ports> <urn:usf:predicate:inLayer> <urn:anqr:architectural-layer:ports> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-ports> <urn:usf:predicate:objective> "Inbound artefact use-case contracts and outbound raster, image, encode and clock ports." <urn:anqr:graph:architecture> .
-<urn:anqr:architectural-component:artefact-ports> <urn:usf:predicate:specificationStatus> "declared-not-realised" <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-component:artefact-ports> <urn:usf:predicate:specificationStatus> "realised" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artefact-ports> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalComponent> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artwork> <urn:usf:predicate:canonicalName> "artwork" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:artwork> <urn:usf:predicate:componentLocation> "packages/artefact/src/art/" <urn:anqr:graph:architecture> .
@@ -90,13 +90,13 @@
 <urn:anqr:architectural-component:render-adapters> <urn:usf:predicate:componentLocation> "packages/artefact/src/adapters/" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:render-adapters> <urn:usf:predicate:inLayer> <urn:anqr:architectural-layer:adapters> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:render-adapters> <urn:usf:predicate:objective> "Concrete rasterising, image decoding and container encoding implementations." <urn:anqr:graph:architecture> .
-<urn:anqr:architectural-component:render-adapters> <urn:usf:predicate:specificationStatus> "declared-not-realised" <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-component:render-adapters> <urn:usf:predicate:specificationStatus> "realised" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:render-adapters> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalComponent> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:web-delivery> <urn:usf:predicate:canonicalName> "web-delivery" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:web-delivery> <urn:usf:predicate:componentLocation> "apps/web/src/" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:web-delivery> <urn:usf:predicate:inLayer> <urn:anqr:architectural-layer:delivery> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:web-delivery> <urn:usf:predicate:objective> "The rendered browser experience." <urn:anqr:graph:architecture> .
-<urn:anqr:architectural-component:web-delivery> <urn:usf:predicate:specificationStatus> "declared-not-realised" <urn:anqr:graph:architecture> .
+<urn:anqr:architectural-component:web-delivery> <urn:usf:predicate:specificationStatus> "realised" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-component:web-delivery> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalComponent> <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-layer:adapters> <urn:usf:predicate:canonicalName> "adapters" <urn:anqr:graph:architecture> .
 <urn:anqr:architectural-layer:adapters> <urn:usf:predicate:dependencyRuleReason> "Everything technology-specific and replaceable sits here, where swapping it cannot reach the centre." <urn:anqr:graph:architecture> .
@@ -209,6 +209,7 @@
 <urn:anqr:architecture-contract:responsivewebdelivery> <urn:usf:predicate:canonicalName> "architecture-responsivewebdelivery" <urn:anqr:graph:architecture> .
 <urn:anqr:architecture-contract:responsivewebdelivery> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:anqr:graph:architecture> .
 <urn:anqr:architecture-contract:responsivewebdelivery> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:anqr:graph:architecture> .
+<urn:anqr:architecture-contract:responsivewebdelivery> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:anqr:graph:architecture> .
 <urn:anqr:architecture-contract:responsivewebdelivery> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:anqr:graph:architecture> .
 <urn:anqr:architecture-contract:responsivewebdelivery> <urn:usf:predicate:definesCompletionFor> <urn:anqr:delivery-capability:responsivewebdelivery> <urn:anqr:graph:architecture> .
 <urn:anqr:architecture-contract:responsivewebdelivery> <urn:usf:predicate:objective> "Structural and assurance obligations constraining how responsivewebdelivery is realised, as distinct from what it does." <urn:anqr:graph:architecture> .
@@ -352,6 +353,20 @@
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:dependency-declaration-integrity> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:canonicalName> "architectureexperiencetraceability" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:expectedResult> "No rendered identity is unknown, no declared action or role is unimplemented, no journey selects an undeclared pattern, and the implemented state machine matches authority exactly." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:facetStatement> "Every rendered element carrying a semantic identity resolves to a declared design role, experience action or journey; every declared action and role has an implementation binding whose location exists; every journey step selects a pattern the catalogue declares; and the state machine the implementation enforces equals the declared states, permitted actions and transitions." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:interface-conformance> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:canonicalName> "architectureframeworkisolation" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:expectedResult> "Zero framework or host imports in the isolated layers." <urn:anqr:graph:architecture> .
@@ -530,6 +545,12 @@
 <urn:anqr:dependency-rule:permits-application-ports> <urn:usf:predicate:dependencyRuleReason> "Use cases are declared by and drive their ports." <urn:anqr:graph:architecture> .
 <urn:anqr:dependency-rule:permits-application-ports> <urn:usf:predicate:dependencyTo> <urn:anqr:architectural-layer:ports> <urn:anqr:graph:architecture> .
 <urn:anqr:dependency-rule:permits-application-ports> <urn:usf:predicate:type> <urn:usf:type:DependencyDirectionRule> <urn:anqr:graph:architecture> .
+<urn:anqr:dependency-rule:permits-delivery-adapters> <urn:usf:predicate:canonicalName> "permits-delivery-adapters" <urn:anqr:graph:architecture> .
+<urn:anqr:dependency-rule:permits-delivery-adapters> <urn:usf:predicate:dependencyFrom> <urn:anqr:architectural-layer:delivery> <urn:anqr:graph:architecture> .
+<urn:anqr:dependency-rule:permits-delivery-adapters> <urn:usf:predicate:dependencyRuleKind> <urn:usf:dependency-rule-kind:permits> <urn:anqr:graph:architecture> .
+<urn:anqr:dependency-rule:permits-delivery-adapters> <urn:usf:predicate:dependencyRuleReason> "The outermost layer is the composition root: it is the one place that may name concrete adapters, because something has to inject them. The application layer still may not, which is what keeps the centre replaceable. Stated explicitly rather than left to a permissive default, so the edge is a decision rather than an omission." <urn:anqr:graph:architecture> .
+<urn:anqr:dependency-rule:permits-delivery-adapters> <urn:usf:predicate:dependencyTo> <urn:anqr:architectural-layer:adapters> <urn:anqr:graph:architecture> .
+<urn:anqr:dependency-rule:permits-delivery-adapters> <urn:usf:predicate:type> <urn:usf:type:DependencyDirectionRule> <urn:anqr:graph:architecture> .
 <urn:anqr:dependency-rule:permits-delivery-application> <urn:usf:predicate:canonicalName> "permits-delivery-application" <urn:anqr:graph:architecture> .
 <urn:anqr:dependency-rule:permits-delivery-application> <urn:usf:predicate:dependencyFrom> <urn:anqr:architectural-layer:delivery> <urn:anqr:graph:architecture> .
 <urn:anqr:dependency-rule:permits-delivery-application> <urn:usf:predicate:dependencyRuleKind> <urn:usf:dependency-rule-kind:permits> <urn:anqr:graph:architecture> .
@@ -583,6 +604,12 @@
 <urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:dependencyRuleReason> "Enforcement machinery and tests are owned code that belongs to no layer of the product. Naming them as an excluded scope means every source is attributable: assigned to a component, or covered by a declared exclusion. Without it the honest count of unaccounted sources cannot be asserted to be zero, and an unaccounted source is a hiding place." <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:nonClaim> "Exclusion from the component model is not exemption from checking. Sources in these scopes are still enumerated, still parsed for imports, and still subject to every rule that does not depend on component assignment." <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:type> <urn:usf:type:ModuleBoundaryRule> <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:delivery-build-and-test-tooling> <urn:usf:predicate:boundaryForbids> "No module of a declared architectural component may import from a build tool or a test location. The build produces the surface; it is not part of it." <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:delivery-build-and-test-tooling> <urn:usf:predicate:boundaryScope> "apps/web/tools/ and apps/web/tests/ in the ANQR product repository." <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:delivery-build-and-test-tooling> <urn:usf:predicate:boundaryScope> <urn:anqr:architecture:1> <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:delivery-build-and-test-tooling> <urn:usf:predicate:canonicalName> "delivery-build-and-test-tooling" <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:delivery-build-and-test-tooling> <urn:usf:predicate:dependencyRuleReason> "The build script imports a bundler, which is a real production-adjacent import that source enumeration must see. Enumerating it makes the script an accounted source, and this boundary is what accounts for it: build tooling is owned code belonging to no layer of the product." <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:delivery-build-and-test-tooling> <urn:usf:predicate:type> <urn:usf:type:ModuleBoundaryRule> <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:released-capability-convention> <urn:usf:predicate:boundaryForbids> "No module of a declared architectural component may import from src/capabilities/ or tests/conformance/. Those paths are the released one-module-per-capability convention, which predates this architecture and is deliberately outside the hexagonal component model; letting a component depend on them would make the released convention load-bearing for the new topology." <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:released-capability-convention> <urn:usf:predicate:boundaryScope> "src/capabilities/ and tests/conformance/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:released-capability-convention> <urn:usf:predicate:boundaryScope> <urn:anqr:architecture:1> <urn:anqr:graph:architecture> .

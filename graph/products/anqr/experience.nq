@@ -1,0 +1,619 @@
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:canonicalName> "anqr-design-profile" <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:contrastRequirement> "4.5" <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:designCharacter> "A precise instrument. Calm, dense, technical-professional: the artefact and its verdict are the loudest things present and the chrome recedes, because someone is about to trust this with a payment payload." <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:content-heading> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:export-action> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:input-label> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:input-surface> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:option-control> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:preview-surface> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:primary-action> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:secondary-action> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:status-message> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:supporting-text> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:hasDesignRole> <urn:anqr:design-role:validation-message> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:nonClaim> "These are roles, not styling. No class name, selector, token value, colour, DOM structure or component name appears here; those are implementation facts and live in the pack." <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:type> <urn:usf:type:DesignProfileRevision> <urn:anqr:graph:experience> .
+<urn:anqr:design-profile-revision:1> <urn:usf:predicate:version> "1" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:content-heading> <urn:usf:predicate:canonicalName> "content-heading" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:content-heading> <urn:usf:predicate:roleGoverns> "The name of a region, establishing the document outline." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:content-heading> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:export-action> <urn:usf:predicate:canonicalName> "export-action" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:export-action> <urn:usf:predicate:roleGoverns> "The action that produces and hands over a container." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:export-action> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:input-label> <urn:usf:predicate:canonicalName> "input-label" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:input-label> <urn:usf:predicate:roleGoverns> "The name of an input, programmatically associated with it." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:input-label> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:input-surface> <urn:usf:predicate:canonicalName> "input-surface" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:input-surface> <urn:usf:predicate:roleGoverns> "Where the actor states what the code should carry." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:input-surface> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:option-control> <urn:usf:predicate:canonicalName> "option-control" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:option-control> <urn:usf:predicate:roleGoverns> "A secondary choice governing encoding or output." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:option-control> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:preview-surface> <urn:usf:predicate:canonicalName> "preview-surface" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:preview-surface> <urn:usf:predicate:roleGoverns> "Where the current artefact is shown, with a text alternative." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:preview-surface> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:primary-action> <urn:usf:predicate:canonicalName> "primary-action" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:primary-action> <urn:usf:predicate:roleGoverns> "The action carrying the journey's intent." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:primary-action> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:secondary-action> <urn:usf:predicate:canonicalName> "secondary-action" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:secondary-action> <urn:usf:predicate:roleGoverns> "An action that is available but not the point." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:secondary-action> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:status-message> <urn:usf:predicate:canonicalName> "status-message" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:status-message> <urn:usf:predicate:roleGoverns> "The outcome of a discrete action, announced not merely drawn." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:status-message> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:supporting-text> <urn:usf:predicate:canonicalName> "supporting-text" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:supporting-text> <urn:usf:predicate:roleGoverns> "Text that explains a control without being an error." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:supporting-text> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:design-role:validation-message> <urn:usf:predicate:canonicalName> "validation-message" <urn:anqr:graph:experience> .
+<urn:anqr:design-role:validation-message> <urn:usf:predicate:roleGoverns> "Why the current input or combination cannot be used." <urn:anqr:graph:experience> .
+<urn:anqr:design-role:validation-message> <urn:usf:predicate:type> <urn:usf:type:DesignRole> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:dismiss-failure> <urn:usf:predicate:actionEvidence> "The state returned to, with the actor's input intact." <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:dismiss-failure> <urn:usf:predicate:actionInvokesCapability> <urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:dismiss-failure> <urn:usf:predicate:actionOutcome> "dismissed" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:dismiss-failure> <urn:usf:predicate:canonicalName> "dismiss-failure" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:dismiss-failure> <urn:usf:predicate:type> <urn:usf:type:ExperienceAction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:export-artefact> <urn:usf:predicate:actionEvidence> "The produced container bytes and their media type." <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:export-artefact> <urn:usf:predicate:actionInvokesCapability> <urn:anqr:delivery-capability:artefactexport> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:export-artefact> <urn:usf:predicate:actionOutcome> "delivered" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:export-artefact> <urn:usf:predicate:actionOutcome> "refused-container" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:export-artefact> <urn:usf:predicate:actionOutcome> "refused-unsafe" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:export-artefact> <urn:usf:predicate:canonicalName> "export-artefact" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:export-artefact> <urn:usf:predicate:type> <urn:usf:type:ExperienceAction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-error-correction> <urn:usf:predicate:actionEvidence> "The admissible join result for the changed specification." <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-error-correction> <urn:usf:predicate:actionInvokesCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-error-correction> <urn:usf:predicate:actionOutcome> "accepted" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-error-correction> <urn:usf:predicate:actionOutcome> "refused-inadmissible-join" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-error-correction> <urn:usf:predicate:canonicalName> "set-error-correction" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-error-correction> <urn:usf:predicate:type> <urn:usf:type:ExperienceAction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-foreground-colour> <urn:usf:predicate:actionEvidence> "The admissible join result, which is where a colour pair below the contrast floor is refused." <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-foreground-colour> <urn:usf:predicate:actionInvokesCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-foreground-colour> <urn:usf:predicate:actionOutcome> "accepted" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-foreground-colour> <urn:usf:predicate:actionOutcome> "refused-inadmissible-join" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-foreground-colour> <urn:usf:predicate:canonicalName> "set-foreground-colour" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-foreground-colour> <urn:usf:predicate:type> <urn:usf:type:ExperienceAction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-output-format> <urn:usf:predicate:actionEvidence> "The admissible join result for the changed specification." <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-output-format> <urn:usf:predicate:actionInvokesCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-output-format> <urn:usf:predicate:actionOutcome> "accepted" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-output-format> <urn:usf:predicate:actionOutcome> "refused-inadmissible-join" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-output-format> <urn:usf:predicate:canonicalName> "set-output-format" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-output-format> <urn:usf:predicate:type> <urn:usf:type:ExperienceAction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-payload> <urn:usf:predicate:actionEvidence> "The validated specification the producer received." <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-payload> <urn:usf:predicate:actionInvokesCapability> <urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-payload> <urn:usf:predicate:actionOutcome> "accepted" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-payload> <urn:usf:predicate:actionOutcome> "refused-empty" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-payload> <urn:usf:predicate:actionOutcome> "refused-too-large" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-payload> <urn:usf:predicate:canonicalName> "set-payload" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-payload> <urn:usf:predicate:type> <urn:usf:type:ExperienceAction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-symbol-version> <urn:usf:predicate:actionEvidence> "The admissible join result, which is where a forced version too small for the payload is refused." <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-symbol-version> <urn:usf:predicate:actionInvokesCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-symbol-version> <urn:usf:predicate:actionOutcome> "accepted" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-symbol-version> <urn:usf:predicate:actionOutcome> "refused-inadmissible-join" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-symbol-version> <urn:usf:predicate:canonicalName> "set-symbol-version" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:set-symbol-version> <urn:usf:predicate:type> <urn:usf:type:ExperienceAction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:toggle-encoding-options> <urn:usf:predicate:actionEvidence> "The disclosure state conveyed to assistive technology." <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:toggle-encoding-options> <urn:usf:predicate:actionInvokesCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:toggle-encoding-options> <urn:usf:predicate:actionOutcome> "collapsed" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:toggle-encoding-options> <urn:usf:predicate:actionOutcome> "disclosed" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:toggle-encoding-options> <urn:usf:predicate:canonicalName> "toggle-encoding-options" <urn:anqr:graph:experience> .
+<urn:anqr:experience-action:toggle-encoding-options> <urn:usf:predicate:type> <urn:usf:type:ExperienceAction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-actor:anonymous-creator> <urn:usf:predicate:actorIntent> "Turn something I can state into a code I can use, and know before I take it that it will scan." <urn:anqr:graph:experience> .
+<urn:anqr:experience-actor:anonymous-creator> <urn:usf:predicate:actorRole> "Someone who wants a scannable code and is never asked who they are." <urn:anqr:graph:experience> .
+<urn:anqr:experience-actor:anonymous-creator> <urn:usf:predicate:canonicalName> "anonymous-creator" <urn:anqr:graph:experience> .
+<urn:anqr:experience-actor:anonymous-creator> <urn:usf:predicate:servesCapability> <urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:graph:experience> .
+<urn:anqr:experience-actor:anonymous-creator> <urn:usf:predicate:type> <urn:usf:type:ExperienceActor> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:boundProfileRevision> <urn:anqr:profile-revision:2> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:canonicalName> "anqr-experience-profile" <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:catalogueRevision> <urn:usf:future-use-pattern-catalogue:1> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasExperienceState> <urn:anqr:experience-state:empty> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasExperienceState> <urn:anqr:experience-state:exported> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasExperienceState> <urn:anqr:experience-state:exporting> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasExperienceState> <urn:anqr:experience-state:failed> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasExperienceState> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasExperienceState> <urn:anqr:experience-state:input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasExperienceState> <urn:anqr:experience-state:ready> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasJourney> <urn:anqr:product-journey:create-and-export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:empty-to-generating> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:empty-to-input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:exported-to-exporting> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:exported-to-generating> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:exporting-to-exported> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:exporting-to-failed> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:failed-to-generating> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:failed-to-input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:failed-to-ready> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:generating-to-failed> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:generating-to-input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:generating-to-ready> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:input-invalid-to-generating> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:ready-to-exporting> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:ready-to-generating> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:hasTransition> <urn:anqr:state-transition:ready-to-input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:nonClaim> "No Foundation service is required by this journey. Generation, preview and export are ANQR-local capabilities realised with no third-party runtime dependency, and the four Foundation capabilities ANQR marks product-mediated are internationalisation, branding, search and policy decisions, none of which supplies them. A Foundation binding is therefore absent rather than omitted." <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:nonClaim> "One rendered surface establishes no parity. Surface parity and locale parity stay undecidable, and no second cosmetic surface or string table was created to make them look decided." <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:nonClaim> "This revision covers one journey. It is not the ANQR experience; it is the first slice of it, built so the boundaries can be inspected before they become the template for the rest." <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:objective> "The first ANQR experience: someone with no account states what a code should carry, sees the real artefact as they type, and takes it away in a form they chose." <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:selectsPattern> <urn:usf:future-use-pattern:action-result-feedback:1> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:selectsPattern> <urn:usf:future-use-pattern:export-download:1> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:selectsPattern> <urn:usf:future-use-pattern:input-and-preview:1> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:selectsPattern> <urn:usf:future-use-pattern:progressive-disclosure:1> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:selectsPattern> <urn:usf:future-use-pattern:validation-feedback:1> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:type> <urn:usf:type:ExperienceProfileRevision> <urn:anqr:graph:experience> .
+<urn:anqr:experience-profile-revision:1> <urn:usf:predicate:version> "1" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:canonicalName> "empty" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:dispositionMeaning> "empty withholds export-artefact: there is no artefact to export" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:mapsToInteractionState> <urn:usf:interaction-state:empty> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:toggle-encoding-options> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:stateAccessibleMeaning> "The surface names its purpose and the input is the first stop in the focus order." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:stateEntryCondition> "No payload has been entered." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:stateFeedback> "What to enter, not an error. Nothing has gone wrong yet." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:stateRecoveryRoute> "Enter a payload." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:type> <urn:usf:type:ExperienceState> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:empty> <urn:usf:predicate:withholdsAction> <urn:anqr:experience-action:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:canonicalName> "exported" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:mapsToInteractionState> <urn:usf:interaction-state:acted> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-error-correction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-foreground-colour> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-output-format> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-symbol-version> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:stateAccessibleMeaning> "Announced politely through a live region, with focus left on the export action." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:stateEntryCondition> "The container was produced and handed over." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:stateFeedback> "What was delivered, in what form and how large." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:stateRecoveryRoute> "Not applicable; export may simply be repeated." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exported> <urn:usf:predicate:type> <urn:usf:type:ExperienceState> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:canonicalName> "exporting" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:dispositionMeaning> "exporting withholds export-artefact: a second export must not start while one is in flight" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:mapsToInteractionState> <urn:usf:interaction-state:acting> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:stateAccessibleMeaning> "The export action is busy and retains focus." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:stateEntryCondition> "An export is in flight." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:stateFeedback> "That the export is in progress." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:stateRecoveryRoute> "Wait for the outcome." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:type> <urn:usf:type:ExperienceState> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:exporting> <urn:usf:predicate:withholdsAction> <urn:anqr:experience-action:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:canonicalName> "failed" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:dispositionMeaning> "failed withholds export-artefact: the reason for the failure has not been addressed" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:mapsToInteractionState> <urn:usf:interaction-state:failed> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:dismiss-failure> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-error-correction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-foreground-colour> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-output-format> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-symbol-version> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:stateAccessibleMeaning> "Announced assertively, because a failure the actor does not notice is a failure twice." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:stateEntryCondition> "Production or export was refused." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:stateFeedback> "The reason, which choice caused it, and what to change." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:stateRecoveryRoute> "Change the named choice, or dismiss and continue." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:type> <urn:usf:type:ExperienceState> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:failed> <urn:usf:predicate:withholdsAction> <urn:anqr:experience-action:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:canonicalName> "generating" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:dispositionMeaning> "generating withholds export-artefact: the artefact is not yet produced" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:mapsToInteractionState> <urn:usf:interaction-state:working> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-error-correction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-foreground-colour> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-output-format> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-symbol-version> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:toggle-encoding-options> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:stateAccessibleMeaning> "The preview region is busy, and focus is not moved." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:stateEntryCondition> "A valid specification is being produced." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:stateFeedback> "That work is in progress, without discarding the previous preview." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:stateRecoveryRoute> "Wait, or change the input again." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:type> <urn:usf:type:ExperienceState> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:generating> <urn:usf:predicate:withholdsAction> <urn:anqr:experience-action:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:canonicalName> "input-invalid" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:dispositionMeaning> "input-invalid withholds export-artefact: an artefact that was refused must not be exportable" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:mapsToInteractionState> <urn:usf:interaction-state:input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-error-correction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-foreground-colour> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-output-format> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-symbol-version> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:toggle-encoding-options> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:stateAccessibleMeaning> "The input is marked invalid and the reason is associated with it, so it is announced on arrival." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:stateEntryCondition> "The payload or the option combination cannot be used." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:stateFeedback> "The specific reason, beside the input that caused it, with the input preserved." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:stateRecoveryRoute> "Correct the payload or the option that was named." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:type> <urn:usf:type:ExperienceState> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:input-invalid> <urn:usf:predicate:withholdsAction> <urn:anqr:experience-action:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:canonicalName> "ready" <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:mapsToInteractionState> <urn:usf:interaction-state:ready> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-error-correction> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-foreground-colour> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-output-format> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:set-symbol-version> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:permitsAction> <urn:anqr:experience-action:toggle-encoding-options> <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:stateAccessibleMeaning> "The preview carries a text alternative describing what it depicts and that it is usable." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:stateEntryCondition> "An artefact exists and decodes to the requested payload." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:stateFeedback> "The artefact, its structure, and an explicit scan-safety verdict." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:stateRecoveryRoute> "Not applicable; this is the state the journey aims at." <urn:anqr:graph:experience> .
+<urn:anqr:experience-state:ready> <urn:usf:predicate:type> <urn:usf:type:ExperienceState> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-dismiss-failure> <urn:usf:predicate:bindingLocation> "apps/web/src/surfaces/creation-surface.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-dismiss-failure> <urn:usf:predicate:bindsImplementationUnit> "CreationSurface" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-dismiss-failure> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:experience-action:dismiss-failure> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-dismiss-failure> <urn:usf:predicate:canonicalName> "action-dismiss-failure" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-dismiss-failure> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-export-artefact> <urn:usf:predicate:bindingLocation> "apps/web/src/components/export-action.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-export-artefact> <urn:usf:predicate:bindsImplementationUnit> "ExportAction" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-export-artefact> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:experience-action:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-export-artefact> <urn:usf:predicate:canonicalName> "action-export-artefact" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-export-artefact> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-error-correction> <urn:usf:predicate:bindingLocation> "apps/web/src/components/encoding-options.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-error-correction> <urn:usf:predicate:bindsImplementationUnit> "EncodingOptions" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-error-correction> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:experience-action:set-error-correction> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-error-correction> <urn:usf:predicate:canonicalName> "action-set-error-correction" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-error-correction> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-foreground-colour> <urn:usf:predicate:bindingLocation> "apps/web/src/components/encoding-options.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-foreground-colour> <urn:usf:predicate:bindsImplementationUnit> "EncodingOptions" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-foreground-colour> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:experience-action:set-foreground-colour> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-foreground-colour> <urn:usf:predicate:canonicalName> "action-set-foreground-colour" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-foreground-colour> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-output-format> <urn:usf:predicate:bindingLocation> "apps/web/src/components/encoding-options.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-output-format> <urn:usf:predicate:bindsImplementationUnit> "EncodingOptions" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-output-format> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:experience-action:set-output-format> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-output-format> <urn:usf:predicate:canonicalName> "action-set-output-format" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-output-format> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-payload> <urn:usf:predicate:bindingLocation> "apps/web/src/components/payload-field.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-payload> <urn:usf:predicate:bindsImplementationUnit> "PayloadField" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-payload> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:experience-action:set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-payload> <urn:usf:predicate:canonicalName> "action-set-payload" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-payload> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-symbol-version> <urn:usf:predicate:bindingLocation> "apps/web/src/components/encoding-options.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-symbol-version> <urn:usf:predicate:bindsImplementationUnit> "EncodingOptions" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-symbol-version> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:experience-action:set-symbol-version> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-symbol-version> <urn:usf:predicate:canonicalName> "action-set-symbol-version" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-set-symbol-version> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-toggle-encoding-options> <urn:usf:predicate:bindingLocation> "apps/web/src/components/encoding-options.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-toggle-encoding-options> <urn:usf:predicate:bindsImplementationUnit> "EncodingOptions" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-toggle-encoding-options> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:experience-action:toggle-encoding-options> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-toggle-encoding-options> <urn:usf:predicate:canonicalName> "action-toggle-encoding-options" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:action-toggle-encoding-options> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:journey-create-and-export-artefact> <urn:usf:predicate:bindingLocation> "apps/web/src/surfaces/creation-surface.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:journey-create-and-export-artefact> <urn:usf:predicate:bindsImplementationUnit> "CreationSurface" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:journey-create-and-export-artefact> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:product-journey:create-and-export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:journey-create-and-export-artefact> <urn:usf:predicate:canonicalName> "journey-create-and-export-artefact" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:journey-create-and-export-artefact> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-content-heading> <urn:usf:predicate:bindingLocation> "apps/web/src/components/section-heading.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-content-heading> <urn:usf:predicate:bindsImplementationUnit> "SectionHeading" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-content-heading> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:content-heading> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-content-heading> <urn:usf:predicate:canonicalName> "role-content-heading" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-content-heading> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-export-action> <urn:usf:predicate:bindingLocation> "apps/web/src/components/export-action.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-export-action> <urn:usf:predicate:bindsImplementationUnit> "ExportAction" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-export-action> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:export-action> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-export-action> <urn:usf:predicate:canonicalName> "role-export-action" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-export-action> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-label> <urn:usf:predicate:bindingLocation> "apps/web/src/components/payload-field.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-label> <urn:usf:predicate:bindsImplementationUnit> "PayloadField" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-label> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:input-label> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-label> <urn:usf:predicate:canonicalName> "role-input-label" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-label> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-surface> <urn:usf:predicate:bindingLocation> "apps/web/src/components/payload-field.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-surface> <urn:usf:predicate:bindsImplementationUnit> "PayloadField" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-surface> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:input-surface> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-surface> <urn:usf:predicate:canonicalName> "role-input-surface" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-input-surface> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-option-control> <urn:usf:predicate:bindingLocation> "apps/web/src/components/encoding-options.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-option-control> <urn:usf:predicate:bindsImplementationUnit> "EncodingOptions" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-option-control> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:option-control> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-option-control> <urn:usf:predicate:canonicalName> "role-option-control" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-option-control> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-preview-surface> <urn:usf:predicate:bindingLocation> "apps/web/src/components/artefact-preview.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-preview-surface> <urn:usf:predicate:bindsImplementationUnit> "ArtefactPreview" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-preview-surface> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:preview-surface> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-preview-surface> <urn:usf:predicate:canonicalName> "role-preview-surface" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-preview-surface> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-primary-action> <urn:usf:predicate:bindingLocation> "apps/web/src/components/export-action.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-primary-action> <urn:usf:predicate:bindsImplementationUnit> "ExportAction" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-primary-action> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:primary-action> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-primary-action> <urn:usf:predicate:canonicalName> "role-primary-action" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-primary-action> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-secondary-action> <urn:usf:predicate:bindingLocation> "apps/web/src/components/encoding-options.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-secondary-action> <urn:usf:predicate:bindsImplementationUnit> "EncodingOptions" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-secondary-action> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:secondary-action> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-secondary-action> <urn:usf:predicate:canonicalName> "role-secondary-action" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-secondary-action> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-status-message> <urn:usf:predicate:bindingLocation> "apps/web/src/components/status-message.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-status-message> <urn:usf:predicate:bindsImplementationUnit> "StatusMessage" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-status-message> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:status-message> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-status-message> <urn:usf:predicate:canonicalName> "role-status-message" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-status-message> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-supporting-text> <urn:usf:predicate:bindingLocation> "apps/web/src/components/supporting-text.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-supporting-text> <urn:usf:predicate:bindsImplementationUnit> "SupportingText" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-supporting-text> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:supporting-text> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-supporting-text> <urn:usf:predicate:canonicalName> "role-supporting-text" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-supporting-text> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-validation-message> <urn:usf:predicate:bindingLocation> "apps/web/src/components/validation-message.ts" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-validation-message> <urn:usf:predicate:bindsImplementationUnit> "ValidationMessage" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-validation-message> <urn:usf:predicate:bindsSemanticElement> <urn:anqr:design-role:validation-message> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-validation-message> <urn:usf:predicate:canonicalName> "role-validation-message" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-binding:role-validation-message> <urn:usf:predicate:type> <urn:usf:type:ImplementationBinding> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:esbuild> <urn:usf:predicate:canonicalName> "esbuild" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:esbuild> <urn:usf:predicate:dependencyRequiredBecause> "Produces the application artefact from declared sources. One dependency, deterministic output, no global tool." <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:esbuild> <urn:usf:predicate:type> <urn:usf:type:ImplementationDependency> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:happy-dom> <urn:usf:predicate:canonicalName> "happy-dom" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:happy-dom> <urn:usf:predicate:dependencyRequiredBecause> "A document implementation for tests, so keyboard operation, focus behaviour and accessible naming are exercised rather than asserted from a string." <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:happy-dom> <urn:usf:predicate:type> <urn:usf:type:ImplementationDependency> <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:preact> <urn:usf:predicate:canonicalName> "preact" <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:preact> <urn:usf:predicate:dependencyRequiredBecause> "The rendering framework the pack binds. Chosen for the smallest dependency surface that still gives a component model with hooks, so the implementation binding stays thin." <urn:anqr:graph:experience> .
+<urn:anqr:implementation-dependency:preact> <urn:usf:predicate:type> <urn:usf:type:ImplementationDependency> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:adjust-encoding> <urn:usf:predicate:canonicalName> "adjust-encoding" <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:adjust-encoding> <urn:usf:predicate:objective> "Change how it is encoded, without having to." <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:adjust-encoding> <urn:usf:predicate:stepOrder> "2" <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:adjust-encoding> <urn:usf:predicate:stepSelectsPattern> <urn:usf:future-use-pattern:progressive-disclosure:1> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:adjust-encoding> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:encodingcontrolsurface> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:adjust-encoding> <urn:usf:predicate:type> <urn:usf:type:JourneyStep> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:describe-payload> <urn:usf:predicate:canonicalName> "describe-payload" <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:describe-payload> <urn:usf:predicate:objective> "State what the code should carry." <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:describe-payload> <urn:usf:predicate:stepOrder> "1" <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:describe-payload> <urn:usf:predicate:stepSelectsPattern> <urn:usf:future-use-pattern:input-and-preview:1> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:describe-payload> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:anonymousgeneration> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:describe-payload> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:custompayloaddefinition> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:describe-payload> <urn:usf:predicate:type> <urn:usf:type:JourneyStep> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:export-artefact> <urn:usf:predicate:canonicalName> "export-artefact" <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:export-artefact> <urn:usf:predicate:objective> "Take it away in a chosen form." <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:export-artefact> <urn:usf:predicate:stepOrder> "4" <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:export-artefact> <urn:usf:predicate:stepSelectsPattern> <urn:usf:future-use-pattern:export-download:1> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:export-artefact> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:artefactexport> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:export-artefact> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:deterministicoutput> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:export-artefact> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:scansafeoutput> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:export-artefact> <urn:usf:predicate:type> <urn:usf:type:JourneyStep> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:canonicalName> "review-artefact" <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:objective> "See the real artefact and whether it will scan." <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:stepOrder> "3" <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:stepSelectsPattern> <urn:usf:future-use-pattern:input-and-preview:1> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:outputrendering> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:qrartefactcreation> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:roundtripcorrectness> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:stepUsesCapability> <urn:anqr:delivery-capability:scansafetyvalidation> <urn:anqr:graph:experience> .
+<urn:anqr:journey-step:review-artefact> <urn:usf:predicate:type> <urn:usf:type:JourneyStep> <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:canonicalName> "create-and-export-artefact" <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:forActor> <urn:anqr:experience-actor:anonymous-creator> <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:hasJourneyStep> <urn:anqr:journey-step:adjust-encoding> <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:hasJourneyStep> <urn:anqr:journey-step:describe-payload> <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:hasJourneyStep> <urn:anqr:journey-step:export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:hasJourneyStep> <urn:anqr:journey-step:review-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:journeyBusinessPurpose> "The product's central outcome. Everything else ANQR offers is either a variation on producing an artefact or an inspection of one." <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:journeyEntryPoint> "The creation surface, reached with no account and no prior state." <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:journeyFailureOutcome> "The actor is told which of their choices made the artefact unusable, keeps everything they entered, and can change that one choice." <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:journeySuccessOutcome> "The actor holds a file that decodes to exactly what they stated." <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:requiresAnonymity> "true" <urn:anqr:graph:experience> .
+<urn:anqr:product-journey:create-and-export-artefact> <urn:usf:predicate:type> <urn:usf:type:ProductJourney> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-generating> <urn:usf:predicate:canonicalName> "empty-to-generating" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-generating> <urn:usf:predicate:transitionCause> "a non-empty payload was entered and its join is admissible" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-generating> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:empty> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-generating> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-generating> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-input-invalid> <urn:usf:predicate:canonicalName> "empty-to-input-invalid" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-input-invalid> <urn:usf:predicate:transitionCause> "the entered payload or option combination was refused" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-input-invalid> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:empty> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-input-invalid> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:empty-to-input-invalid> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-exporting> <urn:usf:predicate:canonicalName> "exported-to-exporting" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-exporting> <urn:usf:predicate:transitionCause> "the actor invoked export again" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-exporting> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:exported> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-exporting> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:exporting> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-exporting> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-generating> <urn:usf:predicate:canonicalName> "exported-to-generating" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-generating> <urn:usf:predicate:transitionCause> "the payload or an encoding option changed" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-generating> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:exported> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-generating> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exported-to-generating> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-exported> <urn:usf:predicate:canonicalName> "exporting-to-exported" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-exported> <urn:usf:predicate:transitionCause> "the container was produced and handed over" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-exported> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:exporting> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-exported> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:exported> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-exported> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-failed> <urn:usf:predicate:canonicalName> "exporting-to-failed" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-failed> <urn:usf:predicate:transitionCause> "the container refused the artefact" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-failed> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:exporting> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-failed> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:failed> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:exporting-to-failed> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-generating> <urn:usf:predicate:canonicalName> "failed-to-generating" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-generating> <urn:usf:predicate:transitionCause> "the named choice was changed" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-generating> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:failed> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-generating> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-generating> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-input-invalid> <urn:usf:predicate:canonicalName> "failed-to-input-invalid" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-input-invalid> <urn:usf:predicate:transitionCause> "the payload changed to one that is refused" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-input-invalid> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:failed> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-input-invalid> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-input-invalid> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-ready> <urn:usf:predicate:canonicalName> "failed-to-ready" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-ready> <urn:usf:predicate:transitionCause> "the failure was dismissed and a valid artefact is still held" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-ready> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:failed> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-ready> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:ready> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:failed-to-ready> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-failed> <urn:usf:predicate:canonicalName> "generating-to-failed" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-failed> <urn:usf:predicate:transitionCause> "production was refused" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-failed> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-failed> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:failed> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-failed> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-input-invalid> <urn:usf:predicate:canonicalName> "generating-to-input-invalid" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-input-invalid> <urn:usf:predicate:transitionCause> "the payload changed to one that is refused" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-input-invalid> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-input-invalid> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-input-invalid> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-ready> <urn:usf:predicate:canonicalName> "generating-to-ready" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-ready> <urn:usf:predicate:transitionCause> "production returned an artefact whose decode equals the requested payload" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-ready> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-ready> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:ready> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:generating-to-ready> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:input-invalid-to-generating> <urn:usf:predicate:canonicalName> "input-invalid-to-generating" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:input-invalid-to-generating> <urn:usf:predicate:transitionCause> "the payload or option was corrected and the join is now admissible" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:input-invalid-to-generating> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:input-invalid-to-generating> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:input-invalid-to-generating> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-exporting> <urn:usf:predicate:canonicalName> "ready-to-exporting" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-exporting> <urn:usf:predicate:transitionCause> "the actor invoked export" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-exporting> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:ready> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-exporting> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:exporting> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-exporting> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-generating> <urn:usf:predicate:canonicalName> "ready-to-generating" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-generating> <urn:usf:predicate:transitionCause> "the payload or an encoding option changed" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-generating> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:ready> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-generating> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:generating> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-generating> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-input-invalid> <urn:usf:predicate:canonicalName> "ready-to-input-invalid" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-input-invalid> <urn:usf:predicate:transitionCause> "the payload or option changed to one that is refused" <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-input-invalid> <urn:usf:predicate:transitionFrom> <urn:anqr:experience-state:ready> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-input-invalid> <urn:usf:predicate:transitionTo> <urn:anqr:experience-state:input-invalid> <urn:anqr:graph:experience> .
+<urn:anqr:state-transition:ready-to-input-invalid> <urn:usf:predicate:type> <urn:usf:type:StateTransition> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:bindsDesignProfileRevision> <urn:anqr:design-profile-revision:1> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:buildCommand> "npm run build" <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:buildOutputLocation> "apps/web/dist/" <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:canonicalName> "anqr-preact-pack" <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:action-dismiss-failure> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:action-export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:action-set-error-correction> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:action-set-foreground-colour> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:action-set-output-format> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:action-set-payload> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:action-set-symbol-version> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:action-toggle-encoding-options> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:journey-create-and-export-artefact> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-content-heading> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-export-action> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-input-label> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-input-surface> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-option-control> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-preview-surface> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-primary-action> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-secondary-action> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-status-message> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-supporting-text> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:hasBinding> <urn:anqr:implementation-binding:role-validation-message> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:joinValidatorLocation> "packages/artefact/src/model/artefact-specification.ts" <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:nonClaim> "This pack is the only place a framework is named. Replacing it must not require editing the experience profile, the patterns, the capability contracts, the codec or the adapters, and the dependency-direction rules are what hold that." <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:packDependency> <urn:anqr:implementation-dependency:esbuild> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:packDependency> <urn:anqr:implementation-dependency:happy-dom> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:packDependency> <urn:anqr:implementation-dependency:preact> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:packImplements> <urn:anqr:experience-profile-revision:1> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:packTargetRuntime> "Evergreen browser, ES2024, no server rendering." <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:type> <urn:usf:type:UiImplementationPack> <urn:anqr:graph:experience> .
+<urn:anqr:ui-implementation-pack:preact:1> <urn:usf:predicate:version> "1" <urn:anqr:graph:experience> .
+<urn:usf:predicate:actionEvidence> <urn:usf:predicate:objective> "What evidences that the outcome occurred." <urn:anqr:graph:experience> .
+<urn:usf:predicate:actionEvidence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:actionInvokesCapability> <urn:usf:predicate:objective> "The capability an action invokes." <urn:anqr:graph:experience> .
+<urn:usf:predicate:actionInvokesCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:actionOutcome> <urn:usf:predicate:objective> "A possible outcome of an action." <urn:anqr:graph:experience> .
+<urn:usf:predicate:actionOutcome> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:actorIntent> <urn:usf:predicate:objective> "What the actor is trying to achieve." <urn:anqr:graph:experience> .
+<urn:usf:predicate:actorIntent> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:actorRole> <urn:usf:predicate:objective> "Who the actor is, in their own terms." <urn:anqr:graph:experience> .
+<urn:usf:predicate:actorRole> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:bindingLocation> <urn:usf:predicate:objective> "Where that unit lives." <urn:anqr:graph:experience> .
+<urn:usf:predicate:bindingLocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:bindsDesignProfileRevision> <urn:usf:predicate:objective> "The design profile revision a pack renders through." <urn:anqr:graph:experience> .
+<urn:usf:predicate:bindsDesignProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:bindsImplementationUnit> <urn:usf:predicate:objective> "The concrete unit realising it." <urn:anqr:graph:experience> .
+<urn:usf:predicate:bindsImplementationUnit> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:bindsSemanticElement> <urn:usf:predicate:objective> "The semantic element a binding realises." <urn:anqr:graph:experience> .
+<urn:usf:predicate:bindsSemanticElement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:buildCommand> <urn:usf:predicate:objective> "The declared command that produces the application artefact." <urn:anqr:graph:experience> .
+<urn:usf:predicate:buildCommand> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:buildOutputLocation> <urn:usf:predicate:objective> "Where the produced application artefact appears." <urn:anqr:graph:experience> .
+<urn:usf:predicate:buildOutputLocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:catalogueRevision> <urn:usf:predicate:objective> "The pattern catalogue revision a profile selects against." <urn:anqr:graph:experience> .
+<urn:usf:predicate:catalogueRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:contrastRequirement> <urn:usf:predicate:objective> "The minimum contrast ratio the design profile requires." <urn:anqr:graph:experience> .
+<urn:usf:predicate:contrastRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:dependencyRequiredBecause> <urn:usf:predicate:objective> "Why this dependency is required." <urn:anqr:graph:experience> .
+<urn:usf:predicate:dependencyRequiredBecause> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:designCharacter> <urn:usf:predicate:objective> "The product's committed visual and behavioural character." <urn:anqr:graph:experience> .
+<urn:usf:predicate:designCharacter> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:forActor> <urn:usf:predicate:objective> "The actor a journey belongs to." <urn:anqr:graph:experience> .
+<urn:usf:predicate:forActor> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasBinding> <urn:usf:predicate:objective> "A binding this pack declares." <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasDesignRole> <urn:usf:predicate:objective> "A role this design profile declares." <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasDesignRole> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasExperienceState> <urn:usf:predicate:objective> "A state this profile declares." <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasExperienceState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasJourney> <urn:usf:predicate:objective> "A journey this profile declares." <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasJourney> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasJourneyStep> <urn:usf:predicate:objective> "A step of this journey." <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasJourneyStep> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasTransition> <urn:usf:predicate:objective> "A transition this profile declares." <urn:anqr:graph:experience> .
+<urn:usf:predicate:hasTransition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:joinValidatorLocation> <urn:usf:predicate:objective> "Where the admissible-join validator lives." <urn:anqr:graph:experience> .
+<urn:usf:predicate:joinValidatorLocation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:journeyBusinessPurpose> <urn:usf:predicate:objective> "Why the journey is worth having." <urn:anqr:graph:experience> .
+<urn:usf:predicate:journeyBusinessPurpose> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:journeyEntryPoint> <urn:usf:predicate:objective> "Where the journey starts." <urn:anqr:graph:experience> .
+<urn:usf:predicate:journeyEntryPoint> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:journeyFailureOutcome> <urn:usf:predicate:objective> "What failure looks like, and what the actor keeps." <urn:anqr:graph:experience> .
+<urn:usf:predicate:journeyFailureOutcome> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:journeySuccessOutcome> <urn:usf:predicate:objective> "What success looks like to the actor." <urn:anqr:graph:experience> .
+<urn:usf:predicate:journeySuccessOutcome> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:mapsToInteractionState> <urn:usf:predicate:objective> "The product-neutral interaction state this product state realises." <urn:anqr:graph:experience> .
+<urn:usf:predicate:mapsToInteractionState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:packDependency> <urn:usf:predicate:objective> "A locked dependency of this pack." <urn:anqr:graph:experience> .
+<urn:usf:predicate:packDependency> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:packImplements> <urn:usf:predicate:objective> "The experience profile revision this pack implements." <urn:anqr:graph:experience> .
+<urn:usf:predicate:packImplements> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:packTargetRuntime> <urn:usf:predicate:objective> "The runtime this pack targets." <urn:anqr:graph:experience> .
+<urn:usf:predicate:packTargetRuntime> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:permitsAction> <urn:usf:predicate:objective> "An action available in this state." <urn:anqr:graph:experience> .
+<urn:usf:predicate:permitsAction> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:requiresAnonymity> <urn:usf:predicate:objective> "Whether the journey must work without an account." <urn:anqr:graph:experience> .
+<urn:usf:predicate:requiresAnonymity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:roleAppliedByAction> <urn:usf:predicate:objective> "An action presented through this role." <urn:anqr:graph:experience> .
+<urn:usf:predicate:roleAppliedByAction> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:roleGoverns> <urn:usf:predicate:objective> "What the role governs." <urn:anqr:graph:experience> .
+<urn:usf:predicate:roleGoverns> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:selectsPattern> <urn:usf:predicate:objective> "A Future Use Pattern this profile explicitly selects. Nothing is inherited." <urn:anqr:graph:experience> .
+<urn:usf:predicate:selectsPattern> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:stateAccessibleMeaning> <urn:usf:predicate:objective> "What this state means to assistive technology." <urn:anqr:graph:experience> .
+<urn:usf:predicate:stateAccessibleMeaning> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:stateEntryCondition> <urn:usf:predicate:objective> "What makes this the current state." <urn:anqr:graph:experience> .
+<urn:usf:predicate:stateEntryCondition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:stateFeedback> <urn:usf:predicate:objective> "What the actor is told in this state." <urn:anqr:graph:experience> .
+<urn:usf:predicate:stateFeedback> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:stateRecoveryRoute> <urn:usf:predicate:objective> "How the actor gets out of this state." <urn:anqr:graph:experience> .
+<urn:usf:predicate:stateRecoveryRoute> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:stepOrder> <urn:usf:predicate:objective> "The step's position in its journey." <urn:anqr:graph:experience> .
+<urn:usf:predicate:stepOrder> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:stepSelectsPattern> <urn:usf:predicate:objective> "The reusable pattern shaping this step." <urn:anqr:graph:experience> .
+<urn:usf:predicate:stepSelectsPattern> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:stepUsesCapability> <urn:usf:predicate:objective> "The product capability a step consumes." <urn:anqr:graph:experience> .
+<urn:usf:predicate:stepUsesCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:stepUsesFoundationCapability> <urn:usf:predicate:objective> "The Foundation capability a step consumes, where one is genuinely required." <urn:anqr:graph:experience> .
+<urn:usf:predicate:stepUsesFoundationCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:transitionCause> <urn:usf:predicate:objective> "What causes the transition." <urn:anqr:graph:experience> .
+<urn:usf:predicate:transitionCause> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:transitionFrom> <urn:usf:predicate:objective> "The state a transition leaves." <urn:anqr:graph:experience> .
+<urn:usf:predicate:transitionFrom> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:transitionTo> <urn:usf:predicate:objective> "The state a transition enters." <urn:anqr:graph:experience> .
+<urn:usf:predicate:transitionTo> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:predicate:withholdsAction> <urn:usf:predicate:objective> "An action deliberately unavailable in this state, and why." <urn:anqr:graph:experience> .
+<urn:usf:predicate:withholdsAction> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:experience> .
+<urn:usf:type:DesignProfileRevision> <urn:usf:predicate:objective> "A versioned statement of the product's presentation semantics as roles rather than styling." <urn:anqr:graph:experience> .
+<urn:usf:type:DesignProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:DesignRole> <urn:usf:predicate:objective> "A semantic presentation role. What it governs, never how it looks." <urn:anqr:graph:experience> .
+<urn:usf:type:DesignRole> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:ExperienceAction> <urn:usf:predicate:objective> "A discrete thing an actor can do, with the states in which it is permitted." <urn:anqr:graph:experience> .
+<urn:usf:type:ExperienceAction> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:ExperienceActor> <urn:usf:predicate:objective> "Someone who acts on the product, with a role and an intent." <urn:anqr:graph:experience> .
+<urn:usf:type:ExperienceActor> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:ExperienceProfileRevision> <urn:usf:predicate:objective> "A versioned product statement of who acts, what they are trying to do, and which reusable patterns the product selects to let them." <urn:anqr:graph:experience> .
+<urn:usf:type:ExperienceProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:ExperienceState> <urn:usf:predicate:objective> "A state of the product experience, with its entry condition, permitted actions and feedback." <urn:anqr:graph:experience> .
+<urn:usf:type:ExperienceState> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:ImplementationBinding> <urn:usf:predicate:objective> "The link from one semantic element to the concrete unit that realises it." <urn:anqr:graph:experience> .
+<urn:usf:type:ImplementationBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:ImplementationDependency> <urn:usf:predicate:objective> "One locked third-party dependency, with why it is required." <urn:anqr:graph:experience> .
+<urn:usf:type:ImplementationDependency> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:JourneyStep> <urn:usf:predicate:objective> "One step of a journey, bound to the capability that supplies it and the pattern that shapes it." <urn:anqr:graph:experience> .
+<urn:usf:type:JourneyStep> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:ProductJourney> <urn:usf:predicate:objective> "An actor's path to a business outcome." <urn:anqr:graph:experience> .
+<urn:usf:type:ProductJourney> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:StateTransition> <urn:usf:predicate:objective> "A permitted move between two experience states, and what causes it." <urn:anqr:graph:experience> .
+<urn:usf:type:StateTransition> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
+<urn:usf:type:UiImplementationPack> <urn:usf:predicate:objective> "A versioned binding of experience semantics to concrete versioned software." <urn:anqr:graph:experience> .
+<urn:usf:type:UiImplementationPack> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:anqr:graph:experience> .
