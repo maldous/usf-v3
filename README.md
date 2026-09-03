@@ -90,9 +90,27 @@ re-derive them at any time with:
 ./bin/usf profile status --manifest graph/products/anqr/manifest.json
 ```
 
-Claims stop at that boundary: no staging, production, terminal proof or live
-external provider behaviour is claimed, and packet-lane completion records
-under `graph/manifests/self-host-provider-v3.json` are point-in-time
-authority whose currentness moves with the exact bytes they bind. See
-[`docs/handover.md`](docs/handover.md) for the wrap-up boundary and
-[`docs/acceptance/`](docs/acceptance/) for the recorded acceptance run.
+Since that boundary the graph integrity gate has been brought to
+`gateConforming: true` — 24 legacy violations against a recorded debt constant
+of 24, with 0 in owned graphs — by declaring the corpus functional-predicate set
+in the graph rather than raising the constant. All six enumerated V1 capture
+remainders now carry a verdict, and the ISO/IEC 27001:2022 Annex A governance
+layer is captured, so `apps/platform/assurance/statement-of-applicability.json`
+is derived by a deterministic generator over 93 declared controls with 93
+decided and 0 pending:
+
+```sh
+./bin/usf graph integrity
+./bin/usf hermes realise
+```
+
+Claims stop there: no staging, production, terminal proof or live external
+provider behaviour is claimed. The statement of applicability is
+`prepared-not-certified` and carries `no-iso-certification-claim` and
+`no-external-auditor-acceptance-claim` — it records which controls apply and
+why, not that any is implemented or that any audit has occurred. Packet-lane
+completion records under `graph/manifests/self-host-provider-v3.json` are
+point-in-time authority whose currentness moves with the exact bytes they bind.
+See [`docs/handover.md`](docs/handover.md) for the current position and what
+remains, and [`docs/acceptance/`](docs/acceptance/) for the recorded acceptance
+run.
