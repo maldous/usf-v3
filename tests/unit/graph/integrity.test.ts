@@ -52,6 +52,10 @@ test("a dangling reference is refused, but a terminal runtime identifier is not"
 
   // An output-schema identifier denotes a runtime value and is intentionally terminal.
   assert.ok(terminalIdentifierKinds.includes("cli-error"));
+  // Every command output schema is a wire identity of the same class. A new
+  // registered command adds one, and forgetting it surfaces as a dangling
+  // reference on the command declaration rather than silently passing.
+  assert.ok(terminalIdentifierKinds.includes("lane-census-result"));
   const terminal = checkIntegrity([
     ...vocabulary,
     declarePredicate("urn:usf:predicate:errorSchema"),

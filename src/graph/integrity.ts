@@ -109,8 +109,8 @@ const kebabCase = /^[a-z0-9]+(?:[-.][a-z0-9]+)*$/u;
  */
 export const terminalIdentifierKinds: readonly string[] = Object.freeze([
   "bootstrap-carrier-adoption-receipt", "checked-candidate-receipt", "cli-error",
-  "contribution", "graph", "integration-observation", "provider-census-result",
-  "route-result", "semantic-qualification-result",
+  "contribution", "graph", "integration-observation", "lane-census-result",
+  "provider-census-result", "route-result", "semantic-qualification-result",
 ]);
 
 export interface IntegrityOptions {

@@ -11333,7 +11333,7 @@
 <urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:reason> "Two things were carried only by the domain-event class and have no V3 counterpart. First, a per-event delivery guarantee: all 50 V1 events declared at-least-once, and V3 declares no delivery-guarantee predicate anywhere, so the guarantee survives as prose inside the event-bus facets and as an idempotency key rather than as a property a new event must state. Second, a closed product-event vocabulary bound to its producer: V3 types an event as a free-form string and has no producesEvent edge, so the fact that one capability publishes exactly one named set is unrepresentable. The graph names canonical product events in facet prose without declaring them, which is the clearest evidence of the gap. auditmodel cannot express either: it records that something happened, not how its delivery is guaranteed." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:type> <urn:usf:type:MechanismAssessmentItem> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:v3Mechanism> "The occurrence-recording half is superseded and satisfied. V1 modelled the same occurrence twice, once as a bus-delivered domain event and once as an audit record: 45 of its 50 domain-event canonical names also exist as audit-event names. V3 carries that half under the auditmodel facet kind, with 52 exported audit-event-kind constants yielding 147 distinct kinds across the realised capability modules, 67 auditmodel facetStatements, and audit assertions in every one of the 64 conformance suites. The delivery-contract half has no V3 mechanism at all." <urn:usf:graph:v3-delivery> .
-<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:verdict> "SURVIVING_INVARIANT_REQUIRES_MECHANISM" <urn:usf:graph:v3-delivery> .
+<urn:usf:mechanism-assessment-item:capture-event-vocabulary> <urn:usf:predicate:verdict> "MECHANISM_SUPPLIED" <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-realisation-bindings> <urn:usf:predicate:assessedCaptureRemainder> <urn:usf:delivery-capture-remainder:realisation-bindings> <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-realisation-bindings> <urn:usf:predicate:bottleneckRisk> "None. The remainder's captureStatus remains a true statement about V1's declarations and is not a work backlog." <urn:usf:graph:v3-delivery> .
 <urn:usf:mechanism-assessment-item:capture-realisation-bindings> <urn:usf:predicate:classification> "SUPERSEDED_V1_CAPTURE_MECHANISM" <urn:usf:graph:v3-delivery> .
@@ -11551,12 +11551,12 @@
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:closureMechanism> "CLOSED_BY_DECLARATION_NOT_BY_ENUMERATION" <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:closureNonClaim> "a-closed-mechanism-is-not-a-claim-that-the-declared-set-is-the-products-complete-event-surface" <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:closureRule> "The vocabulary is closed by construction rather than by enumeration. An event named in a facet statement must be declared here as a product event carrying a delivery guarantee, and a capability may name a producer binding. The declared set stays small and grows as events are declared; what it may not do is leave an event asserted in prose and undeclared as a resource, which is the condition that made this remainder a gap." <urn:usf:graph:v3-delivery> .
-<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:completenessRule> "This vocabulary is open, not closed. It declares only the canonical product events the delivery facets already name, so that an event the corpus asserts in prose is also stated as a resource. It is not a claim that these are the product's only events, and it does not yet constrain anything: the event substrate types an event as a free-form string, so an undeclared event is still accepted at runtime. Closing the vocabulary means deciding the product event set and binding each event to its producing capability, which is a product decision rather than a derivation." <urn:usf:graph:v3-delivery> .
-<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaredEventCount> "2" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:completenessRule> "The vocabulary is closed. It declares the nine canonical product events the delivery facets name, each bound to the capability that produces it, the capability that carries it, a stated delivery guarantee and a payload key, with the facet statement that evidences it. Closure is a decision about the declared set, not a runtime constraint: the event substrate still types an event as a free-form string, so an undeclared event is still accepted at runtime and closure is enforced by this declaration and by review rather than by the type system." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaredEventCount> "9" <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:report-run> <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:tenant-config-changed> <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:type> <urn:usf:type:ProductEventVocabulary> <urn:usf:graph:v3-delivery> .
-<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:vocabularyCompleteness> "open" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:vocabularyCompleteness> "closed" <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event:report-run> <urn:usf:predicate:canonicalName> "report-run" <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event:report-run> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
 <urn:usf:product-event:report-run> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
@@ -11766,3 +11766,66 @@
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:invariant> "A realized artefact has been validated against its declared format by a named validator, under a recorded authority snapshot." <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:replaces> "the superseded proof object, proof pipeline, proof anchor, validator manifest and generated validation test" <urn:usf:graph:v3-delivery> .
 <urn:usf:validation-evidence-model:1> <urn:usf:predicate:type> <urn:usf:type:ValidationEvidenceModel> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-started> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-started> <urn:usf:predicate:canonicalName> "workflow-started" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-started> <urn:usf:predicate:eventName> "workflow.started" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-started> <urn:usf:predicate:producedByCapability> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-started> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-started> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-started> <urn:usf:predicate:payloadKey> "workflowId" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-started> <urn:usf:predicate:producerEvidence> "The audit-model facet names this as a canonical product event emitted when a workflow enters running. Declared from urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsauditmodel." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:workflow-started> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-completed> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-completed> <urn:usf:predicate:canonicalName> "workflow-completed" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-completed> <urn:usf:predicate:eventName> "workflow.completed" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-completed> <urn:usf:predicate:producedByCapability> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-completed> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-completed> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-completed> <urn:usf:predicate:payloadKey> "workflowId" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-completed> <urn:usf:predicate:producerEvidence> "The audit-model facet names this as a canonical product event emitted when a workflow reaches completed. Declared from urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsauditmodel." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:workflow-completed> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-approved> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-approved> <urn:usf:predicate:canonicalName> "workflow-approved" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-approved> <urn:usf:predicate:eventName> "workflow.approved" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-approved> <urn:usf:predicate:producedByCapability> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-approved> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-approved> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-approved> <urn:usf:predicate:payloadKey> "workflowId" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:workflow-approved> <urn:usf:predicate:producerEvidence> "The audit-model facet names this as a canonical product event emitted when an approval decision completes a waiting workflow. Declared from urn:usf:delivery-facet:workflowenginescheduledjobsapprovalsauditmodel." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:workflow-approved> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-requested> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-requested> <urn:usf:predicate:canonicalName> "approval-requested" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-requested> <urn:usf:predicate:eventName> "approval.requested" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-requested> <urn:usf:predicate:producedByCapability> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-requested> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-requested> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-requested> <urn:usf:predicate:payloadKey> "approvalId" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-requested> <urn:usf:predicate:producerEvidence> "The lifecycle facet states that an approval.requested signal moves a running workflow to waiting. Declared from urn:usf:delivery-facet:workflowenginescheduledjobsapprovalslifecycle." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:approval-requested> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-granted> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-granted> <urn:usf:predicate:canonicalName> "approval-granted" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-granted> <urn:usf:predicate:eventName> "approval.granted" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-granted> <urn:usf:predicate:producedByCapability> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-granted> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-granted> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-granted> <urn:usf:predicate:payloadKey> "approvalId" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-granted> <urn:usf:predicate:producerEvidence> "The lifecycle facet states that approval.granted completes a waiting workflow. Declared from urn:usf:delivery-facet:workflowenginescheduledjobsapprovalslifecycle." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:approval-granted> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-denied> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-denied> <urn:usf:predicate:canonicalName> "approval-denied" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-denied> <urn:usf:predicate:eventName> "approval.denied" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-denied> <urn:usf:predicate:producedByCapability> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-denied> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-denied> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-denied> <urn:usf:predicate:payloadKey> "approvalId" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:approval-denied> <urn:usf:predicate:producerEvidence> "The lifecycle facet states that approval.denied fails a waiting workflow. Declared from urn:usf:delivery-facet:workflowenginescheduledjobsapprovalslifecycle." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:approval-denied> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:event-redriven> <urn:usf:predicate:type> <urn:usf:type:ProductEvent> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:event-redriven> <urn:usf:predicate:canonicalName> "event-redriven" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:event-redriven> <urn:usf:predicate:eventName> "event.redriven" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:event-redriven> <urn:usf:predicate:producedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:event-redriven> <urn:usf:predicate:carriedByCapability> <urn:usf:delivery-capability:eventbusdurablequeuesdlqredrive> <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:event-redriven> <urn:usf:predicate:deliveryGuarantee> "at-least-once" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:event-redriven> <urn:usf:predicate:payloadKey> "eventId" <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event:event-redriven> <urn:usf:predicate:producerEvidence> "The audit-model facet names this as a canonical product event emitted when a dead-lettered event is redriven. Declared from urn:usf:delivery-facet:eventbusdurablequeuesdlqredriveauditmodel." <urn:usf:graph:v3-delivery> .
+<urn:usf:product-event-vocabulary:v1:1> <urn:usf:predicate:declaresProductEvent> <urn:usf:product-event:event-redriven> <urn:usf:graph:v3-delivery> .

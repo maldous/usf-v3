@@ -29,7 +29,7 @@ test("one static registry covers parsing and every self-describing help topic", 
       assert.ok(subject.authorityEffect.length > 0);
       assert.ok(["none", "explicit", "possible"].includes(subject.externalContact));
       assert.ok(["none", "bounded"].includes(subject.historyScan));
-      assert.ok(["implemented", "registered", "planned"].includes(subject.availability));
+      assert.ok(["implemented", "registered", "planned", "superseded"].includes(subject.availability));
       assert.equal(findHelpTopic(subject.path), subject);
     }
   }

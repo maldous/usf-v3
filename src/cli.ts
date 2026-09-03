@@ -8,6 +8,7 @@ import { doctorCommandHandler } from "./commands/doctor.ts";
 import { executeCommandHandler } from "./commands/execute.ts";
 import { graphExecuteCommand } from "./commands/graph-execute.ts";
 import { graphIntegrityCommand } from "./commands/graph-integrity.ts";
+import { graphLanesCommand } from "./commands/graph-lanes.ts";
 import { transactCommand } from "./commands/transact.ts";
 import { hermesCommand } from "./commands/hermes.ts";
 import { startCommandHandler, stopCommandHandler, watchCommandHandler } from "./commands/lifecycle.ts";
@@ -82,6 +83,7 @@ const bootstrapHandlers: CommandHandlers = {
   },
   graph: async ({ args, repositoryRoot }) => {
     if (args[0] === "integrity") return graphIntegrityCommand(repositoryRoot, args.slice(1));
+    if (args[0] === "lanes") return graphLanesCommand(repositoryRoot, args.slice(1));
     if (args[0] !== "execute") {
       throw new UsfError("GRAPH_OPERATION_UNKNOWN", exitCodes.INVALID_INPUT, "Graph requires exactly one of: execute, integrity.");
     }
