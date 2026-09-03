@@ -112,9 +112,62 @@ items are open, each needing a decision or ordinary work rather than a gate:
    consumers, which mints construction grants and is worth doing only if that
    lane's completion is wanted for its own sake.
 
+### V1 and V2 accounting is complete
+
+Every V1 capture remainder now carries a **verified** count and a determinate
+disposition, and V2 has a content-capture accounting for the first time
+(`urn:usf:delivery-requirement:v2-specification:1`).
+
+Verification found three errors in V3's own declared authority. The six declared
+counts summed to 1082, which **no scope of the pinned V1 sources reproduces** —
+all files give 1106, excluding fixtures gives 1079. The verified total is
+**1079**, differing on exactly three off-by-ones, and three independent surveys
+converged on the same three by different methods:
+
+| Layer | Declared | Verified | Cause of the error |
+|---|---|---|---|
+| assurance-content | 238 | **236** | counted the whole graph tree, admitting SHACL and defect fixtures as content |
+| realisation-bindings | 119 | **118** | the count's pattern zero-length-matched the prefix declaration, so the 72nd realisation was the empty string |
+| state-machine-content | 443 | 443 | correct |
+| governance-content | 186 | 186 | correct |
+| event-vocabulary | 50 | 50 | correct |
+| validator-rules | 46 | 46 | correct |
+
+The `realisation-bindings` note was also factually wrong: it described "47
+bindings from specification to implementation", but bindings never reference
+specification — `usf:viaBinding` has zero uses, so realisations and bindings are
+independent sub-layers. Corrected.
+
+Four layers are **refused**, evidenced against the source rather than argued
+from V3's preference. The state machines are enums chained (15 of 16 families
+satisfy transitions = states − 1; twelve job failure classes wired as a chain);
+the assurance layer never ran (51 of 52 results `unknown`/`stale`, zero
+executable content, `TestExecution` and `TestResult` with no instances); the
+realisation layer is path-free and its one concrete path names a V1 directory
+absent from this repository; and the validator rules carry no executable content
+while pointing into a different namespace from the real SHACL. Capturing any of
+them would import placeholder metadata into a corpus whose equivalents are
+executable and proven — the same objection the corpus already recorded against
+`validator-manifest`.
+
+**V2 is an accounting, not a capture, and that is a licence boundary rather than
+a choice.** V2's licence status is undetermined and its declared reuse boundary
+permits inventory metadata and original V3 re-expression only, so counts, class
+names, graph identities and scale are recorded while content is not carried.
+V2 holds 126 318 quads across 54 files and 50 graphs, declares 502 classes of
+which 101 have no instances, and carries 10 278 instance declarations. On the
+same class-for-class basis its six-layer equivalent is **797** against V1's
+1079. Governance is **identical** in both at 186, which is why capturing it from
+V1 was sufficient. Excluding the three bulk observational graphs V2 itself
+retired, V2 is the larger semantic model by 4.3× in bytes and 4.7× in quads —
+V1's raw 580 843 quads are 97.6 per cent a single 104 MB scrape file.
+
 Also unchanged and dormant: `urn:usf:work:semantic-recovery-acceptance` refuses
-`WORK_DEPENDENCY_MISSING:config/semantic-recovery-inventory.json`. That file has
-never existed; the lane is the explicitly incomplete historical recovery lane.
+`WORK_DEPENDENCY_MISSING:config/semantic-recovery-inventory.json`. **Two** of its
+declared readPaths have never existed — `config/semantic-recovery.json` as well —
+which the ledger previously recorded as one. The lane is the explicitly
+incomplete historical recovery lane; the accounting above supersedes what it
+would have documented.
 
 Next safe action: none required. The terminal outcome is declared, the repository
 is in a resumable coherent state, and every open item above is a decision or
