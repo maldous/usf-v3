@@ -40,6 +40,37 @@ the blocked six from the realisation run. No new staleness was introduced.
 
 407/407 tests, gate conforming, corpus 25 839 quads.
 
+### The staleness projection was attempted and withdrawn
+
+The second recorded CLI gap — `transact --dry-run` reporting `conforming: true`
+while saying nothing about staleness — is **not** closed. An implementation was
+built (stage the postimages into a throwaway `graph/` tree, re-derive per
+profile, diff) and then removed, because it was wrong four separate ways and
+each looked correct until tested against an independently measured case:
+
+1. Comparing the profile `semanticDigest` misses the documented trap entirely.
+   Widening a shared contract moves `coreToProductDigest` while leaving the
+   profile and product digests untouched, so the projection reported "nothing
+   moved" for exactly the change known to stale a cohort.
+2. A `catch` around the derivation turned every failure into a silent empty
+   result that read as "nothing moved".
+3. Reading a manifest's own `sources` rather than the expanded `sources` set
+   under-reported every transitively affected manifest.
+4. `deriveWork` refuses `maxItems` above 100, so an out-of-range bound yielded
+   zero packets — invisibly, because of (2).
+
+After all four were fixed it then **over**-reported: it flagged as staling a
+delivery-lane append that had been measured twice in a clone lane as byte-identical
+across all eight profiles. A staged tree containing only `graph/` is evidently
+not equivalent to the repository for digest purposes.
+
+A staleness projection that can be wrong in either direction is worse than
+none — a false negative licenses an unmeasured cohort-staling change and a
+false positive makes operators abandon safe ones — so it was withdrawn rather
+than shipped green. Until one is validated against several independently
+measured cases in both directions, measure in a disposable clone. `drift`
+(planned) remains the registered home.
+
 ## Authority boundary 2026-09-03 — governance captured, every remainder assessed
 
 The statement of applicability is realised and all six capture remainders now
