@@ -10,13 +10,13 @@ validation rather than asserted.
 
 | | |
 |---|---|
-| Carrier | `b58213d` on `v3-authority-transition`, clean |
-| Tests | 413/413, typecheck clean |
+| Carrier | `v3-authority-transition`, clean |
+| Tests | 417/417, typecheck clean |
 | Containment | pass — 9 rules, every one planted-defect proven, plus two exemption guards |
-| Integrity gate | conforming — 24 legacy against a recorded debt constant of 24, 0 owned |
-| Corpus | 28 544 quads, 4 178 subjects |
+| Integrity gate | conforming — **16 invariants**, 0 owned violations, 24 legacy against a constant of 24 |
+| Corpus | 21 sources, 32 681 quads, 4 700 subjects, 1 283 predicates, **1 connected component** |
 | Manifests | 15 of 15 derive; none refuses |
-| Provider packet lane | 9/9 `verified-complete` under `urn:usf:profile:v3-self-host:3` |
+| Realisation lanes | 34 total; **1** policy-covered (`self-host-provider-v3` x `v3-self-host:3`) at 9/9 `verified-complete` |
 | Capabilities | core 64/64, anqr 39/39, **composed 103/103**; every frontier empty |
 | Facets | UNSATISFIED / BLOCKED / STALE / NOT_ASSESSED all 0 in every lane |
 | Verdict digests | core `e958768a…`, anqr `17d52953…`, composed `3a9fa0d6…` — unchanged across the whole V1/V2 retirement |
@@ -31,43 +31,55 @@ and the nonclaims, with its remaining sections one file each under
 
 ### What remains
 
-Nothing blocks ordinary operation and nothing gates the terminal outcome. Five
-items are open; each needs a decision or ordinary work rather than a gate.
+Nothing blocks ordinary operation and nothing gates the terminal outcome. Three
+items are open, each a decision rather than unfinished work. Two former items
+are resolved by the lane census below.
 
 1. **A registered restore command, and a corpus lane projection.** The
-   stale-completion chain has now been run by hand more than twenty times
-   through a scratch script, and surveying every manifest-by-profile lane still
-   means hand-rolling the projection. Both belong in the CLI, and both need
-   `src/commands/help.ts` and `dispatcher.ts`, which `operator-observability`
-   owns — so registering either costs the staged chain, two construction grants
-   and a full cohort restoration. Deferred by operator decision to its own
-   packet where that cost is budgeted rather than absorbed into a release. The
-   chain and its traps are documented in the operator skill, so the deferral
-   loses no knowledge.
-2. **Four works carry no publication policy anywhere in the corpus** —
-   `foreground-lifecycle`, `semantic-first-eligibility`, `realisation-basis-chain`
-   and `semantic-first-lifecycle-admission`. Zero policies means
-   `CONSTRUCTION_WORK_NOT_ELIGIBLE` and `WORK_COMPLETION_NOT_ELIGIBLE`, so they
-   cannot complete under any profile. They are reachable only from the
-   superseded self-host lanes. Recorded on the lineage record rather than
-   repaired: giving each a disjoint sibling policy pair would assert authority
-   at a boundary the corpus deliberately moved past.
-3. **Six profiles still have no declared lineage.** `v3-self-host` is declared —
-   revision 3 current, revisions 1 and 2 closed. The hermes, semantic-first,
-   semantic-recovery and three ANQR profiles are not, so their lanes still read
-   as outstanding work when they may be closed boundaries. Each is a decision,
-   not a derivation.
-4. **`usf review` remains `planned`.** The standalone convenience command is
-   declared registered surface that has not landed. The cross-provider review
-   mechanism it would wrap is implemented and tested, so this is
-   registered-surface debt, not a missing capability.
-5. **The product-event vocabulary is open, deliberately.** Two events are
-   declared from facet evidence. Closing it means deciding the product event set
-   and binding each event to its producing capability, which is a product
-   decision. The `event-vocabulary` capture remainder keeps verdict
-   `SURVIVING_INVARIANT_REQUIRES_MECHANISM`.
+   stale-completion chain has been run by hand more than twenty times through a
+   scratch script, and the lane census had to be assembled by iterating
+   `usf status` over the cross product of manifests and profiles. Both belong in
+   the CLI, and both need `src/commands/help.ts` and `dispatcher.ts`, which
+   `operator-observability` owns — so registering either costs the staged chain,
+   two construction grants and a full cohort restoration. Deferred by operator
+   decision to its own packet where that cost is budgeted rather than absorbed
+   into a release. The chain and its traps are in the operator skill, so the
+   deferral loses no knowledge.
+2. **Six profiles still have no declared disposition.** `v3-self-host` is
+   declared — revision 3 current, revisions 1 and 2 closed. The hermes,
+   semantic-first, semantic-recovery and three ANQR profiles are not. The
+   evidence is now derived rather than absent: the census shows each of their
+   lanes is policy-uncovered and therefore uncompletable, so the choice is
+   between declaring each closed and giving it a policy pair. That is a
+   decision, and an uncovered lane is deliberately not asserted to be a
+   superseded one.
+3. **`usf review` remains `planned`, and the product-event vocabulary is open.**
+   The review command is declared registered surface that has not landed; the
+   cross-provider mechanism it would wrap is implemented and tested, so this is
+   registered-surface debt. The event vocabulary declares the two events the
+   facets name; closing it means deciding the product event set, which is a
+   product decision.
 
-Next safe action: none required.
+Resolved by `urn:usf:realisation-lane-census:1`: the four works carrying no
+publication policy anywhere are now named on that record as structurally
+uncoverable, and the 33 lanes reporting outstanding work are explained as a
+policy-admission fact rather than a backlog.
+
+### Graph correctness
+
+The USF and ANQR graphs were exercised structurally on 2026-09-03. The gate read
+its directory non-recursively and checked 14 of 21 authored sources, so the whole
+ANQR product graph had never been integrity-checked; `usf transact` had the same
+loader, so its guarantee about the resulting corpus was true of 14 of 21 sources
+in the write path. Both recurse now, excluding fixtures. Three invariants were
+added, 126 undeclared predicates were declared, and four untyped unreachable
+subjects were typed and connected.
+
+The corpus is now one connected component of 4 700 subjects and 13 593 edges,
+every subject typed, every predicate declared, out-degree minimum 1 with zero
+sinks, dependency edges acyclic, 16 invariants, 0 owned violations. Full figures,
+proofs and nonclaims:
+[`acceptance/2026-09-03-graph-correctness-proof.md`](acceptance/2026-09-03-graph-correctness-proof.md).
 
 ## Closed boundaries
 
