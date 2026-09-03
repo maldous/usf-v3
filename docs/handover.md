@@ -12,9 +12,9 @@ historical remotes are archived.
 | | |
 |---|---|
 | Tests | 413/413, typecheck clean |
-| Containment | pass — 9 rules, every one planted-defect proven |
+| Containment | pass — 9 rules, every one planted-defect proven, plus two exemption guards |
 | Integrity gate | conforming — 24 legacy against a recorded debt constant of 24, 0 owned |
-| Corpus | 27 868 quads, 4 132 subjects |
+| Corpus | 28 185 quads, 4 153 subjects |
 | Facets (implement lane, core) | 670 — 548 SATISFIED, 90 NOT_APPLICABLE, 27 OTHER_LANE, 5 PROFILE_SUPPLIED |
 | Facets (implement lane, composed) | 850 — 719 SATISFIED, 99 NOT_APPLICABLE, 27 OTHER_LANE, 5 PROFILE_SUPPLIED |
 | Facets (realise lane, core) | 670 — 575 SATISFIED, 90 NOT_APPLICABLE |
@@ -23,7 +23,7 @@ historical remotes are archived.
 | Verdict digests | core `e958768a…`, anqr `17d52953…`, composed `3a9fa0d6…` — unchanged across the V1/V2 retirement |
 | Delivery artefacts | 29 satisfied, 8 superseded, 0 authority-blocked, 0 drifted |
 | ANQR profile | `current`, 14-resource closure `a3a2d810…`, 0 moved/added/removed, 0 external drift |
-| Provider packet lane | 9/9 `verified-complete` |
+| Provider packet lane | 9/9 `verified-complete`, semantic digest `ca977577…` |
 | Statement of applicability | 93 declared, 93 decided, 0 pending |
 
 Eight authority boundaries were closed on this date. Each is described in full in
@@ -394,8 +394,10 @@ directories. `usf-v3` has no `.github` directory and never had a workflow, so no
 V3 CI depended on either runner. Full accounting in
 `docs/v3-transition-record.md`.
 
-Left deliberately: `~/.local/share/usf-operator` (inert, not a repository, no
-remote, an inventoried evidence path) and the unrelated `ods-*` container stack.
+Left deliberately: the inert V2 operator tree named in the inventory (not a
+repository, no remote, nothing executes from it now that the broker is stopped)
+and the unrelated `ods-*` container stack. Both are located in
+`docs/v3-transition-record.md`, which is a classified provenance document.
 
 ### Two Gate 0 unknowns are now resolved
 
@@ -415,6 +417,16 @@ to leave open, and the original findings are retained rather than overwritten:
   refused this section when it first quoted them here, which is the guard
   working: the handover is a live operational ledger, not provenance, so it does
   not get an exemption and should not name historical locations.
+
+**The guard had a bypass, found by not trusting it.** An independent grep with a
+deliberately broader pattern than the guard's own found a tilde-abbreviated home
+path surviving in this ledger: the rule matched the fully spelled Linux and macOS
+home prefixes and missed the abbreviations. The tilde form and both
+environment-variable forms are now prohibited too, all three planted-defect
+proven, with a bare tilde as ordinary prose punctuation still passing. This
+paragraph cannot spell any of them, which is the proof restated. Writing the
+check is not the same as knowing what it covers — grep the class separately,
+once, with a wider net than the guard uses.
 
 ### Containment now enforces the whole boundary
 

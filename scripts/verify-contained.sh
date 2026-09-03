@@ -98,7 +98,9 @@ usf_verify_import='(from|import)[[:space:]]+usf_(operator|graph|factory)|org\.ec
 usf_verify_state='usf-operator/broker\.sock|/run/usf-|actions\.runner\.maldous-usf'
 # Absolute development-machine paths. /home/provider is the confined launcher's
 # declared sandbox home and is not a path on any development machine.
-usf_verify_machine='/home/[A-Za-z0-9._-]+/|/Users/[A-Za-z0-9._-]+/'
+# A tilde- or $HOME-abbreviated path is the same dependency written shorter, so
+# both are prohibited alongside the fully spelled forms.
+usf_verify_machine='/home/[A-Za-z0-9._-]+/|/Users/[A-Za-z0-9._-]+/|~/[A-Za-z0-9._-]|[$]HOME/|[$][{]HOME[}]/'
 usf_verify_machine_allowed='/home/provider'
 
 usf_verify_fail() {
