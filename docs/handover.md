@@ -3,112 +3,89 @@
 ## Current position — 2026-09-03
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.
-The successor line has closed the transaction-integrity defect and carries the
-ANQR semantic build model plus a real QR codec.
+Transaction integrity is repaired. ANQR is independently reproducible and its
+architecture is enforced by an adversarially proven checker.
 
 | | |
 |---|---|
-| USF carrier | `fbddf7b` on `anqr-experience-realisation`, clean, **not pushed** |
-| ANQR carrier | `c65426db7` on `anqr-experience-realisation`, clean, **not pushed** |
+| USF carrier | `192b7ea` on `anqr-experience-realisation`, clean, **not pushed** |
+| ANQR carrier | `368528853` on `anqr-experience-realisation`, clean, **not pushed** |
 | Release boundary | `hermetic-release-1` = `9e6239e`, annotated, reachable, untouched |
-| Tests | USF 433/433, containment pass; ANQR codec 11/11 |
-| Integrity gate | conforming — 16 invariants, 0 owned violations, legacy 24 against a constant of 24 |
-| Corpus | 32 sources, 36 995 quads, **1 connected component** |
-| Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — all **byte-identical** to the release |
-| Live provider lane | 9/9 `verified-complete`, semantic digest `2e6a4780`, **unchanged throughout** |
-| Semantic build lane | 104 capabilities, 739 requirements, `architecture` 15 NOT_ASSESSED, verdict `6ad5df33` |
+| USF tests | 433/433, gate conforming, containment pass, legacy 24 against its constant |
+| ANQR clean clone | `npm ci` → typecheck 0 errors → 200/200 tests → architecture |
+| Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — byte-identical |
+| Live provider lane | 9/9 `verified-complete`, digest `2e6a4780`, unchanged throughout |
+| Architecture facets | 9 satisfied, 1 truthfully violated, 5 undecidable |
+| Planted proofs | 18, all passing |
 | Hermes | not running |
 
-### Transaction integrity is repaired
+### ANQR is reproducible
 
-`usf transact` guarantees that the resulting corpus satisfies every integrity
-invariant before any path is written. Two defects broke that, and both are now
-fixed, landed through the ordinary staged chain and adversarially proven.
+Four defects made the released product repository unable to validate itself:
+`typecheck` declared with no dependency at all and therefore never executed; no
+lockfile; a test script enumerating one root and hiding the eleven codec tests;
+and six ports declared at paths that did not exist. A fifth was introduced and
+caught during the work, where unquoted globs made the shell rather than Node
+expand them.
 
-**Novelty.** Discovery walked the on-disk graph tree and substituted postimages
-only for files it had found, so a transaction that *created* a graph source
-never parsed or checked the bytes it produced. Measured: a transaction creating
-nine sources carrying 3 611 quads reported `graphFilesParsed: 21` and
-`resultingQuadCount: 33 177`, the pre-transaction corpus, and applied
-successfully. The earlier recursion repair fixed depth, not novelty, and its
-regression test could not catch this because it appends to an overlay that
-already exists.
+Declared now, exactly: `typescript` 7.0.2 and `@types/node` 26.4.1 with
+`package-lock.json`, and `types: ["node"]` in tsconfig. That took typecheck from
+unrunnable, to 125 errors, to 0 — the 125 almost all cascades from unresolved
+`node:` types defeating the assertion signatures on `node:assert`. One real
+error, in my own `reed-solomon.ts`. **The released capability modules and
+conformance tests needed no change.**
 
-**Attribution.** Owned violations were filtered on `graph.length > 0`, and
-`undeclared-type` reports with an *empty* graph label, so every corpus-level
-violation was silently excused. A transaction introducing an undeclared type
-was accepted while `usf graph integrity` called the same corpus non-conforming.
-This was found by planting the violation, which is the whole point of planting
-it.
+### Architecture is enforced, not described
 
-Demonstrated after the repair: a creating transaction reports 33 sources against
-32 on disk and 36 998 quads against 36 995. Adversarially: reverting the fix
-makes 5 of the 7 end-to-end cases fail, and the two that pass either way are the
-controls. Without the fix a syntactically invalid created source was **written**.
+`packages/architecture/rules.json` is generated from the graph; the checker knows
+how to check and never what is true; every finding carries its facet IRI. Six
+facets pass by the checker, three by the mechanisms they delegate to, one is
+truthfully violated because four adapters and the `image-source` port are
+unrealised, and five are undecidable because their subject does not exist.
+`npm run architecture` exits non-zero and is not weakened.
 
-### Ownership was created by measurement, not by preference
+Eighteen planted-violation proofs run known-good → plant → fail for the intended
+code → restore → pass, including four aimed squarely at the Priority 1 failure
+classes: novelty, depth, unassigned-file attribution and unread import forms.
+Two proofs initially failed and the checker was right both times.
 
-No work owned `src/commands/transact.ts`; sibling commands are owned file by
-file and no contract permits an `src/commands/` prefix. Two cheaper routes were
-authored, applied, measured and reverted, each taking the live provider lane
-from nine `verified-complete` packets to nine `blocked` with all nine scoped
-dependency digests moved: appending four ownership quads to
-`graph/semantic-first.nq`, and selecting an overlay source into
-`graph/manifests/self-host.json`. That source and that manifest are each in
-those packets' candidate scope. Creating a manifest that *imports* another was
-measured separately and is free.
+Full evidence:
+[`acceptance/2026-09-03-anqr-architecture-enforcement.md`](acceptance/2026-09-03-anqr-architecture-enforcement.md).
 
-The repair therefore runs from a self-contained authority island in new files
-under a new manifest — contract, proofblocked permission, work owning exactly
-two paths, hermetic validation, evidence requirements, proof obligations, a
-disjoint construction-authority policy enumerating one work, its reciprocal
-publication algorithm, and a profile. Construction authority was granted the way
-all nine completed packets got theirs, and the chain ran in full:
-`work -> contribution -> resolve -> apply -> check -> integrate`, with the
-confined check passing and a durable receipt.
+### Priority 1 formal completion is structural debt
 
-Three derivation refusals shaped the island, each read from the packet:
-`REALISATION_PROFILE_PRODUCT_TYPE_INVALID`, `WORK_PACKET_ENVIRONMENT_IRI_INVALID`
-and a grant that projected as inapplicable until the permission itself declared
-`activationDerivationRule`.
+A byte-delta completion runs through `semantic-work-completion:1`, whose
+`integrationTransitionVerifier` is `work-integration-transition` — **proofblocked
+at every declared version, 1, 2 and 3** — and `src/graph/work.ts:752` requires
+exactly that state. The only implemented route is no-change completion, which
+this work cannot claim because it changed 58 lines and added a file. Closing the
+chain would require implementing a Foundation verifier left proofblocked by
+design, or falsely asserting no-change. Both excluded, so it stays recorded as
+publication debt: repair landed, integrated and proven; formal completion not
+published.
 
-The validation cannot drive `usf transact` end to end inside the cage at all:
-transact requires its proposal to resolve inside the repository and the cage
-grants one scoped write root. So the repair is reachable through two exported
-pure functions the confined lane asserts with no filesystem, while the
-write-dependent cases are guarded by `process.permission` and asserted in the
-outer carrier lane. Coverage rose from 7 cases to 12.
+### Next safe actions
 
-### Next safe actions, in order
-
-1. **Priority 2 — ANQR clean-clone build assurance.** `typecheck` is declared in
-   `package.json` but TypeScript is not a declared dependency and
-   `node_modules` is absent, so the released product repository's own typecheck
-   script has never run from a clean clone. Fix that first, then `install`,
-   `typecheck`, architecture checks, `test` and `build` must all run from a
-   fresh clone with no developer-machine residue.
-2. **Priority 2 — enforcement for the 15 architecture facets.** Select the
-   minimum mechanisms from the requirements, bind each facet to a named tool,
-   invocation and configuration digest, then plant a representative violation
-   per boundary and show the verifier failing. Until then none is proof and the
-   facets must stay honestly NOT_ASSESSED.
-3. **Priority 3 — the Preact vertical slice**, using the semantics already
-   established rather than a second UI ontology.
+1. **Realise the four container adapters and the image-source port**, which is
+   the only thing standing between the architecture checker and a clean gate,
+   and is also the artefact output layer the vertical slice needs.
+2. **Register the rules-drift check** as a recurring check rather than a manual
+   regeneration and byte comparison.
+3. **Then the Preact slice**, once the adapter gap is closed.
 
 ### Open and honestly unfinished
 
-- Fifteen architecture facets are declared blocking and **none is enforced**.
-- One of ten declared architecture components is realised; four of five delivery
-  surfaces are unrealised, so the parity obligations prove nothing yet.
-- ANQR `typecheck` remains unexecutable from a clean clone.
-- The 86-locale claim is a denominator with a blocking parity obligation, not an
-  assertion that any translation is reviewed.
-- Hosting and deployment targets are undetermined.
-- No experience profile, design profile, implementation pack, experience
-  binding, coverage evaluator or rendered slice exists.
-- No graph source created by an earlier transaction is retroactively validated
-  by this repair; the ANQR semantic build sources were validated by the
-  `usf graph integrity` run that followed them.
+- `portimplementationconformance` violated: 4 adapters + 1 port unrealised.
+- Five facets undecidable: no build, no locale resource, no rendered surface, no
+  join-rule validator, one realised surface where parity needs two.
+- The architecture checker is a regex scanner, not a TypeScript AST parse. It
+  over-reports and never under-reports.
+- No continuous integration exists in the product repository, so no enforcement
+  runs automatically.
+- 81 of 93 ANQR sources belong to no declared component; reported, and the
+  module boundary makes it a named exclusion.
+- Priority 1 formal completion debt as above.
+- Nothing is pushed.
 
 ## Closed boundaries
 
