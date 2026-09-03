@@ -9,7 +9,7 @@ behaviour traces to declared authority in both directions.
 
 | | |
 |---|---|
-| USF carrier | `HEAD` on `anqr-experience-realisation`, clean, **not pushed** |
+| USF carrier | `d6f8426` on `anqr-experience-realisation`, clean, **not pushed** |
 | ANQR carrier | `f7c92a58c` on `anqr-experience-realisation`, clean, **not pushed** |
 | Release boundary | `hermetic-release-1` = `9e6239e`, annotated, reachable, untouched |
 | USF | 442/442 tests, gate conforming, containment pass over 9 rules |
