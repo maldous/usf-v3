@@ -1,0 +1,79 @@
+{
+ "cacheTruth": {
+  "entryCount": 1610,
+  "evaluated": true,
+  "totalReuse": 209
+ },
+ "corpusTruth": {
+  "acceptedLegacyDebtCount": 24,
+  "gateConforming": true,
+  "legacyGraphViolationCount": 24,
+  "ownedGraphViolationCount": 0,
+  "quadCount": 25870,
+  "subjectCount": 3978
+ },
+ "deliveryTruth": {
+  "authorityBlocked": 0,
+  "drifted": [],
+  "readyFrontier": 0,
+  "satisfied": 29,
+  "superseded": 8
+ },
+ "facetTruth": {
+  "composed": {
+   "capabilities": 103,
+   "fullySatisfied": 103,
+   "manifest": "graph/manifests/anqr-with-foundation.json",
+   "requirements": 724,
+   "stateCounts": {
+    "BLOCKED": 0,
+    "NOT_APPLICABLE": 99,
+    "NOT_ASSESSED": 0,
+    "OTHER_LANE": 27,
+    "PROFILE_SUPPLIED": 5,
+    "SATISFIED": 719,
+    "STALE": 0,
+    "UNSATISFIED": 0
+   },
+   "verdictDigest": "sha256:3a9fa0d63031954f8f701f1aa0ae3694390315fa9a46bebdb16afefba674f0ac"
+  }
+ },
+ "gitHeads": {
+  "anqr": "1cf44ce093028f77bbf6a4db67ae1d0600570283",
+  "anqrClean": true,
+  "usfV3": "72d527e5798c51bb28b6a0646d8e364d34f36348",
+  "usfV3Branch": "v3-authority-transition",
+  "usfV3Clean": true
+ },
+ "liveRunReference": {
+  "bundle": "docs/acceptance/2026-09-02-composed-run.evidence.json",
+  "note": "Live-provider criteria are evidenced by that recorded run. This declaration adds current derived state; it does not restate the run."
+ },
+ "operatorDecisions": {
+  "section25_3_providerRemoval": {
+   "basis": "The most successful route (315 of 645 all-time accepted) was removed in effect by quota exhaustion during ordinary operation and production continued across other families.",
+   "reading": "real removal counts",
+   "recordedAs": "observed-not-staged"
+  },
+  "section25_4_crossProviderReview": {
+   "basis": "review-diverse is an implemented RoutingStrategy selecting across distinct provider families and distinct underlying model families, reachable via usf route --strategy review-diverse and the default strategy in the routing test fixtures.",
+   "reading": "met by implemented machinery",
+   "residualDebt": "The standalone usf review --candidate DIGEST convenience command remains availability: planned. Ordinary remaining work, not a gate."
+  }
+ },
+ "producedAt": "2026-09-03T01:13:00Z",
+ "schema": "urn:usf:terminal-declaration-evidence:1",
+ "sectionVerdicts": {
+  "25.1": "met",
+  "25.2": "met",
+  "25.3": "met",
+  "25.4": "met",
+  "25.5": "met",
+  "25.6": "met",
+  "25.7": "met",
+  "25.8": "met"
+ },
+ "status": "declared",
+ "terminalOutcome": "USF_V3_CONTINUOUS_PROVIDER_INDEPENDENT_ANQR_REALISATION_PROVEN",
+ "version": 1
+}

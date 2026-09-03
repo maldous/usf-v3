@@ -77,6 +77,22 @@ product repository needs no toolchain of its own.
 
 ## Current claim
 
+The terminal outcome in `GOAL.md` § 25 is **declared reached on 2026-09-03**:
+
+```text
+USF_V3_CONTINUOUS_PROVIDER_INDEPENDENT_ANQR_REALISATION_PROVEN
+```
+
+Every condition in 25.1 through 25.8 is met criterion by criterion in
+[`docs/acceptance/2026-09-03-terminal-declaration.md`](docs/acceptance/2026-09-03-terminal-declaration.md).
+Composed satisfaction is 103/103 capabilities with UNSATISFIED, NOT_ASSESSED,
+BLOCKED and STALE all 0, and the three verdict digests reproduce byte-identically
+in a fresh clone. The live provider criteria rest on the recorded run in
+[`docs/acceptance/2026-09-02-composed-run.md`](docs/acceptance/2026-09-02-composed-run.md):
+120 871 useful tokens against a pre-frozen 100 000 floor, peak concurrency 5 of
+target 5, two provider families accepted in-window, zero paid cost across 1 009
+units. `GOAL.md` § 26's nonclaims apply in full and are unchanged.
+
 The first complete semantic realisation boundary was reached on 2026-09-02.
 Every implementation-conformance facet on `graph/manifests/v3-delivery.json`
 (64/64 capabilities), `graph/products/anqr/manifest.json` (39/39) and the

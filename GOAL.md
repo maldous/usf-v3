@@ -2417,6 +2417,19 @@ USF_V3_CONTINUOUS_PROVIDER_INDEPENDENT_ANQR_REALISATION_PROVEN
 
 It requires all conditions below.
 
+> **Declared reached on 2026-09-03** at `usf-v3` `72d527e` with `anqr` `1cf44ce`.
+> Every condition in 25.1 through 25.8 is met, criterion by criterion, in
+> [`docs/acceptance/2026-09-03-terminal-declaration.md`](docs/acceptance/2026-09-03-terminal-declaration.md)
+> and its evidence file. Two conditions turned on a reading of the wording here
+> rather than on evidence — provider removal in 25.3 and cross-provider review
+> in 25.4 — and both were put to the operator and answered; the answers are
+> recorded in that document rather than absorbed into the verdict. The live
+> provider criteria rest on the recorded run in
+> [`docs/acceptance/2026-09-02-composed-run.md`](docs/acceptance/2026-09-02-composed-run.md).
+>
+> This note records that these criteria are satisfied. It changes none of them,
+> and Section 26's nonclaims apply in full and are unchanged.
+
 ### 25.1 Repository and containment
 
 - `maldous/usf-v3` exists and is independently cloneable;

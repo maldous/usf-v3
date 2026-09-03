@@ -12,8 +12,10 @@ tracked bytes alone.
 | Tests | 410/410 |
 | Integrity gate | conforming — 24 legacy against a recorded debt constant of 24, 0 owned |
 | Corpus | 25 870 quads |
-| Facets | 670 — 575 SATISFIED, UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 |
-| Capabilities | 64/64 fully satisfied; implementation and delivery frontiers both empty |
+| Facets (core lane) | 670 — 575 SATISFIED, UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 |
+| Facets (composed) | 724 — 719 SATISFIED, UNSATISFIED/BLOCKED/STALE/NOT_ASSESSED all 0 |
+| Capabilities | core 64/64, anqr 39/39, **composed 103/103** fully satisfied; every frontier empty |
+| Verdict digests | core `e958768a…`, anqr `17d52953…`, composed `3a9fa0d6…` — reproduced in a clean clone |
 | Delivery artefacts | 29 satisfied, 8 superseded, 0 authority-blocked, 0 drifted |
 | Statement of applicability | 93 declared, 93 decided, 0 pending |
 
@@ -50,19 +52,37 @@ Three lessons from those boundaries that change how the next one should be run:
   general form applies: anything projected from authority must be re-derived and
   compared, or it drifts silently from the thing it projects.
 
+### The terminal outcome is declared reached
+
+GOAL.md § 25 is met, criterion by criterion, recorded in
+[`docs/acceptance/2026-09-03-terminal-declaration.md`](acceptance/2026-09-03-terminal-declaration.md):
+
+```text
+USF_V3_CONTINUOUS_PROVIDER_INDEPENDENT_ANQR_REALISATION_PROVEN
+```
+
+An earlier draft of this ledger claimed the outcome was blocked on credentials.
+**That was wrong.** It conflated the two unqualified API-key routes in
+`config/providers.json` with the transports that actually did the work, and the
+evidence was already tracked: `docs/acceptance/2026-09-02-composed-run.md`
+records 120 871 useful tokens against a pre-frozen 100 000 floor, peak
+concurrency 5 of target 5, two provider families accepted in-window and zero
+paid cost across 1 009 units. A second wrong reading followed — that § 25.4's
+cross-provider review had no mechanism — when `review-diverse` is an implemented
+routing strategy selecting across distinct provider families and distinct
+underlying model families, reachable through `usf route` and the default
+strategy in the routing test fixtures. Both corrections are recorded in the
+declaration rather than quietly fixed.
+
 ### What remains, and why
 
-Nothing blocks ordinary operation. Three items are open, and each needs a
-decision rather than more engineering:
+Nothing blocks ordinary operation, and nothing gates the terminal outcome. Three
+items are open, each needing a decision or ordinary work rather than a gate:
 
-1. **The terminal outcome in GOAL.md § 25 is not reached.** It requires live
-   multi-provider work: at least two provider families contributing
-   successfully, peak live concurrency, and a frozen useful-token target of at
-   least 100 000 achieved. No route currently has trusted account-tier evidence,
-   a live probe or provider-produced qualification, so `config/providers.json`
-   routes remain `UNQUALIFIED`. This needs an operator-supplied credential file
-   that no work may create; see
-   the receipt seam recorded in the provider packet lane.
+1. **`usf review` remains `planned`.** The standalone convenience command
+   `usf review --candidate DIGEST` is declared registered surface that has not
+   landed. The cross-provider review mechanism it would wrap is implemented and
+   tested, so this is registered-surface debt, not a missing capability.
 2. **The product-event vocabulary is open, deliberately.** Two events are
    declared from facet evidence. Closing it means deciding the product event set
    and binding each event to its producing capability, which is a product
@@ -79,9 +99,9 @@ Also unchanged and dormant: `urn:usf:work:semantic-recovery-acceptance` refuses
 `WORK_DEPENDENCY_MISSING:config/semantic-recovery-inventory.json`. That file has
 never existed; the lane is the explicitly incomplete historical recovery lane.
 
-Next safe action: none required. The repository is in a resumable, coherent
-state, and every open item above is a decision rather than an unfinished
-mechanism.
+Next safe action: none required. The terminal outcome is declared, the repository
+is in a resumable coherent state, and every open item above is a decision or
+ordinary work rather than an unfinished mechanism.
 
 ## Housekeeping boundary 2026-09-03 — release candidate prepared
 
