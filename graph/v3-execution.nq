@@ -16,9 +16,13 @@
 <urn:usf:catalogue-projection:models-dev:1> <urn:usf:predicate:source> "models.dev/api.json" <urn:usf:graph:v3-execution> .
 <urn:usf:catalogue-projection:models-dev:1> <urn:usf:predicate:type> <urn:usf:type:ModelCatalogueProjection> <urn:usf:graph:v3-execution> .
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:boundedCeiling> "16" <urn:usf:graph:v3-execution> .
-<urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:defaultConcurrency> "4" <urn:usf:graph:v3-execution> .
+<urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:defaultConcurrency> "5" <urn:usf:graph:v3-execution> .
+<urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:defaultConcurrencyBasis> "Five is the highest dispatch concurrency for which a live measurement exists showing parallel efficiency above the repository's own floor. The recorded composed run dispatched at five, reached peak five, and measured parallel utilisation 0.664 with a speedup ratio of 3.318 over serial. The floor is 0.60 of workers, asserted for k of one, two, four and eight by the deterministic scale harness. Efficiency at five therefore clears the floor by 0.064, and no live measurement supports a higher default: six or above is extrapolation, and the observed limit at five was ready independent work rather than host capacity." <urn:usf:graph:v3-execution> .
+<urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:defaultConcurrencyNonClaim> "The default is not a claim about the host maximum. The ceiling is separate and higher, GOAL section 25.5 requires peak to reach the minimum of eight and the derived target rather than the default, and a target derived from ready independent work legitimately sits below the default when less work is ready." <urn:usf:graph:v3-execution> .
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:isolation> "A refusal on one provider does not fail unrelated units that had an alternative candidate." <urn:usf:graph:v3-execution> .
+<urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:measuredUtilisationAtDefault> "0.664" <urn:usf:graph:v3-execution> .
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:overlapEvidence> "Peak observed concurrency is derived from actual unit start and end instants; the reported speedup ratio is summed unit duration over wall-clock duration and exceeds one only when executions genuinely overlapped." <urn:usf:graph:v3-execution> .
+<urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:parallelEfficiencyFloor> "0.60" <urn:usf:graph:v3-execution> .
 <urn:usf:concurrency-constraint:execution:1> <urn:usf:predicate:type> <urn:usf:type:ConcurrencyConstraint> <urn:usf:graph:v3-execution> .
 <urn:usf:credential-alias:arcee:1> <urn:usf:predicate:catalogueCredentialName> "ARCEE_API_KEY" <urn:usf:graph:v3-execution> .
 <urn:usf:credential-alias:arcee:1> <urn:usf:predicate:establishedCredentialName> "ARCEE_TOKEN" <urn:usf:graph:v3-execution> .

@@ -216,3 +216,35 @@ test("violations are deterministically ordered so two runs agree", () => {
   const second = checkIntegrity([...quads].reverse());
   assert.deepEqual(first.violations.map((v) => `${v.code}:${v.subject}`), second.violations.map((v) => `${v.code}:${v.subject}`));
 });
+
+test("the runtime reads declared dispatch bounds and distinguishes absent from invalid", () => {
+  // The corpus states the default and the ceiling; the runtime reads them
+  // rather than carrying a second copy. Before this was wired, the graph
+  // declared 4 while the supervisor defaulted to 6 -- the runtime contradicted
+  // its own authority, and nothing detected it.
+  const constraint = "urn:usf:concurrency-constraint:execution:1";
+  const declared = readRuntimeAuthority([
+    quad(constraint, "urn:usf:predicate:defaultConcurrency", "5"),
+    quad(constraint, "urn:usf:predicate:boundedCeiling", "16"),
+  ]);
+  assert.equal(declared.concurrencyDefault, 5);
+  assert.equal(declared.concurrencyCeiling, 16);
+
+  // Absent is null so a caller falls back deliberately, not by accident.
+  const absent = readRuntimeAuthority([]);
+  assert.equal(absent.concurrencyDefault, null);
+  assert.equal(absent.concurrencyCeiling, null);
+
+  // Two declared values are a contradiction, not a range. Taking the first
+  // would silently pick one, so the bound reads as undeclared instead.
+  const conflicting = readRuntimeAuthority([
+    quad(constraint, "urn:usf:predicate:defaultConcurrency", "5"),
+    quad(constraint, "urn:usf:predicate:defaultConcurrency", "9"),
+  ]);
+  assert.equal(conflicting.concurrencyDefault, null);
+
+  // A non-numeric or out-of-range bound is not a bound.
+  for (const bad of ["0", "-1", "many", "99999"]) {
+    assert.equal(readRuntimeAuthority([quad(constraint, "urn:usf:predicate:defaultConcurrency", bad)]).concurrencyDefault, null, bad);
+  }
+});

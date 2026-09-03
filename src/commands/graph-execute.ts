@@ -2,6 +2,7 @@ import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
+import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import { exitCodes, UsfError, type ExitCode } from "../core/errors.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
 import { readDependencyGraph } from "../graph/work-dependency.ts";
@@ -36,7 +37,13 @@ const contextTokensPredicate = "urn:usf:predicate:minimumContextTokens";
 const maximumInputBytes = 4 * 1024 * 1024;
 const maximumQuads = 20_000;
 const maximumWorkUnits = 64;
-const defaultConcurrency = 4;
+/**
+ * Used only when the corpus declares no constraint. Graph authority is the
+ * source: `urn:usf:concurrency-constraint:execution:1` states the default and
+ * the ceiling. This matches that declaration so the command stays safe against
+ * a corpus that has not declared one.
+ */
+const compiledDefaultConcurrency = 4;
 const hardMaximumConcurrency = 16;
 // Measured against real routes: a model still silent at this point is not the
 // productive one, and eight attempts at four minutes each would let one work
@@ -90,7 +97,7 @@ interface ParsedArguments {
   readonly satisfiedDependencies: readonly string[];
 }
 
-function parse(args: readonly string[]): ParsedArguments {
+function parse(args: readonly string[], declaredConcurrency: number | null = null): ParsedArguments {
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
@@ -107,7 +114,7 @@ function parse(args: readonly string[]): ParsedArguments {
   if (input === undefined || graph === undefined || envFile === undefined) {
     invalid("Graph execute requires --input, --graph and --env-file.");
   }
-  const concurrencyText = values.get("--concurrency") ?? String(defaultConcurrency);
+  const concurrencyText = values.get("--concurrency") ?? String(declaredConcurrency ?? compiledDefaultConcurrency);
   if (!/^[1-9][0-9]?$/u.test(concurrencyText)) invalid("--concurrency must be a positive integer.");
   const concurrency = Number(concurrencyText);
   if (concurrency > hardMaximumConcurrency) invalid("--concurrency exceeds the bounded maximum.");
@@ -219,7 +226,14 @@ interface UnitOutcome {
 }
 
 export async function graphExecuteCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
-  const parsed = parse(args);
+  // Dispatch concurrency comes from graph authority when the corpus declares
+  // it. An unreadable or undeclaring corpus falls back to the compiled value
+  // deliberately rather than by accident.
+  const declaredConcurrency = ((): number | null => {
+    try { return readRuntimeAuthority(loadSemanticGraph(repositoryRoot, "graph/manifests/v3-execution.json").quads).concurrencyDefault; }
+    catch { return null; }
+  })();
+  const parsed = parse(args, declaredConcurrency);
   const observedAt = new Date().toISOString();
 
   // 1. Accept and canonicalize the semantic graph.

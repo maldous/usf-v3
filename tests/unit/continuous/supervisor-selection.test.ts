@@ -83,3 +83,20 @@ test("an unknown option is refused rather than silently dropped", () => {
   assert.throws(() => parseLifecycleArguments(["--manifest", "a", "--manifest", "b"]),
     /unique and explicit/u);
 });
+
+test("dispatch concurrency comes from declared bounds and refuses above the ceiling", () => {
+  // Optimal, default and enforceable: the default is whatever authority
+  // declares, and an explicit value above the declared ceiling refuses rather
+  // than clamping, because silently reducing a requested concurrency would make
+  // the run report a bound the operator never asked for.
+  const bounds = { dispatchDefault: 5, dispatchCeiling: 16 };
+  assert.equal(parseLifecycleArguments([], bounds).concurrency, 5);
+  assert.equal(parseLifecycleArguments(["--concurrency", "16"], bounds).concurrency, 16);
+  assert.throws(() => parseLifecycleArguments(["--concurrency", "17"], bounds), /at most 16/u);
+
+  // A narrower declared ceiling is honoured, so tightening authority tightens
+  // the command without a code change.
+  const narrow = { dispatchDefault: 2, dispatchCeiling: 4 };
+  assert.equal(parseLifecycleArguments([], narrow).concurrency, 2);
+  assert.throws(() => parseLifecycleArguments(["--concurrency", "5"], narrow), /at most 4/u);
+});

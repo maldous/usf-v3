@@ -6,6 +6,7 @@ import { canonicalDigest } from "../core/canonical.ts";
 import { linuxProcessInspector, type ProcessIdentity } from "../continuous/lifecycle.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
+import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import type { CommandResult } from "./dispatcher.ts";
 
 /**
@@ -65,7 +66,20 @@ export interface LifecycleArguments {
   readonly waitMs: number;
 }
 
-export function parseLifecycleArguments(args: readonly string[]): LifecycleArguments {
+/**
+ * Dispatch bounds used only when the corpus declares none. Graph authority is
+ * the source: `urn:usf:concurrency-constraint:execution:1` states the default
+ * and the ceiling, and the runtime reads them rather than carrying a second
+ * copy. These values match that declaration and exist so the command is still
+ * safe against a corpus that has not declared its constraint.
+ */
+export interface ConcurrencyBounds { readonly dispatchDefault: number; readonly dispatchCeiling: number; }
+export const compiledConcurrencyBounds: ConcurrencyBounds = Object.freeze({ dispatchDefault: 4, dispatchCeiling: 16 });
+
+export function parseLifecycleArguments(
+  args: readonly string[],
+  bounds: ConcurrencyBounds = compiledConcurrencyBounds,
+): LifecycleArguments {
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
@@ -97,10 +111,42 @@ export function parseLifecycleArguments(args: readonly string[]): LifecycleArgum
     })(),
     envFile: values.get("--env-file") ?? ".usf/credentials/providers.env",
     pauseSeconds: bounded("--pause-seconds", defaultPauseSeconds, maximumPauseSeconds),
-    concurrency: bounded("--concurrency", 6, 16),
+    // Declared authority, not a compiled constant. An explicit value above the
+    // declared ceiling refuses rather than clamping: silently reducing a
+    // requested concurrency would make the run report a bound the operator did
+    // not ask for and cannot see.
+    concurrency: bounded("--concurrency", bounds.dispatchDefault, bounds.dispatchCeiling),
     dispatchLimit: bounded("--limit", 12, 64),
     waitMs: bounded("--wait-ms", defaultStopWaitMs, 900_000),
   });
+}
+
+/**
+ * Resolve the dispatch bounds the corpus declares for the selected manifest.
+ *
+ * Arguments are parsed twice because the manifest that carries the declaration
+ * is itself an argument: once against the compiled fallback to learn which
+ * manifest is selected, then again against whatever that manifest declares. The
+ * parse is pure and cheap, and the alternative -- reading one option out of the
+ * raw argument list ahead of validation -- would duplicate the parser.
+ */
+function resolveConcurrencyBounds(repositoryRoot: string, manifest: string): ConcurrencyBounds {
+  try {
+    const declared = readRuntimeAuthority(loadSemanticGraph(repositoryRoot, manifest).quads);
+    return Object.freeze({
+      dispatchDefault: declared.concurrencyDefault ?? compiledConcurrencyBounds.dispatchDefault,
+      dispatchCeiling: declared.concurrencyCeiling ?? compiledConcurrencyBounds.dispatchCeiling,
+    });
+  } catch {
+    // An unreadable or undeclaring corpus falls back deliberately. It must not
+    // make the command unusable, and it must not silently widen a bound.
+    return compiledConcurrencyBounds;
+  }
+}
+
+function parseLifecycleArgumentsAgainstAuthority(repositoryRoot: string, args: readonly string[]): LifecycleArguments {
+  const provisional = parseLifecycleArguments(args);
+  return parseLifecycleArguments(args, resolveConcurrencyBounds(repositoryRoot, provisional.manifest));
 }
 
 async function runtimeRoot(repositoryRoot: string): Promise<string> {
@@ -180,7 +226,7 @@ export function superviseArguments(parsed: LifecycleArguments): readonly string[
 }
 
 export async function hermesStartCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
-  const parsed = parseLifecycleArguments(args);
+  const parsed = parseLifecycleArgumentsAgainstAuthority(repositoryRoot, args);
   await runtimeRoot(repositoryRoot);
   const observed = await observeSupervisor(repositoryRoot);
   if (observed.liveness === "live") {
@@ -256,7 +302,7 @@ export async function hermesStartCommand(repositoryRoot: string, args: readonly 
 // ---------------------------------------------------------------------------
 
 export async function hermesStopCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
-  const parsed = parseLifecycleArguments(args);
+  const parsed = parseLifecycleArgumentsAgainstAuthority(repositoryRoot, args);
   await runtimeRoot(repositoryRoot);
   const observed = await observeSupervisor(repositoryRoot);
   const idle = (outcome: string, reclaimed: boolean): CommandResult => ({
@@ -504,7 +550,7 @@ async function pause(repositoryRoot: string, supervisorId: string, seconds: numb
 }
 
 export async function hermesSuperviseCommand(repositoryRoot: string, args: readonly string[]): Promise<CommandResult> {
-  const parsed = parseLifecycleArguments(args);
+  const parsed = parseLifecycleArgumentsAgainstAuthority(repositoryRoot, args);
   await runtimeRoot(repositoryRoot);
   const existing = await observeSupervisor(repositoryRoot);
   if (existing.liveness === "live") {
