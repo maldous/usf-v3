@@ -157,3 +157,122 @@
 <urn:anqr:secret-requirement:geocoding-service-key> <urn:anqr:predicate:secretConsequence> "Place lookup refuses; manual coordinate entry stays fully usable." <urn:anqr:graph:environment-bindings> .
 <urn:anqr:secret-requirement:geocoding-service-key> <urn:usf:predicate:nonClaim> "A name, a resolver and a consequence. No value, no format hint that would narrow a guess, and no environment in which one is recorded." <urn:anqr:graph:environment-bindings> .
 <urn:usf:secret-modelling-rule:1> <urn:anqr:predicate:secretRequirement> <urn:anqr:secret-requirement:geocoding-service-key> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:type> <urn:usf:type:SemanticModel> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:canonicalName> "1" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:objective> "Every value staging and production need that no work in this repository may choose, stated so the handoff is mechanical: what the decision is, why it is required, which delivery contract requires it, its allowed shape, the environments affected, the authority that must supply it, what evidence becomes possible once it exists, and whether it is secret." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:anqr:predicate:bindsProfileRevision> <urn:anqr:profile-revision:3> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:nonClaim> "No value appears here and none may. A shape is stated so a supplied value can be checked; a shape is not a hint that narrows a guess at a secret." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:nonClaim> "The delivery platform the legacy application used was discovered, not selected. Discovering it gives this repository no authority to choose it, and every account-shaped decision below stays open regardless of what the legacy configuration named." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:usf:predicate:canonicalName> "staging-site-owner" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:usf:predicate:objective> "Which account or team owns the staging site." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:anqr:predicate:boundResourceKind> "allowed shape: An account or team identifier issued by the chosen platform." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:staging> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:anqr:predicate:unlocksEvidence> "A deployment can be attempted, producing deployment-observation evidence." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-owner> <urn:anqr:predicate:isSecretValue> "false" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "staging-site-owner" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:usf:predicate:canonicalName> "staging-site-identifier" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:usf:predicate:objective> "The site the staging deployment targets." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:anqr:predicate:boundResourceKind> "allowed shape: A platform site identifier." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:staging> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:anqr:predicate:unlocksEvidence> "The deployment mechanism can name what it deployed to." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-site-identifier> <urn:anqr:predicate:isSecretValue> "false" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "staging-site-identifier" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:usf:predicate:canonicalName> "staging-deploy-credential" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:usf:predicate:objective> "A credential authorising deployment to the staging site." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:anqr:predicate:boundResourceKind> "allowed shape: An opaque token resolved through the secret resolver, never a literal." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:staging> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:anqr:predicate:unlocksEvidence> "Deployment and rollback can be rehearsed, producing the staging rung evidence set." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-deploy-credential> <urn:anqr:predicate:isSecretValue> "true" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "staging-deploy-credential" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:usf:predicate:canonicalName> "staging-hostname-posture" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:usf:predicate:objective> "Whether a distinct staging hostname is provisioned or a platform-generated preview name is accepted." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:anqr:predicate:boundResourceKind> "allowed shape: A hostname, or the decision to accept a generated one." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:staging> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:anqr:predicate:unlocksEvidence> "Runtime observation can name a stable address." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:staging-hostname-posture> <urn:anqr:predicate:isSecretValue> "false" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "staging-hostname-posture" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:usf:predicate:canonicalName> "production-site-owner" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:usf:predicate:objective> "Which account or team owns the production site." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:anqr:predicate:boundResourceKind> "allowed shape: An account or team identifier issued by the chosen platform." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:anqr:predicate:unlocksEvidence> "A production deployment becomes attributable to an owner." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-owner> <urn:anqr:predicate:isSecretValue> "false" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "production-site-owner" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:usf:predicate:canonicalName> "production-site-identifier" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:usf:predicate:objective> "The production site." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:anqr:predicate:boundResourceKind> "allowed shape: A platform site identifier." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:anqr:predicate:unlocksEvidence> "Release provenance can bind a running instance to an authorised artefact." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-site-identifier> <urn:anqr:predicate:isSecretValue> "false" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "production-site-identifier" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:usf:predicate:canonicalName> "production-hostname-and-zone" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:usf:predicate:objective> "The production hostname and control of its DNS zone." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:customdomainsdnsownershiptlscanonical> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:anqr:predicate:boundResourceKind> "allowed shape: A fully-qualified name plus demonstrated control of the delegating zone." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:anqr:predicate:unlocksEvidence> "TLS can be issued and the canonical rule can resolve to a real name." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-hostname-and-zone> <urn:anqr:predicate:isSecretValue> "false" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "production-hostname-and-zone" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:usf:predicate:canonicalName> "production-deploy-credential" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:usf:predicate:objective> "A credential authorising deployment to the production site." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:deploymentmechanism> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:anqr:predicate:boundResourceKind> "allowed shape: An opaque token resolved through the secret resolver." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:anqr:predicate:unlocksEvidence> "Production deployment observation becomes possible." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-deploy-credential> <urn:anqr:predicate:isSecretValue> "true" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "production-deploy-credential" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:usf:predicate:canonicalName> "advertising-and-consent-accounts" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:usf:predicate:objective> "The advertising and consent platform account identifiers the delivered header policy allowlists." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:responseheaderpolicy> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:anqr:predicate:boundResourceKind> "allowed shape: Vendor-issued publisher and consent identifiers." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:anqr:predicate:unlocksEvidence> "The advertising and consent capabilities can be observed against real third parties rather than against their contracts." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:advertising-and-consent-accounts> <urn:anqr:predicate:isSecretValue> "false" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "advertising-and-consent-accounts" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:usf:predicate:canonicalName> "error-reporting-project" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:usf:predicate:objective> "The project the observability facades send to." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:metricsandtraces> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:anqr:predicate:boundResourceKind> "allowed shape: A project identifier plus an ingest key resolved through the secret resolver." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:staging> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:anqr:predicate:unlocksEvidence> "Runtime observability can be evidenced at a deployed rung rather than in a unit test." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:error-reporting-project> <urn:anqr:predicate:isSecretValue> "true" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "error-reporting-project" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:usf:predicate:canonicalName> "production-approval-authority" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:usf:predicate:objective> "A named human who authorises production mutation." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:promotion-gate:staging-to-production> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:anqr:predicate:boundResourceKind> "allowed shape: A person, recorded against an exact basis and build." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:anqr:predicate:bindsEnvironment> <urn:usf:environment:productionlive> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:anqr:predicate:requiresExternalAuthority> <urn:usf:approval-authority:operator> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:anqr:predicate:unlocksEvidence> "The staging-to-production gate can be evaluated at all; no machine verdict substitutes." <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-decision:production-approval-authority> <urn:anqr:predicate:isSecretValue> "false" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:external-deployment-decision-record:1> <urn:usf:predicate:member> "production-approval-authority" <urn:anqr:graph:environment-bindings> .
+<urn:anqr:predicate:unlocksEvidence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:environment-bindings> .
+<urn:anqr:predicate:isSecretValue> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:environment-bindings> .
