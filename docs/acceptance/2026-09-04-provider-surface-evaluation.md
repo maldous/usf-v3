@@ -534,3 +534,147 @@ This does not weaken the finding. Every one of these was already reachable, and
 three of them were reachable **without being declared** — the authorization was
 correct in the operator's head and absent from the graph, which is precisely the
 condition under which a catalogue refresh changes what Hermes may do.
+
+---
+
+# Programme: provider-routing assurance
+
+Landed 2026-09-04 after the evaluation above, at the operator's direction, as one
+bounded programme with a separate proof per defect. Model ranking was
+deliberately not tuned: Haiku, Groq and the rest earn routing position through
+the qualification mechanism this programme connected, not through a manual
+preference.
+
+## What landed
+
+| defect | repair | proof |
+|---|---|---|
+| **D1** authorization inferred from price | authorization and spend permission separated; all eight accounts declared | `v3-classification.test.ts` — a three-way separation, plus fail-closed cases in `economics-projection.test.ts` and `economics.test.ts` |
+| **D2** antigravity in plan mode | worker turn pins `accept-edits`; argv extracted so it is assertable | `provider-capability-universe.test.ts` — mode pinned, `plan` absent, exactly one `--mode` |
+| **D3** qualification never consulted | passed into `graph execute`; the input made **required** | `provider-capability-universe.test.ts` — a task class constrains the universe, and wrong-class and wrong-model earn nothing |
+
+**D4 was withdrawn, not deferred.** Its premise is false. Hermes's entire
+dispatch surface is three prompt shapes — `deriveImplementationPrompt` and
+`deriveConformancePrompt` (TypeScript) and `deriveSemanticPrompt` (Markdown,
+JSON, YAML or plain text) — and none of them asks a model for N-Quads. No
+delivery artefact carries a `.nq` canonical path. The typed-literal refusal the
+evaluation measured came from a task *this evaluation* wrote, not from anything
+Hermes dispatches, so "put the profile in the prompt" had no site. The related
+fence-and-preamble defect the recorded admission failures show (three TS1434
+errors at line 1, column 1) was already fixed: `implementation-work.ts` extracts
+a fenced block wherever it sits, and its comment records the same lesson.
+
+The real finding in D4's place is larger and is not repaired here: **`rdf-semantics`
+is declared on nine work packets, is unqualifiable because the suite grades no
+case for it, and is never dispatched.** All three facts say the same thing —
+semantic-graph work is done by the operator, not by Hermes.
+
+## D1, as landed
+
+Two axes where there was one:
+
+| axis | predicate | declared for |
+|---|---|---|
+| may Hermes use this account at all? | one authorization per transport-provider pair | all 8 accounts |
+| what may that account be used for? | `permittedCostClass` | per authorization |
+| may it reach anything chargeable? | `paidSpendPermitted` | all 8, false |
+| what kind of account is it? | `accountBasis` | subscription, prepaid, trial |
+
+`zero-price` is now a property of a model and admits nothing. The measured
+effect, before and after, on the same catalogue and credentials:
+
+| | before | after |
+|---|---|---|
+| routable candidates | 45 | **81** |
+| admitted on catalogue price alone | **21** | **0** |
+| providers with no declaration | 3 | 0 |
+| groq candidates | 14 | **10** |
+
+Groq narrows because four of its models have no known price at all, and an
+unknown price may be a paid one. OpenRouter, Cohere and Mistral are re-admitted
+*by declaration* — they were refused entirely by the intermediate commit, which
+is the fail-closed direction working in both directions.
+
+### The migration was two-sided, and that shaped the sequence
+
+Committing the graph authority alone left the tracked projector refusing the
+tracked projection — verified, not assumed: `ECONOMICS_PROJECTION_DIVERGED`. The
+graph, the derived projection and the reader are one coupled unit, and the staged
+chain moves code while `usf transact` moves graph and config, necessarily in
+different commits.
+
+So the reader landed first, accepting the retired shape under a documented
+transitional default, which is the aliasing route `naming.md` §4 prescribes and
+the same one the `coreDependencySeed` rename used: there is no commit in this
+sequence where the reader and the graph disagree. A half-declared axis is an
+error rather than a legacy shape and is refused; only an authorization carrying
+none of the three is read as retired. The default is removable in one change to
+`retiredShapePermittedClasses` once no graph omits the axis.
+
+One claim about that default was written and then corrected rather than left:
+it does **not** reproduce the retired reach exactly. The retired reading admitted
+four unknown-price groq models; the spend flag now refuses them. The narrowing is
+intentional, so it is stated.
+
+## D3, as landed
+
+`graph execute` now reads `observeQualifiedTaskClasses` once per run and passes
+it into the universe. More importantly the input was made **required**, and the
+compiler immediately found a second production caller with the same defect:
+`usf probe availability` had also never passed it, so the availability preflight
+reported a universe that ignored qualification entirely. Two of three production
+callers were wrong; the omission is no longer expressible.
+
+**The gate is now real and currently binds nothing**, which is worth stating
+plainly. `hermes implement` and `hermes realise` both set
+`requiredCapabilities: []` explicitly, so no unit Hermes dispatches today asks
+for a task class, and D3 cannot stall dispatch. It binds the moment a supplied
+work graph declares `requiredCapability`, or the moment `modelCapability` is
+propagated into dispatched units — which is a separate decision and is not made
+here.
+
+## Cost, priced before the change rather than discovered after it
+
+Editing the economics evaluator, the classification ladder, the capability
+vocabulary and the route universe moves the scoped dependency digest of every
+work that reads them. Measured before the first edit: three of the four affected
+works were already blocked, and exactly one was verified-complete —
+`provider-task-qualification`. It went to blocked as predicted and was restored
+through its own chain. `semantic-authority-path`, `architecture-conformance`,
+`repository-path-scope` and `file-asset-index` are untouched and still
+verified-complete.
+
+One closure defect surfaced and is recorded because its diagnosis is reusable:
+widening the adversarial validation's imports pulled `src/core/canonical.ts` and
+`src/graph/nquads.ts` into its runtime closure, and the confined check failed
+with an opaque `CHECK_FAILED`. Deriving the closure from the primary *preimage*
+returned two members and missed both, because the preimage test file does not
+carry the imports that widened it. Derived from the postimage it returned
+thirteen, named the two exactly, and the same immutable candidate was rechecked
+rather than rematerialised.
+
+## Chain and identity
+
+`transact` (ownership) → construction evidence → proof → twice-verified publish →
+`call` → `resolve` → `apply` → `check` → `integrate --dry-run` → `integrate` →
+`transact` (economics, atomic with its projection) → restore the stale lane →
+second grant → `realise no-change` → `check` → completion evidence → proof →
+twice-verified publish.
+
+Eight commits from `5e48582` to `0ceb6db`. Both affected works
+**verified-complete**. 566/566 tests, integrity gate conforming with zero owned
+violations, containment pass, working tree clean.
+
+## Still open, unchanged by this programme
+
+- **D5** qualification is decoupled from the account receipt in the graph and
+  still coupled in `src/commands/providers.ts`; `validitySeconds` is still 900,
+  and the suite's four `exact`-string graders are still why nothing has ever
+  qualified. Until D5 lands, D3's gate has nothing to admit.
+- **D6** the census verdicts are still unconditional literals.
+- **D7** narrow code repair should reach `groq:openai/gpt-oss-120b` first — as a
+  qualification outcome once D5 lands, never as a hard-coded preference.
+- **D8** `rdf-semantics` has no suite case, and no dispatch path either.
+- `src/commands/classify.ts` still builds a classification input without
+  qualification, so its report differs from routing. Same family as D6; it was
+  left out rather than widening this programme's write set.

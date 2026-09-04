@@ -27,7 +27,8 @@ a rule is drift waiting to happen, so nothing here repeats it.
 ## Current position — 2026-09-04
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.
-**The foundation now measures itself against its own declared architecture**:
+**Provider routing now reads authority instead of inferring it**, and the
+foundation measures itself against its own declared architecture:
 `urn:usf:work:architecture-conformance` is `verified-complete`, the whole
 implementation population is classified with zero unaccounted and zero
 unexplained orphans, and a release claim can depend on that assurance by name
@@ -41,11 +42,59 @@ and fails closed without it.
 | USF | **564/564 tests**, typecheck 0, integrity gate conforming, containment pass |
 | ANQR | 367/367, typecheck 0, architecture conforming, `validate` exit 0 |
 | Architecture | population **171**, unaccounted **0**, unexplained orphans **0**, 9 of 9 requirements CONFORMING |
+| Routing | 81 routable candidates, **0** admitted on catalogue price, 8 of 8 accounts declared |
+| Qualified routes | **0** — the gate is connected and has nothing to admit until the suite can be passed |
 | Release assurance | CONFORMING; required 1, satisfied 1, missing 0, failed 0 |
 | Closure | NOT_ASSESSED **72 → 1**; SATISFIED 719 → 775; capabilities fully satisfied 95 → **109** |
 | Remaining (ANQR) | 15 BLOCKED + 1 NOT_ASSESSED, **all architecture facets**, one exact cause |
 | Source accounting (ANQR) | 151 = 32 + 119 + **0 unaccounted** |
 | Next | the ANQR architecture evidence-class contradiction, then the testing rung |
+
+### Provider routing reads authority now, and the qualification gate is live
+
+Four defects were measured against the live surface and three were repaired;
+the full evaluation and programme are in
+[`acceptance/2026-09-04-provider-surface-evaluation.md`](acceptance/2026-09-04-provider-surface-evaluation.md).
+
+**Catalogue price no longer authorizes anything.** 21 of 45 routable candidates
+used to enter on `catalogue-declared-zero-price` with no declared authorization,
+which is how OpenRouter came to carry 1 799 of 4 383 historical attempts while
+no commit had ever authorized it. Authorization and spend permission are now two
+axes: an authorization says which account may be used, `permittedCostClass` says
+what for, and `paidSpendPermitted` says whether it may reach anything chargeable.
+All eight accounts the operator holds are declared. 81 candidates, none on price.
+
+**Antigravity was running in plan mode.** `agy --mode plan` answers a generation
+request by writing a plan artefact and asking for approval, which is the whole
+explanation for 20 of 20 invocations succeeding, 0 of 13 outputs accepted and
+606 619 tokens spent. Pinned to `accept-edits`, verified against the binary from
+a scratch working directory.
+
+**Hermes never consulted qualification.** `graph execute` is the only path
+`hermes implement` dispatches through and it passed no earned task classes, so a
+qualification model holding thirteen adversarial properties constrained nothing.
+It is passed now, and the input was made *required* — which immediately caught a
+second caller, `usf probe availability`, with the same defect.
+
+The gate binds nothing today and that is deliberate to state: both Hermes
+entry points set `requiredCapabilities: []`, so no dispatched unit asks for a
+task class. It binds when a supplied work graph declares one, or when
+`modelCapability` is propagated into dispatched units — a separate decision.
+
+**D4 was withdrawn rather than deferred.** Hermes has three prompt shapes and
+none asks for N-Quads, so "put the strict profile in semantic-work prompts" had
+no site. The real finding in its place: `rdf-semantics` is declared on nine work
+packets, is unqualifiable because the suite grades no case for it, and is never
+dispatched.
+
+### Two lanes moved and both are back
+
+Changing the economics evaluator, classification ladder, capability vocabulary
+and route universe stales every work that reads them. Priced before the first
+edit: three of four were already blocked and exactly one was verified-complete.
+`provider-task-qualification` went blocked as predicted and was restored;
+`provider-capability-universe` completed. Model ranking was **not** tuned —
+routes earn position through the mechanism this programme connected.
 
 ### The foundation's architecture is declared and decidable
 
@@ -205,7 +254,14 @@ before computing any verdict.
 
 ### Next work item
 
-The ANQR architecture evidence-class contradiction (§6 of the acceptance record),
+**D5: decouple qualification from the account-tier receipt and justify its
+lifetime.** Until it lands, the qualification gate D3 connected has nothing to
+admit: the store holds one expired `UNQUALIFIED` record, `validitySeconds` is
+900, and four of the suite's sixteen graders are `exact` string matches on prose.
+Then D6 (census verdicts are unconditional literals), D7 (let groq earn narrow
+code repair) and D8 (`rdf-semantics` has no suite case and no dispatch path).
+
+Also open, unchanged: the ANQR architecture evidence-class contradiction (§6 of the acceptance record),
 which is graph authority plus a USF source change through their own staged
 chains. Then the testing rung, localisation, browser evidence and per-action
 proof — all listed with what each needs in
@@ -243,6 +299,7 @@ ledger, which is the live operational state and not an archive.
 
 | Closed | Boundary | Detail |
 |---|---|---|
+| 2026-09-04 | Provider surface evaluated; routing assurance programme landed (D1-D3) | [`acceptance/2026-09-04-provider-surface-evaluation.md`](acceptance/2026-09-04-provider-surface-evaluation.md) |
 | 2026-09-04 | Foundation architecture declared and decidable; population classified; release assurance composed | [`acceptance/2026-09-04-architecture-assurance.md`](acceptance/2026-09-04-architecture-assurance.md) |
 | 2026-09-04 | Corpus-wide assurances moved to repository scope | `31f2a88` |
 | 2026-09-04 | Diagnostic boundary repaired; fourteen capabilities realised; closure 72 to 1 | [`acceptance/2026-09-04-anqr-testing-realisation.md`](acceptance/2026-09-04-anqr-testing-realisation.md) |
