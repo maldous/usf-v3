@@ -1,5 +1,23 @@
 # USF V3 handover
 
+## Repository hygiene — what is and is not disposable
+
+`.usf/` is ignored and mostly disposable, but not uniformly, and the difference
+costs real time if it is discovered by deleting the wrong half.
+
+| path | disposable? |
+|---|---|
+| `.usf/workspaces/` | **yes**, once a check receipt exists. The receipt is the evidence; the directory is not. |
+| `.usf/cache/` | **no.** This is the offline package mirror `usf init` resolves against. Removing it makes `usf init` fail with `ERR_PNPM_NO_OFFLINE_META` and no command that loads the graph will run. |
+| `.usf/semantic-cache/`, `.usf/graph-executions/` | yes, at the cost of recomputation |
+| `.usf/receipts/`, `.usf/proposals/` | keep: receipts are the evidence for work already done |
+
+Measured on 2026-09-04: removing `.usf` entirely and running `usf init` fails
+offline, so an empty-`.usf` clean clone is reproducible only with the mirror
+supplied or with network access. That is the documented standalone-qualification
+posture — the mirror is an expected input — but it is not the same claim as
+"`.usf` is pure acceleration", and the two are easy to conflate.
+
 ## Naming
 
 Terminology, namespaces, IRI construction, repository and path conventions are
