@@ -170,3 +170,8 @@
 <urn:usf:profile:v3-naming-completion:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:naming-completion> .
 <urn:usf:profile:v3-naming-completion:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:v3-naming-completion:1> <urn:usf:graph:naming-completion> .
 <urn:usf:profile:v3-naming-completion:1> <urn:usf:predicate:objective> "One contract, deliberately alone, so closing the naming debt cannot stale a sibling cohort." <urn:usf:graph:naming-completion> .
+<urn:usf:work:naming-completion> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:naming-completion> .
+<urn:usf:work:naming-completion> <urn:usf:predicate:readPath> "src/graph/runtime-authority.ts" <urn:usf:graph:naming-completion> .
+<urn:usf:work:naming-completion> <urn:usf:predicate:readPath> "src/providers/economics-projection.ts" <urn:usf:graph:naming-completion> .
+<urn:usf:work:naming-completion> <urn:usf:predicate:readPath> "src/providers/transports.ts" <urn:usf:graph:naming-completion> .
+<urn:usf:contract:naming-completion:1> <urn:usf:predicate:nonClaim> "The read closure is the transitive import closure of the module under change, not a convenience list. A candidate workspace materialises exactly the declared closure, so a validation that imports the module under test fails to resolve unless every module it reaches is declared -- which is the closure being honest about what the work actually reads." <urn:usf:graph:naming-completion> .
