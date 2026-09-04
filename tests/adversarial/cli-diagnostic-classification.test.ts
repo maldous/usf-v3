@@ -32,7 +32,6 @@ const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 const DOMAIN_ERROR_SOURCES = [
   "src/graph/index.ts",
-  "src/semantic/types.ts",
   "src/realisation/index.ts",
   "src/core/asset-index.ts",
   "src/schema/index.ts",
@@ -107,7 +106,11 @@ test("planted: a message masquerading as a reason code is refused", () => {
 });
 
 test("planted: a stack trace offered as a reason code is refused", () => {
-  const stack = "Error: nope\n    at Object.<anonymous> (/home/user/src/usf-v3/src/graph/index.ts:87:93)";
+  // A stack shape, not a real one. The containment boundary refuses any
+// tracked runtime-bearing file naming an absolute development-machine
+// path, and a fixture is no exception: the property under test is that no
+// stack frame becomes a reason code, which needs a frame, not this frame.
+  const stack = "Error: nope\n    at Object.<anonymous> (/repository/src/graph/index.ts:87:93)";
   const output = errorOutput(Object.assign(new Error("nope"), { reasonCode: stack }));
   assert.equal(output.reasonCode, "INTERNAL_ERROR");
   assert.doesNotMatch(JSON.stringify(output), /usf-v3|index\.ts|at Object/u,

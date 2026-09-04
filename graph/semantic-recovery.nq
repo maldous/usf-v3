@@ -333,8 +333,6 @@
 <urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:readPath> "src/core/scope.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:readPath> "src/graph/query.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:readPath> "src/graph/recovery-extract.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:readPath> "src/graph/recovery.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:retirementDisposition> "RETIRED_NEVER_IMPLEMENTED_NOT_REQUIRED" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:retirementReason> "Retired unimplemented. Five of its nine declared outputs never landed, including the exchange module, its result schema and both its tests. Nothing in the corpus or the command surface requires graph exchange, and no registered command exposes it. The two works it depended on did land and are retained as the re-verification capability." <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-graph-exchange> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
@@ -363,8 +361,6 @@
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "graph/manifest.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "src/semantic/store.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:readPath> "src/semantic/types.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
@@ -372,9 +368,6 @@
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:validation> <urn:usf:validation:semantic-manifest-store-focused> <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/graph/index.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/graph/nquads.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/semantic/index.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/semantic/store.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "src/semantic/types.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/data-invalid.ttl" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/data-reordered.ttl" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/data.ttl" <urn:usf:graph:semantic-recovery> .
@@ -385,7 +378,6 @@
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/shapes-reordered.ttl" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/fixtures/semantic/shapes.ttl" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:writePath> "tests/unit/semantic/store.test.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-adoption-readiness> <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-hermetic-reproducibility> <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-isolation-currentness> <urn:usf:graph:semantic-recovery> .
@@ -401,7 +393,6 @@
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:proof> <urn:usf:proof:semantic-recovery-exchange> <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "README.md" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:readPath> "docs/bottleneck-register.md" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:retirementDisposition> "SUPERSEDED_BY_VERIFIED_ACCOUNTING" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-acceptance> <urn:usf:predicate:retirementReason> "Its objective was to document exact recovery coverage and bottlenecks. The V1 and V2 specification requirements now do that with counts reproduced from the pinned sources, including three corrections to counts this lane would have inherited unverified. It could never have run: two of its declared readPaths have never existed and two of its predecessors were never implemented." <urn:usf:graph:semantic-recovery> .
@@ -428,7 +419,6 @@
 <urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:readPath> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:retirementDisposition> "SUPERSEDED_BY_VERIFIED_ACCOUNTING" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:retirementReason> "Its two declared outputs never landed, and the V2 specification accounting is the inventory it was to produce: file, graph, class and instance counts against a stated method, within the reuse boundary the V2 source permits." <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-inventory> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
@@ -451,14 +441,10 @@
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "GOAL.md" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "graph/manifest.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "src/schema/index.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "src/semantic/canonical.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "src/semantic/n3.d.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:readPath> "src/semantic/types.ts" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:toolPath> "package.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:toolPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
@@ -467,7 +453,7 @@
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "package.json" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "pnpm-lock.yaml" <urn:usf:graph:semantic-recovery> .
 <urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "schemas/legacy-graph-inventory.schema.json" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "schemas/semantic-recovery.schema.json" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "src/graph/recovery-extract.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "src/graph/recovery.ts" <urn:usf:graph:semantic-recovery> .
-<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:writePath> "tests/unit/graph/semantic-recovery.test.ts" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:retirementDisposition> "RETIRED_SUPERSEDED_OUTPUT_REMOVED" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-manifest-store> <urn:usf:predicate:retirementReason> "Retired superseded. Its declared output was a second semantic ingestion stack under src/semantic, reachable from no declared root while carrying n3, oxigraph and rdf-validate-shacl as production dependencies. The single-semantic-ingestion-path requirement it shared a corpus with says to unify or retire exactly that path rather than maintain two truths, so the output is removed and the work is retired rather than left declaring files that no longer exist." <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:retirementDisposition> "RETIRED_SUPERSEDED_OUTPUT_REMOVED" <urn:usf:graph:semantic-recovery> .
+<urn:usf:work:semantic-recovery-tooling> <urn:usf:predicate:retirementReason> "Retired superseded. Its declared outputs were the legacy-mining mechanism under src/graph/recovery.ts and recovery-extract.ts, 5431 lines whose only reachability was their own test. The three requirements the exercise discovered that are still required are restated natively in urn:usf:contract:semantic-authority-path:1; the apparatus that discovered them is not retained, because a mechanism kept for a discovery already made is indistinguishable from one nobody has yet needed." <urn:usf:graph:semantic-recovery> .

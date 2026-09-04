@@ -431,10 +431,22 @@ test("a retired work projects as retired, never as blocked", () => {
     assert.equal(packet!.realisationStage?.actionable, false, `${name} must not be actionable`);
   }
 
-  // The two whose declared outputs all landed are blocked on completion
-  // currentness, not retired. Retirement must not swallow them.
+  // These two are now retired as well: their declared outputs were removed
+  // rather than left declaring files that do not exist. The distinction this
+  // guards -- retirement must not swallow a work that is merely blocked --
+  // still holds, and is asserted below for a work to which it applies.
   for (const name of ["semantic-manifest-store", "semantic-recovery-tooling"]) {
-    assert.equal(byId.get(`urn:usf:work:${name}`)?.realisationStage?.stage, "blocked", name);
+    const packet = byId.get(`urn:usf:work:${name}`);
+    assert.equal(packet?.realisationStage?.stage, "retired", name);
+    assert.equal(packet?.realisationStage?.actionable, false, name);
+  }
+
+  // A work with no retirementDisposition must still read blocked, or the label
+  // would be swallowing state rather than describing it.
+  const unretired = (result.items ?? []).filter((packet) =>
+    packet.realisationStage?.stage === "blocked");
+  for (const packet of unretired) {
+    assert.equal(packet.realisationStage?.stage, "blocked", packet.id);
   }
 
   // And the lane derives at all. Before the phantom readPaths were dropped it

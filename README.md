@@ -108,20 +108,19 @@ classified as provenance rather than architecture:
 
 | Retained | Why it is kept |
 |---|---|
-| `config/semantic-recovery-sources.json` | Pins each historical source by revision and tree digest, with its licence boundary. Read by no runtime path. |
 | `docs/historical-inventory.md` | What was inspected at Gate 0, and what each evidence path turned out to be. |
 | `docs/semantic-disposition-ledger.json`, `docs/v1-v2-lessons.md` | The disposition decisions and the reasoning that produced them. |
 | `docs/v3-transition-record.md` | How V3 superseded its predecessors, and the accounting for retiring their operational plane. |
-| `src/graph/recovery.ts`, `src/graph/recovery-extract.ts` | The re-verification lane. |
 
-The re-verification lane is the one piece that looks like code and is not
-architecture. It exists so the retained V1 and V2 accounting stays *checkable*
-rather than merely asserted, and it is deliberately isolated:
-`urn:usf:reverification-lane:1` classifies it, no command or runtime module
-imports it, it is required by no build, test or realisation, and its extractor
-takes exact supplied bytes rather than opening any repository. Invoking
-historical re-verification without separately supplying the pinned sources
-refuses with `LEGACY_EXTRACTION_COMMIT_OID_MISMATCH`.
+What is retained is provenance only. There is no re-verification lane and no
+extraction code: the mechanism that mined those predecessors was removed once it
+had nothing left to discover, because a mechanism kept for a discovery already
+made is indistinguishable from one nobody has yet needed. The three requirements
+it found that are still required are stated natively in
+`urn:usf:contract:semantic-authority-path:1` -- one semantic ingestion path,
+`bootstrap-nquads-v1` as the only operational source profile, and measured
+projection ceilings -- carrying no predecessor namespace or extraction identity.
+Git history is the record that the exercise happened.
 
 `scripts/verify-contained.sh` enforces the boundary rather than asserting it. It
 refuses any tracked runtime-bearing file that names a historical repository,

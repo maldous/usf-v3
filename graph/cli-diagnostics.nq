@@ -127,7 +127,6 @@
 <urn:usf:work:cli-diagnostic-classification> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:cli-diagnostics> .
 <urn:usf:work:cli-diagnostic-classification> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:cli-diagnostics> .
 <urn:usf:work:cli-diagnostic-classification> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:cli-diagnostics> .
-<urn:usf:work:cli-diagnostic-classification> <urn:usf:predicate:readPath> "src/semantic/types.ts" <urn:usf:graph:cli-diagnostics> .
 <urn:usf:work:cli-diagnostic-classification> <urn:usf:predicate:readPath> "src/realisation/index.ts" <urn:usf:graph:cli-diagnostics> .
 <urn:usf:work:cli-diagnostic-classification> <urn:usf:predicate:readPath> "src/core/asset-index.ts" <urn:usf:graph:cli-diagnostics> .
 <urn:usf:work:cli-diagnostic-classification> <urn:usf:predicate:readPath> "src/schema/index.ts" <urn:usf:graph:cli-diagnostics> .

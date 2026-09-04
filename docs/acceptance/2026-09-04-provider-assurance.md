@@ -102,7 +102,7 @@ make the zero-paid ceiling unenforceable.
 ### The Antigravity transport is present, and authority cannot tell
 
 **Three transports are usable, not two.** The Antigravity CLI is `agy` at
-`/home/user/.local/bin/agy`, version 1.1.24, and it is a genuine
+`agy` on the operator's PATH, version 1.1.24, and it is a genuine
 non-interactive transport: `--print` with `--output-format text|json|stream-json`,
 `--input-format stream-json` reading NDJSON per line, `--json-schema` to enforce
 structured output, `--model` selection and a `--print-timeout`. No login,

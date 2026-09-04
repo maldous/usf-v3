@@ -44,10 +44,7 @@
     "ai": "7.0.84",
     "ajv": "8.20.0",
     "graphql": "17.0.2",
-    "n3": "2.0.1",
-    "oxigraph": "0.5.9",
     "rdf-canonize": "5.0.0",
-    "rdf-validate-shacl": "0.6.5",
     "yaml": "2.9.0"
   }
 }
