@@ -10,7 +10,7 @@ makes explicit external contact and writes only ignored snapshots.
 | models | **refreshed today**, 12:07 |
 | capabilities | **current**, derived from that refresh |
 | providers | catalogue current; **2 of 213 routes configured** |
-| authentications | **zero API credentials present**; two session transports usable, one absent |
+| authentications | **zero API credentials present**; **three** session transports usable |
 | semantic qualification | **none held**; suite and policy current and tracked |
 | provider contact | **proofblocked**, independently of all the above |
 
@@ -90,7 +90,7 @@ they are declared with what they refuse:
 |---|---|---|---|
 | `claude-cli-subscription:1` | `claude` | claude.ai first-party subscription | **yes**, 2.1.251 |
 | `codex-cli-subscription:1` | `codex` | ChatGPT subscription | **yes**, codex-cli 0.152.0 |
-| Antigravity | `ajq` per the operator | Google Antigravity subscription | **no** |
+| Antigravity | `agy` | Google Antigravity subscription | **yes**, 1.1.24 |
 
 Each declares its refusals: the Claude transport refuses `ANTHROPIC_API_KEY`,
 auth tokens, Console, Bedrock, Vertex, Foundry, gateways, base URLs, bare mode
@@ -99,28 +99,37 @@ login, custom providers, remote hosts and fallback models. Those refusals are
 the point: a subscription transport that could fall back to a paid API would
 make the zero-paid ceiling unenforceable.
 
-### The Antigravity transport is declared, authorised, and not usable
+### The Antigravity transport is present, and authority cannot tell
 
-`graph/v3-execution.nq` carries an economic authorisation for
-`antigravity-cli` on the basis `operator-declared-subscription` with
-entitlement `subscription-included`, and `config/execution-economics.json`
-declares the transport. But:
+**Three transports are usable, not two.** The Antigravity CLI is `agy` at
+`/home/user/.local/bin/agy`, version 1.1.24, and it is a genuine
+non-interactive transport: `--print` with `--output-format text|json|stream-json`,
+`--input-format stream-json` reading NDJSON per line, `--json-schema` to enforce
+structured output, `--model` selection and a `--print-timeout`. No login,
+API-key or token flag appears in its interface, which is consistent with the
+session authentication its economic authorisation assumes.
 
-- the operator states the executable is **`ajq`**, and `ajq` is **not on this
-  machine** — not on `PATH`, not in `/usr/local/bin`, `/bin`, `/usr/bin` or
-  `~/.local/bin`, and not inside `/opt/antigravity`;
-- what *is* on `PATH` is `/usr/local/bin/antigravity` →
-  `/opt/antigravity/antigravity`, an **Electron desktop application**. Invoking
-  it opens a DevTools listener and an IDE wizard. It is not a non-interactive
-  transport and cannot be driven as one;
-- unlike the Claude and Codex host transports, the Antigravity execution
-  transport declares **no `executableName`**, so nothing in authority would
-  have caught the mismatch.
+`graph/v3-execution.nq` carries that authorisation for `antigravity-cli` on the
+basis `operator-declared-subscription` with entitlement
+`subscription-included`, and `config/execution-economics.json` declares the
+transport.
 
-This is the "available means nothing" trap in its exact form: economically
-authorised, observed by the census as a transport, and unusable. Closing it
-needs the CLI installed and an `executableName` declared so the gap is
-checkable rather than discoverable.
+**What is genuinely missing is the executable name in authority.** Unlike
+`claude-cli-subscription:1` and `codex-cli-subscription:1`, which each declare
+`executableName`, the Antigravity execution transport declares none. So nothing
+in the graph says what to invoke, and nothing can check that what is installed
+is the right thing.
+
+That gap is not theoretical, and this record is the demonstration. Searching for
+the executable by the transport's own name found `/usr/local/bin/antigravity` →
+`/opt/antigravity/antigravity`, an **Electron desktop application** that opens a
+DevTools listener and an IDE wizard when invoked. An earlier revision of this
+document concluded from that binary that the transport was unusable. It was
+wrong: the desktop app and the CLI are different programs with unrelated names,
+and only an operator saying "`agy`" resolved it. A declared `executableName`
+would have.
+
+The remaining work is therefore one quad per transport, not an installation.
 
 ## 5. Semantic qualification — none held, and that is the design
 
@@ -164,8 +173,13 @@ a session transport, then qualification — not the reverse.
   entitlement, quota or health, and this record claims none of those.
 - Credential *presence* was observed. No credential value was read, and no
   statement here implies a credential would authenticate successfully.
-- Two host transports are present and respond to `--version`. That establishes
-  they exist and are the right build; it does not establish an authenticated
+- Three host transports are present and report versions. That establishes they
+  exist and are the right builds; it does not establish an authenticated
   session, which only an invocation would show.
+- This document's first revision reported the Antigravity transport as absent,
+  having looked for it under the transport's own name and found a desktop
+  application. The correction is recorded rather than overwritten silently,
+  because the reason it was wrong is the finding: no `executableName` is
+  declared, so the search had nothing authoritative to look for.
 - Nothing here was refreshed except the model catalogue. The provider roster,
   the adapter set, the credentials and the qualification suite are unchanged.
