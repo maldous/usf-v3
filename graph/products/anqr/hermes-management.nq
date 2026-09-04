@@ -6,7 +6,7 @@
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:foreground-lifecycle:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:operator-observability:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:provider-semantic-qualification:1> <urn:anqr:graph:hermes-management> .
-<urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:anqr:contract:decoded-payload:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:bau:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:anqr:graph:hermes-management> .
@@ -21,7 +21,7 @@
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:operator-observability:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:provider-semantic-qualification:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:hermes-autonomous-management:1> <urn:anqr:graph:hermes-management> .
-<urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:anqr:graph:hermes-management> .
+<urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:anqr:contract:decoded-payload:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-first-order:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:anqr:graph:hermes-management> .
 <urn:anqr:profile:hermes-bau:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:anqr:graph:hermes-management> .

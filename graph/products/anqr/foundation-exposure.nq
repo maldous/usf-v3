@@ -68,7 +68,7 @@
 <urn:anqr:foundation-exposure-classification:1> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:writeonlysecretsettings> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure-classification:1> <urn:usf:predicate:nonClaim> "A disposition is a statement about reachability, not about operation. Availability in the Foundation implies no selection, no runtime binding, no operation and no exposure; those are separate observations." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure-classification:1> <urn:usf:predicate:nonClaim> "The released Foundation lane counts 64 capabilities, because that is how many carry an applicable implementation-conformance facet. 67 are declared. This classification covers all 67 so the denominator has no silent hole, and the difference is stated rather than hidden." <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure-classification:1> <urn:usf:predicate:nonClaim> "not-selected-by-anqr is a positive decision with a reason, never an oversight. Most such entries follow from anonymousgeneration: with no account there is no tenant, role, entitlement, notification target or stored personal datum." <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure-classification:1> <urn:usf:predicate:nonClaim> "not-selected is a positive decision with a reason, never an oversight. Most such entries follow from anonymousgeneration: with no account there is no tenant, role, entitlement, notification target or stored personal datum." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure-classification:1> <urn:usf:predicate:objective> "An explicit ANQR exposure disposition for every one of the 67 Foundation capabilities declared at the hermetic-release-1 boundary, each with its reason." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure-classification:1> <urn:usf:predicate:type> <urn:usf:type:ProductModelDeclaration> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:abacpolicydecisionpoint> <urn:usf:predicate:canonicalName> "abacpolicydecisionpoint" <urn:anqr:graph:foundation-exposure> .
@@ -101,7 +101,7 @@
 <urn:anqr:foundation-exposure:apidocsdeveloperportalsdksratelimits> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:apikeyspersonalaccesstokens> <urn:usf:predicate:canonicalName> "apikeyspersonalaccesstokens" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:apikeyspersonalaccesstokens> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:apikeyspersonalaccesstokens> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:apikeyspersonalaccesstokens> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:apikeyspersonalaccesstokens> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:apikeyspersonalaccesstokens> <urn:usf:predicate:exposureReason> "ANQR issues no keys or tokens because every surface is anonymous. Deferred with authenticatedserviceconsumption." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:apikeyspersonalaccesstokens> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:apikeyspersonalaccesstokens> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -114,7 +114,7 @@
 <urn:anqr:foundation-exposure:auditofprivilegedaccess> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:authenticationplatform> <urn:usf:predicate:canonicalName> "authenticationplatform" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:authenticationplatform> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:authenticationplatform> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:authenticationplatform> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:authenticationplatform> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:authenticationplatform> <urn:usf:predicate:exposureReason> "ANQR authenticates nobody, and supplying a sign-in would contradict anonymousgeneration. Deferred with authenticatedserviceconsumption." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:authenticationplatform> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:authenticationplatform> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -127,7 +127,7 @@
 <urn:anqr:foundation-exposure:backgroundworkersjobrunner> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:backupandrestore> <urn:usf:predicate:canonicalName> "backupandrestore" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:backupandrestore> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:backupandrestore> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:backupandrestore> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:backupandrestore> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:backupandrestore> <urn:usf:predicate:exposureReason> "Generation is stateless and anonymous, so there is no user artefact or account state to back up." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:backupandrestore> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:backupandrestore> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -140,7 +140,7 @@
 <urn:anqr:foundation-exposure:brandingandtheming> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:canonicalName> "browsertelemetrygrafanafarorumandbrowsertobfftracing" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:exposureReason> "Real-user monitoring would attach observation to anonymous sessions and contradict payloadconfidentiality. performancebudget is met by measurement in validation instead." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:browsertelemetrygrafanafarorumandbrowsertobfftracing> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -160,7 +160,7 @@
 <urn:anqr:foundation-exposure:codequalityandsecretanddependencyscanning> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:canonicalName> "compliancereportsaccessreviewsevidencepacks" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:compliancereportsaccessreviewsevidencepacks> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:exposureReason> "No accounts, roles or tenants exist, so there is nothing to review or attest." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:compliancereportsaccessreviewsevidencepacks> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -187,13 +187,13 @@
 <urn:anqr:foundation-exposure:customdomainsdnsownershiptlscanonical> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:predicate:canonicalName> "datagovernancecataloglineageclassificationpiidsrgdpr" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:predicate:exposureReason> "Payloads are processed transiently and nothing personal is stored, so there is no catalogue, lineage or subject request to serve. payloadconfidentiality is the reciprocal product claim." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:datagovernancecataloglineageclassificationpiidsrgdpr> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:delegatedadministrationroles> <urn:usf:predicate:canonicalName> "delegatedadministrationroles" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:delegatedadministrationroles> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:delegatedadministrationroles> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:delegatedadministrationroles> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:delegatedadministrationroles> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:delegatedadministrationroles> <urn:usf:predicate:exposureReason> "No organisations and no roles exist on an anonymous surface." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:delegatedadministrationroles> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:delegatedadministrationroles> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -206,13 +206,13 @@
 <urn:anqr:foundation-exposure:e2econfidenceladderstageaware> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:enduserprofileandpreferencesselfservice> <urn:usf:predicate:canonicalName> "enduserprofileandpreferencesselfservice" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:enduserprofileandpreferencesselfservice> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:enduserprofileandpreferencesselfservice> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:enduserprofileandpreferencesselfservice> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:enduserprofileandpreferencesselfservice> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:enduserprofileandpreferencesselfservice> <urn:usf:predicate:exposureReason> "ANQR holds no end-user profile; anonymousgeneration makes self-service meaningless, and ui-ownership already records this as not-claimed." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:enduserprofileandpreferencesselfservice> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:enduserprofileandpreferencesselfservice> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:entitlementengine> <urn:usf:predicate:canonicalName> "entitlementengine" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:entitlementengine> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:entitlementengine> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:entitlementengine> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:entitlementengine> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:entitlementengine> <urn:usf:predicate:exposureReason> "Every current capability is available anonymously with no entitlement to evaluate." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:entitlementengine> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:entitlementengine> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -239,7 +239,7 @@
 <urn:anqr:foundation-exposure:eventbusdurablequeuesdlqredrive> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:historyreadmodelreadonlyprojection> <urn:usf:predicate:canonicalName> "historyreadmodelreadonlyprojection" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:historyreadmodelreadonlyprojection> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:historyreadmodelreadonlyprojection> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:historyreadmodelreadonlyprojection> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:historyreadmodelreadonlyprojection> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:historyreadmodelreadonlyprojection> <urn:usf:predicate:exposureReason> "No stored user history exists to project." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:historyreadmodelreadonlyprojection> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:historyreadmodelreadonlyprojection> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -280,13 +280,13 @@
 <urn:anqr:foundation-exposure:mockprovidersdevtest> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:canonicalName> "notificationdeliveryandpreferencesandchannels" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:notificationdeliveryandpreferencesandchannels> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:exposureReason> "ANQR has no addressable user to notify; ui-ownership records this as not-claimed rather than deferred, because it follows from anonymity." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:notificationdeliveryandpreferencesandchannels> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:canonicalName> "objectstorageandtenantprefixesandsignedurls" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:objectstorageandtenantprefixesandsignedurls> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:exposureReason> "Artefacts are produced and taken away in the same interaction, so nothing is stored server-side and no signed URL is issued." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:objectstorageandtenantprefixesandsignedurls> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -306,13 +306,13 @@
 <urn:anqr:foundation-exposure:openapidrifthardgate> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:pitrretentionlegalholddataresidency> <urn:usf:predicate:canonicalName> "pitrretentionlegalholddataresidency" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:pitrretentionlegalholddataresidency> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:pitrretentionlegalholddataresidency> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:pitrretentionlegalholddataresidency> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:pitrretentionlegalholddataresidency> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:pitrretentionlegalholddataresidency> <urn:usf:predicate:exposureReason> "With no stored user data there is no retention, legal hold or residency obligation to discharge." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:pitrretentionlegalholddataresidency> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:pitrretentionlegalholddataresidency> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:productcatalogplansprices> <urn:usf:predicate:canonicalName> "productcatalogplansprices" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:productcatalogplansprices> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:productcatalogplansprices> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:productcatalogplansprices> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:productcatalogplansprices> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:productcatalogplansprices> <urn:usf:predicate:exposureReason> "ANQR is anonymous and free. The commercial opportunities are recorded in the opportunity set and none is realised." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:productcatalogplansprices> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:productcatalogplansprices> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -346,13 +346,13 @@
 <urn:anqr:foundation-exposure:ratelimitingapi> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:rbacrolesandpermissions> <urn:usf:predicate:canonicalName> "rbacrolesandpermissions" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:rbacrolesandpermissions> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:rbacrolesandpermissions> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:rbacrolesandpermissions> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:rbacrolesandpermissions> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:rbacrolesandpermissions> <urn:usf:predicate:exposureReason> "No roles exist on an anonymous surface." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:rbacrolesandpermissions> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:rbacrolesandpermissions> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:relationalstorageandmigrationsandrls> <urn:usf:predicate:canonicalName> "relationalstorageandmigrationsandrls" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:relationalstorageandmigrationsandrls> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:relationalstorageandmigrationsandrls> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:relationalstorageandmigrationsandrls> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:relationalstorageandmigrationsandrls> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:relationalstorageandmigrationsandrls> <urn:usf:predicate:exposureReason> "Generation is stateless; no relational store is bound and no row-level policy applies." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:relationalstorageandmigrationsandrls> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:relationalstorageandmigrationsandrls> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -393,79 +393,79 @@
 <urn:anqr:foundation-exposure:servicecatalogandproviderintegrationmodel> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:suborganisations> <urn:usf:predicate:canonicalName> "suborganisations" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:suborganisations> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:suborganisations> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:suborganisations> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:suborganisations> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:suborganisations> <urn:usf:predicate:exposureReason> "No organisations exist to nest." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:suborganisations> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:suborganisations> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:canonicalName> "subscriptionsinvoicespaymentmethodsdunning" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:subscriptionsinvoicespaymentmethodsdunning> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:exposureReason> "Nothing is charged for. paymentpayloadrepresentation concerns payment payloads inside a QR code, not billing the user, and the two must not be conflated." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:subscriptionsinvoicespaymentmethodsdunning> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportmodebreakglassaccess> <urn:usf:predicate:canonicalName> "supportmodebreakglassaccess" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportmodebreakglassaccess> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:supportmodebreakglassaccess> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:supportmodebreakglassaccess> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:supportmodebreakglassaccess> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportmodebreakglassaccess> <urn:usf:predicate:exposureReason> "There is no user account to enter or recover." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportmodebreakglassaccess> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportmodebreakglassaccess> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportticketscustomerhealthannouncements> <urn:usf:predicate:canonicalName> "supportticketscustomerhealthannouncements" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportticketscustomerhealthannouncements> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:supportticketscustomerhealthannouncements> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:supportticketscustomerhealthannouncements> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:supportticketscustomerhealthannouncements> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportticketscustomerhealthannouncements> <urn:usf:predicate:exposureReason> "No identified customer exists to hold a ticket or a health score." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportticketscustomerhealthannouncements> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:supportticketscustomerhealthannouncements> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantcanonicaldomainsetunset> <urn:usf:predicate:canonicalName> "tenantcanonicaldomainsetunset" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantcanonicaldomainsetunset> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenantcanonicaldomainsetunset> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenantcanonicaldomainsetunset> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenantcanonicaldomainsetunset> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantcanonicaldomainsetunset> <urn:usf:predicate:exposureReason> "ANQR is single-tenant; its canonical domain is operator configuration, not a tenant operation." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantcanonicaldomainsetunset> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantcanonicaldomainsetunset> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdataimportexport> <urn:usf:predicate:canonicalName> "tenantdataimportexport" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdataimportexport> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenantdataimportexport> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenantdataimportexport> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenantdataimportexport> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdataimportexport> <urn:usf:predicate:exposureReason> "No tenant and no stored tenant data exist. artefactexport is the unrelated product capability that gives a user their own artefact." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdataimportexport> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdataimportexport> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdomainactivationauthclient> <urn:usf:predicate:canonicalName> "tenantdomainactivationauthclient" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdomainactivationauthclient> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenantdomainactivationauthclient> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenantdomainactivationauthclient> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenantdomainactivationauthclient> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdomainactivationauthclient> <urn:usf:predicate:exposureReason> "No tenant and no auth client exist." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdomainactivationauthclient> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantdomainactivationauthclient> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantgroups> <urn:usf:predicate:canonicalName> "tenantgroups" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantgroups> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenantgroups> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenantgroups> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenantgroups> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantgroups> <urn:usf:predicate:exposureReason> "No tenants exist to group." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantgroups> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantgroups> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenanthostidentityresolution> <urn:usf:predicate:canonicalName> "tenanthostidentityresolution" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenanthostidentityresolution> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenanthostidentityresolution> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenanthostidentityresolution> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenanthostidentityresolution> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenanthostidentityresolution> <urn:usf:predicate:exposureReason> "One host serves one product; there is no tenant to resolve from a host." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenanthostidentityresolution> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenanthostidentityresolution> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantidentityrecordandfqdn> <urn:usf:predicate:canonicalName> "tenantidentityrecordandfqdn" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantidentityrecordandfqdn> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenantidentityrecordandfqdn> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenantidentityrecordandfqdn> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenantidentityrecordandfqdn> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantidentityrecordandfqdn> <urn:usf:predicate:exposureReason> "No tenant identity record exists." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantidentityrecordandfqdn> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantidentityrecordandfqdn> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantisolationproof> <urn:usf:predicate:canonicalName> "tenantisolationproof" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantisolationproof> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenantisolationproof> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenantisolationproof> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenantisolationproof> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantisolationproof> <urn:usf:predicate:exposureReason> "With one tenant there is nothing to isolate from. This is not a weaker claim than isolation; it is a different shape of system." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantisolationproof> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantisolationproof> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:canonicalName> "tenantlifecycleprovisionsuspenddeleteexport" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenantlifecycleprovisionsuspenddeleteexport> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:exposureReason> "No tenant lifecycle exists." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantlifecycleprovisionsuspenddeleteexport> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantserviceclickthroughpolicy> <urn:usf:predicate:canonicalName> "tenantserviceclickthroughpolicy" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantserviceclickthroughpolicy> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:tenantserviceclickthroughpolicy> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:tenantserviceclickthroughpolicy> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:tenantserviceclickthroughpolicy> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantserviceclickthroughpolicy> <urn:usf:predicate:exposureReason> "No tenant accepts terms on behalf of users." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantserviceclickthroughpolicy> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:tenantserviceclickthroughpolicy> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
@@ -478,25 +478,25 @@
 <urn:anqr:foundation-exposure:universalservicefoundationscopeandprinciples> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:usagemeteringandmetereventingestion> <urn:usf:predicate:canonicalName> "usagemeteringandmetereventingestion" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:usagemeteringandmetereventingestion> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:usagemeteringandmetereventingestion> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:usagemeteringandmetereventingestion> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:usagemeteringandmetereventingestion> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:usagemeteringandmetereventingestion> <urn:usf:predicate:exposureReason> "Metering anonymous generation would require attributing usage to a user, which anonymousgeneration forbids." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:usagemeteringandmetereventingestion> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:usagemeteringandmetereventingestion> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:useridentityandtenantmembership> <urn:usf:predicate:canonicalName> "useridentityandtenantmembership" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:useridentityandtenantmembership> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:useridentityandtenantmembership> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:useridentityandtenantmembership> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:useridentityandtenantmembership> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:useridentityandtenantmembership> <urn:usf:predicate:exposureReason> "No user identity and no membership exist." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:useridentityandtenantmembership> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:useridentityandtenantmembership> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:webhooksdeveloperfacing> <urn:usf:predicate:canonicalName> "webhooksdeveloperfacing" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:webhooksdeveloperfacing> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:webhooksdeveloperfacing> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:webhooksdeveloperfacing> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:webhooksdeveloperfacing> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:webhooksdeveloperfacing> <urn:usf:predicate:exposureReason> "There is no subscriber identity to deliver to. Deferred with authenticatedserviceconsumption." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:webhooksdeveloperfacing> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:webhooksdeveloperfacing> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:workflowenginescheduledjobsapprovals> <urn:usf:predicate:canonicalName> "workflowenginescheduledjobsapprovals" <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:workflowenginescheduledjobsapprovals> <urn:usf:predicate:classifiesCapability> <urn:usf:delivery-capability:workflowenginescheduledjobsapprovals> <urn:anqr:graph:foundation-exposure> .
-<urn:anqr:foundation-exposure:workflowenginescheduledjobsapprovals> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:foundation-exposure> .
+<urn:anqr:foundation-exposure:workflowenginescheduledjobsapprovals> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:workflowenginescheduledjobsapprovals> <urn:usf:predicate:exposureReason> "No approval workflow exists on an anonymous surface." <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:workflowenginescheduledjobsapprovals> <urn:usf:predicate:operationalState> <urn:usf:capability-operational-state:available-in-foundation> <urn:anqr:graph:foundation-exposure> .
 <urn:anqr:foundation-exposure:workflowenginescheduledjobsapprovals> <urn:usf:predicate:type> <urn:usf:type:FoundationExposureClassification> <urn:anqr:graph:foundation-exposure> .

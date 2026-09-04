@@ -9,7 +9,7 @@
     {
       "path": "graph/anqr-first-slice.nq",
       "format": "application/n-quads",
-      "graph": "urn:usf:graph:anqr-first-slice",
+      "graph": "urn:anqr:graph:decoded-payload",
       "role": "product-contract",
       "validationProfile": "bootstrap-nquads-v1"
     },

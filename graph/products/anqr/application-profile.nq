@@ -6,7 +6,7 @@
 <urn:anqr:profile:application:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:repository-path-scope:1> <urn:anqr:graph:application-profile> .
 <urn:anqr:profile:application:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:file-asset-index:1> <urn:anqr:graph:application-profile> .
 <urn:anqr:profile:application:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:operator-observability:1> <urn:anqr:graph:application-profile> .
-<urn:anqr:profile:application:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:anqr-decoded-payload:1> <urn:anqr:graph:application-profile> .
+<urn:anqr:profile:application:1> <urn:usf:predicate:selectsContract> <urn:anqr:contract:decoded-payload:1> <urn:anqr:graph:application-profile> .
 <urn:anqr:profile:application:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:delivery-environment:1> <urn:anqr:graph:application-profile> .
 <urn:anqr:profile:application:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:anqr:graph:application-profile> .
 <urn:anqr:profile:application:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:anqr:graph:application-profile> .

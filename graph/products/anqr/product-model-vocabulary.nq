@@ -41,8 +41,8 @@
 <urn:usf:exposure-disposition:direct-user-exposed> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
 <urn:usf:exposure-disposition:internal> <urn:usf:predicate:dispositionMeaning> "Consumed inside the implementation; no actor reaches it and none should know it exists." <urn:anqr:graph:product-model-vocabulary> .
 <urn:usf:exposure-disposition:internal> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
-<urn:usf:exposure-disposition:not-selected-by-anqr> <urn:usf:predicate:dispositionMeaning> "The product does not select this Foundation capability at all, with a stated reason." <urn:anqr:graph:product-model-vocabulary> .
-<urn:usf:exposure-disposition:not-selected-by-anqr> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:not-selected> <urn:usf:predicate:dispositionMeaning> "The product does not select this Foundation capability at all, with a stated reason." <urn:anqr:graph:product-model-vocabulary> .
+<urn:usf:exposure-disposition:not-selected> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
 <urn:usf:exposure-disposition:operator-exposed> <urn:usf:predicate:dispositionMeaning> "Reached by whoever operates the product's infrastructure, not by its users." <urn:anqr:graph:product-model-vocabulary> .
 <urn:usf:exposure-disposition:operator-exposed> <urn:usf:predicate:type> <urn:usf:type:ExposureDisposition> <urn:anqr:graph:product-model-vocabulary> .
 <urn:usf:exposure-disposition:product-mediated> <urn:usf:predicate:dispositionMeaning> "Reached only through product language and journeys, never as itself." <urn:anqr:graph:product-model-vocabulary> .

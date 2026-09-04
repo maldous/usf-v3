@@ -230,7 +230,6 @@
 <urn:usf:integrity-invariant:undeclared-type> <urn:usf:predicate:invariant> "Every asserted type is declared in the corpus, so a typo cannot create a phantom class." <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-invariant:undeclared-type> <urn:usf:predicate:legacyCounterpart> "undefinedterm" <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-invariant:undeclared-type> <urn:usf:predicate:type> <urn:usf:type:IntegrityInvariant> <urn:usf:graph:v3-convention> .
-<urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:anqr-first-slice> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:foundation> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:hermes-management> <urn:usf:graph:v3-convention> .
 <urn:usf:integrity-scope:corpus:1> <urn:usf:predicate:conventionExemptGraph> <urn:usf:graph:integration> <urn:usf:graph:v3-convention> .

@@ -73,7 +73,7 @@
 <urn:anqr:capability-exposure:artefactexport> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:canonicalName> "authenticatedserviceconsumption" <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:authenticatedserviceconsumption> <urn:anqr:graph:capability-exposure> .
-<urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:exposureReason> "Deferred at profile revision 2. Nothing in the current experience depends on it." <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:authenticatedserviceconsumption> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
@@ -163,7 +163,7 @@
 <urn:anqr:capability-exposure:mcpdelivery> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:canonicalName> "mobileapplication" <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:mobileapplication> <urn:anqr:graph:capability-exposure> .
-<urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:exposureReason> "Deferred at profile revision 2. The architecture reserves Android and iOS delivery surfaces so the centre stays reusable." <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:mobileapplication> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
@@ -205,7 +205,7 @@
 <urn:anqr:capability-exposure:performancebudget> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:canonicalName> "platformparity" <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:platformparity> <urn:anqr:graph:capability-exposure> .
-<urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:exposureReason> "Reserved at profile revision 2. The surface-parity fitness function is where it becomes mechanical once a second surface is realised." <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:platformparity> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
@@ -277,7 +277,7 @@
 <urn:anqr:capability-exposure:scansafetyvalidation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:canonicalName> "selfhostedoperation" <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:classifiesCapability> <urn:anqr:delivery-capability:selfhostedoperation> <urn:anqr:graph:capability-exposure> .
-<urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected-by-anqr> <urn:anqr:graph:capability-exposure> .
+<urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:exposureDisposition> <urn:usf:exposure-disposition:not-selected> <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:exposureReason> "Deferred at profile revision 2; hosting is undetermined." <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:parityObligationScope> "deferred-to-later-revision" <urn:anqr:graph:capability-exposure> .
 <urn:anqr:capability-exposure:selfhostedoperation> <urn:usf:predicate:type> <urn:usf:type:ProductCapabilityExposure> <urn:anqr:graph:capability-exposure> .

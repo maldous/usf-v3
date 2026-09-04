@@ -40,11 +40,13 @@ test("manifest overlays isolate products while safely deduplicating shared knowl
     "urn:usf:contract:repository-path-scope:1",
     "urn:usf:contract:semantic-first-order:1",
   ]);
-  assert.deepEqual(semanticContracts(anqr), ["urn:usf:contract:anqr-decoded-payload:1"]);
+  assert.deepEqual(semanticContracts(anqr), ["urn:anqr:contract:decoded-payload:1"]);
   assert.deepEqual(semanticContracts(orchard), ["urn:fixture:contract:orchard-launch-assets:1"]);
   assert.deepEqual(semanticContracts(all), [
+    // urn:anqr: now sorts before urn:fixture:, because the ANQR contract left
+    // the foundation namespace in the naming normalisation.
+    "urn:anqr:contract:decoded-payload:1",
     "urn:fixture:contract:orchard-launch-assets:1",
-    "urn:usf:contract:anqr-decoded-payload:1",
     "urn:usf:contract:file-asset-index:1",
     "urn:usf:contract:foreground-lifecycle:1",
     "urn:usf:contract:operator-observability:1",

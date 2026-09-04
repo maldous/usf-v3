@@ -8,9 +8,9 @@ const root = resolve(import.meta.dirname, "../..");
 const manifest = "graph/products/anqr/manifest.json";
 
 test("query and work command projections are JSON, bounded, and fail closed", () => {
-  const query = JSON.parse(runQuery(root, { contract: "urn:usf:contract:anqr-decoded-payload:1" }, manifest));
+  const query = JSON.parse(runQuery(root, { contract: "urn:anqr:contract:decoded-payload:1" }, manifest));
   assert.equal(query.status, "ok");
-  assert.equal(query.dependencyManifest.some((entry: { key: string }) => entry.key === "urn:usf:contract:anqr-decoded-payload:1"), true);
+  assert.equal(query.dependencyManifest.some((entry: { key: string }) => entry.key === "urn:anqr:contract:decoded-payload:1"), true);
   assert.equal(JSON.parse(runQuery(root, { selector: "unknown" }, manifest)).reasonCode, "QUERY_SELECTOR_UNKNOWN");
   const work = JSON.parse(runWork(root, { maxItems: 1 }, manifest));
   assert.equal(work.status, "ok");
@@ -18,7 +18,7 @@ test("query and work command projections are JSON, bounded, and fail closed", ()
   assert.equal(work.items[0].privacy, "public");
   assert.deepEqual(work.items[0].modelCapabilities, ["node-test", "typescript"]);
   assert.equal(work.items[0].targetRuntimeProvider, "none");
-  assert.equal(work.items[0].environmentPosture.every((entry: { binding?: string }) => entry.binding?.startsWith("urn:usf:environment-applicability:") === true), true);
+  assert.equal(work.items[0].environmentPosture.every((entry: { binding?: string }) => /^urn:(usf|anqr):environment-applicability:/u.test(entry.binding ?? "")), true);
   assert.equal(work.items[0].semanticDependencies.some((entry: { kind: string }) => entry.kind === "policy"), true);
   assert.equal(work.items[0].writeSet.some((path: string) => /[*?\[\]{}]/.test(path)), false);
   assert.ok(work.items[0].scopedDependencyDigest.startsWith("sha256:"));

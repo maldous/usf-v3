@@ -8,12 +8,12 @@ import { queryGraph } from "../../../src/graph/query.ts";
 import { canSatisfyEnvironment, deriveWork, isWorkPacketFresh } from "../../../src/graph/work.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
-const contract = "urn:usf:contract:anqr-decoded-payload:1";
+const contract = "urn:anqr:contract:decoded-payload:1";
 const manifest = "graph/products/anqr/manifest.json";
 
 test("strict bootstrap N-Quads are blank-node-free and compile to a stable content digest", () => {
   const source = readFileSync(resolve(root, "graph/anqr-first-slice.nq"), "utf8");
-  const parsed = parseStrictNQuads(source, "urn:usf:graph:anqr-first-slice");
+  const parsed = parseStrictNQuads(source, "urn:anqr:graph:decoded-payload");
   assert.ok(parsed.length > 20);
   assert.throws(() => parseStrictNQuads("_:b <urn:p> <urn:o> <urn:g> .", "urn:g"), /NQUADS_UNSUPPORTED_SYNTAX/);
   assert.equal(loadSemanticGraph(root, manifest).semanticDigest, loadSemanticGraph(root, manifest).semanticDigest);
@@ -37,16 +37,16 @@ test("work packets are deterministic and construction readiness requires profile
   assert.equal(all.items?.length, 2);
   assert.deepEqual(all.items, deriveWork(graph, { selector: `contract:${contract}` }).items);
   assert.equal(deriveWork(graph, { selector: "unknown" }).reasonCode, "WORK_SELECTOR_UNKNOWN");
-  const implementation = all.items?.find((item) => item.id === "urn:usf:work:anqr-implementation");
+  const implementation = all.items?.find((item) => item.id === "urn:anqr:work:implementation");
   assert.ok(implementation);
   assert.deepEqual(implementation.environmentPosture, [
-    { binding: "urn:usf:environment-applicability:anqr-decoded-payload:ci", environment: "urn:usf:environment:ci", applicability: "reserved" },
-    { binding: "urn:usf:environment-applicability:anqr-decoded-payload:hermetic", environment: "urn:usf:environment:hermetic", applicability: "required" },
-    { binding: "urn:usf:environment-applicability:anqr-decoded-payload:integrationtest", environment: "urn:usf:environment:integrationtest", applicability: "required" },
-    { binding: "urn:usf:environment-applicability:anqr-decoded-payload:localdev", environment: "urn:usf:environment:localdev", applicability: "required" },
-    { binding: "urn:usf:environment-applicability:anqr-decoded-payload:productionlive", environment: "urn:usf:environment:productionlive", applicability: "reserved" },
-    { binding: "urn:usf:environment-applicability:anqr-decoded-payload:productionshaped", environment: "urn:usf:environment:productionshaped", applicability: "reserved" },
-    { binding: "urn:usf:environment-applicability:anqr-decoded-payload:staging", environment: "urn:usf:environment:staging", applicability: "reserved" },
+    { binding: "urn:anqr:environment-applicability:decoded-payload:ci", environment: "urn:usf:environment:ci", applicability: "reserved" },
+    { binding: "urn:anqr:environment-applicability:decoded-payload:hermetic", environment: "urn:usf:environment:hermetic", applicability: "required" },
+    { binding: "urn:anqr:environment-applicability:decoded-payload:integrationtest", environment: "urn:usf:environment:integrationtest", applicability: "required" },
+    { binding: "urn:anqr:environment-applicability:decoded-payload:localdev", environment: "urn:usf:environment:localdev", applicability: "required" },
+    { binding: "urn:anqr:environment-applicability:decoded-payload:productionlive", environment: "urn:usf:environment:productionlive", applicability: "reserved" },
+    { binding: "urn:anqr:environment-applicability:decoded-payload:productionshaped", environment: "urn:usf:environment:productionshaped", applicability: "reserved" },
+    { binding: "urn:anqr:environment-applicability:decoded-payload:staging", environment: "urn:usf:environment:staging", applicability: "reserved" },
   ]);
   assert.equal(implementation.validationPlan[0]?.executionMode, "urn:usf:mode:deterministic-test-substitute");
   assert.equal(implementation.validationPlan[0]?.environment, "urn:usf:environment:hermetic");
@@ -54,7 +54,7 @@ test("work packets are deterministic and construction readiness requires profile
   assert.equal(implementation.targetRuntimeProvider, "none");
   assert.deepEqual(implementation.modelCapabilities, ["node-test", "typescript"]);
   assert.equal(implementation.acceptanceCriteria.length, 7);
-  assert.equal(implementation.semanticDependencies.some((dependency) => dependency.key === "urn:usf:acceptance:anqr-url"), true);
+  assert.equal(implementation.semanticDependencies.some((dependency) => dependency.key === "urn:anqr:acceptance:url"), true);
   assert.equal(implementation.semanticDependencies.some((dependency) => dependency.kind === "policy" && dependency.key === "config/privacy.json"), true);
   assert.equal(implementation.semanticDependencies.some((dependency) => dependency.kind === "schema" && dependency.key === "apps/anqr/contract.schema.json"), true);
   assert.equal(implementation.semanticDependencies.some((dependency) => dependency.kind === "tool" && dependency.key === "pnpm-lock.yaml"), true);
@@ -62,7 +62,7 @@ test("work packets are deterministic and construction readiness requires profile
   assert.equal(canSatisfyEnvironment(implementation, "urn:usf:environment:staging"), false);
   assert.equal(canSatisfyEnvironment(implementation, "urn:usf:environment:absent"), false);
   assert.equal(implementation.eligibility?.dependencyReady, true);
-  assert.equal(all.items?.find((item) => item.id === "urn:usf:work:anqr-tests")?.eligibility?.dependencyReady, false);
+  assert.equal(all.items?.find((item) => item.id === "urn:anqr:work:tests")?.eligibility?.dependencyReady, false);
   assert.equal(deriveWork(graph, { ready: true }).reasonCode, "REALISATION_PROFILE_REQUIRED");
   assert.deepEqual(deriveWork(graph, { profile: "urn:anqr:profile:decoded-payload-bootstrap:1", ready: true }).items, []);
   const allIds = deriveWork(graph).items?.map((item) => item.id) ?? [];
