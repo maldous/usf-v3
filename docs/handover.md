@@ -536,3 +536,49 @@ It is currentness-bound: nine quads there failed fifteen transition and
 publication tests with `TRANSITION_CURRENT_POSTSTATE_MISMATCH`. Foundation
 vocabulary a product imports belongs in `graph/architecture-assurance.nq`.
 
+
+## Grader semantics (2026-09-05)
+
+USF `5b86ab5`, clean. ANQR `915e03a14`, clean and untouched — this lane is
+foundation-only. Architecture facets unchanged at `SATISFIED 14`, `BLOCKED 2`.
+Hermes live throughout, cycle 188, blockers 0.
+
+**What a grader is, now stated.** Each kind declares what it asserts, its
+judgement mode — comparison, selection, structural-validation or
+marker-detection, and deliberately never *proof* — and the dimensions it is
+competent to judge. A grade is one of PASS, FAIL, REFUSAL, INAPPLICABLE or
+INSUFFICIENT_EVIDENCE with a machine-readable diagnostic. Only PASS scores, and
+an unjudgeable case stays in the denominator: dropping it would raise the score
+of a suite that failed to ask the question.
+
+**The audit is mechanical and reproduced the manual one exactly** — eleven of
+sixteen cases defective: four whose grader could not judge the dimension, one
+whose options no prompt supplied, and eight requiring vocabulary private to this
+repository. Eight cases repaired to be answerable from what they state; thirteen
+of sixteen are now clean with **zero hard defects**. The remaining three require
+recall of general engineering knowledge, which is legitimate and is reported
+rather than hidden.
+
+**Anti-circularity is structural, not asserted.** Grading is a pure total
+function of case and answer, proven against the source so no later edit can
+reach a clock, a filesystem or a provider. No grader can ask a model, so model
+agreement can never become evidence. One answer evidences one case: reuse across
+cases now evidences nothing, so a single generic response cannot be multiplied
+by several graders happening to accept it.
+
+**Hermes did not exercise the grader path, and cannot.** All three dispatch
+sites set `requiredCapabilities: []`, so ordinary BAU requests no task class —
+verified: the newest qualification record predates the running supervisor by
+hours. The gate is connected and binds nothing, which remains the intended
+state. It binds when a supplied work graph declares `requiredCapability`, or if
+`modelCapability` is ever propagated into dispatched units — still an unmade
+decision, and not one to make by manufacturing work to demonstrate a mechanism.
+
+**The suite moved to 1.1.0**, which supersedes stored qualification by design: a
+changed case changes what the task class means. Nothing was lost — the two
+stored records carry no corpus binding at all and were already inadmissible.
+
+**Editing `config/qualification.json` refuses `usf route` until it is committed**
+(`ROUTE_QUALIFICATION_AUTHORITY_UNCURRENT`): the authority is compared against
+the Git-indexed blob, not the working tree.
+
