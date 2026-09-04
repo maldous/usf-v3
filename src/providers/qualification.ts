@@ -356,6 +356,198 @@ export type QualificationGrader =
   | Readonly<{ kind: "json-schema"; schema: JsonValue }>
   | Readonly<{ kind: "uncertainty" }>;
 
+/**
+ * What a grader is, stated rather than assumed.
+ *
+ * Every grader here compares one observed answer against one declared
+ * expectation. None of them proves anything, none consults a model, and none
+ * observes the world: a grader is a pure total function of the case and the
+ * answer, and its result is evidence that one answer matched one expectation
+ * and evidence of nothing else. Saying so matters because the alternative --
+ * a grader that asks a model whether an answer is good -- would make generated
+ * prose into evidence on the strength of another model agreeing with it, and
+ * that is not evidence at all.
+ *
+ * Competence is declared per kind. A grader asked to judge a dimension it was
+ * never built for returns INAPPLICABLE rather than a confident zero, because
+ * "this grader cannot judge this" and "the model got it wrong" are different
+ * facts and only one of them is the model's problem.
+ */
+export type GraderJudgementMode =
+  /** Compares the answer against a declared expectation. Proves nothing about the world. */
+  | "comparison"
+  /** Validates the answer's structure against a declared contract. */
+  | "structural-validation"
+  /** Detects declared markers in the answer. */
+  | "marker-detection"
+  /** Selects among options the prompt itself supplies. */
+  | "selection";
+
+/**
+ * The five things a grader can conclude. Only PASS scores.
+ *
+ * The distinction that was missing is between a case the model got wrong and a
+ * case nothing could judge. Collapsing them into a zero made an unanswerable
+ * case and a failed one indistinguishable, which is exactly how a suite defect
+ * reads as a model deficiency for six months.
+ */
+export type GraderVerdict =
+  | "PASS"
+  | "FAIL"
+  /** The model declined to answer. Not a wrong answer; not a pass either. */
+  | "REFUSAL"
+  /** This grader is not competent to judge this case. A suite defect, not a model one. */
+  | "INAPPLICABLE"
+  /** No admissible answer reached the grader at all. */
+  | "INSUFFICIENT_EVIDENCE";
+
+/**
+ * Machine-readable reason, so Hermes can tell whose defect a zero is.
+ *
+ * These are the categories a caller must be able to act on differently: repair
+ * the implementation, repair the evidence, obtain an authority, re-observe,
+ * repair the suite, or take a decision that is not the machine's to take.
+ */
+export type GraderDiagnostic =
+  | "ANSWER_MATCHED_EXPECTATION"
+  | "ANSWER_DID_NOT_MATCH_EXPECTATION"
+  | "ANSWER_WAS_A_REFUSAL"
+  | "ANSWER_ABSENT"
+  | "ANSWER_NOT_BOUND_TO_THIS_CASE"
+  | "ANSWER_ALREADY_EVIDENCED_ANOTHER_CASE"
+  | "GRADER_NOT_COMPETENT_FOR_DIMENSION";
+
+/**
+ * Whose defect a shortfall is, in the terms a caller can act on.
+ *
+ * Hermes must distinguish a model that cannot do the task from a suite that
+ * cannot ask the question, and both from evidence that never arrived. Reporting
+ * only a score forces the reader to guess, and the guess has always been "the
+ * model is bad", which is how a suite defect survived unexamined.
+ */
+export interface QualificationDefectSummary {
+  /** The model answered and the answer did not meet the declared expectation. */
+  readonly implementationDefect: number;
+  /** No admissible answer reached the grader, or it was not bound to this case. */
+  readonly evidenceDefect: number;
+  /** The observed answer declined, where declining was not what was measured. */
+  readonly refusal: number;
+  /** No grader in the suite is competent to judge this case. A suite defect. */
+  readonly graderIncapability: number;
+  /** One answer offered as evidence for more than one case. */
+  readonly manufacturedEvidence: number;
+  /**
+   * True when nothing here is attributable to the model: every shortfall is a
+   * defect in the suite or the evidence. A caller must not read this as a
+   * capability judgement in either direction.
+   */
+  readonly attributableToModel: boolean;
+}
+
+export interface GraderResult {
+  readonly verdict: GraderVerdict;
+  readonly score: number;
+  readonly diagnostic: GraderDiagnostic;
+  readonly graderKind: string;
+  readonly judgementMode: GraderJudgementMode;
+}
+
+/**
+ * Which dimensions each grader kind may judge, and what it asserts when it
+ * passes. A kind absent from a dimension is not a silent zero: it is
+ * INAPPLICABLE, and the suite is what needs repairing.
+ */
+/**
+ * Content dimensions whose answer is prose or code rather than one canonical
+ * token. A grader that inspects the answer's content can judge these.
+ */
+const contentDimensions = Object.freeze([
+  "semantic_planning", "repository_navigation", "implementation", "debugging",
+  "tool_selection", "scope_discipline", "evidence_discipline", "review",
+  "wave_integration", "later_regression", "false_completion", "structured_output",
+] as const);
+
+export const graderCompetence: Readonly<Record<string, Readonly<{
+  judgementMode: GraderJudgementMode;
+  asserts: string;
+  dimensions: readonly QualificationDimension[];
+}>>> = Object.freeze({
+  // Whole-answer equality can judge a canonical output and nothing else. A
+  // dimension whose honest answer is a sentence cannot be graded this way:
+  // "The modifier is `readonly`." is correct and fails, and that is the
+  // grader's defect rather than the model's.
+  exact: Object.freeze({
+    judgementMode: "comparison" as const,
+    asserts: "The whole answer equals the declared expectation after case and whitespace normalisation.",
+    dimensions: Object.freeze(["structured_output"] as const),
+  }),
+  contains: Object.freeze({
+    judgementMode: "comparison" as const,
+    asserts: "Every declared substring appears in the answer.",
+    dimensions: contentDimensions,
+  }),
+  "not-contains": Object.freeze({
+    judgementMode: "comparison" as const,
+    asserts: "No declared substring appears in the answer.",
+    dimensions: Object.freeze([...contentDimensions, "uncertainty_handling"] as const),
+  }),
+  regex: Object.freeze({
+    judgementMode: "comparison" as const,
+    asserts: "The answer matches the declared pattern.",
+    dimensions: contentDimensions,
+  }),
+  "iri-exact": Object.freeze({
+    judgementMode: "comparison" as const,
+    asserts: "The declared IRI appears in the answer verbatim.",
+    dimensions: Object.freeze(["rdf_owl_reasoning", "shacl_sparql", "semantic_planning", "structured_output"] as const),
+  }),
+  choice: Object.freeze({
+    judgementMode: "selection" as const,
+    asserts: "The answer selects the declared option from among options the prompt supplies.",
+    dimensions: contentDimensions,
+  }),
+  "set-equal": Object.freeze({
+    judgementMode: "selection" as const,
+    asserts: "The answer names exactly the declared set, no more and no fewer.",
+    dimensions: Object.freeze([
+      "semantic_planning", "structured_output", "rdf_owl_reasoning", "shacl_sparql",
+      "tool_selection", "review", "scope_discipline", "evidence_discipline",
+      // Naming which check runs while iterating and which before acceptance is
+      // a set answer, so a set is the honest instrument for it.
+      "later_regression",
+    ] as const),
+  }),
+  "json-schema": Object.freeze({
+    judgementMode: "structural-validation" as const,
+    asserts: "A JSON value in the answer validates against the declared schema.",
+    dimensions: Object.freeze([
+      "structured_output", "semantic_planning", "implementation", "review",
+      "debugging", "rdf_owl_reasoning", "shacl_sparql", "evidence_discipline",
+      // A structural contract can state a completion nonclaim exactly, which is
+      // a sharper instrument for this dimension than asking for prose about it.
+      "false_completion",
+    ] as const),
+  }),
+  // Declining well is the measurement here, so this is the one kind whose
+  // dimensions are exactly the ones where a refusal is the right answer.
+  uncertainty: Object.freeze({
+    judgementMode: "marker-detection" as const,
+    asserts: "The answer carries a marker of declared uncertainty.",
+    dimensions: Object.freeze(["uncertainty_handling", "false_completion"] as const),
+  }),
+});
+
+/** Dimensions where declining is the measurement rather than a failure to answer. */
+const refusalIsTheMeasurement: ReadonlySet<string> = Object.freeze(
+  new Set<string>(["uncertainty_handling", "false_completion"]),
+);
+
+/** Markers of a declined answer. A refusal is not a wrong answer. */
+const refusalMarkers = Object.freeze([
+  "i cannot", "i can't", "i am unable", "i'm unable", "cannot assist", "can't assist",
+  "cannot help with", "unable to help", "i won't", "i will not", "as an ai",
+]);
+
 export interface QualificationCase {
   readonly caseId: string;
   readonly taskClass: string;
@@ -442,6 +634,16 @@ export interface QualificationCaseEvaluation {
   readonly score: number;
   readonly weight: number;
   readonly passed: boolean;
+  /**
+   * The rest of the chain, carried on the verdict rather than reconstructed by
+   * a reader: which grader judged this, what kind of judgement that is, what it
+   * concluded, and why. Without these a zero is unattributable, and an
+   * unattributable zero gets read as the model being bad at the task.
+   */
+  readonly verdict: GraderVerdict;
+  readonly graderKind: string;
+  readonly judgementMode: GraderJudgementMode;
+  readonly diagnostic: GraderDiagnostic;
 }
 
 export interface QualificationDimensionEvaluation {
@@ -494,6 +696,8 @@ export interface SemanticQualificationResult {
   readonly casesAnswered: number;
   readonly casesPassed: number;
   readonly casesTotal: number;
+  /** Why the un-passed cases did not pass, attributed rather than aggregated. */
+  readonly defects: QualificationDefectSummary;
   /** Explanatory labels only; they grant no routing, write, or semantic authority. */
   readonly derivedRoles: readonly QualificationRole[];
   readonly observedAt: string;
@@ -924,7 +1128,59 @@ function assertPolicySnapshot(snapshot: QualificationPolicySnapshot): void {
   }
 }
 
-function gradeCase(item: QualificationCase, answer: string): number {
+/**
+ * Compare one answer against one case's declared expectation.
+ *
+ * Pure, total and deterministic: the same case and the same answer produce the
+ * same verdict every time, on every host, with no clock, no filesystem and no
+ * provider. That is load-bearing rather than incidental -- `routeWork` replays
+ * grading rather than trusting a score it was handed, and a replay that could
+ * disagree with the original would make the replay pointless.
+ */
+export function gradeCase(item: QualificationCase, answer: string | undefined): GraderResult {
+  const competence = graderCompetence[item.grader.kind];
+  const judgementMode = competence?.judgementMode ?? "comparison";
+  const shape = { graderKind: item.grader.kind, judgementMode } as const;
+  // A grader that cannot judge this dimension says so. Scoring it zero would
+  // report a suite defect as a model failure, which is how eleven brittle
+  // cases read as an incapable provider.
+  if (competence === undefined || !competence.dimensions.includes(item.dimension)) {
+    return Object.freeze({
+      ...shape, verdict: "INAPPLICABLE" as const, score: 0,
+      diagnostic: "GRADER_NOT_COMPETENT_FOR_DIMENSION" as const,
+    });
+  }
+  if (answer === undefined) {
+    return Object.freeze({
+      ...shape, verdict: "INSUFFICIENT_EVIDENCE" as const, score: 0, diagnostic: "ANSWER_ABSENT" as const,
+    });
+  }
+  const matched = matchesExpectation(item, answer) === 1;
+  if (matched) {
+    return Object.freeze({
+      ...shape, verdict: "PASS" as const, score: 1, diagnostic: "ANSWER_MATCHED_EXPECTATION" as const,
+    });
+  }
+  // A declined answer is distinguished from a wrong one, except where declining
+  // is the very thing being measured: a refusal-calibration case grades the
+  // refusal itself, so reporting it as REFUSAL would discard the measurement.
+  if (!refusalIsTheMeasurement.has(item.dimension) && isRefusal(answer)) {
+    return Object.freeze({
+      ...shape, verdict: "REFUSAL" as const, score: 0, diagnostic: "ANSWER_WAS_A_REFUSAL" as const,
+    });
+  }
+  return Object.freeze({
+    ...shape, verdict: "FAIL" as const, score: 0, diagnostic: "ANSWER_DID_NOT_MATCH_EXPECTATION" as const,
+  });
+}
+
+function isRefusal(answer: string): boolean {
+  const candidate = normalized(answer);
+  if (candidate.length === 0) return true;
+  return refusalMarkers.some((marker) => candidate.includes(marker));
+}
+
+function matchesExpectation(item: QualificationCase, answer: string): number {
   const grader = item.grader;
   switch (grader.kind) {
     case "exact": return normalized(answer) === normalized(grader.value) ? 1 : 0;
@@ -1019,18 +1275,40 @@ function scoreCases(
   casesAnswered: number;
   casesPassed: number;
   casesTotal: number;
+  defects: QualificationDefectSummary;
 }> {
+  // One observed answer evidences exactly the case it was produced for. Reusing
+  // a single generic answer across several cases would turn one observation
+  // into several pieces of evidence, which is manufacturing rather than
+  // observing, so the second and later uses evidence nothing.
+  const answerSeenFor = new Map<string, string>();
   const caseEvaluations = cases.map((item) => {
     const answer = answers.get(item.caseId);
-    const score = answer === undefined ? 0 : gradeCase(item, answer);
+    let result = gradeCase(item, answer);
+    if (answer !== undefined) {
+      const fingerprint = answerDigest(answer);
+      const firstCase = answerSeenFor.get(fingerprint);
+      if (firstCase !== undefined && firstCase !== item.caseId) {
+        result = Object.freeze({
+          ...result, verdict: "INSUFFICIENT_EVIDENCE" as const, score: 0,
+          diagnostic: "ANSWER_ALREADY_EVIDENCED_ANOTHER_CASE" as const,
+        });
+      } else {
+        answerSeenFor.set(fingerprint, item.caseId);
+      }
+    }
     return {
       caseId: item.caseId,
       taskClass,
       dimension: item.dimension,
       answerPresent: answer !== undefined,
-      score,
+      score: result.score,
       weight: item.weight,
-      passed: score >= passThreshold,
+      passed: result.score >= passThreshold,
+      verdict: result.verdict,
+      graderKind: result.graderKind,
+      judgementMode: result.judgementMode,
+      diagnostic: result.diagnostic,
     } satisfies QualificationCaseEvaluation;
   });
 
@@ -1060,7 +1338,28 @@ function scoreCases(
     casesAnswered: caseEvaluations.filter((item) => item.answerPresent).length,
     casesPassed: caseEvaluations.filter((item) => item.passed).length,
     casesTotal: caseEvaluations.length,
+    defects: summariseDefects(caseEvaluations),
   };
+}
+
+function summariseDefects(
+  evaluations: readonly QualificationCaseEvaluation[],
+): QualificationDefectSummary {
+  const count = (verdict: GraderVerdict): number =>
+    evaluations.filter((item) => item.verdict === verdict).length;
+  const manufactured = evaluations
+    .filter((item) => item.diagnostic === "ANSWER_ALREADY_EVIDENCED_ANOTHER_CASE").length;
+  const implementationDefect = count("FAIL");
+  return Object.freeze({
+    implementationDefect,
+    evidenceDefect: count("INSUFFICIENT_EVIDENCE") - manufactured,
+    refusal: count("REFUSAL"),
+    graderIncapability: count("INAPPLICABLE"),
+    manufacturedEvidence: manufactured,
+    // A run whose only shortfalls are the suite's or the evidence's says
+    // nothing about the model, and must not be reported as if it did.
+    attributableToModel: implementationDefect > 0 || count("PASS") === evaluations.length,
+  });
 }
 
 function deriveRoles(
@@ -1439,13 +1738,24 @@ export function evaluateHiddenHoldout(input: HiddenEvaluationInput): HiddenEvalu
       && evaluatedAtMs < Date.parse(answer.expiresAt);
     if (!matched) unmatchedCount += 1;
     else matchedAnswerExpiries.push(answer.expiresAt);
-    const score = matched ? gradeCase(item, answer.answer) : 0;
+    // An answer that failed to bind is not graded at all: whatever it says, it
+    // is not an observation of this case under this projection.
+    const result = matched
+      ? gradeCase(item, answer!.answer)
+      : Object.freeze({
+        verdict: "INSUFFICIENT_EVIDENCE" as const, score: 0,
+        diagnostic: "ANSWER_NOT_BOUND_TO_THIS_CASE" as const,
+        graderKind: item.grader.kind,
+        judgementMode: graderCompetence[item.grader.kind]?.judgementMode ?? "comparison" as const,
+      });
     scores.push(Object.freeze({
       caseId: item.caseId,
       dimension: item.dimension,
       answerPresent: matched,
-      score,
-      passed: score === 1,
+      score: result.score,
+      passed: result.score === 1,
+      verdict: result.verdict,
+      diagnostic: result.diagnostic,
     }));
   }
   const evaluatorExpiry = new Date(evaluatedAtMs + input.validitySeconds * 1_000).toISOString();
@@ -1504,7 +1814,12 @@ export function parseHiddenEvaluationReceipt(value: unknown): HiddenEvaluationRe
   }
   const scores: HiddenEvaluationScore[] = [];
   for (const score of value.scores) {
-    if (!isRecord(score) || !hasExactKeys(score, ["caseId", "dimension", "answerPresent", "score", "passed"])
+    if (!isRecord(score) || !hasExactKeys(score, ["caseId", "dimension", "answerPresent", "score", "passed", "verdict", "diagnostic"])
+      || typeof score.verdict !== "string" || typeof score.diagnostic !== "string"
+      // The verdict and the score must agree here too. A receipt is replayed,
+      // and a replay that accepted a contradictory row would accept a forgery
+      // that only had to get one of the two fields right.
+      || (score.verdict === "PASS") !== (score.score === 1)
       || !validIdentifier(score.caseId) || typeof score.dimension !== "string" || !dimensionSet.has(score.dimension)
       || typeof score.answerPresent !== "boolean" || !validScore(score.score) || typeof score.passed !== "boolean"
       || score.passed !== (score.score === 1) || (!score.answerPresent && score.score !== 0)) {
@@ -1513,6 +1828,8 @@ export function parseHiddenEvaluationReceipt(value: unknown): HiddenEvaluationRe
     scores.push(Object.freeze({
       caseId: score.caseId,
       dimension: score.dimension as QualificationDimension,
+      verdict: score.verdict,
+      diagnostic: score.diagnostic,
       answerPresent: score.answerPresent,
       score: score.score,
       passed: score.passed,
@@ -1546,4 +1863,100 @@ export function verifyHiddenEvaluationReceipt(
     throw new QualificationError("HIDDEN_EVALUATION_STALE");
   }
   return deepFreeze({ current: true, disposition: receipt.disposition, receiptDigest, expiresAt: receipt.expiresAt }) as VerifiedHiddenEvaluation;
+}
+
+/**
+ * What is wrong with a case, judged without running it.
+ *
+ * A suite is authority: a task class means exactly what its cases test. That
+ * makes an unsound case a defect in the definition of the task class itself,
+ * and one that is invisible at run time -- every model fails it, so the suite
+ * looks strict rather than broken. These findings are derived from the case
+ * alone, so they can be read before a single provider is contacted.
+ */
+export type SuiteCaseFinding =
+  /** The grader kind cannot judge this dimension. Nothing can pass it. */
+  | "GRADER_NOT_COMPETENT_FOR_DIMENSION"
+  /** A selection grader whose options the prompt never states. Nothing can select them. */
+  | "EXPECTATION_NOT_DERIVABLE_FROM_PROMPT"
+  /** The expected answer is quoted in the prompt, so copying the prompt passes. */
+  | "EXPECTATION_IS_PROMPT_RESTATEMENT"
+  /**
+   * The expectation appears nowhere in the prompt and must be recalled. That is
+   * legitimate for general knowledge and a defect for private vocabulary, which
+   * no mechanical rule can tell apart -- so this is reported for a human to
+   * judge rather than treated as a failure.
+   */
+  | "EXPECTATION_REQUIRES_UNPROMPTED_RECALL";
+
+export interface SuiteCaseAudit {
+  readonly caseId: string;
+  readonly dimension: QualificationDimension;
+  readonly graderKind: string;
+  readonly judgementMode: GraderJudgementMode | null;
+  readonly findings: readonly SuiteCaseFinding[];
+}
+
+/** The literals a grader compares against, or null when it declares none. */
+function expectedLiterals(grader: QualificationGrader): readonly string[] | null {
+  switch (grader.kind) {
+    case "exact":
+    case "choice": return Object.freeze([grader.value]);
+    case "contains": return grader.all;
+    case "set-equal": return grader.values;
+    case "iri-exact": return Object.freeze([grader.iri]);
+    // A pattern, a schema, a marker set and a negative list declare no answer
+    // the prompt could be expected to supply.
+    case "regex":
+    case "json-schema":
+    case "uncertainty":
+    case "not-contains": return null;
+  }
+}
+
+/**
+ * Audit one suite without invoking anything.
+ *
+ * This is the check that would have caught the shipped suite: eight of sixteen
+ * cases required a model to reproduce USF's own internal phrasing that no
+ * prompt supplied, so the suite measured memorisation of this repository rather
+ * than capability at the task class, and every route failed it for a reason
+ * that had nothing to do with the route.
+ */
+export function auditQualificationSuite(
+  cases: readonly QualificationCase[],
+): readonly SuiteCaseAudit[] {
+  return Object.freeze(cases.map((item) => {
+    const competence = graderCompetence[item.grader.kind];
+    const findings: SuiteCaseFinding[] = [];
+    if (competence === undefined || !competence.dimensions.includes(item.dimension)) {
+      findings.push("GRADER_NOT_COMPETENT_FOR_DIMENSION");
+    }
+    const literals = expectedLiterals(item.grader);
+    if (literals !== null && literals.length > 0) {
+      const prompt = normalized(item.prompt);
+      const supplied = literals.filter((value) => prompt.includes(normalized(value)));
+      const selection = competence?.judgementMode === "selection";
+      if (selection && supplied.length < literals.length) {
+        // Selecting requires something to select among. An option the prompt
+        // never names cannot be chosen, only guessed.
+        findings.push("EXPECTATION_NOT_DERIVABLE_FROM_PROMPT");
+      }
+      if (!selection && supplied.length === literals.length) {
+        // Every expected literal is already in the prompt, so echoing the
+        // question passes. A restatement is not an answer.
+        findings.push("EXPECTATION_IS_PROMPT_RESTATEMENT");
+      }
+      if (!selection && supplied.length === 0) {
+        findings.push("EXPECTATION_REQUIRES_UNPROMPTED_RECALL");
+      }
+    }
+    return Object.freeze({
+      caseId: item.caseId,
+      dimension: item.dimension,
+      graderKind: item.grader.kind,
+      judgementMode: competence?.judgementMode ?? null,
+      findings: Object.freeze(findings),
+    });
+  }));
 }

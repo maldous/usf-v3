@@ -71,7 +71,7 @@ const suite = (): QualificationSuiteSnapshot => createQualificationSuite({
   corpusId: "usf-semantic-fixtures",
   corpusVersion: "2026-08-30",
   cases: [
-    { caseId: "implement", taskClass: "semantic-repair", dimension: "implementation", prompt: "Select the safe change.", grader: { kind: "exact", value: "use scoped patch" }, holdout: false, weight: 1 },
+    { caseId: "implement", taskClass: "semantic-repair", dimension: "implementation", prompt: "Select the safe change: a scoped patch or a repository rewrite.", grader: { kind: "contains", all: ["scoped patch"] }, holdout: false, weight: 1 },
     { caseId: "structured", taskClass: "semantic-repair", dimension: "structured_output", prompt: "Return the required JSON.", grader: { kind: "json-schema", schema: { $schema: dialect, type: "object", properties: { ok: { const: true } }, required: ["ok"], additionalProperties: false } }, holdout: false, weight: 1 },
     { caseId: "scope", taskClass: "semantic-repair", dimension: "scope_discipline", prompt: "Describe the permitted scope.", grader: { kind: "not-contains", any: ["rewrite the repository"] }, holdout: false, weight: 1 },
     { caseId: "evidence", taskClass: "semantic-repair", dimension: "evidence_discipline", prompt: "State the acceptance boundary.", grader: { kind: "contains", all: ["deterministic checks", "do not establish proof"] }, holdout: true, weight: 1 },
@@ -424,7 +424,13 @@ test("hidden evaluation exposes one prompt at a time, never graders, and default
   );
   const alteredScore = {
     ...qualified,
-    scores: [{ ...qualified.scores[0]!, score: 0, passed: false }, qualified.scores[1]!],
+    // Altered consistently -- verdict and diagnostic moved with the score --
+    // so this is caught by the result digest rather than by the row
+    // contradicting itself.
+    scores: [{
+      ...qualified.scores[0]!, score: 0, passed: false,
+      verdict: "FAIL" as const, diagnostic: "ANSWER_DID_NOT_MATCH_EXPECTATION" as const,
+    }, qualified.scores[1]!],
     disposition: "unqualified" as const,
   };
   assert.equal(reason(() => verifyHiddenEvaluationReceipt(alteredScore, hiddenInput, "2026-08-30T00:01:00.000Z")), "HIDDEN_EVALUATION_RESULT_DIGEST_MISMATCH");

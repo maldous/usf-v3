@@ -205,6 +205,10 @@ export interface SemanticQualificationForRouting {
   readonly casesAnswered: number;
   readonly casesPassed: number;
   readonly casesTotal: number;
+  readonly defects: Readonly<{
+    implementationDefect: number; evidenceDefect: number; refusal: number;
+    graderIncapability: number; manufacturedEvidence: number; attributableToModel: boolean;
+  }>;
   readonly derivedRoles: readonly QualificationRole[];
   readonly observedAt: string;
   readonly evaluatedAt: string;
@@ -392,6 +396,14 @@ const maximumCap = 10_000;
 const maximumLatencyMs = 9_000_000;
 const priceDimensions = ["input", "output", "reasoning", "cacheRead", "cacheWrite", "inputAudio", "outputAudio"] as const;
 const qualificationAuthModes = new Set<QualificationAuthMode>(["api_token", "oidc_cli", "local", "none"]);
+const graderVerdicts: ReadonlySet<string> = Object.freeze(
+  new Set<string>(["PASS", "FAIL", "REFUSAL", "INAPPLICABLE", "INSUFFICIENT_EVIDENCE"]),
+);
+const graderDiagnostics: ReadonlySet<string> = Object.freeze(new Set<string>([
+  "ANSWER_MATCHED_EXPECTATION", "ANSWER_DID_NOT_MATCH_EXPECTATION", "ANSWER_WAS_A_REFUSAL",
+  "ANSWER_ABSENT", "ANSWER_NOT_BOUND_TO_THIS_CASE", "ANSWER_ALREADY_EVIDENCED_ANOTHER_CASE",
+  "GRADER_NOT_COMPETENT_FOR_DIMENSION",
+]));
 const qualificationDimensionSet = new Set<QualificationDimension>(qualificationDimensions);
 const qualificationRoleSet = new Set<QualificationRole>(qualificationRoles);
 
@@ -591,7 +603,7 @@ function replayedQualificationMatches(
 
 function validateSemanticQualification(record: SemanticQualificationForRouting): void {
   if (typeof record !== "object" || record === null || record.schema !== "urn:usf:semantic-qualification-result:1"
-    || !exactKeys(record, ["schema", "status", "taskClass", "profile", "inputs", "caseEvaluations", "dimensionEvaluations", "taskScore", "casesAnswered", "casesPassed", "casesTotal", "derivedRoles", "observedAt", "evaluatedAt", "validUntil", "externalContact", "authorityEffect", "nonclaims", "qualificationDigest"])
+    || !exactKeys(record, ["schema", "status", "taskClass", "profile", "inputs", "caseEvaluations", "dimensionEvaluations", "taskScore", "casesAnswered", "casesPassed", "casesTotal", "defects", "derivedRoles", "observedAt", "evaluatedAt", "validUntil", "externalContact", "authorityEffect", "nonclaims", "qualificationDigest"])
     || !["qualified", "unqualified"].includes(record.status) || !capabilityPattern.test(record.taskClass)
     || typeof record.profile !== "object" || record.profile === null || !exactKeys(record.profile, ["profileDigest", "requested", "actual"])
     || !digestPattern.test(record.profile.profileDigest) || typeof record.profile.requested !== "object" || record.profile.requested === null
@@ -625,11 +637,32 @@ function validateSemanticQualification(record: SemanticQualificationForRouting):
     || !digestPattern.test(record.qualificationDigest)) {
     throw new Error("ROUTE_SEMANTIC_QUALIFICATION_INVALID");
   }
+  // The defect attribution is validated as strictly as the score it explains.
+  // A replayed envelope that could carry an unchecked attribution would let a
+  // caller relabel its own failures as somebody else's.
+  const defects = record.defects;
+  if (typeof defects !== "object" || defects === null
+    || !exactKeys(defects, ["implementationDefect", "evidenceDefect", "refusal", "graderIncapability", "manufacturedEvidence", "attributableToModel"])
+    || !Number.isSafeInteger(defects.implementationDefect) || defects.implementationDefect < 0
+    || !Number.isSafeInteger(defects.evidenceDefect) || defects.evidenceDefect < 0
+    || !Number.isSafeInteger(defects.refusal) || defects.refusal < 0
+    || !Number.isSafeInteger(defects.graderIncapability) || defects.graderIncapability < 0
+    || !Number.isSafeInteger(defects.manufacturedEvidence) || defects.manufacturedEvidence < 0
+    || typeof defects.attributableToModel !== "boolean") {
+    throw new Error("ROUTE_SEMANTIC_QUALIFICATION_INVALID");
+  }
   for (const evaluation of record.caseEvaluations) {
-    if (typeof evaluation !== "object" || evaluation === null || !exactKeys(evaluation, ["caseId", "taskClass", "dimension", "answerPresent", "score", "weight", "passed"])
+    if (typeof evaluation !== "object" || evaluation === null
+      || !exactKeys(evaluation, ["caseId", "taskClass", "dimension", "answerPresent", "score", "weight", "passed", "verdict", "graderKind", "judgementMode", "diagnostic"])
       || !labelPattern.test(evaluation.caseId) || !capabilityPattern.test(evaluation.taskClass) || !qualificationDimensionSet.has(evaluation.dimension)
       || typeof evaluation.answerPresent !== "boolean" || !validNonnegativeNumber(evaluation.score, 1)
-      || !validNonnegativeNumber(evaluation.weight) || evaluation.weight === 0 || typeof evaluation.passed !== "boolean") {
+      || !validNonnegativeNumber(evaluation.weight) || evaluation.weight === 0 || typeof evaluation.passed !== "boolean"
+      || !graderVerdicts.has(evaluation.verdict) || !graderDiagnostics.has(evaluation.diagnostic)
+      || typeof evaluation.graderKind !== "string" || typeof evaluation.judgementMode !== "string"
+      // A pass is the one verdict that scores, and the two must agree: an
+      // envelope claiming PASS with score 0, or a score of 1 under any other
+      // verdict, is internally inconsistent and is refused rather than reconciled.
+      || (evaluation.verdict === "PASS") !== (evaluation.score === 1)) {
       throw new Error("ROUTE_SEMANTIC_QUALIFICATION_INVALID");
     }
   }

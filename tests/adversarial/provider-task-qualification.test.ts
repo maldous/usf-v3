@@ -65,7 +65,7 @@ const suite = createQualificationSuite({
   corpusId: "boundary-corpus",
   corpusVersion: "1.0.0",
   cases: [
-    { caseId: "implement", taskClass: "typescript", dimension: "implementation", prompt: "Reply readonly.", grader: { kind: "exact", value: "readonly" }, holdout: false, weight: 1 },
+    { caseId: "implement", taskClass: "typescript", dimension: "implementation", prompt: "Reply with the modifier: readonly or const.", grader: { kind: "choice", value: "readonly" }, holdout: false, weight: 1 },
     { caseId: "debug", taskClass: "typescript", dimension: "debugging", prompt: "Name both layers.", grader: { kind: "contains", all: ["runtime validation", "type checking"] }, holdout: false, weight: 1 },
   ],
 });
@@ -375,4 +375,75 @@ test("the economics policy is untouched by qualification and is what admits exec
   assert.ok(economics.authorizations.length > 0, "economic admission is declared by the operator");
   // Eligibility is never inferred: a qualification cannot create it.
   assert.ok(economics.nonClaims.some((claim) => /never inferred/i.test(String(claim))));
+});
+
+// ---- one answer is evidence for one case -------------------------------------
+
+test("one answer cannot be multiplied into evidence for several cases", () => {
+  // A single answer that happens to satisfy two graders is one observation, not
+  // two. Counting it twice is manufacturing: the model was asked two questions
+  // and answered one of them.
+  const universal = "readonly runtime validation and type checking";
+  const result = qualifySemanticProfile(input({
+    observations: [observation("implement", { answer: universal }), observation("debug", { answer: universal })],
+  }));
+  assert.equal(result.status, "unqualified");
+  assert.equal(result.casesPassed, 1);
+  const reused = result.caseEvaluations.find((item) => item.verdict === "INSUFFICIENT_EVIDENCE");
+  assert.equal(reused?.diagnostic, "ANSWER_ALREADY_EVIDENCED_ANOTHER_CASE");
+  assert.equal(reused?.score, 0);
+  // And the shortfall is attributed to the evidence rather than to the model.
+  assert.equal(result.defects.manufacturedEvidence, 1);
+  assert.equal(result.defects.implementationDefect, 0);
+});
+
+test("two genuinely different answers each evidence their own case", () => {
+  // The control: the same route, the same suite, answers produced per case.
+  const result = qualifySemanticProfile(input());
+  assert.equal(result.status, "qualified");
+  assert.equal(result.defects.manufacturedEvidence, 0);
+  assert.equal(result.caseEvaluations.every((item) => item.verdict === "PASS"), true);
+});
+
+test("a shortfall that is the suite's fault is not attributed to the model", () => {
+  // Every case answered, none passed, and nothing here says the model is
+  // incapable: the graders could not judge the dimensions they were given.
+  const incompetent = createQualificationSuite({
+    suiteId: "boundary-suite", suiteVersion: "1.0.0",
+    corpusId: "boundary-corpus", corpusVersion: "1.0.0",
+    cases: [
+      { caseId: "implement", taskClass: "typescript", dimension: "implementation", prompt: "Reply with the modifier: readonly or const.", grader: { kind: "exact", value: "readonly" }, holdout: false, weight: 1 },
+      { caseId: "debug", taskClass: "typescript", dimension: "debugging", prompt: "Name both layers.", grader: { kind: "exact", value: "runtime validation" }, holdout: false, weight: 1 },
+    ],
+  });
+  const result = qualifySemanticProfile(input({ suite: incompetent }));
+  assert.equal(result.status, "unqualified");
+  assert.equal(result.defects.graderIncapability, 2);
+  assert.equal(result.defects.implementationDefect, 0);
+  assert.equal(result.defects.attributableToModel, false);
+  assert.equal(result.caseEvaluations.every((item) => item.verdict === "INAPPLICABLE"), true);
+});
+
+test("a genuine wrong answer is attributed to the model and says so", () => {
+  const result = qualifySemanticProfile(input({
+    observations: [observation("implement", { answer: "const" }), observation("debug", { answer: "runtime validation and type checking" })],
+  }));
+  assert.equal(result.status, "unqualified");
+  assert.equal(result.defects.implementationDefect, 1);
+  assert.equal(result.defects.graderIncapability, 0);
+  assert.equal(result.defects.manufacturedEvidence, 0);
+  assert.equal(result.defects.attributableToModel, true);
+});
+
+test("every case evaluation carries the grader that produced it", () => {
+  // The provenance chain has to survive to the verdict, or a zero cannot be
+  // attributed to anything by whoever reads it later.
+  const result = qualifySemanticProfile(input());
+  for (const evaluation of result.caseEvaluations) {
+    assert.ok(evaluation.graderKind.length > 0, evaluation.caseId);
+    assert.ok(["comparison", "structural-validation", "marker-detection", "selection"].includes(evaluation.judgementMode));
+    assert.ok(evaluation.verdict.length > 0);
+    assert.ok(evaluation.diagnostic.length > 0);
+    assert.equal(evaluation.verdict === "PASS", evaluation.score === 1);
+  }
 });

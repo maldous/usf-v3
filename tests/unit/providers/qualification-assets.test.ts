@@ -83,8 +83,11 @@ function probe(): ProviderProbeResult {
 test("the V3 qualification config is versioned, deterministic, complete for declared task classes, and ceremony-free", () => {
   assert.deepEqual(Object.keys(config).sort(), ["$schema", "policy", "suite"]);
   assert.equal(config.$schema, "urn:usf:qualification-config:1");
-  assert.equal(config.suite.suiteVersion, "1.0.0");
-  assert.equal(config.suite.corpusVersion, "1.0.0");
+  // The suite moved to 1.1.0 when eleven cases were repaired. Version and
+  // corpus version move together because a changed case changes what the task
+  // class means, which is exactly what supersedes a stored qualification.
+  assert.equal(config.suite.suiteVersion, "1.1.0");
+  assert.equal(config.suite.corpusVersion, "1.1.0");
   assert.equal(config.policy.policyVersion, "1.0.0");
   assert.equal(config.policy.defaultRole, "UNQUALIFIED");
 

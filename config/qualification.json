@@ -2,16 +2,19 @@
   "$schema": "urn:usf:qualification-config:1",
   "suite": {
     "suiteId": "usf-v3-provider-semantic",
-    "suiteVersion": "1.0.0",
+    "suiteVersion": "1.1.0",
     "corpusId": "usf-v3-provider-semantic-corpus",
-    "corpusVersion": "1.0.0",
+    "corpusVersion": "1.1.0",
     "cases": [
       {
         "caseId": "cli-plan-operator-intent",
         "taskClass": "cli-design",
         "dimension": "semantic_planning",
-        "prompt": "State the organizing principle for a reusable operator CLI in four words.",
-        "grader": { "kind": "exact", "value": "group by operator intent" },
+        "prompt": "A reusable operator CLI can be organised by operator intent, by internal module layout, by execution order, or by provider identity. Name the organizing principle that keeps it reusable.",
+        "grader": {
+          "kind": "choice",
+          "value": "intent"
+        },
         "holdout": false,
         "weight": 1
       },
@@ -20,7 +23,10 @@
         "taskClass": "cli-design",
         "dimension": "implementation",
         "prompt": "Choose the Unix execution mode that leaves supervision to the caller: foreground or daemonized.",
-        "grader": { "kind": "choice", "value": "foreground" },
+        "grader": {
+          "kind": "choice",
+          "value": "foreground"
+        },
         "holdout": true,
         "weight": 1
       },
@@ -34,10 +40,21 @@
           "schema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "type": "object",
-            "required": ["command", "arguments"],
+            "required": [
+              "command",
+              "arguments"
+            ],
             "properties": {
-              "command": { "type": "string", "minLength": 1 },
-              "arguments": { "type": "array", "items": { "type": "string" } }
+              "command": {
+                "type": "string",
+                "minLength": 1
+              },
+              "arguments": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             },
             "additionalProperties": false
           }
@@ -49,8 +66,14 @@
         "caseId": "cli-reusable-command-boundary",
         "taskClass": "cli-design",
         "dimension": "scope_discipline",
-        "prompt": "Name both constraints that keep operator work reusable and deterministic.",
-        "grader": { "kind": "contains", "all": ["registered usf command", "no ad hoc command"] },
+        "prompt": "Which two of these keep operator work reusable and deterministic -- registered command, no ad hoc script, interactive shell, manual patch? Answer as a comma-separated list of exactly two.",
+        "grader": {
+          "kind": "set-equal",
+          "values": [
+            "registered command",
+            "no ad hoc script"
+          ]
+        },
         "holdout": true,
         "weight": 1
       },
@@ -59,7 +82,10 @@
         "taskClass": "node-test",
         "dimension": "implementation",
         "prompt": "Give the repository-native Node test runner invocation without extra arguments.",
-        "grader": { "kind": "exact", "value": "node --test" },
+        "grader": {
+          "kind": "regex",
+          "pattern": "\\bnode\\s+--test\\b"
+        },
         "holdout": false,
         "weight": 1
       },
@@ -68,7 +94,13 @@
         "taskClass": "node-test",
         "dimension": "debugging",
         "prompt": "State the two properties needed for a provider failure fixture to be diagnostically useful.",
-        "grader": { "kind": "contains", "all": ["deterministic fixture", "failure reason"] },
+        "grader": {
+          "kind": "contains",
+          "all": [
+            "deterministic fixture",
+            "failure reason"
+          ]
+        },
         "holdout": true,
         "weight": 1
       },
@@ -77,7 +109,13 @@
         "taskClass": "node-test",
         "dimension": "evidence_discipline",
         "prompt": "Complete the boundary: hermetic tests establish fixture behavior, but they do not establish what two live-system claims?",
-        "grader": { "kind": "contains", "all": ["production", "provider availability"] },
+        "grader": {
+          "kind": "contains",
+          "all": [
+            "production",
+            "provider availability"
+          ]
+        },
         "holdout": true,
         "weight": 1
       },
@@ -85,8 +123,14 @@
         "caseId": "node-test-regression-economy",
         "taskClass": "node-test",
         "dimension": "later_regression",
-        "prompt": "Name the narrow check used while iterating and the broader check required before acceptance.",
-        "grader": { "kind": "contains", "all": ["focused test", "full gate"] },
+        "prompt": "Two checks are used at different times: one narrow while iterating, one broad before acceptance. From focused test, full gate, smoke ping, manual review -- name the narrow one and the broad one as a comma-separated list.",
+        "grader": {
+          "kind": "set-equal",
+          "values": [
+            "focused test",
+            "full gate"
+          ]
+        },
         "holdout": false,
         "weight": 1
       },
@@ -94,8 +138,16 @@
         "caseId": "route-complete-partition",
         "taskClass": "provider-routing",
         "dimension": "semantic_planning",
-        "prompt": "List the configured denominator and the three mutually exclusive routing dispositions.",
-        "grader": { "kind": "set-equal", "values": ["configured", "assigned", "excluded", "eligible-unassigned"] },
+        "prompt": "From these terms -- configured, assigned, excluded, eligible-unassigned, deferred, pending -- list the configured denominator and the three mutually exclusive routing dispositions, as a comma-separated list.",
+        "grader": {
+          "kind": "set-equal",
+          "values": [
+            "configured",
+            "assigned",
+            "excluded",
+            "eligible-unassigned"
+          ]
+        },
         "holdout": false,
         "weight": 1
       },
@@ -104,7 +156,10 @@
         "taskClass": "provider-routing",
         "dimension": "tool_selection",
         "prompt": "Choose the routing posture that completes deterministic preflight before any provider contact: local-first or contact-first.",
-        "grader": { "kind": "choice", "value": "local-first" },
+        "grader": {
+          "kind": "choice",
+          "value": "local-first"
+        },
         "holdout": true,
         "weight": 1
       },
@@ -113,7 +168,9 @@
         "taskClass": "provider-routing",
         "dimension": "uncertainty_handling",
         "prompt": "A route has no current exact-account entitlement observation. State what can be concluded about its zero-paid eligibility.",
-        "grader": { "kind": "uncertainty" },
+        "grader": {
+          "kind": "uncertainty"
+        },
         "holdout": true,
         "weight": 1
       },
@@ -121,8 +178,27 @@
         "caseId": "route-noncompletion-boundary",
         "taskClass": "provider-routing",
         "dimension": "false_completion",
-        "prompt": "State both nonclaims needed after a successful mechanical provider probe and deterministic assignment.",
-        "grader": { "kind": "contains", "all": ["probe is not semantic qualification", "assignment is not proof"] },
+        "prompt": "After a successful mechanical provider probe and a deterministic assignment, return a JSON object with exactly two boolean fields, probeEstablishesQualification and assignmentEstablishesProof, set to their correct values.",
+        "grader": {
+          "kind": "json-schema",
+          "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "probeEstablishesQualification": {
+                "const": false
+              },
+              "assignmentEstablishesProof": {
+                "const": false
+              }
+            },
+            "required": [
+              "probeEstablishesQualification",
+              "assignmentEstablishesProof"
+            ],
+            "additionalProperties": false
+          }
+        },
         "holdout": false,
         "weight": 1
       },
@@ -130,8 +206,11 @@
         "caseId": "typescript-readonly-contract",
         "taskClass": "typescript",
         "dimension": "implementation",
-        "prompt": "Name the TypeScript modifier used for immutable interface fields.",
-        "grader": { "kind": "exact", "value": "readonly" },
+        "prompt": "Name the TypeScript modifier used for immutable interface fields: readonly, const, final, or frozen.",
+        "grader": {
+          "kind": "choice",
+          "value": "readonly"
+        },
         "holdout": false,
         "weight": 1
       },
@@ -140,7 +219,13 @@
         "taskClass": "typescript",
         "dimension": "debugging",
         "prompt": "Name both layers needed when untrusted JSON enters a statically typed program.",
-        "grader": { "kind": "contains", "all": ["runtime validation", "type checking"] },
+        "grader": {
+          "kind": "contains",
+          "all": [
+            "runtime validation",
+            "type checking"
+          ]
+        },
         "holdout": true,
         "weight": 1
       },
@@ -154,10 +239,20 @@
           "schema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "type": "object",
-            "required": ["files", "risk"],
+            "required": [
+              "files",
+              "risk"
+            ],
             "properties": {
-              "files": { "type": "array", "items": { "type": "string" } },
-              "risk": { "const": "bounded" }
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "risk": {
+                "const": "bounded"
+              }
             },
             "additionalProperties": false
           }
@@ -169,8 +264,11 @@
         "caseId": "typescript-authorized-scope",
         "taskClass": "typescript",
         "dimension": "scope_discipline",
-        "prompt": "State the change-size rule at the Graph authority boundary.",
-        "grader": { "kind": "exact", "value": "smallest graph-authorized change" },
+        "prompt": "At the Graph authority boundary the change-size rule may be: the smallest graph-authorized change, the fastest change to write, the change with the fewest files, or any change that passes tests. State which one applies.",
+        "grader": {
+          "kind": "choice",
+          "value": "smallest"
+        },
         "holdout": true,
         "weight": 1
       }
@@ -186,40 +284,88 @@
         "taskClass": "cli-design",
         "role": "PATCH_PRODUCER",
         "minimumScores": [
-          { "dimension": "semantic_planning", "minimum": 1 },
-          { "dimension": "implementation", "minimum": 1 },
-          { "dimension": "structured_output", "minimum": 1 },
-          { "dimension": "scope_discipline", "minimum": 1 }
+          {
+            "dimension": "semantic_planning",
+            "minimum": 1
+          },
+          {
+            "dimension": "implementation",
+            "minimum": 1
+          },
+          {
+            "dimension": "structured_output",
+            "minimum": 1
+          },
+          {
+            "dimension": "scope_discipline",
+            "minimum": 1
+          }
         ]
       },
       {
         "taskClass": "node-test",
         "role": "REVIEWER",
         "minimumScores": [
-          { "dimension": "implementation", "minimum": 1 },
-          { "dimension": "debugging", "minimum": 1 },
-          { "dimension": "evidence_discipline", "minimum": 1 },
-          { "dimension": "later_regression", "minimum": 1 }
+          {
+            "dimension": "implementation",
+            "minimum": 1
+          },
+          {
+            "dimension": "debugging",
+            "minimum": 1
+          },
+          {
+            "dimension": "evidence_discipline",
+            "minimum": 1
+          },
+          {
+            "dimension": "later_regression",
+            "minimum": 1
+          }
         ]
       },
       {
         "taskClass": "provider-routing",
         "role": "PLANNER_CANDIDATE",
         "minimumScores": [
-          { "dimension": "semantic_planning", "minimum": 1 },
-          { "dimension": "tool_selection", "minimum": 1 },
-          { "dimension": "uncertainty_handling", "minimum": 1 },
-          { "dimension": "false_completion", "minimum": 1 }
+          {
+            "dimension": "semantic_planning",
+            "minimum": 1
+          },
+          {
+            "dimension": "tool_selection",
+            "minimum": 1
+          },
+          {
+            "dimension": "uncertainty_handling",
+            "minimum": 1
+          },
+          {
+            "dimension": "false_completion",
+            "minimum": 1
+          }
         ]
       },
       {
         "taskClass": "typescript",
         "role": "PATCH_PRODUCER",
         "minimumScores": [
-          { "dimension": "implementation", "minimum": 1 },
-          { "dimension": "debugging", "minimum": 1 },
-          { "dimension": "structured_output", "minimum": 1 },
-          { "dimension": "scope_discipline", "minimum": 1 }
+          {
+            "dimension": "implementation",
+            "minimum": 1
+          },
+          {
+            "dimension": "debugging",
+            "minimum": 1
+          },
+          {
+            "dimension": "structured_output",
+            "minimum": 1
+          },
+          {
+            "dimension": "scope_discipline",
+            "minimum": 1
+          }
         ]
       }
     ]

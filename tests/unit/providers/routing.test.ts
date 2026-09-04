@@ -50,7 +50,7 @@ const qualificationSuite = createQualificationSuite({
   suiteId: "usf-semantic-qualification", suiteVersion: "v1", corpusId: "usf-semantic-fixtures", corpusVersion: "2026-08-30",
   cases: [{
     caseId: "typescript-safe-change", taskClass: semanticTaskClass, dimension: "implementation",
-    prompt: "Select the bounded implementation.", grader: { kind: "exact", value: "scoped patch" }, holdout: false, weight: 1,
+    prompt: "Select the implementation: a scoped patch or a rewrite.", grader: { kind: "contains", all: ["scoped patch"] }, holdout: false, weight: 1,
   }],
 });
 
@@ -391,7 +391,13 @@ test("route-time replay rejects a rehashed forged qualified score and role deriv
       taskScore: 1,
       casesPassed: basis.casesTotal,
       derivedRoles: ["PATCH_PRODUCER"],
-      caseEvaluations: basis.caseEvaluations.map((item) => ({ ...item, score: 1, passed: true })),
+      // Forged consistently, verdict and diagnostic included, so this is not
+      // caught by the envelope's own internal contradiction but by the digest
+      // binding it cannot recompute.
+      caseEvaluations: basis.caseEvaluations.map((item) => ({
+        ...item, score: 1, passed: true,
+        verdict: "PASS" as const, diagnostic: "ANSWER_MATCHED_EXPECTATION" as const,
+      })),
       dimensionEvaluations: basis.dimensionEvaluations.map((item) => ({ ...item, score: 1, passed: item.total })),
     });
   });

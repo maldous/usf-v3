@@ -175,7 +175,7 @@ test("registered provider CLI evaluates semantic inputs and routes fixture facts
   if (childProcessUnavailable(t)) return;
   const suite = createQualificationSuite({
     suiteId: "fixture-suite", suiteVersion: "1", corpusId: "fixture-corpus", corpusVersion: "1",
-    cases: [{ caseId: "typescript-case", taskClass: "typescript", dimension: "implementation", prompt: "Select the bounded patch.", grader: { kind: "exact", value: "bounded patch" }, holdout: false, weight: 1 }],
+    cases: [{ caseId: "typescript-case", taskClass: "typescript", dimension: "implementation", prompt: "Select the change: a bounded patch or a repository rewrite.", grader: { kind: "contains", all: ["bounded patch"] }, holdout: false, weight: 1 }],
   });
   const policy = createQualificationPolicy({
     policyId: "fixture-policy", policyVersion: "1", defaultRole: "UNQUALIFIED", validitySeconds: 900,
