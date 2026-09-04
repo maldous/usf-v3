@@ -492,3 +492,47 @@ sets `dispatchedUnits: pending.length` while actual dispatch is gated on
 dispatched having contacted no provider. Same class as the D6 census literals.
 Unowned and unrepaired.
 
+
+## The four remaining architecture requirements (2026-09-04)
+
+USF `eae26c0`, clean. ANQR `915e03a14`, clean. Hermes live on
+`anqr-application`. Architecture facets `SATISFIED 14`, `BLOCKED 2`,
+`UNSATISFIED 0`, `STALE 0`. All four manifests `ready 0`, `repairExhausted 0`.
+
+They were not four of a kind:
+
+- **Deterministic artefact production — wrong assumption, now decided.** It was
+  grouped with the subprocess requirements on the belief that determinism meant
+  repeating the build. Artefact production is a library call with an injectable
+  clock, so the corpus procedure produces one specification twice and compares
+  bytes.
+- **Static type correctness — real, and the authority already existed.** Every
+  conformance run already shells to USF's own locked `tsc` outside the
+  confinement, on the stated ground that it reads sources and never executes
+  them. That exemption is now declared: a `CorpusToolObservationProcedure` names
+  a host tool carrying `tool-execution-class:source-reader`.
+- **Build correctness — real, and deliberately still blocked.** The declared
+  build executes the corpus, so it does not carry the reader class. Deciding it
+  needs an execution authority for a tool that runs product code. That is an
+  operator decision, not an inference from the requirement being blocking.
+- **Locale parity — real, unrealised, correctly blocked.** No locale resource
+  exists in the product repository. The 86 resources at 1676 keys each are
+  legacy evidence and the graph already records bringing them across as an
+  unresolved delivery decision with a known denominator. Hermes must not derive
+  work for it: a generated string table would evidence nothing.
+
+**The reader-tool authority, and its limits.** Tool must be a declared
+`HostToolDependency` carrying the source-reader class; operation selects a fixed
+argument template held in implementation, so no argument comes from the graph;
+executable path must be repository-relative inside USF's locked dependencies;
+environment carries no PATH; time and output bounded; absent tool records a
+refusal. It is **not** network-sandboxed the way the bwrap vehicle is — the
+grant rests on the tool being a reader, not on isolation. Every observation
+record now names the authority it ran under, and one naming neither is
+inadmissible.
+
+**Do not put a declaration a product profile needs into `graph/semantic-first.nq`.**
+It is currentness-bound: nine quads there failed fifteen transition and
+publication tests with `TRANSITION_CURRENT_POSTSTATE_MISMATCH`. Foundation
+vocabulary a product imports belongs in `graph/architecture-assurance.nq`.
+
