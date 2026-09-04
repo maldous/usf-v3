@@ -1,0 +1,4 @@
+<urn:usf:provider-task-qualification-grants:1> <urn:usf:predicate:type> <urn:usf:type:SemanticFoundationExtension> <urn:usf:graph:provider-task-qualification-grants> .
+<urn:usf:provider-task-qualification-grants:1> <urn:usf:predicate:canonicalName> "provider-task-qualification-grants" <urn:usf:graph:provider-task-qualification-grants> .
+<urn:usf:provider-task-qualification-grants:1> <urn:usf:predicate:objective> "Publication target for construction authority and completion grants of the task-qualification rebind. Kept separate from the source that declares the policy so that publishing a grant does not move the file the work reads." <urn:usf:graph:provider-task-qualification-grants> .
+<urn:usf:provider-task-qualification-grants:1> <urn:usf:predicate:nonClaim> "An empty grants source is the correct initial state. It asserts no authority and its presence is not a grant." <urn:usf:graph:provider-task-qualification-grants> .
