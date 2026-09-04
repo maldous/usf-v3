@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -369,6 +369,77 @@ test("planted: a contract in both the required and not-required lists is caught"
   const required = new Set(objects(quads, "requiresDeliveryContract", set));
   assert.ok(objects(quads, "explicitlyNotRequired", set).some((c) => required.has(c)),
     "a contract on both lists must be visible");
+});
+
+test("declared facets use the namespace the derivation actually reads", () => {
+  // This check exists because its absence cost real work. Twenty-two
+  // predicates were authored as urn:anqr:predicate:* where the forty-four
+  // pre-existing capabilities use urn:usf:predicate:*. Every assertion in this
+  // file passed, because they all matched on the local name — and Hermes
+  // derived 104 implementation needs, none of which were the fourteen new
+  // capabilities. The graph was internally consistent and invisible.
+  const READ_BY_DERIVATION = ["declaresFacet", "definesCompletionFor", "admissibleEvidenceClass",
+    "facetApplicability", "facetStatement", "inDomain", "canonicalName"] as const;
+  const wrong: string[] = [];
+  for (const path of SOURCES) {
+    for (const line of readFileSync(resolve(repositoryRoot, path), "utf8").split("\n")) {
+      const match = /^<[^>]+> <urn:([a-z]+):predicate:([A-Za-z]+)>/u.exec(line);
+      if (match === null) continue;
+      if (READ_BY_DERIVATION.includes(match[2] as never) && match[1] !== "usf") {
+        wrong.push(`${match[2]} in urn:${match[1]}:predicate`);
+      }
+    }
+  }
+  assert.deepEqual([...new Set(wrong)], [],
+    "a predicate the derivation reads must be in the foundation namespace, or the capability is invisible to it");
+});
+
+test("every declared capability is visible to the implementation derivation", () => {
+  // The end-to-end form of the same guarantee: a capability with a contract,
+  // facets and paths that no derivation can select is worse than an absent
+  // one, because it looks finished.
+  // The whole product graph, not just the sources this file otherwise reads:
+  // a capability's contract and facets may live in any of them, and asking
+  // only about the new ones would report the original forty-four as invisible.
+  const productQuads = readdirSync(resolve(repositoryRoot, "graph/products/anqr"))
+    .filter((name) => name.endsWith(".nq"))
+    .flatMap((name) => parse(readFileSync(resolve(repositoryRoot, "graph/products/anqr", name), "utf8")));
+  const contractOfFacet = new Map<string, string>();
+  const capabilityOfContract = new Map<string, string>();
+  for (const q of productQuads) {
+    if (q.p === "urn:usf:predicate:declaresFacet") contractOfFacet.set(q.o, q.s);
+    if (q.p === "urn:usf:predicate:definesCompletionFor") capabilityOfContract.set(q.s, q.o);
+  }
+  const selectable = new Set<string>();
+  for (const q of productQuads) {
+    if (q.p !== "urn:usf:predicate:type" || q.o !== "urn:usf:type:DeliveryFacet") continue;
+    const admissible = objects(productQuads, "admissibleEvidenceClass", q.s)[0];
+    const applicable = objects(productQuads, "facetApplicability", q.s)[0];
+    if (admissible !== "implementation-conformance" || applicable !== "APPLICABLE") continue;
+    const capability = capabilityOfContract.get(contractOfFacet.get(q.s) ?? "");
+    if (capability !== undefined) selectable.add(local(capability));
+  }
+  // A capability whose facets are all authored NOT_APPLICABLE is legitimately
+  // not derivable: that is recovered authority saying the obligation does not
+  // apply here, and it is excluded from the denominator rather than pending.
+  // What must never happen is a capability with APPLICABLE facets that no
+  // derivation can reach, which is what the namespace defect produced.
+  const hasApplicableFacet = new Set<string>();
+  for (const q of productQuads) {
+    if (q.p !== "urn:usf:predicate:type" || q.o !== "urn:usf:type:DeliveryFacet") continue;
+    if (objects(productQuads, "facetApplicability", q.s)[0] !== "APPLICABLE") continue;
+    const capability = capabilityOfContract.get(contractOfFacet.get(q.s) ?? "");
+    if (capability !== undefined) hasApplicableFacet.add(local(capability));
+  }
+  const declared = new Set(objects(productQuads, "declaresCapability", "urn:anqr:profile-revision:3").map(local));
+  const cross = new Set(productQuads.filter((x) => x.p.endsWith(":capabilityRealisationMode")).map((x) => local(x.s)));
+  const invisible = [...declared].filter((c) => !selectable.has(c) && !cross.has(c) && hasApplicableFacet.has(c));
+  assert.deepEqual(invisible, [],
+    "these capabilities declare an applicable facet that no implementation need can be derived from");
+  // And state the legitimate exclusions plainly, so the count cannot drift.
+  const notApplicable = [...declared].filter((c) => !selectable.has(c) && !cross.has(c)).sort();
+  assert.deepEqual(notApplicable, ["authenticatedserviceconsumption", "mobileapplication", "policyboundarycontrol", "selfhostedoperation"],
+    "these four carry only NOT_APPLICABLE facets; a fifth appearing here is a change of authority, not a detail");
 });
 
 test("control: the unmutated sources satisfy every check above", () => {
