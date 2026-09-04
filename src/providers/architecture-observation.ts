@@ -30,6 +30,9 @@ import { parseSpecOutcomes, runChild } from "./implementation-conformance.ts";
 
 const observationTimeoutMs = 300_000;
 
+/** The confined vehicle every in-process observation executes through. */
+export const confinedExecutionAuthority = "urn:usf:execution-authority:confined-node-test";
+
 export const corpusObservationDirectory = ".usf/architecture-observations";
 
 export interface CorpusFacetObservation {
@@ -49,6 +52,13 @@ export interface CorpusArchitectureObservation {
   /** The repository the observed corpus belongs to, or null when USF observes itself. */
   readonly sourceRepository: string | null;
   readonly observationPath: string;
+  /**
+   * The repository observationPath resolves against, which is not always the
+   * one being observed: a declared tool belongs to USF while the corpus it
+   * reads belongs to the product. Resolving both against one root made the
+   * tool unfindable and every tool observation permanently stale.
+   */
+  readonly observationPathRepository: string | null;
   readonly observationPathDigest: string;
   /** The declared roots the corpus is enumerated from, in declaration order. */
   readonly corpusRoots: readonly string[];
@@ -60,6 +70,16 @@ export interface CorpusArchitectureObservation {
   readonly corpusDigest: string;
   readonly corpusFileCount: number;
   readonly confined: boolean;
+  /**
+   * The authority the procedure executed under. Confinement is one; the
+   * declared source-reader tool authority is the only other, and a record
+   * naming neither is inadmissible however complete it otherwise looks. This
+   * is stated rather than inferred from `confined` so that an observation
+   * cannot become admissible by omitting a field.
+   */
+  readonly executionAuthority: string | null;
+  /** The declared host tool, when one ran; null for the confined vehicle. */
+  readonly executionTool: string | null;
   readonly command: readonly string[];
   readonly executed: boolean;
   readonly exitCode: number | null;
@@ -137,6 +157,7 @@ export async function runCorpusObservation(
     procedure: declared.procedure,
     sourceRepository: declared.sourceRepository,
     observationPath: declared.observationPath,
+    observationPathRepository: declared.sourceRepository,
     observationPathDigest: observationBytes === undefined ? "" : canonicalDigest(observationBytes),
     corpusRoots: Object.freeze([...declared.corpusRoots]),
     corpusDigest: corpus.digest,
@@ -150,7 +171,8 @@ export async function runCorpusObservation(
     ]),
   };
   const refused = (reason: string): CorpusArchitectureObservation => Object.freeze({
-    ...base, confined: false, command: Object.freeze([]), executed: false, exitCode: null, signal: null,
+    ...base, confined: false, executionAuthority: null, executionTool: null,
+    command: Object.freeze([]), executed: false, exitCode: null, signal: null,
     outcomes: Object.freeze([]), refusal: reason,
   });
 
@@ -179,6 +201,8 @@ export async function runCorpusObservation(
   return Object.freeze({
     ...base,
     confined: true,
+    executionAuthority: confinedExecutionAuthority,
+    executionTool: null,
     command,
     executed: true,
     exitCode: result.code,
@@ -250,12 +274,21 @@ export async function loadCorpusObservations(
     if (record.schema !== "urn:usf:corpus-architecture-observation:1") continue;
     if (!Array.isArray(record.outcomes) || typeof record.procedure !== "string") continue;
     const sourceRoot = sourceRootFor(record.sourceRepository ?? null);
-    const observationBytes = await readFile(resolve(sourceRoot, record.observationPath), "utf8").catch(() => undefined);
+    const procedureRoot = sourceRootFor(record.observationPathRepository ?? null);
+    const observationBytes = await readFile(resolve(procedureRoot, record.observationPath), "utf8").catch(() => undefined);
     const currentCorpus = await digestCorpus(sourceRoot, record.corpusRoots ?? []);
     const stale = currentCorpus.digest !== record.corpusDigest
       || observationBytes === undefined
       || canonicalDigest(observationBytes) !== record.observationPathDigest;
-    const usable = record.executed === true && record.confined === true && record.refusal === null;
+    // Two authorities, both explicit, and nothing else. A record that names no
+    // authority satisfies nothing: the confined vehicle is trustworthy because
+    // the corpus cannot act during its own observation, and the reader tool is
+    // trustworthy because it never executes the corpus at all. An unnamed
+    // authority is neither of those claims, so it cannot be either.
+    const authorised = record.confined === true
+      ? record.executionAuthority === confinedExecutionAuthority
+      : record.executionAuthority === sourceReaderExecutionClass && typeof record.executionTool === "string";
+    const usable = record.executed === true && record.refusal === null && authorised;
     for (const outcome of record.outcomes) {
       if (typeof outcome.facet !== "string") continue;
       // Later records win only when they are usable. An unusable rerun must not
@@ -320,4 +353,192 @@ export function declaredCorpusProcedures(graph: SemanticGraph): readonly CorpusO
       requirements: Object.freeze(requirements),
     })];
   }));
+}
+
+/**
+ * A corpus requirement decided by running a declared tool over the corpus.
+ *
+ * Some structural facts cannot be established by reading files in this
+ * process. "The whole product source type-checks under its declared strict
+ * configuration" is one: deciding it means running the type checker. The
+ * confined vehicle above cannot, because that confinement grants no
+ * child-process allowance and weakening it to obtain evidence would trade the
+ * thing that makes every other observation trustworthy for one more verdict.
+ *
+ * So this is the other, narrower authority, and it is narrow in every
+ * dimension that matters. The tool must be a host tool the graph declares. It
+ * must carry the source-reader execution class, which is the whole basis of
+ * the exemption: a reader opens files and reports on them, and never executes
+ * the corpus it is reading. Arguments are not taken from the graph at all --
+ * an operation names a fixed template in this file, so there is no argument a
+ * graph edit could introduce. The environment carries no PATH, so no name can
+ * resolve to an executable. Time and output are bounded, and an absent tool
+ * records a refusal rather than a pass.
+ *
+ * This is deliberately not a general subprocess facility, and it must not
+ * become one. A tool that executes the corpus -- a build, a bundler, a test
+ * runner, anything that runs product code -- is a different authority with a
+ * different argument, and belongs to the confined vehicle or to an explicit
+ * operator decision, never here.
+ */
+
+const toolObservationTimeoutMs = 300_000;
+
+/** The only execution class this authority admits. */
+export const sourceReaderExecutionClass = "urn:usf:tool-execution-class:source-reader";
+
+/** The operations this authority knows how to construct, and their fixed argument templates. */
+const toolOperations: Readonly<Record<string, Readonly<{
+  requiredFiles: readonly string[];
+  argumentsFor: (compiler: string, sourceRoot: string) => readonly string[];
+}>>> = Object.freeze({
+  // The product's own declared strict configuration decides the requirement,
+  // so the project file is what is named. Emitting is refused outright: a
+  // reader that writes is not a reader.
+  "typecheck-no-emit": Object.freeze({
+    requiredFiles: Object.freeze(["tsconfig.json"]),
+    argumentsFor: (compiler: string, sourceRoot: string): readonly string[] =>
+      Object.freeze([compiler, "--noEmit", "--pretty", "false", "--project", resolve(sourceRoot, "tsconfig.json")]),
+  }),
+});
+
+export interface CorpusToolProcedure {
+  readonly procedure: string;
+  readonly sourceRepository: string | null;
+  readonly tool: string;
+  readonly toolExecutablePath: string;
+  readonly operation: string;
+  readonly corpusRoots: readonly string[];
+  readonly requirements: readonly ObservableRequirement[];
+}
+
+/**
+ * Recover every corpus tool procedure the graph declares, admitting only those
+ * whose tool is a declared host tool carrying the source-reader class and
+ * whose operation this file knows how to construct. Everything else is not
+ * refused at run time -- it is never offered as a procedure at all.
+ */
+export function declaredCorpusToolProcedures(graph: SemanticGraph): readonly CorpusToolProcedure[] {
+  const P = "urn:usf:predicate:";
+  const one = (subject: string, predicate: string): string | null =>
+    graph.quads.find((quad) => quad.subject === subject && quad.predicate === `${P}${predicate}`)?.object ?? null;
+  const many = (subject: string, predicate: string): readonly string[] =>
+    graph.quads.filter((quad) => quad.subject === subject && quad.predicate === `${P}${predicate}`)
+      .map((quad) => quad.object).sort();
+  const declaredHostTool = (tool: string): string | null => {
+    const isHostTool = graph.quads.some((quad) => quad.subject === tool
+      && quad.predicate === `${P}type` && quad.object === "urn:usf:type:HostToolDependency");
+    const readsOnly = graph.quads.some((quad) => quad.subject === tool
+      && quad.predicate === `${P}toolExecutionClass` && quad.object === sourceReaderExecutionClass);
+    if (!isHostTool || !readsOnly) return null;
+    const path = one(tool, "executablePath");
+    // A path that escapes the repository, or is absolute, is not a declared
+    // dependency of this repository whatever the graph says about it.
+    if (path === null || path.startsWith("/") || path.split("/").includes("..")) return null;
+    return path;
+  };
+  return Object.freeze(graph.quads
+    .filter((quad) => quad.predicate === `${P}type` && quad.object === "urn:usf:type:CorpusToolObservationProcedure")
+    .map((quad) => quad.subject).sort()
+    .flatMap((procedure) => {
+      const tool = one(procedure, "observationTool");
+      const operation = one(procedure, "observationOperation");
+      const corpusRoots = many(procedure, "corpusRoot");
+      if (tool === null || operation === null || corpusRoots.length === 0) return [];
+      if (!Object.hasOwn(toolOperations, operation)) return [];
+      const toolExecutablePath = declaredHostTool(tool);
+      if (toolExecutablePath === null) return [];
+      const requirements = graph.quads
+        .filter((quad) => quad.predicate === `${P}observedByProcedure` && quad.object === procedure)
+        .map((quad) => quad.subject).sort()
+        .flatMap((facet) => {
+          const canonicalName = one(facet, "canonicalName");
+          return canonicalName === null ? [] : [Object.freeze({ facet, canonicalName })];
+        });
+      if (requirements.length === 0) return [];
+      return [Object.freeze({
+        procedure, sourceRepository: one(procedure, "observesRepository"),
+        tool, toolExecutablePath, operation, corpusRoots, requirements: Object.freeze(requirements),
+      })];
+    }));
+}
+
+/**
+ * Run one declared corpus tool procedure. The result is the same record every
+ * other observation produces, so it is loaded, bound to its corpus and judged
+ * by exactly the same rules -- there is no second admission path to get wrong.
+ */
+export async function runCorpusToolObservation(
+  repositoryRoot: string,
+  declared: CorpusToolProcedure,
+  sourceRoot: string,
+): Promise<CorpusArchitectureObservation> {
+  const operation = toolOperations[declared.operation]!;
+  const compiler = resolve(repositoryRoot, declared.toolExecutablePath);
+  const corpus = await digestCorpus(sourceRoot, declared.corpusRoots);
+  const base = {
+    schema: "urn:usf:corpus-architecture-observation:1" as const,
+    version: 1 as const,
+    procedure: declared.procedure,
+    sourceRepository: declared.sourceRepository,
+    // The tool's own bytes are the procedure here, so they are what binds.
+    observationPath: declared.toolExecutablePath,
+    observationPathRepository: null,
+    observationPathDigest: "",
+    corpusRoots: Object.freeze([...declared.corpusRoots]),
+    corpusDigest: corpus.digest,
+    corpusFileCount: corpus.fileCount,
+    reportedPassCount: 0,
+    reportedFailCount: 0,
+    nonClaims: Object.freeze([
+      `This record states that ${declared.tool} ran the ${declared.operation} operation over a named corpus and what it returned. It records no satisfaction.`,
+      "The tool reads the corpus and does not execute it. Nothing here authorises running the corpus, and no argument in this record came from the graph.",
+      "The corpus digest binds this observation to the exact source it observed. It says nothing about any other corpus or any later state of this one.",
+    ]),
+  };
+  const refused = (reason: string): CorpusArchitectureObservation => Object.freeze({
+    ...base, confined: false, executionAuthority: null, executionTool: null,
+    command: Object.freeze([]), executed: false, exitCode: null, signal: null,
+    outcomes: Object.freeze([]), refusal: reason,
+  });
+
+  const toolBytes = await readFile(compiler, "utf8").catch(() => undefined);
+  if (toolBytes === undefined) {
+    return refused(`the declared tool ${declared.tool} is not installed at ${declared.toolExecutablePath}`);
+  }
+  for (const required of operation.requiredFiles) {
+    if (await readFile(resolve(sourceRoot, required), "utf8").catch(() => undefined) === undefined) {
+      return refused(`the ${declared.operation} operation requires ${required}, which the observed repository does not have`);
+    }
+  }
+  const observationPathDigest = canonicalDigest(toolBytes);
+  const argv = operation.argumentsFor(compiler, sourceRoot);
+  // No PATH, so no argument can name an executable and be found. The tool is
+  // launched by the absolute path the graph declared and nothing else.
+  const result = await runChild(process.execPath, argv, repositoryRoot, toolObservationTimeoutMs);
+  if (!result.launched) {
+    return Object.freeze({ ...refused("the declared tool could not be launched"), observationPathDigest });
+  }
+  const satisfied = result.code === 0;
+  return Object.freeze({
+    ...base,
+    observationPathDigest,
+    confined: false,
+    executionAuthority: sourceReaderExecutionClass,
+    executionTool: declared.tool,
+    command: Object.freeze([process.execPath, ...argv]),
+    executed: true,
+    exitCode: result.code,
+    signal: result.signal,
+    reportedPassCount: satisfied ? declared.requirements.length : 0,
+    reportedFailCount: satisfied ? 0 : declared.requirements.length,
+    outcomes: Object.freeze(declared.requirements.map((requirement) => Object.freeze({
+      facet: requirement.facet,
+      facetName: requirement.canonicalName,
+      executed: true,
+      passed: satisfied,
+      detail: satisfied ? null : result.output.slice(0, 2_000),
+    }))),
+    refusal: null,
+  });
 }

@@ -49,6 +49,12 @@
 <urn:usf:dependency-rule-kind:requires> <urn:usf:predicate:type> <urn:usf:type:DependencyRuleKind> <urn:usf:graph:architecture-assurance> .
 <urn:usf:facet-kind:architecture> <urn:usf:predicate:objective> "Structural correctness of the realised implementation: dependency direction, boundaries, ports and adapters, cycles, resolution and declaration integrity." <urn:usf:graph:architecture-assurance> .
 <urn:usf:facet-kind:architecture> <urn:usf:predicate:type> <urn:usf:type:FacetKind> <urn:usf:graph:architecture-assurance> .
+<urn:usf:host-tool:typescript-compiler:5.9.3> <urn:usf:predicate:canonicalName> "typescript-compiler" <urn:usf:graph:architecture-assurance> .
+<urn:usf:host-tool:typescript-compiler:5.9.3> <urn:usf:predicate:executablePath> "node_modules/typescript/bin/tsc" <urn:usf:graph:architecture-assurance> .
+<urn:usf:host-tool:typescript-compiler:5.9.3> <urn:usf:predicate:nonClaim> "The path is repository-relative and resolves inside USF's own locked dependencies. A host binary found on PATH is not this tool, and this authority resolves no executable by name: it runs with no PATH at all." <urn:usf:graph:architecture-assurance> .
+<urn:usf:host-tool:typescript-compiler:5.9.3> <urn:usf:predicate:toolExecutionClass> <urn:usf:tool-execution-class:source-reader> <urn:usf:graph:architecture-assurance> .
+<urn:usf:host-tool:typescript-compiler:5.9.3> <urn:usf:predicate:type> <urn:usf:type:HostToolDependency> <urn:usf:graph:architecture-assurance> .
+<urn:usf:host-tool:typescript-compiler:5.9.3> <urn:usf:predicate:version> "5.9.3" <urn:usf:graph:architecture-assurance> .
 <urn:usf:port-direction:inbound> <urn:usf:predicate:dispositionMeaning> "The component is driven through this port from outside it." <urn:usf:graph:architecture-assurance> .
 <urn:usf:port-direction:inbound> <urn:usf:predicate:type> <urn:usf:type:PortDirection> <urn:usf:graph:architecture-assurance> .
 <urn:usf:port-direction:outbound> <urn:usf:predicate:dispositionMeaning> "The component drives something outside itself through this port." <urn:usf:graph:architecture-assurance> .
@@ -141,6 +147,9 @@
 <urn:usf:requirement-severity:advisory> <urn:usf:predicate:type> <urn:usf:type:RequirementSeverity> <urn:usf:graph:architecture-assurance> .
 <urn:usf:requirement-severity:blocking> <urn:usf:predicate:dispositionMeaning> "Failure means the requirement is unsatisfied and realisation fails." <urn:usf:graph:architecture-assurance> .
 <urn:usf:requirement-severity:blocking> <urn:usf:predicate:type> <urn:usf:type:RequirementSeverity> <urn:usf:graph:architecture-assurance> .
+<urn:usf:tool-execution-class:source-reader> <urn:usf:predicate:canonicalName> "source-reader" <urn:usf:graph:architecture-assurance> .
+<urn:usf:tool-execution-class:source-reader> <urn:usf:predicate:scopeRule> "The tool opens the corpus, reports on what it read, and never executes any of it. This is the entire basis on which a tool observation may run outside the confinement: a reader cannot run product code, so the corpus cannot act during its own observation. A tool that builds, bundles, runs tests or otherwise executes the corpus does not carry this class and must not be granted this authority." <urn:usf:graph:architecture-assurance> .
+<urn:usf:tool-execution-class:source-reader> <urn:usf:predicate:type> <urn:usf:type:ToolExecutionClass> <urn:usf:graph:architecture-assurance> .
 <urn:usf:type:AdversarialVerification> <urn:usf:predicate:objective> "A planted representative violation proving a verification actually observes what it claims." <urn:usf:graph:architecture-assurance> .
 <urn:usf:type:AdversarialVerification> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-assurance> .
 <urn:usf:type:ArchitecturalAdapter> <urn:usf:predicate:objective> "An implementation of one or more outbound ports, living outside the layers it serves." <urn:usf:graph:architecture-assurance> .

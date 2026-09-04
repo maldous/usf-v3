@@ -1,4 +1,4 @@
-import { declaredCorpusProcedures, loadCorpusObservations, recordCorpusObservation, runCorpusObservation } from "../providers/architecture-observation.ts";
+import { declaredCorpusProcedures, declaredCorpusToolProcedures, loadCorpusObservations, recordCorpusObservation, runCorpusObservation, runCorpusToolObservation } from "../providers/architecture-observation.ts";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
@@ -411,6 +411,23 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     observationResults.push(Object.freeze({
       procedure: declared.procedure, evidencePath: path, executed: observation.executed,
       refusal: observation.refusal, corpusFileCount: observation.corpusFileCount,
+      satisfied: observation.outcomes.filter((outcome) => outcome.passed).length,
+      violated: observation.outcomes.filter((outcome) => outcome.executed && !outcome.passed).length,
+      undecided: observation.outcomes.filter((outcome) => !outcome.executed).length,
+    }));
+  }
+
+  // A declared tool decides what reading files in this process cannot. It runs
+  // outside the confinement, which is why the authority admitting it is narrow
+  // in every dimension and why nothing about it is taken from the graph except
+  // which declared reader to use and over what.
+  for (const declared of declaredCorpusToolProcedures(graph)) {
+    const observation = await runCorpusToolObservation(repositoryRoot, declared, rootOf(declared.sourceRepository));
+    const path = await recordCorpusObservation(repositoryRoot, observation);
+    observationResults.push(Object.freeze({
+      procedure: declared.procedure, tool: declared.tool, operation: declared.operation,
+      evidencePath: path, executed: observation.executed, refusal: observation.refusal,
+      corpusFileCount: observation.corpusFileCount,
       satisfied: observation.outcomes.filter((outcome) => outcome.passed).length,
       violated: observation.outcomes.filter((outcome) => outcome.executed && !outcome.passed).length,
       undecided: observation.outcomes.filter((outcome) => !outcome.executed).length,

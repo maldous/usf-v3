@@ -290,9 +290,17 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
       // mere existence of some passing procedure elsewhere proves nothing here.
       const observed = evidence.structuralObservations.get(facet);
       if (observed === undefined) {
+        // Why no procedure decides it is the whole content of the verdict. A
+        // requirement nothing is implemented for and a requirement whose
+        // evidence needs an authority nobody has granted are both blocked, and
+        // treating them alike is how a real gap hides behind a generic
+        // sentence. Where the graph states the reason, that reason is the
+        // verdict; the generic wording is only for a requirement that has not
+        // said.
         return Object.freeze({
           facet, facetKind: kind, capability, state: "BLOCKED" as const, evidence: Object.freeze([]),
-          reason: "This requirement is stated over a corpus and admits a structural observation, which must be produced by running the procedure declared to observe that corpus and cannot be authored.",
+          reason: values(graph, facet, "evidenceUnavailableReason")[0]
+            ?? "This requirement is stated over a corpus and admits a structural observation, which must be produced by running the procedure declared to observe that corpus and cannot be authored.",
         });
       }
       if (!observed.executed) {

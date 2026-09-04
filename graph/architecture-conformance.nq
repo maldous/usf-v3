@@ -878,10 +878,16 @@
 <urn:usf:predicate:entryPointReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:entryPointSurface> <urn:usf:predicate:objective> "The surface kind of an entry point." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:entryPointSurface> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:evidenceUnavailableReason> <urn:usf:predicate:objective> "Why no procedure decides a requirement, so that an unimplemented requirement and one awaiting an execution authority are not both reported as generic missing evidence." <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:evidenceUnavailableReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:generatedCodeBoundary> <urn:usf:predicate:objective> "The generated code boundary this architecture declares." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:generatedCodeBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observationOperation> <urn:usf:predicate:objective> "The named operation a corpus tool observation performs, whose arguments are a fixed template rather than graph content." <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observationOperation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:observationPath> <urn:usf:predicate:objective> "The repository-relative path of the executable procedure that produces a corpus observation." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:observationPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observationTool> <urn:usf:predicate:objective> "The declared host tool a corpus tool observation procedure runs." <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observationTool> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:observedByProcedure> <urn:usf:predicate:objective> "The corpus observation procedure declared to decide this requirement." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:observedByProcedure> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:observesRepository> <urn:usf:predicate:objective> "The repository whose corpus a procedure observes, so a product's observation is never resolved against the foundation." <urn:usf:graph:architecture-conformance> .
@@ -898,6 +904,8 @@
 <urn:usf:predicate:populationRoot> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:populationRule> <urn:usf:predicate:objective> "How the population is enumerated, stated so that a change of denominator is a change of declaration." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:populationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:toolExecutionClass> <urn:usf:predicate:objective> "What a host tool does to the corpus it is pointed at, which decides what authority it may be granted." <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:toolExecutionClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:profile:architecture-conformance:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:architecture-conformance> .
 <urn:usf:profile:architecture-conformance:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:architecture-conformance:1> <urn:usf:graph:architecture-conformance> .
 <urn:usf:profile:architecture-conformance:1> <urn:usf:predicate:canonicalName> "architecture-conformance" <urn:usf:graph:architecture-conformance> .
@@ -1149,6 +1157,8 @@
 <urn:usf:type:ConformanceProcedure> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:CorpusObservationProcedure> <urn:usf:predicate:objective> "A named procedure that observes a whole declared corpus and reports one outcome per requirement it decides, so a requirement stated over a corpus is evidenced at the scope it is stated at rather than by calling one module inside it." <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:CorpusObservationProcedure> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
+<urn:usf:type:CorpusToolObservationProcedure> <urn:usf:predicate:objective> "A named procedure that decides a corpus requirement by running one declared host tool over the corpus, for the requirements no in-process reading can decide. It is not a general subprocess facility: the tool must be declared, the operation names a fixed argument template held in implementation, and no argument is taken from the graph." <urn:usf:graph:architecture-conformance> .
+<urn:usf:type:CorpusToolObservationProcedure> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:EntryPointSurface> <urn:usf:predicate:objective> "The kind of surface an entry point exposes, and whether reaching implementation through it counts as runtime reachability." <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:EntryPointSurface> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:ImplementationClassification> <urn:usf:predicate:objective> "A disposition an implementation unit may carry, the criterion that decides it, and whether carrying it conforms." <urn:usf:graph:architecture-conformance> .
@@ -1167,6 +1177,8 @@
 <urn:usf:type:RuntimeEntryPoint> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:RuntimeReachabilityObservation> <urn:usf:predicate:objective> "The measured set of implementation units reachable from the declared runtime entry points. Derived from observation; never authored." <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:RuntimeReachabilityObservation> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
+<urn:usf:type:ToolExecutionClass> <urn:usf:predicate:objective> "What a host tool does to the corpus it reads, so that an authority can be granted to a tool that only reads and withheld from one that executes." <urn:usf:graph:architecture-conformance> .
+<urn:usf:type:ToolExecutionClass> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
 <urn:usf:validation:architecture-conformance> <urn:usf:predicate:applicability> "required" <urn:usf:graph:architecture-conformance> .
 <urn:usf:validation:architecture-conformance> <urn:usf:predicate:command> "node --test --test-isolation=none tests/adversarial/foundation-architecture-model.test.ts" <urn:usf:graph:architecture-conformance> .
 <urn:usf:validation:architecture-conformance> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:architecture-conformance> .

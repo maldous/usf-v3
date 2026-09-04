@@ -260,6 +260,17 @@
 <urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:observesRepository> <urn:anqr:repository:main> <urn:anqr:graph:architecture> .
 <urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:text> "The corpus observation procedure for ANQR's architecture requirements. It runs the product's own architecture checker over the whole declared corpus and reports one outcome per requirement it decides. It observes; it does not judge, and it satisfies nothing by itself." <urn:anqr:graph:architecture> .
 <urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:type> <urn:usf:type:CorpusObservationProcedure> <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:canonicalName> "static-type" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:corpusRoot> "apps" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:corpusRoot> "packages" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:corpusRoot> "src" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:corpusRoot> "tests" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:nonClaim> "A clean type check is not a claim that the product behaves correctly, only that its declared configuration reports no error over the corpus observed." <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:observationOperation> "typecheck-no-emit" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:observationTool> <urn:usf:host-tool:typescript-compiler:5.9.3> <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:observesRepository> <urn:anqr:repository:main> <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:text> "Decides static type correctness by running USF's declared TypeScript compiler over the product's own declared strict configuration. The product needs no toolchain of its own; the compiler reads its sources and executes none of them." <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:static-type> <urn:usf:predicate:type> <urn:usf:type:CorpusToolObservationProcedure> <urn:anqr:graph:architecture> .
 <urn:anqr:cycle-policy:product> <urn:usf:predicate:canonicalName> "no-cycles" <urn:anqr:graph:architecture> .
 <urn:anqr:cycle-policy:product> <urn:usf:predicate:cyclePolicyScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:cycle-policy:product> <urn:usf:predicate:cyclesPermitted> "false" <urn:anqr:graph:architecture> .
@@ -298,11 +309,11 @@
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:canonicalName> "architecturebuildcorrectness" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:evidenceUnavailableReason> "The declared build executes the corpus rather than reading it, so it does not carry the source-reader execution class and the bounded tool authority does not admit it. Deciding this requirement needs an execution authority for a tool that runs product code, which is a materially wider grant than the reader authority and an explicit operator decision, not an inference from this requirement being blocking." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:expectedResult> "Each declared build command succeeds and names its artefact identities." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:facetStatement> "Every realised delivery surface builds from a clean checkout using only declared, locked dependencies." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:nonClaim> "No procedure decides this yet. It requires the declared build, which is a child process, and every observation this repository admits executes inside a confinement that grants no child-process allowance. Undecided is recorded rather than passed." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
@@ -350,7 +361,7 @@
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:facetStatement> "The same artefact specification produces a byte-identical artefact on repetition." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:nonClaim> "No procedure decides this yet. It requires producing the artefact twice, which is a child process, and every observation this repository admits executes inside a confinement that grants no child-process allowance. Undecided is recorded rather than passed." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
@@ -426,6 +437,7 @@
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:canonicalName> "architecturelocaleparity" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:evidenceUnavailableReason> "Required and unrealised. No locale resource exists in the product repository: the eighty-six locale resources at 1676 keys each are legacy evidence, and the graph records bringing them across as an unresolved delivery decision with a known denominator. No procedure should decide this until they exist, because a string table created to satisfy the count would evidence nothing." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:expectedResult> "Zero missing interface keys in any claimed locale." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
@@ -493,7 +505,7 @@
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:facetStatement> "The whole product source type-checks under its declared strict configuration." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:nonClaim> "No procedure decides this yet. It requires the type checker, which is a child process, and every observation this repository admits executes inside a confinement that grants no child-process allowance. Undecided is recorded rather than passed." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:static-type> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
