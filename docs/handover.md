@@ -1,5 +1,11 @@
 # USF V3 handover
 
+## Naming
+
+Terminology, namespaces, IRI construction, repository and path conventions are
+defined once in [`naming.md`](naming.md). It is canonical: a second statement of
+a rule is drift waiting to happen, so nothing here repeats it.
+
 ## Current position — 2026-09-04
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.

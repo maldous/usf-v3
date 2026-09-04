@@ -223,7 +223,21 @@ Deliberately retained, under §6:
   It is a record closed on 2026-09-02 of what the corpus was then. Rewriting it
   would falsify the record it exists to be.
 
-The one remaining live residue, justified rather than fixed:
+Two further items are real and need a foundation source change through its own
+construction-authority lane, so they are named rather than half-done:
+
+- **CLI help prose** in `src/commands/help.ts` says "resource-scoped core
+  dependency closure" and "core authority profile/manifest", using `core` for
+  the foundation in the operator-facing surface. The words are wrong by §2; the
+  behaviour is not.
+- **The `coreDependencySeed` predicate** carries the same word into semantic
+  authority, and it is referenced by every profile-to-foundation binding
+  including released ones. Renaming it is a semantic migration across
+  release-visible identifiers, which §4 requires be explicit and validated
+  rather than folded into a documentation pass. `foundationDependencySeed` is
+  the correct name when that migration is run.
+
+The remaining live residue, justified rather than fixed:
 
 - `src/commands/graph-integrity.ts` holds a hardcoded fallback list of
   convention-exempt graphs which still names `urn:usf:graph:anqr-first-slice`.

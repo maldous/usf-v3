@@ -1,5 +1,9 @@
 # Bootstrap architecture
 
+**USF is the Universal Service Foundation.** Terminology, namespaces and
+identifier construction are defined once in [`naming.md`](naming.md), which is
+canonical; this document does not restate them.
+
 USF V3 begins with one repository, one command surface, tracked semantic and
 realisation source, and ignored operational artefacts beneath `.usf/`.
 
