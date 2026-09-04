@@ -265,7 +265,28 @@ foundation manifest, so the foundation's reusable closure and version axis are
 not polluted today. The namespace is wrong; the closure is right. Defect 1 is
 the one that genuinely reaches into foundation authority.
 
-## 10. Non-claims
+## 10. Observability gaps found while normalising
+
+Recorded, not fixed here, because each belongs to a packet that owns the
+surface it would change.
+
+- **Catalogue staleness is unmeasurable.** The frozen model catalogue records
+  digests and no timestamp, and `usf doctor` reports its availability and
+  digests without a freeze time or staleness signal. A four-day-old snapshot
+  and a four-month-old one are indistinguishable in every projection, which is
+  why refreshing it required a person to think of it. Measured on 2026-09-04:
+  the snapshot was four days old and two provider routes plus thirty-seven
+  model routes behind. The fix is a freeze timestamp in the snapshot and a
+  doctor field reporting its age; `doctor` is owned by another packet, so this
+  is a readiness projection to route to that owner rather than to smuggle in.
+- **Lane policy coverage is 1 of 62.** `usf graph lanes` reports 327 work slots
+  with 303 at risk, and every lane created today reads `at-risk` despite
+  declaring a disjoint publication policy naming its own work. Whether that is
+  a coverage-evaluation defect or a correct reading of a policy that covers
+  construction but not completion has not been established, and asserting
+  either without measuring would be a guess.
+
+## 11. Non-claims
 
 - A naming standard makes drift visible. It does not prevent it, and this
   document is worth exactly as much as the checks that enforce it.
