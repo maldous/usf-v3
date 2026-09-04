@@ -3,27 +3,42 @@
 ## Current position — 2026-09-04
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.
-The **ANQR application denominator is established and Hermes derives work from
-one resolvable realisation basis.** Deployment stops at the environment
-boundary: staging and production are unbound and need an authority this
-repository does not have.
+The **fourteen capabilities revision 3 added are realised and evidenced**, and
+the unresolved facet closure fell from 72 to 1. Two released verdict digests no
+longer recompute here; the cause is measured and recorded below.
 
 | | |
 |---|---|
 | USF carrier | `anqr-experience-realisation`, clean, **not pushed** |
-| ANQR carrier | `dde40c738` on `anqr-experience-realisation`, clean, **not pushed** |
-| Release boundary | `hermetic-release-1` = `9e6239e`, annotated, reachable, untouched |
-| USF | 470/470 tests |
-| ANQR | 297/297 ×3, typecheck 0, architecture conforming, `validate` exit 0, CI automated |
-| Denominator | **58 capabilities** (revision 3), **60 application actions**, zero unclassified |
-| Delivery | 24 required, 35 explicitly not required, 9 new generic contracts |
-| Environments | 4 rungs, 7 environments; dev and test **bound**, staging and production **unresolved** |
-| Realisation basis | `realisation-identity:v2:1`, 18 axes, narrow per-axis invalidation |
-| Hermes | 104 capabilities, 922 facets, 72 NOT_ASSESSED, frontier 1 |
-| Source accounting | 122 = 32 + 90 + **0 unaccounted** |
-| Released verdicts | core `e958768a`, anqr `17d52953`, composed `3a9fa0d6` — byte-identical |
-| Live provider lane | `2e6a4780`, both frontiers 0 |
-| Next | **eleven external decisions.** See the acceptance record, §36. |
+| ANQR carrier | `f983edbd5` on `anqr-experience-realisation`, clean, **not pushed** |
+| Release boundary | `hermetic-release-1` = `9e6239e`, untouched |
+| USF | 484/484 tests |
+| ANQR | 367/367, typecheck 0, architecture conforming, `validate` exit 0 |
+| Closure | NOT_ASSESSED **72 → 1**; SATISFIED 719 → 775; capabilities fully satisfied 95 → **109** |
+| Remaining | 15 BLOCKED + 1 NOT_ASSESSED, **all architecture facets**, one exact cause |
+| Source accounting | 151 = 32 + 119 + **0 unaccounted** |
+| Next | the architecture evidence-class contradiction, then the testing rung |
+
+### Two released digests no longer recompute, and nothing tracked changed
+
+Core `e958768a` is still byte-identical. `anqr` and `anqr-with-foundation` are
+not, and the cause was measured: neither manifest contains any source added in
+this or the previous boundary, and the movement came entirely from
+`.usf/conformance-evidence`, which is gitignored disposable state. Executing
+conformance superseded the cached records the released recomputation had been
+reading. The release record and tag are unmodified.
+
+The check run at four consecutive boundaries was therefore reading disposable
+local cache. That is the finding, not the digests.
+
+### The blocker is a semantic contradiction, not missing work
+
+All 16 remaining facets are architecture facets declaring
+`implementation-conformance`, which means a subtest named for the facet that
+**invokes the capability module**. An architecture property is not a behaviour
+of a capability module, so the evaluator refuses such a subtest — correctly, by
+the anti-self-warrant rule. Resolving it needs those facets to declare an
+evidence class the architecture checker produces, and the evaluator to load it.
 
 ### The denominator is the deliverable
 
@@ -115,11 +130,11 @@ before computing any verdict.
 
 ### Next work item
 
-**Eleven external decisions**, listed in
-[`acceptance/2026-09-04-anqr-full-realisation.md`](acceptance/2026-09-04-anqr-full-realisation.md)
-§36. Until staging has an account, a site and a credential, no rung above
-testing can produce a verdict. Implementation work against revision 3 can
-proceed in parallel and does not need them.
+The architecture evidence-class contradiction (§6 of the acceptance record),
+which is graph authority plus a USF source change through their own staged
+chains. Then the testing rung, localisation, browser evidence and per-action
+proof — all listed with what each needs in
+[`acceptance/2026-09-04-anqr-testing-realisation.md`](acceptance/2026-09-04-anqr-testing-realisation.md).
 
 ### Open and honestly unfinished
 
@@ -153,6 +168,7 @@ ledger, which is the live operational state and not an archive.
 
 | Closed | Boundary | Detail |
 |---|---|---|
+| 2026-09-04 | Diagnostic boundary repaired; fourteen capabilities realised; closure 72 to 1 | [`acceptance/2026-09-04-anqr-testing-realisation.md`](acceptance/2026-09-04-anqr-testing-realisation.md) |
 | 2026-09-04 | ANQR application denominator, delivery semantics and environment ladder | [`acceptance/2026-09-04-anqr-full-realisation.md`](acceptance/2026-09-04-anqr-full-realisation.md) |
 | 2026-09-04 | First semantic experience realised in Preact; profiles documented | `c0dbf8f`, [`acceptance/2026-09-04-first-semantic-experience.md`](acceptance/2026-09-04-first-semantic-experience.md), [`profiles.md`](profiles.md) |
 | 2026-09-04 | Test suite made order-independent; real-tree planting isolated | ANQR `f7c92a58c` |
