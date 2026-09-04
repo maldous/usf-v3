@@ -112,7 +112,10 @@ test("product evidence is governed by the product's own conformance rule", () =>
 
 test("the foundation dependency is a bounded closure of exact resources", () => {
   const binding = "urn:anqr:profile-foundation-binding:2";
-  const seeds = objects(anqr, binding, "coreDependencySeed");
+  // The canonical predicate. coreDependencySeed remains a declared migration
+  // alias the reader accepts, so a graph written before the rename still
+  // resolves; the graph itself now uses only this name.
+  const seeds = objects(anqr, binding, "foundationDependencySeed");
   assert.ok(seeds.length > 0, "the binding must declare what it depends on");
   assert.ok(seeds.every((seed) => seed.startsWith("urn:usf:")), "a seed names a foundation resource");
   // Every port bound must be a port the foundation actually declares, and must

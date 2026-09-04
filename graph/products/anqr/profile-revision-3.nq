@@ -211,21 +211,21 @@
 <urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:boundFoundationRevision> <urn:usf:foundation-revision:v3:1> <urn:anqr:graph:profile-revision-3> .
 <urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationAuthorityManifest> "graph/manifests/v3-delivery.json" <urn:anqr:graph:profile-revision-3> .
 <urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:realisationRecordRoot> ".usf/profile" <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-implementation-convention:v1:1> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:core-surface-policy:v1:1> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:implementation-conformance-rule:v1:1> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:objectstore> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:auditledger> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:operationaljobport> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:secretresolver> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:configlayerprovider> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-port:analyticseventstore> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:contract:delivery-environment:1> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:realisation-identity:v2:1> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:delivery-binding-model:1> <urn:anqr:graph:profile-revision-3> .
-<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:coreDependencySeed> <urn:usf:evidence-environment-pinning-rule:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-implementation-convention:v1:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:core-surface-policy:v1:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:implementation-conformance-rule:v1:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-port:objectstore> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-port:observabilitysink> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-port:auditledger> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-port:operationaljobport> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-port:secretresolver> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-port:configlayerprovider> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-port:analyticseventstore> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:contract:delivery-environment:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:realisation-identity:v2:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:delivery-binding-model:1> <urn:anqr:graph:profile-revision-3> .
+<urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:foundationDependencySeed> <urn:usf:evidence-environment-pinning-rule:1> <urn:anqr:graph:profile-revision-3> .
 <urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:externalFactSource> "models.dev catalogue projection" <urn:anqr:graph:profile-revision-3> .
 <urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:externalFactSource> "installed provider adapter versions" <urn:anqr:graph:profile-revision-3> .
 <urn:anqr:profile-foundation-binding:3> <urn:usf:predicate:externalFactSource> "the delivery provider's own platform behaviour" <urn:anqr:graph:profile-revision-3> .

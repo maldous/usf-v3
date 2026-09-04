@@ -1,9 +1,9 @@
 <urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:boundFoundationRevision> <urn:usf:foundation-revision:v3:1> <urn:anqr:graph:profile> .
 <urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:boundProfileRevision> <urn:anqr:profile-revision:1> <urn:anqr:graph:profile> .
 <urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:canonicalName> "1" <urn:anqr:graph:profile> .
-<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:coreDependencySeed> <urn:usf:capability-implementation-convention:v1:1> <urn:anqr:graph:profile> .
-<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:coreDependencySeed> <urn:usf:core-surface-policy:v1:1> <urn:anqr:graph:profile> .
-<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:coreDependencySeed> <urn:usf:implementation-conformance-rule:v1:1> <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:foundationDependencySeed> <urn:usf:capability-implementation-convention:v1:1> <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:foundationDependencySeed> <urn:usf:core-surface-policy:v1:1> <urn:anqr:graph:profile> .
+<urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:foundationDependencySeed> <urn:usf:implementation-conformance-rule:v1:1> <urn:anqr:graph:profile> .
 <urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:externalFactSource> "installed provider adapter versions" <urn:anqr:graph:profile> .
 <urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:externalFactSource> "models.dev catalogue projection" <urn:anqr:graph:profile> .
 <urn:anqr:profile-foundation-binding:1> <urn:usf:predicate:foundationAuthorityManifest> "graph/manifests/v3-delivery.json" <urn:anqr:graph:profile> .

@@ -244,11 +244,44 @@ migration, not folded into a rename pass. Until then a `permitsWrite` or an
 `excludedModifiedPath` naming a path that no longer exists permits and excludes
 nothing, so the residue is inert.
 
-**The one remaining item**, therefore, is not the two filenames but this:
-`graph/semantic-first.nq` and `graph/integration.nq` name
-`graph/products/anqr/hermes-management.nq`, and `graph/profile-authority.nq`
-records it in a historical carrier intent that should keep it. The first two are
-cross-ownership to migrate deliberately; the third is §6 retention.
+### The seed predicate, migrated with a declared alias
+
+`coreDependencySeed` is now `foundationDependencySeed`. It is referenced by
+every profile-to-foundation binding including released ones, so §4's aliasing
+route was used rather than silent mutation: the reader was taught the canonical
+name first, accepting the retired one as a **declared alias**, and only then did
+the graph move. There was no moment where the reader and the graph disagreed.
+
+A binding declaring **both** predicates is refused rather than merged. An alias
+that silently unioned them would be worse than no alias, because the resulting
+closure would depend on which predicate someone happened to use.
+
+Measured after the migration: the core verdict digest is byte-identical, the
+live provider lane is unchanged, and `usf profile status` still reports current
+with the same fourteen closure resources. **Zero blast radius.**
+
+The alias may be removed once no graph in any repository declares the retired
+predicate. Until then it is documented here, which is what distinguishes it from
+the undocumented aliases §12 hunts for.
+
+### What is actually left
+
+Three named items are closed. Two remain, and neither is naming debt in the
+sense this exercise set out to clear:
+
+1. **`graph/semantic-first.nq` and `graph/integration.nq` name a product path**
+   (`graph/products/anqr/hermes-management.nq`, which no longer exists). This is
+   **cross-ownership**, the same class as defect 1, and following the rename
+   into it moved the live lane and failed fifteen tests. It needs its own
+   measured migration. Until then it permits and excludes nothing, so it is
+   inert. `graph/profile-authority.nq` also records the old path in a historical
+   carrier intent and should keep it under §6.
+2. **`src/commands/graph-integrity.ts` holds a hardcoded fallback list** of
+   convention-exempt graphs naming a graph identity that no longer exists. The
+   naming residue is the symptom; the defect is that a hardcoded fallback is a
+   **second source of truth** for something the graph already owns. Correcting
+   the string would preserve the defect. Removing the fallback is the right fix
+   and is a design change rather than a rename.
 
 ### Adversarial sweep outcomes
 
