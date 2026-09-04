@@ -1,0 +1,274 @@
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:canonicalName> "semantic-authority-path" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:title> "One semantic ingestion path, and the retirement of the mechanism that found it" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:objective> "State natively the requirements worth keeping from a legacy-mining exercise, and remove the mechanism that discovered them. Three requirements survive because they are still required, are declared nowhere else, and can be said entirely in current terms. One of the three was measurably unsatisfied, so satisfying it is part of this work rather than a finding left open." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:objectiveEvidence> "Measured 2026-09-04. A reachability observation over the tracked tree found 175 production units, 170 reachable from some declared root, five reachable from none: src/semantic/store.ts, query.ts and n3.d.ts, plus two unrelated units. src/semantic imports n3, oxigraph and rdf-validate-shacl -- three production dependencies for a second RDF ingestion stack that nothing imports. The mining graph's own requirement said to unify or retire exactly that second path rather than maintain two truths, so the requirement and its violation were discovered together. The mechanism itself is 5431 lines whose only reachability is its own test, and five of its requirements describe commands that were never registered: usf graph offers execute, integrity and lanes, not inspect, export, import, coverage or inventory." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:constructionRouteConstraint> "Local, hermetic and deterministic. It removes implementation and dependencies, states four requirements, and contacts nothing." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:semantic-authority-path:completion> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-authority-path:hermetic> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-authority-path:localdev> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:localdev> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-authority-path:ci> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:ci> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-authority-path:integrationtest> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:integrationtest> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-authority-path:productionshaped> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-authority-path:staging> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:semantic-authority-path:productionlive> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:environment-applicability:semantic-authority-path:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:nonClaim> "Eighteen of the mining graph's twenty-one requirements are deliberately not carried forward. Six are already stated in current authority and would be duplicates. Twelve describe the mechanism itself -- its inventory, its source-selection contract, its extraction profile, its candidate identity, and five commands that were never registered -- and have no meaning once the mechanism is gone." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:nonClaim> "graph/semantic-recovery.nq and graph/foundation.nq are deliberately untouched. Both are pinned in an immutable historical-carrier record with observedCurrentnessDisposition exact-present, and foundation.nq additionally holds a dated disposition derived over all nine declared profiles. Retiring a pinned carrier member is its own declared act, not a side effect of removing an implementation." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:nonClaim> "Removing a second ingestion stack is not a claim that the remaining one is complete. It is a claim that there is one of them, which is what the requirement asks." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:requires> <urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:predicate:canonicalName> "single-semantic-ingestion-path" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:predicate:semanticStage> <urn:usf:stage:semantic-model> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:dependency-declaration-integrity> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:predicate:text> "Graph-manifest version two import expansion, strict source validation and canonical dataset identity are the only operational path by which semantic authority is ingested. A second ingestion stack is a defect whether or not anything currently calls it, because two implementations of one decision can disagree and the unused one is the one nobody notices diverging." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:predicate:invariant> "one ingestion implementation; a second is a finding, not a spare." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:single-semantic-ingestion-path> <urn:usf:predicate:nonClaim> "An unused second stack is not harmless. It carried three production dependencies, and a reader looking for the ingestion path could reasonably have found the wrong one." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:requires> <urn:usf:requirement:operational-source-profile> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:operational-source-profile> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:operational-source-profile> <urn:usf:predicate:canonicalName> "operational-source-profile" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:operational-source-profile> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:operational-source-profile> <urn:usf:predicate:semanticStage> <urn:usf:stage:semantic-model> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:operational-source-profile> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:import-resolution> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:operational-source-profile> <urn:usf:predicate:text> "Every operational graph source is bootstrap-nquads-v1: N-Quads carrying an explicit named graph, with IRI subject, predicate and graph, and no blank node anywhere. The profile is what makes a source's identity computable, so a source that does not satisfy it has no stable digest and cannot carry authority." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:operational-source-profile> <urn:usf:predicate:invariant> "explicit named graph; IRI subject, predicate and graph; no blank node." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:operational-source-profile> <urn:usf:predicate:nonClaim> "Every manifest already selects this profile for every source. The requirement was nonetheless declared only inside the mining graph, so the corpus enforced it structurally while stating it nowhere a reader would look." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:requires> <urn:usf:requirement:semantic-projection-ceilings> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:semantic-projection-ceilings> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:semantic-projection-ceilings> <urn:usf:predicate:canonicalName> "semantic-projection-ceilings" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:semantic-projection-ceilings> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:advisory> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:semantic-projection-ceilings> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:semantic-projection-ceilings> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:static-analysis> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:semantic-projection-ceilings> <urn:usf:predicate:text> "Profile load and projection over a ten-thousand-quad corpus complete within a declared p95 ceiling, and affected-validation selection within its own, both measured over repeated clean local runs rather than asserted. A ceiling is a measurement with a number attached; without the measurement it is a wish." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:semantic-projection-ceilings> <urn:usf:predicate:invariant> "a ceiling names its measurement method and its sample count, or it is not a ceiling." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:semantic-projection-ceilings> <urn:usf:predicate:nonClaim> "This is advisory rather than blocking because the current corpus is far below ten thousand quads, so the ceiling is not yet load-bearing. It is stated now because the number and its method would otherwise be lost with the mechanism that measured them." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:requires> <urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:predicate:canonicalName> "legacy-mining-mechanism-absent" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:predicate:semanticStage> <urn:usf:stage:realisation> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:static-analysis> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:predicate:text> "No active implementation, test, configuration, schema or dependency exists whose only purpose is to read a superseded semantic corpus. The requirements such an exercise discovers are kept by being restated in current terms; the apparatus that discovered them is not kept, because a mechanism retained for a discovery already made is indistinguishable from a mechanism nobody has yet needed." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:predicate:invariant> "discovered requirements survive restated; the discovering mechanism does not survive at all." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:requirement:legacy-mining-mechanism-absent> <urn:usf:predicate:nonClaim> "Absence is proved against the tracked tree and the dependency manifest, not against version history. History is the record that the exercise happened." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:acceptance:semantic-authority-path> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:acceptance:semantic-authority-path> <urn:usf:predicate:text> "The three surviving requirements are stated in this contract in current terms, carrying no superseded namespace, provenance or extraction identity. The mechanism's implementation, its test, its configuration, its schema and the second ingestion stack are absent from the tracked tree, and the three dependencies that only it required are absent from the dependency manifest. No remaining source, test, script or command imports any removed module. The full validation suite passes, and the eighteen requirements not carried forward are each accounted for as duplicate or mechanism-bound." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:validation:semantic-authority-path> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:validation:semantic-authority-path> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:validation:semantic-authority-path> <urn:usf:predicate:command> "node --test --test-isolation=none tests/adversarial/semantic-authority-path.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:validation:semantic-authority-path> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:validation:semantic-authority-path> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:validation:semantic-authority-path> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:validation:semantic-authority-path> <urn:usf:predicate:nonClaim> "The validation proves absence and single-path by reading the tracked tree and the dependency manifest. It proves nothing about whether the remaining ingestion path is correct, which its own validations already cover." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-authority-path:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:predicate:text> "Require the exact current preimage of the declared paths, the derived work basis, and the observed record: the reachability measurement naming the unreachable units, the dependency manifest entries only they required, and the classification of all twenty-one mined requirements into carried, duplicate and mechanism-bound." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path:completion> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-authority-path:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:evidence-requirement:semantic-authority-path:completion> <urn:usf:predicate:text> "Require the passing validation receipt bound to the exact candidate tree, exhibiting the absence of every removed path and dependency and the presence of exactly one ingestion path." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:predicate:text> "Prove the removal needs exactly the declared writes, that each carried requirement is genuinely unstated elsewhere, and that no pinned graph source is among them." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path> <urn:usf:predicate:applicability> "required" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:semantic-authority-path:completion> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:proof:semantic-authority-path> <urn:usf:predicate:text> "Prove absence, single-path, and that nothing remaining imports a removed module." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:forContract> <urn:usf:contract:semantic-authority-path:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:proofObligation> <urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:semantic-authority-path:construction-authority> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:permission:semantic-authority-path> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:semantic-authority-path-construction-authority-publication:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/semantic-authority-path.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/semantic-authority-path-grants.nq" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:semantic-authority-path-grants> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable construction-authority policy plus the exact declared schema and tool bytes. It enumerates exactly one work, so it can never stale a sibling cohort." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-construction-authority-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-construction-authority-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-construction-authority-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-construction-authority-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:construction-evidence-candidate:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:construction-proof-bundle:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/construction-authority/" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:construction-authority-publication-result:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/construction-authority/" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-construction:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-construction:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-construction-authority:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/construction-authority.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-construction-authority:1> <urn:usf:predicate:toolPath> "src/realisation/construction-authority.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-construction-authority-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing construction evidence and proof for this one work into an additive copy-on-write authority grant." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:rule:semantic-authority-path-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:rule:semantic-authority-path-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:rule:semantic-authority-path-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other bases as history." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:semantic-authority-path-work-completion-publication:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/semantic-authority-path.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/semantic-authority-path-grants.nq" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:semantic-authority-path-grants> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable completion policy plus the exact declared schema and tool bytes. It enumerates exactly one work, so it can never stale a sibling cohort." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-work-completion-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-work-completion-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-work-completion-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-work-completion-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:completionDerivationRule> <urn:usf:rule:semantic-authority-path-copy-on-write-work-completion:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/work-completion/" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:realisationAlgorithm> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:realisationResultSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:workspaceSchema> <urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-completion:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-completion:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-work-completion:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:realise-no-change:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/check.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/work-completion.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/index.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:publication-policy:semantic-authority-path-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/work-completion.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:algorithm:semantic-authority-path-work-completion-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing no-change completion evidence and proof for this one work into an additive copy-on-write completion record." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:contract> <urn:usf:contract:semantic-authority-path:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:acceptance> <urn:usf:acceptance:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:validation> <urn:usf:validation:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:proof> <urn:usf:proof:semantic-authority-path> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:objective> "State the three surviving requirements natively and remove the mining mechanism and the second ingestion stack." <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:modelCapability> "rdf-semantics" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:readPath> "graph/manifests/self-host-semantic-recovery.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:readPath> "src/commands/graph-integrity.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:readPath> "src/schema/index.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:readPath> "pnpm-lock.yaml" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "src/graph/recovery.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "src/graph/recovery.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "src/graph/recovery-extract.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "src/graph/recovery-extract.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "tests/unit/graph/semantic-recovery.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/semantic-recovery.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "config/semantic-recovery-sources.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "schemas/semantic-recovery.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "schemas/semantic-recovery.schema.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "src/semantic/index.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "src/semantic/index.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "src/semantic/canonical.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "src/semantic/canonical.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "src/semantic/query.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "src/semantic/query.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "src/semantic/store.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "src/semantic/store.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "src/semantic/types.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "src/semantic/types.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "src/semantic/n3.d.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "src/semantic/n3.d.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "tests/unit/semantic/store.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "tests/unit/semantic/store.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "tests/adversarial/cli-diagnostic-classification.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/cli-diagnostic-classification.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "tests/adversarial/semantic-authority-path.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/semantic-authority-path.test.ts" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:work:semantic-authority-path> <urn:usf:predicate:writePath> "package.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:contract:semantic-authority-path:1> <urn:usf:predicate:permitsWrite> "package.json" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:canonicalName> "semantic-authority-path" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:version> "1" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:semantic-authority-path:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:semantic-authority-path:1> <urn:usf:graph:semantic-authority-path> .
+<urn:usf:profile:semantic-authority-path:1> <urn:usf:predicate:objective> "One contract, deliberately alone, so a removal cannot stale a sibling cohort." <urn:usf:graph:semantic-authority-path> .

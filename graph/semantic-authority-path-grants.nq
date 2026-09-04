@@ -1,0 +1,4 @@
+<urn:usf:semantic-authority-path-grants:1> <urn:usf:predicate:type> <urn:usf:type:SemanticFoundationExtension> <urn:usf:graph:semantic-authority-path-grants> .
+<urn:usf:semantic-authority-path-grants:1> <urn:usf:predicate:canonicalName> "semantic-authority-path-grants" <urn:usf:graph:semantic-authority-path-grants> .
+<urn:usf:semantic-authority-path-grants:1> <urn:usf:predicate:objective> "Publication target for construction authority and completion grants of the semantic authority path lane." <urn:usf:graph:semantic-authority-path-grants> .
+<urn:usf:semantic-authority-path-grants:1> <urn:usf:predicate:nonClaim> "An empty grants source is the correct initial state." <urn:usf:graph:semantic-authority-path-grants> .
