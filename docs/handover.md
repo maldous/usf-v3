@@ -27,21 +27,72 @@ a rule is drift waiting to happen, so nothing here repeats it.
 ## Current position — 2026-09-04
 
 `hermetic-release-1` is the immutable release boundary and remains untouched.
-The **fourteen capabilities revision 3 added are realised and evidenced**, and
-the unresolved facet closure fell from 72 to 1. Two released verdict digests no
-longer recompute here; the cause is measured and recorded below.
+**The foundation now measures itself against its own declared architecture**:
+`urn:usf:work:architecture-conformance` is `verified-complete`, the whole
+implementation population is classified with zero unaccounted and zero
+unexplained orphans, and a release claim can depend on that assurance by name
+and fails closed without it.
 
 | | |
 |---|---|
 | USF carrier | `anqr-experience-realisation`, clean, **not pushed** |
 | ANQR carrier | `f983edbd5` on `anqr-experience-realisation`, clean, **not pushed** |
 | Release boundary | `hermetic-release-1` = `9e6239e`, untouched |
-| USF | 484/484 tests |
+| USF | **564/564 tests**, typecheck 0, integrity gate conforming, containment pass |
 | ANQR | 367/367, typecheck 0, architecture conforming, `validate` exit 0 |
+| Architecture | population **171**, unaccounted **0**, unexplained orphans **0**, 9 of 9 requirements CONFORMING |
+| Release assurance | CONFORMING; required 1, satisfied 1, missing 0, failed 0 |
 | Closure | NOT_ASSESSED **72 → 1**; SATISFIED 719 → 775; capabilities fully satisfied 95 → **109** |
-| Remaining | 15 BLOCKED + 1 NOT_ASSESSED, **all architecture facets**, one exact cause |
-| Source accounting | 151 = 32 + 119 + **0 unaccounted** |
-| Next | the architecture evidence-class contradiction, then the testing rung |
+| Remaining (ANQR) | 15 BLOCKED + 1 NOT_ASSESSED, **all architecture facets**, one exact cause |
+| Source accounting (ANQR) | 151 = 32 + 119 + **0 unaccounted** |
+| Next | the ANQR architecture evidence-class contradiction, then the testing rung |
+
+### The foundation's architecture is declared and decidable
+
+`graph/architecture-assurance.nq` could already state a topology and had never
+stated this one: every instance in the corpus was `urn:anqr:`, and three of its
+twenty types — enforcement binding, drift check and adversarial verification —
+had never been instantiated by anyone. What was missing was not architecture
+vocabulary but the machinery that makes a declared architecture decidable, so
+`graph/architecture-conformance.nq` adds only that: declared roots and whether
+each surface counts as running implementation, an enumerated population, eight
+classifications each with the criterion and precedence that decide it, explicit
+disposition decisions, assurance scope, a composable assurance set, and a
+release claim with a declared absent-evidence disposition. Fifteen types,
+thirty-two predicates, no new lifecycle and no parallel proof system.
+
+Full report, including every disposition and all twelve planted negative cases:
+[`acceptance/2026-09-04-architecture-assurance.md`](acceptance/2026-09-04-architecture-assurance.md).
+
+### A wrong deletion was prevented by the denominator, not by review
+
+Under a `src/`-only population, `src/providers/index.ts` was reached by nothing
+— not the runtime, not the graph, not the tests — and the model reported it as
+an unexplained orphan. Deleting it broke the typecheck: `recipes/` holds a
+declared build-time recipe that imports it, and `recipes/` had never been in the
+denominator. **The denominator was wrong, not the module.** The repair was to
+declare the build-time root and widen the population; nothing was deleted.
+
+This is the non-recursive-`readdir` defect one step further out. A denominator
+that stops short of a *consumer* reports live implementation as abandoned, and
+the population declaration now records why `recipes/` is in scope so nobody has
+to rediscover it. If another root is ever added outside `src/` and `recipes/`,
+it belongs in `populationRoot` in the same change.
+
+### Two things the foundation genuinely does not have
+
+The architecture is declared as measured, not as wished for. It is a module
+architecture, not a hexagon: the realisation and provider layers both reach the
+command surface, the semantic layer reaches the realisation layer, and fourteen
+units sit in import cycles enumerated as a bounded exception. All of that is
+declared with its reason, and tightening any of it is an architecture change
+with its own work.
+
+Six architecture-assurance types remain uninstantiated for the foundation.
+`ArchitecturalPort` and `ArchitecturalAdapter` are absent because the foundation
+is not ports-and-adapters. `DependencyScopeRule`, `FrameworkIsolationRule`,
+`TestBoundaryRule` and `EnforcementDriftCheck` are real gaps, expressible today
+and not claimed as covered.
 
 ### Two released digests no longer recompute, and nothing tracked changed
 
@@ -154,7 +205,7 @@ before computing any verdict.
 
 ### Next work item
 
-The architecture evidence-class contradiction (§6 of the acceptance record),
+The ANQR architecture evidence-class contradiction (§6 of the acceptance record),
 which is graph authority plus a USF source change through their own staged
 chains. Then the testing rung, localisation, browser evidence and per-action
 proof — all listed with what each needs in
@@ -192,6 +243,8 @@ ledger, which is the live operational state and not an archive.
 
 | Closed | Boundary | Detail |
 |---|---|---|
+| 2026-09-04 | Foundation architecture declared and decidable; population classified; release assurance composed | [`acceptance/2026-09-04-architecture-assurance.md`](acceptance/2026-09-04-architecture-assurance.md) |
+| 2026-09-04 | Corpus-wide assurances moved to repository scope | `31f2a88` |
 | 2026-09-04 | Diagnostic boundary repaired; fourteen capabilities realised; closure 72 to 1 | [`acceptance/2026-09-04-anqr-testing-realisation.md`](acceptance/2026-09-04-anqr-testing-realisation.md) |
 | 2026-09-04 | ANQR application denominator, delivery semantics and environment ladder | [`acceptance/2026-09-04-anqr-full-realisation.md`](acceptance/2026-09-04-anqr-full-realisation.md) |
 | 2026-09-04 | First semantic experience realised in Preact; profiles documented | `c0dbf8f`, [`acceptance/2026-09-04-first-semantic-experience.md`](acceptance/2026-09-04-first-semantic-experience.md), [`profiles.md`](profiles.md) |
