@@ -13,6 +13,7 @@ import {
 import type { CommandHandler } from "./dispatcher.ts";
 import { observeInstalledAdapter, readLocalCatalogue } from "./models.ts";
 import { observeAvailableRoutes } from "../providers/evidence-index.ts";
+import { observeQualifiedTaskClasses } from "../providers/capabilities.ts";
 import { readGraphDerivedEconomics } from "../providers/economics-projection.ts";
 import { loadSemanticGraph } from "../graph/index.ts";
 import { readProviderBindings, type ProviderBindings } from "../providers/provider-bindings.ts";
@@ -54,13 +55,19 @@ interface ParsedExecuteArguments {
   readonly requirement: RoutingRequirement;
   readonly providerFilter: string | null;
   readonly modelFilter: string | null;
+  /**
+   * Restrict candidates to one execution transport. The help has documented
+   * this since the command was registered; the parser rejected it, so every
+   * documented invocation failed with EXECUTE_ARGUMENTS_INVALID.
+   */
+  readonly transportFilter: string | null;
 }
 
 function parse(args: readonly string[]): ParsedExecuteArguments {
   const values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 1) {
     const option = args[index]!;
-    if (!["--prompt", "--env-file", "--max-output-tokens", "--require-capability", "--minimum-context", "--provider", "--model"].includes(option)) {
+    if (!["--prompt", "--env-file", "--max-output-tokens", "--require-capability", "--minimum-context", "--provider", "--model", "--transport"].includes(option)) {
       invalid(`Unknown execute option: ${option}`);
     }
     const value = args[++index];
@@ -94,6 +101,7 @@ function parse(args: readonly string[]): ParsedExecuteArguments {
     }),
     providerFilter: values.get("--provider") ?? null,
     modelFilter: values.get("--model") ?? null,
+    transportFilter: values.get("--transport") ?? null,
   });
 }
 
@@ -216,12 +224,14 @@ export const executeCommandHandler: CommandHandler = async ({ args, repositoryRo
     executionPolicy,
     credentialAliases: bindings.credentialAliases,
     providerEndpoints: bindings.endpoints,
+    qualifiedTaskClassesByRoute: (await observeQualifiedTaskClasses(repositoryRoot, new Date(observedAt))).byRoute,
   });
 
   const summary = universe.catalogueSummary;
   const selectable = universe.candidates.filter((entry) =>
     (parsed.providerFilter === null || entry.provider === parsed.providerFilter || entry.transport === parsed.providerFilter)
-    && (parsed.modelFilter === null || entry.model === parsed.modelFilter));
+    && (parsed.modelFilter === null || entry.model === parsed.modelFilter)
+    && (parsed.transportFilter === null || entry.transport === parsed.transportFilter));
 
   // Prefer a route with a durable successful invocation, then stable identity.
   const ordered = Object.freeze([...selectable].sort((left, right) => {

@@ -8,6 +8,7 @@ import {
   type EffectiveCostPolicy, type ExecutionEconomicAuthorization,
 } from "./execution-economics.ts";
 import { permitsExecution, type ProviderExecutionPolicy } from "./provider-policy.ts";
+import { unmetCapabilities, type RouteCapabilityEvidence } from "./capabilities.ts";
 import type { AuthenticatedTransportCapability, ExecutionTransportId } from "./transports.ts";
 
 /**
@@ -30,7 +31,19 @@ export interface ExecutionCandidate {
   readonly costClass: string;
   /** How eligibility was established, e.g. an operator free-quota authorization. */
   readonly economicBasis: string | null;
+  /**
+   * Catalogue-observed model features, or the transport's own for a local agent.
+   * What the endpoint can do, known before anyone calls it.
+   */
   readonly capabilityNames: readonly string[];
+  /**
+   * Task classes this route has earned through qualification. Optional because
+   * absent and empty mean the same thing and must: a task class is held only
+   * when a stored record says so, so "no field" and "no records" are one state,
+   * and encoding them differently would invite a caller to treat absence as
+   * unknown and then guess.
+   */
+  readonly qualifiedTaskClasses?: readonly string[];
   readonly contextLimit: number | null;
   readonly outputLimit: number | null;
   readonly state: "ROUTABLE" | "AVAILABLE";
@@ -83,6 +96,11 @@ export interface RouteUniverseInput {
   readonly executionPolicy?: ProviderExecutionPolicy;
   /** Live capability observations for the local agent CLI transports. */
   readonly localAgentCapabilities: readonly AuthenticatedTransportCapability[];
+  /**
+   * Task classes each route has earned, keyed `provider:model`, and `provider`
+   * alone for a transport that selects its own model. Absent means none.
+   */
+  readonly qualifiedTaskClassesByRoute?: ReadonlyMap<string, readonly string[]>;
 }
 
 export interface RouteUniverse {
@@ -112,6 +130,7 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
     credentialAliases: input.credentialAliases,
     providerEndpoints: input.providerEndpoints,
     executionPolicy: input.executionPolicy,
+    qualifiedTaskClassesByRoute: input.qualifiedTaskClassesByRoute,
   });
 
   const candidates: ExecutionCandidate[] = [];
@@ -139,6 +158,7 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       costClass: entry.costClass,
       economicBasis: entry.economicBasis,
       capabilityNames: Object.freeze([...((model?.capabilityNames ?? []) as readonly string[])]),
+      qualifiedTaskClasses: entry.qualifiedTaskClasses,
       contextLimit: model?.limits.context ?? null,
       outputLimit: model?.limits.output ?? null,
       state: entry.state,
@@ -191,11 +211,21 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       dispositions.push(Object.freeze({ transport, admitted: false, reason: economics.code }));
       continue;
     }
-    const missing = input.requirement.requiredCapabilities.filter(
-      (name) => !(profile.capabilityNames as readonly string[]).includes(name),
-    );
-    if (missing.length > 0) {
+    // A local agent is matched the same way a catalogue model is: its own
+    // transport features against model-feature requirements, and its stored
+    // qualification records against task-class ones. A CLI that has never sat
+    // the suite holds no task class, however capable its underlying model is.
+    const agentEvidence: RouteCapabilityEvidence = {
+      modelFeatures: profile.capabilityNames as readonly string[],
+      qualifiedTaskClasses: input.qualifiedTaskClassesByRoute?.get(profile.provider) ?? [],
+    };
+    const agentUnmet = unmetCapabilities(input.requirement.requiredCapabilities, agentEvidence);
+    if (agentUnmet.missingModelFeatures.length > 0) {
       dispositions.push(Object.freeze({ transport, admitted: false, reason: "CAPABILITY_MISSING" }));
+      continue;
+    }
+    if (agentUnmet.unqualifiedTaskClasses.length > 0) {
+      dispositions.push(Object.freeze({ transport, admitted: false, reason: "CAPABILITY_UNQUALIFIED" }));
       continue;
     }
     if (input.requirement.minimumContextTokens !== null && profile.contextLimit < input.requirement.minimumContextTokens) {
@@ -224,6 +254,11 @@ export function deriveRouteUniverse(input: RouteUniverseInput): RouteUniverse {
       costClass: "subscription-included",
       economicBasis: economics.basis,
       capabilityNames: profile.capabilityNames,
+      qualifiedTaskClasses: Object.freeze([
+        ...(input.qualifiedTaskClassesByRoute?.get(
+          selected === null ? profile.provider : `${profile.provider}:${selected}`,
+        ) ?? agentEvidence.qualifiedTaskClasses),
+      ]),
       contextLimit: profile.contextLimit,
       outputLimit: profile.outputLimit,
       state: "ROUTABLE" as const,

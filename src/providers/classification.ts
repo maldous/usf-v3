@@ -5,6 +5,7 @@ import {
   type EconomicEligibilityCode, type EffectiveCostPolicy, type ExecutionEconomicAuthorization,
 } from "./execution-economics.ts";
 import { permitsExecution as policyDecision } from "./provider-policy.ts";
+import { unmetCapabilities, type RouteCapabilityEvidence } from "./capabilities.ts";
 import type { ExecutionTransportId } from "./transports.ts";
 
 /**
@@ -34,6 +35,7 @@ export type ClassificationReason =
   | "SESSION_UNAUTHENTICATED"
   | EconomicEligibilityCode
   | "CAPABILITY_MISSING"
+  | "CAPABILITY_UNQUALIFIED"
   | "CONTEXT_LIMIT_INSUFFICIENT"
   | "OUTPUT_LIMIT_INSUFFICIENT"
   | "NO_OBSERVED_SUCCESSFUL_INVOCATION"
@@ -63,6 +65,12 @@ export interface ClassificationInput {
   readonly providerEndpoints?: ReadonlyMap<string, string>;
   /** Execution policy from graph authority; reserved families are not routable. */
   readonly executionPolicy?: import("./provider-policy.ts").ProviderExecutionPolicy;
+  /**
+   * Task classes each `provider:model` route has earned, from stored
+   * qualification records. Absent means none are earned, which is the correct
+   * default: a task class is never inferred from catalogue metadata.
+   */
+  readonly qualifiedTaskClassesByRoute?: ReadonlyMap<string, readonly string[]>;
 }
 
 export interface ModelClassification {
@@ -79,6 +87,10 @@ export interface ModelClassification {
   readonly economicCode: EconomicEligibilityCode | null;
   readonly state: ReadinessState;
   readonly reason: ClassificationReason;
+  /** Catalogue-observed model features for this exact model. */
+  readonly modelFeatures: readonly string[];
+  /** Qualification-earned task classes for this exact route. */
+  readonly qualifiedTaskClasses: readonly string[];
 }
 
 export interface ClassificationSummary {
@@ -153,6 +165,15 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
     const baseUrl = input.providerEndpoints?.get(provider.providerRoute) ?? null;
     for (const model of provider.models) {
       const costClass = catalogueCostClass(model.cost);
+      // Both capability kinds ride on every classification, including the ones
+      // that stop early. A route refused for a missing credential still has
+      // catalogue features, and reporting them is what lets an operator see why
+      // a route would be worth a credential.
+      const routeIdentity = `${provider.providerRoute}:${model.route.model}`;
+      const capabilityEvidence: RouteCapabilityEvidence = {
+        modelFeatures: Object.freeze([...((model.capabilityNames ?? []) as readonly string[])]),
+        qualifiedTaskClasses: Object.freeze([...(input.qualifiedTaskClassesByRoute?.get(routeIdentity) ?? [])]),
+      };
       const base = {
         provider: provider.providerRoute,
         model: model.route.model,
@@ -160,6 +181,8 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
         transport,
         baseUrl,
         costClass,
+        modelFeatures: capabilityEvidence.modelFeatures,
+        qualifiedTaskClasses: capabilityEvidence.qualifiedTaskClasses,
       } as const;
 
       // Execution authorization is checked before anything else, so a reserved
@@ -219,10 +242,19 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
         continue;
       }
 
-      const capabilityNames = (model.capabilityNames ?? []) as readonly string[];
-      const missing = input.requirement.requiredCapabilities.filter((name) => !capabilityNames.includes(name));
-      if (missing.length > 0) {
+      // Each vocabulary is matched against its own evidence. A model feature is
+      // read from this model's catalogue metadata; a task class comes only from
+      // a stored qualification record for this exact route. They are reported
+      // under different reasons because they are fixed differently: a missing
+      // feature means pick another model, an unqualified task class means run
+      // the suite against this one.
+      const unmet = unmetCapabilities(input.requirement.requiredCapabilities, capabilityEvidence);
+      if (unmet.missingModelFeatures.length > 0) {
         classifications.push(Object.freeze({ ...base, credentialName, economicBasis: economics.basis, economicCode: economics.code, state: "ECONOMICALLY_ELIGIBLE", reason: "CAPABILITY_MISSING" }));
+        continue;
+      }
+      if (unmet.unqualifiedTaskClasses.length > 0) {
+        classifications.push(Object.freeze({ ...base, credentialName, economicBasis: economics.basis, economicCode: economics.code, state: "ECONOMICALLY_ELIGIBLE", reason: "CAPABILITY_UNQUALIFIED" }));
         continue;
       }
       const contextLimit = model.limits.context;
@@ -238,8 +270,7 @@ export function classifyCatalogue(input: ClassificationInput): Readonly<{
         continue;
       }
 
-      const routeId = `${provider.providerRoute}:${model.route.model}`;
-      if (!observed.has(routeId)) {
+      if (!observed.has(routeIdentity)) {
         classifications.push(Object.freeze({ ...base, credentialName, economicBasis: economics.basis, economicCode: economics.code, state: "ROUTABLE", reason: "NO_OBSERVED_SUCCESSFUL_INVOCATION" }));
         continue;
       }

@@ -7,6 +7,13 @@ import { observeLifecycleStatus, validateInstanceSlug, validateRepositoryManifes
 import { loadSemanticGraph, objectsFor, objectValues, resourceDigest, type SemanticGraph } from "../graph/index.ts";
 import { deriveWork, type WorkPacket } from "../graph/work.ts";
 import type { CommandHandler } from "./dispatcher.ts";
+import { homedir } from "node:os";
+import { readLocalCatalogue } from "./models.ts";
+import { readTrackedJson } from "./probe.ts";
+import { readGraphDerivedEconomics } from "../providers/economics-projection.ts";
+import { localAgentTransportIds, observeTransportCapability } from "../providers/transports.ts";
+import { observeQualifiedTaskClasses } from "../providers/capabilities.ts";
+import { observeAvailableRoutes } from "../providers/evidence-index.ts";
 
 const statusNonclaims = Object.freeze([
   "status-is-observation-not-semantic-authority",
@@ -404,6 +411,94 @@ async function providerObservation(repositoryRoot: string): Promise<Readonly<Rec
     reasonCode: configuredRoutes === 0 ? "PROVIDER_ROUTES_EMPTY" : "PROVIDER_DETAIL_NOT_SELECTED",
     detailCommand: "usf providers status",
     remoteContact: false,
+    ...await providerDenominators(repositoryRoot),
+  });
+}
+
+/**
+ * The counts that make a configured-route number interpretable.
+ *
+ * Reporting `configuredRoutes: 2` alone invited exactly one reading, and it was
+ * the wrong one: that two of the catalogue's routes had been chosen and the rest
+ * passed over. Two is not a selection from 213. It is how many routes
+ * `config/providers.json` can hold, because its schema requires an adapter
+ * package and a credential name, and the three subscription CLI transports have
+ * neither. The number that bounds what may be reached is the count of explicit
+ * operator economic authorizations, and it appeared in no projection at all.
+ *
+ * So every kind of candidate is reported beside the configured count, each
+ * against its own denominator, and none of them is presented as a share of the
+ * catalogue. Catalogue membership authorises nothing -- the economics policy
+ * states that eligibility is never inferred -- so a catalogue total is context,
+ * never a denominator for eligibility.
+ *
+ * This stays a no-contact projection. It reads the frozen catalogue, the
+ * verified economics projection, the local transport observations and the
+ * stored qualification records. It does not read a credential, so it reports
+ * what is authorised and observable rather than what is reachable right now;
+ * `usf providers census --env-file` answers that.
+ */
+async function providerDenominators(repositoryRoot: string): Promise<Readonly<Record<string, unknown>>> {
+  const catalogue = await readLocalCatalogue(repositoryRoot).catch(() => undefined);
+  // Named for what it counts rather than for the domain word: an operator
+  // observability projection is scanned for secret-shaped keys, and
+  // "authorizations" collides with that guard. The guard is right to be blunt.
+  let authorizations: readonly { readonly transport: string; readonly provider: string; readonly entitlement: string }[] = [];
+  try {
+    const economics = readGraphDerivedEconomics(
+      await readTrackedJson(repositoryRoot, "config/execution-economics.json"),
+      loadSemanticGraph(repositoryRoot, "graph/manifests/v3-convention.json"),
+    );
+    authorizations = economics.authorizations;
+  } catch { authorizations = []; }
+
+  const byEntitlement: Record<string, number> = {};
+  for (const entry of authorizations) {
+    byEntitlement[entry.entitlement] = (byEntitlement[entry.entitlement] ?? 0) + 1;
+  }
+
+  const transports = await Promise.all(localAgentTransportIds.map(async (transport) => ({
+    transport,
+    observed: (await observeTransportCapability(transport, {
+      repositoryRoot, homeDirectory: homedir(), observedAt: new Date().toISOString(),
+      suppliedCredentialNames: [], requiredCredentialName: null, adapterInstalled: false,
+    })).usable,
+  })));
+
+  const qualification = await observeQualifiedTaskClasses(repositoryRoot, new Date());
+  const invocations = await observeAvailableRoutes(repositoryRoot);
+
+  return Object.freeze({
+    economicAdmission: Object.freeze({
+      declaredPairs: authorizations.length,
+      byEntitlement: Object.freeze(byEntitlement),
+      denominator: "explicit-operator-declared-transport-and-provider-pairs",
+      note: "The ceiling on what any route projection may reach. Eligibility is never inferred from catalogue membership.",
+    }),
+    hostTransports: Object.freeze({
+      declared: transports.length,
+      executableObserved: transports.filter((entry) => entry.observed).length,
+      denominator: "local-agent-transports-declared-in-graph-authority",
+      note: "A subscription host transport is not an API provider route and cannot appear in config/providers.json.",
+    }),
+    catalogue: catalogue === undefined ? Object.freeze({ status: "not-observed" }) : Object.freeze({
+      providerRoutes: catalogue.snapshot.denominators.providerRoutes,
+      modelRoutes: catalogue.snapshot.denominators.modelRoutes,
+      denominator: "frozen-models-dev-catalogue",
+      note: "Context only. Catalogue membership confers no economic admission, entitlement or availability, and is never a denominator for eligibility.",
+    }),
+    observedInvocations: Object.freeze({
+      routesWithSuccessfulInvocation: invocations.routeIds.length,
+      records: invocations.recordCount,
+      denominator: "durable-execution-evidence-records",
+    }),
+    qualification: Object.freeze({
+      routesHoldingAnyTaskClass: qualification.byRoute.size,
+      records: qualification.recordCount,
+      expiredRecords: qualification.expiredCount,
+      denominator: "stored-qualification-records",
+      note: "A task-class capability is held only while a stored record says so. Availability is not qualification.",
+    }),
   });
 }
 

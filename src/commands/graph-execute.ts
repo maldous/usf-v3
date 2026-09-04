@@ -31,7 +31,25 @@ import {
 const typePredicate = "urn:usf:predicate:type";
 const workUnitType = "urn:usf:type:SemanticWorkUnit";
 const promptPredicate = "urn:usf:predicate:prompt";
-const capabilityPredicate = "urn:usf:predicate:requiredCapability";
+/**
+ * Two spellings for one relationship, read as one.
+ *
+ * Work packets in the graph declare `modelCapability` -- 69 assertions across
+ * nine task classes. This dispatcher read `requiredCapability`, of which the
+ * graph holds none. The requirement was therefore always empty and no capability
+ * a work unit declared has ever constrained a dispatch. The mismatch survived
+ * because an empty requirement never refuses anything, so it looked like a
+ * permissive router rather than a broken one.
+ *
+ * Both names are accepted rather than one being rewritten, for the same reason
+ * the foundation dependency seed kept its retired spelling: released graphs
+ * already carry `modelCapability`, and a reader that accepts both can move
+ * without a moment where the reader and the graph disagree.
+ */
+const capabilityPredicates = Object.freeze([
+  "urn:usf:predicate:modelCapability",
+  "urn:usf:predicate:requiredCapability",
+] as const);
 const outputTokensPredicate = "urn:usf:predicate:maximumOutputTokens";
 const contextTokensPredicate = "urn:usf:predicate:minimumContextTokens";
 const maximumInputBytes = 4 * 1024 * 1024;
@@ -182,7 +200,9 @@ function extractWorkUnits(quads: readonly Quad[]): readonly SemanticWorkUnit[] {
     return Object.freeze({
       iri,
       prompt: prompts[0]!,
-      requiredCapabilities: Object.freeze([...new Set(literalsFor(quads, iri, capabilityPredicate))].sort()),
+      requiredCapabilities: Object.freeze([...new Set(
+        capabilityPredicates.flatMap((predicate) => literalsFor(quads, iri, predicate)),
+      )].sort()),
       maximumOutputTokens: numeric(outputTokensText[0], 1024) ?? 1024,
       minimumContextTokens: numeric(contextText[0], null),
       sourceAssertionDigest: canonicalQuadDigest(ownQuads),
