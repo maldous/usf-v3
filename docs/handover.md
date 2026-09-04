@@ -43,12 +43,52 @@ and fails closed without it.
 | ANQR | 367/367, typecheck 0, architecture conforming, `validate` exit 0 |
 | Architecture | population **171**, unaccounted **0**, unexplained orphans **0**, 9 of 9 requirements CONFORMING |
 | Routing | 81 routable candidates, **0** admitted on catalogue price, 8 of 8 accounts declared |
-| Qualified routes | **0** — the gate is connected and has nothing to admit until the suite can be passed |
+| Qualified routes | **0** — the gate is connected, no longer expires, and has nothing to admit until the graders are repaired |
 | Release assurance | CONFORMING; required 1, satisfied 1, missing 0, failed 0 |
 | Closure | NOT_ASSESSED **72 → 1**; SATISFIED 719 → 775; capabilities fully satisfied 95 → **109** |
 | Remaining (ANQR) | 15 BLOCKED + 1 NOT_ASSESSED, **all architecture facets**, one exact cause |
 | Source accounting (ANQR) | 151 = 32 + 119 + **0 unaccounted** |
 | Next | the ANQR architecture evidence-class contradiction, then the testing rung |
+
+### A qualification no longer expires, and the CLI stopped hiding a command
+
+Full record in
+[`acceptance/2026-09-04-qualification-authority-and-cli-validity.md`](acceptance/2026-09-04-qualification-authority-and-cli-validity.md).
+
+**The 900-second lifetime had no rationale.** `validitySeconds: 900` entered in
+the same commit that set `probeFreshnessSeconds: 900`, and the decision record
+justifies neither. They are different kinds of fact: whether a route answers now
+decays, whether a model demonstrated competence does not. The routing replay had
+decided it by identity all along — comparing corpus, policy and route digests and
+never the clock — and only `observeQualifiedTaskClasses` disagreed. The newer
+consumer now agrees with the established one, and the time parameter is gone, so
+wall-clock expiry is unrepresentable rather than merely absent.
+
+**The graders are why nothing qualifies, and eight of sixteen leak the answer.**
+Run for real: `groq:openai/gpt-oss-120b` answered all four typescript cases and
+passed one — the `json-schema` one. Eight cases require the model to reproduce
+USF's own private vocabulary the prompt never supplies. One asked for the
+TypeScript immutability modifier, got "The modifier is `readonly`", and scored
+zero. The repair is designed in §4 of the record and **is the next step**; it
+touches `config/qualification.json`, a different owner, and was not rushed into
+this chain.
+
+**`probe qualify` was implemented, reachable, and absent from help** — while the
+command's own refusal message named it. `profile build`, `export` and `import`
+were implemented, registered in the graph, and likewise absent. All four are in
+help now, and a test asserts the dispatcher and help agree in both directions.
+
+**Every provider adapter argv was validated against the installed CLI** — claude
+2.1.251, codex-cli 0.152.0, agy 1.1.26 — flags and accepted values. All valid.
+One doc defect fixed: the claude adapter's comment claimed a `--max-turns` flag
+that its own inline comment three lines below said does not exist.
+
+### `rdf-semantics` is outside Hermes, and no grader should be added for it
+
+`modelCapability` on a work packet and `requiredCapability` on a dispatched unit
+are different predicates. All nine `rdf-semantics` packets were realised through
+the staged chain by an operator, not dispatched; Hermes has three prompt shapes
+and none asks for N-Quads. Not stale, not a backlog, not a qualification gap.
 
 ### Provider routing reads authority now, and the qualification gate is live
 
@@ -254,12 +294,20 @@ before computing any verdict.
 
 ### Next work item
 
-**D5: decouple qualification from the account-tier receipt and justify its
-lifetime.** Until it lands, the qualification gate D3 connected has nothing to
-admit: the store holds one expired `UNQUALIFIED` record, `validitySeconds` is
-900, and four of the suite's sixteen graders are `exact` string matches on prose.
-Then D6 (census verdicts are unconditional literals), D7 (let groq earn narrow
-code repair) and D8 (`rdf-semantics` has no suite case and no dispatch path).
+**Repair the qualification graders.** The freshness half of D5 is done; this is
+the half that still blocks everything. Eleven of sixteen graders are brittle and
+eight leak USF's private vocabulary as the expected answer, so no model can
+qualify for reasons unrelated to competence. The replacement is designed
+case-by-case in §4 of the record, needs no new grader kind, and must keep grading
+pure because `routeWork` replays it. Owner: `provider-semantic-qualification`.
+
+Then run the suite across the authorized population, and only then decide whether
+to propagate `modelCapability` into dispatched `requiredCapability` — turning that
+on today would stop dispatch entirely, since nothing is qualified.
+
+Also open: D6 (census verdicts are unconditional literals), the `usf graph`
+refusal message that omits `lanes`, and the `RegisteredCliCommand` gap (27 of
+about 74 surface points declared).
 
 Also open, unchanged: the ANQR architecture evidence-class contradiction (§6 of the acceptance record),
 which is graph authority plus a USF source change through their own staged
@@ -299,6 +347,7 @@ ledger, which is the live operational state and not an archive.
 
 | Closed | Boundary | Detail |
 |---|---|---|
+| 2026-09-04 | Qualification freshness repaired; CLI surface validated and reconciled | [`acceptance/2026-09-04-qualification-authority-and-cli-validity.md`](acceptance/2026-09-04-qualification-authority-and-cli-validity.md) |
 | 2026-09-04 | Provider surface evaluated; routing assurance programme landed (D1-D3) | [`acceptance/2026-09-04-provider-surface-evaluation.md`](acceptance/2026-09-04-provider-surface-evaluation.md) |
 | 2026-09-04 | Foundation architecture declared and decidable; population classified; release assurance composed | [`acceptance/2026-09-04-architecture-assurance.md`](acceptance/2026-09-04-architecture-assurance.md) |
 | 2026-09-04 | Corpus-wide assurances moved to repository scope | `31f2a88` |
