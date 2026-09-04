@@ -518,3 +518,11 @@
 <urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:requiresDeliveryContract> <urn:usf:delivery-contract:networkingress> <urn:anqr:graph:delivery-posture> .
 <urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:apiruntime> <urn:anqr:graph:delivery-posture> .
 <urn:anqr:delivery-capability:visualcustomisation> <urn:anqr:predicate:requiresDeliveryPort> <urn:usf:capability-port:auditledger> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:parity-disposition:surfaceparity> <urn:anqr:predicate:appliesToFacet> <urn:anqr:delivery-facet:architecturesurfaceparity> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-facet:architecturesurfaceparity> <urn:anqr:predicate:dispositionedBy> <urn:anqr:parity-disposition:surfaceparity> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-facet:architecturesurfaceparity> <urn:usf:predicate:notRequiredReason> "This facet is derivable and must not be satisfied in this revision. Parity is a relation between realisations of the same action, so it needs a second surface that genuinely produces artefacts. Building one to satisfy the count is the specific thing three directives forbid, and a work unit derived for it should be declined rather than worked." <urn:anqr:graph:delivery-posture> .
+<urn:anqr:predicate:appliesToFacet> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:predicate:dispositionedBy> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:parity-disposition:localeparity> <urn:anqr:predicate:appliesToFacet> <urn:anqr:delivery-facet:architecturelocaleparity> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-facet:architecturelocaleparity> <urn:anqr:predicate:dispositionedBy> <urn:anqr:parity-disposition:localeparity> <urn:anqr:graph:delivery-posture> .
+<urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:notRequiredReason> "Required and unrealised. The eighty-six locale resources exist as legacy evidence at 1676 keys each and are not in the product repository; the current semantic message denominator has not been derived. A subtest asserting this facet would be the one thing the exercise forbids." <urn:anqr:graph:delivery-posture> .
