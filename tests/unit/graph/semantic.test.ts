@@ -12,7 +12,7 @@ const contract = "urn:anqr:contract:decoded-payload:1";
 const manifest = "graph/products/anqr/manifest.json";
 
 test("strict bootstrap N-Quads are blank-node-free and compile to a stable content digest", () => {
-  const source = readFileSync(resolve(root, "graph/anqr-first-slice.nq"), "utf8");
+  const source = readFileSync(resolve(root, "graph/products/anqr/decoded-payload.nq"), "utf8");
   const parsed = parseStrictNQuads(source, "urn:anqr:graph:decoded-payload");
   assert.ok(parsed.length > 20);
   assert.throws(() => parseStrictNQuads("_:b <urn:p> <urn:o> <urn:g> .", "urn:g"), /NQUADS_UNSUPPORTED_SYNTAX/);

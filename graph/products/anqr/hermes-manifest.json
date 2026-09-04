@@ -7,9 +7,9 @@
   ],
   "sources": [
     {
-      "path": "graph/products/anqr/hermes-management.nq",
+      "path": "graph/products/anqr/hermes-operation.nq",
       "format": "application/n-quads",
-      "graph": "urn:anqr:graph:hermes-management",
+      "graph": "urn:anqr:graph:hermes-operation",
       "role": "product-contract",
       "validationProfile": "bootstrap-nquads-v1"
     }

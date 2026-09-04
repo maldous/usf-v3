@@ -215,6 +215,41 @@ its own construction-authority lane.
 A filename is not a semantic identity, so this is cosmetic debt with a named
 cause and a known fix, rather than ambiguity in the graph.
 
+### Debt closed, and one item that replaced it
+
+Defects 4 and 5 are **fixed**. `usf transact` now admits `delete-file`, so a
+graph source move is one atomic transaction whose validated postimage contains
+neither a missing source nor two copies: existing, plus created, minus deleted.
+`graph/anqr-first-slice.nq` is now `graph/products/anqr/decoded-payload.nq` and
+the product hermes source is `hermes-operation.nq`. Zero duplicate basenames
+across the graph tree and zero product sources at the foundation root.
+
+The CLI prose is **fixed**: the command surface says foundation, not core.
+
+The rename taught two things worth keeping:
+
+- **A source may be selected by more than one manifest.** Updating the one that
+  was checked left a second manifest naming a path that no longer existed, and
+  the loader caught it.
+- **A path's reference surface is wider than its manifests.** A work read path,
+  a foundation contract's `permitsWrite` and a gate's `excludedModifiedPath` all
+  named the old filename.
+
+Following the rename into those last two moved the live provider lane's semantic
+digest from `2e6a4780` to `1869c5c0` and failed fifteen basis-pinned tests. It
+was reverted, the lane restored exactly, and the reason is the point: **a
+foundation contract naming a product path is a genuine cross-ownership defect,
+and fixing it costs a foundation lane.** It belongs in its own measured
+migration, not folded into a rename pass. Until then a `permitsWrite` or an
+`excludedModifiedPath` naming a path that no longer exists permits and excludes
+nothing, so the residue is inert.
+
+**The one remaining item**, therefore, is not the two filenames but this:
+`graph/semantic-first.nq` and `graph/integration.nq` name
+`graph/products/anqr/hermes-management.nq`, and `graph/profile-authority.nq`
+records it in a historical carrier intent that should keep it. The first two are
+cross-ownership to migrate deliberately; the third is §6 retention.
+
 ### Adversarial sweep outcomes
 
 Deliberately retained, under §6:
@@ -240,7 +275,8 @@ construction-authority lane, so they are named rather than half-done:
 The remaining live residue, justified rather than fixed:
 
 - `src/commands/graph-integrity.ts` holds a hardcoded fallback list of
-  convention-exempt graphs which still names `urn:usf:graph:anqr-first-slice`.
+  convention-exempt graphs which still names `urn:usf:graph:anqr-first-slice`,
+  a graph identity that no longer exists at all.
   It is reached only when the graph declares no exempt graphs, and the graph
   declares nine, so the current corpus never reads it. Correcting one string
   literal in an unreachable branch would need a foundation source change through

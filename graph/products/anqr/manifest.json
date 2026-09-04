@@ -7,7 +7,7 @@
   ],
   "sources": [
     {
-      "path": "graph/anqr-first-slice.nq",
+      "path": "graph/products/anqr/decoded-payload.nq",
       "format": "application/n-quads",
       "graph": "urn:anqr:graph:decoded-payload",
       "role": "product-contract",
