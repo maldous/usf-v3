@@ -75,7 +75,9 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.equal(publish.externalContact, "none");
   assert.equal(publish.historyScan, "none");
   assert.match(publish.synopsis[0]!, /--profile urn:usf:profile:v3-semantic-first:1/u);
-  assert.match(publish.options[0]!.description, /isolated core authority profile/u);
+  // "foundation", not "core": the naming standard retires core as a name for
+  // the foundation, and the command surface was the last place still using it.
+  assert.match(publish.options[0]!.description, /isolated foundation authority profile/u);
   assert.match(publish.authorityEffect, /No Git, signature, provider, runtime or historical-repository effect/u);
 
   const applyHelp = helpCommandResult(["apply", "--json"]);
