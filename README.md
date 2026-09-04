@@ -1,10 +1,27 @@
 # USF V3
 
-USF V3 is a repository-contained semantic delivery foundation. ANQR is its
-first product realisation, not a product-specific branch of the kernel. V3
-turns a versioned product profile and its bounded semantic closure into
+**USF is the Universal Service Foundation**: a repository-contained, reusable
+semantic delivery foundation. The graph is authority — it defines durable
+meaning, capabilities, contracts, constraints, acceptance obligations and
+evidence requirements. Models generate candidate implementations; they do not
+define truth.
+
+**ANQR is a product**, not a branch of USF and not a layer of it. USF and ANQR
+are independently versioned semantic authorities with separate namespaces and
+separate authority closures. An ANQR **profile revision** binds explicitly to
+an identified USF **foundation revision**; ANQR consumes identified USF
+capabilities through that binding and never "latest".
+
+**Hermes** performs bounded external realisation and orchestration. It is not
+semantic authority, not part of any product's identity, and never a synonym
+for USF.
+
+V3 turns a versioned product profile and its bounded semantic closure into
 isolated candidate changes, deterministic observations, admitted evidence,
 proof, and coherent source checkpoints.
+
+Naming, namespaces and repository conventions are defined once in
+[`docs/naming.md`](docs/naming.md), which is the canonical source.
 
 The authoritative programme directive is [`GOAL.md`](GOAL.md), an index carrying
 the terminal criteria and the nonclaims, with its remaining sections one file
@@ -44,7 +61,7 @@ The default graph manifest contains reusable USF foundation knowledge only.
 Select a product or self-host overlay explicitly:
 
 ```sh
-./bin/usf query --manifest graph/products/anqr/manifest.json --contract urn:usf:contract:anqr-decoded-payload:1
+./bin/usf query --manifest graph/products/anqr/manifest.json --contract urn:anqr:contract:decoded-payload:1
 ./bin/usf work --manifest graph/manifests/self-host.json --selector profile:urn:usf:profile:v3-self-host:1
 ./bin/usf work --manifest graph/manifests/self-host-hermes.json --selector urn:usf:work:hermes-management-facade
 ./bin/usf work --manifest graph/products/anqr/hermes-manifest.json --selector profile:urn:anqr:profile:hermes-bau:1

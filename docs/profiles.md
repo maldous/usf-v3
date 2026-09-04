@@ -90,7 +90,7 @@ are both **0**: every packet in it is complete.
 | `urn:anqr:profile:decoded-payload-bootstrap:1` | `anqr-decoded-payload:1` alone — the bootstrap that brings the contract into existence before any lane selects it |
 
 Note what this shows: a product profile selects **core** contracts and adds its
-own. It does not fork the foundation. `urn:usf:contract:anqr-decoded-payload:1`
+own. It does not fork the foundation. `urn:anqr:contract:decoded-payload:1`
 is in the `urn:usf:` namespace because the contract is a foundation obligation
 about a product, not a product-local invention.
 
