@@ -1,6 +1,5 @@
 import { canonicalDigest, canonicalJson, type JsonValue } from "../core/canonical.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
-import type { ProviderRouteConfig } from "./config.ts";
 // ---------------------------------------------------------------------------
 // Qualification observations
 //
