@@ -6,7 +6,7 @@ import type { ProviderRouteConfig } from "../../../src/providers/config.ts";
 import {
   answerDigest, promptDigest, sealQualificationObservation,
   type QualificationObservation,
-} from "../../../src/providers/qualification-observation.ts";
+} from "../../../src/providers/qualification.ts";
 import {
   QualificationError,
   createHiddenPromptProjections,
@@ -193,7 +193,11 @@ test("semantic qualification is deterministic, task-scoped, immutable, and binds
   assert.equal(first.externalContact, false);
   assert.equal(first.authorityEffect, "none");
   assert.match(first.nonclaims[0]!, /grant no write, routing, roster/);
-  assert.equal(first.nonclaims.some((claim) => claim.includes("caller-supplied replay inputs")), true);
+  // The old non-claim said answers were caller-supplied replay inputs. That is
+  // no longer true and its replacement says what is: each graded answer is
+  // bound to the invocation that produced it.
+  assert.equal(first.nonclaims.some((claim) => claim.includes("bound to the invocation that produced it")), true);
+  assert.equal(first.nonclaims.some((claim) => claim.includes("no economic authorization")), true);
   assert.equal(first.nonclaims.some((claim) => claim.includes("not confidential hidden holdouts")), true);
   assert.equal(Object.isFrozen(first), true);
   assert.equal(Object.isFrozen(first.profile.requested), true);

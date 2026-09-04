@@ -1,6 +1,6 @@
 import { canonicalDigest } from "../core/canonical.ts";
-import { observationSetDigest, type QualificationObservation } from "./qualification-observation.ts";
 import {
+  observationSetDigest, type QualificationObservation,
   qualifySemanticProfile,
   qualificationDimensions,
   qualificationRoles,
@@ -417,16 +417,28 @@ function includesAll(have: readonly string[], required: readonly string[]): bool
   const values = new Set(have); return required.every((value) => values.has(value));
 }
 function catalogueKey(provider: string, model: string): string { return `${provider}\u0000${model}`; }
-function qualificationKey(routeDigest: string, profileDigest: string, taskClass: string): string {
-  return `${routeDigest}\u0000${profileDigest}\u0000${taskClass}`;
+/**
+ * Qualifications are found by route identity rather than by a digest of the
+ * route configuration. The configuration carries the declared cost and
+ * entitlement, so keying on it made an economics edit silently orphan every
+ * qualification for that route -- they would not be refused, they would simply
+ * stop being found, and the route would report SEMANTIC_QUALIFICATION_MISSING
+ * as if it had never been assessed.
+ */
+function routeIdentityKey(provider: string, model: string): string {
+  return `${provider}\u0000${model}`;
+}
+function qualificationKey(routeIdentity: string, profileDigest: string, taskClass: string): string {
+  return `${routeIdentity}\u0000${profileDigest}\u0000${taskClass}`;
 }
 
 function replaySourceKey(source: SemanticQualificationReplaySourceForRouting): string {
-  // Keyed by the observation set rather than by the route configuration. A
-  // qualification is identified by the invocations it rests on; the route's
-  // declared cost and entitlement are economics and must not change which
-  // qualification a replay is taken to be.
-  return qualificationKey(observationSetDigest(source.observations), exactDigest(source.profile), source.taskClass);
+  const first = source.observations[0]!;
+  return qualificationKey(
+    routeIdentityKey(first.provider, first.requestedModel),
+    exactDigest(source.profile),
+    source.taskClass,
+  );
 }
 
 function derivedSemanticDigests(core: Readonly<CoreSemanticBinding>, product: ProductSemanticBinding): Readonly<{
@@ -703,7 +715,9 @@ function validateInput(input: RoutingInput, trustedAuthority: TrustedSemanticQua
   const qualificationKeys = new Set<string>();
   for (const qualification of input.semanticQualifications) {
     validateSemanticQualification(qualification);
-    const key = qualificationKey(qualification.inputs.observationSetDigest, qualification.profile.profileDigest, qualification.taskClass);
+    const key = qualificationKey(
+      routeIdentityKey(qualification.profile.requested.provider, qualification.profile.requested.model),
+      qualification.profile.profileDigest, qualification.taskClass);
     if (qualificationKeys.has(key)) throw new Error("ROUTE_INPUT_DUPLICATE");
     qualificationKeys.add(key);
   }
@@ -758,10 +772,10 @@ function assess(
   const requiredSemanticTaskClasses = Object.freeze(semanticRequirements.map((requirement) => requirement.taskClass));
   const expectedQualificationProfile = qualificationProfiles.get(route.id);
   const orderedQualificationRecords = Object.freeze(expectedQualificationProfile === undefined ? [] : requiredSemanticTaskClasses
-    .map((taskClass) => semanticQualifications.get(qualificationKey(route.configDigest, expectedQualificationProfile.profileDigest, taskClass)))
+    .map((taskClass) => semanticQualifications.get(qualificationKey(routeIdentityKey(route.provider, route.model), expectedQualificationProfile.profileDigest, taskClass)))
     .filter((record): record is SemanticQualificationForRouting => record !== undefined));
   const orderedReplaySources = Object.freeze(expectedQualificationProfile === undefined ? [] : requiredSemanticTaskClasses
-    .map((taskClass) => replaySources.get(qualificationKey(route.configDigest, expectedQualificationProfile.profileDigest, taskClass)))
+    .map((taskClass) => replaySources.get(qualificationKey(routeIdentityKey(route.provider, route.model), expectedQualificationProfile.profileDigest, taskClass)))
     .filter((source): source is SemanticQualificationReplaySourceForRouting => source !== undefined));
   let exclusionReason: RouteExclusionReason | null = null;
 
@@ -919,7 +933,9 @@ export function routeWork(input: RoutingInput, trustedAuthority: TrustedSemantic
     || left.taskClass.localeCompare(right.taskClass));
   const qualificationGroups = new Map<string, SemanticQualificationForRouting>();
   for (const record of orderedSemanticQualifications) {
-    qualificationGroups.set(qualificationKey(record.inputs.observationSetDigest, record.profile.profileDigest, record.taskClass), record);
+    qualificationGroups.set(qualificationKey(
+      routeIdentityKey(record.profile.requested.provider, record.profile.requested.model),
+      record.profile.profileDigest, record.taskClass), record);
   }
   const replaySources = new Map<string, SemanticQualificationReplaySourceForRouting>();
   for (const source of input.semanticQualificationReplay.sources) replaySources.set(replaySourceKey(source), source);

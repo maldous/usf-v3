@@ -37,7 +37,7 @@ import { proposalBasis } from "../../fixtures/proposal-packet.ts";
 import { createRealisationBasis } from "../../../src/realisation/basis.ts";
 import {
   answerDigest, promptDigest, sealQualificationObservation,
-} from "../../../src/providers/qualification-observation.ts";
+} from "../../../src/providers/qualification.ts";
 
 const digest = (character: string) => `sha256:${character.repeat(64)}`;
 const exactDigest = (value: unknown) => canonicalDigest(value, { rejectAbsolutePaths: true });
@@ -438,12 +438,17 @@ test("same-model routes select only their exact route and profile qualification"
   assert.equal(result.status, "ok");
   assert.equal(result.denominators.eligibleRoutes, 2);
   assert.equal(result.assignments.length, 2);
+  // Two routes may name the same provider and model. They are still distinct
+  // routes with distinct configurations, and each must select the qualification
+  // earned under its own agent profile rather than its sibling's.
+  const selected = result.assignments.map((assignment) =>
+    assignment.qualification.semanticQualification.applicability === "required"
+      ? assignment.qualification.semanticQualification.qualificationDigests[0]
+      : null);
+  assert.equal(new Set(selected).size, 2, "each route selects its own qualification");
   for (const assignment of result.assignments) {
-    assert.equal(assignment.qualification.providerRouteConfigDigest,
-      value.semanticQualifications.find((item) => item.qualificationDigest
-        === (assignment.qualification.semanticQualification.applicability === "required"
-          ? assignment.qualification.semanticQualification.qualificationDigests[0]
-          : null))!.inputs.observationSetDigest);
+    const route = value.routes.find((item) => item.id === assignment.routeId)!;
+    assert.equal(assignment.qualification.providerRouteConfigDigest, route.configDigest);
   }
 });
 
@@ -456,13 +461,21 @@ test("assignment digests change with scoped operational and semantic bindings", 
     semanticQualificationProfiles: [], semanticQualifications: [],
   });
   const cases: RoutingInput[] = [
-    changedProviderConfig,
     changedProbe,
     withPolicy(base, { ...base.policy, acceptedCostClasses: ["free-quota"] }),
     withSemanticBinding(base, createRoutingSemanticBinding({ ...base.work.semanticBinding.core, profileDigest: digest("e") }, base.work.semanticBinding.product)),
   ];
   for (const value of cases) assert.notEqual(routeWork(value).assignments[0]!.assignmentDigest, baseDigest);
   assert.notEqual(routeWork(changedProbe).inputs.probeSetDigest, routeWork(base).inputs.probeSetDigest);
+
+  // An assignment is bound to its own route's configuration rather than to a
+  // digest of the whole provider config file, so editing an unrelated route no
+  // longer invalidates it. The result stays bound to the whole file, which is
+  // where a file-wide change belongs: it changed what the routing considered,
+  // not what this route is.
+  assert.notEqual(routeWork(changedProviderConfig).resultDigest, routeWork(base).resultDigest);
+  assert.equal(routeWork(changedProviderConfig).assignments[0]!.qualification.providerRouteConfigDigest,
+    routeWork(base).assignments[0]!.qualification.providerRouteConfigDigest);
 });
 
 test("product non-applicability is explicit and directional claims are constructed", () => {

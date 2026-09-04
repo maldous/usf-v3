@@ -15,7 +15,7 @@ import {
 import { createJsonSchemaValidator } from "../../../src/schema/index.ts";
 import {
   answerDigest, promptDigest, sealQualificationObservation,
-} from "../../../src/providers/qualification-observation.ts";
+} from "../../../src/providers/qualification.ts";
 
 interface QualificationConfigAsset {
   readonly $schema: "urn:usf:qualification-config:1";

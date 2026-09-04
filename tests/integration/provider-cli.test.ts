@@ -6,7 +6,10 @@ import test, { type TestContext } from "node:test";
 
 import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
 import { normalizeModelsDevCatalogue } from "../../src/providers/catalogue.ts";
-import { createQualificationPolicy, createQualificationSuite } from "../../src/providers/qualification.ts";
+import {
+  answerDigest, createQualificationPolicy, createQualificationSuite,
+  promptDigest, sealQualificationObservation,
+} from "../../src/providers/qualification.ts";
 import { createRoutingSemanticBinding } from "../../src/providers/routing.ts";
 import { observeInstalledAdapter } from "../../src/commands/models.ts";
 import { proposalBasis } from "../fixtures/proposal-packet.ts";
@@ -180,7 +183,22 @@ test("registered provider CLI evaluates semantic inputs and routes fixture facts
   });
   const semantic = invoke(["probe", "semantic", "--input", "-"], JSON.stringify({
     profile: { schema: "urn:usf:agent-profile:1", provider: route.provider, requestedModel: route.model, adapter: route.adapterPackage, adapterVersion: "1.0.0", adapterLockDigest: digest("0"), authMode: "api_token", toolProfile: "fixture-tools-v1", toolProfileDigest: digest("3"), promptVersion: "fixture-prompt-v1", promptDigest: digest("4"), contextConfig: "fixture-context-v1", contextConfigDigest: digest("5"), outputConfig: "fixture-output-v1", outputConfigDigest: digest("6") },
-    taskClass: "typescript", suite, policy, route, providerConfigDigest: digest("f"), effectivePolicyDigest: digest("c"), probe, answers: [{ caseId: "typescript-case", answer: "bounded patch" }], evaluatedAt: "2026-08-30T00:00:01.000Z",
+    taskClass: "typescript", suite, policy, effectivePolicyDigest: digest("c"),
+    // One observation standing for one real invocation. There is no answers
+    // array and no probe result: an answer reaches the grader only by being
+    // carried on the record of the call that produced it.
+    observations: [sealQualificationObservation({
+      schema: "urn:usf:qualification-observation:1",
+      provider: route.provider, requestedModel: route.model, actualModel: route.model,
+      transport: "vercel-ai-sdk", adapterPackage: route.adapterPackage,
+      adapterVersion: "1.0.0", adapterLockDigest: digest("0"),
+      caseId: "typescript-case", promptDigest: promptDigest("Select the bounded patch."),
+      answer: "bounded patch", answerDigest: answerDigest("bounded patch"),
+      executionEvidenceDigest: digest("7"),
+      observedAt: "2026-08-30T00:00:00.000Z", latencyMs: 20,
+      usage: { inputTokens: 8, outputTokens: 3, totalTokens: 11 },
+    })],
+    evaluatedAt: "2026-08-30T00:00:01.000Z",
   }));
   assert.equal(semantic.schema, "urn:usf:semantic-qualification-result:1");
   assert.equal(semantic.status, "qualified");
