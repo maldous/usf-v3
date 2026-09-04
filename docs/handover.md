@@ -448,3 +448,47 @@ The pruned sections, newest first:
 - V3 live execution demonstration (achieved)
 
 ---
+
+## Architecture evidence-class rebinding (2026-09-04)
+
+USF `1ae1373`, clean. ANQR `585f25057`, clean. Hermes live on
+`graph/manifests/anqr-application.json`, authority
+`sha256:ba5913a41d71206f5be4c034253507944c042310e581a351018a00296bd775c3`.
+
+**What was wrong.** Fifteen ANQR architecture requirements declared
+`admissibleEvidenceClass "implementation-conformance"` while declaring a corpus
+`requirementScope`. The class admits only a subtest named for the requirement
+that invokes one capability module, and no export of one module knows what the
+others import, so the artefact Hermes was asked for could not be written
+truthfully. Eight capabilities spent five repair rounds each on it. The control
+case proves the mechanism was never the problem: `architecturesurfaceparity` is
+the one architecture concern expressible as a call on a module's own exports,
+and BAU generated and satisfied it in a single cycle.
+
+**What changed.** Corpus requirements are now observed at corpus scope through a
+declared `CorpusObservationProcedure`. Nothing was invented: `structural-observation`
+is the class the foundation's own architecture requirements already declare,
+`assurance-scope:corpus`, `conformanceProcedure` and `requirementClass "structural"`
+already existed, and ANQR already had a checker returning a per-facet verdict
+over the real tree. Only the path from that evidence to the evaluator was
+missing. Observations execute through the same confinement as every other check
+and are recorded bound to a digest of exactly the corpus they observed.
+
+**Result.** Architecture facets `BLOCKED 15 → 4`, `SATISFIED 1 → 12`, with
+`UNSATISFIED`, `STALE` and `NOT_ASSESSED` all 0. `repairExhausted 8 → 0` on
+every manifest. All four manifests are at `ready 0`.
+
+**The four that remain BLOCKED are correct, not a backlog.** Static type
+correctness, build correctness and deterministic artefact production each need
+a child process, and an observation runs inside a confinement that grants none,
+so the declared procedure records them undecided rather than passed. Deciding
+them needs an observation vehicle that may spawn the toolchain — a real
+follow-up, and not something to fix by loosening the confinement. Locale parity
+is required and unrealised; no procedure should assert it until it is built.
+
+**Separate reporting defect, not causal here.** `src/commands/hermes-implement.ts:697`
+sets `dispatchedUnits: pending.length` while actual dispatch is gated on
+`envFile !== null` near line 490, so a credential-free run reports units
+dispatched having contacted no provider. Same class as the D6 census literals.
+Unowned and unrepaired.
+
