@@ -76,7 +76,8 @@ interface ChildResult {
   readonly launched: boolean;
 }
 
-async function runChild(
+/** Shared with the corpus observation runner, which launches the same way. */
+export async function runChild(
   executable: string,
   args: readonly string[],
   cwd: string,

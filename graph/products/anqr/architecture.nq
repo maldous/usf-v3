@@ -250,12 +250,23 @@
 <urn:anqr:architecture:1> <urn:usf:predicate:styleRule> "One place expresses what a journey does, so web, HTTP, MCP and mobile cannot each invent a different meaning for the same outcome." <urn:anqr:graph:architecture> .
 <urn:anqr:architecture:1> <urn:usf:predicate:styleRule> "The centre depends on nothing beyond the language standard library, so it can be reasoned about, tested and reused on every surface without a runtime." <urn:anqr:graph:architecture> .
 <urn:anqr:architecture:1> <urn:usf:predicate:type> <urn:usf:type:ArchitecturalStyle> <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:canonicalName> "architecture-static" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:corpusRoot> "apps" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:corpusRoot> "packages" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:corpusRoot> "src" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:corpusRoot> "tests" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:nonClaim> "A requirement this procedure returns no outcome for is undecided by it. That is never a claim the corpus satisfies the requirement." <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:observationPath> "tests/architecture/corpus-observation.test.ts" <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:observesRepository> <urn:anqr:repository:main> <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:text> "The corpus observation procedure for ANQR's architecture requirements. It runs the product's own architecture checker over the whole declared corpus and reports one outcome per requirement it decides. It observes; it does not judge, and it satisfies nothing by itself." <urn:anqr:graph:architecture> .
+<urn:anqr:corpus-observation:architecture-static> <urn:usf:predicate:type> <urn:usf:type:CorpusObservationProcedure> <urn:anqr:graph:architecture> .
 <urn:anqr:cycle-policy:product> <urn:usf:predicate:canonicalName> "no-cycles" <urn:anqr:graph:architecture> .
 <urn:anqr:cycle-policy:product> <urn:usf:predicate:cyclePolicyScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:cycle-policy:product> <urn:usf:predicate:cyclesPermitted> "false" <urn:anqr:graph:architecture> .
 <urn:anqr:cycle-policy:product> <urn:usf:predicate:dependencyRuleReason> "A cycle makes layer assignment meaningless, because two modules in a cycle cannot be separated by any dependency rule." <urn:anqr:graph:architecture> .
 <urn:anqr:cycle-policy:product> <urn:usf:predicate:type> <urn:usf:type:CircularDependencyPolicy> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureaccessibilityconformance> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureaccessibilityconformance> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:implementation-unit> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureaccessibilityconformance> <urn:usf:predicate:canonicalName> "architectureaccessibilityconformance" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureaccessibilityconformance> <urn:usf:predicate:expectedResult> "Zero violations of the declared accessibility obligations on any rendered surface." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureaccessibilityconformance> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
@@ -270,6 +281,7 @@
 <urn:anqr:delivery-facet:architectureaccessibilityconformance> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureaccessibilityconformance> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:accessibility-conformance> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureartefactroundtrip> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureartefactroundtrip> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:implementation-unit> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureartefactroundtrip> <urn:usf:predicate:canonicalName> "architectureartefactroundtrip" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureartefactroundtrip> <urn:usf:predicate:expectedResult> "Every claimed version and level round-trips, and planted damage inside the budget still decodes to the exact payload." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureartefactroundtrip> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
@@ -283,13 +295,15 @@
 <urn:anqr:delivery-facet:architectureartefactroundtrip> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureartefactroundtrip> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureartefactroundtrip> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:integration-behaviour> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:canonicalName> "architecturebuildcorrectness" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:expectedResult> "Each declared build command succeeds and names its artefact identities." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:facetStatement> "Every realised delivery surface builds from a clean checkout using only declared, locked dependencies." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:nonClaim> "No procedure decides this yet. It requires the declared build, which is a child process, and every observation this repository admits executes inside a confinement that grants no child-process allowance. Undecided is recorded rather than passed." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:runsAtStage> <urn:usf:stage:realisation> <urn:anqr:graph:architecture> .
@@ -297,13 +311,15 @@
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturebuildcorrectness> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:build-correctness> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:canonicalName> "architecturedeclareddependenciesagree" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:expectedResult> "No undeclared, unused or mis-scoped dependency." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:facetStatement> "Everything imported is declared, everything declared is imported, and runtime and development scopes are not confused." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -311,13 +327,15 @@
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeclareddependenciesagree> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:dependency-declaration-integrity> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:canonicalName> "architecturedependencydirection" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:expectedResult> "No import in any component resolves to a layer the dependency rules forbid." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:facetStatement> "Every forbidden dependency edge between the declared layers is absent from the product source, and every required edge is present." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -325,13 +343,15 @@
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedependencydirection> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:dependency-boundary> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:canonicalName> "architecturedeterministicartefact" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:expectedResult> "Repeated production of one specification yields an identical digest." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:facetStatement> "The same artefact specification produces a byte-identical artefact on repetition." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:nonClaim> "No procedure decides this yet. It requires producing the artefact twice, which is a child process, and every observation this repository admits executes inside a confinement that grants no child-process allowance. Undecided is recorded rather than passed." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -339,13 +359,15 @@
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedeterministicartefact> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:reproducible-build> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:canonicalName> "architecturedomainhasnoruntimedependency" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:expectedResult> "Zero third-party runtime imports beneath the domain components." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:facetStatement> "The domain layer imports nothing outside the language standard library, so it is reusable unchanged on every delivery surface." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -353,13 +375,15 @@
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturedomainhasnoruntimedependency> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:dependency-declaration-integrity> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:canonicalName> "architectureexperiencetraceability" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:expectedResult> "No rendered identity is unknown, no declared action or role is unimplemented, no journey selects an undeclared pattern, and the implemented state machine matches authority exactly." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:facetStatement> "Every rendered element carrying a semantic identity resolves to a declared design role, experience action or journey; every declared action and role has an implementation binding whose location exists; every journey step selects a pattern the catalogue declares; and the state machine the implementation enforces equals the declared states, permitted actions and transitions." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -367,13 +391,15 @@
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureexperiencetraceability> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:interface-conformance> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:canonicalName> "architectureframeworkisolation" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:expectedResult> "Zero framework or host imports in the isolated layers." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:facetStatement> "No module in the domain, ports or application layers imports a delivery framework, a rasteriser or a host runtime." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -381,13 +407,15 @@
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureframeworkisolation> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:dependency-boundary> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:canonicalName> "architectureimportsresolve" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:expectedResult> "Zero unresolved imports and zero undeclared orphan modules." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:facetStatement> "Every import in the product source resolves, and no module is unreachable from a declared entry point." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -395,13 +423,15 @@
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureimportsresolve> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:import-resolution> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:canonicalName> "architecturelocaleparity" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:expectedResult> "Zero missing interface keys in any claimed locale." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:facetStatement> "Every claimed locale carries the reference locale's complete interface key set." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:nonClaim> "No procedure decides this, and none should until the requirement is realised. Locale parity is required and unrealised; a procedure asserting it would evidence a capability the product does not have." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -409,13 +439,15 @@
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturelocaleparity> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:contract-compatibility> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:canonicalName> "architecturenodependencycycles" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:expectedResult> "Zero cycles reported over every module beneath packages/ and apps/." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:facetStatement> "The product source contains no dependency cycle at module or component scope." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -424,6 +456,7 @@
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturenodependencycycles> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:circular-dependency> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureparameterjoinadmissibility> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureparameterjoinadmissibility> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:implementation-unit> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureparameterjoinadmissibility> <urn:usf:predicate:canonicalName> "architectureparameterjoinadmissibility" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureparameterjoinadmissibility> <urn:usf:predicate:expectedResult> "Each declared join rule has a positive and a negative vector, and every inadmissible permutation is refused with its declared reason." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureparameterjoinadmissibility> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
@@ -437,13 +470,15 @@
 <urn:anqr:delivery-facet:architectureparameterjoinadmissibility> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureparameterjoinadmissibility> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureparameterjoinadmissibility> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:unit-behaviour> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:canonicalName> "architectureportimplementationconformance" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:expectedResult> "Every declared port and adapter is paired." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:facetStatement> "Every declared outbound port has at least one adapter structurally implementing it, and every adapter implements a declared port." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:observedByProcedure> <urn:anqr:corpus-observation:architecture-static> <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -451,13 +486,15 @@
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architectureportimplementationconformance> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:interface-conformance> <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:admissibleEvidenceClass> "structural-observation" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:corpus> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:canonicalName> "architecturestatictypecorrectness" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:expectedResult> "The type checker reports zero errors." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:architecture> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:facetStatement> "The whole product source type-checks under its declared strict configuration." <urn:anqr:graph:architecture> .
-<urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:nonClaim> "No procedure decides this yet. It requires the type checker, which is a child process, and every observation this repository admits executes inside a confinement that grants no child-process allowance. Undecided is recorded rather than passed." <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:requirementScope> "Every module beneath packages/ and apps/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:runsAtStage> <urn:usf:stage:validation> <urn:anqr:graph:architecture> .
@@ -466,6 +503,7 @@
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturestatictypecorrectness> <urn:usf:predicate:verificationClass> <urn:usf:verification-class:static-type> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturesurfaceparity> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:architecture> .
+<urn:anqr:delivery-facet:architecturesurfaceparity> <urn:usf:predicate:assuranceScope> <urn:usf:assurance-scope:implementation-unit> <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturesurfaceparity> <urn:usf:predicate:canonicalName> "architecturesurfaceparity" <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturesurfaceparity> <urn:usf:predicate:expectedResult> "Identical specifications yield identical artefact digests and verdicts across every realised surface." <urn:anqr:graph:architecture> .
 <urn:anqr:delivery-facet:architecturesurfaceparity> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:architecture> .
@@ -598,7 +636,7 @@
 <urn:anqr:generated-code-boundary:product> <urn:usf:predicate:generatedCodeLocation> "Any path whose name declares it generated, and localised content resources produced by the translation pipeline." <urn:anqr:graph:architecture> .
 <urn:anqr:generated-code-boundary:product> <urn:usf:predicate:type> <urn:usf:type:GeneratedCodeBoundary> <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:boundaryForbids> "No module of a declared architectural component may import from packages/architecture/ or from any test location. Assurance code observes the architecture and must never become something the architecture depends on." <urn:anqr:graph:architecture> .
-<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:boundaryScope> "packages/architecture/ and packages/artefact/tests/ in the ANQR product repository." <urn:anqr:graph:architecture> .
+<urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:boundaryScope> "packages/architecture/, packages/artefact/tests/ and tests/architecture/ in the ANQR product repository." <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:boundaryScope> <urn:anqr:architecture:1> <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:canonicalName> "assurance-and-test-tooling" <urn:anqr:graph:architecture> .
 <urn:anqr:module-boundary:assurance-and-test-tooling> <urn:usf:predicate:dependencyRuleReason> "Enforcement machinery and tests are owned code that belongs to no layer of the product. Naming them as an excluded scope means every source is attributable: assigned to a component, or covered by a declared exclusion. Without it the honest count of unaccounted sources cannot be asserted to be zero, and an unaccounted source is a hiding place." <urn:anqr:graph:architecture> .

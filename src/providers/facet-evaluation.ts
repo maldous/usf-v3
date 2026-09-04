@@ -89,6 +89,28 @@ export interface ConformanceEvidenceEntry {
   readonly detail: string | null;
 }
 
+/**
+ * One outcome of a declared corpus-scoped procedure for one requirement.
+ *
+ * This type lives beside the behavioural entry rather than with the producer
+ * that fills it, for the same reason that one does: the evaluator owns the
+ * shape of the evidence it will accept. Putting it with the producer made
+ * three modules import each other in a ring, which the foundation's own
+ * architecture assurance refused on sight.
+ */
+export interface CorpusObservationEntry {
+  readonly facet: string;
+  /** The declared procedure that decided it, never the tool it happened to use. */
+  readonly procedure: string;
+  /** The procedure returned an outcome for this requirement at all. */
+  readonly executed: boolean;
+  readonly passed: boolean;
+  /** The recorded observation no longer binds the current corpus. */
+  readonly stale: boolean;
+  readonly detail: string | null;
+  readonly evidence: string;
+}
+
 export interface EvidenceIndex {
   /** Realized artefact paths that exist, mapped to their content digest. */
   readonly realizedArtefacts: ReadonlyMap<string, string>;
@@ -100,6 +122,13 @@ export interface EvidenceIndex {
   readonly proofOutcomes: readonly string[];
   /** Executed behavioural outcomes, keyed by the facet IRI they were named for. */
   readonly conformanceOutcomes: ReadonlyMap<string, ConformanceEvidenceEntry>;
+  /**
+   * Outcomes of declared corpus-scoped procedures, keyed by the requirement
+   * each decided. A structural property is stated over a body of code, so its
+   * evidence is produced by observing that body, never by calling one module
+   * inside it.
+   */
+  readonly structuralObservations: ReadonlyMap<string, CorpusObservationEntry>;
   /**
    * The evidence classes this evaluation lane actually loaded. A facet
    * admitting a class outside this set is another lane's to assess and reads
@@ -115,6 +144,7 @@ export interface EvidenceIndex {
 /** Every evidence class the evaluator can read; a full-evidence lane supplies all of them. */
 export const allEvidenceClasses: ReadonlySet<string> = Object.freeze(new Set([
   "implementation-conformance", "realized-artefact", "runtime-composition", "validator-outcome",
+  "structural-observation",
 ]));
 
 function values(graph: SemanticGraph, subject: string, predicate: string): readonly string[] {
@@ -252,6 +282,43 @@ export function evaluateFacets(graph: SemanticGraph, evidence: EvidenceIndex): r
             facet, facetKind: kind, capability, state: "UNSATISFIED" as const, evidence: Object.freeze([outcome.evidence]),
             reason: outcome.detail ?? "A behavioural subtest named for this requirement executed against the implementation module and failed.",
           });
+    }
+    if (declaredEvidence === "structural-observation") {
+      // A corpus requirement is decided by the procedure declared to observe
+      // the corpus, and by nothing else. The entry is keyed by this facet, so
+      // no other requirement's result can be borrowed to satisfy it and the
+      // mere existence of some passing procedure elsewhere proves nothing here.
+      const observed = evidence.structuralObservations.get(facet);
+      if (observed === undefined) {
+        return Object.freeze({
+          facet, facetKind: kind, capability, state: "BLOCKED" as const, evidence: Object.freeze([]),
+          reason: "This requirement is stated over a corpus and admits a structural observation, which must be produced by running the procedure declared to observe that corpus and cannot be authored.",
+        });
+      }
+      if (!observed.executed) {
+        return Object.freeze({
+          facet, facetKind: kind, capability, state: "BLOCKED" as const, evidence: Object.freeze([observed.evidence]),
+          reason: observed.detail
+            ?? "The declared procedure ran but returned no outcome for this requirement, so nothing decides it.",
+        });
+      }
+      if (!observed.passed) {
+        return Object.freeze({
+          facet, facetKind: kind, capability, state: "UNSATISFIED" as const, evidence: Object.freeze([observed.evidence]),
+          reason: observed.detail
+            ?? "The declared procedure observed the corpus and reported this requirement violated.",
+        });
+      }
+      if (observed.stale) {
+        return Object.freeze({
+          facet, facetKind: kind, capability, state: "STALE" as const, evidence: Object.freeze([observed.evidence]),
+          reason: "The declared procedure last observed a corpus that has since changed. A structural claim does not outlive the code it was made about; the procedure must run again.",
+        });
+      }
+      return Object.freeze({
+        facet, facetKind: kind, capability, state: "SATISFIED" as const, evidence: Object.freeze([observed.evidence]),
+        reason: `The procedure declared to observe this corpus ran over it and reported this requirement satisfied.`,
+      });
     }
     if (declaredEvidence === "realized-artefact") {
       const realized = [...evidence.realizedArtefacts.keys()].sort();

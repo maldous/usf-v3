@@ -107,6 +107,7 @@ test("a product's own UI facets are its requirements, never handed back to the p
     runtimeComposed: false,
     validatorOutcomes: [],
     proofOutcomes: [],
+    structuralObservations: new Map(),
     conformanceOutcomes: new Map(),
     suppliedEvidenceClasses: allEvidenceClasses,
   });
@@ -136,6 +137,7 @@ test("blocked evidence surfaces as BLOCKED, never as never-assessed", () => {
   const verdicts = evaluateFacets(graph, {
     realizedArtefacts: new Map(), runtimeComposed: false,
     validatorOutcomes: [], proofOutcomes: [],
+    structuralObservations: new Map(),
     conformanceOutcomes: new Map([[facet, outcome]]) as never,
     suppliedEvidenceClasses: allEvidenceClasses,
   });

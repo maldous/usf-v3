@@ -1,3 +1,4 @@
+import { declaredCorpusProcedures, loadCorpusObservations, recordCorpusObservation, runCorpusObservation } from "../providers/architecture-observation.ts";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
@@ -312,7 +313,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   const units = deriveImplementationWorkUnits(needs, present, repairs);
   const ready = units.filter((unit) => unit.ready);
   const blocked = units.filter((unit) => !unit.ready);
-  const exhausted = needs.filter((need) => (rounds[need.capability] ?? 0) > maximumRepairRounds);
+  const exhausted = needs.filter((need) => roundsAgainstCurrentRequirements(rounds, need) > maximumRepairRounds);
 
   const plan = Object.freeze({
     schema: "urn:usf:implementation-realisation-plan:1" as const,
@@ -357,7 +358,11 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       validatorOutcomes: Object.freeze([] as readonly string[]),
       proofOutcomes: Object.freeze([] as readonly string[]),
       conformanceOutcomes: await loadConformanceEvidence(repositoryRoot, sourceRootFor),
-      suppliedEvidenceClasses: new Set(["implementation-conformance"]),
+      // Corpus-scoped structural requirements are decided by a declared
+      // procedure observing the whole corpus, and this lane is the one that
+      // runs it, so it reads those outcomes back alongside behavioural ones.
+      structuralObservations: await loadCorpusObservations(repositoryRoot, sourceRootFor),
+      suppliedEvidenceClasses: new Set(["implementation-conformance", "structural-observation"]),
     })));
 
   if (!parsed.apply) {
@@ -390,6 +395,25 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
       passed: run.outcomes.filter((outcome) => outcome.passed).length,
       failed: run.outcomes.filter((outcome) => outcome.executed && !outcome.passed).length,
       unobserved: run.outcomes.filter((outcome) => !outcome.executed).length,
+    }));
+  }
+
+  // ---- observe the corpus for structural requirements ------------------------
+  // Corpus-scoped requirements are decided here for the same reason
+  // behavioural ones are: the procedure is local, it costs no tokens, and a
+  // requirement it satisfies must never reach a provider as work. Nothing is
+  // dispatched for these, because no model can produce a structural fact about
+  // a corpus -- only observing the corpus can.
+  const observationResults: Array<Readonly<Record<string, unknown>>> = [];
+  for (const declared of declaredCorpusProcedures(graph)) {
+    const observation = await runCorpusObservation(repositoryRoot, declared, rootOf(declared.sourceRepository));
+    const path = await recordCorpusObservation(repositoryRoot, observation);
+    observationResults.push(Object.freeze({
+      procedure: declared.procedure, evidencePath: path, executed: observation.executed,
+      refusal: observation.refusal, corpusFileCount: observation.corpusFileCount,
+      satisfied: observation.outcomes.filter((outcome) => outcome.passed).length,
+      violated: observation.outcomes.filter((outcome) => outcome.executed && !outcome.passed).length,
+      undecided: observation.outcomes.filter((outcome) => !outcome.executed).length,
     }));
   }
 
@@ -637,7 +661,9 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
   }
   for (const unit of selected) {
     if (unit.repairs.length === 0) continue;
-    advanced[unit.need.capability] = unit.repairRound + 1;
+    // The advanced count records which requirement set earned it, so it cannot
+    // later be spent against a different one.
+    advanced[unit.need.capability] = Object.freeze({ round: unit.repairRound + 1, basis: repairBasis(unit.need) });
   }
   if (Object.keys(advanced).length > 0 || Object.keys(rounds).length > 0) await writeRepairRounds(repositoryRoot, advanced);
   await writeCandidateFailures(repositoryRoot, candidateFailures);
@@ -685,6 +711,7 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
     output: Object.freeze({
       ...plan,
       conformanceRuns: Object.freeze(conformanceResults),
+      corpusObservations: Object.freeze(observationResults),
       repairExhaustedCapabilities: Object.freeze(exhausted.map((need) => need.canonicalName)),
       // Derived after this invocation's conformance runs, so a check that just
       // passed is visible in the same cycle that produced it.
@@ -714,20 +741,61 @@ export async function implementCommand(repositoryRoot: string, args: readonly st
 
 const repairRoundsPath = ".usf/hermes/repair-rounds.json";
 
-async function readRepairRounds(repositoryRoot: string): Promise<Record<string, number>> {
+/**
+ * The requirements a capability's repair effort is actually spent against.
+ *
+ * A round count means nothing without this. Counting rounds per capability and
+ * nothing else let exhaustion earned against one set of requirements silence
+ * work on a different set: fifteen architecture requirements were rebound to
+ * the scope that can evidence them, and the capabilities carrying them stayed
+ * mute at round five over requirements that had left the lane entirely. So the
+ * count is bound to the set it was earned against, and a set that has since
+ * changed starts again -- which re-earns exhaustion within the same ceiling if
+ * the work really is impossible, and releases it if it never was.
+ */
+function repairBasis(need: CapabilityImplementationNeed): string {
+  return canonicalDigest([...need.requirements.map((requirement) => requirement.facet)].sort().join("\n"));
+}
+
+interface RepairRound { readonly round: number; readonly basis: string | null; }
+
+async function readRepairRounds(repositoryRoot: string): Promise<Record<string, RepairRound>> {
   const bytes = await readFile(resolve(repositoryRoot, repairRoundsPath), "utf8").catch(() => undefined);
   if (bytes === undefined) return {};
   try {
     const parsed = JSON.parse(bytes) as { rounds?: Record<string, unknown> };
-    const rounds: Record<string, number> = {};
+    const rounds: Record<string, RepairRound> = {};
     for (const [capability, value] of Object.entries(parsed.rounds ?? {})) {
-      if (typeof value === "number" && Number.isInteger(value) && value >= 0) rounds[capability] = value;
+      // The retired shape is a bare count that names no requirement set, so
+      // nothing can establish that it applies to the current one. It is read
+      // with a null basis, which every comparison treats as not applicable.
+      if (typeof value === "number" && Number.isInteger(value) && value >= 0) {
+        rounds[capability] = Object.freeze({ round: value, basis: null });
+        continue;
+      }
+      if (value === null || typeof value !== "object") continue;
+      const entry = value as { round?: unknown; basis?: unknown };
+      if (typeof entry.round !== "number" || !Number.isInteger(entry.round) || entry.round < 0) continue;
+      rounds[capability] = Object.freeze({
+        round: entry.round,
+        basis: typeof entry.basis === "string" ? entry.basis : null,
+      });
     }
     return rounds;
   } catch { return {}; }
 }
 
-async function writeRepairRounds(repositoryRoot: string, rounds: Record<string, number>): Promise<void> {
+/** The rounds already spent against this capability's current requirement set. */
+function roundsAgainstCurrentRequirements(
+  rounds: Record<string, RepairRound>,
+  need: CapabilityImplementationNeed,
+): number {
+  const entry = rounds[need.capability];
+  if (entry === undefined || entry.basis === null || entry.basis !== repairBasis(need)) return 0;
+  return entry.round;
+}
+
+async function writeRepairRounds(repositoryRoot: string, rounds: Record<string, RepairRound>): Promise<void> {
   await mkdir(resolve(repositoryRoot, ".usf", "hermes"), { recursive: true, mode: 0o700 });
   await writeFile(resolve(repositoryRoot, repairRoundsPath),
     `${JSON.stringify({ schema: "urn:usf:hermes-repair-rounds:1", version: 1, rounds }, null, 1)}\n`, { mode: 0o600 });
@@ -741,7 +809,7 @@ async function writeRepairRounds(repositoryRoot: string, rounds: Record<string, 
 function deriveRepairState(
   needs: readonly CapabilityImplementationNeed[],
   evidence: Awaited<ReturnType<typeof loadConformanceEvidence>>,
-  rounds: Record<string, number>,
+  rounds: Record<string, RepairRound>,
 ): ReadonlyMap<string, CapabilityRepairState> {
   const state = new Map<string, CapabilityRepairState>();
   for (const need of needs) {
@@ -764,7 +832,7 @@ function deriveRepairState(
     const namesModule = details.includes(need.modulePath);
     state.set(need.capability, Object.freeze({
       failing: Object.freeze(failing),
-      round: Math.max(1, (rounds[need.capability] ?? 0) || 1),
+      round: Math.max(1, roundsAgainstCurrentRequirements(rounds, need) || 1),
       ...(namesTest && !namesModule ? { preferredStage: "conformance" as const } : {}),
     }));
   }

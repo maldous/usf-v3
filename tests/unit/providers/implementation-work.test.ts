@@ -201,6 +201,7 @@ function evidenceWith(entries: EvidenceIndex["conformanceOutcomes"]): EvidenceIn
   return Object.freeze({
     realizedArtefacts: new Map(), runtimeComposed: false,
     validatorOutcomes: Object.freeze([]), proofOutcomes: Object.freeze([]),
+    structuralObservations: new Map(),
     conformanceOutcomes: entries,
     suppliedEvidenceClasses: allEvidenceClasses,
   });

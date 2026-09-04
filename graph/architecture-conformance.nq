@@ -267,6 +267,9 @@
 <urn:usf:assurance-scope:corpus> <urn:usf:predicate:canonicalName> "corpus" <urn:usf:graph:architecture-conformance> .
 <urn:usf:assurance-scope:corpus> <urn:usf:predicate:scopeRule> "The observation covered the whole repository tree the population declares. A corpus requirement is decidable only against a corpus observation." <urn:usf:graph:architecture-conformance> .
 <urn:usf:assurance-scope:corpus> <urn:usf:predicate:type> <urn:usf:type:AssuranceScope> <urn:usf:graph:architecture-conformance> .
+<urn:usf:assurance-scope:implementation-unit> <urn:usf:predicate:canonicalName> "implementation-unit" <urn:usf:graph:architecture-conformance> .
+<urn:usf:assurance-scope:implementation-unit> <urn:usf:predicate:scopeRule> "The observation covered one implementation unit and the behaviour reachable through its own exports. A requirement decidable at this scope is evidenced by invoking that unit; one stated over a body of code is not, and must declare a corpus scope instead." <urn:usf:graph:architecture-conformance> .
+<urn:usf:assurance-scope:implementation-unit> <urn:usf:predicate:type> <urn:usf:type:AssuranceScope> <urn:usf:graph:architecture-conformance> .
 <urn:usf:assurance-set:foundation-architecture:1> <urn:usf:predicate:assuranceMember> <urn:usf:requirement:foundation-assurance-tooling-isolation> <urn:usf:graph:architecture-conformance> .
 <urn:usf:assurance-set:foundation-architecture:1> <urn:usf:predicate:assuranceMember> <urn:usf:requirement:foundation-component-ownership> <urn:usf:graph:architecture-conformance> .
 <urn:usf:assurance-set:foundation-architecture:1> <urn:usf:predicate:assuranceMember> <urn:usf:requirement:foundation-cycle-boundary> <urn:usf:graph:architecture-conformance> .
@@ -841,6 +844,8 @@
 <urn:usf:predicate:conformanceProcedure> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:contributesToRuntimeReachability> <urn:usf:predicate:objective> "Whether reaching an implementation unit through this surface makes it runtime reachable." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:contributesToRuntimeReachability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:corpusRoot> <urn:usf:predicate:objective> "One declared root the observed corpus is enumerated from, so an observation binds exactly the extent it covered." <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:corpusRoot> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:cycleExceptionReason> <urn:usf:predicate:objective> "Why a cycle exception exists and on what terms it may change." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:cycleExceptionReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:cyclePolicy> <urn:usf:predicate:objective> "The circular dependency policy this architecture declares." <urn:usf:graph:architecture-conformance> .
@@ -875,6 +880,12 @@
 <urn:usf:predicate:entryPointSurface> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:generatedCodeBoundary> <urn:usf:predicate:objective> "The generated code boundary this architecture declares." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:generatedCodeBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observationPath> <urn:usf:predicate:objective> "The repository-relative path of the executable procedure that produces a corpus observation." <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observationPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observedByProcedure> <urn:usf:predicate:objective> "The corpus observation procedure declared to decide this requirement." <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observedByProcedure> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observesRepository> <urn:usf:predicate:objective> "The repository whose corpus a procedure observes, so a product's observation is never resolved against the foundation." <urn:usf:graph:architecture-conformance> .
+<urn:usf:predicate:observesRepository> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:permittedClassification> <urn:usf:predicate:objective> "An implementation classification this architecture admits." <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:permittedClassification> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:architecture-conformance> .
 <urn:usf:predicate:permittedCycleMember> <urn:usf:predicate:objective> "An implementation unit permitted to participate in an import cycle under a policy that otherwise forbids them." <urn:usf:graph:architecture-conformance> .
@@ -1136,6 +1147,8 @@
 <urn:usf:type:ClassificationCriterion> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:ConformanceProcedure> <urn:usf:predicate:objective> "A named decision procedure a requirement selects, so that a requirement whose rule has no procedure is missing evidence rather than satisfied." <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:ConformanceProcedure> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
+<urn:usf:type:CorpusObservationProcedure> <urn:usf:predicate:objective> "A named procedure that observes a whole declared corpus and reports one outcome per requirement it decides, so a requirement stated over a corpus is evidenced at the scope it is stated at rather than by calling one module inside it." <urn:usf:graph:architecture-conformance> .
+<urn:usf:type:CorpusObservationProcedure> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:EntryPointSurface> <urn:usf:predicate:objective> "The kind of surface an entry point exposes, and whether reaching implementation through it counts as runtime reachability." <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:EntryPointSurface> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:architecture-conformance> .
 <urn:usf:type:ImplementationClassification> <urn:usf:predicate:objective> "A disposition an implementation unit may carry, the criterion that decides it, and whether carrying it conforms." <urn:usf:graph:architecture-conformance> .

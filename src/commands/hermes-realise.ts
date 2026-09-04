@@ -1,3 +1,4 @@
+import { loadCorpusObservations } from "../providers/architecture-observation.ts";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
@@ -361,6 +362,10 @@ export async function realisePlanCommand(repositoryRoot: string, args: readonly 
     // Behavioural outcomes come from executed conformance runs, so the artefact
     // lane reports the same facet truth the implementation lane produces.
     conformanceOutcomes: await loadConformanceEvidence(repositoryRoot),
+    // Corpus-scoped observations are durable records, so this lane reads the
+    // same ones the implementation lane produced rather than claiming to
+    // supply a class it never looked at.
+    structuralObservations: await loadCorpusObservations(repositoryRoot),
     realizedArtefacts,
     runtimeComposed: [...realizedArtefacts.keys()].some((path) => path.endsWith("/runtime/compose.json")),
     validatorOutcomes: Object.freeze([...new Set(validatorOutcomes)].sort()),
