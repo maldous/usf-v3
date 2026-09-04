@@ -1,0 +1,4 @@
+<urn:usf:architecture-conformance-grants:1> <urn:usf:predicate:type> <urn:usf:type:SemanticFoundationExtension> <urn:usf:graph:architecture-conformance-grants> .
+<urn:usf:architecture-conformance-grants:1> <urn:usf:predicate:canonicalName> "architecture-conformance-grants" <urn:usf:graph:architecture-conformance-grants> .
+<urn:usf:architecture-conformance-grants:1> <urn:usf:predicate:objective> "Publication target for the construction authority and completion grants of the architecture conformance lane." <urn:usf:graph:architecture-conformance-grants> .
+<urn:usf:architecture-conformance-grants:1> <urn:usf:predicate:nonClaim> "An empty grants source is the correct initial state. Authority is appended by publication, never authored here." <urn:usf:graph:architecture-conformance-grants> .
