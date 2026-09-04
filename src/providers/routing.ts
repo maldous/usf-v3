@@ -1,4 +1,5 @@
 import { canonicalDigest } from "../core/canonical.ts";
+import { observationSetDigest, type QualificationObservation } from "./qualification-observation.ts";
 import {
   qualifySemanticProfile,
   qualificationDimensions,
@@ -13,7 +14,6 @@ import {
   type QualifiedRole,
 } from "./qualification.ts";
 import type { ProviderRouteConfig } from "./config.ts";
-import type { ProviderProbeResult } from "./probe.ts";
 import { assertRealisationBasis, type RealisationBasis } from "../realisation/basis.ts";
 
 export type RoutingStrategy = "all-eligible" | "diverse" | "fastest" | "review-diverse" | "deterministic-fixture";
@@ -156,9 +156,13 @@ export interface SemanticQualificationProfileForRouting {
 export interface SemanticQualificationReplaySourceForRouting {
   readonly routeId: string;
   readonly taskClass: string;
-  readonly route: ProviderRouteConfig;
   readonly profile: QualificationAgentProfile;
-  readonly answers: readonly QualificationAnswer[];
+  /**
+   * The observations the qualification was earned from. Replay regrades the
+   * same invocations rather than the same asserted answers, so a receipt whose
+   * evidence has been altered no longer reproduces its own digest.
+   */
+  readonly observations: readonly QualificationObservation[];
   readonly evaluatedAt: string;
 }
 
@@ -181,16 +185,15 @@ export interface SemanticQualificationForRouting {
   readonly profile: Readonly<{
     profileDigest: string;
     requested: Readonly<{
-      family: string; provider: string; model: string; adapter: string; adapterVersion: string; adapterLockDigest: string; authMode: QualificationAuthMode;
+      provider: string; model: string; adapter: string; adapterVersion: string; adapterLockDigest: string; authMode: QualificationAuthMode;
       toolProfile: string; promptVersion: string; contextConfig: string; outputConfig: string;
       toolProfileDigest: string; promptDigest: string; contextConfigDigest: string; outputConfigDigest: string;
     }>;
-    actual: Readonly<{ family: string; provider: string; model: string; sdkProvider: string | null }>;
+    actual: Readonly<{ provider: string; model: string; transport: string }>;
   }>;
   readonly inputs: Readonly<{
     suiteDigest: string; corpusDigest: string; qualificationPolicyDigest: string; effectivePolicyDigest: string;
-    providerConfigDigest: string; routeDigest: string; probeResultDigest: string; catalogueRawDigest: string;
-    catalogueNormalizedDigest: string; answersDigest: string;
+    observationSetDigest: string;
   }>;
   readonly caseEvaluations: readonly Readonly<{
     caseId: string; taskClass: string; dimension: QualificationDimension; answerPresent: boolean; score: number; weight: number; passed: boolean;
@@ -292,9 +295,7 @@ export interface SemanticQualificationReferenceForRouting {
   readonly corpusDigest: string;
   readonly qualificationPolicyDigest: string;
   readonly effectivePolicyDigest: string;
-  readonly providerConfigDigest: string;
-  readonly routeDigest: string;
-  readonly probeResultDigest: string;
+  readonly observationSetDigest: string;
   readonly actualIdentityDigest: string;
   readonly validityDigest: string;
   readonly validUntil: string;
@@ -421,7 +422,11 @@ function qualificationKey(routeDigest: string, profileDigest: string, taskClass:
 }
 
 function replaySourceKey(source: SemanticQualificationReplaySourceForRouting): string {
-  return qualificationKey(exactDigest(source.route), exactDigest(source.profile), source.taskClass);
+  // Keyed by the observation set rather than by the route configuration. A
+  // qualification is identified by the invocations it rests on; the route's
+  // declared cost and entitlement are economics and must not change which
+  // qualification a replay is taken to be.
+  return qualificationKey(observationSetDigest(source.observations), exactDigest(source.profile), source.taskClass);
 }
 
 function derivedSemanticDigests(core: Readonly<CoreSemanticBinding>, product: ProductSemanticBinding): Readonly<{
@@ -554,9 +559,7 @@ function replayedQualificationMatches(
   source: SemanticQualificationReplaySourceForRouting,
   suite: QualificationSuiteSnapshot,
   policy: QualificationPolicySnapshot,
-  providerConfigDigest: string,
   effectivePolicyDigest: string,
-  probe: ProbeForRouting,
 ): boolean {
   try {
     const replayed = qualifySemanticProfile({
@@ -564,11 +567,8 @@ function replayedQualificationMatches(
       taskClass: source.taskClass,
       suite,
       policy,
-      route: source.route,
-      providerConfigDigest,
       effectivePolicyDigest,
-      probe: probe as ProviderProbeResult,
-      answers: source.answers,
+      observations: source.observations,
       evaluatedAt: source.evaluatedAt,
     });
     return replayed.qualificationDigest === record.qualificationDigest && exactDigest(replayed) === exactDigest(record);
@@ -583,8 +583,8 @@ function validateSemanticQualification(record: SemanticQualificationForRouting):
     || !["qualified", "unqualified"].includes(record.status) || !capabilityPattern.test(record.taskClass)
     || typeof record.profile !== "object" || record.profile === null || !exactKeys(record.profile, ["profileDigest", "requested", "actual"])
     || !digestPattern.test(record.profile.profileDigest) || typeof record.profile.requested !== "object" || record.profile.requested === null
-    || !exactKeys(record.profile.requested, ["family", "provider", "model", "adapter", "adapterVersion", "adapterLockDigest", "authMode", "toolProfile", "toolProfileDigest", "promptVersion", "promptDigest", "contextConfig", "contextConfigDigest", "outputConfig", "outputConfigDigest"])
-    || !labelPattern.test(record.profile.requested.family) || !labelPattern.test(record.profile.requested.provider)
+    || !exactKeys(record.profile.requested, ["provider", "model", "adapter", "adapterVersion", "adapterLockDigest", "authMode", "toolProfile", "toolProfileDigest", "promptVersion", "promptDigest", "contextConfig", "contextConfigDigest", "outputConfig", "outputConfigDigest"])
+    || !labelPattern.test(record.profile.requested.provider)
     || !modelPattern.test(record.profile.requested.model) || !adapterPattern.test(record.profile.requested.adapter)
     || !labelPattern.test(record.profile.requested.adapterVersion) || !digestPattern.test(record.profile.requested.adapterLockDigest)
     || !qualificationAuthModes.has(record.profile.requested.authMode) || !labelPattern.test(record.profile.requested.toolProfile)
@@ -592,11 +592,11 @@ function validateSemanticQualification(record: SemanticQualificationForRouting):
     || !labelPattern.test(record.profile.requested.outputConfig) || !digestPattern.test(record.profile.requested.toolProfileDigest)
     || !digestPattern.test(record.profile.requested.promptDigest) || !digestPattern.test(record.profile.requested.contextConfigDigest)
     || !digestPattern.test(record.profile.requested.outputConfigDigest) || typeof record.profile.actual !== "object" || record.profile.actual === null
-    || !exactKeys(record.profile.actual, ["family", "provider", "model", "sdkProvider"])
-    || !labelPattern.test(record.profile.actual.family) || !labelPattern.test(record.profile.actual.provider) || !modelPattern.test(record.profile.actual.model)
-    || (record.profile.actual.sdkProvider !== null && !labelPattern.test(record.profile.actual.sdkProvider))
+    || !exactKeys(record.profile.actual, ["provider", "model", "transport"])
+    || !labelPattern.test(record.profile.actual.provider) || !modelPattern.test(record.profile.actual.model)
+    || !labelPattern.test(record.profile.actual.transport)
     || typeof record.inputs !== "object" || record.inputs === null
-    || !exactKeys(record.inputs, ["suiteDigest", "corpusDigest", "qualificationPolicyDigest", "effectivePolicyDigest", "providerConfigDigest", "routeDigest", "probeResultDigest", "catalogueRawDigest", "catalogueNormalizedDigest", "answersDigest"])
+    || !exactKeys(record.inputs, ["suiteDigest", "corpusDigest", "qualificationPolicyDigest", "effectivePolicyDigest", "observationSetDigest"])
     || Object.values(record.inputs).some((value) => typeof value !== "string" || !digestPattern.test(value))
     || !Array.isArray(record.caseEvaluations) || record.caseEvaluations.length > 10_000
     || !Array.isArray(record.dimensionEvaluations) || record.dimensionEvaluations.length > 128
@@ -703,16 +703,17 @@ function validateInput(input: RoutingInput, trustedAuthority: TrustedSemanticQua
   const qualificationKeys = new Set<string>();
   for (const qualification of input.semanticQualifications) {
     validateSemanticQualification(qualification);
-    const key = qualificationKey(qualification.inputs.routeDigest, qualification.profile.profileDigest, qualification.taskClass);
+    const key = qualificationKey(qualification.inputs.observationSetDigest, qualification.profile.profileDigest, qualification.taskClass);
     if (qualificationKeys.has(key)) throw new Error("ROUTE_INPUT_DUPLICATE");
     qualificationKeys.add(key);
   }
   const replayKeys = new Set<string>();
   for (const source of input.semanticQualificationReplay.sources) {
-    if (typeof source !== "object" || source === null || !exactKeys(source, ["routeId", "taskClass", "route", "profile", "answers", "evaluatedAt"])
+    if (typeof source !== "object" || source === null || !exactKeys(source, ["routeId", "taskClass", "profile", "observations", "evaluatedAt"])
       || !labelPattern.test(source.routeId) || !routeIds.has(source.routeId) || !capabilityPattern.test(source.taskClass)
-      || !mappedTaskClasses.has(source.taskClass) || typeof source.route !== "object" || source.route === null
-      || typeof source.profile !== "object" || source.profile === null || !Array.isArray(source.answers) || source.answers.length > 10_000
+      || !mappedTaskClasses.has(source.taskClass)
+      || typeof source.profile !== "object" || source.profile === null
+      || !Array.isArray(source.observations) || source.observations.length === 0 || source.observations.length > 10_000
       || !validInstant(source.evaluatedAt)) throw new Error("ROUTE_SEMANTIC_QUALIFICATION_INVALID");
     const key = replaySourceKey(source);
     if (replayKeys.has(key)) throw new Error("ROUTE_INPUT_DUPLICATE");
@@ -812,17 +813,14 @@ function assess(
       || record.inputs.suiteDigest !== input.semanticQualificationAuthority.suiteDigest
       || record.inputs.corpusDigest !== input.semanticQualificationAuthority.corpusDigest
       || record.inputs.qualificationPolicyDigest !== input.semanticQualificationAuthority.qualificationPolicyDigest
-      || record.inputs.effectivePolicyDigest !== input.policyDigest || record.inputs.providerConfigDigest !== input.providerConfigDigest
-      || record.inputs.routeDigest !== route.configDigest || record.inputs.probeResultDigest !== probe.resultDigest
-      || record.inputs.catalogueRawDigest !== input.catalogueRawDigest || record.inputs.catalogueNormalizedDigest !== input.catalogueNormalizedDigest
-      || !sameIdentity(record.profile.requested, { family: route.family, provider: route.provider, model: route.model })
-      || !sameIdentity(record.profile.actual, probe.actual!)
-      || record.profile.actual.sdkProvider !== probe.actual!.sdkProvider || record.observedAt !== probe.observedAt
+      || record.inputs.effectivePolicyDigest !== input.policyDigest
+      || record.profile.requested.provider !== route.provider || record.profile.requested.model !== route.model
+      || record.profile.actual.provider !== route.provider || record.profile.actual.model !== route.model
       || Date.parse(record.evaluatedAt) < Date.parse(record.observedAt)
       || (record.status === "unqualified") !== (record.derivedRoles.length === 1 && record.derivedRoles[0] === "UNQUALIFIED"))
     || orderedReplaySources.some((source, index) => source.routeId !== route.id || source.taskClass !== orderedQualificationRecords[index]?.taskClass
       || !replayedQualificationMatches(orderedQualificationRecords[index]!, source, trustedAuthority.suite,
-        trustedAuthority.policy, input.providerConfigDigest, input.policyDigest, probe)))) {
+        trustedAuthority.policy, input.policyDigest)))) {
     exclusionReason = "SEMANTIC_QUALIFICATION_MISMATCH";
   } else if (requiredSemanticCapabilities.length > 0 && orderedQualificationRecords.some((record) => Date.parse(record.evaluatedAt) > now
     || Date.parse(record.validUntil) <= now || Date.parse(record.validUntil) <= Date.parse(record.evaluatedAt))) exclusionReason = "SEMANTIC_QUALIFICATION_STALE";
@@ -921,7 +919,7 @@ export function routeWork(input: RoutingInput, trustedAuthority: TrustedSemantic
     || left.taskClass.localeCompare(right.taskClass));
   const qualificationGroups = new Map<string, SemanticQualificationForRouting>();
   for (const record of orderedSemanticQualifications) {
-    qualificationGroups.set(qualificationKey(record.inputs.routeDigest, record.profile.profileDigest, record.taskClass), record);
+    qualificationGroups.set(qualificationKey(record.inputs.observationSetDigest, record.profile.profileDigest, record.taskClass), record);
   }
   const replaySources = new Map<string, SemanticQualificationReplaySourceForRouting>();
   for (const source of input.semanticQualificationReplay.sources) replaySources.set(replaySourceKey(source), source);
@@ -930,8 +928,8 @@ export function routeWork(input: RoutingInput, trustedAuthority: TrustedSemantic
     taskClass: record.taskClass, status: record.status, qualificationDigest: record.qualificationDigest,
     profileDigest: record.profile.profileDigest, suiteDigest: record.inputs.suiteDigest, corpusDigest: record.inputs.corpusDigest,
     qualificationPolicyDigest: record.inputs.qualificationPolicyDigest, effectivePolicyDigest: record.inputs.effectivePolicyDigest,
-    providerConfigDigest: record.inputs.providerConfigDigest, routeDigest: record.inputs.routeDigest,
-    probeResultDigest: record.inputs.probeResultDigest, actualIdentityDigest: exactDigest(record.profile.actual),
+    observationSetDigest: record.inputs.observationSetDigest,
+    actualIdentityDigest: exactDigest(record.profile.actual),
     validityDigest: exactDigest({ observedAt: record.observedAt, evaluatedAt: record.evaluatedAt, validUntil: record.validUntil }),
     validUntil: record.validUntil,
   })));

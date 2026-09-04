@@ -13,6 +13,9 @@ import {
   type QualificationSuiteDefinition,
 } from "../../../src/providers/qualification.ts";
 import { createJsonSchemaValidator } from "../../../src/schema/index.ts";
+import {
+  answerDigest, promptDigest, sealQualificationObservation,
+} from "../../../src/providers/qualification-observation.ts";
 
 interface QualificationConfigAsset {
   readonly $schema: "urn:usf:qualification-config:1";
@@ -108,7 +111,7 @@ test("the V3 qualification config is versioned, deterministic, complete for decl
   }
 });
 
-test("missing answers remain zero/default UNQUALIFIED and the closed result schema accepts the exact V3 output", () => {
+test("unanswered cases score zero, a wrong answer stays unqualified, and the closed result schema accepts the exact output", () => {
   const suite = createQualificationSuite(config.suite);
   const policy = createQualificationPolicy(config.policy);
   const result = qualifySemanticProfile({
@@ -132,17 +135,36 @@ test("missing answers remain zero/default UNQUALIFIED and the closed result sche
     taskClass: "typescript",
     suite,
     policy,
-    route,
-    providerConfigDigest: digest("f"),
     effectivePolicyDigest: digest("c"),
-    probe: probe(),
-    answers: [],
+    // One real invocation that answered badly. An empty set is refused rather
+    // than scored, because with no invocation there is nothing to grade: a
+    // route that was never called is neither qualified nor unqualified, and
+    // reporting it as unqualified would claim an assessment never made.
+    observations: [sealQualificationObservation({
+      schema: "urn:usf:qualification-observation:1",
+      provider: route.provider,
+      requestedModel: route.model,
+      actualModel: route.model,
+      transport: "vercel-ai-sdk",
+      adapterPackage: route.adapterPackage,
+      adapterVersion: "4.0.34",
+      adapterLockDigest: digest("0"),
+      caseId: config.suite.cases.find((item) => item.taskClass === "typescript")!.caseId,
+      promptDigest: promptDigest("typescript case prompt"),
+      answer: "an answer that is not what the grader requires",
+      answerDigest: answerDigest("an answer that is not what the grader requires"),
+      executionEvidenceDigest: digest("e"),
+      observedAt: "2026-08-30T00:00:00.000Z",
+      latencyMs: 30,
+      usage: { inputTokens: 10, outputTokens: 12, totalTokens: 22 },
+    })],
     evaluatedAt: "2026-08-30T00:00:30.000Z",
   });
 
   assert.equal(result.status, "unqualified");
   assert.deepEqual(result.derivedRoles, ["UNQUALIFIED"]);
-  assert.equal(result.casesAnswered, 0);
+  assert.equal(result.casesAnswered, 1);
+  assert.equal(result.casesPassed, 0);
   assert.equal(result.taskScore, 0);
   assert.deepEqual(result.caseEvaluations.map((item) => item.score), [0, 0, 0, 0]);
 

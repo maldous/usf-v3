@@ -1,7 +1,11 @@
 import { canonicalDigest, canonicalJson, type JsonValue } from "../core/canonical.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
 import type { ProviderRouteConfig } from "./config.ts";
-import type { ProviderProbeResult } from "./probe.ts";
+import {
+  answersFromObservations, assertObservationSet, earliestObservedAt,
+  observationSetDigest, QualificationObservationError,
+  type QualificationObservation,
+} from "./qualification-observation.ts";
 
 export const qualificationDimensions = Object.freeze([
   "semantic_planning",
@@ -133,11 +137,16 @@ export interface SemanticQualificationInput {
   readonly taskClass: string;
   readonly suite: QualificationSuiteSnapshot;
   readonly policy: QualificationPolicySnapshot;
-  readonly route: ProviderRouteConfig;
-  readonly providerConfigDigest: string;
   readonly effectivePolicyDigest: string;
-  readonly probe: ProviderProbeResult;
-  readonly answers: readonly QualificationAnswer[];
+  /**
+   * One observation per graded case, each recording a real invocation of the
+   * exact model being qualified. There is deliberately no separate answers
+   * array and no route configuration here: an answer that is not carried by an
+   * observation has no established origin, and the route's declared cost and
+   * entitlement are economics, which qualification must not bind into its
+   * identity or depend upon.
+   */
+  readonly observations: readonly QualificationObservation[];
   /** Explicit clock input; the pure core never reads wall time. */
   readonly evaluatedAt: string;
 }
@@ -168,7 +177,6 @@ export interface SemanticQualificationResult {
   readonly profile: Readonly<{
     readonly profileDigest: string;
     readonly requested: Readonly<{
-      readonly family: string;
       readonly provider: string;
       readonly model: string;
       readonly adapter: string;
@@ -185,10 +193,9 @@ export interface SemanticQualificationResult {
       readonly outputConfigDigest: string;
     }>;
     readonly actual: Readonly<{
-      readonly family: string;
       readonly provider: string;
       readonly model: string;
-      readonly sdkProvider: string | null;
+      readonly transport: string;
     }>;
   }>;
   readonly inputs: Readonly<{
@@ -196,12 +203,7 @@ export interface SemanticQualificationResult {
     readonly corpusDigest: string;
     readonly qualificationPolicyDigest: string;
     readonly effectivePolicyDigest: string;
-    readonly providerConfigDigest: string;
-    readonly routeDigest: string;
-    readonly probeResultDigest: string;
-    readonly catalogueRawDigest: string;
-    readonly catalogueNormalizedDigest: string;
-    readonly answersDigest: string;
+    readonly observationSetDigest: string;
   }>;
   readonly caseEvaluations: readonly QualificationCaseEvaluation[];
   readonly dimensionEvaluations: readonly QualificationDimensionEvaluation[];
@@ -227,9 +229,7 @@ export interface QualificationExpectedBindings {
   readonly corpusDigest: string;
   readonly qualificationPolicyDigest: string;
   readonly effectivePolicyDigest: string;
-  readonly providerConfigDigest: string;
-  readonly routeDigest: string;
-  readonly probeResultDigest: string;
+  readonly observationSetDigest: string;
 }
 
 export interface VerifiedSemanticQualification {
@@ -311,10 +311,8 @@ export type QualificationReason =
   | "QUALIFICATION_INPUT_INVALID"
   | "QUALIFICATION_SUITE_DIGEST_MISMATCH"
   | "QUALIFICATION_POLICY_DIGEST_MISMATCH"
-  | "QUALIFICATION_PROBE_DIGEST_MISMATCH"
   | "QUALIFICATION_BINDING_MISMATCH"
-  | "QUALIFICATION_PROBE_UNAVAILABLE"
-  | "QUALIFICATION_PROBE_STALE"
+  | "QUALIFICATION_OBSERVATION_REFUSED"
   | "QUALIFICATION_ANSWER_DUPLICATE"
   | "QUALIFICATION_ANSWER_OUT_OF_SCOPE"
   | "QUALIFICATION_RESULT_DIGEST_MISMATCH"
@@ -677,66 +675,53 @@ function gradeCase(item: QualificationCase, answer: string): number {
   }
 }
 
-function probeDigestInput(probe: ProviderProbeResult): unknown {
-  const { resultDigest: _ignored, ...withoutDigest } = probe;
-  return withoutDigest;
-}
 
-function assertProbeBinding(input: SemanticQualificationInput, routeDigest: string): void {
-  const probe = input.probe;
-  if (
-    !validIdentifier(input.route.id)
-    || !validIdentifier(input.route.family)
-    || !validIdentifier(input.route.provider)
-    || !validIdentifier(input.route.model)
-    || !adapterPattern.test(input.route.adapterPackage)
-    || !validDigest(probe.resultDigest)
-    || !validDigest(probe.inputs.routeDigest)
-    || !adapterPattern.test(probe.inputs.adapterPackage)
-    || !validIdentifier(probe.inputs.adapterVersion)
-    || !validDigest(probe.inputs.adapterLockDigest)
-    || !validDigest(probe.inputs.policyDigest)
-    || !validDigest(probe.inputs.catalogueRawDigest)
-    || !validDigest(probe.inputs.catalogueNormalizedDigest)
-  ) throw new QualificationError("QUALIFICATION_INPUT_INVALID");
-  if (probe.resultDigest !== exactDigest(probeDigestInput(probe))) {
-    throw new QualificationError("QUALIFICATION_PROBE_DIGEST_MISMATCH");
+/**
+ * Authenticate the observation set against the profile and task class it claims
+ * to qualify.
+ *
+ * The identity checks kept from the previous binding are the ones that are
+ * about the invocation: which model was asked, which model answered, and which
+ * adapter carried it. The ones dropped are the ones that were about the
+ * account -- quota availability, service health and an observed cost of zero.
+ * The qualification requirement never asked for those; only an authenticated
+ * provider-console observation could establish them; and requiring them meant
+ * the evaluator could never run. Whether this route may be executed at all is
+ * decided by the operator's economic authorization, at the point where
+ * execution is authorised, and it is not re-decided here.
+ */
+function assertObservationBinding(
+  input: SemanticQualificationInput,
+  caseIds: readonly string[],
+): void {
+  try {
+    assertObservationSet(input.observations, {
+      provider: input.profile.provider,
+      requestedModel: input.profile.requestedModel,
+      caseIds,
+    });
+  } catch (error) {
+    if (error instanceof QualificationObservationError) {
+      throw new QualificationError("QUALIFICATION_OBSERVATION_REFUSED");
+    }
+    throw error;
   }
-  if (
-    probe.inputs.routeDigest !== routeDigest
-    || probe.inputs.adapterPackage !== input.route.adapterPackage
-    || probe.inputs.adapterPackage !== input.profile.adapter
-    || probe.inputs.adapterVersion !== input.profile.adapterVersion
-    || probe.inputs.adapterLockDigest !== input.profile.adapterLockDigest
-    || probe.inputs.policyDigest !== input.effectivePolicyDigest
-    || probe.routeId !== input.route.id
-    || probe.requested.family !== input.route.family
-    || probe.requested.provider !== input.route.provider
-    || probe.requested.model !== input.route.model
-  ) throw new QualificationError("QUALIFICATION_BINDING_MISMATCH");
-  if (
-    probe.status !== "ok"
-    || probe.actual === undefined
-    || probe.quota !== "available"
-    || probe.health !== "available"
-    || probe.cost.evidence === "unavailable"
-    || (probe.cost.observedCost !== null && probe.cost.observedCost !== 0)
-    || !validIdentifier(probe.actual.family)
-    || !validIdentifier(probe.actual.provider)
-    || !validIdentifier(probe.actual.model)
-    || (probe.actual.sdkProvider !== null && !validIdentifier(probe.actual.sdkProvider))
-  ) throw new QualificationError("QUALIFICATION_PROBE_UNAVAILABLE");
-  if (
-    probe.actual.family !== input.route.family
-    || probe.actual.provider !== input.route.provider
-    || probe.actual.model !== input.route.model
-  ) throw new QualificationError("QUALIFICATION_BINDING_MISMATCH");
-  if (
-    !validInstant(probe.observedAt)
-    || !validInstant(probe.expiresAt)
-    || Date.parse(probe.observedAt) > Date.parse(input.evaluatedAt)
-    || Date.parse(input.evaluatedAt) >= Date.parse(probe.expiresAt)
-  ) throw new QualificationError("QUALIFICATION_PROBE_STALE");
+  for (const observation of input.observations) {
+    // The adapter that carried the invocation must be the adapter the profile
+    // is qualifying. A transport that resolves its own model carries no
+    // adapter, and the profile must say so rather than naming one.
+    const profileAdapter = input.profile.adapter === "" ? null : input.profile.adapter;
+    if (observation.adapterPackage !== profileAdapter
+      || (profileAdapter !== null
+        && (observation.adapterVersion !== input.profile.adapterVersion
+          || observation.adapterLockDigest !== input.profile.adapterLockDigest))) {
+      throw new QualificationError("QUALIFICATION_BINDING_MISMATCH");
+    }
+    // An invocation cannot have happened after the moment it is being graded.
+    if (Date.parse(observation.observedAt) > Date.parse(input.evaluatedAt)) {
+      throw new QualificationError("QUALIFICATION_OBSERVATION_REFUSED");
+    }
+  }
 }
 
 function scoreCases(
@@ -869,38 +854,28 @@ export function qualifySemanticProfile(input: SemanticQualificationInput): Seman
   if (
     !validIdentifier(input.taskClass)
     || !validInstant(input.evaluatedAt)
-    || !validDigest(input.providerConfigDigest)
     || !validDigest(input.effectivePolicyDigest)
-    || input.profile.provider !== input.route.provider
-    || input.profile.requestedModel !== input.route.model
-    || input.profile.adapter !== input.route.adapterPackage
   ) throw new QualificationError("QUALIFICATION_BINDING_MISMATCH");
 
-  const routeDigest = exactDigest(input.route);
-  assertProbeBinding(input, routeDigest);
   const taskCases = input.suite.corpus.cases.filter((item) => item.taskClass === input.taskClass);
   if (taskCases.length === 0) throw new QualificationError("QUALIFICATION_INPUT_INVALID");
-  if (!Array.isArray(input.answers) || input.answers.length > taskCases.length) {
-    throw new QualificationError("QUALIFICATION_INPUT_INVALID");
-  }
-  const scopedCaseIds = new Set(taskCases.map((item) => item.caseId));
-  const answers = new Map<string, string>();
-  for (const item of input.answers) {
-    if (!isRecord(item) || !validIdentifier(item.caseId) || !validBoundedString(item.answer)) {
-      throw new QualificationError("QUALIFICATION_INPUT_INVALID");
-    }
-    if (!scopedCaseIds.has(item.caseId)) throw new QualificationError("QUALIFICATION_ANSWER_OUT_OF_SCOPE");
-    if (answers.has(item.caseId)) throw new QualificationError("QUALIFICATION_ANSWER_DUPLICATE");
-    answers.set(item.caseId, item.answer);
-  }
+  assertObservationBinding(input, taskCases.map((item) => item.caseId));
 
+  // The answers are read off the authenticated observations rather than taken
+  // from the caller, so every graded answer is one a recorded invocation
+  // actually returned. A case with no observation is unanswered and scores
+  // zero; an answer with no observation cannot reach the grader at all.
+  const answers = answersFromObservations(input.observations);
   const score = scoreCases(taskCases, answers, input.taskClass);
   const derivedRoles = deriveRoles(input.taskClass, score.dimensionEvaluations, input.policy);
   const profileDigest = exactDigest(input.profile);
-  const sortedAnswers = [...answers].sort(([left], [right]) => left.localeCompare(right))
-    .map(([caseId, answer]) => ({ caseId, answer }));
-  const policyExpiry = new Date(Date.parse(input.evaluatedAt) + input.policy.validitySeconds * 1_000).toISOString();
-  const validUntil = Date.parse(policyExpiry) < Date.parse(input.probe.expiresAt) ? policyExpiry : input.probe.expiresAt;
+  // Expiry comes from the declared qualification policy and from nothing else.
+  // Previously it was the earlier of the policy window and the probe's own
+  // expiry, which made a qualification's lifetime depend on an availability
+  // observation; the policy already declares the window it wants.
+  const validUntil = new Date(
+    Date.parse(input.evaluatedAt) + input.policy.validitySeconds * 1_000,
+  ).toISOString();
   const withoutDigest = {
     schema: "urn:usf:semantic-qualification-result:1" as const,
     status: derivedRoles[0] === "UNQUALIFIED" ? "unqualified" as const : "qualified" as const,
@@ -908,7 +883,6 @@ export function qualifySemanticProfile(input: SemanticQualificationInput): Seman
     profile: {
       profileDigest,
       requested: {
-        family: input.route.family,
         provider: input.profile.provider,
         model: input.profile.requestedModel,
         adapter: input.profile.adapter,
@@ -924,11 +898,13 @@ export function qualifySemanticProfile(input: SemanticQualificationInput): Seman
         outputConfig: input.profile.outputConfig,
         outputConfigDigest: input.profile.outputConfigDigest,
       },
+      // The identity that actually answered, taken from the observations. They
+      // are authenticated to agree with each other and with the requested
+      // model, so the first carries the set's answer.
       actual: {
-        family: input.probe.actual!.family,
-        provider: input.probe.actual!.provider,
-        model: input.probe.actual!.model,
-        sdkProvider: input.probe.actual!.sdkProvider,
+        provider: input.observations[0]!.provider,
+        model: input.observations[0]!.actualModel,
+        transport: input.observations[0]!.transport,
       },
     },
     inputs: {
@@ -936,16 +912,11 @@ export function qualifySemanticProfile(input: SemanticQualificationInput): Seman
       corpusDigest: input.suite.corpusDigest,
       qualificationPolicyDigest: input.policy.policyDigest,
       effectivePolicyDigest: input.effectivePolicyDigest,
-      providerConfigDigest: input.providerConfigDigest,
-      routeDigest,
-      probeResultDigest: input.probe.resultDigest,
-      catalogueRawDigest: input.probe.inputs.catalogueRawDigest,
-      catalogueNormalizedDigest: input.probe.inputs.catalogueNormalizedDigest,
-      answersDigest: exactDigest(sortedAnswers),
+      observationSetDigest: observationSetDigest(input.observations),
     },
     ...score,
     derivedRoles,
-    observedAt: input.probe.observedAt,
+    observedAt: earliestObservedAt(input.observations),
     evaluatedAt: input.evaluatedAt,
     validUntil,
     externalContact: false as const,
@@ -973,9 +944,7 @@ export function verifySemanticQualification(
     || !validDigest(expected.corpusDigest)
     || !validDigest(expected.qualificationPolicyDigest)
     || !validDigest(expected.effectivePolicyDigest)
-    || !validDigest(expected.providerConfigDigest)
-    || !validDigest(expected.routeDigest)
-    || !validDigest(expected.probeResultDigest)
+    || !validDigest(expected.observationSetDigest)
   ) {
     throw new QualificationError("QUALIFICATION_INPUT_INVALID");
   }
@@ -1025,9 +994,7 @@ export function verifySemanticQualification(
     corpusDigest: result.inputs.corpusDigest,
     qualificationPolicyDigest: result.inputs.qualificationPolicyDigest,
     effectivePolicyDigest: result.inputs.effectivePolicyDigest,
-    providerConfigDigest: result.inputs.providerConfigDigest,
-    routeDigest: result.inputs.routeDigest,
-    probeResultDigest: result.inputs.probeResultDigest,
+    observationSetDigest: result.inputs.observationSetDigest,
   };
   if (canonicalJson(actualBindings) !== canonicalJson(expected)) {
     throw new QualificationError("QUALIFICATION_RESULT_BINDING_MISMATCH");

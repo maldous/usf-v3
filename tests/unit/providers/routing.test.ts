@@ -35,6 +35,9 @@ import {
 import { createJsonSchemaValidator } from "../../../src/schema/index.ts";
 import { proposalBasis } from "../../fixtures/proposal-packet.ts";
 import { createRealisationBasis } from "../../../src/realisation/basis.ts";
+import {
+  answerDigest, promptDigest, sealQualificationObservation,
+} from "../../../src/providers/qualification-observation.ts";
 
 const digest = (character: string) => `sha256:${character.repeat(64)}`;
 const exactDigest = (value: unknown) => canonicalDigest(value, { rejectAbsolutePaths: true });
@@ -132,7 +135,6 @@ function qualificationReplaySourceFor(
   return {
     routeId: item.id,
     taskClass: semanticTaskClass,
-    route: providerRoute(item),
     profile: {
       schema: "urn:usf:agent-profile:1", provider: item.provider, requestedModel: item.model, adapter: item.adapter,
       adapterVersion: "1.0.0", adapterLockDigest: exactDigest({ adapter: item.adapter, version: "1.0.0" }),
@@ -143,7 +145,27 @@ function qualificationReplaySourceFor(
       contextConfigDigest: exactDigest({ context: "bounded-context-v1" }),
       outputConfigDigest: exactDigest({ output: "json-output-v1" }),
     },
-    answers: [{ caseId: "typescript-safe-change", answer: qualified ? "scoped patch" : "unbounded rewrite" }],
+    // One observation standing for one real invocation. Replay regrades the
+    // invocation, so a receipt whose evidence was altered stops reproducing
+    // its own digest.
+    observations: [sealQualificationObservation({
+      schema: "urn:usf:qualification-observation:1",
+      provider: item.provider,
+      requestedModel: item.model,
+      actualModel: item.model,
+      transport: "vercel-ai-sdk",
+      adapterPackage: item.adapter,
+      adapterVersion: "1.0.0",
+      adapterLockDigest: exactDigest({ adapter: item.adapter, version: "1.0.0" }),
+      caseId: "typescript-safe-change",
+      promptDigest: promptDigest("typescript-safe-change"),
+      answer: qualified ? "scoped patch" : "unbounded rewrite",
+      answerDigest: answerDigest(qualified ? "scoped patch" : "unbounded rewrite"),
+      executionEvidenceDigest: exactDigest({ routeId: item.id, caseId: "typescript-safe-change" }),
+      observedAt: value.now,
+      latencyMs: 25,
+      usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
+    })],
     evaluatedAt: value.now,
   };
 }
@@ -153,12 +175,11 @@ function qualificationFor(
   item: ConfiguredRouteForRouting,
   source: SemanticQualificationReplaySourceForRouting,
 ): SemanticQualificationResult {
-  const selectedProbe = value.probes.find((probe) => probe.routeId === item.id)!;
   return qualifySemanticProfile({
     profile: source.profile, taskClass: source.taskClass,
-    suite: qualificationSuite, policy: qualificationPolicy, route: source.route,
-    providerConfigDigest: value.providerConfigDigest, effectivePolicyDigest: value.policyDigest,
-    probe: selectedProbe as ProviderProbeResult, answers: source.answers, evaluatedAt: source.evaluatedAt,
+    suite: qualificationSuite, policy: qualificationPolicy,
+    effectivePolicyDigest: value.policyDigest,
+    observations: source.observations, evaluatedAt: source.evaluatedAt,
   });
 }
 
@@ -279,7 +300,10 @@ test("routing validates, partitions and binds exact qualification plus both sema
       assert.equal(reference.taskClass, semanticTaskClass);
       assert.equal(reference.suiteDigest, qualificationSuite.suiteDigest);
       assert.equal(reference.corpusDigest, qualificationSuite.corpusDigest);
-      assert.equal(reference.probeResultDigest, assignment.qualification.probeDigest);
+      // The reference carries the observation set the qualification rests on,
+      // not a probe digest: routing no longer cross-checks a qualification
+      // against an availability observation.
+      assert.ok(/^sha256:[0-9a-f]{64}$/u.test(reference.observationSetDigest));
     }
     assert.equal(assignment.qualification.validAt, input().now);
   }
@@ -419,7 +443,7 @@ test("same-model routes select only their exact route and profile qualification"
       value.semanticQualifications.find((item) => item.qualificationDigest
         === (assignment.qualification.semanticQualification.applicability === "required"
           ? assignment.qualification.semanticQualification.qualificationDigests[0]
-          : null))!.inputs.routeDigest);
+          : null))!.inputs.observationSetDigest);
   }
 });
 

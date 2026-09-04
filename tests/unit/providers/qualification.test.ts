@@ -3,7 +3,10 @@ import test from "node:test";
 
 import { canonicalDigest } from "../../../src/core/canonical.ts";
 import type { ProviderRouteConfig } from "../../../src/providers/config.ts";
-import type { ProviderProbeResult } from "../../../src/providers/probe.ts";
+import {
+  answerDigest, promptDigest, sealQualificationObservation,
+  type QualificationObservation,
+} from "../../../src/providers/qualification-observation.ts";
 import {
   QualificationError,
   createHiddenPromptProjections,
@@ -112,50 +115,34 @@ const allAnswers: readonly QualificationAnswer[] = Object.freeze([
   { caseId: "uncertain", answer: "I cannot know that from the supplied evidence." },
 ]);
 
-function probeFor(
-  selectedRoute: ProviderRouteConfig = route,
-  actual: { family: string; provider: string; model: string; sdkProvider: string | null } = {
-    family: route.family,
-    provider: route.provider,
-    model: route.model,
-    sdkProvider: "groq.chat",
-  },
-  observedAt = "2026-08-30T00:00:00.000Z",
-  expiresAt = "2026-08-30T00:30:00.000Z",
-): ProviderProbeResult {
-  const withoutDigest = {
-    schema: "urn:usf:probe-result:1" as const,
-    status: "ok" as const,
-    routeId: selectedRoute.id,
-    endpointOrigin: "https://api.groq.com",
-    serviceTier: "on_demand" as const,
-    requested: { family: selectedRoute.family, provider: selectedRoute.provider, model: selectedRoute.model },
-    actual,
-    inputs: {
-      routeDigest: exactDigest(selectedRoute),
-      adapterPackage: selectedRoute.adapterPackage,
-      adapterVersion: profile.adapterVersion,
-      adapterLockDigest: profile.adapterLockDigest,
-      catalogueRawDigest: digest("a"),
-      catalogueNormalizedDigest: digest("b"),
-      policyDigest: digest("c"),
-      entitlementEvidenceDigest: digest("d"),
-      probePromptDigest: digest("e"),
-    },
-    observedAt,
-    expiresAt,
-    capabilityEvaluations: [{ capability: "text-generation" as const, status: "available" as const, reasonCode: null }],
-    quota: "available" as const,
-    health: "available" as const,
-    cost: { observedCost: null, currency: null, evidence: "entitlement" as const },
-    usage: { inputTokens: 12, outputTokens: 4 },
+/**
+ * Seal one observation per answer. Each stands for an invocation that returned
+ * that answer, which is the whole point of the rebind: the grader now reads the
+ * answer off an authenticated record of a call, not off a caller's array.
+ */
+function observationsFor(
+  answers: readonly QualificationAnswer[] = allAnswers,
+  overrides: Partial<Omit<QualificationObservation, "observationDigest">> = {},
+): readonly QualificationObservation[] {
+  return Object.freeze(answers.map((item) => sealQualificationObservation({
+    schema: "urn:usf:qualification-observation:1",
+    provider: "groq",
+    requestedModel: route.model,
+    actualModel: route.model,
+    transport: "vercel-ai-sdk",
+    adapterPackage: route.adapterPackage,
+    adapterVersion: profile.adapterVersion,
+    adapterLockDigest: profile.adapterLockDigest,
+    caseId: item.caseId,
+    promptDigest: promptDigest(`prompt for ${item.caseId}`),
+    answer: item.answer,
+    answerDigest: answerDigest(item.answer),
+    executionEvidenceDigest: digest("e"),
+    observedAt: "2026-08-30T00:00:00.000Z",
     latencyMs: 22.5,
-    limits: { timeoutMs: 500, maxRetries: 0 as const, maxOutputTokens: 8 as const },
-    externalContact: true,
-    authorityEffect: "none" as const,
-    nonclaims: ["operational observation only"],
-  };
-  return Object.freeze({ ...withoutDigest, resultDigest: exactDigest(withoutDigest) });
+    usage: { inputTokens: 12, outputTokens: 4, totalTokens: 16 },
+    ...overrides,
+  })));
 }
 
 function input(overrides: Partial<SemanticQualificationInput> = {}): SemanticQualificationInput {
@@ -164,11 +151,8 @@ function input(overrides: Partial<SemanticQualificationInput> = {}): SemanticQua
     taskClass: "semantic-repair",
     suite: suite(),
     policy: policy(),
-    route,
-    providerConfigDigest: digest("f"),
     effectivePolicyDigest: digest("c"),
-    probe: probeFor(),
-    answers: allAnswers,
+    observations: observationsFor(),
     evaluatedAt: "2026-08-30T00:00:30.000Z",
     ...overrides,
   };
@@ -182,9 +166,7 @@ function expected(result: SemanticQualificationResult): QualificationExpectedBin
     corpusDigest: result.inputs.corpusDigest,
     qualificationPolicyDigest: result.inputs.qualificationPolicyDigest,
     effectivePolicyDigest: result.inputs.effectivePolicyDigest,
-    providerConfigDigest: result.inputs.providerConfigDigest,
-    routeDigest: result.inputs.routeDigest,
-    probeResultDigest: result.inputs.probeResultDigest,
+    observationSetDigest: result.inputs.observationSetDigest,
   };
 }
 
@@ -207,7 +189,7 @@ test("semantic qualification is deterministic, task-scoped, immutable, and binds
   assert.equal(first.casesPassed, 5);
   assert.equal(first.dimensionEvaluations.length, 17);
   assert.equal(first.profile.profileDigest, exactDigest(profile));
-  assert.deepEqual(first.profile.actual, { family: "groq", provider: "groq", model: route.model, sdkProvider: "groq.chat" });
+  assert.deepEqual(first.profile.actual, { provider: "groq", model: route.model, transport: "vercel-ai-sdk" });
   assert.equal(first.externalContact, false);
   assert.equal(first.authorityEffect, "none");
   assert.match(first.nonclaims[0]!, /grant no write, routing, roster/);
@@ -232,17 +214,27 @@ test("semantic qualification is deterministic, task-scoped, immutable, and binds
     assert.notEqual(changed.profile.profileDigest, first.profile.profileDigest, field);
     assert.notEqual(changed.qualificationDigest, first.qualificationDigest, field);
   }
+  // A profile claiming a provider or model the observations do not show is
+  // refused by the evidence rather than by a declaration check, which is the
+  // stronger statement: the invocations came from somewhere else.
   for (const changed of [
     { ...profile, provider: "other" },
     { ...profile, requestedModel: "other/model" },
-    { ...profile, adapter: "@ai-sdk/other" },
   ]) {
-    assert.equal(reason(() => qualifySemanticProfile(input({ profile: changed }))), "QUALIFICATION_BINDING_MISMATCH");
+    assert.equal(reason(() => qualifySemanticProfile(input({ profile: changed }))), "QUALIFICATION_OBSERVATION_REFUSED");
   }
+  // The adapter is the profile's own declaration about the execution path, so a
+  // profile and observation that disagree about it is a binding mismatch.
+  assert.equal(
+    reason(() => qualifySemanticProfile(input({ profile: { ...profile, adapter: "@ai-sdk/other" } }))),
+    "QUALIFICATION_BINDING_MISMATCH",
+  );
 });
 
 test("missing answers score zero and every role threshold dimension is mandatory", () => {
-  const missingMost = qualifySemanticProfile(input({ answers: [{ caseId: "implement", answer: "use scoped patch" }] }));
+  const missingMost = qualifySemanticProfile(input({
+    observations: observationsFor([{ caseId: "implement", answer: "use scoped patch" }]),
+  }));
   assert.equal(missingMost.status, "unqualified");
   assert.deepEqual(missingMost.derivedRoles, ["UNQUALIFIED"]);
   assert.equal(missingMost.casesAnswered, 1);
@@ -253,28 +245,52 @@ test("missing answers score zero and every role threshold dimension is mandatory
     [0, 0, 0, 0],
   );
 
-  const withoutScope = qualifySemanticProfile(input({ answers: allAnswers.filter((item) => item.caseId !== "scope") }));
+  const withoutScope = qualifySemanticProfile(input({
+    observations: observationsFor(allAnswers.filter((item) => item.caseId !== "scope")),
+  }));
   assert.deepEqual(withoutScope.derivedRoles, ["READ_ONLY_ANALYST"]);
   assert.equal(withoutScope.dimensionEvaluations.find((item) => item.dimension === "scope_discipline")!.score, 0);
 });
 
-test("suite, policy, probe, route, policy, and answer bindings fail closed", () => {
+test("suite, policy, profile and observation bindings fail closed", () => {
   const valid = input();
   const cases: Array<[string, SemanticQualificationInput, string]> = [
     ["corpus digest", { ...valid, suite: { ...valid.suite, corpusDigest: digest("0") } }, "QUALIFICATION_SUITE_DIGEST_MISMATCH"],
     ["suite digest", { ...valid, suite: { ...valid.suite, suiteDigest: digest("0") } }, "QUALIFICATION_SUITE_DIGEST_MISMATCH"],
     ["policy digest", { ...valid, policy: { ...valid.policy, policyDigest: digest("0") } }, "QUALIFICATION_POLICY_DIGEST_MISMATCH"],
-    ["probe tamper", { ...valid, probe: { ...valid.probe, quota: "exhausted" } }, "QUALIFICATION_PROBE_DIGEST_MISMATCH"],
     ["adapter version", { ...valid, profile: { ...valid.profile, adapterVersion: "4.0.35" } }, "QUALIFICATION_BINDING_MISMATCH"],
     ["adapter lock", { ...valid, profile: { ...valid.profile, adapterLockDigest: digest("9") } }, "QUALIFICATION_BINDING_MISMATCH"],
-    ["effective policy", { ...valid, effectivePolicyDigest: digest("0") }, "QUALIFICATION_BINDING_MISMATCH"],
-    ["route", { ...valid, route: { ...route, id: "repointed" } }, "QUALIFICATION_BINDING_MISMATCH"],
-    ["duplicate answer", { ...valid, answers: [...allAnswers.slice(0, 4), allAnswers[0]!] }, "QUALIFICATION_ANSWER_DUPLICATE"],
-    ["out of scope answer", { ...valid, answers: [{ caseId: "review-only", answer: "stale" }] }, "QUALIFICATION_ANSWER_OUT_OF_SCOPE"],
+    // An observation whose stored digest no longer recomputes is a tampered
+    // record, and tampering refuses the set rather than dropping one member.
+    ["observation tamper", {
+      ...valid,
+      observations: [{ ...valid.observations[0]!, answer: "rewritten" }, ...valid.observations.slice(1)],
+    }, "QUALIFICATION_OBSERVATION_REFUSED"],
+    ["duplicate case", {
+      ...valid,
+      observations: [...observationsFor(allAnswers.slice(0, 4)), observationsFor([allAnswers[0]!])[0]!],
+    }, "QUALIFICATION_OBSERVATION_REFUSED"],
+    ["case outside the task class", {
+      ...valid,
+      observations: observationsFor([{ caseId: "review-only", answer: "stale" }]),
+    }, "QUALIFICATION_OBSERVATION_REFUSED"],
+    ["another model's observation", {
+      ...valid,
+      observations: observationsFor(allAnswers, { requestedModel: "qwen/other-model", actualModel: "qwen/other-model" }),
+    }, "QUALIFICATION_OBSERVATION_REFUSED"],
+    ["an empty set", { ...valid, observations: [] }, "QUALIFICATION_OBSERVATION_REFUSED"],
   ];
   for (const [label, value, expectedReason] of cases) {
     assert.equal(reason(() => qualifySemanticProfile(value)), expectedReason, label);
   }
+
+  // The effective policy digest is part of qualification identity rather than a
+  // value checked against another artefact, so a different policy yields a
+  // different qualification instead of a refusal.
+  assert.notEqual(
+    qualifySemanticProfile(input({ effectivePolicyDigest: digest("0") })).qualificationDigest,
+    qualifySemanticProfile(input()).qualificationDigest,
+  );
   assert.throws(
     () => createQualificationPolicy({
       policyId: "unsafe-policy",
@@ -288,19 +304,29 @@ test("suite, policy, probe, route, policy, and answer bindings fail closed", () 
 });
 
 test("requested and actual identities remain distinct exact fields and mismatches fail closed", () => {
-  const routedProbe = probeFor(route, { family: "qwen", provider: "groq", model: "qwen3.6-27b-build-42", sdkProvider: "groq.chat" });
   const direct = qualifySemanticProfile(input());
   assert.equal(direct.profile.requested.provider, "groq");
   assert.equal(direct.profile.requested.model, route.model);
-  assert.deepEqual(direct.profile.actual, { family: "groq", provider: "groq", model: route.model, sdkProvider: "groq.chat" });
-  assert.equal(reason(() => qualifySemanticProfile(input({ probe: routedProbe }))), "QUALIFICATION_BINDING_MISMATCH");
+  assert.deepEqual(direct.profile.actual,
+    { provider: "groq", model: route.model, transport: "vercel-ai-sdk" });
+  // A transport that answers as a different build than was asked has not
+  // qualified the requested identity: the answer came from something else.
+  assert.equal(
+    reason(() => qualifySemanticProfile(input({
+      observations: observationsFor(allAnswers, { actualModel: "qwen3.6-27b-build-42" }),
+    }))),
+    "QUALIFICATION_OBSERVATION_REFUSED",
+  );
 });
 
 test("qualification and verification enforce observed and expiry currentness plus immutable result identity", () => {
-  const future = probeFor(route, undefined, "2026-08-30T00:01:00.000Z");
-  const expired = probeFor(route, undefined, "2026-08-29T23:00:00.000Z", "2026-08-30T00:00:30.000Z");
-  assert.equal(reason(() => qualifySemanticProfile(input({ probe: future }))), "QUALIFICATION_PROBE_STALE");
-  assert.equal(reason(() => qualifySemanticProfile(input({ probe: expired }))), "QUALIFICATION_PROBE_STALE");
+  // An invocation cannot have happened after the moment it is graded.
+  assert.equal(
+    reason(() => qualifySemanticProfile(input({
+      observations: observationsFor(allAnswers, { observedAt: "2026-08-30T00:01:00.000Z" }),
+    }))),
+    "QUALIFICATION_OBSERVATION_REFUSED",
+  );
 
   const result = qualifySemanticProfile(input());
   assert.equal(result.validUntil, "2026-08-30T00:01:30.000Z");
@@ -311,7 +337,7 @@ test("qualification and verification enforce observed and expiry currentness plu
 
   const tampered = { ...result, taskScore: 0 } as SemanticQualificationResult;
   assert.equal(reason(() => verifySemanticQualification(tampered, expected(result), "2026-08-30T00:01:00.000Z")), "QUALIFICATION_RESULT_DIGEST_MISMATCH");
-  assert.equal(reason(() => verifySemanticQualification(result, { ...expected(result), providerConfigDigest: digest("0") }, "2026-08-30T00:01:00.000Z")), "QUALIFICATION_RESULT_BINDING_MISMATCH");
+  assert.equal(reason(() => verifySemanticQualification(result, { ...expected(result), observationSetDigest: digest("0") }, "2026-08-30T00:01:00.000Z")), "QUALIFICATION_RESULT_BINDING_MISMATCH");
 });
 
 test("hidden evaluation exposes one prompt at a time, never graders, and defaults every unmatched answer to unqualified", () => {
