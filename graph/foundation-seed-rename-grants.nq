@@ -1,0 +1,4 @@
+<urn:usf:foundation-seed-rename-grants:1> <urn:usf:predicate:type> <urn:usf:type:SemanticFoundationExtension> <urn:usf:graph:foundation-seed-rename-grants> .
+<urn:usf:foundation-seed-rename-grants:1> <urn:usf:predicate:canonicalName> "foundation-seed-rename-grants" <urn:usf:graph:foundation-seed-rename-grants> .
+<urn:usf:foundation-seed-rename-grants:1> <urn:usf:predicate:objective> "Publication target for construction authority grants of the foundation dependency seed rename." <urn:usf:graph:foundation-seed-rename-grants> .
+<urn:usf:foundation-seed-rename-grants:1> <urn:usf:predicate:nonClaim> "An empty grants source is the correct initial state. It asserts no authority and its presence is not a grant." <urn:usf:graph:foundation-seed-rename-grants> .
