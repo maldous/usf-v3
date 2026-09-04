@@ -1,0 +1,12 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/self-host.json",
+    "graph/manifests/profile-authority.json"
+  ],
+  "sources": [
+    { "path": "graph/cli-diagnostics.nq", "format": "application/n-quads", "graph": "urn:usf:graph:cli-diagnostics", "role": "contract", "validationProfile": "bootstrap-nquads-v1" },
+    { "path": "graph/cli-diagnostics-grants.nq", "format": "application/n-quads", "graph": "urn:usf:graph:cli-diagnostics-grants", "role": "contract", "validationProfile": "bootstrap-nquads-v1" }
+  ]
+}
