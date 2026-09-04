@@ -276,6 +276,17 @@ sense this exercise set out to clear:
    measured migration. Until then it permits and excludes nothing, so it is
    inert. `graph/profile-authority.nq` also records the old path in a historical
    carrier intent and should keep it under §6.
+   The same two files, plus the same historical carrier intent, also still name
+   `graph/anqr-first-slice.nq` for the same reason and with the same inertness.
+
+   A third reference is retained for a **better** reason and is not debt:
+   `graph/products/anqr/profile-revision-2.nq` records
+   `graph/anqr-first-slice.nq` as an `evidenceSourceLocator`. Revision 2 is
+   immutable, and an evidence-source locator records where evidence was found at
+   the time. Updating it would falsify an immutable revision's provenance to
+   make a path look tidy. `evidence/historical-carriers/` retains it for the
+   same reason.
+
 2. **`src/commands/graph-integrity.ts` holds a hardcoded fallback list** of
    convention-exempt graphs naming a graph identity that no longer exists. The
    naming residue is the symptom; the defect is that a hardcoded fallback is a
