@@ -121,6 +121,7 @@
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:scope> "product-platform" <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:supersededBy> <urn:usf:delivery-requirement:v1-specification:1> <urn:usf:graph:v3-execution> .
 <urn:usf:disposition:service-infrastructure-ports:1> <urn:usf:predicate:type> <urn:usf:type:KnowledgeDisposition> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:accountBasis> "subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:authorizesProvider> "antigravity-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:antigravity-cli> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:basis> "operator-declared-subscription" <urn:usf:graph:v3-execution> .
@@ -128,8 +129,11 @@
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:evidence> "The Antigravity CLI executes under the operator's existing authenticated Google Antigravity subscription. Marginal per-invocation cost is zero; the subscription enforces its own limits and refuses rather than billing this repository. It may not fall back to paid Anthropic or Google API access." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:paidSpendPermitted> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:permittedCostClass> "subscription-included" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:sourceDocumentation> "https://antigravity.google/cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:antigravity-cli-antigravity-cli:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:accountBasis> "subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:authorizesProvider> "claude-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:claude-cli> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:basis> "operator-declared-subscription" <urn:usf:graph:v3-execution> .
@@ -137,8 +141,11 @@
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:evidence> "The Claude CLI executes under the operator's existing authenticated Claude subscription. Marginal per-invocation cost is zero; the cost figures the CLI reports are list-basis attribution for usage accounting, not a charge against this repository." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:paidSpendPermitted> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:permittedCostClass> "subscription-included" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:sourceDocumentation> "https://docs.claude.com/en/docs/claude-code/overview" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:claude-cli-claude-cli:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:accountBasis> "subscription" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:authorizesProvider> "codex-cli" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:codex-cli> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:basis> "operator-declared-subscription" <urn:usf:graph:v3-execution> .
@@ -146,8 +153,11 @@
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:evidence> "The Codex CLI executes under the operator's existing authenticated ChatGPT/Codex subscription. Marginal per-invocation cost is zero; the subscription enforces its own usage limits and refuses rather than billing this repository." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:paidSpendPermitted> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:permittedCostClass> "subscription-included" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:sourceDocumentation> "https://developers.openai.com/codex/cli/" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:codex-cli-codex-cli:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:accountBasis> "trial" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:authorizesProvider> "cerebras" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:basis> "operator-declared-free-tier" <urn:usf:graph:v3-execution> .
@@ -155,8 +165,25 @@
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:evidence> "Cerebras documents that the Free Trial tier stops API access when credits are exhausted rather than billing; there is no charge until the operator purchases additional credits." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:paidSpendPermitted> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:permittedCostClass> "priced" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:permittedCostClass> "zero-price" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:sourceDocumentation> "https://inference-docs.cerebras.ai/support/rate-limits" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-cerebras:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:accountBasis> "trial" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:authorizesProvider> "cohere" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:basis> "operator-declared-trial-account" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:entitlement> "free-quota" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:evidence> "The operator holds a Cohere trial account whose free tier serves the provider's models at no charge. Authorized on that basis with no permission to spend: when the trial ends the provider refuses, and narrowing this authorization is an operator decision rather than something the runtime infers." <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:paidSpendPermitted> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:permittedCostClass> "priced" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:permittedCostClass> "zero-price" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:sourceDocumentation> "https://docs.cohere.com/docs/rate-limits" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-cohere:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:accountBasis> "trial" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:authorizesProvider> "groq" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:basis> "operator-declared-free-tier" <urn:usf:graph:v3-execution> .
@@ -164,8 +191,36 @@
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:evidence> "Groq documents the free tier as rate-limited only; billing begins solely after the operator explicitly upgrades to the Developer tier or crosses a published spend threshold, so a free-tier key cannot silently incur cost." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:paidSpendPermitted> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:permittedCostClass> "priced" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:permittedCostClass> "zero-price" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:sourceDocumentation> "https://console.groq.com/docs/rate-limits" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-authorization:vercel-ai-sdk-groq:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:accountBasis> "trial" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:authorizesProvider> "mistral" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:basis> "operator-declared-trial-account" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:entitlement> "free-quota" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:evidence> "The operator holds a Mistral trial account whose free tier serves the provider's models at no charge. Authorized on that basis with no permission to spend. Measured on 2026-09-04 this account returned Payment Required, which is the trial boundary doing its own work; an authorization records permission, never remaining entitlement." <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:paidSpendPermitted> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:permittedCostClass> "priced" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:permittedCostClass> "zero-price" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:sourceDocumentation> "https://docs.mistral.ai/deployment/laplateforme/tier/" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-mistral:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:accountBasis> "prepaid" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:authorizesProvider> "openrouter" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:authorizesTransport> <urn:usf:execution-transport:vercel-ai-sdk> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:basis> "operator-declared-prepaid-account" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:entitlement> "free-quota" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:evidence> "The operator holds a prepaid OpenRouter balance. It is authorized for free-model routes only: a zero-price route draws nothing from the balance, and reaching a priced route would spend it, so the priced class is deliberately absent rather than refused later. Before this was declared, nineteen OpenRouter candidates were entering on the catalogue's own zero price with no authorization at all, and no commit in tracked history had ever authorized the provider." <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:governedBy> <urn:usf:economic-policy:zero-paid:1> <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:paidSpendPermitted> "false" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:permittedCostClass> "zero-price" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:sourceDocumentation> "https://openrouter.ai/docs/api-reference/limits" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-authorization:vercel-ai-sdk-openrouter:1> <urn:usf:predicate:type> <urn:usf:type:OperatorEconomicAuthorization> <urn:usf:graph:v3-execution> .
 <urn:usf:economic-disposition:openrouter:1> <urn:usf:predicate:distinctFrom> "Groq and Cerebras free-tier economics" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-disposition:openrouter:1> <urn:usf:predicate:eligibleSubset> "Only catalogue zero-price routes are eligible under the zero paid-cost policy; priced and unknown-price routes are refused before any contact." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-disposition:openrouter:1> <urn:usf:predicate:futureState> "An explicitly authorized non-zero budget would be a different economic policy state, declared as such." <urn:usf:graph:v3-execution> .
@@ -179,6 +234,8 @@
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:evaluationScope> "per-execution-transport-and-provider-pair" <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:failureMode> "An absent authorization is ineligible. Eligibility is never inferred and one provider's economics never transfer to another." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:maximumPaidCostUsd> "0" <urn:usf:graph:v3-execution> .
+<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "A catalogue cost class is a property of a model and authorizes nothing. Eligibility requires exactly one declared authorization for the transport and provider pair, and that authorization must permit the model's cost class. A zero catalogue price used to be admitted on its own; measured before that was closed, 21 of 45 routable candidates entered that way across three providers no commit had ever authorized." <urn:usf:graph:v3-execution> .
+<urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "A permitted cost class is a statement of permission, never an observation that the account still has entitlement. When a trial or a prepaid balance runs out the provider refuses; this declaration does not notice, and narrowing it stays an operator decision." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "A subscription-included authorization asserts only that the operator's existing subscription covers invocation and that no per-call charge accrues to this repository. It asserts no remaining subscription quota; the transport refuses when its own limit is reached." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "Absence of an authorization for a transport and provider pair makes that pair economically ineligible; eligibility is never inferred." <urn:usf:graph:v3-execution> .
 <urn:usf:economic-policy:zero-paid:1> <urn:usf:predicate:nonClaim> "Catalogue list prices describe provider paid-tier rates and are not evidence that an authorized execution incurs cost." <urn:usf:graph:v3-execution> .
@@ -322,8 +379,14 @@
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:terminalState> "cycles-exhausted" <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:terminalState> "idle-no-pending-work" <urn:usf:graph:v3-execution> .
 <urn:usf:operational-lifecycle:hermes:1> <urn:usf:predicate:type> <urn:usf:type:OperationalLifecycle> <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:accountBasis> <urn:usf:predicate:objective> "What kind of account an economic authorization covers: a subscription, a prepaid balance, a trial or a standing free tier. Authorization is permission to use an account, so the kind of account is stated rather than derived from what a model costs." <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:accountBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
 <urn:usf:predicate:operatorPreferredForDispatch> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
 <urn:usf:predicate:operatorPreferredReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:paidSpendPermitted> <urn:usf:predicate:objective> "Whether an authorized account may execute anything that could incur a charge. False refuses an unknown-price model, because an unknown price may be a paid one, and it is what keeps a trial from walking silently onto paid usage when the trial ends." <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:paidSpendPermitted> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:permittedCostClass> <urn:usf:predicate:objective> "One catalogue cost class an authorized account may be used for. The set is closed: a class absent from it is refused, so widening what an account may reach is always an explicit declaration." <urn:usf:graph:v3-execution> .
+<urn:usf:predicate:permittedCostClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
 <urn:usf:predicate:reservedModelPrefixExemptReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
 <urn:usf:predicate:reservedModelPrefixExemptTransport> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:v3-execution> .
 <urn:usf:provider-endpoint:arcee:1> <urn:usf:predicate:baseUrl> "https://api.arcee.ai/api/v1" <urn:usf:graph:v3-execution> .

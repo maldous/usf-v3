@@ -3,7 +3,7 @@
   "version": 1,
   "generated": true,
   "derivedFrom": "graph/v3-execution.nq via urn:usf:economic-policy:zero-paid:1",
-  "sourceGraphDigest": "sha256:72fcaf8d6a510513f450d49bd0e1dd1ebc52dedc8029f968eff6f11e552d5951",
+  "sourceGraphDigest": "sha256:b9fa86686348d35d1342a47b35eb8500a2a8bd232c0477a4ca5159c00bb45d7f",
   "costPolicy": {
     "maximumPaidCost": 0,
     "paidFallback": "prohibited",
@@ -24,7 +24,7 @@
       "maximumPaidCostUsd": 0,
       "evidence": "The Antigravity CLI executes under the operator's existing authenticated Google Antigravity subscription. Marginal per-invocation cost is zero; the subscription enforces its own limits and refuses rather than billing this repository. It may not fall back to paid Anthropic or Google API access.",
       "sourceDocumentation": "https://antigravity.google/cli",
-      "accountBasis": "undeclared-retained",
+      "accountBasis": "subscription",
       "permittedCostClasses": [
         "subscription-included"
       ],
@@ -38,7 +38,7 @@
       "maximumPaidCostUsd": 0,
       "evidence": "The Claude CLI executes under the operator's existing authenticated Claude subscription. Marginal per-invocation cost is zero; the cost figures the CLI reports are list-basis attribution for usage accounting, not a charge against this repository.",
       "sourceDocumentation": "https://docs.claude.com/en/docs/claude-code/overview",
-      "accountBasis": "undeclared-retained",
+      "accountBasis": "subscription",
       "permittedCostClasses": [
         "subscription-included"
       ],
@@ -52,7 +52,7 @@
       "maximumPaidCostUsd": 0,
       "evidence": "The Codex CLI executes under the operator's existing authenticated ChatGPT/Codex subscription. Marginal per-invocation cost is zero; the subscription enforces its own usage limits and refuses rather than billing this repository.",
       "sourceDocumentation": "https://developers.openai.com/codex/cli/",
-      "accountBasis": "undeclared-retained",
+      "accountBasis": "subscription",
       "permittedCostClasses": [
         "subscription-included"
       ],
@@ -66,10 +66,24 @@
       "maximumPaidCostUsd": 0,
       "evidence": "Cerebras documents that the Free Trial tier stops API access when credits are exhausted rather than billing; there is no charge until the operator purchases additional credits.",
       "sourceDocumentation": "https://inference-docs.cerebras.ai/support/rate-limits",
-      "accountBasis": "undeclared-retained",
+      "accountBasis": "trial",
       "permittedCostClasses": [
         "priced",
-        "unknown",
+        "zero-price"
+      ],
+      "paidSpendPermitted": false
+    },
+    {
+      "transport": "vercel-ai-sdk",
+      "provider": "cohere",
+      "entitlement": "free-quota",
+      "basis": "operator-declared-trial-account",
+      "maximumPaidCostUsd": 0,
+      "evidence": "The operator holds a Cohere trial account whose free tier serves the provider's models at no charge. Authorized on that basis with no permission to spend: when the trial ends the provider refuses, and narrowing this authorization is an operator decision rather than something the runtime infers.",
+      "sourceDocumentation": "https://docs.cohere.com/docs/rate-limits",
+      "accountBasis": "trial",
+      "permittedCostClasses": [
+        "priced",
         "zero-price"
       ],
       "paidSpendPermitted": false
@@ -82,16 +96,46 @@
       "maximumPaidCostUsd": 0,
       "evidence": "Groq documents the free tier as rate-limited only; billing begins solely after the operator explicitly upgrades to the Developer tier or crosses a published spend threshold, so a free-tier key cannot silently incur cost.",
       "sourceDocumentation": "https://console.groq.com/docs/rate-limits",
-      "accountBasis": "undeclared-retained",
+      "accountBasis": "trial",
       "permittedCostClasses": [
         "priced",
-        "unknown",
+        "zero-price"
+      ],
+      "paidSpendPermitted": false
+    },
+    {
+      "transport": "vercel-ai-sdk",
+      "provider": "mistral",
+      "entitlement": "free-quota",
+      "basis": "operator-declared-trial-account",
+      "maximumPaidCostUsd": 0,
+      "evidence": "The operator holds a Mistral trial account whose free tier serves the provider's models at no charge. Authorized on that basis with no permission to spend. Measured on 2026-09-04 this account returned Payment Required, which is the trial boundary doing its own work; an authorization records permission, never remaining entitlement.",
+      "sourceDocumentation": "https://docs.mistral.ai/deployment/laplateforme/tier/",
+      "accountBasis": "trial",
+      "permittedCostClasses": [
+        "priced",
+        "zero-price"
+      ],
+      "paidSpendPermitted": false
+    },
+    {
+      "transport": "vercel-ai-sdk",
+      "provider": "openrouter",
+      "entitlement": "free-quota",
+      "basis": "operator-declared-prepaid-account",
+      "maximumPaidCostUsd": 0,
+      "evidence": "The operator holds a prepaid OpenRouter balance. It is authorized for free-model routes only: a zero-price route draws nothing from the balance, and reaching a priced route would spend it, so the priced class is deliberately absent rather than refused later. Before this was declared, nineteen OpenRouter candidates were entering on the catalogue's own zero price with no authorization at all, and no commit in tracked history had ever authorized the provider.",
+      "sourceDocumentation": "https://openrouter.ai/docs/api-reference/limits",
+      "accountBasis": "prepaid",
+      "permittedCostClasses": [
         "zero-price"
       ],
       "paidSpendPermitted": false
     }
   ],
   "nonClaims": [
+    "A catalogue cost class is a property of a model and authorizes nothing. Eligibility requires exactly one declared authorization for the transport and provider pair, and that authorization must permit the model's cost class. A zero catalogue price used to be admitted on its own; measured before that was closed, 21 of 45 routable candidates entered that way across three providers no commit had ever authorized.",
+    "A permitted cost class is a statement of permission, never an observation that the account still has entitlement. When a trial or a prepaid balance runs out the provider refuses; this declaration does not notice, and narrowing it stays an operator decision.",
     "A subscription-included authorization asserts only that the operator's existing subscription covers invocation and that no per-call charge accrues to this repository. It asserts no remaining subscription quota; the transport refuses when its own limit is reached.",
     "Absence of an authorization for a transport and provider pair makes that pair economically ineligible; eligibility is never inferred.",
     "Catalogue list prices describe provider paid-tier rates and are not evidence that an authorized execution incurs cost.",
