@@ -1,0 +1,9 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": ["graph/manifests/self-host.json", "graph/manifests/profile-authority.json"],
+  "sources": [
+    { "path": "graph/naming-completion.nq", "format": "application/n-quads", "graph": "urn:usf:graph:naming-completion", "role": "contract", "validationProfile": "bootstrap-nquads-v1" },
+    { "path": "graph/naming-completion-grants.nq", "format": "application/n-quads", "graph": "urn:usf:graph:naming-completion-grants", "role": "contract", "validationProfile": "bootstrap-nquads-v1" }
+  ]
+}
