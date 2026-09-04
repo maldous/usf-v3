@@ -169,3 +169,6 @@
 <urn:usf:profile:v3-foundation-seed-rename:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:foundation-seed-rename> .
 <urn:usf:profile:v3-foundation-seed-rename:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:v3-foundation-seed-rename:1> <urn:usf:graph:foundation-seed-rename> .
 <urn:usf:profile:v3-foundation-seed-rename:1> <urn:usf:predicate:objective> "One contract, deliberately alone." <urn:usf:graph:foundation-seed-rename> .
+<urn:usf:work:foundation-seed-rename> <urn:usf:predicate:readPath> "src/commands/dispatcher.ts" <urn:usf:graph:foundation-seed-rename> .
+<urn:usf:work:foundation-seed-rename> <urn:usf:predicate:readPath> "src/commands/help.ts" <urn:usf:graph:foundation-seed-rename> .
+<urn:usf:work:foundation-seed-rename> <urn:usf:predicate:readPath> "src/core/product-repository.ts" <urn:usf:graph:foundation-seed-rename> .
