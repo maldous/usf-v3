@@ -299,11 +299,14 @@
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/manifests/work-task-class-disposition.json" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/operational-stewardship-grants.nq" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/operational-stewardship.nq" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/commands/check.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/commands/dispatcher.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/commands/hermes.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/continuous/stewardship.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/realisation/basis.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:linear-work-binding> .
