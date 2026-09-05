@@ -1,0 +1,376 @@
+<urn:usf:acceptance:operational-stewardship> <urn:usf:predicate:text> "Real process tests demonstrate concurrent claims and starts admit one owner/supervisor; same-session replay is stable; stale generations and expired claims cannot control, renew or release; handoff/recovery refuse active operations, locked or pending transactions and preserve a healthy guarded supervisor. Transaction tests prove currentness under lock, noninterleaved writes, durable receipt before unlock, exact rollback, crash recovery and refusal of changed/unknown preimages. Status is read-only. Unsafe record paths, symlinks/hardlinks and forged identities refuse. No provider contact or expanded authority occurs. Full integration and typecheck must pass independently before acceptance; a real host takeover remains separately observed." <urn:usf:graph:operational-stewardship> .
+<urn:usf:acceptance:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-construction-authority-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-construction-authority-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing construction evidence and proof for this one work into an additive copy-on-write authority grant, without mutating the permission the proof evaluated." <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-construction-authority-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-construction-authority-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-construction-authority-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-work-completion-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-work-completion-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing no-change completion evidence and proof for this one work into an additive copy-on-write completion record." <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-work-completion-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-work-completion-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:operational-stewardship> .
+<urn:usf:algorithm:operational-stewardship-work-completion-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:canonicalName> "operational-stewardship" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:operational-stewardship:completion> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:constructionRouteConstraint> "Current operator explicitly selected USF-1158 and necessary transaction exclusion for governed semantic authoring and bounded local candidate realisation. Contact no provider or paid service during construction and validation. A published construction grant must precede candidate execution; existing unaccepted drafts are observations only." <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operational-stewardship:ci> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operational-stewardship:hermetic> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operational-stewardship:integrationtest> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operational-stewardship:localdev> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operational-stewardship:productionlive> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operational-stewardship:productionshaped> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:operational-stewardship:staging> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:nonClaim> "An operational claim is neither semantic work ownership, Linear assignment nor integration authority. This scope grants no product decision, credential, provider, paid spend, deployment or production permission. One drained upgrade is required to adopt guards in a previously loaded supervisor; ordinary handoffs preserve the upgraded supervisor." <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:nonClaim> "Current no-change completion publication authenticates the independently validated postimage only. It does not establish the unresolved general byte-delta publication verifier tracked in USF-1160, nor automatically solve Linear work binding or takeover acceptance in USF-1162 and USF-1163." <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:objective> "Support one safe, resumable operational steward of Hermes with exact process and session identity, guarded control operations, safe handoff/recovery, supervisor admission exclusion and transaction integration exclusion without becoming semantic or provider authority." <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:objectiveEvidence> "Inspected current local USF bd09293f45164bacaef00b19a552893e2569279b. src/commands/hermes-lifecycle.ts admits supervisors by record observation without a kernel lifetime lock and imports its handlers once. src/commands/transact.ts performs final currentness, writes and rollback without the existing primary-mutation lock; stale-check failure can restore preimages before this transaction wrote anything. No current CLI stewardship/session claim is implemented. Live supervisor 8f24feeb35021fdcaa5488d58 PID1752694 remains healthy at inspection; cycle projections cannot prove absence of an in-flight transaction." <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "docs/hermes-management.md" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-stewardship.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "src/commands/transact.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "src/continuous/lifecycle.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "src/continuous/stewardship.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/transaction-exclusion.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "tests/contract/graph-lanes.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "tests/integration/hermes-stewardship.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "tests/unit/continuous/stewardship.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-claim-exclusive> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-confinement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-continuation-durable> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-guarded-execution> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-handoff-safe> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-integration-exclusive> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-observe-current> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-recover-safe> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-release-safe> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-supervisor-exclusive> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:scope> "bootstrap-self-host" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:title> "Hermes operational stewardship and transaction exclusion" <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:ci> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:localdev> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:localdev> <urn:usf:predicate:environment> <urn:usf:environment:localdev> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:localdev> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:productionlive> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:productionshaped> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:productionshaped> <urn:usf:predicate:environment> <urn:usf:environment:productionshaped> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:productionshaped> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:staging> <urn:usf:predicate:applicability> "reserved" <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:usf:graph:operational-stewardship> .
+<urn:usf:environment-applicability:operational-stewardship:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship:completion> <urn:usf:predicate:forContract> <urn:usf:contract:operational-stewardship:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship:completion> <urn:usf:predicate:text> "Require matching independent validation receipts for the exact candidate tree: real process and kernel-lock exclusion, same-session replay, guarded handoff/recovery/release, unsafe and stale record refusal, durable transaction outcomes and exact rollback. Preserve separate live host upgrade/takeover observations and environment scope. No qualification, provider or production result is implied." <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship> <urn:usf:predicate:forContract> <urn:usf:contract:operational-stewardship:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship> <urn:usf:predicate:text> "Require exact current path preimages, derived work basis and observed absence of a stewardship/session control contract, supervisor lifetime exclusion and primary transaction exclusion at the inspected local source identity. Retain the actual unguarded handlers and stale-preimage rollback defect as construction observations; existing drafts and ticket prose grant nothing." <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:evidence-requirement:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:adoptionPolicy> "A legacy supervisor which has already imported unguarded handlers must be drained and upgraded once before guarded execution; ordinary handoffs preserve the guarded supervisor." <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:authorityEffect> "Local operational exclusion only; no semantic, provider, credential, execution-permission, integration or completion authority is created by a claim." <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:constructionRouteConstraint> "Current operator instruction explicitly selects USF-1158 for bounded semantic authoring and isolated implementation/validation. Operational records and tests do not activate semantic work or grant provider/deployment authority." <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:defaultRenewalSeconds> "300" <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:maximumRenewalSeconds> "1800" <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:minimumRenewalSeconds> "30" <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:outputSchema> "urn:usf:stewardship-result:1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-claim-exclusive> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-confinement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-continuation-durable> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-guarded-execution> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-handoff-safe> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-integration-exclusive> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-observe-current> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-recover-safe> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-release-safe> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:requires> <urn:usf:requirement:stewardship-supervisor-exclusive> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:runtimePath> ".usf/hermes/stewardship" <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:scope> "Single host and repository trust boundary; independently owned product repositories retain their own integration lock. Same-user hostile direct filesystem access is outside cooperative CLI exclusion." <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:type> <urn:usf:type:OperationalLifecycle> <urn:usf:graph:operational-stewardship> .
+<urn:usf:operational-lifecycle:stewardship:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:forContract> <urn:usf:contract:operational-stewardship:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:proofObligation> <urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:operational-stewardship> .
+<urn:usf:predicate:defaultRenewalSeconds> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:operational-stewardship> .
+<urn:usf:predicate:maximumRenewalSeconds> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:operational-stewardship> .
+<urn:usf:predicate:minimumRenewalSeconds> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:operational-stewardship:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:canonicalName> "operational-stewardship" <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:objective> "One independently scoped Core contract selects operational stewardship and its necessary transaction exclusion. Product profiles and semantics remain independently owned." <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:operational-stewardship:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:operational-stewardship> .
+<urn:usf:profile:operational-stewardship:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:predicate:text> "Prove the current observed missing stewardship and unlocked transaction boundary warrants only the declared implementation, CLI, validation and guidance paths. Existing drafts, tickets and tests cannot grant permission retroactively." <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:operational-stewardship:completion> <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship> <urn:usf:predicate:text> "Prove only the selected current operational stewardship contract from matching independently validated candidate evidence. No production, provider, deployment, work binding or overall programme completion claim follows." <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:proof:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable policy plus the exact declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work, so it can never stale a sibling cohort." <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:construction-evidence-candidate:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/construction-authority/" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:nonClaim> "The grant permits only the exact selected work ceiling. It is not completion, integration acceptance, provider qualification, runtime activation or terminal proof." <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:construction-proof-bundle:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:operational-stewardship-construction-authority-publication:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/construction-authority/" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:construction-authority-publication-result:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-construction:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-construction:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-construction-authority:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/operational-stewardship.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:operational-stewardship-grants> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/operational-stewardship-grants.nq" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/construction-authority.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:toolPath> "src/realisation/construction-authority.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:completionDerivationRule> <urn:usf:rule:operational-stewardship-copy-on-write-work-completion:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:currentnessRule> "Select exact completion only for this immutable policy, the current work basis and the declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work." <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:operational-stewardship-work-completion-publication:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/work-completion/" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:realisationAlgorithm> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:realisationResultSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-completion:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-completion:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-work-completion:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:realise-no-change:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/operational-stewardship.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:operational-stewardship-grants> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/operational-stewardship-grants.nq" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/check.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/work-completion.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/index.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/work-completion.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:publication-policy:operational-stewardship-no-change-completion:1> <urn:usf:predicate:workspaceSchema> <urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-claim-exclusive> <urn:usf:predicate:canonicalName> "stewardship-claim-exclusive" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-claim-exclusive> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-claim-exclusive> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-claim-exclusive> <urn:usf:predicate:text> "CLAIM atomically identifies one steward by opaque session digest, agent label, exact process fingerprint, current supervisor identity and immutable claim generation. Same live session replay returns the same claim; another live session refuses." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-claim-exclusive> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-confinement> <urn:usf:predicate:canonicalName> "stewardship-confinement" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-confinement> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-confinement> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-confinement> <urn:usf:predicate:text> "Stewardship records and lock files are bounded, owner-private, repository-contained, no-follow and regular with one link; malformed, replaced, ambiguous or unsafe state refuses. Only digests of nonsecret session identities are retained; credential values and raw session IDs never appear." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-confinement> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-continuation-durable> <urn:usf:predicate:canonicalName> "stewardship-continuation-durable" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-continuation-durable> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-continuation-durable> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-continuation-durable> <urn:usf:predicate:text> "Accepted and in-flight work identities and continuation remain recoverable from ordinary semantic/runtime/evidence records plus Linear. Session identifiers, renewal times and Linear prose do not determine semantic work identity or proof." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-continuation-durable> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-guarded-execution> <urn:usf:predicate:canonicalName> "stewardship-guarded-execution" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-guarded-execution> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-guarded-execution> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-guarded-execution> <urn:usf:predicate:text> "Every steward control operation validates exact session/generation and holds the existing local activity exclusion for its full lifetime. Supervisor cycles serialize with manual execution. Valid in-flight work completes before transfer; expired ownership permits no new operation." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-guarded-execution> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-handoff-safe> <urn:usf:predicate:canonicalName> "stewardship-handoff-safe" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-handoff-safe> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-handoff-safe> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-handoff-safe> <urn:usf:predicate:text> "HANDOFF requires the current session and generation, no guarded activity and no primary mutation. It makes a transfer available; incoming CLAIM atomically supersedes it. The outgoing generation cannot control, renew or release afterwards. Supervisor state is preserved." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-handoff-safe> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-integration-exclusive> <urn:usf:predicate:canonicalName> "stewardship-integration-exclusive" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-integration-exclusive> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-integration-exclusive> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-integration-exclusive> <urn:usf:predicate:text> "Transactions reuse the existing exclusive primary-mutation lock for final currentness validation, all postimage writes, rollback and durable transaction outcome. Product writes also take the owning repository lock in deterministic order; overlapping writers cannot interleave." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-integration-exclusive> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-observe-current> <urn:usf:predicate:canonicalName> "stewardship-observe-current" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-observe-current> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-observe-current> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-observe-current> <urn:usf:predicate:text> "OBSERVE is read-only and distinguishes absent/live/dead/expired/handoff-ready/released stewardship, exact supervisor liveness, active guarded execution and primary mutation; cached cycle transactions do not prove idleness." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-observe-current> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-recover-safe> <urn:usf:predicate:canonicalName> "stewardship-recover-safe" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-recover-safe> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-recover-safe> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-recover-safe> <urn:usf:predicate:text> "RECOVERY requires a dead process fingerprint or expired boot-monotonic renewal and available activity and primary mutation locks. Wall-clock movement or expiry during activity cannot authorize takeover. A stale live host process cannot retain abandoned session ownership forever." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-recover-safe> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-release-safe> <urn:usf:predicate:canonicalName> "stewardship-release-safe" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-release-safe> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-release-safe> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-release-safe> <urn:usf:predicate:text> "RELEASE validates current session and generation, refuses conflicting activity/primary mutation, records idempotent release, and leaves the healthy supervisor running." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-release-safe> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-supervisor-exclusive> <urn:usf:predicate:canonicalName> "stewardship-supervisor-exclusive" <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-supervisor-exclusive> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-supervisor-exclusive> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-supervisor-exclusive> <urn:usf:predicate:text> "Supervisor admission holds one kernel lifetime lock before reading/writing its record; concurrent starts admit one process. Cleanup may remove only its own supervisor record. A live legacy supervisor must be refused by a competing upgraded start." <urn:usf:graph:operational-stewardship> .
+<urn:usf:requirement:stewardship-supervisor-exclusive> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:operational-stewardship> .
+<urn:usf:rule:operational-stewardship-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other profiles and bases as history." <urn:usf:graph:operational-stewardship> .
+<urn:usf:rule:operational-stewardship-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:operational-stewardship> .
+<urn:usf:rule:operational-stewardship-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:authorityRule> "Finite transitive TypeScript imports of the existing transaction, lifecycle and primary-mutation validation boundary are readable inside the confined validator. This changes no write scope, provider permission or product authority." <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:forValidation> <urn:usf:validation:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/check.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/classify.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/dispatcher.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/execute.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-execute.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-integrity.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-implement.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-realise.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/models.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/probe.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/product-repository.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/integrity.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/runtime-authority.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work-dependency.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/architecture-observation.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/artefact-validation.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/authority-snapshot.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/capabilities.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/catalogue.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/classification.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/cli-transports.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/config.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/delivery-generators.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/economics-projection.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/economics.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/evidence-index.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/execution-economics.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/facet-evaluation.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/implementation-conformance.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/implementation-work.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/local-git.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/probe.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/provider-bindings.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/provider-policy.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/qualification.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/route-deferral.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/route-universe.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/semantic-cache.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/transports.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/types.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/index.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/transition.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/continuous/stewardship.test.ts tests/adversarial/transaction-exclusion.test.ts tests/integration/hermes-stewardship.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:nonClaim> "Confined deterministic tests include real local processes and kernel locks against isolated fixtures. They contact no provider and do not control the live supervisor. Live host upgrade and takeover observations are recorded separately and cannot be inferred from tests." <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:acceptance> <urn:usf:acceptance:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:contract> <urn:usf:contract:operational-stewardship:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:objective> "Support one safe, resumable operational steward of Hermes with exact process and session identity, guarded control operations, safe handoff/recovery, supervisor admission exclusion and transaction integration exclusion without becoming semantic or provider authority." <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:proof> <urn:usf:proof:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "config/policy.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "graph/manifests/operational-stewardship.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "graph/operational-stewardship.nq" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/commands/dispatcher.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/graph/runtime-authority.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/realisation/transition.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:validation> <urn:usf:validation:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "docs/hermes-management.md" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "src/commands/hermes-stewardship.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "src/commands/transact.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "src/continuous/lifecycle.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "src/continuous/stewardship.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "tests/adversarial/transaction-exclusion.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "tests/contract/graph-lanes.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "tests/integration/hermes-stewardship.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "tests/unit/continuous/stewardship.test.ts" <urn:usf:graph:operational-stewardship> .
