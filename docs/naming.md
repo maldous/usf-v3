@@ -12,8 +12,8 @@ defect the corpus has, with its exact location.
 | name | expansion | is |
 |---|---|---|
 | **USF** | Universal Service **Foundation** | the reusable semantic delivery foundation. The graph is authority. |
-| **UIF** | Universal Infrastructure **Foundation** | the infrastructure counterpart. Does not exist yet. |
-| **UXF** | Universal Experience **Foundation** | the experience counterpart. Does not exist yet. |
+| **UIF** | Universal Infrastructure **Foundation** | Independent managed-environment authority is declared under its own namespace, manifest and revision; implementation and runtime evidence remain to be realised. |
+| **UXF** | Universal Experience **Foundation** | Independent reusable experience authority is declared under its own namespace, manifest and revision; implementation and rendered evidence remain to be realised. |
 | **ANQR** | — | a product. Not a foundation, not a platform, not a layer of USF. |
 | **Hermes** | — | a bounded external realisation mechanism. Not authority, not part of any product's identity, and never a synonym for USF. |
 | **TID** | Technical Infrastructure Design | a legacy design package used as a semantic-mining lens. Not authority. |
@@ -92,7 +92,7 @@ that reads it, and the graph stays internally consistent while meaning nothing.
 
 | repository | holds | may declare |
 |---|---|---|
-| `usf-v3` | USF foundation authority, CLI, methodology | `urn:usf:*` only |
+| `usf-v3` | USF foundation authority, CLI, methodology, and temporary hosted authority carriers | `urn:usf:*`; temporarily hosted non-USF authority only when a separate manifest, namespace, revision, and explicit hosting statement make logical ownership and migration independent |
 | `anqr` | ANQR product implementation | no semantic authority; consumes projections |
 | `usf-console` | the operator console over the USF CLI and its runtime state | no semantic authority |
 
@@ -372,4 +372,4 @@ surface it would change.
   document is worth exactly as much as the checks that enforce it.
 - Recording a defect is not fixing it. §9 is a list of open work, not a
   disclaimer.
-- UIF and UXF are named, not built. Naming a counterpart does not create it.
+- UXF and UIF have initial independently versioned semantic authorities hosted here. Their declarations do not establish implementations, rendered experience evidence, provisioned environments or operational acceptance.

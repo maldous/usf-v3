@@ -1,0 +1,23 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/anqr-application.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/products/anqr/safety-assessment.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:anq-4954-safety-requirements",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/profile-revision-4.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:profile-revision-4",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

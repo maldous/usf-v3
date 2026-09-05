@@ -1,0 +1,12 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": ["graph/manifests/delivery-environment.json"],
+  "sources": [{
+    "path": "graph/foundations/uif/authority-v1.nq",
+    "format": "application/n-quads",
+    "graph": "urn:uif:graph:authority-v1",
+    "role": "contract",
+    "validationProfile": "bootstrap-nquads-v1"
+  }]
+}

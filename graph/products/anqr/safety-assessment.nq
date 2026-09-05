@@ -1,0 +1,114 @@
+<urn:anqr:intent-source:anq-4954:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceSource> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:intent-source:anq-4954:1> <urn:usf:predicate:canonicalName> "anq-4954-operator-intent" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:intent-source:anq-4954:1> <urn:usf:predicate:objective> "Operator-authorised product decision for ANQR assessment scope; semantic authoring only." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:intent-source:anq-4954:1> <urn:usf:predicate:nonClaim> "No provider, heuristic, external service, credential, safety guarantee, or production result is selected or established." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:canonicalName> "phishingreputationassessment" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:title> "Reputation and phishing assessment" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:inDomain> <urn:anqr:delivery-domain:trust> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:objective> "Assess a decoded destination through a later selected and independently evidenced method." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:observableOutput> "A positive, negative, or unknown assessment with assessed input, method identity, observation time, and reason." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:productConstraint> "Unknown is a first-class result; missing, stale, unsupported, or insufficient evidence never becomes a safety conclusion." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:captureStatus> "specified" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:realisationStatus> "not-started" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:phishingreputationassessment> <urn:usf:predicate:specifiedByContract> <urn:anqr:delivery-contract:phishingreputationassessment> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:phishingreputationassessment> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:phishingreputationassessment> <urn:usf:predicate:canonicalName> "phishingreputationassessment" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:phishingreputationassessment> <urn:usf:predicate:definesCompletionFor> <urn:anqr:delivery-capability:phishingreputationassessment> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:phishingreputationassessment> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:canonicalName> "phishingreputationassessmentclassification" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:facetStatement> "Result vocabulary is positive, negative, or unknown; unavailable, stale, unsupported, or insufficient evidence produces unknown with its cause." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:phishingreputationassessment> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:phishingreputationassessmentclassification> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:canonicalName> "phishingreputationassessmentmethod" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:facetStatement> "Assessment method selection is unresolved; no provider, heuristic, or feed is selected." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:specificationStatus> "incomplete" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:phishingreputationassessment> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:phishingreputationassessmentmethod> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:canonicalName> "phishingreputationassessmentevidence" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:facetStatement> "Positive and negative conclusions require independently admissible scoped evidence; the evidence procedure is unresolved." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:specificationStatus> "incomplete" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:phishingreputationassessment> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:phishingreputationassessmentevidence> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:canonicalName> "phishingreputationassessmentenvironment" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:facetStatement> "Applicable environment and external-contact authority are unresolved; no production environment is claimed." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:specificationStatus> "incomplete" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:phishingreputationassessment> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:phishingreputationassessmentenvironment> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:type> <urn:usf:type:DeliveryCapability> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:canonicalName> "destinationpaymentsafetyassessment" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:title> "Destination and payment-safety assessment" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:inDomain> <urn:anqr:delivery-domain:trust> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:objective> "Assess a decoded destination or payment payload without executing the destination or payment." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:observableOutput> "A positive, negative, or unknown assessment with assessed input, method identity, observation time, and reason." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:productConstraint> "Unknown is a first-class result; missing, stale, unsupported, or insufficient evidence never becomes a safety conclusion." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:captureStatus> "specified" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:realisationStatus> "not-started" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:productScopeDisposition> <urn:usf:product-scope-disposition:current> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:usf:predicate:specifiedByContract> <urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:usf:predicate:type> <urn:usf:type:DeliveryContract> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:usf:predicate:canonicalName> "destinationpaymentsafetyassessment" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:usf:predicate:definesCompletionFor> <urn:anqr:delivery-capability:destinationpaymentsafetyassessment> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:usf:predicate:semanticStage> <urn:usf:stage:activated-contract> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:canonicalName> "destinationpaymentsafetyassessmentclassification" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:errormodel> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:facetStatement> "Result vocabulary is positive, negative, or unknown; unavailable, stale, unsupported, or insufficient evidence produces unknown with its cause." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:destinationpaymentsafetyassessmentclassification> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:canonicalName> "destinationpaymentsafetyassessmentmethod" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:facetStatement> "Assessment method selection is unresolved; no provider, heuristic, or feed is selected." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:specificationStatus> "incomplete" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:destinationpaymentsafetyassessmentmethod> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:canonicalName> "destinationpaymentsafetyassessmentevidence" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:facetStatement> "Positive and negative conclusions require independently admissible scoped evidence; the evidence procedure is unresolved." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:specificationStatus> "incomplete" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:destinationpaymentsafetyassessmentevidence> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:canonicalName> "destinationpaymentsafetyassessmentenvironment" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:contracts> <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:facetStatement> "Applicable environment and external-contact authority are unresolved; no production environment is claimed." <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:requirementClass> "structural" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:specificationStatus> "incomplete" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:anq-4954-safety-requirements> .
+<urn:anqr:delivery-contract:destinationpaymentsafetyassessment> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:destinationpaymentsafetyassessmentenvironment> <urn:anqr:graph:anq-4954-safety-requirements> .

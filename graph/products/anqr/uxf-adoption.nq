@@ -1,0 +1,8 @@
+<urn:anqr:experience-foundation-binding:1> <urn:usf:predicate:boundFoundationRevision> <urn:uxf:foundation-revision:1> <urn:anqr:graph:uxf-adoption> .
+<urn:anqr:experience-foundation-binding:1> <urn:usf:predicate:boundProfileRevision> <urn:anqr:experience-profile-revision:1> <urn:anqr:graph:uxf-adoption> .
+<urn:anqr:experience-foundation-binding:1> <urn:usf:predicate:canonicalName> "anqr-experience-uxf-1" <urn:anqr:graph:uxf-adoption> .
+<urn:anqr:experience-foundation-binding:1> <urn:usf:predicate:foundationAuthorityManifest> "graph/manifests/uxf-foundation.json" <urn:anqr:graph:uxf-adoption> .
+<urn:anqr:experience-foundation-binding:1> <urn:usf:predicate:foundationDependencySeed> <urn:uxf:closure:initial:1> <urn:anqr:graph:uxf-adoption> .
+<urn:anqr:experience-foundation-binding:1> <urn:usf:predicate:nonClaim> "This new composition binding does not alter the immutable ANQR experience profile revision 1, its journey, design profile or implementation pack. It records the exact reusable-experience closure that ANQR elects to consume." <urn:anqr:graph:uxf-adoption> .
+<urn:anqr:experience-foundation-binding:1> <urn:usf:predicate:type> <urn:usf:type:ProfileFoundationBinding> <urn:anqr:graph:uxf-adoption> .
+<urn:anqr:experience-foundation-binding:1> <urn:usf:predicate:objective> "ANQR adoption of the initial UXF closure. Product selection remains explicit and product-owned." <urn:anqr:graph:uxf-adoption> .

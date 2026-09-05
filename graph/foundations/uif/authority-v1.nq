@@ -1,0 +1,48 @@
+<urn:uif:authority-closure:1> <urn:usf:predicate:buildsUpon> <urn:uif:foundation:1> <urn:uif:graph:authority-v1> .
+<urn:uif:authority-closure:1> <urn:usf:predicate:nonClaim> "This is a CLI-compatible carrier for a versioned UIF authority closure. It is not a consumer product, a deployed system, or a provider selection." <urn:uif:graph:authority-v1> .
+<urn:uif:authority-closure:1> <urn:usf:predicate:type> <urn:usf:type:ProductModel> <urn:uif:graph:authority-v1> .
+<urn:uif:authority-closure:1> <urn:usf:predicate:version> "1" <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:canonicalName> "managed-service-authority" <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:environmentApplicability> <urn:uif:environment-applicability:managed-service-authority:staging> <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:environmentApplicability> <urn:uif:environment-applicability:managed-service-authority:productionlive> <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:nonClaim> "This authority chooses no provider, account, site, credential, API, paid resource, deployment, production mutation or realisation permission." <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:objective> "Define provider-neutral managed-service infrastructure authority for hosting/runtime, edge/DNS/TLS, observability, configuration and identity isolation, consumer-required persistence, and recovery lifecycle obligations." <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:requires> <urn:uif:requirement:managed-infrastructure-in-scope:1> <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:uif:graph:authority-v1> .
+<urn:uif:contract:managed-service-authority:1> <urn:usf:predicate:version> "1" <urn:uif:graph:authority-v1> .
+<urn:uif:environment-applicability:managed-service-authority:productionlive> <urn:usf:predicate:applicability> "required" <urn:uif:graph:authority-v1> .
+<urn:uif:environment-applicability:managed-service-authority:productionlive> <urn:usf:predicate:environment> <urn:usf:environment:productionlive> <urn:uif:graph:authority-v1> .
+<urn:uif:environment-applicability:managed-service-authority:productionlive> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:uif:graph:authority-v1> .
+<urn:uif:environment-applicability:managed-service-authority:staging> <urn:usf:predicate:applicability> "required" <urn:uif:graph:authority-v1> .
+<urn:uif:environment-applicability:managed-service-authority:staging> <urn:usf:predicate:environment> <urn:usf:environment:staging> <urn:uif:graph:authority-v1> .
+<urn:uif:environment-applicability:managed-service-authority:staging> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:uif:graph:authority-v1> .
+<urn:uif:foundation-revision:1> <urn:usf:predicate:authorityManifestPath> "graph/manifests/uif-authority-v1.json" <urn:uif:graph:authority-v1> .
+<urn:uif:foundation-revision:1> <urn:usf:predicate:foundation> <urn:uif:foundation:1> <urn:uif:graph:authority-v1> .
+<urn:uif:foundation-revision:1> <urn:usf:predicate:nonClaim> "Current repository placement carries UIF source without making UIF a USF submodel, creating a USF reverse dependency, or establishing a separate remote repository." <urn:uif:graph:authority-v1> .
+<urn:uif:foundation-revision:1> <urn:usf:predicate:type> <urn:usf:type:FoundationRevision> <urn:uif:graph:authority-v1> .
+<urn:uif:foundation-revision:1> <urn:usf:predicate:version> "1" <urn:uif:graph:authority-v1> .
+<urn:uif:foundation:1> <urn:usf:predicate:title> "Universal Infrastructure Foundation" <urn:uif:graph:authority-v1> .
+<urn:uif:foundation:1> <urn:usf:predicate:type> <urn:usf:type:SemanticFoundation> <urn:uif:graph:authority-v1> .
+<urn:uif:foundation:1> <urn:usf:predicate:version> "1" <urn:uif:graph:authority-v1> .
+<urn:uif:profile-foundation-binding:1> <urn:usf:predicate:boundFoundationRevision> <urn:uif:foundation-revision:1> <urn:uif:graph:authority-v1> .
+<urn:uif:profile-foundation-binding:1> <urn:usf:predicate:boundProfileRevision> <urn:uif:profile-revision:managed-service-authority:1> <urn:uif:graph:authority-v1> .
+<urn:uif:profile-foundation-binding:1> <urn:usf:predicate:foundationAuthorityManifest> "graph/manifests/uif-authority-v1.json" <urn:uif:graph:authority-v1> .
+<urn:uif:profile-foundation-binding:1> <urn:usf:predicate:foundationDependencySeed> <urn:uif:contract:managed-service-authority:1> <urn:uif:graph:authority-v1> .
+<urn:uif:profile-foundation-binding:1> <urn:usf:predicate:nonClaim> "This self-contained binding uses the existing profile/currentness reader for UIF authority. Consumer adoption remains a separately authored consumer-owned binding." <urn:uif:graph:authority-v1> .
+<urn:uif:profile-foundation-binding:1> <urn:usf:predicate:type> <urn:usf:type:ProfileFoundationBinding> <urn:uif:graph:authority-v1> .
+<urn:uif:profile-revision:managed-service-authority:1> <urn:usf:predicate:nonClaim> "This typed revision binds the independently versioned UIF authority closure through the current profile CLI. It declares no consumer capability, deployment, realisation permission or adoption." <urn:uif:graph:authority-v1> .
+<urn:uif:profile-revision:managed-service-authority:1> <urn:usf:predicate:product> <urn:uif:authority-closure:1> <urn:uif:graph:authority-v1> .
+<urn:uif:profile-revision:managed-service-authority:1> <urn:usf:predicate:type> <urn:usf:type:ProductProfileRevision> <urn:uif:graph:authority-v1> .
+<urn:uif:profile-revision:managed-service-authority:1> <urn:usf:predicate:version> "1" <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:nonClaim> "This profile authorises no implementation work. A work packet, construction authority, independent validation and completion evidence remain separate later steps." <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:product> <urn:uif:authority-closure:1> <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:selectsContract> <urn:uif:contract:managed-service-authority:1> <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:uif:graph:authority-v1> .
+<urn:uif:profile:managed-service-authority:1> <urn:usf:predicate:version> "1" <urn:uif:graph:authority-v1> .
+<urn:uif:requirement:managed-infrastructure-in-scope:1> <urn:usf:predicate:objective> "Managed services are infrastructure and are in scope for UIF when selected by a consumer; provider selection remains outside this requirement." <urn:uif:graph:authority-v1> .
+<urn:uif:requirement:managed-infrastructure-in-scope:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:uif:graph:authority-v1> .
