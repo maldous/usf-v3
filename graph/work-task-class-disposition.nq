@@ -1,0 +1,246 @@
+<urn:usf:acceptance:work-task-class-disposition> <urn:usf:predicate:text> "Focused existing generic projection tests prove: exact one taskClassRequirement none permits an empty aggregate; omitted, unknown, multiple and conflicting dispositions refuse; none with nonempty aggregate refuses; existing nonempty WorkPackets keep their modelCapability output. Tests use existing confined fixture mode2, contact no provider, and do not assert qualification, availability or capacity." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:acceptance:work-task-class-disposition> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-construction-authority-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-construction-authority-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing construction evidence and proof for this one work into an additive copy-on-write authority grant, without mutating the permission the proof evaluated." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-construction-authority-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-construction-authority-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-construction-authority-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-work-completion-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-work-completion-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing no-change completion evidence and proof for this one work into an additive copy-on-write completion record." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-work-completion-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-work-completion-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:algorithm:work-task-class-disposition-work-completion-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:canonicalName> "work-task-class-disposition" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:work-task-class-disposition:completion> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:constructionRouteConstraint> "GOAL section 23.2 permits this isolated operator toolchain repair because the current work reader cannot express an explicit no-specialised-task-class disposition. It uses no provider call, qualification claim, scheduler, bridge implementation, bootstrap exception, host mode or capacity waiver. Existing construction authority, integration and completion lifecycle remain required." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:work-task-class-disposition:ci> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:work-task-class-disposition:hermetic> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:work-task-class-disposition:integrationtest> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:nonClaim> "This repair does not say any provider is qualified, available, authorised or dispatched. It does not waive a specialised task-class requirement where one is declared." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:objective> "Repair the work reader's inability to express that one WorkPacket has no specialised task-class requirement, while preserving nonempty downstream model capabilities unchanged." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:permitsWrite> "src/graph/work.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:requires> <urn:usf:requirement:task-class-disposition-conflict> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:requires> <urn:usf:requirement:task-class-empty-guard> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:requires> <urn:usf:requirement:task-class-independent-validation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:requires> <urn:usf:requirement:task-class-none-explicit> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:requires> <urn:usf:requirement:task-class-preserve-nonempty> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:scope> "foundation-toolchain-repair" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:title> "Explicit WorkPacket task-class disposition" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:contract:work-task-class-disposition:1> <urn:usf:predicate:version> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:ci> <urn:usf:predicate:applicability> "required" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:environment-applicability:work-task-class-disposition:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition:completion> <urn:usf:predicate:forContract> <urn:usf:contract:work-task-class-disposition:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition:completion> <urn:usf:predicate:text> "Require focused positive/negative disposition observations for the exact candidate, plus ordinary integration and current completion evidence. A test or candidate alone is not completion." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:predicate:applicability> "required" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:predicate:forContract> <urn:usf:contract:work-task-class-disposition:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:predicate:text> "Require exact source/currentness observations proving the reader rejects an empty model capability denominator before this narrowly scoped repair. No provider result is construction evidence." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:forContract> <urn:usf:contract:work-task-class-disposition:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:proofObligation> <urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:permission:work-task-class-disposition> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:predicate:taskClassRequirement> <urn:usf:predicate:text> "An exact work-level literal stating specialised task-class requirement disposition." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:predicate:taskClassRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:work-task-class-disposition:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:canonicalName> "work-task-class-disposition" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:objective> "A foundation profile for an explicit work-level task-class disposition without creating provider authority." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:work-task-class-disposition:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:profile:work-task-class-disposition:1> <urn:usf:predicate:version> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:predicate:text> "Prove exact current toolchain observations warrant only the bounded reader/test repair." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition> <urn:usf:predicate:applicability> "required" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:work-task-class-disposition:completion> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition> <urn:usf:predicate:text> "Evaluate independent current validation/evidence without turning none into qualification or capacity authority." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:proof:work-task-class-disposition> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable policy plus the exact declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work, so it can never stale a sibling cohort." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:construction-evidence-candidate:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/construction-authority/" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:nonClaim> "The grant permits only the exact selected work ceiling. It is not completion, integration acceptance, provider qualification, runtime activation or terminal proof." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:construction-proof-bundle:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:work-task-class-disposition-construction-authority-publication:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/construction-authority/" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:construction-authority-publication-result:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-construction:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-construction:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-construction-authority:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/work-task-class-disposition.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:work-task-class-disposition-grants> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/work-task-class-disposition-grants.nq" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/construction-authority.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:toolPath> "src/realisation/construction-authority.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:completionDerivationRule> <urn:usf:rule:work-task-class-disposition-copy-on-write-work-completion:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:currentnessRule> "Select exact completion only for this immutable policy, the current work basis and the declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:work-task-class-disposition-work-completion-publication:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/work-completion/" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:realisationAlgorithm> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:realisationResultSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-completion:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-completion:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-work-completion:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:realise-no-change:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/work-task-class-disposition.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:work-task-class-disposition-grants> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/work-task-class-disposition-grants.nq" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/check.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/work-completion.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/index.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/work-completion.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:publication-policy:work-task-class-disposition-no-change-completion:1> <urn:usf:predicate:workspaceSchema> <urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-disposition-conflict> <urn:usf:predicate:canonicalName> "task-class-disposition-conflict" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-disposition-conflict> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-disposition-conflict> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-disposition-conflict> <urn:usf:predicate:text> "Unknown, multiple or conflicting taskClassRequirement values refuse. A nonempty aggregated modelCapabilities set with none also refuses." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-disposition-conflict> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-empty-guard> <urn:usf:predicate:canonicalName> "task-class-empty-guard" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-empty-guard> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-empty-guard> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-empty-guard> <urn:usf:predicate:text> "An empty aggregated modelCapabilities set is accepted only when exactly one work-level taskClassRequirement literal is none. Empty classes with no declaration refuse." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-empty-guard> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-independent-validation> <urn:usf:predicate:canonicalName> "task-class-independent-validation" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-independent-validation> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-independent-validation> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-independent-validation> <urn:usf:predicate:text> "Focused deterministic fixture tests prove positive and negative dispositions; ordinary construction authority, integration and completion evidence/proof remain independent." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-independent-validation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-none-explicit> <urn:usf:predicate:canonicalName> "task-class-none-explicit" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-none-explicit> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-none-explicit> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-none-explicit> <urn:usf:predicate:text> "A WorkPacket may declare taskClassRequirement with the exact literal none only to state explicit absence of a specialised task-class requirement." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-none-explicit> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-preserve-nonempty> <urn:usf:predicate:canonicalName> "task-class-preserve-nonempty" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-preserve-nonempty> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-preserve-nonempty> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-preserve-nonempty> <urn:usf:predicate:text> "Existing WorkPackets with nonempty modelCapabilities remain unchanged. This predicate neither maps modelCapability to requiredCapability nor alters downstream provider qualification." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:requirement:task-class-preserve-nonempty> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:rule:work-task-class-disposition-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other profiles and bases as history." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:rule:work-task-class-disposition-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:rule:work-task-class-disposition-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:authorityRule> "One exact mode2 closure supplies only current non-candidate imports needed by the focused graph projection test. Candidate work.ts and its test remain in candidate scope; no host, provider, credential or extra write authority follows." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:forValidation> <urn:usf:validation:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation-runtime-closure:work-task-class-disposition:1> <urn:usf:predicate:version> "1" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation:work-task-class-disposition> <urn:usf:predicate:applicability> "required" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation:work-task-class-disposition> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation:work-task-class-disposition> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation:work-task-class-disposition> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation:work-task-class-disposition> <urn:usf:predicate:nonClaim> "This is an independent deterministic source/test observation. It contacts no provider and does not establish qualification." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:validation:work-task-class-disposition> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:acceptance> <urn:usf:acceptance:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:contract> <urn:usf:contract:work-task-class-disposition:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:fixtureValidationMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:objective> "Repair explicit no-specialised-task-class disposition in the current WorkPacket reader." <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:proof> <urn:usf:proof:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "config/policy.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "evidence/work-completion/dda51123f88cf5cf37584b65e99a16824235f32ec6b4646615d6e777700e7a0b.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "graph/manifests/operational-stewardship.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "graph/manifests/work-task-class-disposition.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "graph/operational-stewardship-grants.nq" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "graph/operational-stewardship.nq" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "graph/work-task-class-disposition.nq" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:semanticDependency> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:semanticDependency> <urn:usf:proof-result:completion:80e0d6585bea9aef54ed79e144e4f62072460f04a1dd62ee4a0747b87890a277> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:validation> <urn:usf:validation:work-task-class-disposition> <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:writePath> "src/graph/work.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:writePath> "tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:work-task-class-disposition> .

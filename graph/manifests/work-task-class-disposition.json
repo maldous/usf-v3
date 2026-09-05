@@ -1,0 +1,23 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/operational-stewardship.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/work-task-class-disposition.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:work-task-class-disposition",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/work-task-class-disposition-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:work-task-class-disposition-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
