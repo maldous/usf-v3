@@ -244,6 +244,8 @@
 <urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "graph/work-task-class-disposition.nq" <urn:usf:graph:work-task-class-disposition> .
 <urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:work-task-class-disposition> .
 <urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:work-task-class-disposition> .
+<urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "src/realisation/fixture-process.apparmor" <urn:usf:graph:work-task-class-disposition> .
 <urn:usf:work:work-task-class-disposition> <urn:usf:predicate:readPath> "tests/unit/graph/generic-projection.test.ts" <urn:usf:graph:work-task-class-disposition> .
 <urn:usf:work:work-task-class-disposition> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:work-task-class-disposition> .
 <urn:usf:work:work-task-class-disposition> <urn:usf:predicate:semanticDependency> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:work-task-class-disposition> .
