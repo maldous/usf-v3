@@ -1,0 +1,23 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/fixture-process-validation.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/fixture-process-runtime.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:fixture-process-runtime",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/fixture-process-runtime-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:fixture-process-runtime-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
