@@ -1,0 +1,24 @@
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:canonicalIssueLocator> "maldous:4cb48b98-2c3b-45c0-b805-612ee7fd1875" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:fixedPrompt> "Bounded native-workflow correlation exercise explicitly required by USF-1162 acceptance. The implementation is integrated and independently checked. This invocation exercises issue-to-native-work execution and saved-result recovery only. Do not modify files or claim product delivery, conformance, semantic authority, acceptance or completion. Return one concise JSON object recording that this is a candidate transport response, the supplied work objective, and nonClaims listing that validation, integration and semantic completion remain independently governed. No tools or external services beyond this explicitly authorised model response." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:issueUuid> "4cb48b98-2c3b-45c0-b805-612ee7fd1875" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:issueWorkspace> "maldous" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:maximumPromptTokens> "20000" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:owningModel> "USF" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:selectedProfile> <urn:usf:profile:linear-work-binding:1> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:targetManifest> "graph/manifests/linear-work-binding.json" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:type> <urn:usf:type:LinearIssueWorkBinding> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162:1> <urn:usf:predicate:workIri> <urn:usf:work:linear-work-binding> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:canonicalIssueLocator> <urn:usf:predicate:text> "Stable workspace and issue UUID locator for coordination, never semantic execution authority." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:canonicalIssueLocator> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:issueUuid> <urn:usf:predicate:text> "Immutable Linear issue UUID used for idempotent work correlation." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:issueUuid> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:issueWorkspace> <urn:usf:predicate:text> "Owning Linear workspace identity for unambiguous issue correlation." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:issueWorkspace> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:owningModel> <urn:usf:predicate:text> "Explicit owning semantic model selected by the governed binding: ANQR, USF, UXF or UIF." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:owningModel> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:selectedProfile> <urn:usf:predicate:text> "Exact versioned semantic profile selected by the governed binding." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:selectedProfile> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:targetManifest> <urn:usf:predicate:text> "Repository-relative target semantic manifest from which current authoritative work is rederived." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:targetManifest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:workIri> <urn:usf:predicate:text> "Existing authoritative semantic WorkPacket IRI selected by the governed binding." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:predicate:workIri> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-issue-bindings> .
