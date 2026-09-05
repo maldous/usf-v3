@@ -1,0 +1,326 @@
+<urn:usf:acceptance:linear-work-binding> <urn:usf:predicate:text> "Unit and integration evidence demonstrates: same issue submitted twice; the same issue by Claude then Codex; interrupted STARTED submission retried as UNKNOWN without redispatch; completed submission returning completion/evidence; changed semantic scope yielding explicit supersession; and concurrent submitters returning one binding/attempt. It also demonstrates ANQR, USF, UXF and UIF ownership-to-profile/manifest selection, rejects malformed/missing locators and unbound prose, preserves WorkPacket.modelCapability, and correlates owner-private attempt state with .usf/work plus Hermes state/result. Tests use the already admitted native fixture mode2 and do not contact Linear, providers or the live supervisor." <urn:usf:graph:linear-work-binding> .
+<urn:usf:acceptance:linear-work-binding> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-construction-authority-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-construction-authority-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing construction evidence and proof for this one work into an additive copy-on-write authority grant, without mutating the permission the proof evaluated." <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-construction-authority-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-construction-authority-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-construction-authority-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-work-completion-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-work-completion-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing no-change completion evidence and proof for this one work into an additive copy-on-write completion record." <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-work-completion-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-work-completion-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:linear-work-binding> .
+<urn:usf:algorithm:linear-work-binding-work-completion-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:attemptKeyRule> "intentKey plus exact current RealisationBasis/basisDigest and scoped dependency digest" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:attemptStateRule> "PREPARED then durable STARTED before Hermes dispatch; SETTLED only after correlated result; UNKNOWN never redispatches" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:canonicalName> "linear-work-binding-template" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:completionRule> "return existing accepted completion/evidence/proof for the current binding" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:fixedPrompt> "Use only the selected WorkPacket objective, requirements, read/write scope, validation/evidence obligations and bounded authorised context. Do not read or execute Linear prose." <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:intentKeyRule> "canonical issue locator, owner, selected profile, manifest and governed fixed fields; timestamps excluded" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:issueLocatorRule> "workspace plus immutable issue UUID; display key alone is insufficient" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:maximumPromptTokens> "12000" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:nonClaim> "This is a reusable governed schema/template, not a binding for USF-1162 or any other issue." <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:owningModelRule> "exactly one of ANQR, USF, UXF, UIF" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:profileManifestRule> "owner selects an explicit current profile and manifest; no CLI override" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:semanticDependency> <urn:usf:work:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:supersessionRule> "changed declared semantic meaning explicitly supersedes; basis movement creates a distinct attempt" <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:type> <urn:usf:type:LinearIssueWorkBinding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:binding-template:linear-work-binding:1> <urn:usf:predicate:workIdentityRule> "WorkPacket.id/workIri is authoritative semantic work identity" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:canonicalName> "linear-work-binding" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:linear-work-binding:completion> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:constructionRouteConstraint> "Use the accepted USF-1158 stewardship exclusion for the smallest before/after Hermes dispatch hook. A binding is admitted only after semantic owner, profile, manifest, WorkPacket, current basis, dependencies, evidence obligations and execution permission are independently derived. Existing Hermes state and graph execution correlation are reused. No Linear API client, provider admission, paid spend, credential, deployment, scheduler or qualification mechanism is introduced." <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:linear-work-binding:ci> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:linear-work-binding:hermetic> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:linear-work-binding:integrationtest> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:nonClaim> "Linear is a coordination narrative. It grants no semantic truth, prompt authority, evidence admissibility, proof, permission, integration, deployment or product decision." <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:nonClaim> "This contract does not bind USF-1162 itself to implementation work. A later actual issue binding must be semantically authored against a current selected WorkPacket." <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:nonClaim> "Under GOAL section 28, this ordinary candidate iteration declares no specialised task-class qualification. Source and test conformance remain independently required." <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:objective> "Bind a Linear issue to already-authorised semantic work without allowing Linear prose to become execution authority, and preserve idempotent continuation through Hermes." <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "docs/hermes-management.md" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "src/commands/linear-binding.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "tests/integration/linear-binding.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "tests/unit/commands/linear-binding.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-authority-separation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-capability-preservation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-completed-replay> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-concurrent-submission> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-currentness-supersession> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-duplicate-retry> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-identity-stable> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-interrupted-unknown> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-owner-explicit> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-prose-nonexecutable> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:scope> "foundation-coordination" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:title> "Governed Linear issue to semantic work binding" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:ci> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:linear-work-binding> .
+<urn:usf:environment-applicability:linear-work-binding:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding:completion> <urn:usf:predicate:forContract> <urn:usf:contract:linear-work-binding:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding:completion> <urn:usf:predicate:text> "Require independent deterministic tests for owner selection, binding identity, all six duplicate/replay cases, explicit supersession and the guarded Hermes correlation record. A successful dispatch alone is not completion." <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding> <urn:usf:predicate:forContract> <urn:usf:contract:linear-work-binding:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding> <urn:usf:predicate:text> "Require exact current source/path preimages and the graph-derived scope showing no existing Linear binding implementation. Tickets and drafts are not construction evidence or authority." <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:evidence-requirement:linear-work-binding> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:forContract> <urn:usf:contract:linear-work-binding:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:proofObligation> <urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:graph:linear-work-binding> .
+<urn:usf:permission:linear-work-binding> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:attemptKeyRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:attemptStateRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:completionRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:fixedPrompt> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:intentKeyRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:issueLocatorRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:maximumPromptTokens> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:owningModelRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:profileManifestRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:supersessionRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:workIdentityRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:linear-work-binding:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:canonicalName> "linear-work-binding" <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:objective> "A reusable foundation profile for governed issue/work correlation; consuming models remain independently owned." <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:linear-work-binding:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:linear-work-binding> .
+<urn:usf:profile:linear-work-binding:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:predicate:text> "Prove that exact current construction observations warrant only this bounded source/test/CLI bridge work." <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:linear-work-binding:completion> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding> <urn:usf:predicate:text> "Evaluate independent current completion evidence without treating binding data or Linear prose as proof authority." <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:proof:linear-work-binding> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable policy plus the exact declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work, so it can never stale a sibling cohort." <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:construction-evidence-candidate:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/construction-authority/" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:nonClaim> "The grant permits only the exact selected work ceiling. It is not completion, integration acceptance, provider qualification, runtime activation or terminal proof." <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:construction-proof-bundle:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:linear-work-binding-construction-authority-publication:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/construction-authority/" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:construction-authority-publication-result:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-construction:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-construction:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-construction-authority:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/linear-work-binding.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:linear-work-binding-grants> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/linear-work-binding-grants.nq" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/construction-authority.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:toolPath> "src/realisation/construction-authority.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:completionDerivationRule> <urn:usf:rule:linear-work-binding-copy-on-write-work-completion:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:currentnessRule> "Select exact completion only for this immutable policy, the current work basis and the declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work." <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:linear-work-binding-work-completion-publication:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/work-completion/" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:realisationAlgorithm> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:realisationResultSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-completion:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-completion:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-work-completion:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:realise-no-change:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/linear-work-binding.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:linear-work-binding-grants> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/linear-work-binding-grants.nq" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/check.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/work-completion.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/index.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/work-completion.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:publication-policy:linear-work-binding-no-change-completion:1> <urn:usf:predicate:workspaceSchema> <urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-authority-separation> <urn:usf:predicate:canonicalName> "linear-binding-authority-separation" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-authority-separation> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-authority-separation> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-authority-separation> <urn:usf:predicate:text> "The bridge persists coordination identity and attempt correlation only. WorkPacket.id/workIri remains semantic authority; Hermes state and execution results remain execution observations; independent validation, evidence, proof, permission, integration and publication retain their existing lifecycle." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-authority-separation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-capability-preservation> <urn:usf:predicate:canonicalName> "linear-binding-capability-preservation" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-capability-preservation> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-capability-preservation> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-capability-preservation> <urn:usf:predicate:text> "The materialiser preserves WorkPacket.modelCapability under its existing predicate for graph execution. It does not infer, rename or manufacture requiredCapability and it introduces no provider, scheduler, qualification, Linear API client or economic authority." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-capability-preservation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-completed-replay> <urn:usf:predicate:canonicalName> "linear-binding-completed-replay" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-completed-replay> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-completed-replay> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-completed-replay> <urn:usf:predicate:text> "A completed current binding returns its completion, proof and evidence identities across accepted postimages. It does not recreate work or re-run implementation merely because the issue is evaluated again." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-completed-replay> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-concurrent-submission> <urn:usf:predicate:canonicalName> "linear-binding-concurrent-submission" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-concurrent-submission> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-concurrent-submission> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-concurrent-submission> <urn:usf:predicate:text> "Two agents attempting one issue concurrently use the existing accepted stewardship exclusion and one owner-private attempt record. One records or observes the attempt; the other receives the same binding or a typed busy/unknown result. Linear assignment is not a lock." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-concurrent-submission> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-currentness-supersession> <urn:usf:predicate:canonicalName> "linear-binding-currentness-supersession" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-currentness-supersession> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-currentness-supersession> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-currentness-supersession> <urn:usf:predicate:text> "A changed semantic meaning produces a new declared intent and explicit supersession of the former binding. Exact basis and scoped dependency identity distinguish an attempt from the coordination intent; timestamps alone neither supersede nor revive work." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-currentness-supersession> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-duplicate-retry> <urn:usf:predicate:canonicalName> "linear-binding-duplicate-retry" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-duplicate-retry> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-duplicate-retry> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-duplicate-retry> <urn:usf:predicate:text> "Submitting the same issue twice, including after Codex or Claude handoff, reuses the same intentKey, WorkPacket and current attempt record. It returns accepted completion and evidence when present; it creates neither duplicate semantic work nor a second Hermes dispatch." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-duplicate-retry> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-identity-stable> <urn:usf:predicate:canonicalName> "linear-binding-identity-stable" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-identity-stable> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-identity-stable> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-identity-stable> <urn:usf:predicate:text> "A binding uses a canonical external issue locator containing the workspace and immutable issue UUID, plus its declared owning model. It resolves only to one selected profile, manifest and graph-declared WorkPacket. The exact issue, WorkPacket and scoped basis reuse the existing binding; no timestamp is identity." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-identity-stable> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-interrupted-unknown> <urn:usf:predicate:canonicalName> "linear-binding-interrupted-unknown" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-interrupted-unknown> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-interrupted-unknown> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-interrupted-unknown> <urn:usf:predicate:text> "A durable STARTED record is written before Hermes dispatch. If its result is unknown after interruption, retry returns UNKNOWN and requires reconciliation with the existing Hermes state and execution-result correlation; it never silently redispatches." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-interrupted-unknown> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-owner-explicit> <urn:usf:predicate:canonicalName> "linear-binding-owner-explicit" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-owner-explicit> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-owner-explicit> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-owner-explicit> <urn:usf:predicate:text> "Every binding names exactly one owning semantic model: ANQR, USF, UXF or UIF. That owner selects the declared profile and manifest authority; product ownership is not funnelled through USF and no product-specific kernel branch is created." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-owner-explicit> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-prose-nonexecutable> <urn:usf:predicate:canonicalName> "linear-binding-prose-nonexecutable" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-prose-nonexecutable> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-prose-nonexecutable> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-prose-nonexecutable> <urn:usf:predicate:text> "Issue title, body, comments, labels, assignment and cross-workspace links are coordination inputs only. They cannot supply a prompt, write set, provider route, model, permission, acceptance, evidence or proof. Missing semantic scope is a bounded semantic-authoring disposition, never unchecked implementation dispatch." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-prose-nonexecutable> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:rule:linear-work-binding-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other profiles and bases as history." <urn:usf:graph:linear-work-binding> .
+<urn:usf:rule:linear-work-binding-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:linear-work-binding> .
+<urn:usf:rule:linear-work-binding-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:type:LinearIssueWorkBinding> <urn:usf:predicate:text> "A governed coordination binding between an external issue locator and an already-authorised semantic WorkPacket. It does not itself grant execution or proof authority." <urn:usf:graph:linear-work-binding> .
+<urn:usf:type:LinearIssueWorkBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:authorityRule> "One exact mode2 closure supplies only current non-candidate Hermes, stewardship and semantic lifecycle imports needed by the focused binding tests. Candidate binding/CLI/test files remain in candidate scope; no Linear contact, provider, credential, host or extra write authority follows." <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:forValidation> <urn:usf:validation:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/continuous/stewardship.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation:linear-work-binding> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation:linear-work-binding> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/commands/linear-binding.test.ts tests/integration/linear-binding.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation:linear-work-binding> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation:linear-work-binding> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation:linear-work-binding> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation:linear-work-binding> <urn:usf:predicate:nonClaim> "This deterministic fixture validation does not contact Linear or providers and does not control the live Hermes supervisor." <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation:linear-work-binding> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:acceptance> <urn:usf:acceptance:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:contract> <urn:usf:contract:linear-work-binding:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:fixtureValidationMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:objective> "Implement the smallest governed Linear issue to existing semantic WorkPacket binding and Hermes correlation surface." <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:proof> <urn:usf:proof:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "config/policy.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "evidence/work-completion/55cd2908cb780d096e0bff3f8ddb236c9d00c4ed1ea326bffe612b7f2184315f.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "evidence/work-completion/dda51123f88cf5cf37584b65e99a16824235f32ec6b4646615d6e777700e7a0b.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/linear-work-binding.nq" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/manifests/linear-work-binding.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/manifests/operational-stewardship.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/manifests/work-task-class-disposition.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/operational-stewardship-grants.nq" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "graph/operational-stewardship.nq" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/commands/dispatcher.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/commands/hermes.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/continuous/stewardship.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/realisation/basis.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/realisation/fixture-process.apparmor" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/realisation/work-completion.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "tests/integration/hermes-stewardship.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:semanticDependency> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:semanticDependency> <urn:usf:proof-result:completion:80e0d6585bea9aef54ed79e144e4f62072460f04a1dd62ee4a0747b87890a277> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:semanticDependency> <urn:usf:proof-result:completion:f466e4a837b11290c60473df822fdc2b4b63c5217845c571d2e52d5f467ba85e> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:taskClassRequirement> "none" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:validation> <urn:usf:validation:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "docs/hermes-management.md" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "src/commands/hermes.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "src/commands/linear-binding.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "tests/integration/linear-binding.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "tests/unit/commands/linear-binding.test.ts" <urn:usf:graph:linear-work-binding> .
