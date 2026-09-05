@@ -11,6 +11,20 @@
       "graph": "urn:uxf:graph:authority",
       "role": "foundation",
       "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/foundations/uxf/contracts.nq",
+      "format": "application/n-quads",
+      "graph": "urn:uxf:graph:contracts",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/foundations/uxf/contract-evidence.nq",
+      "format": "application/n-quads",
+      "graph": "urn:uxf:graph:contract-evidence",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
     }
   ]
 }

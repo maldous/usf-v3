@@ -1,0 +1,43 @@
+<urn:uxf:foundation-revision:2> <urn:usf:predicate:authorityManifestPath> "graph/manifests/uxf-foundation.json" <urn:uxf:graph:contracts> .
+<urn:uxf:foundation-revision:2> <urn:usf:predicate:canonicalName> "2" <urn:uxf:graph:contracts> .
+<urn:uxf:foundation-revision:2> <urn:usf:predicate:foundation> <urn:uxf:foundation:1> <urn:uxf:graph:contracts> .
+<urn:uxf:foundation-revision:2> <urn:usf:predicate:nonClaim> "Revision 2 adds the governed contract closure while preserving revision 1 and every existing consumer binding. A product selects revision 2 only through a new explicit binding." <urn:uxf:graph:contracts> .
+<urn:uxf:foundation-revision:2> <urn:usf:predicate:type> <urn:usf:type:FoundationRevision> <urn:uxf:graph:contracts> .
+<urn:uxf:foundation-revision:2> <urn:usf:predicate:version> "2" <urn:uxf:graph:contracts> .
+<urn:uxf:closure:pattern-contracts:1> <urn:usf:predicate:canonicalName> "pattern-contracts" <urn:uxf:graph:contracts> .
+<urn:uxf:closure:pattern-contracts:1> <urn:uxf:predicate:closureMember> <urn:uxf:experience-pattern-contract-set:1> <urn:uxf:graph:contracts> .
+<urn:uxf:closure:pattern-contracts:1> <urn:uxf:predicate:requiresExplicitConsumerBinding> "true" <urn:uxf:graph:contracts> .
+<urn:uxf:closure:pattern-contracts:1> <urn:usf:predicate:type> <urn:uxf:type:ExperienceFoundationClosure> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:usf:predicate:canonicalName> "retained-pattern-contracts" <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:uxf:predicate:contractMember> <urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:uxf:predicate:contractMember> <urn:uxf:experience-pattern-contract:export-download:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:uxf:predicate:contractMember> <urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:uxf:predicate:contractMember> <urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:uxf:predicate:contractMember> <urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:usf:predicate:nonClaim> "Membership is neither a product selection nor proof that any implementation satisfies a contract." <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:usf:predicate:type> <urn:uxf:type:ExperiencePatternContractSet> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract-set:1> <urn:usf:predicate:version> "1" <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:usf:predicate:canonicalName> "action-result-feedback" <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:uxf:predicate:governsPatternAdoption> <urn:uxf:pattern-adoption:action-result-feedback:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:usf:predicate:nonClaim> "The adopted source pattern, not this wrapper, is the complete positive and negative interaction-obligation source. This contract does not prove a rendered implementation." <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:usf:predicate:type> <urn:uxf:type:ExperiencePatternContract> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:export-download:1> <urn:usf:predicate:canonicalName> "export-download" <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:export-download:1> <urn:uxf:predicate:governsPatternAdoption> <urn:uxf:pattern-adoption:export-download:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:export-download:1> <urn:usf:predicate:nonClaim> "The adopted source pattern, not this wrapper, is the complete positive and negative interaction-obligation source. This contract does not prove a rendered implementation." <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:export-download:1> <urn:usf:predicate:type> <urn:uxf:type:ExperiencePatternContract> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:usf:predicate:canonicalName> "input-and-preview" <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:uxf:predicate:governsPatternAdoption> <urn:uxf:pattern-adoption:input-and-preview:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:usf:predicate:nonClaim> "The adopted source pattern, not this wrapper, is the complete positive and negative interaction-obligation source. This contract does not prove a rendered implementation." <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:usf:predicate:type> <urn:uxf:type:ExperiencePatternContract> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:usf:predicate:canonicalName> "progressive-disclosure" <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:uxf:predicate:governsPatternAdoption> <urn:uxf:pattern-adoption:progressive-disclosure:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:usf:predicate:nonClaim> "The adopted source pattern, not this wrapper, is the complete positive and negative interaction-obligation source. This contract does not prove a rendered implementation." <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:usf:predicate:type> <urn:uxf:type:ExperiencePatternContract> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:usf:predicate:canonicalName> "validation-feedback" <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:uxf:predicate:governsPatternAdoption> <urn:uxf:pattern-adoption:validation-feedback:1> <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:usf:predicate:nonClaim> "The adopted source pattern, not this wrapper, is the complete positive and negative interaction-obligation source. This contract does not prove a rendered implementation." <urn:uxf:graph:contracts> .
+<urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:usf:predicate:type> <urn:uxf:type:ExperiencePatternContract> <urn:uxf:graph:contracts> .
+<urn:uxf:predicate:contractMember> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:contracts> .
+<urn:uxf:predicate:governsPatternAdoption> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:contracts> .
+<urn:uxf:type:ExperiencePatternContract> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:uxf:graph:contracts> .
+<urn:uxf:type:ExperiencePatternContractSet> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:uxf:graph:contracts> .
