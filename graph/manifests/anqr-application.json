@@ -47,6 +47,13 @@
       "graph": "urn:anqr:graph:application-profile",
       "role": "contract",
       "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/products/anqr/qrdecoding-real-image-evidence.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:qrdecoding-real-image-evidence",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
     }
   ]
 }

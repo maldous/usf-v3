@@ -1,0 +1,10 @@
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:type> <urn:usf:type:DeliveryFacet> <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:canonicalName> "qrdecodingrealimageevidence" <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:facetKind> <urn:usf:facet-kind:validation> <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:facetStatement> "An executed conformance subtest named qrdecodingrealimageevidence decodes a controlled local QR PNG to its exact UTF-8 payload and returns named no_qr_found with no payload for a controlled local non-QR PNG. The procedure performs no network, camera, URL retrieval, destination resolution, or payment operation." <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:facetApplicability> "APPLICABLE" <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:requirementClass> "behavioural-runtime" <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:specificationStatus> "complete" <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:anqr:graph:qrdecoding-real-image-evidence> .
+<urn:anqr:delivery-contract:qrdecoding> <urn:usf:predicate:declaresFacet> <urn:anqr:delivery-facet:qrdecodingrealimageevidence> <urn:anqr:graph:qrdecoding-real-image-evidence> .
