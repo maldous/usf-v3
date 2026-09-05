@@ -29,8 +29,8 @@
 <urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:operational-stewardship> <urn:usf:graph:operational-stewardship> .
 <urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:graph:operational-stewardship> .
 <urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:nonClaim> "An operational claim is neither semantic work ownership, Linear assignment nor integration authority. This scope grants no product decision, credential, provider, paid spend, deployment or production permission. One drained upgrade is required to adopt guards in a previously loaded supervisor; ordinary handoffs preserve the upgraded supervisor." <urn:usf:graph:operational-stewardship> .
-<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:nonClaim> "Current USF-1179 runtime observation has classified the selected Landlock strategy as incapable of the dynamic Node and direct-loader-denial combination. This preparatory revision authorises only bounded candidate generation/materialisation through apply, with no check, integration or stewardship runtime activation. A later explicit current semantic selection and independently accepted fixture runtime are required before raising the ceiling. Existing default-mode process validation remains an unsatisfied obligation, never a waived or claimed-successful check." <urn:usf:graph:operational-stewardship> .
 <urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:nonClaim> "Current no-change completion publication authenticates the independently validated postimage only. It does not establish the unresolved general byte-delta publication verifier tracked in USF-1160, nor automatically solve Linear work binding or takeover acceptance in USF-1162 and USF-1163." <urn:usf:graph:operational-stewardship> .
+<urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:nonClaim> "Separately admitted fixture-process-runtime completion is a scoped prerequisite for the explicitly selected confined process validation. This current selection permits construction through integrate only after an ordinary current construction proof and grant. Fixture completion and integration do not establish live operational stewardship, agent takeover, provider permission or production deployment; those observations remain distinct." <urn:usf:graph:operational-stewardship> .
 <urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:objective> "Support one safe, resumable operational steward of Hermes with exact process and session identity, guarded control operations, safe handoff/recovery, supervisor admission exclusion and transaction integration exclusion without becoming semantic or provider authority." <urn:usf:graph:operational-stewardship> .
 <urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:objectiveEvidence> "Inspected current local USF bd09293f45164bacaef00b19a552893e2569279b. src/commands/hermes-lifecycle.ts admits supervisors by record observation without a kernel lifetime lock and imports its handlers once. src/commands/transact.ts performs final currentness, writes and rollback without the existing primary-mutation lock; stale-check failure can restore preimages before this transaction wrote anything. No current CLI stewardship/session claim is implemented. Live supervisor 8f24feeb35021fdcaa5488d58 PID1752694 remains healthy at inspection; cycle projections cannot prove absence of an in-flight transaction." <urn:usf:graph:operational-stewardship> .
 <urn:usf:contract:operational-stewardship:1> <urn:usf:predicate:permitsWrite> "docs/hermes-management.md" <urn:usf:graph:operational-stewardship> .
@@ -123,7 +123,7 @@
 <urn:usf:permission:operational-stewardship> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:graph:operational-stewardship> .
 <urn:usf:permission:operational-stewardship> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:operational-stewardship> <urn:usf:graph:operational-stewardship> .
 <urn:usf:permission:operational-stewardship> <urn:usf:predicate:forContract> <urn:usf:contract:operational-stewardship:1> <urn:usf:graph:operational-stewardship> .
-<urn:usf:permission:operational-stewardship> <urn:usf:predicate:maximumThrough> "apply" <urn:usf:graph:operational-stewardship> .
+<urn:usf:permission:operational-stewardship> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:operational-stewardship> .
 <urn:usf:permission:operational-stewardship> <urn:usf:predicate:proofObligation> <urn:usf:proof:operational-stewardship:construction-authority> <urn:usf:graph:operational-stewardship> .
 <urn:usf:permission:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:operational-stewardship> .
 <urn:usf:predicate:defaultRenewalSeconds> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:operational-stewardship> .
@@ -279,28 +279,28 @@
 <urn:usf:rule:operational-stewardship-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:authorityRule> "Finite transitive TypeScript imports of the existing transaction, lifecycle and primary-mutation validation boundary are readable inside the confined validator. This changes no write scope, provider permission or product authority." <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:forValidation> <urn:usf:validation:operational-stewardship> <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "graph/provider-pipeline.nq" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "schemas/call-result.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "schemas/provider-config.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/call.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/check.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/classify.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/dispatcher.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/command-input.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/execute.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-execute.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-integrity.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-implement.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-realise.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/models.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/probe.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/product-repository.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/commands/provider-leaf-dispatch.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/repository.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/integrity.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/runtime-authority.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work-dependency.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/architecture-observation.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/artefact-validation.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/authority-snapshot.ts" <urn:usf:graph:operational-stewardship> .
@@ -315,6 +315,7 @@
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/evidence-index.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/execution-economics.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/facet-evaluation.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/fake.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/implementation-conformance.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/implementation-work.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/local-git.ts" <urn:usf:graph:operational-stewardship> .
@@ -329,21 +330,22 @@
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/providers/types.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/index.ts" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/transition.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation-runtime-closure:operational-stewardship:1> <urn:usf:predicate:version> "1" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation:operational-stewardship> <urn:usf:predicate:applicability> "required" <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation:operational-stewardship> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/continuous/stewardship.test.ts tests/adversarial/transaction-exclusion.test.ts tests/integration/hermes-stewardship.test.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/continuous/stewardship.test.ts tests/adversarial/transaction-exclusion.test.ts tests/integration/hermes-stewardship.test.ts tests/integration/hermes-lifecycle.test.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation:operational-stewardship> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:operational-stewardship> .
-<urn:usf:validation:operational-stewardship> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:operational-stewardship> .
+<urn:usf:validation:operational-stewardship> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:1> <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation:operational-stewardship> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation:operational-stewardship> <urn:usf:predicate:nonClaim> "Confined deterministic tests include real local processes and kernel locks against isolated fixtures. They contact no provider and do not control the live supervisor. Live host upgrade and takeover observations are recorded separately and cannot be inferred from tests." <urn:usf:graph:operational-stewardship> .
 <urn:usf:validation:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:acceptance> <urn:usf:acceptance:operational-stewardship> <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:contract> <urn:usf:contract:operational-stewardship:1> <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:fixtureValidationMode> <urn:usf:mode:confined-fixture-process:1> <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:objective> "Support one safe, resumable operational steward of Hermes with exact process and session identity, guarded control operations, safe handoff/recovery, supervisor admission exclusion and transaction integration exclusion without becoming semantic or provider authority." <urn:usf:graph:operational-stewardship> .
@@ -352,6 +354,7 @@
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:proof> <urn:usf:proof:operational-stewardship> <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "config/policy.json" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "evidence/work-completion/b241cd22390828bba302b294211ddb99ec97b73a5491e1e7db997d83ce9f2f29.json" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "graph/manifests/operational-stewardship.json" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "graph/operational-stewardship.nq" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/commands/dispatcher.ts" <urn:usf:graph:operational-stewardship> .
@@ -360,9 +363,12 @@
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/graph/runtime-authority.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/graph/work.ts" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/realisation/fixture-process.apparmor" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "src/realisation/transition.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:readPath> "tests/integration/hermes-lifecycle.test.ts" <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:operational-stewardship> .
+<urn:usf:work:operational-stewardship> <urn:usf:predicate:semanticDependency> <urn:usf:proof-result:completion:01e60c4f856c3c7539054ac0eb466df0b8c7ded7671dbdcfc83d9ab08facf73b> <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:validation> <urn:usf:validation:operational-stewardship> <urn:usf:graph:operational-stewardship> .
 <urn:usf:work:operational-stewardship> <urn:usf:predicate:writePath> "docs/hermes-management.md" <urn:usf:graph:operational-stewardship> .

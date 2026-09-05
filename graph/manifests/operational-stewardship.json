@@ -3,7 +3,8 @@
   "version": 2,
   "imports": [
     "graph/manifests/self-host-hermes.json",
-    "graph/manifests/profile-authority.json"
+    "graph/manifests/profile-authority.json",
+    "graph/manifests/fixture-process-runtime.json"
   ],
   "sources": [
     {
