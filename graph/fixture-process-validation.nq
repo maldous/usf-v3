@@ -35,8 +35,6 @@
 <urn:usf:contract:fixture-process-validation:1> <urn:usf:predicate:permitsWrite> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:contract:fixture-process-validation:1> <urn:usf:predicate:permitsWrite> "src/realisation/fixture-process.ts" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:contract:fixture-process-validation:1> <urn:usf:predicate:permitsWrite> "src/realisation/transition.ts" <urn:usf:graph:fixture-process-validation> .
-<urn:usf:contract:fixture-process-validation:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/fixture-process-confinement.test.ts" <urn:usf:graph:fixture-process-validation> .
-<urn:usf:contract:fixture-process-validation:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/realisation-check.test.ts" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:contract:fixture-process-validation:1> <urn:usf:predicate:permitsWrite> "tests/unit/realisation/fixture-process.test.ts" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:contract:fixture-process-validation:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:contract:fixture-process-validation:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:fixture-process-validation> <urn:usf:graph:fixture-process-validation> .
@@ -287,6 +285,4 @@
 <urn:usf:work:fixture-process-validation> <urn:usf:predicate:writePath> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:work:fixture-process-validation> <urn:usf:predicate:writePath> "src/realisation/fixture-process.ts" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:work:fixture-process-validation> <urn:usf:predicate:writePath> "src/realisation/transition.ts" <urn:usf:graph:fixture-process-validation> .
-<urn:usf:work:fixture-process-validation> <urn:usf:predicate:writePath> "tests/adversarial/fixture-process-confinement.test.ts" <urn:usf:graph:fixture-process-validation> .
-<urn:usf:work:fixture-process-validation> <urn:usf:predicate:writePath> "tests/adversarial/realisation-check.test.ts" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:work:fixture-process-validation> <urn:usf:predicate:writePath> "tests/unit/realisation/fixture-process.test.ts" <urn:usf:graph:fixture-process-validation> .
