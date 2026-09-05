@@ -287,9 +287,12 @@
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/execute.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-execute.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-integrity.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-stewardship.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/models.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/probe.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/publish.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/commands/transact.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/continuous/lifecycle.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/core/repository.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:linear-work-binding> .
