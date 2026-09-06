@@ -2,7 +2,8 @@
  "schema": "urn:usf:graph-manifest:2",
  "version": 2,
  "imports": [
-  "graph/manifests/v3-convention.json"
+  "graph/manifests/v3-convention.json",
+  "graph/manifests/delivery-environment.json"
  ],
  "sources": [
   {
