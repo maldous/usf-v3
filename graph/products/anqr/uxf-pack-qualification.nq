@@ -1,0 +1,64 @@
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:type> <urn:usf:type:ProfileFoundationBinding> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:canonicalName> "anqr-preact-pack-uxf-qualification" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:objective> "Product-owned definition binding the committed ANQR Preact implementation pack to five selected reusable UXF patterns. It records unsupported interactions without changing UXF contracts or selecting another product." <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:boundProfileRevision> <urn:anqr:experience-profile-revision:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:boundFoundationRevision> <urn:uxf:foundation-revision:3> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:foundationDependencySeed> <urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:foundationDependencySeed> <urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:foundationDependencySeed> <urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:foundationDependencySeed> <urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:foundationDependencySeed> <urn:uxf:experience-pattern-contract:export-download:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:foundationAuthorityManifest> "graph/manifests/uxf-foundation.json" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:implementationPackIdentity> <urn:anqr:ui-implementation-pack:preact:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:designProfileRevision> <urn:anqr:design-profile-revision:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:dependencyIdentity> "preact@10.29.8" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:dependencyLockDigest> "sha256:e1b6f58b9c8e283da96b126ae044f6303967fb0b02ce2d64b13ee1c243175d41" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:sourceRevision> "git:915e03a14d546cb5e4243f4fb89afa95f7e4e825" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:buildCommand> "npm run build" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:buildOutputLocation> "apps/web/dist/" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:qualifiesPattern> <urn:usf:future-use-pattern:input-and-preview:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:selectedContract> <urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:qualifiesPattern> <urn:usf:future-use-pattern:validation-feedback:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:selectedContract> <urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:qualifiesPattern> <urn:usf:future-use-pattern:action-result-feedback:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:selectedContract> <urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:qualifiesPattern> <urn:usf:future-use-pattern:progressive-disclosure:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:selectedContract> <urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:qualifiesPattern> <urn:usf:future-use-pattern:export-download:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:selectedContract> <urn:uxf:experience-pattern-contract:export-download:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:nonClaim> "This is a binding/qualification definition. Happy DOM/source tests are candidate evidence only and do not prove browser rendering, release, deployment, locale/RTL behavior, risk disclosure, or UXF-6 conformance." <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:locale-directional-layout:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:locale-directional-layout:1> <urn:usf:predicate:canonicalName> "locale-directional-layout" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:locale-directional-layout:1> <urn:usf:predicate:bindingStatus> "unsupported-unrealised" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:locale-directional-layout:1> <urn:usf:predicate:text> "No selected locale, RTL output, fallback behavior or rendered locale evidence is bound by this pack qualification." <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:locale-directional-layout:1> <urn:usf:predicate:forContract> <urn:uxf:experience-contract:locale-directional-layout:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:uncertain-assessment-disclosure:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:uncertain-assessment-disclosure:1> <urn:usf:predicate:canonicalName> "uncertain-assessment-disclosure" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:uncertain-assessment-disclosure:1> <urn:usf:predicate:bindingStatus> "unsupported-unrealised" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:uncertain-assessment-disclosure:1> <urn:usf:predicate:text> "No selected assessment subject/disposition policy or rendered stale/unknown disclosure evidence is bound by this pack qualification." <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-support:uncertain-assessment-disclosure:1> <urn:usf:predicate:forContract> <urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:evidence-requirement:uxf-pack-qualification:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:evidence-requirement:uxf-pack-qualification:1> <urn:usf:predicate:forContract> <urn:anqr:uxf-pack-qualification:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:evidence-requirement:uxf-pack-qualification:1> <urn:usf:predicate:text> "Before any acceptance, bind exact committed pack source, dependency lock, selected profile/patterns, test command result, source/build output identity and an independent evidence result. Missing or mismatched inputs keep every pattern unrealised." <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:uxf-pack-qualification:1> <urn:usf:predicate:evidenceRequirement> <urn:anqr:evidence-requirement:uxf-pack-qualification:1> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:de97d0b73dab16ae7497e3d6e0abb00f55a389912c26bb6006526c1a0ef14ae7> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:de97d0b73dab16ae7497e3d6e0abb00f55a389912c26bb6006526c1a0ef14ae7> <urn:usf:predicate:sourcePath> "graph/products/anqr/experience.nq" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:de97d0b73dab16ae7497e3d6e0abb00f55a389912c26bb6006526c1a0ef14ae7> <urn:usf:predicate:sourceDigest> "sha256:47c6f318632056c86fcfe5a3680c4f779d24ae7b0bf74ad18364c95378dce2b0" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:2f904434269af29f96394811545996744e06190c0080c86a7b6564802cd38ded> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:2f904434269af29f96394811545996744e06190c0080c86a7b6564802cd38ded> <urn:usf:predicate:sourcePath> "graph/products/anqr/uxf-adoption.nq" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:2f904434269af29f96394811545996744e06190c0080c86a7b6564802cd38ded> <urn:usf:predicate:sourceDigest> "sha256:7d8c6995dd9f6fd818031f555be1d886de54b59e064aff9c24d39817f5ed5cc4" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:feb0e686229695926ca1bb0e153c93563b68017a15237f4c003d8daef576ddaa> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:feb0e686229695926ca1bb0e153c93563b68017a15237f4c003d8daef576ddaa> <urn:usf:predicate:sourcePath> "graph/foundations/uxf/contracts.nq" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:feb0e686229695926ca1bb0e153c93563b68017a15237f4c003d8daef576ddaa> <urn:usf:predicate:sourceDigest> "sha256:daea33a94aa428e9510272b3f6bf6eb32cb1f47d0d78aa8e798012528cae198a" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:08b5c44caba189a365b17c8c36abb0e664e2a12d532cf189daede527154fc58c> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:08b5c44caba189a365b17c8c36abb0e664e2a12d532cf189daede527154fc58c> <urn:usf:predicate:sourcePath> "graph/foundations/uxf/accessibility-i18n-risk.nq" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:anqr:qualification-read:08b5c44caba189a365b17c8c36abb0e664e2a12d532cf189daede527154fc58c> <urn:usf:predicate:sourceDigest> "sha256:80fb31481290db24d44b29aca1b04496087b15bf73f086cd04449bd92e4fa71e" <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:bindingStatus> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:dependencyIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:dependencyLockDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:designProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:implementationPackIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:qualifiesPattern> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:selectedContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:sourceDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .
+<urn:usf:predicate:sourceRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:anqr:graph:uxf-pack-qualification:1> .

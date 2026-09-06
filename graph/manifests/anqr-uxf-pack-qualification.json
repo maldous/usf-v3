@@ -1,0 +1,16 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/anqr-uxf-adoption.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/products/anqr/uxf-pack-qualification.nq",
+      "format": "application/n-quads",
+      "graph": "urn:anqr:graph:uxf-pack-qualification:1",
+      "role": "product-profile",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
