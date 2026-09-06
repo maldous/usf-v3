@@ -723,3 +723,26 @@ stored records carry no corpus binding at all and were already inadmissible.
 **Editing `config/qualification.json` refuses `usf route` until it is committed**
 (`ROUTE_QUALIFICATION_AUTHORITY_UNCURRENT`): the authority is compared against
 the Git-indexed blob, not the working tree.
+
+## USF-1169 retained completion receipt (2026-09-07)
+
+The accepted candidate is
+`sha256:3bacd911e0e2a26dcab132a767d5801d479952e53937aced65f7489a2d58ccd2`.
+It preserves rejected candidate `a602ee7002a56ebc6857e037786b3bbf129a0d87`
+as provenance and changes only the retained checked-receipt fixture, its
+provenance record, and `tests/integration/work-completion.test.ts`.
+
+The official graph-selected check passed under its declared confinement and
+produced checked-candidate receipt
+`.usf/receipts/check/3bacd911e0e2a26dcab132a767d5801d479952e53937aced65f7489a2d58ccd2/80c08d220f8d6497fd4ef20dfd2b3635f3388f8730e1283b4ea433e3656298d6.json`.
+Independent review confirmed that malformed and integrity-tampered receipts are
+both rejected before effects, in addition to the seven rehashed substitutions.
+The ordinary integrator advanced the carrier to
+`a0eddec4d0b2b49a4f1499eb7eb8aefbafcd9944` with tree
+`05234afec7235402eed103e9c64ec81dfc952921`; rollback was not required.
+
+Post-integration construction authority was re-derived rather than repaired.
+The current publication receipt is
+`evidence/construction-authority/471fa8ec1c376e8e7d9a81a492a499cf0290b4d5de62b82c910ad14ff083b636.json`.
+Completion publication and replay must be derived after this handover update so
+the final no-change basis includes these bytes.
