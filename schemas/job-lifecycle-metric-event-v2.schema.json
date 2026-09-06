@@ -615,6 +615,40 @@
           "const": "interrupted"
         }
       }
+    },
+    {
+      "properties": {
+        "eventKind": {
+          "const": "failure"
+        },
+        "acceptedOutcome": {
+          "const": null
+        },
+        "outcomeLineage": {
+          "const": "failed"
+        },
+        "missingnessReason": {
+          "type": "string",
+          "pattern": "^[\\s\\S]{1,240}$"
+        }
+      }
+    },
+    {
+      "properties": {
+        "eventKind": {
+          "const": "interrupted"
+        },
+        "acceptedOutcome": {
+          "const": null
+        },
+        "outcomeLineage": {
+          "const": "interrupted"
+        },
+        "missingnessReason": {
+          "type": "string",
+          "pattern": "^[\\s\\S]{1,240}$"
+        }
+      }
     }
   ]
 }

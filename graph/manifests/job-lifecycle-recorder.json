@@ -1,0 +1,27 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/operational-stewardship.json",
+    "graph/manifests/v3-execution.json",
+    "graph/manifests/profile-authority.json",
+    "graph/manifests/fixture-process-runtime.json",
+    "graph/manifests/job-lifecycle-metrics-v2.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/job-lifecycle-recorder.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:job-lifecycle-recorder",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/job-lifecycle-recorder-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:job-lifecycle-recorder-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
