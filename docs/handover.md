@@ -1,5 +1,13 @@
 # USF V3 handover
 
+## Current accepted checkpoint - USF-1162 completion and replay 2026-09-06
+
+USF-1162 is implemented and current at integrated carrier `f3dee697b8051b997c700838e6829d9134e60e49`. Candidate `sha256:24e2e32ca3b91ac55a311963d4b6bada5a0127bf26e0f4ca5f9eaee6421dde36` passed the graph-selected `urn:usf:validation:linear-work-binding` check under `urn:usf:mode:confined-fixture-process:2`; checked-candidate receipt digest `sha256:6b1093a90ca57b8329bde225b50b74c2a78e339b5eecae09487b3c9270d5fd99`. Independent frozen-byte review found one bounded Hermes change: completed binding selection returns no private work while all nonterminal currentness checks remain. Guarded dry-run and integration passed with request `sha256:7d31c46b1f0fc123e3c5ac37a2bedcc633c94e684f75e9b4d555f559a2b4199e` and observation `sha256:bd7b65ad5b24ec8a2e1b86fea4398e57972178f768ae24f40eb1de531f27e67a`. The shell required owner-private `umask 0077` so Git-created detached worktree directories satisfied the unchanged authenticated confinement policy; no policy or host permission was weakened.
+
+Fresh post-integration construction publication is `evidence/construction-authority/2de6be855478d9df11432c33c11e1d79ba3ed448afb89a756fabb92f9deeaba6.json`, receipt digest `sha256:618e8ed91ffcaba9d3d93d9c9bc919a35e3bdeadd3c7229a8df6ed9396bc159d`. Fresh no-change candidate `sha256:9913aceed8555625549634b7d2e91a2247a69c860872ead069cacd36fedebbae` passed the same official check, receipt digest `sha256:db68b693cca035683acf1e514fe00221b5b913f9759edc316392af156adec17b`. Completion publication is `evidence/work-completion/96f69d43edeccd7ed00b8694b9624bea041b70f6252f3a9d4241791c63d45b74.json`, receipt digest `sha256:e109cdedabcc0a1a5cb3bcce5b143d64fbfcbeeb1ea3f5795af4d301df3a8edd`. CLI binding readback is `COMPLETED`. Governed completed-work replay returned `idle-no-pending-work`, zero cycles and zero selected units. Hermes remained supervisor `e2f6e23b399268910ef4311d9`, PID `2054583`, cycle 199, ready zero, with empty provider activity and transactions before and after replay. This proves no duplicate dispatch or integration for the current completed input.
+
+Continue with the meaningful USF-1163 bounded-work ownership transfer/interruption/recovery acceptance case. Preserve the same Hermes supervisor and the supported durable stewardship lifecycle. Then repair USF-1169's two missing pre-effect negatives in its accepted three-file scope. USF-1166 remains correctly `UNQUALIFIED` at 1/4 and must not be retried merely for a pass.
+
 ## Current accepted checkpoint — model-switch handover 2026-09-06T10:24:34.185Z
 
 The user requested a safe stop to change models. All producer/reviewer lanes are parked; start no new work until the next controller resumes. Preserve the user's scarce-provider-budget priority: USF-1162/1163 real acceptance, USF-1169 confinement, USF-1166 useful CLI qualification, then essential USF-1176 timing. Atlas/USF-1188 and both Atlas-named agents remain hard suspended; preserve their prior checkpoint only. No Atlas work occurred in this pass. Fourteen of the original44 scoped issues remain confirmed Done; the increments below do not close broader issues.
@@ -715,4 +723,3 @@ stored records carry no corpus binding at all and were already inadmissible.
 **Editing `config/qualification.json` refuses `usf route` until it is committed**
 (`ROUTE_QUALIFICATION_AUTHORITY_UNCURRENT`): the authority is compared against
 the Git-indexed blob, not the working tree.
-
