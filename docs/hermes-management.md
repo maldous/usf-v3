@@ -14,16 +14,18 @@ selected through:
   --manifest graph/products/anqr/hermes-manifest.json
 
 ./bin/usf work \
+  --profile urn:usf:profile:v3-self-host-hermes:1 \
   --selector urn:usf:work:hermes-management-facade \
   --max-items 10 \
   --manifest graph/manifests/self-host-hermes.json
 
 ./bin/usf work \
-  --selector profile:urn:anqr:profile:hermes-bau:1 \
+  --profile urn:anqr:profile:hermes-bau:1 \
   --max-items 20 \
   --manifest graph/products/anqr/hermes-manifest.json
 
 ./bin/usf work \
+  --profile urn:anqr:profile:hermes-bau:1 \
   --selector urn:usf:work:hermes-bau-binding \
   --max-items 10 \
   --manifest graph/products/anqr/hermes-manifest.json
@@ -214,16 +216,15 @@ ANQR triples.
 every route currently eligible under the exact frozen inputs, not every
 catalogue row and not a fixed list copied from historical `.env` files.
 
-Current volatile counts are obtained with `usf models summary`, whose output
-binds the exact raw and normalized catalogue digests. The tracked
-`config/providers.json` currently declares only Cerebras `gpt-oss-120b` and
-Groq `qwen/qwen3.6-27b`. Both adapters are installed. Neither route currently
-has trusted account-tier evidence, a live probe or provider-produced semantic
-qualification answers, so both remain ineligible and `UNQUALIFIED`.
-OpenAI/Codex catalogue presence is not configuration or entitlement; a future
-Codex agent adapter must bind its binary/runtime, model, authentication,
-tool/skill/rule bundle, sandbox, nested-agent accounting, economics and
-qualification.
+Use `usf models summary` for frozen catalogue identities and
+`usf providers census` for the current no-contact route projection. Follow each
+command's installed help and inspect the selected work's requirements before
+using those observations. Configuration, account authorisation, subscription
+entitlement, availability, task-class qualification and actual route identity
+are separate inputs; a catalogue row or an old example establishes none of them.
+The implemented subscription-host adapters have their own contained account and
+transport boundaries. Current source, policy and authenticated observations
+determine whether a route may receive the selected work.
 
 Hermes consumes the ordinary `doctor`, `models`, `probe` and `route` results.
 It never maintains a provider roster. The initial hermetic facade performs no
@@ -302,18 +303,11 @@ Any later product follows the same pattern with its own versioned product
 overlay. It may additionally define its own operating intent and stable Hermes
 configuration; it does not need a different Hermes engine.
 
-After the graph-defined implementation packet is realized, the optional facade
-uses its exact tracked default:
-
-```sh
-./bin/usf hermes
-./bin/usf hermes status
-./bin/usf hermes stop --wait-ms 5000
-```
-
-The first accepted test may prove these lifecycle/control contracts with the
-ordinary local provider evaluator and deterministic fallback only. It does not
-prove that Hermes-Agent or a live model ran.
+For the separate detached Hermes supervisor, inspect `usf hermes status`
+and follow the stewardship and `hermes start`/`hermes stop` procedure above.
+Bare `usf hermes` currently refuses; it does not launch the optional management
+facade. Starting either lifecycle proves process readiness only. Live model
+contribution, candidate acceptance and completion require their own evidence.
 
 ## Skills, batching and BAU
 
@@ -329,7 +323,9 @@ and performs no integration, commit or publication. Routine generated
 configuration, prompts, provider responses, metrics and repeated passing checks
 stay under `.usf/`.
 
-`BAU` is a versioned operating intent, not a claim of production maturity. The
-current ceiling remains `check`; automatic integration and publication are
-disabled. Production BAU, complete ANQR, live multi-provider parallelism and
-semantic-token reduction remain unproven until exact evidence exists.
+`BAU` is a versioned operating intent, not a claim of production maturity.
+The selected command, profile, current permission and automation policy define
+its ceiling. The foreground composer's default `check` ceiling does not describe
+the detached supervisor's transaction effects. Report live contribution,
+integration, semantic completion and deployment only for the exact scope and
+evidence observed.

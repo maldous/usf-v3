@@ -1,0 +1,153 @@
+<urn:uxf:foundation-revision:3> <urn:usf:predicate:authorityManifestPath> "graph/manifests/uxf-foundation.json" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:foundation-revision:3> <urn:usf:predicate:canonicalName> "3" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:foundation-revision:3> <urn:usf:predicate:foundation> <urn:uxf:foundation:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:foundation-revision:3> <urn:usf:predicate:nonClaim> "Revision 3 adds four reusable presentation contracts and preserves revisions 1 and 2. A consumer selects it only through a new explicit binding." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:foundation-revision:3> <urn:usf:predicate:type> <urn:usf:type:FoundationRevision> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:foundation-revision:3> <urn:usf:predicate:version> "3" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:closure:accessible-internationalised-disclosure:1> <urn:usf:predicate:canonicalName> "accessible-internationalised-disclosure" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:closure:accessible-internationalised-disclosure:1> <urn:uxf:predicate:closureMember> <urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:closure:accessible-internationalised-disclosure:1> <urn:uxf:predicate:closureMember> <urn:uxf:experience-contract:locale-directional-layout:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:closure:accessible-internationalised-disclosure:1> <urn:uxf:predicate:closureMember> <urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:closure:accessible-internationalised-disclosure:1> <urn:uxf:predicate:requiresExplicitConsumerBinding> "true" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:closure:accessible-internationalised-disclosure:1> <urn:usf:predicate:type> <urn:uxf:type:ExperienceFoundationClosure> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:usf:predicate:canonicalName> "accessible-feedback-and-recovery" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:usf:predicate:evidenceRequirement> <urn:uxf:evidence-requirement:accessible-feedback-and-recovery:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:predicate:negativeObligation> <urn:uxf:requirement:accessible-feedback-and-recovery:negative:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:predicate:positiveObligation> <urn:uxf:requirement:accessible-feedback-and-recovery:positive:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:usf:predicate:type> <urn:uxf:type:ExperienceContract> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:locale-directional-layout:1> <urn:usf:predicate:canonicalName> "locale-directional-layout" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:locale-directional-layout:1> <urn:usf:predicate:evidenceRequirement> <urn:uxf:evidence-requirement:locale-directional-layout:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:locale-directional-layout:1> <urn:uxf:predicate:negativeObligation> <urn:uxf:requirement:locale-directional-layout:negative:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:locale-directional-layout:1> <urn:uxf:predicate:positiveObligation> <urn:uxf:requirement:locale-directional-layout:positive:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:locale-directional-layout:1> <urn:uxf:predicate:requiresConsumerDecisionParameter> <urn:uxf:consumer-decision-parameter:supported-locale-set:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:locale-directional-layout:1> <urn:uxf:predicate:requiresConsumerDecisionParameter> <urn:uxf:consumer-decision-parameter:locale-fallback-policy:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:locale-directional-layout:1> <urn:usf:predicate:type> <urn:uxf:type:ExperienceContract> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:usf:predicate:canonicalName> "uncertain-assessment-disclosure" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:usf:predicate:evidenceRequirement> <urn:uxf:evidence-requirement:uncertain-assessment-disclosure:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:uxf:predicate:negativeObligation> <urn:uxf:requirement:uncertain-assessment-disclosure:negative:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:uxf:predicate:positiveObligation> <urn:uxf:requirement:uncertain-assessment-disclosure:positive:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:uxf:predicate:requiresConsumerDecisionParameter> <urn:uxf:consumer-decision-parameter:assessment-disposition-policy:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:action-result-feedback:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:usf:predicate:type> <urn:uxf:type:ExperienceContract> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:accessible-feedback-and-recovery:positive:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:accessible-feedback-and-recovery:positive:1> <urn:usf:predicate:text> "Rendered feedback exposes an understandable named outcome and its state, keeps focus at the actor's working context unless the actor requests movement, remains keyboard-operable, announces outcome and recovery information, and supplies an actionable recovery path for each error." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:accessible-feedback-and-recovery:positive:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:accessible-feedback-and-recovery:negative:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:accessible-feedback-and-recovery:negative:1> <urn:usf:predicate:text> "Rendered feedback never makes colour the sole error signal, never leaves a terminal failure without reason and recovery, and never silently changes control or disclosure state." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:accessible-feedback-and-recovery:negative:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:locale-directional-layout:positive:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:locale-directional-layout:positive:1> <urn:usf:predicate:text> "Rendered output uses the consumer-selected locale and direction, keeps control meaning and reading order coherent under directional layout, and makes the active locale discoverable without assuming the consumer's locale set or fallback policy." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:locale-directional-layout:positive:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:locale-directional-layout:negative:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:locale-directional-layout:negative:1> <urn:usf:predicate:text> "Rendered output never represents unsupported or fallback content as a selected locale, never reverses semantic order merely to mirror layout, and never relies on untranslated text or direction-specific placement as the only meaning cue." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:locale-directional-layout:negative:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:uncertain-assessment-disclosure:positive:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:uncertain-assessment-disclosure:positive:1> <urn:usf:predicate:text> "Rendered assessment disclosure identifies its subject, disposition, reason and freshness where available; unknown, stale, unavailable, unsupported and insufficient inputs are shown as unresolved with a truthful next action when one exists." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:uncertain-assessment-disclosure:positive:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:uncertain-assessment-disclosure:negative:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:uncertain-assessment-disclosure:negative:1> <urn:usf:predicate:text> "Rendered assessment disclosure never presents unknown, stale, unavailable, unsupported or insufficient information as safe, successful, verified or current; it never hides the reason for an adverse disposition." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:uncertain-assessment-disclosure:negative:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:accessible-feedback-and-recovery:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:accessible-feedback-and-recovery:1> <urn:usf:predicate:forContract> <urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:accessible-feedback-and-recovery:1> <urn:uxf:predicate:observesRequirement> <urn:uxf:requirement:accessible-feedback-and-recovery:negative:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:accessible-feedback-and-recovery:1> <urn:uxf:predicate:observesRequirement> <urn:uxf:requirement:accessible-feedback-and-recovery:positive:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:accessible-feedback-and-recovery:1> <urn:uxf:predicate:requiresExplicitConsumerBinding> "true" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:accessible-feedback-and-recovery:1> <urn:usf:predicate:text> "An independently executed conformance observation against rendered consumer output must be current against this exact contract, observe both named requirements, and show the reused pattern contracts remain applicable." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:accessible-feedback-and-recovery:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:locale-directional-layout:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:locale-directional-layout:1> <urn:usf:predicate:forContract> <urn:uxf:experience-contract:locale-directional-layout:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:locale-directional-layout:1> <urn:uxf:predicate:observesRequirement> <urn:uxf:requirement:locale-directional-layout:negative:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:locale-directional-layout:1> <urn:uxf:predicate:observesRequirement> <urn:uxf:requirement:locale-directional-layout:positive:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:locale-directional-layout:1> <urn:uxf:predicate:requiresExplicitConsumerBinding> "true" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:locale-directional-layout:1> <urn:usf:predicate:text> "An independently executed conformance observation against rendered consumer output must be current against this exact contract, test one selected directional locale and one declared fallback or unsupported case, and observe both named requirements." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:locale-directional-layout:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:uncertain-assessment-disclosure:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:uncertain-assessment-disclosure:1> <urn:usf:predicate:forContract> <urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:uncertain-assessment-disclosure:1> <urn:uxf:predicate:observesRequirement> <urn:uxf:requirement:uncertain-assessment-disclosure:negative:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:uncertain-assessment-disclosure:1> <urn:uxf:predicate:observesRequirement> <urn:uxf:requirement:uncertain-assessment-disclosure:positive:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:uncertain-assessment-disclosure:1> <urn:uxf:predicate:requiresExplicitConsumerBinding> "true" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:uncertain-assessment-disclosure:1> <urn:usf:predicate:text> "An independently executed conformance observation against rendered consumer output must be current against this exact contract, test an adverse disposition and every selected unresolved disposition, and observe both named requirements." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:uncertain-assessment-disclosure:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:supported-locale-set:1> <urn:usf:predicate:canonicalName> "supported-locale-set" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:supported-locale-set:1> <urn:usf:predicate:text> "The consuming product declares which locales it supports and which direction each selected locale requires." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:supported-locale-set:1> <urn:usf:predicate:type> <urn:uxf:type:ConsumerDecisionParameter> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:locale-fallback-policy:1> <urn:usf:predicate:canonicalName> "locale-fallback-policy" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:locale-fallback-policy:1> <urn:usf:predicate:text> "The consuming product declares its fallback, unsupported-locale and translation-availability behaviour." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:locale-fallback-policy:1> <urn:usf:predicate:type> <urn:uxf:type:ConsumerDecisionParameter> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:assessment-disposition-policy:1> <urn:usf:predicate:canonicalName> "assessment-disposition-policy" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:assessment-disposition-policy:1> <urn:usf:predicate:text> "The consuming product declares its assessment method, disposition labels, thresholds, allowed actions and any domain-specific policy. UXF only governs truthful presentation." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:consumer-decision-parameter:assessment-disposition-policy:1> <urn:usf:predicate:type> <urn:uxf:type:ConsumerDecisionParameter> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:negativeObligation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:observesRequirement> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:positiveObligation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:requiresConsumerDecisionParameter> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:reusesPatternContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:type:ConsumerDecisionParameter> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:type:ExperienceContract> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:forContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:requires> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:requiredField> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:consumerBindingIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:consumerRevisionIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:buildIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:renderedOutputIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:sourceIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:observationScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:observedAt> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:observationEnvironment> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:viewportIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:localeIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:assistiveTechnologyIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:observationMethod> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:observationResult> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:predicate:unknownDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:type:RenderConformanceObservationTemplate> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:usf:predicate:type> <urn:uxf:type:RenderConformanceObservationTemplate> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:usf:predicate:nonClaim> "This template records no observation or result." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:consumerBindingIdentity> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:consumerRevisionIdentity> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:buildIdentity> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:renderedOutputIdentity> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:sourceIdentity> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:observationScope> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:observedAt> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:observationEnvironment> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:viewportIdentity> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:localeIdentity> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:assistiveTechnologyIdentity> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:observationMethod> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:observationResult> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:render-conformance-observation-template:1> <urn:uxf:predicate:requiredField> <urn:uxf:predicate:unknownDisposition> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:render-conformance-observation-currentness:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:render-conformance-observation-currentness:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:render-conformance-observation-currentness:1> <urn:usf:predicate:text> "Future independent render conformance identifies exact consumer binding and revision, build, rendered output, source, scope, time, environment, viewport, locale, assistive technology, method and result; unknown stays explicit." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:accessible-feedback-and-recovery:1> <urn:uxf:predicate:requires> <urn:uxf:requirement:render-conformance-observation-currentness:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:locale-directional-layout:1> <urn:uxf:predicate:requires> <urn:uxf:requirement:render-conformance-observation-currentness:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:uncertain-assessment-disclosure:1> <urn:uxf:predicate:requires> <urn:uxf:requirement:render-conformance-observation-currentness:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:usf:predicate:canonicalName> "observational-mobile-drilldown" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:usf:predicate:type> <urn:uxf:type:ExperienceContract> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:uxf:predicate:positiveObligation> <urn:uxf:requirement:observational-operator-interpretation:positive:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:uxf:predicate:negativeObligation> <urn:uxf:requirement:observational-command-paste-prerequisite:negative:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:usf:predicate:evidenceRequirement> <urn:uxf:evidence-requirement:observational-mobile-drilldown:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:uxf:predicate:requires> <urn:uxf:requirement:render-conformance-observation-currentness:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:input-and-preview:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:progressive-disclosure:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:uxf:predicate:reusesPatternContract> <urn:uxf:experience-pattern-contract:validation-feedback:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:observational-operator-interpretation:positive:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:observational-operator-interpretation:positive:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:observational-operator-interpretation:positive:1> <urn:usf:predicate:text> "Rendered read-only observational output lets an operator access and interpret captured state, milestones and evidence through the product surface without entering or pasting commands. The same read-only surface exposes capture timestamp, source and scope; charts and tables preserve actual observed values and explicit missing or unknown values through accessible mobile drill-down, with keyboard, focus and assistive access to the same information." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:observational-command-paste-prerequisite:negative:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:observational-command-paste-prerequisite:negative:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:requirement:observational-command-paste-prerequisite:negative:1> <urn:usf:predicate:text> "Rendered read-only observational output never requires command entry or command pasting to access or interpret captured state, milestones or evidence. Captured state must never appear as live state or live control; absent data must never appear as observed values, zero, success or hidden aggregate completeness. The presentation must not expose a live-control bridge, imply actuation, or use visual encoding alone to conceal missingness." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:observational-mobile-drilldown:1> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:observational-mobile-drilldown:1> <urn:uxf:predicate:forContract> <urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:observational-mobile-drilldown:1> <urn:usf:predicate:admissibleEvidenceClass> "implementation-conformance" <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:observational-mobile-drilldown:1> <urn:uxf:predicate:observesRequirement> <urn:uxf:requirement:observational-operator-interpretation:positive:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:observational-mobile-drilldown:1> <urn:uxf:predicate:observesRequirement> <urn:uxf:requirement:observational-command-paste-prerequisite:negative:1> <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:evidence-requirement:observational-mobile-drilldown:1> <urn:usf:predicate:text> "An independent current implementation-conformance observation of an explicitly bound consumer observes the mobile read-only surface, keyboard and assistive drill-down, captured-state provenance, missingness and command-free interpretation." <urn:uxf:graph:accessibility-i18n-risk> .
+<urn:uxf:closure:accessible-internationalised-disclosure:1> <urn:uxf:predicate:closureMember> <urn:uxf:experience-contract:observational-mobile-drilldown:1> <urn:uxf:graph:accessibility-i18n-risk> .

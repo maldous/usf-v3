@@ -1,5 +1,9 @@
 # USF V3 handover
 
+## Latest bounded checkpoint — 2026-09-06
+
+See [the Linear execution checkpoint](acceptance/2026-09-06-linear-execution-checkpoint.md) for accepted UIF/UXF definitions, the task-class decision, toolchain repair and exact validation limits. The full gate passed 745 ordinary tests plus five graph-routed confinement obligations; final UIF definitions also passed transaction integrity and synthetic schema checks. USF-1165 replay consistency and USF-1182 frozen bootstrap remain open. This is a local source checkpoint, not push, deployment, product adoption, actual Claude takeover or whole-programme completion. Preserve the existing ANQR edits and live Hermes; re-read current stewardship before mutation.
+
 ## Repository hygiene — what is and is not disposable
 
 `.usf/` is ignored and mostly disposable, but not uniformly, and the difference

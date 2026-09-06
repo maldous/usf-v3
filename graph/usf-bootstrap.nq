@@ -574,6 +574,7 @@
 <urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/commands/provider-leaf-dispatch.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:version> "1" <urn:usf:graph:usf-bootstrap> .

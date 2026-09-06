@@ -1,0 +1,16 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/uif-authority-v1.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/foundations/uif/managed-service-contracts-v2.nq",
+      "format": "application/n-quads",
+      "graph": "urn:uif:graph:managed-service-contracts-v2",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

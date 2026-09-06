@@ -25,6 +25,13 @@
       "graph": "urn:uxf:graph:contract-evidence",
       "role": "contract",
       "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/foundations/uxf/accessibility-i18n-risk.nq",
+      "format": "application/n-quads",
+      "graph": "urn:uxf:graph:accessibility-i18n-risk",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
     }
   ]
 }

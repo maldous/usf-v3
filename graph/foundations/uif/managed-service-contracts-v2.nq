@@ -1,0 +1,283 @@
+<urn:uif:predicate:configurationIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:consumingFoundationRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:consumingProfileRevision> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:environmentBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:runtimeResourceIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:selectedDeliveryContractOrPort> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:serviceLevelBreachResponse> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:serviceLevelMeasurementWindow> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:serviceLevelTarget> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:foundation-revision:2> <urn:usf:predicate:authorityManifestPath> "graph/manifests/uif-managed-service-v2.json" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:foundation-revision:2> <urn:usf:predicate:foundation> <urn:uif:foundation:1> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:foundation-revision:2> <urn:usf:predicate:nonClaim> "This opt-in UIF revision adds reusable binding-field semantics. It does not amend or reinterpret UIF foundation revision 1." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:foundation-revision:2> <urn:usf:predicate:type> <urn:usf:type:FoundationRevision> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:foundation-revision:2> <urn:usf:predicate:version> "2" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:buildsUpon> <urn:uif:contract:managed-service-authority:1> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:canonicalName> "managed-service-consumption" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:failureMode> "A consumer binding without every required field is incomplete; a selected delivery contract or port with no environment binding is unbound. Neither condition authorises a deployment, promotion, runtime, or evidence claim." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:nonClaim> "This contract selects no consumer product, provider, account, site, credential, runtime resource, configuration identity, SLO value, persistence system, job runner, queue, deployment, evidence, or proof." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:objective> "Define the reusable field-level contract by which a consuming service later binds its selected delivery contract or port through an EnvironmentBinding to a runtime resource while retaining exact consumer and foundation revision identities." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:requires> <urn:uif:requirement:consumer-managed-service-binding:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:version> "2" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:buildsUpon> <urn:usf:delivery-binding-model:1> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:canonicalName> "managed-service-consumer-binding" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:nonClaim> "This is a reusable binding shape, not a consumer binding or an environment binding. A later consumer-owned instance supplies values and requires its own evidence." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-contract-unbound> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:type> <urn:usf:type:SemanticModel> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:consumingProfileRevision> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:consumingFoundationRevision> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:selectedDeliveryContractOrPort> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentBinding> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:runtimeResourceIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:configurationIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelTarget> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelMeasurementWindow> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelBreachResponse> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-foundation-binding:managed-service-contracts:2> <urn:usf:predicate:boundFoundationRevision> <urn:uif:foundation-revision:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-foundation-binding:managed-service-contracts:2> <urn:usf:predicate:boundProfileRevision> <urn:uif:profile-revision:managed-service-contracts:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-foundation-binding:managed-service-contracts:2> <urn:usf:predicate:foundationAuthorityManifest> "graph/manifests/uif-managed-service-v2.json" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-foundation-binding:managed-service-contracts:2> <urn:usf:predicate:foundationDependencySeed> <urn:uif:contract:managed-service-consumption:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-foundation-binding:managed-service-contracts:2> <urn:usf:predicate:nonClaim> "This opt-in closure is UIF-owned reusable authority. Consumer product adoption and environment binding remain separately authored by the consumer and environment owners." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-foundation-binding:managed-service-contracts:2> <urn:usf:predicate:type> <urn:usf:type:ProfileFoundationBinding> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-revision:managed-service-contracts:2> <urn:usf:predicate:nonClaim> "This profile revision carries reusable binding semantics only; it does not identify a consumer product, provider, environment, realisation, work packet, or acceptance evidence." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-revision:managed-service-contracts:2> <urn:usf:predicate:product> <urn:uif:authority-closure:1> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-revision:managed-service-contracts:2> <urn:usf:predicate:type> <urn:usf:type:ProductProfileRevision> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile-revision:managed-service-contracts:2> <urn:usf:predicate:version> "2" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:nonClaim> "This profile authorises no implementation or external operation. Closure currentness tracks only the selected reusable authority; it is not consumer completion." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:product> <urn:uif:authority-closure:1> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:selectsContract> <urn:uif:contract:managed-service-consumption:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:version> "2" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:failureMode> "Missing selectedDeliveryContractOrPort or environmentBinding maps to DELIVERY_CONTRACT_UNBOUND. Missing runtimeResourceIdentity, configurationIdentity, consuming revision identity, SLO target, measurement window, or breach response maps to DELIVERY_BINDING_INCOMPLETE." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:nonClaim> "No SLO number, percentage, duration, provider, account, resource, or operational evidence is asserted here. Stateful persistence, jobs, queues, and object storage remain individually selected or dispositioned by each consumer." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:objective> "A later consumer binding must carry every required field in the managed-service consumer-binding template, use the four-hop USF delivery binding model, and fail closed on unbound or incomplete fields." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-contract-unbound> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:requires> <urn:uif:consumer-binding-template:managed-service:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:deployment-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:release-provenance> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:consumer-managed-service-binding:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:secretReferenceIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:secretVersionIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:accountOwnershipBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:externalContactApprovalBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:leastScopeRuntimeAccess> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:environmentIsolationBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:rotationOwner> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:rotationRollbackBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:persistentStateInventory> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:persistenceApplicabilityDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:failureDomain> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:availabilityBudget> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:recoveryProcedureIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:upgradeRollbackProcedureIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:destructiveActionApprovalBoundary> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:operationalOwner> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:buildsUpon> <urn:uif:contract:managed-service-consumption:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:canonicalName> "configuration-secret-identity-isolation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:objective> "Require a consumer binding to identify immutable nonsecret configuration, secret reference and version identities, least-scope runtime access, account ownership, external-contact approval and environment isolation without exposing secret values." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:nonClaim> "This reusable contract selects no provider, account, region, resource, credential, recovery value, deployment, operation, evidence result or consumer product." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:version> "2" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:requires> <urn:uif:requirement:configuration-identity:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:requires> <urn:uif:requirement:secret-reference-and-rotation:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:configuration-secret-identity-isolation:2> <urn:usf:predicate:requires> <urn:uif:requirement:identity-and-environment-isolation:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:selectsContract> <urn:uif:contract:configuration-secret-identity-isolation:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:objective> "A consumer binding identifies immutable nonsecret configuration and its environment, while evidence identifies those identities without secret values." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:failureMode> "Absent configuration identity or a secret value carried as evidence is invalid; the result is incomplete rather than a configuration or deployment claim." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:nonClaim> "This requirement declares no selected value or evidence result; a consumer binding supplies applicable values and any inapplicable disposition." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:deployment-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:configurationIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:configuration-identity:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentBinding> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:objective> "A consumer binding identifies a secret reference and version identity, least-scope runtime access, rotation owner and rollback effect boundary; secret values remain outside semantic source and evidence." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:failureMode> "Missing secret reference, version, owner or rollback boundary refuses; rotation does not permit an unbounded account, resource or cross-environment effect." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:nonClaim> "This requirement declares no selected value or evidence result; a consumer binding supplies applicable values and any inapplicable disposition." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:approval-required-not-present> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:deployment-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:release-provenance> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:secretReferenceIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:secretVersionIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:leastScopeRuntimeAccess> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:rotationOwner> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:secret-reference-and-rotation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:rotationRollbackBoundary> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:objective> "A consumer binding identifies account ownership, environment isolation and external-contact approval boundaries so local, test, staging and production cannot silently share an account, secret scope, data or runtime resource." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:failureMode> "A wrong environment, account or secret scope refuses; staging use of production resources or a missing contact approval remains unresolved." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:nonClaim> "This requirement declares no selected value or evidence result; a consumer binding supplies applicable values and any inapplicable disposition." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:approval-required-not-present> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:deployment-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:accountOwnershipBoundary> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentIsolationBoundary> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:externalContactApprovalBoundary> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:identity-and-environment-isolation:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:runtimeResourceIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:buildsUpon> <urn:uif:contract:managed-service-consumption:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:canonicalName> "resilience-persistence-recovery" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:objective> "Require a consumer-owned persistence inventory or reasoned inapplicability plus bounded failure, recovery, backup/restore, upgrade/rollback and destructive-action assurance." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:nonClaim> "This reusable contract selects no provider, account, region, resource, credential, recovery value, deployment, operation, evidence result or consumer product." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:version> "2" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:requires> <urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:requires> <urn:uif:requirement:service-resilience-and-recovery:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:requires> <urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:profile:managed-service-contracts:2> <urn:usf:predicate:selectsContract> <urn:uif:contract:resilience-persistence-recovery:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:objective> "Every consumer-selected persisted state class identifies its owner, retention and restore acceptance, or an explicit reasoned inapplicability disposition; no database, queue, job runner or object store is invented merely to populate the model." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:failureMode> "An unclassified persisted state class or a bare inapplicable label refuses; absence of consumer-selected state does not erase resilience obligations." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:nonClaim> "This requirement declares no selected value or evidence result; a consumer binding supplies applicable values and any inapplicable disposition." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:release-provenance> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:persistentStateInventory> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:persistenceApplicabilityDisposition> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:operationalOwner> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:objective> "A consumer binding identifies failure domains, availability or performance budget, recovery procedure and operational owner; recovery evidence validates service behavior, not only a file or process." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:failureMode> "Missing failure bound, recovery procedure or behavior validation refuses; a successful file restoration alone is not recovery acceptance." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:nonClaim> "This requirement declares no selected value or evidence result; a consumer binding supplies applicable values and any inapplicable disposition." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:deployment-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:failureDomain> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:availabilityBudget> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:recoveryProcedureIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:operationalOwner> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:objective> "Where persistence is applicable, a consumer binding identifies backup/restore and upgrade/rollback procedures, owner and destructive-action approval boundary; evidence tests the selected behavior and rollback effect." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:failureMode> "An unapproved destructive action, missing restore or rollback procedure, or evidence that only proves artefact existence refuses; no recovery value is assumed." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:nonClaim> "This requirement declares no selected value or evidence result; a consumer binding supplies applicable values and any inapplicable disposition." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:delivery-binding-incomplete> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:refusalReason> <urn:usf:refusal-reason:approval-required-not-present> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:runtime-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:deployment-observation> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:requiresEvidenceClass> <urn:usf:evidence-class:release-provenance> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:upgradeRollbackProcedureIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:destructiveActionApprovalBoundary> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:operationalOwner> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:capabilityInventory> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:topologyDependency> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:environmentApplicability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:applicabilityDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:inapplicabilityReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:dataLossBound> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:recoveryTimeBound> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:retentionRestoreAcceptance> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:healthReadinessProcedureIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:versionedUpgradeRollbackProcedureIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:type:ManagedServiceCapabilityTemplate> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:capabilityInventory> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:topologyDependency> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:consumer-binding-template:managed-service:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentApplicability> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:hosting-runtime:2> <urn:usf:predicate:type> <urn:uif:type:ManagedServiceCapabilityTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:hosting-runtime:2> <urn:usf:predicate:canonicalName> "hosting-runtime" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:hosting-runtime:2> <urn:usf:predicate:objective> "A consumer-selected capability has an observable outcome and independently scoped evidence." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:hosting-runtime:2> <urn:usf:predicate:failureMode> "Missing topology, environment, SLO, window, breach response or evidence binding refuses; no provider or resource is selected." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:hosting-runtime:2> <urn:usf:predicate:requiresEvidenceClass> "runtime-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:hosting-runtime:2> <urn:usf:predicate:requiresEvidenceClass> "deployment-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:requires> <urn:uif:capability-template:hosting-runtime:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:edge-dns-tls:2> <urn:usf:predicate:type> <urn:uif:type:ManagedServiceCapabilityTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:edge-dns-tls:2> <urn:usf:predicate:canonicalName> "edge-dns-tls" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:edge-dns-tls:2> <urn:usf:predicate:objective> "A consumer-selected capability has an observable outcome and independently scoped evidence." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:edge-dns-tls:2> <urn:usf:predicate:failureMode> "Missing topology, environment, SLO, window, breach response or evidence binding refuses; no provider or resource is selected." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:edge-dns-tls:2> <urn:usf:predicate:requiresEvidenceClass> "runtime-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:edge-dns-tls:2> <urn:usf:predicate:requiresEvidenceClass> "deployment-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:requires> <urn:uif:capability-template:edge-dns-tls:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:network-boundaries:2> <urn:usf:predicate:type> <urn:uif:type:ManagedServiceCapabilityTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:network-boundaries:2> <urn:usf:predicate:canonicalName> "network-boundaries" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:network-boundaries:2> <urn:usf:predicate:objective> "A consumer-selected capability has an observable outcome and independently scoped evidence." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:network-boundaries:2> <urn:usf:predicate:failureMode> "Missing topology, environment, SLO, window, breach response or evidence binding refuses; no provider or resource is selected." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:network-boundaries:2> <urn:usf:predicate:requiresEvidenceClass> "runtime-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:network-boundaries:2> <urn:usf:predicate:requiresEvidenceClass> "deployment-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:requires> <urn:uif:capability-template:network-boundaries:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:jobs-object-persistence:2> <urn:usf:predicate:type> <urn:uif:type:ManagedServiceCapabilityTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:jobs-object-persistence:2> <urn:usf:predicate:canonicalName> "jobs-object-persistence" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:jobs-object-persistence:2> <urn:usf:predicate:objective> "A consumer-selected capability has an observable outcome and independently scoped evidence." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:jobs-object-persistence:2> <urn:usf:predicate:failureMode> "Missing topology, environment, SLO, window, breach response or evidence binding refuses; no provider or resource is selected." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:jobs-object-persistence:2> <urn:usf:predicate:requiresEvidenceClass> "runtime-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:jobs-object-persistence:2> <urn:usf:predicate:requiresEvidenceClass> "deployment-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:requires> <urn:uif:capability-template:jobs-object-persistence:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:observability:2> <urn:usf:predicate:type> <urn:uif:type:ManagedServiceCapabilityTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:observability:2> <urn:usf:predicate:canonicalName> "observability" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:observability:2> <urn:usf:predicate:objective> "A consumer-selected capability has an observable outcome and independently scoped evidence." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:observability:2> <urn:usf:predicate:failureMode> "Missing topology, environment, SLO, window, breach response or evidence binding refuses; no provider or resource is selected." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:observability:2> <urn:usf:predicate:requiresEvidenceClass> "runtime-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-template:observability:2> <urn:usf:predicate:requiresEvidenceClass> "deployment-observation" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:managed-service-consumption:2> <urn:usf:predicate:requires> <urn:uif:capability-template:observability:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:text> "Inventory is always present. It may be empty only with a reasoned no-state disposition; every persisted class carries retention and restore acceptance or a reasoned inapplicability disposition." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:retentionRestoreAcceptance> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:dataLossBound> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:recoveryTimeBound> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:service-resilience-and-recovery:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:healthReadinessProcedureIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:nonClaim> "Backup and restore are conditional on an applicable persisted state class; versioned upgrade and rollback ownership remain required for every consumer, including stateless consumers." <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:backup-restore-and-upgrade-rollback:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:versionedUpgradeRollbackProcedureIdentity> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:capabilityTemplate> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:stateClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:stateOwner> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:stateApplicability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:stateRetention> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:stateRestore> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:stateBackup> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:predicate:schemaPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:type:CapabilityBindingTemplate> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:type:PersistentStateEntryModel> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:hosting-runtime:2> <urn:usf:predicate:type> <urn:uif:type:CapabilityBindingTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:hosting-runtime:2> <urn:uif:predicate:capabilityTemplate> <urn:uif:capability-template:hosting-runtime:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:hosting-runtime:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:topologyDependency> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:hosting-runtime:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentApplicability> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:hosting-runtime:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelTarget> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:hosting-runtime:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelMeasurementWindow> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:hosting-runtime:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelBreachResponse> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:edge-dns-tls:2> <urn:usf:predicate:type> <urn:uif:type:CapabilityBindingTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:edge-dns-tls:2> <urn:uif:predicate:capabilityTemplate> <urn:uif:capability-template:edge-dns-tls:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:edge-dns-tls:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:topologyDependency> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:edge-dns-tls:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentApplicability> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:edge-dns-tls:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelTarget> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:edge-dns-tls:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelMeasurementWindow> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:edge-dns-tls:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelBreachResponse> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:network-boundaries:2> <urn:usf:predicate:type> <urn:uif:type:CapabilityBindingTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:network-boundaries:2> <urn:uif:predicate:capabilityTemplate> <urn:uif:capability-template:network-boundaries:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:network-boundaries:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:topologyDependency> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:network-boundaries:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentApplicability> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:network-boundaries:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelTarget> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:network-boundaries:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelMeasurementWindow> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:network-boundaries:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelBreachResponse> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:jobs-object-persistence:2> <urn:usf:predicate:type> <urn:uif:type:CapabilityBindingTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:jobs-object-persistence:2> <urn:uif:predicate:capabilityTemplate> <urn:uif:capability-template:jobs-object-persistence:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:jobs-object-persistence:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:topologyDependency> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:jobs-object-persistence:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentApplicability> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:jobs-object-persistence:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelTarget> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:jobs-object-persistence:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelMeasurementWindow> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:jobs-object-persistence:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelBreachResponse> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:observability:2> <urn:usf:predicate:type> <urn:uif:type:CapabilityBindingTemplate> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:observability:2> <urn:uif:predicate:capabilityTemplate> <urn:uif:capability-template:observability:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:observability:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:topologyDependency> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:observability:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:environmentApplicability> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:observability:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelTarget> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:observability:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelMeasurementWindow> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:capability-binding-template:observability:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:serviceLevelBreachResponse> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:persistent-state-entry:2> <urn:usf:predicate:type> <urn:uif:type:PersistentStateEntryModel> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:persistent-state-entry:2> <urn:usf:predicate:schemaPath> "schemas/uif-persistent-state-entry.schema.json" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:persistent-state-entry:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:stateClass> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:persistent-state-entry:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:stateOwner> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:persistent-state-entry:2> <urn:usf:predicate:requiredField> <urn:uif:predicate:stateApplicability> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:requirement:persistence-inventory-and-disposition:2> <urn:usf:predicate:requires> <urn:uif:model:persistent-state-entry:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:resilience-envelope:2> <urn:usf:predicate:type> <urn:usf:type:SemanticModel> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:resilience-envelope:2> <urn:usf:predicate:canonicalName> "resilience-envelope" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:resilience-envelope:2> <urn:usf:predicate:schemaPath> "schemas/uif-managed-service-binding.schema.json" <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:resilience-envelope:2> <urn:usf:predicate:requires> <urn:uif:model:persistent-state-entry:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:contract:resilience-persistence-recovery:2> <urn:usf:predicate:requires> <urn:uif:model:resilience-envelope:2> <urn:uif:graph:managed-service-contracts-v2> .
+<urn:uif:model:persistent-state-entry:2> <urn:usf:predicate:text> "Its bound schema is the executable shape of one entry: stateClass, owner and applicability are unconditional; applicable requires retention, restore and backup; inapplicable instead requires a nonempty reason. These exclusive branches must never be flattened into unconditional required fields." <urn:uif:graph:managed-service-contracts-v2> .

@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:uif:schema:managed-service-binding:2",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "healthReadinessProcedure",
+        "recoveryProcedure",
+        "versionedUpgradeRollbackProcedure",
+        "stateInventory"
+      ],
+      "properties": {
+        "healthReadinessProcedure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recoveryProcedure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "versionedUpgradeRollbackProcedure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stateInventory": {
+          "type": "object",
+          "required": [
+            "disposition",
+            "reason",
+            "entries"
+          ],
+          "properties": {
+            "disposition": {
+              "const": "no-persisted-state"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "entries": {
+              "type": "array",
+              "maxItems": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "healthReadinessProcedure",
+        "recoveryProcedure",
+        "versionedUpgradeRollbackProcedure",
+        "stateInventory"
+      ],
+      "properties": {
+        "healthReadinessProcedure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recoveryProcedure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "versionedUpgradeRollbackProcedure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stateInventory": {
+          "type": "object",
+          "required": [
+            "disposition",
+            "entries"
+          ],
+          "properties": {
+            "disposition": {
+              "const": "stateful"
+            },
+            "entries": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "stateClass",
+                      "owner",
+                      "applicability",
+                      "retention",
+                      "restore",
+                      "backup"
+                    ],
+                    "properties": {
+                      "stateClass": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "owner": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "applicability": {
+                        "const": "applicable"
+                      },
+                      "retention": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "restore": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "backup": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "stateClass",
+                      "owner",
+                      "applicability",
+                      "reason"
+                    ],
+                    "properties": {
+                      "stateClass": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "owner": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "applicability": {
+                        "const": "inapplicable"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}
