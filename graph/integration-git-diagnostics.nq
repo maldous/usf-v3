@@ -207,10 +207,31 @@
 <urn:usf:rule:integration-git-diagnostics-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other profiles and bases as history." <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:rule:integration-git-diagnostics-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:rule:integration-git-diagnostics-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration-git-diagnostics> .
-<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:authorityRule> "The confined mode2 execution view contains exactly the candidate scope plus these 18 authenticated repository inputs: the complete non-candidate runtime TypeScript import closure, package type metadata, fixture launcher and AppArmor asset. Node modules and the USF package cache remain separately authenticated read-only mounts. No ambient repository, provider home, credentials, network, host mutation or additional write authority follows." <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:authorityRule> "The confined mode2 execution view uses candidate scope plus an exact 59-path supplemental repository-read allowlist. Candidate-scope paths are not recopied; the remaining paths supply the complete runtime TypeScript import closure, package metadata, fixture launcher and AppArmor asset, and the self-host realisation fixture's exact graph, policy, schema, source and test inputs required to exercise a real authenticated candidate. Node modules and the USF package cache remain separately authenticated read-only mounts. No ambient repository, provider home, credentials, network, host mutation or additional write authority follows." <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:forValidation> <urn:usf:validation:integration-git-diagnostics> <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "GOAL.md" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "graph/foundation.nq" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "graph/manifest.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/self-host.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "graph/semantic-first.nq" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "graph/usf-bootstrap.nq" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "package.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "pnpm-lock.yaml" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "recipes/self-host-path-scope.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "schemas/candidate.schema.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "schemas/provider-config.schema.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "schemas/realisation-basis.schema.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "schemas/route-result.schema.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "schemas/verified-transition-receipt.schema.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/bootstrap/loop.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/collaboration/resolve.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/commands/call.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/commands/check.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/commands/dispatcher.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/commands/help.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/commands/resolve.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/commands/route.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/commands/work.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:integration-git-diagnostics> .
@@ -218,6 +239,13 @@
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/providers/config.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/providers/economics.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/providers/fake.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/providers/local-git.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/providers/probe.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/providers/qualification.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/providers/routing.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/providers/types.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:integration-git-diagnostics> .
@@ -227,6 +255,19 @@
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/index.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/adversarial/realisation-check.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/contract/provider-commands.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/fixtures/proposal-packet.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/fixtures/providers/models-dev.json" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/integration/bootstrap-loop.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/integration/provider-cli.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/collaboration/resolve.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/graph/product-overlays.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/graph/semantic-first.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/graph/semantic.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/providers/fake.test.ts" <urn:usf:graph:integration-git-diagnostics> .
+<urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/providers/routing.test.ts" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation-runtime-closure:integration-git-diagnostics:1> <urn:usf:predicate:version> "1" <urn:usf:graph:integration-git-diagnostics> .
 <urn:usf:validation:integration-git-diagnostics> <urn:usf:predicate:applicability> "required" <urn:usf:graph:integration-git-diagnostics> .
