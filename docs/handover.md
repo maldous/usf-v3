@@ -6,6 +6,8 @@ See [the Linear execution checkpoint](acceptance/2026-09-06-linear-execution-che
 
 The existing Hermes supervisor was last read back live at cycle 51 at 2026-09-06 01:28 UTC; this is a dated runtime observation. USF-1177 runs bounded single-reviewer passes during this steward session. No persistent review timer is enabled: USF-1178 remains dependent on the unresolved USF-1162 acceptance boundary. Custom operator and continuous-review skills have been updated; they grant no runtime authority. Prospective job recording has resumed in the existing `.usf/metrics/programme-jobs.jsonl` ledger; missing older durations remain unknown. Preserve the existing ANQR edits and live Hermes; re-read current stewardship before mutation. No push, deployment, actual Claude takeover or whole-programme completion is claimed.
 
+USF-1168 now has an independently accepted accounting definition and published current construction authority; exact work readback permits six source/test paths through integration. Implementation is still pending and completion remains proofblocked. Atlas inventory and local acceptance corrections continue in its isolated lane; no Atlas acceptance is claimed.
+
 ## Repository hygiene — what is and is not disposable
 
 `.usf/` is ignored and mostly disposable, but not uniformly, and the difference

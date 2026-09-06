@@ -1,0 +1,277 @@
+<urn:usf:acceptance:dispatch-accounting> <urn:usf:predicate:text> "One confined offline test proves exact phase/contact marking and separately derived planned, eligible, attempted, contacted, successful, structurallyAccepted, refused and reused unit counts for no-route, no-credential, contacted-refusal, partial-wave, output-rejection, cache-reuse and repair-lineage fixtures. It proves dispatchedUnits equals contacted units, modelInvocations equals contacted attempts, acceptedResults equals structurally accepted plus reused results, no-route and preflight-only waves report zero dispatch, and TRANSPORT_TIMEOUT receives the same bounded timeout backoff as PROVIDER_TIMEOUT. The test has no usable network, credential or provider path." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:acceptance:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-construction-authority-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-construction-authority-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing construction evidence and proof for this one work into an additive copy-on-write authority grant, without mutating the permission the proof evaluated." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-construction-authority-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-construction-authority-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-construction-authority-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-work-completion-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-work-completion-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing no-change completion evidence and proof for this one work into an additive copy-on-write completion record." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-work-completion-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-work-completion-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:algorithm:dispatch-accounting-work-completion-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:canonicalName> "dispatch-accounting" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:dispatch-accounting:completion> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:constructionRouteConstraint> "This semantic-first operational accounting repair requires exact current construction evidence, passing proof and an additive construction grant before implementation. Authoring and validation are local and deterministic, run through confined fixture mode2 with bwrap, and receive no provider, credential, paid-call, supervisor, production, completion or Git authority." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:dispatch-accounting:ci> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:dispatch-accounting:hermetic> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:dispatch-accounting:integrationtest> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:nonClaim> "A response marked successful records transport output only. It does not say the output is structurally accepted or that a semantic requirement holds; Hermes admission and later conformance remain separate." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:nonClaim> "Accounting reports observed execution stages; it does not infer entitlement, quota, capacity, provider availability, qualification quality or provider-family health. A catalogue or census row is not an eligible route, a preflight refusal is not contact, and a returned response is not structural acceptance." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:nonClaim> "No attempt count can reveal SDK-internal HTTP retries that the installed adapter does not expose. Such retries remain unobserved instead of being estimated. Wall-clock timing and a historical provider response are not completion evidence." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:objective> "Make graph execution, Hermes implementation and cycle projections distinguish work selection, route eligibility, attempt creation, external contact, usable response, structural admission, refusal and cache reuse while preserving exact execution and repair lineage." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:permitsWrite> "src/commands/graph-execute.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-implement.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:permitsWrite> "src/providers/dispatch-accounting.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:permitsWrite> "src/providers/route-deferral.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/dispatch-accounting.test.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:requires> <urn:usf:requirement:census-denominator-boundary> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:requires> <urn:usf:requirement:dispatch-attempt-phase-contact> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:requires> <urn:usf:requirement:dispatch-compatibility-identities> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:requires> <urn:usf:requirement:dispatch-counter-semantics> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:requires> <urn:usf:requirement:dispatch-lineage-economics> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:requires> <urn:usf:requirement:dispatch-offline-validation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:requires> <urn:usf:requirement:transport-timeout-equivalence> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:scope> "foundation-operational-accounting-repair" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:title> "Execution-phase and dispatch accounting" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:contract:dispatch-accounting:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:ci> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:environment-applicability:dispatch-accounting:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting:completion> <urn:usf:predicate:forContract> <urn:usf:contract:dispatch-accounting:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting:completion> <urn:usf:predicate:text> "Require the exact integrated candidate, the declared confined offline test passing every phase, counter, lineage and timeout case, and ordinary current integration evidence. The completion policy remains proofblocked until a governed publication reader authenticates this exact validation result rather than only generic bundle shape. No provider invocation, credential, production observation, historical timing or unavailable account fact may be substituted or required." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:predicate:forContract> <urn:usf:contract:dispatch-accounting:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:predicate:text> "Require current source observations of the mixed attempt representation, pending-based dispatchedUnits alias, successful-response-only modelInvocations alias, cycle projection copy, timeout-class mismatch and already-separated census denominators, plus exact preimages for every existing authorised write and explicit absence for new files. Provider output and historical operational records are not construction evidence." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:forContract> <urn:usf:contract:dispatch-accounting:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:proofObligation> <urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:permission:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:dispatch-accounting:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:canonicalName> "dispatch-accounting" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:objective> "A foundation profile for honest, phase-aware dispatch and result accounting without creating provider authority." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:dispatch-accounting:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:profile:dispatch-accounting:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:predicate:text> "Prove the exact current defects and existing census separation warrant only the declared accounting, projection, timeout and focused-test writes, with no provider contact." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:dispatch-accounting:completion> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting> <urn:usf:predicate:text> "Evaluate the exact integrated candidate with the one declared confined offline test and ordinary integration evidence. Refuse completion if any required phase, counter identity, lineage, no-contact case or timeout behavior is unobserved, and keep publication proofblocked until the publication reader authenticates that exact validation." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:proof:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable policy plus the exact declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work, so it can never stale a sibling cohort." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:construction-evidence-candidate:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/construction-authority/" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:nonClaim> "The grant permits only the exact selected work ceiling. It is not completion, integration acceptance, provider qualification, runtime activation or terminal proof." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:construction-proof-bundle:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:dispatch-accounting-construction-authority-publication:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/construction-authority/" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:construction-authority-publication-result:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-construction:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-construction:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-construction-authority:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/dispatch-accounting.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:dispatch-accounting-grants> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/dispatch-accounting-grants.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/construction-authority.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/graph-execute.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/hermes-implement.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:toolPath> "src/providers/route-deferral.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:toolPath> "src/realisation/construction-authority.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:completionDerivationRule> <urn:usf:rule:dispatch-accounting-copy-on-write-work-completion:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:currentnessRule> "Select exact completion only for this immutable policy, the current work basis and the declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:nonClaim> "The current generic completion publisher authenticates generic bundle structure but not execution of this work-specific validation. proofblocked is an explicit refusal boundary, not completion evidence or a waiver of the declared test." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:dispatch-accounting-work-completion-publication:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/work-completion/" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:realisationAlgorithm> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:realisationResultSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-completion:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-completion:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-work-completion:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:realise-no-change:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/dispatch-accounting.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:dispatch-accounting-grants> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/dispatch-accounting-grants.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/check.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/work-completion.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/index.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/work-completion.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:publication-policy:dispatch-accounting-no-change-completion:1> <urn:usf:predicate:workspaceSchema> <urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:census-denominator-boundary> <urn:usf:predicate:canonicalName> "census-denominator-boundary" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:census-denominator-boundary> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:census-denominator-boundary> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:census-denominator-boundary> <urn:usf:predicate:text> "Provider census remains outside the write set because its current schema and implementation already report catalogue, configured-route, credential-presence, installed-adapter, availability and qualification denominators separately. Dispatch accounting consumes current route eligibility and must never reinterpret a catalogue, configured or credential row as a contacted invocation." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:census-denominator-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-attempt-phase-contact> <urn:usf:predicate:canonicalName> "dispatch-attempt-phase-contact" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-attempt-phase-contact> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-attempt-phase-contact> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-attempt-phase-contact> <urn:usf:predicate:text> "Every candidate disposition has an explicit phase and contacted boolean. Authority movement, no eligible route, absent credential, missing adapter/model and other preflight refusals are never contact. An invocation attempt becomes contacted immediately before the CLI or SDK invocation begins, whether it later succeeds, refuses, times out or throws. A no-route unit carries explicit NO_ELIGIBLE_ROUTE with an empty attempt list. SDK-internal retries that are not observable remain an explicit non-claim." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-attempt-phase-contact> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-compatibility-identities> <urn:usf:predicate:canonicalName> "dispatch-compatibility-identities" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-compatibility-identities> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-compatibility-identities> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-compatibility-identities> <urn:usf:predicate:text> "The legacy aliases remain but become exact identities: dispatchedUnits equals contactedUnits, modelInvocations equals contactedAttempts, cacheHits equals reusedUnits, and acceptedResults equals structurallyAcceptedUnits plus reusedUnits. Zero contacted attempts therefore always reports zero dispatch and zero model invocations. The Hermes cycle projection copies every new counter and the corrected aliases without recomputation." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-compatibility-identities> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-counter-semantics> <urn:usf:predicate:canonicalName> "dispatch-counter-semantics" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-counter-semantics> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-counter-semantics> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-counter-semantics> <urn:usf:predicate:text> "Hermes reports separate nonnegative counts for planned, eligible, attempted, contacted, successful, structurallyAccepted, refused and reused units. planned is the exact selected ready frontier; eligible is a non-reused planned unit with at least one current route after capability, task-class qualification, economics and availability filtering; attempted has at least one recorded candidate disposition; contacted has at least one contacted attempt; successful has one usable nonempty execution result; structurallyAccepted is a successful result admitted by Hermes; reused is an admitted current semantic-cache hit with no new contact; refused is a planned unit that is neither structurallyAccepted nor reused. The output also reports contactedAttempts." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-counter-semantics> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-lineage-economics> <urn:usf:predicate:canonicalName> "dispatch-lineage-economics" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-lineage-economics> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-lineage-economics> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-lineage-economics> <urn:usf:predicate:text> "Each graph attempt remains ordered under its exact work unit and retains candidate, transport, provider, requested and actual model where observable, status, reason, retryAfter, latency and cost facts. Each Hermes terminal outcome carries the semantic cache key, exact execution-evidence digest or cache evidence-digest set, repair round and repair-basis digest. A successor repair record stores and reads the exact prior work identity and execution evidence when observed, and uses null with an explicit legacy/no-parent disposition rather than inventing lineage. Existing usage, transport-reported cost, accepted/refused token attribution and repair ceilings remain unchanged." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-lineage-economics> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-offline-validation> <urn:usf:predicate:canonicalName> "dispatch-offline-validation" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-offline-validation> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-offline-validation> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-offline-validation> <urn:usf:predicate:text> "The declared confined test covers no route, no credentials, a contacted provider or transport refusal, a partial wave, structural output rejection, cache reuse and a successor repair. It checks counter conservation, aliases, attempt phase/contact, exact lineage, preservation of usage/cost fields and that no fixture path can contact a provider. Missing, negative, contradictory or impossible counters refuse rather than being normalized." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:dispatch-offline-validation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:transport-timeout-equivalence> <urn:usf:predicate:canonicalName> "transport-timeout-equivalence" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:transport-timeout-equivalence> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:transport-timeout-equivalence> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:transport-timeout-equivalence> <urn:usf:predicate:text> "TRANSPORT_TIMEOUT and PROVIDER_TIMEOUT retain their raw reason codes but receive the same bounded timeout-grade deferral: fifteen minutes on the first observation, exponential growth capped at two hours, success clearing unchanged. Generic invocation failures keep the existing two-minute exponential class." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:requirement:transport-timeout-equivalence> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:rule:dispatch-accounting-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other profiles and bases as history." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:rule:dispatch-accounting-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:rule:dispatch-accounting-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:authorityRule> "One exact mode2 closure supplies only package metadata required by the focused test. Candidate accounting, command, projection, deferral and test files remain in candidate scope; bwrap removes usable network and no credential, provider, host invocation or extra write authority follows." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:forValidation> <urn:usf:validation:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "package.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:command> "node --test --test-isolation=none tests/adversarial/dispatch-accounting.test.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:nonClaim> "This deterministic fixture test invokes pure accounting and deferral logic under confined mode2. It contacts no provider and does not establish availability, qualification, cost, completion or production behavior." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:acceptance> <urn:usf:acceptance:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:contract> <urn:usf:contract:dispatch-accounting:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:fixtureValidationMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:objective> "Add explicit attempt phase/contact facts and honest graph/Hermes/cycle counters, preserve work and repair lineage and economics, and classify transport timeouts with the existing timeout backoff." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:proof> <urn:usf:proof:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "config/execution-economics.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/manifests/dispatch-accounting.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/manifests/fixture-process-runtime.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/manifests/operational-stewardship.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/manifests/profile-authority.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/manifests/v3-execution.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/operational-stewardship.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/provider-capability-universe.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/provider-task-qualification.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "graph/v3-execution.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "schemas/provider-census-result.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/commands/graph-execute.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/commands/hermes-implement.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/commands/providers.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/providers/cli-transports.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/providers/implementation-work.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/providers/route-deferral.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/providers/route-universe.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "src/providers/semantic-cache.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:readPath> "tests/unit/providers/route-deferral.test.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:semanticDependency> <urn:usf:contract:provider-capability-universe:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:semanticDependency> <urn:usf:contract:provider-task-qualification:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:semanticDependency> <urn:usf:evidence-record:graph-execution-evidence:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:semanticDependency> <urn:usf:evidence-record:hermes-cycle-report:1> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:semanticDependency> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:validation> <urn:usf:validation:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:writePath> "src/commands/graph-execute.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:writePath> "src/commands/hermes-implement.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:writePath> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:writePath> "src/providers/dispatch-accounting.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:writePath> "src/providers/route-deferral.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:work:dispatch-accounting> <urn:usf:predicate:writePath> "tests/adversarial/dispatch-accounting.test.ts" <urn:usf:graph:dispatch-accounting> .
