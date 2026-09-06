@@ -1,0 +1,277 @@
+<urn:usf:acceptance:metrics-record> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-construction-authority-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-construction-authority-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing construction evidence and proof for this one work into an additive copy-on-write authority grant, without mutating the permission the proof evaluated." <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-construction-authority-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-construction-authority-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-construction-authority-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-work-completion-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-work-completion-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing no-change completion evidence and proof for this one work into an additive copy-on-write completion record." <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-work-completion-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-work-completion-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:metrics-record> .
+<urn:usf:algorithm:metrics-record-work-completion-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:canonicalName> "metrics-record" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:metrics-record:completion> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:metrics-record:construction-authority> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:metrics-record:ci> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:metrics-record:hermetic> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:metrics-record:integrationtest> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:metrics-record:construction-authority> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:requires> <urn:usf:requirement:metrics-record-event-identity> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:requires> <urn:usf:requirement:metrics-record-factory-shape> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:requires> <urn:usf:requirement:metrics-record-locking-recovery> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:requires> <urn:usf:requirement:metrics-record-private-append> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:requires> <urn:usf:requirement:metrics-record-reported-outcomes> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:requires> <urn:usf:requirement:metrics-record-validation> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:schemaPath> "schemas/job-lifecycle-metric-event-v2.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:scope> "foundation-operational-timing-recorder" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:title> "Bounded lifecycle observation factory and private replay-safe ledger" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:version> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:ci> <urn:usf:predicate:applicability> "required" <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:metrics-record> .
+<urn:usf:environment-applicability:metrics-record:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record:completion> <urn:usf:predicate:forContract> <urn:usf:contract:metrics-record:1> <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record:completion> <urn:usf:predicate:text> "Require independent exact-candidate factory/ledger observations covering all recorder acceptance cases, current source/schema identity, restart replay, failed/interrupted unknown acceptance and real kernel lock contention. Construction evidence and schema shape cannot satisfy this completion evidence. Completion publication remains separate from a passing check or integration." <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record> <urn:usf:predicate:applicability> "required" <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record> <urn:usf:predicate:forContract> <urn:usf:contract:metrics-record:1> <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:metrics-record:construction-authority> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:forContract> <urn:usf:contract:metrics-record:1> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:proofObligation> <urn:usf:proof:metrics-record:construction-authority> <urn:usf:graph:metrics-record> .
+<urn:usf:permission:metrics-record> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:metrics-record:1> <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:canonicalName> "metrics-record" <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:metrics-record:1> <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:version> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record:construction-authority> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record:construction-authority> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record> <urn:usf:predicate:applicability> "required" <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:metrics-record:completion> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record> <urn:usf:predicate:text> "Require work-specific independent behavioral validation; the generic no-change publisher remains proofblocked until it can authenticate this exact test." <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable policy plus the exact declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work, so it can never stale a sibling cohort." <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:construction-evidence-candidate:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/construction-authority/" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:nonClaim> "The grant permits only the exact selected work ceiling. It is not completion, integration acceptance, provider qualification, runtime activation or terminal proof." <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:construction-proof-bundle:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:metrics-record-construction-authority-publication:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/construction-authority/" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:construction-authority-publication-result:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-construction:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-construction:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-construction-authority:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/metrics-record.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:metrics-record-grants> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/metrics-record-grants.nq" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/construction-authority.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/help.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/metrics.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:toolPath> "src/observability/metrics.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:toolPath> "src/realisation/construction-authority.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:completionDerivationRule> <urn:usf:rule:metrics-record-copy-on-write-work-completion:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:currentnessRule> "Select exact completion only for this immutable policy, the current work basis and the declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work." <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:nonClaim> "The current generic completion publisher authenticates generic bundle structure but not execution of this work-specific validation. proofblocked is an explicit refusal boundary, not completion evidence or a waiver of the declared test." <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:metrics-record-work-completion-publication:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/work-completion/" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:realisationAlgorithm> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:realisationResultSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-completion:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-completion:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-work-completion:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:realise-no-change:1> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/metrics-record.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:metrics-record-grants> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/metrics-record-grants.nq" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/check.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/work-completion.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/index.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/work-completion.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:publication-policy:metrics-record-no-change-completion:1> <urn:usf:predicate:workspaceSchema> <urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-event-identity> <urn:usf:predicate:canonicalName> "metrics-record-event-identity" <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-event-identity> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-event-identity> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-event-identity> <urn:usf:predicate:text> "Validate each emitted or stored event against the closed v2 schema and factory invariants. Reuse summarizeJobLifecycle over the proposed bounded ledger to enforce current event-key, logical-attempt, pairing, domain, UTC and arithmetic rules; do not duplicate or relax the reader. Exact canonical-content replay does not append again. A changed same-key record, conflicting terminal kind, changed logical/source/scope/tool/route/owner/domain relationship or malformed prior record refuses before mutation. Explicit null work/attempt/logical/source identities remain incomplete and unpairable. An incomplete start remains a fact, not success; replay cannot overwrite its clock domain or manufacture a terminal." <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-event-identity> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-factory-shape> <urn:usf:predicate:canonicalName> "metrics-record-factory-shape" <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-factory-shape> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-factory-shape> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-factory-shape> <urn:usf:predicate:text> "createLifecycleObservation accepts one closed plain JSON object with exactly these required keys: eventKind, jobIdentity, jobType, issueIdentity, workIdentity, semanticOwnerIdentity, attemptIdentity, logicalAttemptIdentity, phaseIdentity, sourceIdentity, observedAt, clockDomainIdentity, startedAt, finishedAt, startOffsetNanoseconds, endOffsetNanoseconds, scopeIdentity, toolIdentity, routeIdentity. All enums, bounds and nullable identity meanings are inherited from the v2 event schema. Unknown values are explicit nulls, never omitted or inferred from CWD, PID, Git, argv, environment or a random identifier. No arbitrary missingness text, command, evidence, contribution, accepted outcome, cost, token, cache or outcome-lineage input is accepted. Set schema/clock/unit constants and compute eventKey from canonicalDigest({jobIdentity,workIdentity,attemptIdentity,phaseIdentity,eventKind}). Preserve actual canonical UTC instants separately from monotonic offsets; UTC reversal cannot change elapsed time." <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-factory-shape> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-locking-recovery> <urn:usf:predicate:canonicalName> "metrics-record-locking-recovery" <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-locking-recovery> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-locking-recovery> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-locking-recovery> <urn:usf:predicate:text> "Use one recorder-specific .usf/locks/metrics-record.lock with the existing private-file and kernel flock trust pattern, never the Hermes activity/lifetime or primary integration lock. Only /usr/bin/flock with fixed exclusive/nonblock/conflict-exit-code75/fd3 arguments and env{} may acquire that lock; validate trusted executable identity/permissions and admitted root-UID mapping. Hold the parent-owned file descriptor through bounded read/validate/write/readback and release in finally; contention and unavailable tooling are explicit refusals, never spin or stale-owner deletion. Re-express the existing atomic private temporary-file plus fsync/rename/directory-fsync pattern under that lock, preserving named/opened identities before publication. Exact durable readback is required. On interruption, preserve the old complete ledger or the new complete ledger and let a later exact replay discover which; do not infer a terminal. Return only status appended/replayed, eventKey, raw ledger digest, byte and row counts; no authority effect." <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-locking-recovery> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-private-append> <urn:usf:predicate:canonicalName> "metrics-record-private-append" <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-private-append> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-private-append> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-private-append> <urn:usf:predicate:text> "appendLifecycleObservation accepts only one explicit canonical repository root and a valid factory event. Its only output ledger is .usf/metrics/job-lifecycle-v2.jsonl. Enforce canonical owner-controlled root, private .usf/metrics and .usf/locks directories, 0600 regular non-symlink single-link files and matching opened/named inode/device identity; refuse unsafe ancestors and changed paths. Limit each canonical UTF-8 event including newline to16384 bytes, complete ledger to8388608 bytes and100000 rows before allocation/parse/append. Refuse malformed or partial existing JSONL without deleting or truncating it. Never read raw session, credentials, provider homes or unrelated ledger files." <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-private-append> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-reported-outcomes> <urn:usf:predicate:canonicalName> "metrics-record-reported-outcomes" <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-reported-outcomes> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-reported-outcomes> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-reported-outcomes> <urn:usf:predicate:text> "The factory always emits acceptedOutcome null, evidenceIdentity null, contributionDigest null, tokenFact/cacheFact/costFact null, parentAttemptIdentity null and overlapDisposition unknown. Start and finish have outcomeLineage null; failure and interrupted carry only their corresponding reported lifecycle lineage failed/interrupted, not observed semantic nonacceptance. For a start require null end/duration/finishedAt. For a terminal compute safe duration only when both nonnegative offsets are known and end>=start; otherwise retain null duration. intervals.total is that reported duration and all phase subintervals remain null. Use fixed bounded missingness text identifying unknown duration/acceptance/resource facts; never caller prose." <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-reported-outcomes> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-validation> <urn:usf:predicate:canonicalName> "metrics-record-validation" <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-validation> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-validation> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-validation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:metrics-record> .
+<urn:usf:rule:metrics-record-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other profiles and bases as history." <urn:usf:graph:metrics-record> .
+<urn:usf:rule:metrics-record-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:metrics-record> .
+<urn:usf:rule:metrics-record-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:forValidation> <urn:usf:validation:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:version> "1" <urn:usf:graph:metrics-record> .
+<urn:usf:validation:metrics-record> <urn:usf:predicate:applicability> "required" <urn:usf:graph:metrics-record> .
+<urn:usf:validation:metrics-record> <urn:usf:predicate:command> "node --test --test-isolation=none tests/adversarial/metrics-record-cli.test.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation:metrics-record> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:metrics-record> .
+<urn:usf:validation:metrics-record> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:metrics-record> .
+<urn:usf:validation:metrics-record> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:metrics-record> .
+<urn:usf:validation:metrics-record> <urn:usf:predicate:nonClaim> "Actual pure-factory and private-ledger fixtures run under admitted mode2. Fixed flock and fixture-only Node child processes test locking; no timed job, live ledger, provider, credential, network, semantic acceptance or telemetry admission is exercised." <urn:usf:graph:metrics-record> .
+<urn:usf:validation:metrics-record> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:acceptance> <urn:usf:acceptance:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:contract> <urn:usf:contract:metrics-record:1> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:fixtureValidationMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:proof> <urn:usf:proof:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:semanticDependency> <urn:usf:contract:job-lifecycle-metrics:2> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:semanticDependency> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:validation> <urn:usf:validation:metrics-record> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:objective> "Add one ordinary metrics record command that authenticates one closed owner-private JSON observation, delegates factory and append to the integrated recorder, and preserves unverified outcomes and the default v1 ledger." <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:constructionRouteConstraint> "This bounded operator command follows fresh construction evidence, proof, copy-on-write grant and the ordinary isolated candidate/check/integrate path. Exactly five declared candidate paths may be constructed: one result schema, two command modules and two focused tests. No job executor, dispatcher instrumentation, provider, network, service, default reader, credential, global concurrency or host-trust change is permitted." <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:nonClaim> "The command never executes a job, accepts a result, infers evidence, tokens, cache, cost or acceptance, contacts a provider or network, changes events.jsonl, reads a live ledger, or alters recorder, reader or host policy." <urn:usf:graph:metrics-record> .
+<urn:usf:profile:metrics-record:1> <urn:usf:predicate:objective> "Opt-in foundation authority for the five-path explicit-input metrics record surface; construction and completion remain separate." <urn:usf:graph:metrics-record> .
+<urn:usf:evidence-requirement:metrics-record> <urn:usf:predicate:text> "Bind current recorder, reader, metrics, canonical/error/schema, event/report schema and fixture-asset bytes; exact five future candidate absences or preimages; and the complete declared direct-handler runtime. This is construction evidence only and cannot admit ledger rows or prove completion." <urn:usf:graph:metrics-record> .
+<urn:usf:proof:metrics-record:construction-authority> <urn:usf:predicate:text> "Prove exact current pre-realisation observations and separate construction evidence warrant only the five declared schema/command/test writes. No self-asserted active permission or post-realisation result establishes this proof." <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-validation> <urn:usf:predicate:text> "Before a construction grant, independently review the closed result schema, exact five-path scope, authenticated private input and direct-handler imports. After construction, run the single dedicated metrics-record-cli fixture in mode2: append/replay/refusal, private filesystem controls, no default-ledger mutation and unverified unknowns. It does not select the legacy subprocess/Git-shim integration test, execute a timed job or use nested bwrap." <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:objective> "Implement only metrics record explicit-input ingestion, self-describing help, closed result schema and focused handler/filesystem tests using the existing recorder." <urn:usf:graph:metrics-record> .
+<urn:usf:acceptance:metrics-record> <urn:usf:predicate:text> "One authenticated mode2 fixture in the new metrics-record-cli test invokes the real metrics command handler directly with a private closed JSON file, proves append/replay and refusal before ledger mutation, and proves no default-ledger or acceptance/token/evidence fabrication. The legacy observability CLI subprocess/Git-shim test is not selected or modified. No nested graph check, shell, job execution, provider or network occurs." <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-factory> <urn:usf:predicate:text> "metrics record accepts exactly one --input .usf/inputs/NAME.json. It authenticates a 0600 owner-owned single-link regular non-symlink UTF-8 file with O_NOFOLLOW and named/opened/readback device-inode-mode-size identity, caps it at 16384 bytes and permits exactly the recorder factory nineteen keys. It invokes createLifecycleObservation then appendLifecycleObservation only." <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-no-claims> <urn:usf:predicate:text> "Output is a closed record-result schema carrying recorder status/key/digest/bounds plus acceptanceStatus unverified and acceptedOutcome null. It cannot carry input fields, raw paths, credential-like values, evidence, token/cache/cost facts or accepted semantics." <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:requires> <urn:usf:requirement:metrics-record-factory> <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:requires> <urn:usf:requirement:metrics-record-no-claims> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-factory> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:metrics-record> .
+<urn:usf:requirement:metrics-record-no-claims> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:authorityRule> "Exact direct imports, schemas and fixture assets for the actual metrics handler test. The candidate test imports metricsCommandHandler, helpCommandResult, dispatchCommand and schema validation directly; dispatcher is supplemental because the existing contract test executes it. Candidate postimages provide the result schema, metrics/help modules and both tests. The legacy subprocess/Git-shim observability test is excluded. The v2 ledger, input file, credentials, provider home, network and default ledger are not runtime closure inputs." <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:permitsWrite> "schemas/job-lifecycle-record-result.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:writePath> "schemas/job-lifecycle-record-result.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:permitsWrite> "src/commands/metrics.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:writePath> "src/commands/metrics.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:permitsWrite> "tests/contract/operator-observability.test.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:writePath> "tests/contract/operator-observability.test.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:contract:metrics-record:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/metrics-record-cli.test.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:writePath> "tests/adversarial/metrics-record-cli.test.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "package.json" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "pnpm-lock.yaml" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "schemas/job-lifecycle-metric-event-v2.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "schemas/job-lifecycle-metrics-report.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/commands/dispatcher.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/observability/job-lifecycle-recorder.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/observability/job-lifecycle.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/observability/metrics.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/schema/index.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/realisation/fixture-process.apparmor" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/commands/metrics.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:work:metrics-record> <urn:usf:predicate:readPath> "src/commands/help.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "config/privacy.json" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "package.json" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "pnpm-lock.yaml" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "schemas/job-lifecycle-metric-event-v2.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "schemas/job-lifecycle-metrics-report.schema.json" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/commands/dispatcher.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/observability/job-lifecycle-recorder.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/observability/job-lifecycle.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/observability/metrics.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:metrics-record> .
+<urn:usf:validation-runtime-closure:metrics-record:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.apparmor" <urn:usf:graph:metrics-record> .
