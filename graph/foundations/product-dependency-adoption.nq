@@ -1,0 +1,61 @@
+<urn:usf:predicate:adoptsCapability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:adoptsProductProfile> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:adoptsProfileClosureDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:packageName> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:resolvedPackageVersion> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:packageIntegrity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:packageLockIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:transitiveLockClosureDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:permittedImportSpecifier> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:sourceProvenance> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:licenseProvenance> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:platformScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:buildScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:runtimeScope> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:consumerImplementationConvention> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:adoptionCurrentnessRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:predicate:adoptionRefusalCode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:type:ProductDependencyAdoption> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:type:ExactPackageAllowlistEntry> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:canonicalName> "exact-product-dependency-adoption" <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:objective> "Define a reusable, finite consumer-owned record that can later admit one exact external package import for one capability without changing the Node-standard-library-only default." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:failureMode> "Missing, ambiguous, stale, byte-mismatched or undeclared adoption fields refuse; the record grants no installation, package-manager, network, runtime, provider, credential, build, deployment or generic import authority." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:nonClaim> "This definition selects no product, profile, capability, package, version, import, lockfile, package source, licence, path, platform, environment or executable work packet." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:requires> <urn:usf:requirement:exact-adoption-record:1> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:requires> <urn:usf:requirement:default-node-only:1> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:requires> <urn:usf:requirement:adoption-currentness-and-evidence:1> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:contract:exact-product-dependency-adoption:1> <urn:usf:predicate:requires> <urn:usf:requirement:reader-and-publisher-proofblock:1> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:objective> "A later consumer-owned adoption record binds exactly one product capability, product profile and profile closure to exactly one resolved package and finite import specifier set." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:failureMode> "A package name alone, semver range, ambient node_modules entry, unpinned transitive resolution, missing currentness rule, missing refusal code, or package presence is refused." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:objective> "Each adoption has exactly one currentness rule and exactly one stable refusal code; both identify the finite record fields whose movement or absence refuses the exception." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:adoptsCapability> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:adoptsProductProfile> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:adoptsProfileClosureDigest> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:packageName> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:resolvedPackageVersion> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:packageIntegrity> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:packageLockIdentity> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:transitiveLockClosureDigest> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:permittedImportSpecifier> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:sourceProvenance> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:licenseProvenance> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:platformScope> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:buildScope> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:runtimeScope> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:consumerImplementationConvention> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:adoptionCurrentnessRule> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:exact-adoption-record:1> <urn:usf:predicate:requiredField> <urn:usf:predicate:adoptionRefusalCode> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:default-node-only:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:default-node-only:1> <urn:usf:predicate:objective> "Every implementation convention remains Node-standard-library-only unless an exact current adoption record is accepted for the one consumer capability and one declared specifier." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:default-node-only:1> <urn:usf:predicate:failureMode> "An undeclared, mismatched or cross-capability import refuses and does not fall back to a generic package exception." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:adoption-currentness-and-evidence:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:adoption-currentness-and-evidence:1> <urn:usf:predicate:objective> "Any package bytes, resolved version, integrity, lock identity, transitive closure, profile closure, capability, convention or import-specifier movement stales the adoption and dependent conformance evidence." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:adoption-currentness-and-evidence:1> <urn:usf:predicate:requiresEvidenceClass> "independent-implementation-conformance" <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:adoption-currentness-and-evidence:1> <urn:usf:predicate:failureMode> "Ticket prose, type checking, package presence or a self-contained candidate is not evidence that the consumer capability conforms; independent consumer conformance must exercise the adopted behavior and its invalid-input refusal." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:reader-and-publisher-proofblock:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:reader-and-publisher-proofblock:1> <urn:usf:predicate:objective> "The current import validator and generic work-completion publisher must read, enforce and publish the exact adoption record before a consumer adoption can be executable." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:reader-and-publisher-proofblock:1> <urn:usf:predicate:failureMode> "Until those readers and planted refusals are independently implemented and verified, every prospective adoption remains proofblocked and neither work derivation nor completion publication may treat this semantic definition as an import exception." <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:reader-and-publisher-proofblock:1> <urn:usf:predicate:specificationStatus> "incomplete" <urn:usf:graph:product-dependency-adoption> .
+<urn:usf:requirement:reader-and-publisher-proofblock:1> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:usf:graph:product-dependency-adoption> .

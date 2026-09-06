@@ -8,6 +8,8 @@ The existing Hermes supervisor was last read back live at cycle 51 at 2026-09-06
 
 USF-1168 now has an independently accepted accounting definition and published current construction authority; exact work readback permits six source/test paths through integration. Implementation is still pending and completion remains proofblocked. Atlas inventory and local acceptance corrections continue in its isolated lane; no Atlas acceptance is claimed.
 
+USF-1187 now has an independently accepted definition for finite exact product dependency adoption, applied by transaction ae5384379e4c8b847f830d511b2ec47485485410fa465cf492962945739022eb. Currentness/refusal are mandatory per-adoption records and the Node-only default remains intact. No package, product adoption or implementation reader is selected or activated; USF-1187 remains open.
+
 ## Repository hygiene — what is and is not disposable
 
 `.usf/` is ignored and mostly disposable, but not uniformly, and the difference
