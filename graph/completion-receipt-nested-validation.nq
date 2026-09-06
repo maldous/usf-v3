@@ -216,7 +216,6 @@
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "schemas/construction-authority-publication-receipt.schema.json" <urn:usf:graph:completion-receipt-nested-validation> .
-<urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "schemas/contribution.schema.json" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:completion-receipt-nested-validation> .
@@ -250,6 +249,7 @@
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/economics.ts" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/fake.ts" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/local-git.ts" <urn:usf:graph:completion-receipt-nested-validation> .
+<urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/probe.ts" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/types.ts" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:completion-receipt-nested-validation> .
