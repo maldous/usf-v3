@@ -1,0 +1,16 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/atlas-capture-observer.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/atlas-capture-symbol-assurance-observer.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:atlas-capture-symbol-assurance-observer",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

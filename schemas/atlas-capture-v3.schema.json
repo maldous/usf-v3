@@ -1,0 +1,862 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:atlas-capture:3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "captureId",
+    "capturedAt",
+    "mode",
+    "inputs",
+    "selection",
+    "assets",
+    "pathCoverage",
+    "symbols",
+    "declaredGraphEdges",
+    "assuranceLinks",
+    "projectionCoverage",
+    "limits",
+    "jobs",
+    "nonClaims"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:atlas-capture:3"
+    },
+    "captureId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+    },
+    "capturedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mode": {
+      "const": "committed-read-only"
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/input"
+      }
+    },
+    "selection": {
+      "$ref": "#/$defs/selection"
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1500,
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "pathCoverage": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1500,
+      "items": {
+        "$ref": "#/$defs/pathCoverage"
+      }
+    },
+    "symbols": {
+      "type": "array",
+      "maxItems": 3000,
+      "items": {
+        "$ref": "#/$defs/symbol"
+      }
+    },
+    "declaredGraphEdges": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/$defs/edge"
+      }
+    },
+    "assuranceLinks": {
+      "type": "array",
+      "maxItems": 300,
+      "items": {
+        "$ref": "#/$defs/assuranceLink"
+      }
+    },
+    "projectionCoverage": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/coverage"
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maximumRepositories",
+        "maximumTrackedFiles",
+        "maximumParserPaths",
+        "maximumParserFileBytes",
+        "maximumParserInputBytes",
+        "maximumNQuadsSources",
+        "maximumNQuadsFileBytes",
+        "maximumNQuadsPerSource",
+        "maximumNQuads",
+        "maximumSymbols",
+        "maximumDeclaredGraphEdges",
+        "maximumAssuranceLinks",
+        "maximumOutputBytes",
+        "maximumMemoryBytes",
+        "maximumWallMilliseconds",
+        "maximumCpuQuotaPercent",
+        "maximumConcurrency"
+      ],
+      "properties": {
+        "maximumRepositories": {
+          "const": 3
+        },
+        "maximumTrackedFiles": {
+          "const": 1500
+        },
+        "maximumParserPaths": {
+          "const": 300
+        },
+        "maximumParserFileBytes": {
+          "const": 262144
+        },
+        "maximumParserInputBytes": {
+          "const": 16777216
+        },
+        "maximumNQuadsSources": {
+          "const": 128
+        },
+        "maximumNQuadsFileBytes": {
+          "const": 262144
+        },
+        "maximumNQuadsPerSource": {
+          "const": 1000
+        },
+        "maximumNQuads": {
+          "const": 8000
+        },
+        "maximumSymbols": {
+          "const": 3000
+        },
+        "maximumDeclaredGraphEdges": {
+          "const": 1000
+        },
+        "maximumAssuranceLinks": {
+          "const": 300
+        },
+        "maximumOutputBytes": {
+          "const": 2097152
+        },
+        "maximumMemoryBytes": {
+          "const": 536870912
+        },
+        "maximumWallMilliseconds": {
+          "const": 30000
+        },
+        "maximumCpuQuotaPercent": {
+          "const": 100
+        },
+        "maximumConcurrency": {
+          "const": 1
+        }
+      }
+    },
+    "jobs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/job"
+      }
+    },
+    "nonClaims": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 600
+      }
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 of raw UTF-8 bytes unless a field explicitly defines another canonical input."
+    },
+    "repository": {
+      "type": "string",
+      "enum": [
+        "USF",
+        "ANQR",
+        "Atlas"
+      ]
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/@:-]+(?:/[A-Za-z0-9._@:-]+)*$"
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assetId",
+        "repository",
+        "revision",
+        "path",
+        "blobOid",
+        "sourceDigest"
+      ],
+      "properties": {
+        "assetId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+        },
+        "repository": {
+          "$ref": "#/$defs/repository"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "blobOid": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40,64}$"
+        },
+        "sourceDigest": {
+          "$ref": "#/$defs/digest",
+          "description": "SHA-256 of raw committed blob bytes."
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "revision",
+        "treeOid",
+        "remoteIdentityDigest"
+      ],
+      "properties": {
+        "repository": {
+          "$ref": "#/$defs/repository"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "remoteIdentityDigest": {
+          "$ref": "#/$defs/digest",
+          "description": "SHA-256 of UTF-8 bytes of the exact approved canonical remote-identity string. The implementation compares that identity to the approved preimage without reading, retaining or outputting a credential URL."
+        },
+        "treeOid": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "Git tree object ID from exact fixed `git rev-parse REVISION^{tree}`; this is not a SHA-256 digest."
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parser",
+        "strictNQuads",
+        "selectedParserAssetIds",
+        "selectedNQuadsBindings",
+        "assurancePredicateIris",
+        "selectionDigest"
+      ],
+      "properties": {
+        "parser": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "packageName",
+            "version",
+            "logicalResolver",
+            "packageMetadataRawDigest",
+            "bundledParserRawDigest",
+            "permittedOperation",
+            "declaredRuntimeBuiltins"
+          ],
+          "properties": {
+            "packageName": {
+              "const": "typescript"
+            },
+            "version": {
+              "const": "5.9.3"
+            },
+            "logicalResolver": {
+              "const": "usf-dependency-root/typescript@5.9.3",
+              "description": "Approved logical resolver relative to the USF dependency root; it is not an absolute host path."
+            },
+            "packageMetadataRawDigest": {
+              "const": "sha256:822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+              "description": "SHA-256 of raw package metadata bytes for fixed logical file package.json."
+            },
+            "bundledParserRawDigest": {
+              "const": "sha256:3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+              "description": "SHA-256 of raw bytes for fixed logical file lib/typescript.js."
+            },
+            "permittedOperation": {
+              "const": "createSourceFile-source-text-only"
+            },
+            "declaredRuntimeBuiltins": {
+              "const": [
+                "node:perf_hooks",
+                "node:fs",
+                "node:path",
+                "node:os",
+                "node:crypto",
+                "node:inspector"
+              ],
+              "description": "Declared bundle runtime imports only; this declaration grants no filesystem, path resolution, Program, module-resolution or other API use."
+            }
+          }
+        },
+        "selectedParserAssetIds": {
+          "type": "array",
+          "maxItems": 300,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+          }
+        },
+        "selectedNQuadsBindings": {
+          "type": "array",
+          "maxItems": 128,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "assetId",
+              "expectedGraphIri"
+            ],
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+              },
+              "expectedGraphIri": {
+                "$ref": "#/$defs/strictIri"
+              }
+            }
+          }
+        },
+        "assurancePredicateIris": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "urn:usf:predicate:constructionEvidenceRequirement",
+              "urn:usf:predicate:constructionProofObligation",
+              "urn:usf:predicate:completionEvidenceRequirement",
+              "urn:usf:predicate:completionProofObligation",
+              "urn:usf:predicate:completionValidationObligation",
+              "urn:usf:predicate:mandatoryProofObligation"
+            ]
+          }
+        },
+        "selectionDigest": {
+          "$ref": "#/$defs/digest",
+          "description": "SHA-256 of canonical JSON serialization of selection after omitting selectionDigest itself."
+        },
+        "strictNQuads": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "repository",
+            "revision",
+            "logicalResolver",
+            "logicalPath",
+            "rawDigest",
+            "byteLength",
+            "declaredRuntimeBuiltins"
+          ],
+          "properties": {
+            "repository": {
+              "const": "USF"
+            },
+            "revision": {
+              "const": "81295123640a9c7e8d15c430aae2cc1f519d6dad"
+            },
+            "logicalResolver": {
+              "const": "usf-committed-source",
+              "description": "Approved logical resolver, not an absolute host path."
+            },
+            "logicalPath": {
+              "const": "src/graph/nquads.ts"
+            },
+            "rawDigest": {
+              "const": "sha256:74c7a6bab70ee438d3594b09ade79a61a06b07aeb680b7f91fe73eb27826ac14"
+            },
+            "byteLength": {
+              "const": 4705
+            },
+            "declaredRuntimeBuiltins": {
+              "const": [
+                "node:crypto"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "pathCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assetId",
+        "disposition",
+        "reason",
+        "observedSymbols"
+      ],
+      "properties": {
+        "assetId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+        },
+        "disposition": {
+          "enum": [
+            "parser-selected",
+            "not-selected",
+            "unsupported",
+            "unresolved"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "observedSymbols": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "symbol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "assetId",
+        "kind",
+        "exportModifier",
+        "offsetEncoding",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+        },
+        "assetId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+        },
+        "kind": {
+          "enum": [
+            "class",
+            "function",
+            "interface",
+            "typeAlias",
+            "enum",
+            "variable",
+            "method",
+            "property"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "exportModifier": {
+          "enum": [
+            "present",
+            "absent"
+          ]
+        },
+        "offsetEncoding": {
+          "const": "utf16-code-unit"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "assetId",
+        "subjectIri",
+        "predicateIri",
+        "objectIri",
+        "graphIri",
+        "canonicalQuadDigest",
+        "line",
+        "state",
+        "extraction"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+        },
+        "assetId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+        },
+        "subjectIri": {
+          "$ref": "#/$defs/strictIri"
+        },
+        "predicateIri": {
+          "$ref": "#/$defs/strictIri"
+        },
+        "objectIri": {
+          "$ref": "#/$defs/strictIri"
+        },
+        "graphIri": {
+          "$ref": "#/$defs/strictIri"
+        },
+        "canonicalQuadDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "state": {
+          "const": "declared"
+        },
+        "extraction": {
+          "const": "strict-nquads"
+        }
+      }
+    },
+    "assuranceLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declaredGraphEdgeId",
+        "subjectIri",
+        "predicateIri",
+        "objectIri",
+        "meaning"
+      ],
+      "properties": {
+        "declaredGraphEdgeId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+        },
+        "subjectIri": {
+          "$ref": "#/$defs/strictIri"
+        },
+        "predicateIri": {
+          "enum": [
+            "urn:usf:predicate:constructionEvidenceRequirement",
+            "urn:usf:predicate:constructionProofObligation",
+            "urn:usf:predicate:completionEvidenceRequirement",
+            "urn:usf:predicate:completionProofObligation",
+            "urn:usf:predicate:completionValidationObligation",
+            "urn:usf:predicate:mandatoryProofObligation"
+          ]
+        },
+        "objectIri": {
+          "$ref": "#/$defs/strictIri"
+        },
+        "meaning": {
+          "const": "declared-requirement-or-obligation"
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projection",
+        "observed",
+        "retained",
+        "unresolved",
+        "excluded",
+        "reason"
+      ],
+      "properties": {
+        "projection": {
+          "enum": [
+            "symbols",
+            "declaredGraphEdges",
+            "assuranceLinks"
+          ]
+        },
+        "observed": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "retained": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "unresolved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excluded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "clock",
+        "startedAt",
+        "endedAt",
+        "elapsedMilliseconds",
+        "action",
+        "command",
+        "sources",
+        "environment",
+        "limits",
+        "result"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "capture",
+            "extraction",
+            "build",
+            "test",
+            "browser",
+            "benchmark"
+          ]
+        },
+        "clock": {
+          "const": "time.monotonic_ns"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "elapsedMilliseconds": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "action": {
+          "enum": [
+            "capture-committed-carriers",
+            "extract-declarations",
+            "extract-strict-nquads",
+            "validate-portable-envelope",
+            "build-atlas-reader",
+            "test-atlas-reader",
+            "measure-browser-reader"
+          ]
+        },
+        "command": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executableId",
+            "argvDigest",
+            "argumentCount"
+          ],
+          "properties": {
+            "executableId": {
+              "enum": [
+                "atlas-v3-capture-wrapper",
+                "atlas-v3-extractor",
+                "atlas-v3-validator",
+                "atlas-v3-site-build",
+                "atlas-v3-site-test",
+                "atlas-v3-browser-measure"
+              ]
+            },
+            "argvDigest": {
+              "$ref": "#/$defs/digest",
+              "description": "SHA-256 of the exact argument vector encoded by the approved capture implementation; raw arguments are not portable output."
+            },
+            "argumentCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 64
+            }
+          }
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1500,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+          }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "environmentIdentityDigest",
+            "clock",
+            "network",
+            "cgroupControlNames",
+            "cgroupControlsDigest",
+            "cgroupMembershipDigest",
+            "hostToolingDigest"
+          ],
+          "properties": {
+            "environmentIdentityDigest": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/digest"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Digest of the approved closed environment identity; raw environment variables and paths are never output."
+            },
+            "clock": {
+              "enum": [
+                "time.monotonic_ns",
+                "unknown"
+              ]
+            },
+            "network": {
+              "enum": [
+                "not-contacted",
+                "disabled",
+                "unknown"
+              ]
+            },
+            "cgroupControlNames": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "minItems": 1,
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "memory.max",
+                  "cpu.max",
+                  "RuntimeMaxUSec"
+                ]
+              }
+            },
+            "cgroupControlsDigest": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/digest"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "cgroupMembershipDigest": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/digest"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "hostToolingDigest": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/digest"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Digest of a future independently pinned host-tool closure; null means unavailable or unverified."
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "maxProperties": 16,
+          "additionalProperties": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          }
+        },
+        "result": {
+          "enum": [
+            "passed",
+            "failed",
+            "refused",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "strictIri": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\u0000-\\u0020<>\"{}|^`\\\\]{1,4096}$",
+      "description": "Strict IRI lexical profile: scheme plus non-empty, whitespace-free IRI body; semantic parser still validates exact N-Quads graph identity."
+    }
+  },
+  "description": "Separate v3 envelope proposal; it inherits no v2 payload shape. Digest domains: input.treeOid is the 40-hex Git tree object ID returned by `git rev-parse REVISION^{tree}`; asset.sourceDigest and parser.rawEntrypointDigest are SHA-256 of raw bytes; remoteIdentityDigest is SHA-256 of the exact approved canonical remote-identity UTF-8 preimage; selectionDigest is SHA-256 of canonical selection JSON with selectionDigest omitted. Cross-record validation requires exactly three distinct input repositories; unique asset IDs; every asset bound to exactly one input repository/revision/path identity; exactly one pathCoverage row per asset; parser, N-Quads, job and projection references bound to asset IDs; exactly one N-Quads binding per selected N-Quads asset; distinct symbols/declaredGraphEdges/assuranceLinks coverage categories; retained less than or equal to observed when observed is known; aggregate counts; TS5.9.3 fixed two-file host binding and committed strict-NQuads source binding; edge and assurance-link provenance binding; and serialized UTF-8 output-byte enforcement. These invariants require a capture validator in addition to JSON Schema. A refused run emits only a bounded private operational refusal record and no portable capture. Jobs use a closed command identity (logical executable ID, raw-argument-vector digest and count) and a closed environment identity; raw commands, argv values, arbitrary environment key/value pairs and absolute paths are never portable output. Environment records clock, network state, cgroup control names/control and membership digests, and host-tooling digest as known values or null/unknown. Job limits describe configured controls and do not imply measured CPU time."
+}
