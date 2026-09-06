@@ -1,0 +1,620 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:job-lifecycle-metric-event:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "eventKind",
+    "eventKey",
+    "jobIdentity",
+    "jobType",
+    "issueIdentity",
+    "workIdentity",
+    "semanticOwnerIdentity",
+    "attemptIdentity",
+    "logicalAttemptIdentity",
+    "phaseIdentity",
+    "sourceIdentity",
+    "evidenceIdentity",
+    "contributionDigest",
+    "observedAt",
+    "clockIdentity",
+    "durationUnit",
+    "startOffsetNanoseconds",
+    "endOffsetNanoseconds",
+    "durationNanoseconds",
+    "parentAttemptIdentity",
+    "overlapDisposition",
+    "scopeIdentity",
+    "toolIdentity",
+    "routeIdentity",
+    "intervals",
+    "outcomeLineage",
+    "acceptedOutcome",
+    "missingnessReason",
+    "tokenFact",
+    "cacheFact",
+    "costFact",
+    "clockDomainIdentity",
+    "startedAt",
+    "finishedAt"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:job-lifecycle-metric-event:2"
+    },
+    "eventKind": {
+      "enum": [
+        "start",
+        "finish",
+        "failure",
+        "interrupted"
+      ]
+    },
+    "eventKey": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "jobIdentity": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,96}$"
+    },
+    "jobType": {
+      "enum": [
+        "discovery",
+        "semantic-authoring",
+        "routing-qualification",
+        "implementation",
+        "test",
+        "review",
+        "repair",
+        "integration",
+        "environment-observation"
+      ]
+    },
+    "issueIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "workIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "semanticOwnerIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "attemptIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "logicalAttemptIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "phaseIdentity": {
+      "enum": [
+        "discovery",
+        "semantic-authoring",
+        "routing",
+        "qualification",
+        "implementation",
+        "test",
+        "review",
+        "repair",
+        "integration",
+        "environment-observation"
+      ]
+    },
+    "sourceIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "evidenceIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "contributionDigest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "clockIdentity": {
+      "const": "monotonic-plus-utc-observation"
+    },
+    "durationUnit": {
+      "const": "nanoseconds"
+    },
+    "startOffsetNanoseconds": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "endOffsetNanoseconds": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "durationNanoseconds": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "parentAttemptIdentity": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "overlapDisposition": {
+      "enum": [
+        "none",
+        "nonadditive-parent-child",
+        "accounted",
+        "unknown"
+      ]
+    },
+    "scopeIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "toolIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "routeIdentity": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "intervals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "queue",
+        "modelActive",
+        "command",
+        "validation",
+        "integration",
+        "total"
+      ],
+      "properties": {
+        "queue": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "modelActive": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "command": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "validation": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "integration": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "total": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "outcomeLineage": {
+      "enum": [
+        "accepted-candidate",
+        "accepted-review",
+        "accepted-repair",
+        "proof-conclusion",
+        "rejected",
+        "failed",
+        "interrupted",
+        null
+      ]
+    },
+    "acceptedOutcome": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "missingnessReason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tokenFact": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceIdentity",
+            "evidenceIdentity",
+            "missingnessReason",
+            "inputTokens",
+            "outputTokens",
+            "providerCachedTokens",
+            "semanticCacheHit"
+          ],
+          "properties": {
+            "sourceIdentity": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+            },
+            "evidenceIdentity": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+            },
+            "missingnessReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "inputTokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "outputTokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "providerCachedTokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "semanticCacheHit": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "cacheFact": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceIdentity",
+            "evidenceIdentity",
+            "missingnessReason",
+            "providerCachedTokens",
+            "semanticCacheHit"
+          ],
+          "properties": {
+            "sourceIdentity": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+            },
+            "evidenceIdentity": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+            },
+            "missingnessReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "providerCachedTokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "semanticCacheHit": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "costFact": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceIdentity",
+            "evidenceIdentity",
+            "missingnessReason",
+            "amount",
+            "currency",
+            "costClass",
+            "evidenceKind"
+          ],
+          "properties": {
+            "sourceIdentity": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+            },
+            "evidenceIdentity": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+            },
+            "missingnessReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "amount": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            "currency": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Z]{3}$"
+            },
+            "costClass": {
+              "enum": [
+                "local",
+                "zero-price",
+                "free-quota",
+                "subscription",
+                "paid",
+                "unknown",
+                null
+              ]
+            },
+            "evidenceKind": {
+              "enum": [
+                "observed",
+                "estimated",
+                "unavailable",
+                null
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "clockDomainIdentity": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,96}$"
+    },
+    "startedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "finishedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "eventKind": {
+          "const": "start"
+        },
+        "acceptedOutcome": {
+          "const": null
+        },
+        "outcomeLineage": {
+          "const": null
+        },
+        "durationNanoseconds": {
+          "const": null
+        },
+        "endOffsetNanoseconds": {
+          "const": null
+        }
+      }
+    },
+    {
+      "properties": {
+        "eventKind": {
+          "const": "finish"
+        },
+        "acceptedOutcome": {
+          "const": true
+        },
+        "outcomeLineage": {
+          "enum": [
+            "accepted-candidate",
+            "accepted-review",
+            "accepted-repair",
+            "proof-conclusion"
+          ]
+        },
+        "evidenceIdentity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contributionDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    {
+      "properties": {
+        "eventKind": {
+          "const": "finish"
+        },
+        "acceptedOutcome": {
+          "const": null
+        },
+        "outcomeLineage": {
+          "const": null
+        }
+      }
+    },
+    {
+      "properties": {
+        "eventKind": {
+          "const": "finish"
+        },
+        "acceptedOutcome": {
+          "const": false
+        },
+        "outcomeLineage": {
+          "const": "rejected"
+        }
+      }
+    },
+    {
+      "properties": {
+        "eventKind": {
+          "const": "failure"
+        },
+        "acceptedOutcome": {
+          "const": false
+        },
+        "outcomeLineage": {
+          "const": "failed"
+        }
+      }
+    },
+    {
+      "properties": {
+        "eventKind": {
+          "const": "interrupted"
+        },
+        "acceptedOutcome": {
+          "const": false
+        },
+        "outcomeLineage": {
+          "const": "interrupted"
+        }
+      }
+    }
+  ]
+}

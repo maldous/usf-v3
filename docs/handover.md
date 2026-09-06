@@ -10,6 +10,8 @@ USF-1168 now has an independently accepted accounting definition and published c
 
 USF-1187 now has an independently accepted definition for finite exact product dependency adoption, applied by transaction ae5384379e4c8b847f830d511b2ec47485485410fa465cf492962945739022eb. Currentness/refusal are mandatory per-adoption records and the Node-only default remains intact. No package, product adoption or implementation reader is selected or activated; USF-1187 remains open.
 
+USF-1176/1173 now have an independently accepted versioned job-lifecycle metric definition and schema, applied by transaction c690a6f236e3fd22dde6befe78e93f105f8bb4bc7ab56d849eb30e39b39ac8f5. This defines future record identity, clocks, unknowns and refusal rules; it does not admit the operational ledger or implement a recorder/reader. Both tasks remain open pending dispatch-accounting integration and governed instrumentation.
+
 ## Repository hygiene — what is and is not disposable
 
 `.usf/` is ignored and mostly disposable, but not uniformly, and the difference

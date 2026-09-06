@@ -1,0 +1,87 @@
+<urn:usf:predicate:eventKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:eventKey> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:jobIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:jobType> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:issueIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:workIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:semanticOwnerIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:attemptIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:logicalAttemptIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:phaseIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:sourceIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:evidenceIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:clockIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:durationUnit> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:startOffsetNanoseconds> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:endOffsetNanoseconds> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:durationNanoseconds> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:parentAttemptIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:overlapDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:scopeIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:toolIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:routeIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:intervals> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:outcomeLineage> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:acceptedOutcome> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:missingnessReason> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:tokenFact> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:cacheFact> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:costFact> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:type:JobLifecycleMetricEvent> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:type:JobLifecycleMetricModel> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:contract:job-lifecycle-metrics:2> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:contract:job-lifecycle-metrics:2> <urn:usf:predicate:schemaPath> "schemas/job-lifecycle-metric-event-v2.schema.json" <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:contract:job-lifecycle-metrics:2> <urn:usf:predicate:objective> "Versioned closed lifecycle event model: immutable distinct start, finish, failure and interruption facts; v1 remains unchanged and programme-jobs stays unadmitted." <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:contract:job-lifecycle-metrics:2> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:contract:job-lifecycle-metrics:2> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-dedup-currentness:2> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:contract:job-lifecycle-metrics:2> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-proofblock:2> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:objective> "Each event supplies finite job type, issue/work semantic owner, phase, source/evidence, scope/tool/route identity; monotonic clock offsets and independent UTC start/finish observation; separate nullable queue, model-active, command, validation, integration and total intervals." <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:failureMode> "Unknown remains null with reason. Command exit 0 is not semantic acceptance. acceptedOutcome true requires accepted lineage plus exact evidence and contribution identity; false means observed nonacceptance only." <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:schema> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:eventKind> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:eventKey> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:jobIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:jobType> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:issueIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:workIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:semanticOwnerIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:attemptIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:logicalAttemptIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:phaseIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:sourceIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:evidenceIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:clockDomainIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:startedAt> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:finishedAt> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:predicate:contributionDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:contributionDigest> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:observedAt> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:clockDomainIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:startedAt> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:finishedAt> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:clockIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:durationUnit> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:startOffsetNanoseconds> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:endOffsetNanoseconds> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:durationNanoseconds> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:parentAttemptIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:overlapDisposition> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:scopeIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:toolIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:routeIdentity> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:intervals> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:outcomeLineage> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:acceptedOutcome> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:missingnessReason> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:tokenFact> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:cacheFact> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-event-shape:2> <urn:usf:predicate:requiredField> <urn:usf:predicate:costFact> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-dedup-currentness:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-dedup-currentness:2> <urn:usf:predicate:objective> "eventKey is exact over job/work/attempt/phase/eventKind. Start and terminal event kinds have separate keys. Identical replay deduplicates, conflicting same-key facts refuse, and final logical attempt aggregates once." <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-dedup-currentness:2> <urn:usf:predicate:failureMode> "Negative or unsafe-integer offsets/durations, unmatched terminal/start pair, conflicting duplicate, or unaccounted parent-child overlap refuses. Nested intervals are never summed automatically. A focused reader invariant requires one clockDomainIdentity, endOffset >= startOffset, endOffset-startOffset = duration, and compares monotonic offsets only within that domain; UTC startedAt/finishedAt are observations, never duration inputs." <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-reader-proofblock:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRequirement> <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-reader-proofblock:2> <urn:usf:predicate:objective> "Reader/recorder remains unavailable until USF-1168 current phase/contact/counter identities are integrated and independently reviewed." <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-reader-proofblock:2> <urn:usf:predicate:failureMode> "Existing metric-event v1, events.jsonl and programme-jobs ledger remain separate. No historic record is upgraded to admitted evidence." <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-reader-proofblock:2> <urn:usf:predicate:specificationStatus> "incomplete" <urn:usf:graph:job-lifecycle-metrics-v2> .
+<urn:usf:requirement:job-lifecycle-reader-proofblock:2> <urn:usf:predicate:satisfactionStatus> "not-assessed" <urn:usf:graph:job-lifecycle-metrics-v2> .
