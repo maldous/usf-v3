@@ -346,7 +346,7 @@ export function validationRuntimeClosure(graph: SemanticGraph, validationId: str
     || validationBindings.some((quad) => quad.objectKind !== "iri")
     || new Set(validationBindings.map((quad) => quad.object)).size !== validationBindings.length
     || !validationBindings.some((quad) => quad.object === validationId)
-    || fileBindings.length < 1 || fileBindings.length > 64
+    || fileBindings.length < 1 || fileBindings.length > 128
     || fileBindings.some((quad) => quad.objectKind !== "literal")
     || new Set(fileBindings.map((quad) => quad.object)).size !== fileBindings.length) {
     throw new Error(`VALIDATION_RUNTIME_CLOSURE_INVALID:${validationId}`);
