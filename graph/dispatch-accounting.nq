@@ -218,9 +218,62 @@
 <urn:usf:rule:dispatch-accounting-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other profiles and bases as history." <urn:usf:graph:dispatch-accounting> .
 <urn:usf:rule:dispatch-accounting-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:dispatch-accounting> .
 <urn:usf:rule:dispatch-accounting-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
-<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:authorityRule> "One exact mode2 closure supplies only package metadata required by the focused test. Candidate accounting, command, projection, deferral and test files remain in candidate scope; bwrap removes usable network and no credential, provider, host invocation or extra write authority follows." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:authorityRule> "The confined mode2 execution view contains exactly the candidate scope plus these 54 authenticated repository inputs: the runtime static TypeScript import closure, fixture launcher and AppArmor asset, copied catalogue/package/config inputs, and the v3 execution/convention graph closure. Node modules and the USF package cache remain separately authenticated read-only tool mounts. No ambient repository, provider home, credentials, network, host mutation or additional write authority follows." <urn:usf:graph:dispatch-accounting> .
 <urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:forValidation> <urn:usf:validation:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "config/qualification.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "graph/foundation.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "graph/manifest.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/self-host.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/v3-convention.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "graph/semantic-first.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "graph/usf-bootstrap.nq" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "graph/v3-convention.nq" <urn:usf:graph:dispatch-accounting> .
 <urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "package.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "pnpm-lock.yaml" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/commands/check.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/commands/execute.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/commands/models.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/commands/probe.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/continuous/lifecycle.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/continuous/stewardship.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/graph/runtime-authority.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work-dependency.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/architecture-observation.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/authority-snapshot.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/capabilities.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/catalogue.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/classification.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/config.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/economics-projection.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/economics.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/evidence-index.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/execution-economics.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/facet-evaluation.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/implementation-conformance.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/local-git.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/probe.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/provider-bindings.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/provider-policy.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/qualification.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/transports.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/providers/types.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.apparmor" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/index.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/transition.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "tests/fixtures/providers/models-dev.json" <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:repositoryReadFile> "schemas/provider-config.schema.json" <urn:usf:graph:dispatch-accounting> .
 <urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:dispatch-accounting> .
 <urn:usf:validation-runtime-closure:dispatch-accounting:1> <urn:usf:predicate:version> "1" <urn:usf:graph:dispatch-accounting> .
 <urn:usf:validation:dispatch-accounting> <urn:usf:predicate:applicability> "required" <urn:usf:graph:dispatch-accounting> .
@@ -228,7 +281,7 @@
 <urn:usf:validation:dispatch-accounting> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:dispatch-accounting> .
 <urn:usf:validation:dispatch-accounting> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:dispatch-accounting> .
 <urn:usf:validation:dispatch-accounting> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:dispatch-accounting> .
-<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:nonClaim> "This deterministic fixture test invokes pure accounting and deferral logic under confined mode2. It contacts no provider and does not establish availability, qualification, cost, completion or production behavior." <urn:usf:graph:dispatch-accounting> .
+<urn:usf:validation:dispatch-accounting> <urn:usf:predicate:nonClaim> "This deterministic fixture test invokes the real graph command through a private in-process dependency seam plus the current accounting, Hermes projection, lifecycle projection, repair-persistence and deferral paths under confined mode2. The seam records local invocation entry only; it contacts no provider and does not establish authenticated remote contact, availability, qualification, billed cost, completion or production behavior." <urn:usf:graph:dispatch-accounting> .
 <urn:usf:validation:dispatch-accounting> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:dispatch-accounting> .
 <urn:usf:work:dispatch-accounting> <urn:usf:predicate:acceptance> <urn:usf:acceptance:dispatch-accounting> <urn:usf:graph:dispatch-accounting> .
 <urn:usf:work:dispatch-accounting> <urn:usf:predicate:contract> <urn:usf:contract:dispatch-accounting:1> <urn:usf:graph:dispatch-accounting> .
