@@ -160,7 +160,7 @@
 <urn:usf:publication-policy:provider-cli-qualification-no-change-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:provider-cli-qualification> .
 <urn:usf:publication-policy:provider-cli-qualification-no-change-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:provider-cli-qualification> .
 <urn:usf:publication-policy:provider-cli-qualification-no-change-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:provider-cli-qualification> .
-<urn:usf:publication-policy:provider-cli-qualification-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:provider-cli-qualification> .
+<urn:usf:publication-policy:provider-cli-qualification-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:provider-cli-qualification> .
 <urn:usf:publication-policy:provider-cli-qualification-no-change-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:provider-cli-qualification> .
 <urn:usf:publication-policy:provider-cli-qualification-no-change-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:provider-cli-qualification> .
 <urn:usf:publication-policy:provider-cli-qualification-no-change-completion:1> <urn:usf:predicate:nonClaim> "proofblocked deliberately refuses generic completion publication until a governed completion reader authenticates this exact validation; it is not a waiver or evidence of test execution." <urn:usf:graph:provider-cli-qualification> .
