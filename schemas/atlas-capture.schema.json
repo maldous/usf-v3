@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:atlas-capture:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","captureId","capturedAt","mode","inputs","coverage","nodes","edges","jobs","limits","nonClaims"],
+  "properties": {
+    "schema":{"const":"urn:usf:atlas-capture:1"},
+    "captureId":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{2,127}$"},
+    "capturedAt":{"type":"string","format":"date-time"},
+    "mode":{"const":"committed-read-only"},
+    "inputs":{"type":"array","minItems":1,"maxItems":8,"items":{"$ref":"#/$defs/source"}},
+    "coverage":{"type":"array","maxItems":128,"items":{"type":"object","additionalProperties":false,"required":["owner","assetClass","disposition","count","reason"],"properties":{"owner":{"enum":["USF","ANQR","UXF","UIF","Atlas"]},"assetClass":{"type":"string","minLength":1,"maxLength":120},"disposition":{"enum":["mapped","excluded","unresolved"]},"count":{"type":"integer","minimum":0},"reason":{"type":"string","minLength":1,"maxLength":1000}}}},
+    "nodes":{"type":"array","maxItems":5000,"items":{"type":"object","additionalProperties":false,"required":["id","kind","state","declaredSource"],"properties":{"id":{"type":"string","pattern":"^[A-Za-z0-9._:-]{1,256}$"},"kind":{"enum":["capability","contract","port","adapter","module","test","evidence","proof","guide","resource"]},"state":{"enum":["declared","extracted","observed","evidence","proof","proposed","unresolved"]},"declaredSource":{"$ref":"#/$defs/source"}}}},
+    "edges":{"type":"array","maxItems":20000,"items":{"type":"object","additionalProperties":false,"required":["from","to","relationship","provenance"],"properties":{"from":{"type":"string"},"to":{"type":"string"},"relationship":{"type":"string","minLength":1,"maxLength":120},"provenance":{"$ref":"#/$defs/source"}}}},
+    "jobs":{"type":"array","minItems":1,"maxItems":256,"items":{"type":"object","additionalProperties":false,"required":["kind","startedAt","endedAt","elapsedMilliseconds","action","command","sources","environment","limits","result"],"properties":{"kind":{"enum":["capture","extraction","build","test","browser","benchmark"]},"startedAt":{"type":"string","format":"date-time"},"endedAt":{"type":["string","null"],"format":"date-time"},"elapsedMilliseconds":{"type":["integer","null"],"minimum":0},"action":{"type":"string","minLength":1,"maxLength":1000},"command":{"type":["string","null"],"maxLength":2000},"sources":{"type":"array","minItems":1,"maxItems":8,"items":{"$ref":"#/$defs/source"}},"environment":{"type":"object","maxProperties":32,"additionalProperties":{"type":"string","maxLength":500}},"limits":{"type":"object","maxProperties":16,"additionalProperties":{"type":"integer","minimum":0}},"result":{"enum":["passed","failed","refused","unknown"]}}}},
+    "limits":{"type":"object","additionalProperties":false,"required":["maximumRepositories","maximumTrackedFiles","maximumInputBytes","maximumOutputBytes","maximumCpuMilliseconds","maximumMemoryBytes","maximumConcurrency"],"properties":{"maximumRepositories":{"const":8},"maximumTrackedFiles":{"const":1500},"maximumInputBytes":{"const":67108864},"maximumOutputBytes":{"const":2097152},"maximumCpuMilliseconds":{"const":30000},"maximumMemoryBytes":{"const":536870912},"maximumConcurrency":{"const":1}}},
+    "nonClaims":{"type":"array","minItems":1,"items":{"type":"string","minLength":1,"maxLength":600}}
+  },
+  "$defs":{"digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},"source":{"type":"object","additionalProperties":false,"required":["repository","revision","path","sourceDigest"],"properties":{"repository":{"type":"string","pattern":"^[A-Za-z0-9._/-]+$"},"revision":{"type":"string","pattern":"^[0-9a-f]{40}$"},"path":{"type":"string","pattern":"^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/@:-]+(?:/[A-Za-z0-9._@:-]+)*$"},"sourceDigest":{"$ref":"#/$defs/digest"}}}}
+}
