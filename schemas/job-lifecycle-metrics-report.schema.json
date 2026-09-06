@@ -1,0 +1,480 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:job-lifecycle-metrics-report:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "view",
+    "acceptanceStatus",
+    "acceptedOutcome",
+    "coverage",
+    "source",
+    "refusals",
+    "items",
+    "nonclaims"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:job-lifecycle-metrics-report:2"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "incomplete",
+        "not-observed"
+      ]
+    },
+    "view": {
+      "const": "summary"
+    },
+    "acceptanceStatus": {
+      "const": "unverified"
+    },
+    "acceptedOutcome": {
+      "const": null
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputRecords",
+        "validRecords",
+        "duplicateRecords",
+        "refusedRecords",
+        "incompleteAttempts",
+        "pairedAttempts",
+        "overlapPairs",
+        "incomparableClockDomains",
+        "omittedGroups",
+        "sourceTruncated"
+      ],
+      "properties": {
+        "inputRecords": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "validRecords": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "duplicateRecords": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "refusedRecords": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "incompleteAttempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "pairedAttempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "overlapPairs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4999950000
+        },
+        "incomparableClockDomains": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "omittedGroups": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "sourceTruncated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "kind",
+        "path",
+        "eventLimit",
+        "eventsRead",
+        "bytesRead",
+        "truncated",
+        "digest",
+        "digestBasis"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not-observed",
+            "observed"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "stdin",
+            "repository-relative-jsonl"
+          ]
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\.usf/metrics/[A-Za-z0-9][A-Za-z0-9._-]{0,95}\\.jsonl$"
+        },
+        "eventLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "eventsRead": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "bytesRead": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8388608
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "digestBasis": {
+          "enum": [
+            "not-observed",
+            "raw-input-bytes"
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "status": {
+              "const": "observed"
+            },
+            "kind": {
+              "const": "stdin"
+            },
+            "path": {
+              "const": null
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "digestBasis": {
+              "const": "raw-input-bytes"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "observed"
+            },
+            "kind": {
+              "const": "repository-relative-jsonl"
+            },
+            "path": {
+              "type": "string"
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "digestBasis": {
+              "const": "raw-input-bytes"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "not-observed"
+            },
+            "kind": {
+              "const": "stdin"
+            },
+            "path": {
+              "const": null
+            },
+            "digest": {
+              "const": null
+            },
+            "digestBasis": {
+              "const": "not-observed"
+            },
+            "bytesRead": {
+              "const": 0
+            },
+            "eventsRead": {
+              "const": 0
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "not-observed"
+            },
+            "kind": {
+              "const": "repository-relative-jsonl"
+            },
+            "path": {
+              "type": "string"
+            },
+            "digest": {
+              "const": null
+            },
+            "digestBasis": {
+              "const": "not-observed"
+            },
+            "bytesRead": {
+              "const": 0
+            },
+            "eventsRead": {
+              "const": 0
+            }
+          }
+        }
+      ]
+    },
+    "refusals": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reasonCode",
+          "records"
+        ],
+        "properties": {
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,95}$"
+          },
+          "records": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "jobType",
+          "phaseIdentity",
+          "sourceIdentity",
+          "scopeIdentity",
+          "toolIdentity",
+          "routeIdentity",
+          "attempts",
+          "reportedFinishes",
+          "reportedFailures",
+          "reportedInterruptions",
+          "claimedAccepted",
+          "acceptedOutcome",
+          "duration"
+        ],
+        "properties": {
+          "jobType": {
+            "type": "string",
+            "enum": [
+              "discovery",
+              "semantic-authoring",
+              "routing-qualification",
+              "implementation",
+              "test",
+              "review",
+              "repair",
+              "integration",
+              "environment-observation"
+            ]
+          },
+          "phaseIdentity": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+          },
+          "sourceIdentity": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+          },
+          "scopeIdentity": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+          },
+          "toolIdentity": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+          },
+          "routeIdentity": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "reportedFinishes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "reportedFailures": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "reportedInterruptions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "claimedAccepted": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "acceptedOutcome": {
+            "const": null
+          },
+          "duration": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "samples",
+              "unknown",
+              "minNanoseconds",
+              "maxNanoseconds",
+              "medianNanoseconds"
+            ],
+            "properties": {
+              "samples": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              },
+              "unknown": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              },
+              "minNanoseconds": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "maxNanoseconds": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "medianNanoseconds": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "samples": {
+                    "const": 0
+                  },
+                  "minNanoseconds": {
+                    "const": null
+                  },
+                  "maxNanoseconds": {
+                    "const": null
+                  },
+                  "medianNanoseconds": {
+                    "const": null
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "samples": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minNanoseconds": {
+                    "type": "number"
+                  },
+                  "maxNanoseconds": {
+                    "type": "number"
+                  },
+                  "medianNanoseconds": {
+                    "type": "number"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "nonclaims": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "string",
+        "pattern": "^[^\\u0000-\\u001f]{1,512}$"
+      }
+    }
+  }
+}

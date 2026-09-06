@@ -1,0 +1,276 @@
+<urn:usf:acceptance:job-lifecycle-reader> <urn:usf:predicate:text> "The confined offline test exercises the real metricsCommandHandler on private bounded v2 input, and the pure reducer on reordered, replayed, contradictory, stale, incomplete and overlapping events. It proves exact report schema shape, v1 default/reader compatibility, mixed/unsupported view refusal, no accepted-count fabrication, wall-clock reversal with valid monotonic duration, parent-child nonadditivity, explicit unknown identities and finite deterministic output. No test fixture contacts a provider or consumes the private programme ledger." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:acceptance:job-lifecycle-reader> <urn:usf:predicate:type> <urn:usf:type:AcceptanceCriterion> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-construction-authority-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-construction-authority-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing construction evidence and proof for this one work into an additive copy-on-write authority grant, without mutating the permission the proof evaluated." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-construction-authority-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-construction-authority-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-construction-authority-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-work-completion-publication:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-work-completion-publication:1> <urn:usf:predicate:objective> "Atomically promote exact passing no-change completion evidence and proof for this one work into an additive copy-on-write completion record." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-work-completion-publication:1> <urn:usf:predicate:publicationPolicy> <urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-work-completion-publication:1> <urn:usf:predicate:type> <urn:usf:type:SemanticPublicationAlgorithm> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:algorithm:job-lifecycle-reader-work-completion-publication:1> <urn:usf:predicate:version> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:buildsUpon> <urn:usf:foundation:v3> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:canonicalName> "job-lifecycle-reader" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:completionEvidenceRequirement> <urn:usf:evidence-requirement:job-lifecycle-reader:completion> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:completionProofObligation> <urn:usf:proof:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:constructionRouteConstraint> "GOAL section 23.2 permits this bounded operator-toolchain repair after exact construction evidence, proof and additive authority publication. USF-1168 counters are integrated at 76649b5e93fde94c53c76bd98336e5fabe9c37ba and independently reviewed. This does not depend on or claim its separately proofblocked semantic completion. The existing metrics command cannot interpret the accepted v2 events. No recorder, dispatcher instrumentation, provider contact, network, service, concurrency or trust-policy change is authorized by this scope." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:contractShape> <urn:usf:contract-shape:semantic-first:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:job-lifecycle-reader:ci> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:job-lifecycle-reader:hermetic> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:environmentApplicability> <urn:usf:environment-applicability:job-lifecycle-reader:integrationtest> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:nonClaim> "A parsed event or matching identity is a reported claim, not authenticated timing, tokens, acceptance, proof or telemetry authority. This slice does not admit or upgrade programme-jobs.jsonl, instrument actual lifecycle producers, authenticate semantic completion or finish USF-1176/1173." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:objective> "Add an explicit read-only v2 lifecycle report to the existing metrics command, preserving v1 default behavior and retaining all claimed acceptance as unverified." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:permitsWrite> "src/commands/metrics.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:permitsWrite> "src/observability/job-lifecycle.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:permitsWrite> "tests/adversarial/job-lifecycle-metrics.test.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-acceptance-boundary> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-clock-pairing> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-event-identity> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-grouping> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-overlap> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-reported-provenance> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-selection> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:requires> <urn:usf:requirement:job-lifecycle-reader-validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:schemaPath> "schemas/job-lifecycle-metrics-report.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:scope> "foundation-operational-metrics-reader-repair" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:targetRuntimeProvider> "none" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:title> "Bounded job-lifecycle reader with replay, clock and overlap checks" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:type> <urn:usf:type:SemanticContract> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:contract:job-lifecycle-reader:1> <urn:usf:predicate:version> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:ci> <urn:usf:predicate:applicability> "required" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:ci> <urn:usf:predicate:environment> <urn:usf:environment:ci> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:ci> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:hermetic> <urn:usf:predicate:applicability> "required" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:hermetic> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:hermetic> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:integrationtest> <urn:usf:predicate:applicability> "required" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:integrationtest> <urn:usf:predicate:environment> <urn:usf:environment:integrationtest> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:environment-applicability:job-lifecycle-reader:integrationtest> <urn:usf:predicate:type> <urn:usf:type:EnvironmentApplicability> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader:completion> <urn:usf:predicate:applicability> "required" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader:completion> <urn:usf:predicate:forContract> <urn:usf:contract:job-lifecycle-reader:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader:completion> <urn:usf:predicate:text> "Require independent current actual-command v2 observations and v1 compatibility, replay/conflict, pairing, arithmetic, overlap and unverified-acceptance negatives for the exact candidate. Implementation checks do not publish semantic completion." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader:completion> <urn:usf:predicate:type> <urn:usf:type:CompletionEvidenceRequirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader:completion> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:predicate:applicability> "required" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:predicate:forContract> <urn:usf:contract:job-lifecycle-reader:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:predicate:text> "Bind current v1-only metrics source/help, accepted v2 event/report schemas and every authorized write preimage or exact absence. Show the integrated dispatch prerequisite through current source/readback. Construction evidence is evidence of this existing gap and finite intended scope, not tests of the unbuilt reader, provider output or historical programme timings." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:predicate:type> <urn:usf:type:ConstructionEvidenceRequirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:predicate:type> <urn:usf:type:EvidenceRequirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:activationState> <urn:usf:contract-state:proofblocked> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:constructionEvidenceRequirement> <urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:constructionProofObligation> <urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:evidenceRequirement> <urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:forContract> <urn:usf:contract:job-lifecycle-reader:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:maximumThrough> "integrate" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:proofObligation> <urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:permission:job-lifecycle-reader> <urn:usf:predicate:type> <urn:usf:type:RealisationPermission> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:adoptionPolicy> "explicit-semantic-delta" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:authorityProfile> <urn:usf:profile:job-lifecycle-reader:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:canonicalName> "job-lifecycle-reader" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:directionalCurrentnessPolicy> <urn:usf:policy:directional-currentness:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:objective> "Opt-in authority for a source-bound v2 lifecycle observation reader, preserving existing metrics default and reported/evidenced boundaries." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:product> <urn:usf:product:v3> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:reconstructionPolicy> "exact-closure-or-block" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:selectsContract> <urn:usf:contract:job-lifecycle-reader:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:semanticOrderPolicy> <urn:usf:policy:semantic-first:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:type> <urn:usf:type:RealisationProfile> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:profile:job-lifecycle-reader:1> <urn:usf:predicate:version> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:predicate:applicability> "required" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:predicate:executionMode> <urn:usf:mode:deterministic-test-substitute> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:predicate:text> "Prove exact existing source/schema observations warrant only the bounded v2 reader/help/test writes." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ConstructionProofObligation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader:construction-authority> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader> <urn:usf:predicate:algorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader> <urn:usf:predicate:applicability> "required" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader> <urn:usf:predicate:requiresEvidence> <urn:usf:evidence-requirement:job-lifecycle-reader:completion> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader> <urn:usf:predicate:text> "Require work-specific independent behavioral validation; the generic no-change publisher remains proofblocked until it can authenticate this exact test." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader> <urn:usf:predicate:type> <urn:usf:type:CompletionProofObligation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:proof:job-lifecycle-reader> <urn:usf:predicate:type> <urn:usf:type:ProofObligation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:activationDerivationRule> <urn:usf:rule:copy-on-write-construction-authority:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:currentnessRule> "Bind only the selected work branch of this immutable policy plus the exact declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work, so it can never stale a sibling cohort." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:construction-evidence-normalization:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:construction-evidence-candidate:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/construction-authority/" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:implemented> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:nonClaim> "The grant permits only the exact selected work ceiling. It is not completion, integration acceptance, provider qualification, runtime activation or terminal proof." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-construction-authority:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:construction-proof-bundle:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:job-lifecycle-reader-construction-authority-publication:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/construction-authority/" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:profile-scoped-construction-authority-publication-receipt:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:construction-authority-publication-result:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-construction:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-construction:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-construction-authority:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/job-lifecycle-reader.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-authority-publication-result.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-evidence-candidate.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/construction-proof-bundle.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:schemaPath> "schemas/profile-scoped-construction-authority-publication-receipt.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:job-lifecycle-reader-grants> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/job-lifecycle-reader-grants.nq" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/construction-authority.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/help.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:toolPath> "src/commands/metrics.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:toolPath> "src/observability/metrics.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:toolPath> "src/realisation/construction-authority.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionAuthorityPublicationPolicy> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-construction-authority:1> <urn:usf:predicate:version> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:completionDerivationRule> <urn:usf:rule:job-lifecycle-reader-copy-on-write-work-completion:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:currentnessRule> "Select exact completion only for this immutable policy, the current work basis and the declared schema and tool bytes. This policy is deliberately disjoint: it enumerates exactly one work." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:eligibleWork> <urn:usf:work:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:evidenceAlgorithm> <urn:usf:algorithm:no-change-completion-evidence:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:evidenceSchema> <urn:usf:schema:completion-evidence-candidate:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:ignoredCandidateRoot> ".usf/candidates/work-completion/" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:maximumBundleCount> "32" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:minimumBundleCount> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:nonClaim> "The current generic completion publisher authenticates generic bundle structure but not execution of this work-specific validation. proofblocked is an explicit refusal boundary, not completion evidence or a waiver of the declared test." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:primaryMutationLockPath> ".usf/locks/primary-mutation.lock" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:proofAlgorithm> <urn:usf:proof-algorithm:semantic-no-change-completion:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:proofBundleSchema> <urn:usf:schema:completion-proof-bundle:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:publicationAlgorithm> <urn:usf:algorithm:job-lifecycle-reader-work-completion-publication:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:publicationReceiptRoot> "evidence/work-completion/" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:publicationReceiptSchema> <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:publicationResultSchema> <urn:usf:schema:work-completion-publication-result:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:realisationAlgorithm> <urn:usf:algorithm:no-change-workspace-materialisation:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:realisationResultSchema> <urn:usf:schema:no-change-realisation-result:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:evidence-completion:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:prove-completion:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:publish-work-completion:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:realise-no-change:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:requiredManifestPath> "graph/manifests/job-lifecycle-reader.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-evidence-candidate.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/completion-proof-bundle.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-realisation-result.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/no-change-workspace-manifest.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:schemaPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:targetNamedGraph> <urn:usf:graph:job-lifecycle-reader-grants> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:targetSemanticSourcePath> "graph/job-lifecycle-reader-grants.nq" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/check.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:toolPath> "src/commands/work-completion.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:toolPath> "src/graph/work.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/index.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:toolPath> "src/realisation/work-completion.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:type> <urn:usf:type:NoChangeWorkCompletionPublicationPolicy> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:publication-policy:job-lifecycle-reader-no-change-completion:1> <urn:usf:predicate:workspaceSchema> <urn:usf:schema:no-change-workspace-manifest:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-acceptance-boundary> <urn:usf:predicate:canonicalName> "job-lifecycle-reader-acceptance-boundary" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-acceptance-boundary> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-acceptance-boundary> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-acceptance-boundary> <urn:usf:predicate:text> "Ignore claimed acceptedOutcome for authenticated acceptance accounting: acceptedOutcome and all authenticated accepted totals are null with status unverified. Count claimed accepted observations separately and expose no accepted-progress ratio. Failure/interruption/rejection are reported lifecycle classes, not independently authenticated outcomes. No generic truth flag, schema validity, exact digest or successful exit establishes semantic acceptance." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-acceptance-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-clock-pairing> <urn:usf:predicate:canonicalName> "job-lifecycle-reader-clock-pairing" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-clock-pairing> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-clock-pairing> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-clock-pairing> <urn:usf:predicate:text> "A start and one finish/failure/interrupted terminal pair must bind one clockDomainIdentity and identical start offset. Require safe nonnegative integers, end >= start and end-start=duration; total interval if present equals duration, and each reported subinterval is at most total duration. UTC is a separate real instant observation and may move backwards; never derive duration or monotonic order from UTC. Pending starts remain explicitly incomplete. Missing terminal offsets remain unknown and produce no duration sample. Unknown values require a nonempty bounded missingness reason." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-clock-pairing> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-event-identity> <urn:usf:predicate:canonicalName> "job-lifecycle-reader-event-identity" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-event-identity> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-event-identity> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-event-identity> <urn:usf:predicate:text> "Recompute eventKey using canonicalDigest of the closed object {jobIdentity,workIdentity,attemptIdentity,phaseIdentity,eventKind}. Exact canonical-content replay deduplicates; a changed same-key event, multiple terminal kinds, changed pair source/scope/tool/route/work/owner/logical identity or clock domain refuses that attempt. Order is immaterial. Null attempt/work/logical/source identities are incomplete and unpairable, never one shared-null attempt. Refuse conflicting current logical-attempt reuse; never select the last received row as truth." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-event-identity> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-grouping> <urn:usf:predicate:canonicalName> "job-lifecycle-reader-grouping" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-grouping> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-grouping> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-grouping> <urn:usf:predicate:text> "Group comparable paired attempts by job type, phase, source, scope, tool and route, including explicit missingness. Report record/attempt/sample counts, refused and incomplete counts before min/max/median reported duration samples; no global duration sum, unqualified efficiency claim or distribution with no samples. Source/scope changes cannot join or share a replay identity. Stable deterministic lexical group ordering precedes max-items truncation. Do not echo event payloads, arbitrary missingness text, raw command arguments or private paths. Zero duration samples require null min/max/median; positive samples require finite numeric min <= median <= max within safe bounds. Compute median without unsafe integer addition. Source status observed requires the raw-byte digest; missing source requires null digest and zero input counts; stdin has null path and repository input has a validated metrics path. Actual readers must enforce these relationships in addition to schema shape." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-grouping> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-overlap> <urn:usf:predicate:canonicalName> "job-lifecycle-reader-overlap" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-overlap> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-overlap> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-overlap> <urn:usf:predicate:text> "Detect parent cycles/missing parents and time overlap in the same clock domain. Parent-child intervals require their declared nonadditive disposition and matching actual parent identity; conflicting claimed none/accounted cannot waive observed overlap. Preserve individual duration samples but never sum nested or cross-job intervals. Report overlap pairs and incomplete parent linkage; offsets from different clock domains are incomparable, not disjoint. All interval kinds remain separate. Use half-open intervals [start,end); zero-duration intervals overlap none. Per clock domain use a sorted sweep and bounded active-end index/count with O(n log n) time and O(n) memory; never enumerate or materialize an all-pairs list. overlapPairs is the exact count, at most 4999950000 for the conservative 100000-record input bound. Include a confined many-overlaps fixture and a zero-duration/endpoint-touch case." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-overlap> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-reported-provenance> <urn:usf:predicate:canonicalName> "job-lifecycle-reader-reported-provenance" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-reported-provenance> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-reported-provenance> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-reported-provenance> <urn:usf:predicate:text> "Validate closed v2 event shape and facts, including bounded nonsecret identifiers and text, actual UTC instants and safe arithmetic. A token/cache/cost fact requires consistent nonnull source/evidence identity to expose its values as reported; mismatched or missing provenance is refused or reported unknown, never repaired. Keep provider cache tokens, semantic cache facts, observed cost and estimated cost separate. Preserve currency/evidence-kind groups if exposed; never infer charged cost, active model time, cache hit rates, or authenticity from equality or hashes." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-reported-provenance> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-selection> <urn:usf:predicate:canonicalName> "job-lifecycle-reader-selection" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-selection> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-selection> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-selection> <urn:usf:predicate:text> "Only explicit metrics summary --input .usf/metrics/NAME.jsonl or bounded stdin may select an all-v2 lifecycle report. Preserve default events.jsonl and all v1 views/outputs. Reject mixed v1/v2, invalid v2 records and unsupported v2 views or filters without raw payload output; no accidental schema fallback. Keep current private owner/symlink/size/input boundaries. Maximum input 8 MiB and 100000 records, result rows at most the caller max-items from 1 through 100; truncation and omitted groups remain explicit." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-selection> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-validation> <urn:usf:predicate:canonicalName> "job-lifecycle-reader-validation" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-validation> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-validation> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-validation> <urn:usf:predicate:text> "Actual-command private-input fixtures cover valid v2 and unchanged v1, replay/reordering/conflicting terminals, wall-clock rollback/cross-domain refusal, null identities, negative/unsafe/mismatched duration, forged acceptance, missing/changed provenance, parent cycles/unaccounted overlaps, unsupported views/mixed schemas, bounds and report shape. Preserve current boundary/error classifications and ordinary candidate/check/integration flow." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:requirement:job-lifecycle-reader-validation> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:rule:job-lifecycle-reader-copy-on-write-work-completion:1> <urn:usf:predicate:selectionRule> "For one exact current basis of this profile, select exactly one matching admitted no-change receipt, Evidence and passing ProofResult; retain other profiles and bases as history." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:rule:job-lifecycle-reader-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:rule:job-lifecycle-reader-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:authorityRule> "Exact supplemental source/schema/package and launcher/AppArmor files for the in-process metrics command fixture. Candidate source/test files supply their own postimages; type-only dispatcher imports do not execute. Node modules are separately authenticated read-only tool mounts. No ambient repository, private metric ledger, provider home, credential, host change or network access follows." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:forValidation> <urn:usf:validation:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "package.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "pnpm-lock.yaml" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "schemas/job-lifecycle-metric-event-v2.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "schemas/job-lifecycle-metrics-report.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "schemas/metric-event.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "schemas/metrics-report.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "src/observability/metrics.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.apparmor" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation-runtime-closure:job-lifecycle-reader:1> <urn:usf:predicate:version> "1" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation:job-lifecycle-reader> <urn:usf:predicate:applicability> "required" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation:job-lifecycle-reader> <urn:usf:predicate:command> "node --test --test-isolation=none tests/adversarial/job-lifecycle-metrics.test.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation:job-lifecycle-reader> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation:job-lifecycle-reader> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation:job-lifecycle-reader> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation:job-lifecycle-reader> <urn:usf:predicate:nonClaim> "Actual in-process metrics command plus pure reader fixtures under mode2; no CLI dispatcher-wide runtime import, provider, credential, network, actual semantic acceptance or telemetry admission." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:validation:job-lifecycle-reader> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:acceptance> <urn:usf:acceptance:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:contract> <urn:usf:contract:job-lifecycle-reader:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:fixtureValidationMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:modelCapability> "node-test" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:modelCapability> "typescript" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:objective> "Implement the existing metrics summary explicit-input v2 path, a pure bounded lifecycle reducer, precise help and actual-command confined offline cases." <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:outputSchema> <urn:usf:contribution:1> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:policyPath> "config/privacy.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:proof> <urn:usf:proof:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "graph/foundations/job-lifecycle-metrics-v2.nq" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "graph/manifests/job-lifecycle-metrics-v2.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "graph/manifests/job-lifecycle-reader.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "schemas/job-lifecycle-metric-event-v2.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "schemas/job-lifecycle-metrics-report.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "src/commands/help.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "src/commands/metrics.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "src/core/canonical.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "src/core/errors.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "src/observability/metrics.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "src/schema/index.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:readPath> "tests/unit/observability/metrics.test.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:semanticDependency> <urn:usf:contract:job-lifecycle-metrics:2> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:semanticDependency> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:validation> <urn:usf:validation:job-lifecycle-reader> <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:writePath> "src/commands/metrics.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:writePath> "src/observability/job-lifecycle.ts" <urn:usf:graph:job-lifecycle-reader> .
+<urn:usf:work:job-lifecycle-reader> <urn:usf:predicate:writePath> "tests/adversarial/job-lifecycle-metrics.test.ts" <urn:usf:graph:job-lifecycle-reader> .
