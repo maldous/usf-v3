@@ -1,0 +1,26 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/fixture-process-runtime.json",
+    "graph/manifests/operational-stewardship.json",
+    "graph/manifests/product-dependency-adoption.json",
+    "graph/manifests/profile-authority.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/product-dependency-adoption-reader.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:product-dependency-adoption-reader",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/product-dependency-adoption-reader-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:product-dependency-adoption-reader-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
