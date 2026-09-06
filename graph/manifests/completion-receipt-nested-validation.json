@@ -1,0 +1,23 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/completion-receipt-reauthentication-assurance.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/completion-receipt-nested-validation.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:completion-receipt-nested-validation",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/completion-receipt-nested-validation-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:completion-receipt-nested-validation-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
