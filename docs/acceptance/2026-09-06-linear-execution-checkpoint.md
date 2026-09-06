@@ -28,10 +28,33 @@ Confined basis-chain validation lacked the actual `fixture-process.ts` import us
 
 Construction-only receipts were refreshed for the existing fixture-runtime and provider-capability work. They confer neither completion nor provider/production authority.
 
+## Accepted later checkpoints
+
+The definition/toolchain checkpoint was committed as 76a3adb9f3448ecdcdf0843af2182219b54a2b86. Bounded provider-reader hardening was then integrated by the governed candidate path as 0051410e432b347dc9648d096f22eb64d5c043be, with integration receipt .usf/receipts/integration/d80462623c8161172f02ffa79009fd2ab6e4b1fc6c8c9c53b889d1ad360e73a8.json. It replays sealed qualification observations and rejects rehashed fake score projections; 31 focused cases and the relevant combined tests passed. It does not authenticate independent provider contact, observe the currently installed adapter, or resolve legacy routing validUntil semantics. USF-1165 therefore remains open.
+
+Carrier cf9dece8bb1a07421f7aad7d39e49865b7176323 records decisions 0011 (bounded ANQR build), 0012 (exact source transfer) and 0013 (retained semantics/debt), plus the finite build-input inventory. USF-1161, USF-1170 and USF-1172 are confirmed Done for their decision scopes. Together with the seven earlier closures, ten tasks are confirmed Done; none of those states proves deployment or all-programme completion.
+
+## Timing and continuous maintenance checkpoint
+
+The existing operational ledger .usf/metrics/programme-jobs.jsonl held 386 older records, ending 2026-09-05. The intervening work retained command/test logs but did not consistently append the ledger. That gap is explicit; missing durations are not reconstructed. Prospective recording resumed with the existing .usf/tools/time-job.py helper. These are unadmitted operational observations pending USF-1176, not a new semantic metric contract or accepted-progress series.
+
+| Job | Direct measured duration | Result and scope |
+|---|---:|---|
+| Earlier full-gate ordinary batch | 125746.772411 ms | 745 passed; excludes the five subsequent confined obligations and later changes |
+| Current CLI registry verification, 2026-09-06 01:05:38 UTC | 83.333726 ms | Node child command exited 0; 3/3 operator-observability tests; test-runner internal duration 54.37242 ms is a different interval |
+| Current CLI help readback, 2026-09-06 01:05:38 UTC | 97.090730 ms | usf help --json exited 0 |
+| ANQ-4954 UIF closure readback, 2026-09-06 01:06:29 UTC | 371.833464 ms | 73 resources, closure b06cbd7b253eb97bc7c2f27ac1a852efbacf541592c26ea27228a132785827bf |
+
+The latest command/readback logs are .usf/inputs/linear-completion-cli-registry-current.log, linear-completion-help-current.json and linear-completion-anqr-managed-service-closure.json. Source carrier is cf9dece8 with explicitly uncommitted bootstrap/ANQR graph additions. Timings use monotonic nanoseconds with UTC start/end. Model-active time, queue delay, token costs and overlap-adjusted totals are unknown unless independently exposed; these samples are not an optimisation comparison.
+
+At each accepted checkpoint, retain exact job/source/outcome identities, update this checkpoint and handover, and reconcile changed CLI behavior with registry/help/schema and focused checks. Use the supported operator recorder for ordinary jobs; never add a wrapper that changes a steward command's authenticated direct parent. Keep an unavailable measured interval unknown. The custom continuous-review skill now repeats this maintenance obligation, alongside the existing USF-1177 review scope. Full instrumentation and restart/deduplication acceptance remain with USF-1176/1173.
+
 ## Continuation
 
-USF-1165 remains open. Independent review rejected the initial isolated reader candidate because a fully rehashed forged score projection could still pass without durable observation replay. The candidate is being replaced in ignored isolated state; no provider-reader implementation from that candidate is part of this checkpoint. The accepted no-clock-expiry decision and a legacy routing TTL path also require consistent disposition before claiming all readers agree.
+USF-1182 remains open. The isolated candidate removes exactly 259 stale lockfile lines and preserves current intended dependencies. Seven initial regression cases passed; independent review then found missing resolved-version/locator/peer/integrity tamper coverage. The revised isolated candidate adds an independently derived retained-lock fingerprint and four negatives; 11/11 cases and direct installed-compiler checking pass, pending independent review and governed checks before integration. Construction has an active current grant; the selected generic completion policy is proofblocked, and actual realise no-change refused WORK_COMPLETION_POLICY_INVALID. A separate clean frozen offline bootstrap plus direct compiler and missing-compiler refusal must still be observed and authenticated. A warm cached compiler result is not that evidence.
 
-USF-1182 remains open: live importer comparison still finds `n3`, `oxigraph` and `rdf-validate-shacl` in the lockfile but absent from package.json. A cached compiler pass does not prove frozen clean-clone bootstrap.
+ANQ-4954 applied transaction 82109e8a70f12168321aabf2af5bb7f7e43f6eb25f5a6e3409aec4c424bfbcf2 adds an opt-in product-owned UIF binding and typed physical-infrastructure exclusion. Its manifest imports only ANQR safety authority; UIF is resolved separately through the foundationAuthorityManifest binding to preserve isolation. Service/provider/account/environment/method/evidence remain unresolved for implementation. Existing ANQ-4955 foundation closure work remains separate.
 
-No push, deployment, external provider invocation, managed-resource operation, actual Claude takeover, consumer adoption or whole-programme completion was performed by this checkpoint. The ANQR worktree's existing edits and the running Hermes supervisor PID 2054583 were preserved. Re-read current Git, CLI and stewardship state before continuing; these observations are historical once the source or runtime moves.
+USF-1177 bounded single-reviewer passes continue in this steward session. No persistent review timer has been installed or enabled. USF-1178 remains dependent on the unfinished USF-1162 real handover/continuation acceptance. USF-1188 runs in isolated site worktree /home/user/src/usf-v3-site-atlas at base 20059dcf599dc17e6b2f91086f326d31fee7206f, with a capture-only semantic proposal under review; no Atlas implementation is accepted yet.
+
+No push, deployment, new provider invocation, managed-resource operation, actual Claude takeover, production adoption or whole-programme completion is claimed. Existing ANQR edits and the running Hermes supervisor PID 2054583 are preserved. Current status readback reported live cycle 43 with zero ready selected application work; that narrow projection is not all-issue completion. Re-read current Git, CLI and stewardship before continuing.

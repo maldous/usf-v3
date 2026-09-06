@@ -1,0 +1,24 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/architecture-assurance.json",
+    "graph/manifests/profile-authority.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/bootstrap-consistency.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:bootstrap-consistency",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/bootstrap-consistency-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:bootstrap-consistency-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
