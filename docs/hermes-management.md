@@ -210,6 +210,44 @@ deterministic currentness digests, not signatures, and GitHub does not own or
 calculate them. ANQR remains an overlay; reusable core manifests contain no
 ANQR triples.
 
+## Dispatch accounting
+
+The implementation and lifecycle result projections distinguish these counts:
+
+| Field | Meaning |
+|---|---|
+| plannedUnits | Units selected for the wave, including reused units |
+| eligibleUnits | Non-reused units with an eligible graph route |
+| attemptedUnits | Units with at least one recorded preflight or invocation attempt |
+| contactedUnits / contactedAttempts | Distinct units / attempts that entered a local CLI or SDK invocation |
+| successfulUnits | Units whose invocation returned a successful nonempty result |
+| structurallyAcceptedUnits | Successful units whose output passed the structural acceptance step |
+| refusedUnits | Planned units ending refused, including structurally rejected output |
+| reusedUnits | Units resolved from retained semantic cache without dispatch |
+
+Compatibility aliases are dispatchedUnits=contactedUnits,
+modelInvocations=contactedAttempts, cacheHits=reusedUnits and
+acceptedResults=structurallyAcceptedUnits+reusedUnits. Planned units partition
+into structurally accepted, refused and reused outcomes. A preflight refusal
+can count as attempted but never contacted; no eligible route records zero
+attempts and zero contacts. A local invocation can refuse before any remote
+provider receives it, so these fields do not authenticate remote contact or
+count invisible provider-internal HTTP retries.
+
+Graph attempts expose preflight/invocation phase and contact disposition.
+Repair records retain parent/work/evidence lineage; the reader accepts the
+older repair shape with explicit missingness. Existing requested/actual model,
+usage and economic observations keep their own evidence boundaries. Structural
+acceptance, cache reuse and a Linear implementation closure do not publish
+semantic completion. The provider census still has separate catalogue,
+configured, credential, adapter, availability and qualification denominators.
+
+This is an additive result change, with existing command options and schema
+identity retained. A running supervisor may retain already imported modules;
+source integration alone does not prove that it has executed the new path.
+Use fresh dated readback and the ordinary lifecycle controls when an authorised
+upgrade is required.
+
 ## Provider population and credentials
 
 “Full provider/model population” means every route currently configured and
