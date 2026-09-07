@@ -1,5 +1,67 @@
 # USF V3 handover
 
+## Integrated descriptor safety checkpoint - 2026-09-07
+
+Source carrier: 1d2e27181cfe13698051e2ec658b2e3690dda941,
+tree caa76433f02bd359dd698e6acc34ee31e69b55c3. The canonical graph-generated
+descriptor schema, referencing interrogation wrapper, local contribution
+schema, native preparation adapter, shared context derivation and tests are
+now tracked. The old candidate-only statements below are historical.
+Strict adapter compatibility refuses swapped/missing/additional rule roles,
+including an extra role reusing a known rule, and inconsistent output producer
+lineage. Read-only independent review found those reported defects addressed.
+
+Full authoritative validation passed 923 ordinary tests (zero failures/skips)
+and all five graph-selected confinement checks, exit 0:
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`.
+Temporal log: `.usf/inputs/cli-closure-repair-full-check.log`.
+Full-gate candidate: sha256:a48fad48dbed429ed2de30787dbb96496a104b1dd544947c7b3923a3b758bb85.
+Earlier failing gates/candidates remain historical, not acceptance evidence.
+The synthetic multi-validation regression now declares its complete bounded
+literal import/schema closure; no check, receipt-currentness assertion or
+confinement was relaxed. Keep receipt-bound graph/semantic-first.nq unchanged;
+shared validation runtime declarations belong in graph/usf-bootstrap.nq.
+
+Installed prepare-local -> resolve -> apply -> both graph-selected checks ->
+integrate dry-run -> integrate delivered final candidate
+sha256:1d383b914595793ee8a48865c84b4139a89732422c1ccc3a343174e8fb8b6b62.
+Original basis: sha256:23f330666673243e547aa0b214d9e1da2659093db164d7dc62b2bb8818fad8c2.
+Integration request: sha256:ee0a1658238900d7565b7820e3c75a15cb6308950bf54178fcce3d4e894bc54e.
+Observation: sha256:87832330a3c6310fb74fd49daac8dd4e2df9963db3c93520e9bb5a702175c30f.
+Outcome integration-success; new-advancement; rollback not-required-fast-forward.
+Check receipts are under `.usf/receipts/check/1d383b914595793ee8a48865c84b4139a89732422c1ccc3a343174e8fb8b6b62/`.
+
+Fresh `./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json`
+returns one descriptor, 100 diagnostics, complete=false, executionAuthority=none,
+parallelSafety.state=unproven, terminalClosure.equal=false. Report digest:
+sha256:eeb85cea66b019a31a829fec42f6ae37ebe4edd0383749e2a19d0c0e8cac3f87.
+Schema permits complete=true without execution authority and typed proved safety,
+but schema-valid proof shapes are not authenticated parallel permission.
+Terminal completion/recovery obligations, independent safety/currentness/conflict
+evaluation and canonical interrogation/admission/frontier agreement remain open.
+USF-1194 also retains native preimage race/interruption coverage. No issue closure,
+completion publication, provider contact, Hermes cut-over or ANQR runtime claim.
+
+Current postimage basis is sha256:b8e120ddcbbd49d14ea5f181e379d43779e791abcb437c5407d92f0a0276a199;
+construction eligibility is false after source movement. Exact next transition:
+inspect `./bin/usf help evidence construction`, then run
+`./bin/usf evidence construction --work urn:usf:work:cli-transition-definition --profile urn:usf:profile:cli-transition-definition:1 --manifest graph/manifests/cli-transition-definition.json --output .usf/candidates/construction-authority/next-descriptor-evidence.json`.
+Use current prove construction and publish construction-authority help to prove
+and publish that exact candidate, then read back work before bounded edits.
+Do not reuse an old basis/grant or fabricate a provider contribution.
+
+Nineteen delivered postimages were compared against tracked source with zero
+mismatches. Removed redundant `.usf/inputs/cli-transition-implementation` and
+four bounded diagnostic traces. Retained proposal inputs, rejected candidates,
+integration/check receipts and necessary runtime history; these are temporal
+state, not implementation. No new implementation references development-only
+input paths. Unrelated worktrees remain untouched; USF-1193 owns the wider
+clean-clone/runtime-state audit, which is not yet proven. Disk: 335G available,
+81% used. Hermes supervisor e2f6e23b399268910ef4311d9 remains live; no restart.
+Selected ANQR ready=0 is not programme completion. No provider/Linear/integration
+mutation is in flight. Final publication and stewardship readback are recorded
+in the accompanying Linear checkpoint; do not infer them from this source text.
+
 ## Typed local preparation contract checkpoint - 2026-09-07
 
 Carrier before this checkpoint: e92909529df27d1eeb37de251e79576578a640cf,
