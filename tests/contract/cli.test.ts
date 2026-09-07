@@ -67,8 +67,9 @@ test("registered integration adapter returns a stable refusal without fabricatin
     candidateDigests: [digest],
     dryRun: true,
     nonClaims: [
-      "no-integration-observation-created",
-      "no-evidence-proof-publication-or-completion-effect",
+      "no-successful-integration-or-completion-effect",
+      "refusal-integration-observation-may-exist",
+      "no-evidence-or-proof-publication-effect",
       "no-github-push-provider-runtime-staging-or-production-effect",
     ],
   });

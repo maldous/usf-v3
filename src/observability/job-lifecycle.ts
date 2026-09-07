@@ -1,12 +1,22 @@
 import { readFileSync } from "node:fs";
 import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
-import { createJsonSchemaValidator } from "../schema/index.ts";
+import { Ajv2020, type AnySchema, type ValidateFunction } from "ajv/dist/2020.js";
 
 const eventSchema = JSON.parse(readFileSync(new URL("../../schemas/job-lifecycle-metric-event-v2.schema.json", import.meta.url), "utf8")) as unknown;
 const reportSchema = JSON.parse(readFileSync(new URL("../../schemas/job-lifecycle-metrics-report.schema.json", import.meta.url), "utf8")) as unknown;
-const validateEvent = createJsonSchemaValidator<Record<string, unknown>>(eventSchema);
-const validateReport = createJsonSchemaValidator<Record<string, unknown>>(reportSchema);
+function compileLocalSchema(schema: unknown): ValidateFunction<unknown> {
+  const ajv = new Ajv2020({ allErrors: true, coerceTypes: false, logger: false, messages: false, ownProperties: true, removeAdditional: false, strictNumbers: true, strictRequired: false, strictSchema: true, strictTuples: true, strictTypes: true });
+  ajv.addFormat("date-time", true);
+  return ajv.compile(schema as AnySchema);
+}
+
+function validateLocal<T>(validator: ValidateFunction<unknown>, value: unknown): { readonly valid: true; readonly value: T } | { readonly valid: false } {
+  return validator(value) ? { valid: true, value: value as T } : { valid: false };
+}
+
+const validateEventSchema = compileLocalSchema(eventSchema);
+const validateReportSchema = compileLocalSchema(reportSchema);
 const MAX = Number.MAX_SAFE_INTEGER;
 const keyFields = ["jobIdentity", "workIdentity", "attemptIdentity", "phaseIdentity", "eventKind"] as const;
 
@@ -58,7 +68,7 @@ export function summarizeJobLifecycle(input: readonly unknown[], options: Lifecy
   const keys = new Map<string, string>();
   let duplicates = 0;
   for (const value of input) {
-    const result = validateEvent.validate(value);
+    const result = validateLocal<Record<string, unknown>>(validateEventSchema, value);
     if (!result.valid) refuse("JOB_LIFECYCLE_EVENT_INVALID");
     const event = result.value;
     if (!actualInstant(event.observedAt) || (event.startedAt !== null && !actualInstant(event.startedAt)) || (event.finishedAt !== null && !actualInstant(event.finishedAt))) refuse("JOB_LIFECYCLE_UTC_INVALID");
@@ -146,6 +156,6 @@ export function summarizeJobLifecycle(input: readonly unknown[], options: Lifecy
     return Object.freeze({ jobType: row.exemplar.jobType, phaseIdentity: nullableId(row.exemplar.phaseIdentity), sourceIdentity: nullableId(row.exemplar.sourceIdentity), scopeIdentity: nullableId(row.exemplar.scopeIdentity), toolIdentity: nullableId(row.exemplar.toolIdentity), routeIdentity: nullableId(row.exemplar.routeIdentity), attempts: row.attempts, reportedFinishes: row.finishes, reportedFailures: row.failures, reportedInterruptions: row.interruptions, claimedAccepted: row.claimed, acceptedOutcome: null, duration: Object.freeze({ samples: sorted.length, unknown: row.unknown, minNanoseconds: min, maxNanoseconds: max, medianNanoseconds: median(sorted) }) });
   });
   const report = Object.freeze({ schema: "urn:usf:job-lifecycle-metrics-report:2", status: events.length === 0 ? "not-observed" : incomplete > 0 || options.source.truncated || omitted > 0 ? "incomplete" : "ok", view: "summary", acceptanceStatus: "unverified", acceptedOutcome: null, coverage: Object.freeze({ inputRecords: input.length, validRecords: events.length, duplicateRecords: duplicates, refusedRecords: 0, incompleteAttempts: incomplete, pairedAttempts: paired, overlapPairs, incomparableClockDomains: byDomain.size > 1 ? byDomain.size - 1 : 0, omittedGroups: omitted, sourceTruncated: options.source.truncated }), source: sourceState(options.source), refusals: Object.freeze([]), items: Object.freeze(items), nonclaims: Object.freeze(["Claimed outcomes are unverified and are not authenticated acceptance.", "Durations use only paired monotonic offsets in one clock domain."]) });
-  if (!validateReport.validate(report).valid) refuse("JOB_LIFECYCLE_REPORT_INVALID");
+  if (!validateLocal<Record<string, unknown>>(validateReportSchema, report).valid) refuse("JOB_LIFECYCLE_REPORT_INVALID");
   return report;
 }

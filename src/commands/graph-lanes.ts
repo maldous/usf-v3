@@ -21,8 +21,11 @@ import type { CommandResult } from "./dispatcher.ts";
  */
 const profileType = "urn:usf:type:RealisationProfile";
 const typePredicate = "urn:usf:predicate:type";
+const selectsContractPredicate = "urn:usf:predicate:selectsContract";
+const semanticContractType = "urn:usf:type:SemanticContract";
 const fixtureDirectory = "fixtures";
 const maximumLanes = 512;
+const suspendedProductManifestPrefixes = ["graph/manifests/anqr-", "graph/products/anqr/"] as const;
 
 async function manifestPaths(repositoryRoot: string): Promise<readonly string[]> {
   const root = resolve(repositoryRoot, "graph");
@@ -55,6 +58,23 @@ async function manifestPaths(repositoryRoot: string): Promise<readonly string[]>
   return manifests.slice().sort();
 }
 
+async function directlyDeclaredProfiles(repositoryRoot: string, manifest: string): Promise<readonly string[]> {
+  const manifestSource = await readFile(resolve(repositoryRoot, manifest), "utf8").catch(() => undefined);
+  if (manifestSource === undefined) return [];
+  let parsed: unknown;
+  try { parsed = JSON.parse(manifestSource); } catch { return []; }
+  if (typeof parsed !== "object" || parsed === null || !Array.isArray((parsed as Record<string, unknown>).sources)) return [];
+  const profiles = new Set<string>();
+  for (const entry of (parsed as { sources: Array<{ path?: unknown }> }).sources) {
+    if (typeof entry.path !== "string") continue;
+    const source = await readFile(resolve(repositoryRoot, entry.path), "utf8").catch(() => undefined);
+    if (source === undefined) continue;
+    const expression = /<([^<>]+)>\s+<urn:usf:predicate:type>\s+<urn:usf:type:RealisationProfile>/gu;
+    for (const match of source.matchAll(expression)) profiles.add(match[1]!);
+  }
+  return [...profiles].sort();
+}
+
 function stageCounts(packets: readonly WorkPacket[]): Readonly<Record<string, number>> {
   const counts = new Map<string, number>();
   for (const packet of packets) {
@@ -85,11 +105,13 @@ export async function graphLanesCommand(repositoryRoot: string, args: readonly s
   let workSlotCount = 0;
   let workSlotsAtRisk = 0;
   let coveredLaneCount = 0;
-  for (const manifest of manifests) {
+  manifests: for (const manifest of manifests) {
+    if (suspendedProductManifestPrefixes.some((prefix) => manifest.startsWith(prefix))) continue;
     let graph;
     try { graph = loadSemanticGraph(repositoryRoot, manifest); } catch { continue; }
-    for (const profile of orderedProfiles) {
-      if (lanes.length >= maximumLanes) break;
+    const manifestProfiles = await directlyDeclaredProfiles(repositoryRoot, manifest);
+    for (const profile of manifestProfiles) {
+      if (lanes.length >= maximumLanes) break manifests;
       let packets: readonly WorkPacket[] = [];
       try { packets = deriveWork(graph, { selector: `profile:${profile}`, maxItems: 100 }).items ?? []; } catch { continue; }
       if (packets.length === 0) continue;
