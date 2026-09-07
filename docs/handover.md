@@ -1,5 +1,49 @@
 # USF V3 handover
 
+## Source admission and parallel-safety boundary - 2026-09-07
+
+Accepted carrier before this documentation checkpoint is
+d5f17f5e080c6f1e10e5cce8ac1945d9b55b8b7a, tree
+a8e5f6b39d9a31f0a216389ab8a7b196ff50b630. Its tracked tree was clean.
+Fresh profile-bound work interrogation still returns active construction and
+basis f57d66c8e296d8ffd56253dbfcc429b63d3430148f63d3b7966563b0114d259b.
+The prior 875-test/five-confined-check full gate covers that semantic carrier,
+not the implementation postimages.
+
+MAIN owns all ignored candidate paths; Bohr completed a read-only safety review
+and is frozen. Candidate local preparation now requires the selected contract's
+exact local-authored source and preparation-algorithm requirements and types.
+The pure constructor/parser also requires matching requirement/dependency
+digests in the immutable basis. Missing, partial, foreign-contract and rehashed
+omission/mismatch cases refuse. This is not fresh authority authentication by
+the pure parser; normal current-basis validation remains mandatory downstream.
+
+The eight-file bounded test invocation recorded in the preceding checkpoint
+now passes 47 tests, zero failures/skips. Strict installed tsc --noEmit passes
+for candidate resolve.ts and local-contribution, resolver and fake-call-resolve
+tests. No candidate integration, provider invocation or completion was claimed.
+Hermes was freshly live at cycle 539, supervisor e2f6e23b399268910ef4311d9,
+PID 2054583, selected ready=0; this is not programme completion.
+
+Next executable transition: interrogate the existing work/profile through
+`./bin/usf work` as below, then continue only the admitted candidate scope.
+For typed parallel-safety schema authoring, inspect `./bin/usf help transact`
+and author graph-owned allowed/constant discriminator and record-alternative
+primitives before implementing their generic schema derivation. Existing
+field specifications cannot express branch-specific required proof fields.
+Required safety records must bind exact assessed members/pairs, scopes and
+resources, semantic/currentness basis, conflicts, obligations and verifier
+evidence. An empty conflict set or a declared proved tag is never proof.
+Cross-record currentness/coverage requires an admitted evaluator, not JSON
+Schema. Keep complete independent of execution authority; keep topology-only
+waves unproven until that evaluator is implemented and authenticated.
+
+USF-1192 also still requires authenticated terminal/recovery closure and the
+canonical local preparation adapter before the required schemas/source can
+enter tracked paths through normal apply/check/integrate. No required ignored
+candidate file is accepted as a permanent runtime dependency. USF-1194 owns
+source-admission/delivery details; USF-1193 owns clean-clone reproduction.
+
 ## Current local contribution scope - 2026-09-07
 
 USF-1194 is In Progress under USF-1192. Its bounded source/schema/resolver scope
