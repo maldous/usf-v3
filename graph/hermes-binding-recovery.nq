@@ -379,3 +379,5 @@
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "tests/integration/hermes-linear.test.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "tests/integration/linear-binding.test.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "tests/unit/commands/linear-binding.test.ts" <urn:usf:graph:hermes-binding-recovery> .
+<urn:usf:validation-runtime-closure:hermes-binding-recovery:1> <urn:usf:predicate:repositoryReadFile> "src/graph/linear-binding.ts" <urn:usf:graph:hermes-binding-recovery> .
+<urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:readPath> "src/graph/linear-binding.ts" <urn:usf:graph:hermes-binding-recovery> .

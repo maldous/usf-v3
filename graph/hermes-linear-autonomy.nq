@@ -436,3 +436,5 @@
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/unit/linear/client.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/unit/linear/contribution.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/unit/linear/state.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/graph/linear-binding.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "src/graph/linear-binding.ts" <urn:usf:graph:hermes-linear-autonomy> .
