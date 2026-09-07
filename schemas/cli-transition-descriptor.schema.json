@@ -1673,6 +1673,13 @@
       "$ref": "#/$defs/recovery",
       "description": "Typed recovery obligations including terminal verification."
     },
+    "resultSchema": {
+      "description": "Graph-owned command result schema resource, separate from every produced durable artifact schema. Compiled admission validates resource, contained path and wire identity before effects.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
     "version": {
       "description": "Immutable descriptor revision.",
       "maximum": 1048576,
