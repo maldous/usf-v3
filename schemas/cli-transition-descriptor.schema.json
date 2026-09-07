@@ -1024,6 +1024,418 @@
         "unknownOutcomeRule"
       ],
       "type": "object"
+    },
+    "terminalAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "declarations": {
+          "description": "declarations: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "edges": {
+          "description": "edges: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "$ref": "#/$defs/terminalEdge"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "nodes": {
+          "description": "nodes: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "$ref": "#/$defs/terminalNode"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "reasonCodes": {
+          "description": "reasonCodes: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "requiredTransitions": {
+          "description": "requiredTransitions: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "satisfaction": {
+          "const": "unverified",
+          "description": "satisfaction: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "semanticBasis": {
+          "description": "semanticBasis: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "structuralComplete": {
+          "description": "structuralComplete: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "type": "boolean"
+        },
+        "terminalArtifacts": {
+          "description": "terminalArtifacts: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "declarations",
+        "edges",
+        "nodes",
+        "reasonCodes",
+        "requiredTransitions",
+        "satisfaction",
+        "semanticBasis",
+        "structuralComplete",
+        "terminalArtifacts"
+      ],
+      "type": "object"
+    },
+    "terminalDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "closureRule": {
+          "description": "closureRule: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "explanation": {
+          "description": "explanation: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "identity": {
+          "description": "identity: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "profile": {
+          "description": "profile: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "roots": {
+          "description": "roots: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "terminalArtifacts": {
+          "description": "terminalArtifacts: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "transitions": {
+          "description": "transitions: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "version": {
+          "const": "1",
+          "description": "version: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "work": {
+          "description": "work: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "closureRule",
+        "explanation",
+        "identity",
+        "profile",
+        "roots",
+        "terminalArtifacts",
+        "transitions",
+        "version",
+        "work"
+      ],
+      "type": "object"
+    },
+    "terminalEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "predicate": {
+          "description": "predicate: typed terminalEdge value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "rule": {
+          "description": "rule: typed terminalEdge value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "source": {
+          "description": "source: typed terminalEdge value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "target": {
+          "description": "target: typed terminalEdge value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "predicate",
+        "rule",
+        "source",
+        "target"
+      ],
+      "type": "object"
+    },
+    "terminalEdgeRule": {
+      "additionalProperties": false,
+      "properties": {
+        "explanation": {
+          "description": "explanation: typed terminalEdgeRule value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "identity": {
+          "description": "identity: typed terminalEdgeRule value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "predicate": {
+          "description": "predicate: typed terminalEdgeRule value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "required": {
+          "description": "Whether this relationship must exist for every source of this type; missing required edges refuse structural completeness.",
+          "type": "boolean"
+        },
+        "scope": {
+          "description": "scope: typed terminalEdgeRule value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "enum": [
+            "contract",
+            "owner",
+            "reference",
+            "work-profile"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceType": {
+          "description": "sourceType: typed terminalEdgeRule value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "targetType": {
+          "description": "targetType: typed terminalEdgeRule value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "explanation",
+        "identity",
+        "predicate",
+        "required",
+        "scope",
+        "sourceType",
+        "targetType"
+      ],
+      "type": "object"
+    },
+    "terminalNode": {
+      "additionalProperties": false,
+      "properties": {
+        "identity": {
+          "description": "identity: typed terminalNode value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "semanticType": {
+          "description": "semanticType: typed terminalNode value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "sourceDigest": {
+          "description": "sourceDigest: typed terminalNode value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "state": {
+          "description": "state: typed terminalNode value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "enum": [
+            "missing-semantics",
+            "unverified"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "identity",
+        "semanticType",
+        "sourceDigest",
+        "state"
+      ],
+      "type": "object"
+    },
+    "terminalPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "edges": {
+          "description": "edges: typed terminalPolicy value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "items": {
+            "$ref": "#/$defs/terminalEdgeRule"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "explanation": {
+          "description": "explanation: typed terminalPolicy value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "identity": {
+          "description": "identity: typed terminalPolicy value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "maxDepth": {
+          "description": "maxDepth: typed terminalPolicy value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maximum": 65536,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maxEdges": {
+          "description": "maxEdges: typed terminalPolicy value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maximum": 65536,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maxNodes": {
+          "description": "maxNodes: typed terminalPolicy value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maximum": 65536,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "version": {
+          "const": "1",
+          "description": "version: typed terminalPolicy value; declaration and structural observation do not authenticate satisfaction or grant execution.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "edges",
+        "explanation",
+        "identity",
+        "maxDepth",
+        "maxEdges",
+        "maxNodes",
+        "version"
+      ],
+      "type": "object"
     }
   },
   "$id": "urn:usf:cli-transition-descriptor:1",
