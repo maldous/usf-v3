@@ -1041,7 +1041,7 @@
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation:cli-transition-definition> <urn:usf:predicate:applicability> "required" <urn:usf:graph:cli-transition-definition> .
-<urn:usf:validation:cli-transition-definition> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/commands/transition.test.ts tests/contract/cli-transition-coverage.test.ts tests/contract/operator-observability.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:cli-transition-definition> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/commands/transition.test.ts tests/contract/cli-transition-coverage.test.ts tests/contract/operator-observability.test.ts tests/unit/schema/registry.test.ts tests/unit/collaboration/local-contribution.test.ts tests/unit/collaboration/resolve.test.ts tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation:cli-transition-definition> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation:cli-transition-definition> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation:cli-transition-definition> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:cli-transition-definition> .
@@ -1158,3 +1158,169 @@
 <urn:usf:cli-field-specification:artifact-identity:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-field-specification:artifact-identity:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-field-specification:artifact-identity:1> <urn:usf:predicate:text> "Exact semantic subject identity of this artifact record, derived from its source subject rather than a claimed identity property." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:algorithm:local-contribution-preparation:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:algorithm:local-contribution-preparation:1> <urn:usf:predicate:text> "Resolve a unique current work/profile from stable root within the selected manifest. Use existing deriveWork and immutable basis helpers; bind canonical graph-selected scope, original source/operation bytes and preimages before returning any envelope. Caller supplies only root selector and genuine proposed file operations, not authority digests. Capture file identity and bytes through existing confined no-follow bounded readers, compare identities/preimages again before returning. Fail on stale source, unsupported file type/mode/encoding, scope gaps or operation collision. No primary writes, subprocesses, credentials, providers or hidden lifecycle effects." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:algorithm:local-contribution-preparation:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:algorithm:local-contribution-preparation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:algorithm> <urn:usf:algorithm:local-contribution-preparation:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:outputSchema> <urn:usf:schema:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:registeredCommand> <urn:usf:command:resolve-prepare-local:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:sourceKind> <urn:usf:contribution-source:local-authored:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:text> "Compiled native adapter identity local-contribution-prepare; proposed API prepareLocalContribution(root, selection, proposedOperations). src/commands/resolve.ts owns preparation CLI binding; src/collaboration/local-contribution.ts owns envelope production; same resolveContributions owns resolution. A graph adapter IRI never becomes an arbitrary module import. Preparation returns a proposal on stdout only." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:type> <urn:usf:type:CliTransitionAdapter> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:adapterIdentity> <urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:command> <urn:usf:command:resolve-prepare-local:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:owner> <urn:usf:contract:cli-transition-definition:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:text> "Canonical planned preparation transition, not a new lifecycle. Structural typed input/effect/recovery/proof records must be completed through the current graph field-specification mechanism before the generic kernel reports mapping complete. Missing records remain explicit gaps; this declaration grants no execution." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:type> <urn:usf:type:CliTransitionDescriptor> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:adapterIdentity> <urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:authorityEffect> "Read current authority and explicit proposed operations; emit a local contribution on stdout. No durable state, primary files, provider calls, evidence or publication." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:availability> "planned" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:commandPath> "resolve prepare-local" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:forContract> <urn:usf:contract:cli-transition-definition:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:outputSchema> <urn:usf:schema:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:synopsis> "usf resolve prepare-local --root IRI --manifest PATH --input PATH|-" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:constructionRouteConstraint> "This additive local-source scope permits only a native local contribution producer and the existing resolver union, with canonical transition registration and tests. Existing domain handlers, publication, locks, provider Contribution identity and metrics semantics remain unchanged. Local bytes are not provider success or independent review. Refresh aggregate construction evidence/proof/grant after the amendment; no old scoped grant authorizes newly added paths." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "schemas/local-contribution.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "src/collaboration/local-contribution.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "src/collaboration/resolve.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "src/commands/resolve.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/unit/collaboration/local-contribution.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/unit/collaboration/resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/unit/schema/registry.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:requirement:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contribution-source:local-authored:1> <urn:usf:predicate:nonClaim> "Imported bytes are not model invocation success, qualification, independently reviewed work, construction proof, completion, integration or published authority." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contribution-source:local-authored:1> <urn:usf:predicate:text> "Source kind local-authored denotes locally imported/proposed bytes, not knowledge of their original human/model author. Original author, model identity, token usage and cost are unknown, represented by explicit unknown/null fields in the closed local schema, never zero or a fabricated ProviderIdentity. Preparation tool identity and observed byte provenance are separate exact facts." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contribution-source:local-authored:1> <urn:usf:predicate:type> <urn:usf:type:LocalContributionSource> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contribution-source:local-authored:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:local-contribution:1> <urn:usf:predicate:nonClaim> "Local record is a proposal artifact and cannot attest original authorship, model success, token cost, review independence or authority." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:local-contribution:1> <urn:usf:predicate:schema> <urn:usf:schema:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:local-contribution:1> <urn:usf:predicate:sourceKind> <urn:usf:contribution-source:local-authored:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:local-contribution:1> <urn:usf:predicate:text> "Discriminated local wire record: schema urn:usf:local-contribution:1, kind local-contribution, exact basis, canonical identity, operations and provenance. Provenance binds preparation rule/tool, root selection, observed source-content digests and declared unknown original author/model/tokens/cost. No provider/assignment imitation. Canonical artifact digest covers the closed record excluding only its own artifactDigest, with path-ordered unique operations. Raw file digest and canonical JSON record digest domains remain distinct." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:local-contribution:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:local-contribution:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:permission:cli-transition-definition> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:adapterIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-contribution:1> <urn:usf:predicate:canonicalName> "local-contribution" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-contribution:1> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-contribution:1> <urn:usf:predicate:semanticStage> <urn:usf:stage:realisation> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-contribution:1> <urn:usf:predicate:text> "Move the four bounded in-memory registry tests from tests/unit/schema/validator.test.ts to new tests/unit/schema/registry.test.ts without duplication. Select registry.test.ts for confined focused validation; keep recursive all-schemas/apps validation in the ordinary full gate. Never validate a silent subset or admit ambient source directories." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-contribution:1> <urn:usf:predicate:text> "USF-1194 extends the existing cli-transition-definition aggregate. Native preparation derives one local-authored contribution from a stable root and genuine proposed operations without caller-reconstructed basis/assignment/provider identities or a private script. Preserve provider Contribution wire semantics. No prerequisite on completion of this same work; both changes integrate under one current parent basis." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-contribution:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-contribution:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-contribution-resolution:1> <urn:usf:predicate:text> "Only resolveContributions accepts the discriminated Contribution | LocalContribution union. Each branch authenticates its own closed wire schema and digest; compare exact immutable bases before deterministic collision handling and preserve accepted local artifact digests in existing candidate lineage. Local input never passes through synthetic call-result metrics or provider-success validation. Provider call envelopes still require genuine complete provider results. Exact replay is deterministic and grants no second attempt or new provenance; incompatible basis, unknown discriminator or reused digest with changed content refuses." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-contribution-resolution:1> <urn:usf:predicate:type> <urn:usf:type:DerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-contribution-resolution:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:local-contribution:1> <urn:usf:predicate:repositoryPath> "schemas/local-contribution.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:local-contribution:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:local-contribution:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:CliTransitionAdapter> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:CliTransitionAdapter> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:LocalContributionSource> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:LocalContributionSource> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/commands/call.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/commands/provider-leaf-dispatch.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:authorityRule> "Finite current static import/re-export closure read from existing resolver, graph work reader and resolver test, plus explicit schema inputs. New owned candidate files enter as candidate postimages. Dynamic imports, data dependencies, external AJV/compiler/bwrap runtime and the eventual new command fixture must be audited against the admitted fixture-process environment before construction validation; this list is not a completeness proof. Missing closure requires explicit amendment, never ambient whole-repository mounts." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:forValidation> <urn:usf:validation:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "config/privacy.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "schemas/call-result.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "schemas/candidate.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "schemas/contribution.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "schemas/realisation-basis.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "schemas/resolve-result.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/collaboration/index.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/collaboration/resolve.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/commands/call.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/commands/check.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/commands/command-input.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/commands/dispatcher.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/commands/help.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/commands/provider-leaf-dispatch.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/commands/resolve.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/core/canonical.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/core/scope.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/providers/fake.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/providers/types.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/index.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/transition.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/work-completion.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "tests/fixtures/proposal-packet.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/collaboration/resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:local-contribution:1> <urn:usf:predicate:applicability> "required" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:local-contribution:1> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/collaboration/local-contribution.test.ts tests/unit/collaboration/resolve.test.ts tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:local-contribution:1> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:local-contribution:1> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:local-contribution:1> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:local-contribution:1> <urn:usf:predicate:text> "Test preparation through native command with real bounded proposed bytes, basis derived from current root, pure resolver mixed local/provider union, unchanged provider failures, unknown provenance, non-overlap and malformed/stale rejection. Test symlink parents/leaf, hardlinks, source movement, duplicate paths, path traversal, delete/content ambiguity, unauthorized writes, same-input deterministic replay and changed-basis refusal. Assert no repository effects, contact, invented provider usage or synthetic call-result. Verify registered transition selection reaches producer and same resolver, not a private packager." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:local-contribution:1> <urn:usf:predicate:type> <urn:usf:type:TestObligation> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation:local-contribution:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "config/privacy.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "schemas/call-result.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "schemas/candidate.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "schemas/contribution.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "schemas/realisation-basis.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "schemas/resolve-result.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/collaboration/index.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/collaboration/resolve.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/commands/call.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/commands/check.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/commands/command-input.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/commands/graph-leaf-dispatch.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/commands/provider-leaf-dispatch.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/commands/resolve.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/core/scope.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/graph/index.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/graph/nquads.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/graph/query.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/providers/fake.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/realisation/basis.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/realisation/construction-authority.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/realisation/fixture-process.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/realisation/index.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/realisation/transition.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "src/realisation/work-completion.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "tests/fixtures/proposal-packet.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "tests/unit/collaboration/resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:transition> <urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:validation> <urn:usf:validation:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "schemas/local-contribution.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "src/collaboration/local-contribution.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "src/collaboration/resolve.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "src/commands/resolve.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/contract/fake-call-resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/unit/collaboration/local-contribution.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/unit/collaboration/resolve.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/unit/schema/registry.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:contribution-source:local-authored:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:schema:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:algorithm:local-contribution-preparation:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:rule:local-contribution-resolution:1> <urn:usf:graph:cli-transition-definition> .

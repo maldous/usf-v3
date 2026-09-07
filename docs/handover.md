@@ -1,5 +1,41 @@
 # USF V3 handover
 
+## Current local contribution scope - 2026-09-07
+
+USF-1194 is In Progress under USF-1192. Its bounded source/schema/resolver scope
+is part of the existing cli-transition-definition aggregate, not a second
+work lifecycle. Current construction receipt:
+evidence/construction-authority/c3f1ff39905c3e5225c4a342208f699f49215fe5f3d868f1bc3e64306be68495.json,
+receiptDigest sha256:1ab119679de9193947232b4caf10eb8c3a4e41942a68e655cfc20b44d4e2436a.
+Profile-bound CLI work readback reports active construction through integrate,
+20 exact write paths, basis
+sha256:f57d66c8e296d8ffd56253dbfcc429b63d3430148f63d3b7966563b0114d259b.
+
+Scope transaction 45c631937a356ce9cb42825e6c241ac317c0bdabe483b4ecec02bdec8afe1162
+and governed role corrections 06ee47e1152b1cc81cf156807150bb8c74ac1fdfe09490c1f3b4141c5093c924
+and 176985f97c41ebfa8e92796e4a8dad41a1c721f200681ccabed575d7cf21a3ad
+preserve new files as write outputs with absence preimages, not nonexistent
+construction inputs. Duplicate sourceKind ownership was refused and removed
+from the proposal; the convention graph retains ownership. No gate was waived.
+Full primary check passed: 875 tests, five confined checks, exit 0.
+Temporal log: .usf/inputs/local-contribution-scope-full-check.log.
+
+Implementation remains ONLY in .usf/inputs/cli-transition-implementation.
+LocalContribution is a distinct proposed wire record; provider Contribution and
+usage semantics remain unchanged. Existing resolve input is being adapted to
+local records without synthetic provider success. Four bounded registry tests
+moved to registry.test.ts; the recursive repository schema census remains in
+the ordinary full gate. The split passed 9/9 tests. Neither local preparation
+nor a compatible executable transition descriptor is accepted yet.
+
+Next: finish and review the candidate local module/resolver/CLI tests, complete
+the graph-admitted preparation adapter and its typed input/effect/recovery
+records, then use the same ordinary apply/check/integrate path. Missing native
+preparation remains CLI_TRANSITION_UNIMPLEMENTED; do not replace it with a
+private packager or fabricated provider provenance. Construction scope is not
+permission to report planned transition records as executable. Exact evolving
+ownership/checkpoints are on USF-1194; prior checkpoints below are historical.
+
 ## Current checkpoint - 2026-09-07, CLI descriptor safety
 
 This checkpoint supersedes the ownership/current-state statements below;
