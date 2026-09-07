@@ -1,5 +1,63 @@
 # USF V3 handover
 
+## Completion artifact lineage integrated - 2026-09-07 UTC
+
+USF-1192 progressed, not accepted. Semantic carrier
+abc7d67593dff47b1ab80cfcdff13dc41360539f adds three completion artifact
+contracts, reciprocal producer transitions, predecessor consumption and
+recovery references to existing evidence/proof/publication algorithms and
+policy. Applied semantic transaction
+sha256:56701845257b1c5e2e2684306c966b875c75df9815a3a5a73ca6e9e199043ab9
+validated 116 graphs, 62123 quads, 16 invariants, zero violations.
+No alternate executor, schema, automatic crash repair or adapter admission.
+Publication partial source/receipt state explicitly refuses; authenticated
+matching replay and verified-complete work readback remain required.
+
+The first full gate failed one global test assertion (938/939): local
+preparation admission was incorrectly assumed to cover all transitions.
+The correction scopes admission to the exact local identity, requires all
+three completion adapters to remain unmapped, and checks their actual
+producer/consumer/recovery census without granting satisfaction or execution.
+Native candidate sha256:b6354f15055c49f527b0c7bab106705bf19a4188b92ee75458769210a9a94e5d;
+basis sha256:3066b41bb3d261d7fb0811ce7aa5705ebcd00e652a963fafdb866c68d5110f63.
+13 focused command tests, targeted strict tsc, both graph-selected candidate
+checks and postimage checks passed. Independent read-only review found no
+weakened gate. Integration request
+sha256:d05738eaa4ec5a1b4588d6d77773aa5acc2f15b968eac17fe1f8acd3b3f50bd6;
+observation sha256:460c9c06aba39481e224c77a0513ead14831708139b0b3ecd034c37e5e2e9bae;
+source commit c1fa72fa2c45e8bcee435ff992ae40b09eaa07dd,
+tree 06df92dd113e9160659a35928cbb1bd64db1c4c5.
+
+Fresh `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`
+exited 0: 940/940 tests, zero skipped/cancelled, all five confined checks pass.
+Log `.usf/inputs/completion-descriptor-lineage-full-check-v2.log`;
+the prior failed log without `-v2` remains failure evidence.
+All required implementation/semantics are tracked. New ignored files are
+bounded transaction/contribution proposals, construction candidates and
+execution observations only; no ignored script or schema is required.
+
+Current CLI census: 26 nodes, 42 edges, four transitions; report
+sha256:2183b25c1d14b448d48c961d0f2763e9c5c6f337f5bbf977110c68d8fe611ce8.
+Semantic basis sha256:b1d40acdfd6125e91265d97da20f53b4ab0a3c20c8602595fe2a61d4a2bd4306.
+Canonical generated schema digest remains
+sha256:524de9b1a90e8c5bbd8e551f8d7b03477b8eadfb03a776289dbe96b4256eb899.
+Complete=false, executionAuthority=none, parallelSafety=unproven,
+terminal satisfaction=unverified. The declaration intentionally remains
+incomplete: local preparation and intermediate artifacts must not be called
+final completion simply because downstream consumers are not yet mapped.
+
+Next executable transition remains supported `transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json` after current stewardship
+readback/recovery. Then reconcile current construction authority before
+implementing typed input/effect derivations over existing completion commands,
+checked no-change materialisation/check/review/delivery artifact closure and
+conditional Linear reconciliation. Shared reauthentication references are
+requirements, not executable role-specific interpreters. The missing
+transact input-contract discovery (declaredAffectedPaths) and preparation
+file-posture help are also recorded on1192. No new issue or skill anecdote
+was created.1192/1194/1193 and autonomous1189 remain open.
+
 ## Timeout cleanup integrated and full gate passed - 2026-09-07 UTC
 
 This checkpoint supersedes the interrupted-gate boundary below, while retaining
