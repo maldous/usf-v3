@@ -1,5 +1,67 @@
 # USF V3 handover
 
+## Current composition repair in progress - 2026-09-07 UTC
+
+Last full-gate accepted and pushed source remains501f236012a0de3287f1f366879cacec9284c886,
+962 ordinary tests plus five confined gates. Do not infer a new accepted capability
+from the later local integrations below. USF-1192 remains the complete executable
+circuit owner; USF-1189 only independently proves and cuts over that circuit.
+
+Current local source HEAD5f9c3410cb9a74455dbb2d686db6bee6d9a9145b,
+treeecf997bac1e661aef2a3bfc4397876b1e0e2c00c, is intentionally unpushed.
+Native intent integration595bc236 and native receipt-set integration5f9c3410
+passed both graph-selected and postimage checks. Direct outer acceptance failed:
+.usf/inputs/selective-check-interruption-regression.log records
+CANDIDATE_BASIS_MISMATCH before the first fault barrier, zero validation launches;
+.usf/inputs/selective-check-set-regression.log records a test assertion using code
+instead of native RealisationError.reasonCode. No interruption/full-gate claim.
+
+Exact diagnosed source defects: pre-spawn currentCandidateWorkspace runs after
+execution-view construction and correctly rejects the owned nonempty scratch;
+complete-set readState recursively acquires the same non-reentrant candidate lock.
+The ordinary workspace guard must NOT be weakened. Governed composition amendment
+b0a81d024829dceab7bd0d6ec6e2081deca2e4792923f283d0f698fefd159f12 permits
+shared core basis derivation plus exact manifest/fact snapshots after view creation,
+and an unchanged authenticated no-change reader callback inside one existing lock.
+Construction publication53be1d4d22457c5cbd93d6684dee991c37da289035c6391f0287da3057a9c781
+is published AND verified; receipt
+sha256:efef1071d22383459cd853015a350ebaeaf6395101ba43cc5d324ce0e528c73d.
+Earlier scoped grants are historical after affected source movement.
+
+One integrator. Pending source postimages in.usf/inputs/selective-check-authoring
+are bounded development inputs, never operational helpers: Mendel owns check.ts,
+adversarial receipt test and tracked interruption fixture; Maxwell owns native
+no-change reader and completion integration test; main owns receipt-set callsite.
+Turing's final kernel/CLI/help and unit-test postimages remain frozen and unintegrated.
+Bohr owns only the subsequent proof semantic proposal, not primary graph/source.
+No worker may integrate. The fixture now loads the tracked runtime from its source
+root while passing the isolated operation root; it must not depend on copied caches.
+
+Next executable transition:
+./bin/usf transition inspect --root urn:usf:work:cli-transition-definition
+--manifest graph/manifests/cli-transition-definition.json.
+After reviewed repair postimages: resolve prepare-local, resolve, apply, both exact
+graph-selected checks, integrate, genuine outer regressions, then
+COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check.
+Publish/read back Git and Linear only after the full gate passes. Required source,
+schemas and shared intent graph live in tracked locations, not ignored runtime state.
+
+Retained rejected/superseded candidates:02feec46... combined manifest739854bytes
+exceeded the existing512KiB reader;1bdeff786... failed TypeScript and stale metadata
+tests;62344caa... had corrected types but stale metadata tests. None is completion.
+The CLI still lacks pre-effect serialization-bound interrogation. V1 receipts also
+remain byte/path-only for runtime authority inputs and do not prove executable
+file-mode currentness. Both gaps, proof/review/publication, full terminal/Linear/
+Hermes adapters, recovery and parallel/coverage/clean-clone acceptance remain1192.
+
+Hermes supervisor e2f6e23b399268910ef4311d9 PID2054583 is preserved. Integration
+observations97642b16... and031ca6d8... read back success with no rollback required;
+no external provider/Linear mutation was part of those integrations. Do not recover
+an integration by editing state. Current stewardship must be read through
+hermes steward status, not inferred from this historical checkpoint.
+Linear1192 comments b2365638-c598-40d5-b141-c6cdf8155dab and
+e55bab1c-3dc0-4ba1-a01b-b1052c097092 carry exact evidence and remaining boundaries.
+
 ## Selective checks and execution-intent batch in progress - 2026-09-07 UTC
 
 Last accepted, fully checked and remotely read-back source remains
