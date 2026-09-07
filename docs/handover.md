@@ -1,6 +1,66 @@
 # USF V3 handover
 
-## Graph-owned record variants - 2026-09-07
+## Canonical safety schema published - 2026-09-07
+
+Carrier before this checkpoint: cd89d9677081a50cb79fdd112b4f95ec05435b09,
+tree 19f0bb5ecf0ccb1d233a4c56266516650a2d1129. The canonical descriptor schema
+is now governed repository material at schemas/cli-transition-descriptor.schema.json,
+not only an ignored postimage. It was generated from graph-owned record/field
+specifications and published through supported semantic transactions, not by
+installing candidate TypeScript. Canonical schema object digest:
+sha256:4dcc3a5cbeb94cbb0b9cac10a10be465fd45b014eadefa6f400b7324011b80ac.
+Fresh graph rederivation agrees exactly, with zero structural gaps and 23 still
+unresolved operational rules. Schema shape does not authenticate those rules.
+
+Safety records define unproven/blocked/proved variants and typed currentness,
+member/pair coverage, read/write scope, non-file resources, conflicts and verifier
+evidence. Every collection is explicitly present even when empty; missing pairs
+or conflicts are not equivalent to an observed empty analysis. Reverse amendment
+discovery cannot introduce schema records outside the required forward closure.
+Semantic Requirement urn:usf:requirement:cli-parallel-safety-schema:1 binds the
+record root and its transitive definitions into the work basis. Directly treating
+a schema record as a requirement exposed the existing JSON-pointer/path-domain
+conflation; that remaining 1192 issue is recorded in Linear, not bypassed.
+
+Applied transactions: safety records
+6e06fcc13897b2f34c0e6582412c9b6d0e21bbba3fe8bbf6e6aeca0d6a82c599;
+dependency binding b504e9239f6e5a3381aaefec49d94fcde25544dbe53821416ba618307a32349a;
+requirement role correction 3ab87869a40ee8e93e4be017b55f0eb3923169e5876dbcc938e30d614ad08857;
+schema definition 61c90df33e76b371843e5aa1472cf95c1a938898f8c1025007598491c55a9ec5;
+atomic collection-presence semantics/schema correction
+7f93e82c31a7bbe15e3a87f8da2ef9dfef55a3f646907ecadcbef92c759cb5fb.
+Initial invalid-name proposal was refused; no integrity or path gate was relaxed.
+
+Current construction receipt:
+evidence/construction-authority/4185980c483ac9f99b319a156a9ed3170049b80773ae597b122b4f0f61b22cfd.json,
+receiptDigest sha256:518c7935594caf934f9312c3211480ec9d9d0b23246f482d01b94bba3b1331ac.
+Current profile-bound work is construction eligible at basis
+sha256:4d0217ff2814a9b12273645b784f29aa7573d43bfca6bfdd4c58faa0daa3985d.
+The prior c402895c2a204fa00a8f33cd8cb86b6d3d19474c44f530c477c31dda2488b14b
+receipt remains history. Full primary gate passed 875 ordinary tests, zero
+failures/skips, and five confined checks after the final schema/grant changes:
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`.
+Temporal log: .usf/inputs/cli-descriptor-tracked-full-check.log.
+
+Candidate eight-file suite: 55/55 passing, strict installed tsc passing for
+kernel, handler and coverage test. MAIN owns all candidates; Bohr is frozen.
+Fresh diagnostic candidate CLI report b6bcabfc49f4fdfb8c2b69d7db65280cf62714c9b85f02bc8f6fe13d7abcc67a
+still refuses with complete=false, executionAuthority=none, typed safety.state
+unproven, 105 diagnostics, zero descriptors and terminalClosure.equal=false.
+Hermes is live, supervisor e2f6e23b399268910ef4311d9, PID 2054583, cycle 549,
+selected ready=0 and no provider activity. This is not programme completion.
+
+Next: inspect current help/work and continue the admitted 20-path candidate
+scope. Complete the canonical local-preparation transition's typed input,
+effect, artifact and recovery records and its generic adapter, then exercise
+ordinary resolve/apply/check/integrate. Implement independent safety/currentness
+evaluation and terminal/recovery closure before any corresponding claim.
+The interrogation wrapper, local contribution schema and TypeScript remain
+unaccepted candidate postimages; they must be integrated before BAU relies on
+them. Publishing this declarative descriptor schema did not accept those files,
+activate a transition, authenticate a proved tag or close USF-1192/1194.
+
+## Prior graph-owned record variants - 2026-09-07
 
 Carrier before this checkpoint: 3c0e58664e7a715c0dc27e6abc741d3cdee08210,
 tree 5e6a7d687bda416277d34429eaf24d77aaa4884a. Graph-owned allowedValue,
