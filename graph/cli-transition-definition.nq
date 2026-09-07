@@ -3699,7 +3699,7 @@
 <urn:usf:cli-transition:no-change-workspace:1> <urn:usf:predicate:owner> <urn:usf:contract:cli-transition-definition:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-transition:no-change-workspace:1> <urn:usf:predicate:command> <urn:usf:command:realise-no-change:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-transition:no-change-workspace:1> <urn:usf:predicate:produces> <urn:usf:cli-contract:no-change-workspace-artifact:1> <urn:usf:graph:cli-transition-definition> .
-<urn:usf:cli-transition:no-change-workspace:1> <urn:usf:predicate:text> "Required existing producer in the completion artifact closure. Its input/effect/recovery adapter remains unimplemented; this declaration admits no materialisation or check execution." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:no-change-workspace:1> <urn:usf:predicate:text> "Required no-change workspace producer with typed intended input, effect and recovery declarations. Canonical execution adapter remains unmapped; declarations grant no materialisation, recovery, parallel safety or completion authority." <urn:usf:graph:cli-transition-definition> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:transition> <urn:usf:cli-transition:no-change-workspace:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-terminal-closure:cli-transition-definition:1> <urn:usf:predicate:transition> <urn:usf:cli-transition:no-change-workspace:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-transition:completion-evidence:1> <urn:usf:predicate:consumes> <urn:usf:cli-contract:no-change-workspace-artifact:1> <urn:usf:graph:cli-transition-definition> .
@@ -3741,3 +3741,297 @@
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:requirement:candidate-content-digest:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "src/providers/types.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "src/providers/types.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:type> <urn:usf:type:CliRecordSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:unknownFieldPolicy> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:schemaFragment> "/$defs/noChangeRequest" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:schemaIdentity> <urn:usf:cli-transition-descriptor:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:sourceType> <urn:usf:type:CliNoChangeRequest> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:schemaDerivationRule> <urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:amendment:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:noChangeRootIdentity> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:outputProperty> "rootIdentity" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:text> "Selected stable semantic work or binding root. Current context must uniquely derive work, contract and versioned profile; root is not execution authority." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:noChangeRootIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-input:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-no-change-request-root-identity:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:noChangeManifestPath> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:outputProperty> "manifestPath" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:text> "Explicit contained manifest selects graph sources. Derive current basis, scoped permission, no-change policy, candidate identity and workspace from that closure; no caller override." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:noChangeManifestPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-input:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-no-change-request-manifest-path:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:type> <urn:usf:type:CliRecordSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:unknownFieldPolicy> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:schemaFragment> "/$defs/recoveryCase" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:schemaIdentity> <urn:usf:cli-transition-descriptor:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:sourceType> <urn:usf:type:CliRecoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:schemaDerivationRule> <urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:amendment:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:recoveryWhenState> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:outputProperty> "whenState" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:text> "Declared precondition class, not an observation that it currently holds." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:allowedValue> "absent" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:allowedValue> "complete-current" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:allowedValue> "partial" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:allowedValue> "conflicting" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:allowedValue> "stale" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:allowedValue> "busy" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-state:1> <urn:usf:predicate:allowedValue> "unknown" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:recoveryWhenState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:recoveryCaseAction> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:outputProperty> "action" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:text> "Required domain response after authenticating the condition; this declaration cannot execute it." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:allowedValue> "create" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:allowedValue> "reuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-action:1> <urn:usf:predicate:allowedValue> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:recoveryCaseAction> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:recoveryCaseMayMutate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:outputProperty> "mayMutateWorkspace" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-boolean:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:text> "Whether this declared branch may create workspace bytes. False branches must preserve retained state." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:recoveryCaseMayMutate> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:recoveryCaseCondition> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:outputProperty> "condition" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:text> "Exact condition to authenticate before selecting this branch." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-condition:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:recoveryCaseCondition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:recoveryCaseNextTransition> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:outputProperty> "nextTransitions" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-iri:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:collection> "true" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:minimumCardinality> "0" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:maximumCardinality> "32" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:text> "Potential downstream consumers after a successful authenticated result. Not a ready frontier or grant." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-next:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:recoveryCaseNextTransition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:recoveryCaseRefusalCode> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:outputProperty> "refusalCodes" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:collection> "true" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:minimumCardinality> "0" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:maximumCardinality> "32" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:text> "Guaranteed concrete refusal codes, if any. An empty set means no single code is guaranteed for this state class; actual native typed or fallback classification must be read from the result." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-reason:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:recoveryCaseRefusalCode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:text> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:outputProperty> "explanation" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:text> "Interruption and preservation boundary; no stronger recovery or completion assertion." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-explanation:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-recovery:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-recovery:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:recoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:outputProperty> "cases" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-record:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-recovery:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:collection> "true" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:minimumCardinality> "0" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:maximumCardinality> "32" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:text> "Typed recovery branches declared by the domain; absent declarations produce an empty set, not an inferred recovery plan." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-recovery-case:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:recoveryCase> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-input:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-input:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-input:1> <urn:usf:predicate:text> "Canonical intended request contains only rootIdentity and manifestPath. Derive unique work/contract/profile through the shared context resolver, then derive the exact work packet, current immutable basis and graph-selected no-change completion policy. Candidate digest, workspace, policy, basis, profile and work overrides refuse. The legacy realise no-change parser is not a canonical adapter; no --input execution is admitted by this declaration." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-guard:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-guard:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-guard:1> <urn:usf:predicate:text> "Existing native materialisation requires exact current active construction authority and valid graph-selected no-change policy. Authenticate source scope, policy and basis again under the existing candidate lock. Missing, stale or ambiguous authority refuses; descriptor availability is not eligibility." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-scope:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-scope:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-scope:1> <urn:usf:predicate:text> "Existing native effect may create only the derived private no-change candidate workspace and existing per-candidate operational lock state. Primary repository source, Git, provider, evidence/proof, publication and Linear state are untouched. The candidate identity is derived from current basis, policy, empty operations/lineage, scope, write set and exact preimages." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-readback:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-readback:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-readback:1> <urn:usf:predicate:text> "Authenticate exact manifest identity, current scoped basis, full expected workspace inventory and bytes before returning a workspace result. Existing complete matching state is reused without deletion or rewriting. Candidate existence, empty operations and successful return establish neither validation nor completion." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-safety:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-safety:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-safety:1> <urn:usf:predicate:text> "The native candidate lock serializes the same derived identity only. No disjoint-scope, shared-authority, provider/resource or cross-transition parallel-safety proof is implemented here. Topological independence never admits parallel execution." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-replay:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-replay:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-replay:1> <urn:usf:predicate:text> "A fresh absent workspace may be created after current authority authentication. If interrupted before any workspace effect, absence must be observed again before retry. If effect completed but acknowledgement was lost, restart reauthenticates and reuses the exact complete workspace. Abrupt partial creation, unsafe/missing manifest, conflicting bytes, stale relevant basis or unknown state refuse without deleting retained state. Caught fresh-creation errors use existing bounded cleanup, which is not crash atomicity or power-loss durability. No partial-workspace repair or automatic outcome assumption is admitted." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-terminal:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-terminal:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:no-change-descriptor-terminal:1> <urn:usf:predicate:text> "A successful no-change workspace is only input to all graph-required completion checks. Check/review/evidence/proof/publication/reconciliation obligations remain separately required; no terminal satisfaction or execution authority follows from this producer descriptor." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-input:1> <urn:usf:predicate:type> <urn:usf:type:CliInputContract> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:predicate:type> <urn:usf:type:CliEffectContract> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryContract> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:no-change-request:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-no-change-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-input:1> <urn:usf:predicate:schema> <urn:usf:schema:no-change-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-input:1> <urn:usf:predicate:inputDerivationRule> <urn:usf:rule:no-change-descriptor-input:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-input:1> <urn:usf:predicate:text> "Execution-unmapped proposed canonical no-change producer request, not the current legacy parser. Only selected rootIdentity and manifestPath are external. Candidate/workspace/policy/currentness identities are derived outputs; canonical execution remains unmapped." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:predicate:effectClass> "candidate-workspace" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:predicate:contact> "none" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:predicate:guardRule> <urn:usf:rule:no-change-descriptor-guard:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:predicate:scopeDerivationRule> <urn:usf:rule:no-change-descriptor-scope:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:predicate:readbackRule> <urn:usf:rule:no-change-descriptor-readback:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:predicate:safetyDerivationRule> <urn:usf:rule:no-change-descriptor-safety:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:predicate:text> "Effectful local workspace materialisation, not observation. Exact current context and native guards are mandatory. This contract describes existing native behavior without registering a canonical executor." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:intentDerivationRule> <urn:usf:rule:no-change-descriptor-scope:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:irreversibleBoundaryRule> <urn:usf:rule:no-change-descriptor-replay:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:unknownOutcomeRule> <urn:usf:rule:no-change-descriptor-replay:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:reconciliationRule> <urn:usf:rule:no-change-descriptor-readback:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:terminalRecoveryProofRule> <urn:usf:rule:no-change-descriptor-terminal:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryObligation> <urn:usf:rule:no-change-descriptor-replay:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryObligation> <urn:usf:rule:no-change-descriptor-readback:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:text> "Typed branch declarations require authentication of actual retained state. No branch observation, partial-state repair, crash-atomic guarantee or canonical recovery execution is inferred." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryCase> <urn:usf:cli-recovery-case:no-change-absent:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-absent:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-absent:1> <urn:usf:predicate:recoveryWhenState> "absent" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-absent:1> <urn:usf:predicate:recoveryCaseAction> "create" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-absent:1> <urn:usf:predicate:recoveryCaseMayMutate> "true" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-absent:1> <urn:usf:predicate:recoveryCaseCondition> "Exact derived workspace is absent under the candidate lock, and current construction basis and policy are authenticated." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-absent:1> <urn:usf:predicate:text> "Before-effect interruption can retry only after a fresh absence/currentness check. Fresh creation caught failures use existing cleanup; abrupt interruption can leave partial state." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-absent:1> <urn:usf:predicate:recoveryCaseNextTransition> <urn:usf:cli-transition:completion-check-receipts:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryCase> <urn:usf:cli-recovery-case:no-change-complete-current:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-complete-current:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-complete-current:1> <urn:usf:predicate:recoveryWhenState> "complete-current" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-complete-current:1> <urn:usf:predicate:recoveryCaseAction> "reuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-complete-current:1> <urn:usf:predicate:recoveryCaseMayMutate> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-complete-current:1> <urn:usf:predicate:recoveryCaseCondition> "Exact retained manifest equals intended no-change identity, relevant basis is current, and all expected workspace bytes and inventory authenticate." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-complete-current:1> <urn:usf:predicate:text> "After-effect acknowledgement loss can reuse this authenticated complete state. Return does not create validation, proof or completion." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-complete-current:1> <urn:usf:predicate:recoveryCaseNextTransition> <urn:usf:cli-transition:completion-check-receipts:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryCase> <urn:usf:cli-recovery-case:no-change-partial:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-partial:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-partial:1> <urn:usf:predicate:recoveryWhenState> "partial" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-partial:1> <urn:usf:predicate:recoveryCaseAction> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-partial:1> <urn:usf:predicate:recoveryCaseMayMutate> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-partial:1> <urn:usf:predicate:recoveryCaseCondition> "A workspace retained before this invocation exists but its required manifest or expected bytes are missing or unsafe." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-partial:1> <urn:usf:predicate:text> "Preserve pre-existing retained state. No supported partial-workspace repair is declared. This does not describe caught-error cleanup within a fresh creation attempt." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryCase> <urn:usf:cli-recovery-case:no-change-conflicting:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-conflicting:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-conflicting:1> <urn:usf:predicate:recoveryWhenState> "conflicting" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-conflicting:1> <urn:usf:predicate:recoveryCaseAction> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-conflicting:1> <urn:usf:predicate:recoveryCaseMayMutate> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-conflicting:1> <urn:usf:predicate:recoveryCaseCondition> "Retained manifest, byte inventory or contents differ from the exact intended candidate." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-conflicting:1> <urn:usf:predicate:text> "Preserve retained state and refuse; do not rebuild it or manufacture closure." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryCase> <urn:usf:cli-recovery-case:no-change-stale:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-stale:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-stale:1> <urn:usf:predicate:recoveryWhenState> "stale" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-stale:1> <urn:usf:predicate:recoveryCaseAction> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-stale:1> <urn:usf:predicate:recoveryCaseMayMutate> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-stale:1> <urn:usf:predicate:recoveryCaseCondition> "Relevant scoped source, construction basis or no-change policy no longer authenticates." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-stale:1> <urn:usf:predicate:text> "Preserve retained workspace; derive current semantic context before attempting different work." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryCase> <urn:usf:cli-recovery-case:no-change-busy:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-busy:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-busy:1> <urn:usf:predicate:recoveryWhenState> "busy" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-busy:1> <urn:usf:predicate:recoveryCaseAction> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-busy:1> <urn:usf:predicate:recoveryCaseMayMutate> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-busy:1> <urn:usf:predicate:recoveryCaseCondition> "Existing candidate ownership prevents acquiring the required native candidate lock." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-busy:1> <urn:usf:predicate:text> "Do not steal ownership, erase state or infer another invocation outcome." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:predicate:recoveryCase> <urn:usf:cli-recovery-case:no-change-unknown:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-unknown:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryCase> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-unknown:1> <urn:usf:predicate:recoveryWhenState> "unknown" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-unknown:1> <urn:usf:predicate:recoveryCaseAction> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-unknown:1> <urn:usf:predicate:recoveryCaseMayMutate> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-unknown:1> <urn:usf:predicate:recoveryCaseCondition> "Current workspace outcome or required authentication cannot be established." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-recovery-case:no-change-unknown:1> <urn:usf:predicate:text> "Unknown stays unknown. Restart must authenticate actual state before choosing another branch." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:no-change-workspace:1> <urn:usf:predicate:inputContract> <urn:usf:cli-contract:no-change-workspace-input:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:no-change-workspace:1> <urn:usf:predicate:effectContract> <urn:usf:cli-contract:no-change-workspace-effect:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:no-change-workspace:1> <urn:usf:predicate:recoveryContract> <urn:usf:cli-contract:no-change-workspace-recovery:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:no-change-producer-descriptor:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:no-change-producer-descriptor:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:no-change-producer-descriptor:1> <urn:usf:predicate:text> "Expose graph-owned canonical no-change request, effect and typed recovery cases through the existing generic descriptor projection and graph-generated schema. Preserve no-execution authority and unmapped adapter; tests must reject hidden candidate/profile/basis overrides, observation misclassification and partial-state repair claims. Schema and native behavior are not terminal completion." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:requirement:no-change-producer-descriptor:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:CliNoChangeRequest> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:CliRecoveryCase> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:no-change-request:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:no-change-request:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:no-change-request:1> <urn:usf:predicate:repositoryPath> "schemas/cli-transition-descriptor.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:minimumLength> "4" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-recovery-case-mutation:1> <urn:usf:predicate:maximumLength> "5" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:recovery-cases:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .

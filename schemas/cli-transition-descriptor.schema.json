@@ -405,6 +405,28 @@
       ],
       "type": "object"
     },
+    "noChangeRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "manifestPath": {
+          "description": "Explicit contained manifest selects graph sources. Derive current basis, scoped permission, no-change policy, candidate identity and workspace from that closure; no caller override.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "rootIdentity": {
+          "description": "Selected stable semantic work or binding root. Current context must uniquely derive work, contract and versioned profile; root is not execution authority.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "manifestPath",
+        "rootIdentity"
+      ],
+      "type": "object"
+    },
     "parallelSafety": {
       "oneOf": [
         {
@@ -988,6 +1010,16 @@
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         },
+        "cases": {
+          "description": "Typed recovery branches declared by the domain; absent declarations produce an empty set, not an inferred recovery plan.",
+          "items": {
+            "$ref": "#/$defs/recoveryCase"
+          },
+          "maxItems": 32,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
         "explanation": {
           "description": "Explain retained identity, permissible continuation and exact refusal conditions.",
           "maxLength": 4096,
@@ -1045,6 +1077,7 @@
       },
       "required": [
         "boundaryRule",
+        "cases",
         "explanation",
         "identity",
         "intentRule",
@@ -1052,6 +1085,88 @@
         "reconciliationRule",
         "terminalProofRule",
         "unknownOutcomeRule"
+      ],
+      "type": "object"
+    },
+    "recoveryCase": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "description": "Required domain response after authenticating the condition; this declaration cannot execute it.",
+          "enum": [
+            "create",
+            "refuse",
+            "reuse"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "condition": {
+          "description": "Exact condition to authenticate before selecting this branch.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "explanation": {
+          "description": "Interruption and preservation boundary; no stronger recovery or completion assertion.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "mayMutateWorkspace": {
+          "description": "Whether this declared branch may create workspace bytes. False branches must preserve retained state.",
+          "type": "boolean"
+        },
+        "nextTransitions": {
+          "description": "Potential downstream consumers after a successful authenticated result. Not a ready frontier or grant.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "refusalCodes": {
+          "description": "Guaranteed concrete refusal codes, if any. An empty set means no single code is guaranteed for this state class; actual native typed or fallback classification must be read from the result.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "whenState": {
+          "description": "Declared precondition class, not an observation that it currently holds.",
+          "enum": [
+            "absent",
+            "busy",
+            "complete-current",
+            "conflicting",
+            "partial",
+            "stale",
+            "unknown"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "condition",
+        "explanation",
+        "mayMutateWorkspace",
+        "nextTransitions",
+        "refusalCodes",
+        "whenState"
       ],
       "type": "object"
     },
