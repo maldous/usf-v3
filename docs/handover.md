@@ -1,5 +1,64 @@
 # USF V3 handover
 
+## Current checkpoint - 2026-09-07, CLI descriptor safety
+
+This checkpoint supersedes the ownership/current-state statements below;
+older identities remain historical evidence, not current authority.
+
+Primary carrier before this checkpoint: HEAD
+4a16be2ccb749ce543dd92e11d53a0bd6088127a, tree
+3e321585d8da5e4d8de6004568e40eeca25e6e1d. The convention-closure manifest
+amendment was applied through transaction
+sha256:c9b3f720d7b56a640f20e33de72e9747efd375ba0b762299ae845bacd5b8336a.
+Current construction receipt:
+evidence/construction-authority/225a0345c24cb34f9caef0283755b3f1ab0b73123de582cd7edbc85ab6f29fd3.json,
+receiptDigest sha256:f9db0dbe783101e20b4c3f0fab2e3d791f0504b7abec1fbd6040c3d18abbf771.
+Full primary gate completed exit 0: 875 tests, zero failures/skips, five
+graph-selected confined checks passing. Command:
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`.
+Temporal log: .usf/inputs/cli-convention-closure-full-check.log.
+This validates the primary semantic/grant change, not the implementation draft.
+
+MAIN owns all candidate paths under .usf/inputs/cli-transition-implementation.
+Bohr is read-only reviewer, not a writer. The draft now derives descriptor
+values through the same graph-owned field specifications that generate the
+canonical schema. The legacy operational `fields` map/parser is removed.
+Topological terminal artifact equality is deliberately insufficient: recovery
+obligations remain unauthenticated and terminalClosure.equal stays false.
+The schema can represent complete=true with executionAuthority=none; this
+representability is not an authenticated semantic completion result.
+
+Fresh diagnostic candidate CLI interrogation of
+urn:usf:work:cli-transition-definition with
+graph/manifests/cli-transition-definition.json returned exit 1,
+TRANSITION_SEMANTICS_INCOMPLETE, 13 unresolved operational rules,
+executionAuthority=none, parallelSafety=unproven, and report digest
+sha256:97dfccf66b110119cbedae8721faea436a645ecdd5586190d1a0647a1b6ccc2a.
+No actual transition descriptors exist for that work yet. Do not infer a
+complete contract from structural schema generation or empty descriptors.
+
+Next executable transition: inspect `./bin/usf help work`, then select work
+urn:usf:work:cli-transition-definition with profile
+urn:usf:profile:cli-transition-definition:1 and its manifest above. Continue
+only in its declared candidate scope. Author missing identity, operational
+rule, parallel-safety evidence and terminal/recovery closure semantics through
+`./bin/usf transact` after inspecting its current help. Native local
+contribution preparation remains CLI_TRANSITION_UNIMPLEMENTED; admit that
+bounded source/provenance extension before implementing it. Do not use a
+private packager, fake-provider envelope or direct primary source copy.
+
+Required schemas remain unaccepted candidate postimages and MUST enter tracked
+schemas/ through governed integration before acceptance. All .usf/ paths here
+are temporary candidate/evidence state, not a supported operating dependency.
+USF-1192 remains In Progress and blocks USF-1189. USF-1193 owns cleanup and
+fresh-clone reproduction; no USF worktrees/candidates were pruned.
+
+Hermes was freshly observed live at cycle 528, supervisor
+e2f6e23b399268910ef4311d9, PID 2054583, no provider activity/transactions.
+Its selected ready=0 projection is not programme completion. Stewardship was
+recovered using the supported CLI after expiry; inspect current steward status
+before any mutation. No integration lock or primary mutation was active.
+
 ## Coordination and reproducibility checkpoint - 2026-09-07
 
 Structured field metadata subsequently applied through transaction

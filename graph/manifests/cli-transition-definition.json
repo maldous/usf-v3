@@ -4,7 +4,8 @@
   "imports": [
     "graph/manifests/fixture-process-runtime.json",
     "graph/manifests/profile-authority.json",
-    "graph/manifests/v3-execution.json"
+    "graph/manifests/v3-execution.json",
+    "graph/manifests/v3-convention.json"
   ],
   "sources": [
     {
