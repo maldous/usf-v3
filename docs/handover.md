@@ -1,5 +1,56 @@
 # USF V3 handover
 
+## Timeout cleanup integrated and full gate passed - 2026-09-07 UTC
+
+This checkpoint supersedes the interrupted-gate boundary below, while retaining
+its failure and recovery history. USF-1195 source repair is integrated at
+61c946db543f2d01b3589ac8d8de1197c2f73ec9 (tree
+dc9a8236ee650c85d836ab5dfa3ac8d17a323027), following scoped semantic carrier
+59b72b9. Candidate sha256:37ed656b89d88955b0bcd6313214be82d3f25c4326e4fcce526c1977e0173e87;
+integration request sha256:dc864430dacd30445eebb44c18e21131248473487ba0ae69ec8bfb517d841faa;
+observation sha256:125d806be55bb5166e48286b2fb1124b5059ecf6a58e4c324666a999135459b0.
+Both declared checks and postimage checks passed. Five focused process tests
+and targeted strict TypeScript checking passed, including an actual detached
+leader with a descendant retaining pipes and ignoring SIGTERM. Signal delivery
+is not asserted to prove descendant death. Normal execution waits for close;
+timeout retains grace escalation and releases owned streams exactly once.
+
+Fresh authoritative command:
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`
+passed with 939/939 ordinary tests, zero skipped/cancelled, and all five
+graph-selected confined fixture checks. Log:
+`.usf/inputs/integration-cleanup-full-check-v3.log` (exit 0).
+Fixture candidate sha256:1cf62b10e238175a1bb5d4e37d43138a102e268f759c2fdabb16f0d69ff814e1;
+receipts under `.usf/receipts/check/1cf62b10e238175a1bb5d4e37d43138a102e268f759c2fdabb16f0d69ff814e1/`.
+The first two cleanup gates refused before tests because the fixture grant
+was stale. A publication attempt refused STEWARD_ACTIVITY_BUSY without effect;
+after idle readback, exact proof publication and eligible work readback passed.
+Tracked construction receipt:
+`evidence/construction-authority/7fc763e7607c9220b1734cf20bd47734de6f3ecb6559ff6ddc879fec5b1ab245.json`.
+Historical refused/interrupted runs remain preserved, not reported as passes.
+
+Hermes remained live, supervisor e2f6e23b399268910ef4311d9, PID2054583,
+cycle597 at readback, with no provider activity or transaction in that snapshot.
+No restart, provider contact, ANQR delivery or autonomous cutover is claimed.
+
+USF-1192 remains unaccepted. Fresh transition inspection reports complete=false,
+executionAuthority=none and TRANSITION_SEMANTICS_INCOMPLETE, digest
+sha256:90001d7010bfc9e83fb59c41c957aa4876d2f24e74b5729fe555953e5ae98d49.
+Topology still grants no parallel safety. The canonical tracked generated
+descriptor schema supports typed independent proof with currentness/conflict
+analysis; the wrapper references it. Shape support is not proof authentication.
+
+Next executable transition: use `./bin/usf help transition`, then
+`./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json`.
+Reconcile current work/construction authority before proposing the remaining
+terminal artifact contracts and reciprocal producer descriptors over existing
+completion evidence, proof and publication commands. Include conditional
+recovery/reconciliation applicability and authenticated satisfaction, not only
+reachability. USF-1192 owns this delta; USF-1194 owns preparation recovery and
+USF-1193 owns temporal-state/clean-clone reproducibility. No issue is closed by
+this checkpoint. Exact publication carrier/readback belongs in Linear; obtain
+current HEAD/status rather than treating an earlier handover hash as current.
+
 ## Terminal census integrated; full gate interrupted - 2026-09-07 UTC
 
 Local source carrier 6d41fa5672fadc2f5548720cad3c6300dcd58f7e,
