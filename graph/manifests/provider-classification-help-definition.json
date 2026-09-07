@@ -1,0 +1,25 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/fixture-process-runtime.json",
+    "graph/manifests/profile-authority.json",
+    "graph/manifests/v3-execution.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/provider-classification-help-definition.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:provider-classification-help-definition",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/provider-classification-help-definition-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:provider-classification-help-definition-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
