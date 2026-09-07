@@ -709,3 +709,11 @@
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:validation> <urn:usf:validation:repository-path-tests> <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:writePath> "src/core/scope.ts" <urn:usf:graph:usf-bootstrap> .
 <urn:usf:work:repository-path-scope> <urn:usf:predicate:writePath> "tests/unit/core/scope.test.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/collaboration/local-contribution.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/commands/transition.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/graph/cli-transitions.ts" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "schemas/cli-transition-descriptor.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "schemas/cli-transition-interrogation.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "schemas/provider-config.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "schemas/route-qualification-receipt.schema.json" <urn:usf:graph:usf-bootstrap> .
+<urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1> <urn:usf:predicate:repositoryReadFile> "src/continuous/lifecycle.ts" <urn:usf:graph:usf-bootstrap> .
