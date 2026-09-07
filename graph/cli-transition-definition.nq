@@ -2553,3 +2553,9 @@
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/unit/realisation/workspace.test.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "graph/cli-transition-definition.nq" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "graph/cli-transition-definition.nq" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "graph/cli-transition-definition.nq" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "graph/v3-convention.nq" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "graph/v3-convention.nq" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "graph/v3-convention.nq" <urn:usf:graph:cli-transition-definition> .
