@@ -1,5 +1,84 @@
 # USF V3 handover
 
+## Primary focus - USF-1192, 2026-09-07
+
+USF-1192 supersedes the immediate USF-1189 delivery sequence. Implement one
+graph-derived CLI transition kernel and complete artifact/recovery DAG, not a
+TypeScript Golden Path state machine. Do not use private lifecycle scripts,
+invent flags, reconstruct receipts, or infer completion. Missing semantics and
+adapters must be reported as TRANSITION_SEMANTICS_INCOMPLETE and
+CLI_TRANSITION_UNIMPLEMENTED respectively, then repaired before dependent work.
+USF-1189 autonomous cut-over resumes only after USF-1192 acceptance.
+
+At this checkpoint the accepted source HEAD is
+632cddadacdd423fc41c604445d8f1f6ffbd2549, tree
+9db9b3c7c9198107670709897e4600e73853ea62, branch
+anqr-experience-realisation. Tracked tree was clean before this handover edit.
+Two local authority-only commits were ahead of origin: 8b0785439d4ac6703c3e8d73edc66c27ee1c1eef
+and 632cddadacdd423fc41c604445d8f1f6ffbd2549. Last previously verified/pushed
+boundary was 0b81d84f703e887fdfad6047aeda0897effdd4ae (875 ordinary tests plus
+five confined fixture checks). A fresh authoritative check was started for the
+current tree and completed with exit 0 (typecheck, ordinary tests and all five
+graph-selected confined fixture checks). Command:
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`.
+Fresh fixture candidate sha256:a48fad48dbed429ed2de30787dbb96496a104b1dd544947c7b3923a3b758bb85;
+receipts are under .usf/receipts/check/a48fad48dbed429ed2de30787dbb96496a104b1dd544947c7b3923a3b758bb85/.
+This validates the primary tree, not either frozen implementation draft.
+
+Original Hermes supervisor e2f6e23b399268910ef4311d9, PID 2054583, remains live.
+At cycle 504 its selected graph/manifests/anqr-application.json reported ready 0,
+no provider activity and no transactions; that is not programme completion.
+Authority identity was sha256:4054fed667ba7884bca862c2c68a9c7ad6db73def4099153211f1d714a9ca3f7.
+Supported stewardship handoff succeeded for claim
+sha256:2be56748f9c9faa88c24b13f98ae94ddb896d7bd0775b0793a7b3cc992eea6d3,
+generation sha256:5062723a9068c74c5a6e9a0b0add3d204edaf6e54a6bf436ac2a93d7cc048cd5.
+Read-back: handoff-ready, activeActivity false, primaryMutation idle, supervisor
+live. A prior STEWARD_ACTIVITY_BUSY refusal made no handoff; the subsequent
+successful operation is the boundary. Recover/claim ownership through current
+hermes steward help before any new governed mutation; never reuse the old lease.
+
+Direct Linear runtime interrogation:
+`./bin/usf hermes status --linear-policy urn:usf:policy:hermes-linear-transport:1 --manifest graph/manifests/hermes-linear-autonomy.json`
+returned running false, runtime null, cycle null, selector digest
+sha256:a76d32fa6304cc137e48968184d4a067aeb91789c37b63fb035ccedaa6adef54.
+There was no .usf/hermes/linear/state.json. No new live Linear/provider delivery
+was launched in this handoff. Existing credential files remain private and
+unchanged. Historical worktrees, candidates, attempts and rejected results remain.
+
+Frozen UNACCEPTED recovery source is .usf/inputs/hermes-linear-implementation,
+not an independent Git repository. Work urn:usf:work:hermes-binding-recovery,
+profile urn:usf:profile:hermes-binding-recovery:1, manifest
+graph/manifests/hermes-binding-recovery.json; nine-file grant receipt
+evidence/construction-authority/65ca2f6f235278161e0a7011eb397fb7c6bdf633ea17f5ac728678247384a855.json.
+Its .usf/recovery-positive-r9.log records a real fixture integration/completion
+recovery test PASS 1/1, no skips, 298447.56018 ms. This is not live autonomy or
+accepted source. Known gap: runHermesLinearCycle callback still observes the
+fresh binding before retained recovery; full controller-cycle and actual
+pre-integration resume coverage remain. Do not integrate merely from this pass.
+Earlier failed r2-r8 logs and their lineage are retained, not rewritten as passes.
+
+Frozen UNACCEPTED help source is
+.usf/inputs/provider-classification-help-implementation. Work/profile/manifest
+use provider-classification-help-definition (:1 for profile). Construction receipt:
+evidence/construction-authority/a7af23fd5af47a7166bc274569dc13f3f195f1ab8024eb1b00aca5d30041bf60.json.
+Three focused tests passed; no governed candidate integration was performed.
+This static-help draft may need replacement under the canonical USF-1192 kernel;
+preserve it rather than quietly merge a competing metadata interpretation.
+
+Next executable transition is read-only USF-1192 audit: `./bin/usf help --json`,
+then inspect current cli.ts, commands/dispatcher.ts, commands/help.ts, graph/work.ts,
+realisation/basis.ts, construction/completion readers, apply/check/integrate,
+stewardship, provider routing/qualification, and Linear mutation reconciliation.
+Initial evidence: cli.ts separately parses binding arguments and chooses effect
+guards; help.ts is a static registry; work.ts and work-completion.ts each parse
+their own inputs; linear-state.ts declares its own lifecycle edges. Derive a
+bounded semantic/tooling authoring scope from this audit before implementation.
+No complete-path interrogation currently demonstrated; do not invent its command.
+Record generated coverage gaps and seed adversarial defects, not a manual green
+checklist. USF-1192 progress comment: 9fc1799b-af4f-4580-8c10-b9143024a18e.
+
+Older checkpoints below are historical and do not override this priority.
+
 ## Current boundary - CLI Hermes autonomy and full roster, 2026-09-07
 
 User direction: ANQR semantic realisation must be performed by CLI-started Hermes
