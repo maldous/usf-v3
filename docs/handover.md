@@ -1,5 +1,66 @@
 # USF V3 handover
 
+## Schema derivation CLI checkpoint - 2026-09-07
+
+Source carrier 9144fe41c86579735e342ac127756db9839aa6e1,
+tree 079b51ccaf4d9e43af08526d721a4efdb6479477. Installed no-effect
+`./bin/usf transition schema --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json`
+emits the canonical graph-generated descriptor schema, source basis and
+operational gaps. Same selector/parser contract as inspection; no writes,
+runtime ledger, permission, completion or parallel authority. The output
+envelope schema is tracked at schemas/cli-schema-derivation.schema.json;
+it does not redefine the descriptor or its semantic lifecycle.
+
+Generated descriptor digest remains
+sha256:c1d477ec43b0e6b4aa82e599397009debd1510d1555149661fe45fa22652b973;
+source basis sha256:df110372c56172bcb48805b50863ad545d7c963ef24493929e8e3bf67b393909.
+Fresh inspection reports 100 gaps, complete=false, executionAuthority=none,
+parallelSafety.state=unproven and terminalClosure.equal=false; report digest
+sha256:96b573945c0f9beee4ec44821d78ca9a1e61b3579029252b35277b98e03795e7.
+Graph command availability still says planned; reconcile that declaration in
+the next governed amendment, not as a substitute for installed evidence.
+
+Native prepare-local/resolve/apply candidate
+sha256:e5ca5a4afbb4fa05a957a32e57722ff0faa2814a486fafe9875c9968e9931b28,
+construction basis sha256:a2cad2a65577d4ed913a78e3fac0bcb15230ca7a61a49bf658e07d6dd02dcf56.
+Both graph-selected checks and postimage checks passed; normal integrate
+request sha256:edc46e6c28b086d928465eea785f98b88f5b7130c1e20d3fb47e5f46c2f2e1a9,
+observation sha256:d6da8944ef2e8f181aa1fe4bfd6bc031c08a234ceee976d444a5cfcde3b454c9.
+Focused 15/15 and strict targeted tsc passed. Full authoritative command
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`
+passed 930 ordinary tests, zero failures/skips, and all five confined checks,
+exit 0; temporal log .usf/inputs/schema-cli-full-check.log. Independent narrow
+review found no blockers after handler/no-ledger and oversized-input tests.
+Unversioned local-contribution validation selector refused without execution;
+the exact bound urn:usf:validation:local-contribution:1 subsequently passed.
+Earlier rejected transaction and superseded candidate remain historical.
+
+Next executable transition: inspect current transact help and author a bounded
+versioned terminal-closure declaration, required by the selected contract and
+matching exact work/profile. Reuse transition, terminalArtifact, closureRule,
+requiresTransition, consumes/producer, proofObligation, recoveryContract,
+recoveryObligation and terminalRecoveryProofRule. Declare bounded traversal,
+scope/type/cycle/missing-reference refusal and typed conditional applicability.
+Unknown conditions stay unresolved in the denominator. Generate declaration,
+obligation-association and assessment records through the existing field
+specifications; the wrapper must reference canonical generated definitions.
+Use the new supported schema command to derive candidate schema bytes, then
+governed transaction and fresh construction evidence/proof/publication before
+source preparation. Separate structural completeness, currentness and
+authenticated satisfaction. Sinks, declaration shape and topology prove none
+of terminal completion or parallel safety. USF-1192 comment
+b917d6a2-91c9-498c-9ac2-f8921c529c20 records this remaining work.
+
+Three integrated postimages matched their authoring copies; removed redundant
+.usf/inputs/schema-cli-source (152K). Candidate workspace (5.2M), proposed
+inputs and receipts remain bounded temporal recovery/history, not required
+implementation. New handler/test/schema contain no .usf-only dependency.
+Disk observation: 334G available, 81% used. No unrelated worktree pruning.
+Hermes e2f6e23b399268910ef4311d9 / PID2054583 remained live, cycle584;
+selected ANQR ready=0 is not programme completion. No provider, autonomous
+delivery, completion publication or issue Done claim. Final Git publication
+and stewardship readback are recorded in the accompanying Linear checkpoint.
+
 ## Shared admission checkpoint - 2026-09-07
 
 Source carrier 5e3738411238dbfbaca42063ce70f6695a929afb,
