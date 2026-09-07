@@ -1,5 +1,76 @@
 # USF V3 handover
 
+## Receipt-currentness repair integrated; full circuit remains primary - 2026-09-07 UTC
+
+USF-1192 owns the COMPLETE executable Linear/Hermes/USF/completion/Linear circuit.
+USF-1189 independently proves and cuts over that completed circuit; no missing
+adapter, recovery, coverage, clean-clone fixture or bounded real run is deferred
+there. The full1192 Linear history (81 comments through19:14UTC) was independently
+read. Current six-transition subset has3/6 structurally complete descriptors and
+adapters,5/6 recovery declarations,0/2 declared terminal artifacts and0/1
+authenticated terminal completion. These are bounded subset denominators, not an
+overall percentage: Linear/provider/controller census remains incomplete.
+
+Semantic carrier7cf133e8b5197230ce72f1ccf91e66859647fa9c and native integration
+63b50085f9d9fe6a7a29cc66c386b47da1d66559,
+tree ba3028b5dffacdabfbc8f78060cea3dac6d8aa66, strengthen the canonical check
+receipt reader before selective reuse. Shared producer/reader validation claims
+and shared execution-view authority-file selection now bind current resource,
+command, environment, mode identity, tools, schemas, workspace facts, and exact
+runtime authority path/byte dependencies. Post-await readback reauthenticates
+basis, validation, authority bytes, candidate facts and receipt. Existing receipt
+schema/digest domain, locks, execution and temporary publication recovery remain
+unchanged. Integration retains its separately derived authority checks.
+
+Candidate sha256:f98e358db5896e74f8f660a24a5eb09285cea863fab8d467884f121be69e6588,
+basis sha256:2fa787d0050f5264ba2ba79bc51014953abd697bd8f81a7a332d396cab1da7ab,
+passed scoped TypeScript,60/60 descriptor tests, both graph-selected checks and
+native postimage validation. Integration request
+sha256:2515dcbaa8617e79b56c4d7521edf883b5dd76e3db5f1d52d105f55879829e15;
+observation sha256:8edae6ae0649936dfbf73d85bbfdbdd6846707a5e84533a31a00e6183588ba63.
+Lock wait5.14ms/hold2726.735ms are not total delivery time. The genuine receipt
+adversarial test passed in the integrated complete tree (one test,21 planted
+self-rehashed mismatches,16681.58712ms total test process). No rejection repaired
+the receipt or mutated its workspace. Full authoritative gate and remote
+readback for this carrier must be obtained before publication is claimed;
+the final1192 checkpoint records exact results and current HEAD.
+
+Postintegration construction publication is
+evidence/construction-authority/ac563311638ab215d5816d18ca326fd467c6e98e7963a49d41b5a4badf46e16a.json,
+receipt sha256:ad651bd93b4455ff4612e3fff5b61388f7a62bb051ce5c635ca4f4f9b1ed8836.
+Earlier e66ae3e... is the preimplementation grant; preserve it as history.
+
+The direct sparse-candidate fixture first refused MANIFEST_UNREADABLE. A proposed
+fixture read expansion then refused construction with WORK_DEPENDENCY_CONFLICT
+for the normalized bootstrap receipt. That exact proposed expansion was
+withdrawn through transact, restoring7cf133e source scope. Do not add a normalized
+receipt as raw readPath or weaken its digest domain. Two empty test-created
+scratch directories were removed with rmdir before a successful native check;
+no source, manifest, receipt or unknown state was repaired. The full-tree direct
+test provides the genuine receipt regression proof, not the refused sparse run.
+
+Next exact interrogation remains ./bin/usf transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json. Next delivery is root-derived
+candidate identity and the graph-required current/absent receipt set, selective
+execution, persistence and full readback. Existing temporary publication or
+unknown states still refuse; no set-atomic recovery is claimed. Native v1
+runtime authority dependencies bind paths/bytes, not executable modes; preserve
+this explicit limitation until separately governed rather than changing the
+existing schema/digest silently.
+
+Parallel work is durable in1192 comments b93f83eb-3bbe-41ed-b841-1c4072dfb56c,
+6a54240f-7bd5-4ee9-9d8b-b1f0c5866fa0 and f5a5a9a5-64c7-4ada-a1eb-513c70ef9d03.
+One integration owner controls shared graph/schema/kernel changes. Independent
+workers prepare check definitions, proof extraction scope, Linear boundary scope,
+Hermes restart scope and proven parallel-safety scope; no worker independently
+integrates or gains provider/lifecycle permission. Temporary proposal postimages
+are development inputs only and must be governed into tracked source before use.
+Required implementation and regression changes above are tracked. Hermes stays
+live; disk334G available/81% used at last readback. No1192 acceptance, authenticated
+terminal or parallel proof, provider contact, production change or1189 cutover
+is claimed. Continue rather than treating this source checkpoint as completion.
+
 ## Source-bound terminal diagnostics integrated - 2026-09-07 UTC
 
 USF-1192 remains primary and unaccepted. Semantic carrier1340162 and native
