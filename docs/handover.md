@@ -2,6 +2,29 @@
 
 ## Coordination and reproducibility checkpoint - 2026-09-07
 
+Structured field metadata subsequently applied through transaction
+sha256:ffa6405e0a2893fe613d831beaea8f6c3f6261a912426a304a46946a14af9087.
+The resulting corpus passed 16 integrity invariants (116 graph files,
+59059 quads, zero violations). This is structural metadata, not complete
+operational rules. Refreshed active construction receipt:
+evidence/construction-authority/17a7a5b51524d5df6bb81f42b17954df74914f8f261f5ec6ea62114e2e107451.json,
+receiptDigest sha256:6eb9ebf1e5affdf5e700ca7c1d28aeeb274d33b28a6ef5a6a0ee8b2762d10f88.
+Bohr now owns only candidate src/graph/cli-transitions.ts and its coverage test
+for generic graph-spec reading/schema generation. MAIN owns other candidate
+paths. Candidate schemas/validator/handler are not integrated. Current candidate
+interrogation is schema-validated but non-authorizing and parallel-unproven.
+Native contribution preparation remains a CLI gap: do not hand-build envelopes
+or use fake providers to manufacture manual contribution provenance. The
+required provenance/schema adaptation must be admitted before implementation.
+
+Last committed/pushed carrier before this field-metadata amendment is
+f3c968ad74dbe3bc6e1a494d852f6ea58db32a7c, tree
+e3be9481beda75471863c8d70fef329c67efadd5. Its full gate passed 875 tests and
+five confined checks. The fresh full gate for the field amendment completed
+with exit 0: 875 ordinary tests, zero failures/skips, all five confined checks
+passing. Log: .usf/inputs/cli-field-specification-full-check.log. This validates
+the primary semantic/grant checkpoint, not ignored implementation drafts.
+
 Latest construction refresh: receipt
 evidence/construction-authority/5073cd3b38364e65b883db8381d7600044be6796cedd1b4f751d54def20dae67.json,
 receiptDigest sha256:b4efe8115d88213ad3c684950a570068f2d89d2c791a6e2b6b83599de503f4c9.
