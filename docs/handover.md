@@ -1,5 +1,73 @@
 # USF V3 handover
 
+## Native canonical no-change adapter integrated - 2026-09-07 UTC
+
+USF-1192 remains primary and unaccepted. Semantic carriers fb9a105 and
+b7ad898, source/test integration fee5578b23f5579d2620cc0a1bed8c5b8ad11fab
+(tree176aeac5a356f303e56eb32d9e61f3502a18b814), and postintegration
+construction carrier0012eb6 expose realise no-change --input through the
+existing canonical transition kernel. Only rootIdentity and manifestPath are
+caller inputs; native work/profile/basis/policy/candidate values are derived.
+Command-result schema and produced-workspace artifact schema are distinct.
+Observation-only compatibility callers still refuse workspace effects.
+Exact rule and typed recovery-case fingerprints reject unknown interpretation;
+bounded no-follow result-schema reads reject unsafe or incompatible inputs.
+No second producer, lifecycle state machine, recovery script or schema was added.
+
+Candidate sha256:9792dd5e62a607fd0171377feaa1e561692fe7393a044bafe3e509e17988af79,
+basis sha256:4ec1f6ae21e60b204efc8bd0b1c4a91ebc140af9bd024699c058446efa7afe28,
+passed55/55 descriptor/contract tests, both graph-selected confined checks and
+native postimage validation. Integration request
+sha256:19ff5ca36c5209a96528e0e516498fd5644d031e1dd096857463d290cc11334b;
+observation sha256:0a3738acb66112630737b5c531b0af17a7fc888eefd0bea181583c826ac8778c.
+Lock wait3.938ms/hold2614.92ms are not total delivery timing.
+The full authoritative check under umask022 passed957/957 tests and all five
+confined checks, exit0. Ordinary test duration162404.671488ms is not total gate
+time. Log .usf/inputs/no-change-execution-full-check.log. Fresh subprocess tests
+cover before-effect interruption, post-materialisation/pre-acknowledgement kill,
+restart/replay, partial/conflicting retained state, caller overrides, and
+post-effect stale-graph refusal with preserved inode/manifest and later replay.
+Independent review findings were corrected; no remaining slice blocker found.
+
+Fresh construction publication applied and verified at
+evidence/construction-authority/11ad0e9ea718cc5cf473bdae31ad934d377e44a50bf5bf705018309083907cee.json,
+receipt sha256:e640eb34e2fc3bea64912c3a04ece939005cd3bd23bfef45d5ec23f7fff19178.
+Installed ./bin/usf realise no-change --input
+.usf/inputs/no-change-execution-installed-request.json ran twice with identical
+results, inode and manifest bytes. Candidate
+sha256:85fc2841605b92cebaaa417bd1a52505e495192b2fc7a8b3ea7f104d2d9d0c33,
+basis sha256:0007c0f0b3e424d2197211fdef50794215c0bda5be5c9aaf3058dc59adb57f92,
+is ready-for-validation, not completion. The temporal request contains only
+the work root above and graph/manifests/cli-transition-definition.json.
+
+Next executable interrogation: ./bin/usf transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json. Current digest
+sha256:7d291ce5f0b778512ef5ed474e8175f38dca828c4fa3cc25ab745c8e38f638b9;
+three descriptors, terminal34nodes57edges, complete=false,
+executionAuthority=none, parallelSafety=unproven. Complete=true/authority=none
+and proved/blocked safety are schema-representable, not authenticated verdicts.
+Before contract acceptance, complete terminal artifact declarations and required
+recovery edges; implement authenticated evaluators and remaining check/proof/
+publication adapters through this kernel. Never infer safety from topology.
+The current check-receipts transition lacks complete recovery semantics. Author
+that bounded semantic gap before implementing its canonical adapter; do not
+guess a new --input form or use native candidate files as completion evidence.
+
+Preserve candidate58a481e71a51e96f5385c73baca6a9f639b104fb3d5ee91d266ee4ff4c1de8d8
+as unaccepted/stale: two schema files were absent from candidate readPath despite
+confined runtime admission. Governed read-scope amendment and fresh grant fixed
+it; no native workspace was patched. Six redundant authoring copies were removed
+only after exact integrated-byte comparison. Required schema/implementation/tests
+are tracked; proposals, observations, native candidate/receipt history and the
+installed request remain bounded temporal state, not permanent dependencies.
+Disk334G available/81% used; unrelated historical worktrees were not pruned.
+USF-1192 comments1eae3742-0542-423b-9233-c20d52e7e83a and
+0ba85073-3fa5-44e4-a847-1064f1e4a32a were read back. Final gate/carrier/remote
+and supported stewardship handoff readback belong in the final1192 checkpoint.
+No1192 acceptance, independent parallel proof, terminal completion, provider
+contact, ANQR delivery,1189 cutover or clean-clone acceptance is claimed.
+
 ## No-change producer descriptor integrated - 2026-09-07 UTC
 
 USF-1192 progressed, not accepted. Semantic carrier
