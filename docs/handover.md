@@ -1,5 +1,91 @@
 # USF V3 handover
 
+## Completion evidence adapter integrated; terminal gaps remain - 2026-09-07 UTC
+
+USF-1192 progressed, not accepted. Semantic carrier 6d72763 and native source
+integration ae09fd072c511c8324027ea6d0e482550d0fe178 were followed by refreshed
+construction carrier f5af12b and dispatch-cycle repair integration
+f3241742f6d99db5eb656bc87367f665033c2f4c, tree
+c75c952b7df4485b33f651f4dc928214ba2a6b97.
+The canonical `evidence completion --input PATH|-` request has only
+rootIdentity, manifestPath and candidateDigest. It derives work/profile,
+authenticates the exact no-change workspace and complete validation receipt
+set through shared prepareCompletionEvidence, then rechecks scoped authority
+after awaited authentication. Canonical output is stdout-only; the legacy
+handler retains optional persistence. Dispatch belongs in src/cli.ts, with
+no completion-handler back-reference to transition.ts. Shared transition
+reachability and artifact-producer consistency now serve both coverage and
+observation admission. Competing producers and ambiguous owners refuse.
+
+The canonical tracked schema remains graph-generated, digest
+sha256:bb96d092ff8628cf9040edf30eca56547b9f65aa911d5bedc250a9c32b67568e.
+The interrogation wrapper references it. Structural completeness remains
+independent of execution authority; typed proved/blocked safety shapes do
+not authenticate safety. No generic operational fields or topology-derived
+parallel admission. Fresh installed interrogation report
+sha256:f45c52a4b821a06be937a03b80ab6eb9bee7a3bf610d7c7d926b0645f06dcd98,
+graphDigest sha256:030f82abff4c79ccd87dd9277af9a81d73fc7fac62b47fd3a7cb8a947b62bccb:
+30 terminal nodes,53 edges, complete=false, executionAuthority=none,
+parallelSafety=unproven, satisfaction=unverified. Newly explicit workspace
+and full-check-receipt producers expose missing required recovery edges.
+Terminal artifact declaration is still missing; proof/publication adapters
+remain unmapped. None is concealed by a passing structural fixture.
+
+First candidate c0c0700598302c636fe7473f88a6ce4024e41b936a6b9e9e6ee84cb57f1d273e
+remains unaccepted:48/50 focused tests and missing scoped imports. Native
+candidate 0f3c05b50aa8b8133bf758d85a439afcdc263e0f0472d3607fe27bff0e3a5366
+passed50/50 focused tests and scoped TypeScript, both required confined checks
+and integration postimage validation. Independent narrow review accepted the
+ownership repair. Its first full gate was946/949, exit1: two architecture
+cycle failures plus one restrictive-umask receipt-mode failure. Cycle repair
+candidate d2238ab3580a69799edcb8cfc66145fd116d8bc4b5af38a433470d5b1bf49c43
+passed both confined checks/postimage validation; primary architecture12/12.
+Integration request sha256:206b37446ddaaff6cf99ad8c739dc3932f10e3d8cd98f5e9314759af290eddbd,
+observation sha256:fb27e3daae2b4bef6a111213f3c5e27fc8ef78340188f4fc0ec4dbec3fe6efdc.
+No architecture exception or assertion weakening. Restrictive umask077
+portability follow-up is recorded in1194 comment726367d7-e7a5-4a1b-b8cb-e2405993f381.
+
+Fresh installed `./bin/usf evidence completion --input
+.usf/inputs/completion-evidence-cli-readback.json` correctly refused that
+actual source-change candidate with exit4, "Candidate is not an exact
+no-change workspace". This is refusal evidence, not positive live completion
+evidence. Do not manufacture a no-change identity or use a bespoke lifecycle
+script to bypass currently unmapped producer semantics.
+
+Next executable interrogation: `./bin/usf transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json`. Reconcile current construction
+authority, then author bounded input/effect/recovery semantics for the
+no-change-workspace and complete-check-receipt producers through transact.
+Regenerate the canonical schema through transition schema, prove/publish
+construction authority, and implement only graph-admitted adapters through
+native prepare-local/resolve/apply/check/integrate. Terminal applicability,
+artifact satisfaction, independent safety verification, installed inventory
+coverage and fresh CLI-only acceptance remain1192;1189 cutover remains open.
+
+All required source/schema lives tracked. Removed the three redundant
+completion-main-source/completion-worker-source/completion-cycle-source
+authoring directories after checking native proposals and integrated bytes.
+Proposals, candidates and failed/successful receipts are retained as bounded
+temporal observations, not an implementation or authority. Source search found
+no dependency on authoring paths. Current candidate workspaces total about12M;
+disk334G free,81% used. Older worktree disposition remains1193, not silently
+pruned. No provider contact, parallel proof, terminal completion, ANQR
+delivery, autonomous cutover or clean-clone acceptance is claimed.
+
+Fresh full `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`
+under explicit umask022 exited0:949/949 ordinary tests, zero skips/cancellations,
+all five confined checks passed. Log
+`.usf/inputs/completion-evidence-full-check-v3.log`; failed v2 log retained.
+Final runtime readback: supervisor e2f6e23b399268910ef4311d9,PID2054583,
+live at cycle626, no providerActivity or transactions in this snapshot.
+Supported steward handoff succeeded for claim
+sha256:ec8fd9524dbfa85f9a82c1d4a649618aa3091442c2ae20c4c6dda0c8dff62b06,
+generation sha256:902d2b37f802fb390462cba83f548dc85f6a7363ba942430c39155d0fd763115.
+Obtain fresh Git/remote and stewardship readback; final publication identities
+are recorded in the matching Linear checkpoint, not inferred from this text.
+
+
 ## Binding context integrated; descriptor remains fail-closed - 2026-09-07 UTC
 
 USF-1192 progressed, not accepted. Source commit
