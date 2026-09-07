@@ -1,5 +1,69 @@
 # USF V3 handover
 
+## Binding context integrated; descriptor remains fail-closed - 2026-09-07 UTC
+
+USF-1192 progressed, not accepted. Source commit
+21ccc75328d1b4ef843fe009a1f59fa3c0274a33, tree
+5eaaaa0500e1499bf3b2df95515f9df8d5cc35d4 includes shared pure binding
+declaration parsing and no-effect binding-root context selection. Semantic
+carrier de2738a and source integration e13e502 are followed by bootstrap
+runtime-closure carrier 272d12f and the one-line synthetic closure repair.
+Linear handler runtime attempts, supersession, dispatch, locks and receipts
+remain unchanged. Exact RDF kinds, cardinalities and bounded declarations
+are checked once by the shared reader. Large fixedPrompt literals require a
+valid bounded binding declaration; this is graph-wide structural parsing,
+not selected-only runtime authentication. Ordinary literal limits remain.
+
+Final fixture candidate
+sha256:cc0b94bffe1ef6b9ca834b12ba9bac9d8ff96366dfdb7c166ca6d2add14877bd;
+basis sha256:b0c847c17c8fdc03a78bbbb654dfb254fcf1715d93d9d61ce95905cf7fe870d3.
+Both required confined checks and postimage checks passed. Integration request
+sha256:5523c95212106b4180013be5cc67550cb75107210d05dd01aa7b3685095bb702;
+observation sha256:6e2713d18b0163a590fccad5a79aae386eab5911f0fd88cdb27e3813afcc49c2.
+Fresh `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`
+exited 0: 947/947 ordinary tests, zero skips/cancellations, all five confined
+checks passed. Log `.usf/inputs/binding-context-full-check-v2.log`.
+The earlier full log records943/947: missing bootstrap/synthetic runtime
+imports, repaired without changing assertions or confinement. Earlier
+candidate refusals (nine-file confinement bound, blank-at-EOF, temporary
+steward activity, and b09393f candidate basis mismatch after an unsuitable
+whole-repository fixture invocation) remain unaccepted history. See1192/1194.
+
+Fresh installed interrogation report
+sha256:a29eea90ea17129b2c77e41406566633073265e704a31c6730980f8711f727f3:
+26 terminal-census nodes,42 edges, complete=false, executionAuthority=none,
+parallelSafety=unproven, terminal satisfaction=unverified. Canonical tracked
+graph-generated schema digest remains
+sha256:524de9b1a90e8c5bbd8e551f8d7b03477b8eadfb03a776289dbe96b4256eb899.
+The wrapper references that schema; typed proved/blocked shapes and
+complete=true with no authority are representable, not authenticated claims.
+No operational generic fields or topology-derived parallel admission.
+Real binding urn:usf:linear-binding:usf-1162-fixture-repair:2 resolves its
+target contract and then refuses CLI_SPECIFICATION_INCOMPLETE because that
+contract lacks descriptor specifications. No synthetic binding was created.
+
+Next executable transition: `./bin/usf transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json`. Reconcile current work and
+construction authority, then map existing completion-evidence preparation:
+checked no-change workspace input, exact validation-receipt denominator,
+typed input/effect/recovery contracts and shared authentication through the
+existing completion machinery. Keep proof/publication unmapped until admitted.
+Full terminal applicability/satisfaction, independent safety authentication,
+installed-leaf coverage and CLI-only acceptance remain1192 work;1189 stays open.
+
+All seven postimages matched the integrated tracked files. Removed204K of
+redundant binding-main-source/binding-worker-source authoring copies. Retained
+proposals, candidates and refusal/check/integration observations are bounded
+temporal state, not a required implementation or schema. No source depends on
+those authoring paths. Older worktree disposition remains1193, not silently
+pruned. Disk readback334G available,81% used. Hermes supervisor
+e2f6e23b399268910ef4311d9,PID2054583 remained live at cycle614, with no provider
+activity or transaction in that snapshot. No restart, provider contact,
+parallel proof, terminal completion, ANQR delivery or clean-clone acceptance.
+Obtain current HEAD/remote/steward readback; publication and ownership settlement
+are recorded in the matching Linear checkpoint, not inferred from this text.
+
 ## Completion artifact lineage integrated - 2026-09-07 UTC
 
 USF-1192 progressed, not accepted. Semantic carrier
