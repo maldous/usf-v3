@@ -1,5 +1,75 @@
 # USF V3 handover
 
+## Source-bound terminal diagnostics integrated - 2026-09-07 UTC
+
+USF-1192 remains primary and unaccepted. Semantic carrier1340162 and native
+source/test integration96f8131de1ec2d636199caf49fd42c036e639c93,
+tree4acd58e062f45c34cc2c21ad1d94c20b92f5d5c7, replace aggregate-only
+terminal refusal reporting with closed typed diagnostics in the existing
+reader. reasonCodes is their deduplicated projection, not a second verdict.
+Each diagnostic binds actual source rows and, where known, the exact predicate,
+rule/digest, expected target type, scope and observed IRI targets. Absent
+targets stay absent. Exact duplicate diagnostics deduplicate; repeated source
+rows remain bound by the unchanged canonical digest domain. Overflow refuses.
+The tracked canonical schema was generated through transition schema and
+published through transact, digest
+sha256:50a976f9a0abf8f8afadd076278832f09846ef7ffa5e9d4e68edaa864a3b3350.
+No wrapper schema copy, private helper or lifecycle state machine was added.
+
+Candidate sha256:4d050b18a11929fc2573eeff9093d253ec993981a47d1b281ae3ed2749eb1779,
+basis sha256:2cb389cb54a70111e68a1160931d5bde451ccf53a1289e11fc2227762fef7d2c,
+passed scoped TypeScript,60/60 descriptor/contract tests, both confined checks
+and native postimage validation. Integration request
+sha256:2e862e8cc6251e019f62fc273d3234c621d6916cd2c39796469535b0a155d426;
+observation sha256:59993d9e349fa57ba5e2bed45de4a9069d2969cc5b4b3d9e26676d68648315e1.
+Lock wait5.323ms/hold2612.073ms and focused-test11802.131581ms are distinct
+observations, not total delivery timing. Review found no remaining blocker.
+The proposed duplicate-row digest normalization was rejected: tests instead
+prove unchanged diagnostic identity/count and exact changed source digests.
+
+Postintegration construction authority was applied and verified at
+evidence/construction-authority/24a583d09df7f0fb10c6b8a6aca0d7f23e00722dff5b7199b2026127f130440b.json,
+receipt sha256:40ad8f6fbeaa229c02ba2d5b0046e47cbd82f7f60ef698bee8ab1a49bd22a9e8.
+Earlier a5e9de4... publication became noncurrent when existing graph carrier
+order was restored after append-quads sorting; aa321a06... refreshed it before
+source authoring. Preserve both as historical records, not current grants.
+Two redundant authoring copies144K were removed after exact integrated-byte
+comparison. Required implementation/schema/tests are tracked; proposals,
+observations and native receipts/workspaces are bounded temporal state.
+Disk334G available/81% used; unrelated worktrees/runtime remain untouched.
+
+Next exact command: ./bin/usf transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json. It now directly identifies:
+- closure cli-transition-definition:1 missing predicate terminalArtifact,
+  governed by cli-terminal-policy:bounded-obligations:1;
+- transition completion-check-receipts:1 missing predicate recoveryContract,
+  governed by cli-terminal-edge:9:1, expected CliRecoveryContract.
+Both return source/rule digests and empty observedTargets. Do not invent targets
+or infer parallel safety. Structural completion and satisfaction still refuse.
+
+Next implementation lane remains the canonical check-receipts contracts and
+adapter. Preserve rootIdentity/manifestPath-only intent: extract the existing
+native no-change identity calculation without changing its digest or creating
+a workspace, then authenticate retained state and current authority. Extract
+current-or-absent receipt-member authentication from validationReferences;
+reuse current members without executing checks, execute only absent obligations,
+and reauthenticate the full set afterwards. The current denominator is TWO
+obligations, not the first matching graph row. Derive it; never hardcode it.
+Stale/conflicting/unsafe/unknown state refuses and stays preserved. These changes
+need their own semantic contracts/recovery cases and construction exception
+before source edits. Do not relabel durable check persistence as observation.
+Previous no-change candidate85fc284... is historical; rederive current identity.
+
+USF-1192 comments6a9489f6-288e-41db-a069-3620e6dba271 and
+5977a511-d0db-4c8d-8d7e-b88ccf66adc4 hold current scope and corrected next-lane
+audit. Final full-gate outcome, exact published carrier and stewardship handoff
+readback are in the final1192 checkpoint. Required final gate is
+COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check under umask022;
+log .usf/inputs/terminal-diagnostics-full-check.log. No1192 acceptance, terminal
+completion, authenticated parallel proof, provider contact, ANQR delivery,
+1189 cutover or clean-clone acceptance is claimed.
+
 ## Native canonical no-change adapter integrated - 2026-09-07 UTC
 
 USF-1192 remains primary and unaccepted. Semantic carriers fb9a105 and
