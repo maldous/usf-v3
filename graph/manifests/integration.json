@@ -1,7 +1,10 @@
 {
   "schema": "urn:usf:graph-manifest:2",
   "version": 2,
-  "imports": ["graph/manifests/self-host.json"],
+  "imports": [
+    "graph/manifests/self-host.json",
+    "graph/manifests/check-execution-intent.json"
+  ],
   "sources": [
     {
       "path": "graph/integration.nq",

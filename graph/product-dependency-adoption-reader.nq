@@ -286,3 +286,6 @@
 <urn:usf:work:product-dependency-adoption-reader> <urn:usf:predicate:writePath> "src/realisation/work-completion.ts" <urn:usf:graph:product-dependency-adoption-reader> .
 <urn:usf:work:product-dependency-adoption-reader> <urn:usf:predicate:writePath> "tests/integration/work-completion.test.ts" <urn:usf:graph:product-dependency-adoption-reader> .
 <urn:usf:work:product-dependency-adoption-reader> <urn:usf:predicate:writePath> "tests/unit/providers/implementation-work.test.ts" <urn:usf:graph:product-dependency-adoption-reader> .
+<urn:usf:validation-runtime-closure:product-dependency-adoption-reader:1> <urn:usf:predicate:repositoryReadFile> "graph/check-execution-intent.nq" <urn:usf:graph:product-dependency-adoption-reader> .
+<urn:usf:validation-runtime-closure:product-dependency-adoption-reader:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/check-execution-intent.json" <urn:usf:graph:product-dependency-adoption-reader> .
+<urn:usf:validation-runtime-closure:product-dependency-adoption-reader:1> <urn:usf:predicate:repositoryReadFile> "schemas/checked-candidate-execution-intent.schema.json" <urn:usf:graph:product-dependency-adoption-reader> .

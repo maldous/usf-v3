@@ -1,0 +1,14 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [],
+  "sources": [
+    {
+      "path": "graph/check-execution-intent.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:check-execution-intent",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

@@ -280,3 +280,6 @@
 <urn:usf:work:completion-receipt-reauthentication-assurance> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:completion-receipt-reauthentication-assurance> .
 <urn:usf:work:completion-receipt-reauthentication-assurance> <urn:usf:predicate:validation> <urn:usf:validation:completion-receipt-reauthentication-assurance> <urn:usf:graph:completion-receipt-reauthentication-assurance> .
 <urn:usf:work:completion-receipt-reauthentication-assurance> <urn:usf:predicate:writePath> "tests/integration/work-completion.test.ts" <urn:usf:graph:completion-receipt-reauthentication-assurance> .
+<urn:usf:validation-runtime-closure:completion-receipt-reauthentication-assurance:1> <urn:usf:predicate:repositoryReadFile> "graph/check-execution-intent.nq" <urn:usf:graph:completion-receipt-reauthentication-assurance> .
+<urn:usf:validation-runtime-closure:completion-receipt-reauthentication-assurance:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/check-execution-intent.json" <urn:usf:graph:completion-receipt-reauthentication-assurance> .
+<urn:usf:validation-runtime-closure:completion-receipt-reauthentication-assurance:1> <urn:usf:predicate:repositoryReadFile> "schemas/checked-candidate-execution-intent.schema.json" <urn:usf:graph:completion-receipt-reauthentication-assurance> .

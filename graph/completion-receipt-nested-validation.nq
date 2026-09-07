@@ -347,3 +347,6 @@
 <urn:usf:work:completion-receipt-nested-validation> <urn:usf:predicate:writePath> "tests/fixtures/work-completion/repository-path-checked-receipt.json" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:work:completion-receipt-nested-validation> <urn:usf:predicate:writePath> "tests/fixtures/work-completion/repository-path-checked-receipt.provenance.json" <urn:usf:graph:completion-receipt-nested-validation> .
 <urn:usf:work:completion-receipt-nested-validation> <urn:usf:predicate:writePath> "tests/integration/work-completion.test.ts" <urn:usf:graph:completion-receipt-nested-validation> .
+<urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "graph/check-execution-intent.nq" <urn:usf:graph:completion-receipt-nested-validation> .
+<urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/check-execution-intent.json" <urn:usf:graph:completion-receipt-nested-validation> .
+<urn:usf:validation-runtime-closure:completion-receipt-nested-validation:1> <urn:usf:predicate:repositoryReadFile> "schemas/checked-candidate-execution-intent.schema.json" <urn:usf:graph:completion-receipt-nested-validation> .
