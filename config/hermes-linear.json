@@ -1,0 +1,66 @@
+{
+  "$schema": "../schemas/hermes-linear-policy.schema.json",
+  "schema": "urn:usf:hermes-linear-policy:1",
+  "endpoint": "https://api.linear.app/graphql",
+  "bindingManifests": [
+    "graph/manifests/linear-issue-bindings.json"
+  ],
+  "pageSize": 50,
+  "maxPages": 20,
+  "timeoutMs": 10000,
+  "maxResponseBytes": 4194304,
+  "maximumIssuesPerCycle": 100,
+  "pollSeconds": 30,
+  "allowCreate": true,
+  "allowUpdate": true,
+  "workspaces": [
+    {
+      "key": "MALDOUS",
+      "organizationUrlKey": "maldous",
+      "credentialName": "USF_LINEAR_API_KEY",
+      "authScheme": "api-key",
+      "teams": [
+        {
+          "id": "77f0a87a-f966-460f-b744-98e75634f128",
+          "owner": "USF",
+          "assigneeId": null,
+          "startedStateId": null,
+          "completedStateId": null,
+          "blockedStateId": null
+        },
+        {
+          "id": "53f584e7-70a1-4b1e-b982-b815210e47d4",
+          "owner": "UIF",
+          "assigneeId": null,
+          "startedStateId": null,
+          "completedStateId": null,
+          "blockedStateId": null
+        },
+        {
+          "id": "b37722e5-83b8-474c-9338-9781c0160d4f",
+          "owner": "UXF",
+          "assigneeId": null,
+          "startedStateId": null,
+          "completedStateId": null,
+          "blockedStateId": null
+        }
+      ]
+    },
+    {
+      "key": "ANQR",
+      "organizationUrlKey": "anqr",
+      "credentialName": "ANQR_LINEAR_API_KEY",
+      "authScheme": "api-key",
+      "teams": [
+        {
+          "id": "01534c1e-4041-474d-a81e-24f917f33912",
+          "owner": "ANQR",
+          "assigneeId": null,
+          "startedStateId": null,
+          "completedStateId": null,
+          "blockedStateId": null
+        }
+      ]
+    }
+  ]
+}

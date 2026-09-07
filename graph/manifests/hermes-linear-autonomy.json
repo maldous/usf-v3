@@ -1,0 +1,26 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/operational-stewardship.json",
+    "graph/manifests/v3-execution.json",
+    "graph/manifests/profile-authority.json",
+    "graph/manifests/fixture-process-runtime.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/hermes-linear-autonomy.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:hermes-linear-autonomy",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/hermes-linear-autonomy-grants.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:hermes-linear-autonomy-grants",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}
