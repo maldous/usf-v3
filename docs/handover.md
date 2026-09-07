@@ -1,5 +1,85 @@
 # USF V3 handover
 
+## Opaque candidate content repair integrated - 2026-09-07 UTC
+
+USF-1194 progressed; USF-1192 remains primary and unaccepted.
+Semantic carrier bd9a11f81b272520ce9d73946c731819e3bb83f9 and native
+integration 5cccd0e6dbf35c4e2325fbc11e8cbeb3dd736147, tree
+83dab2d9ef2f18693dbe252d3e69614193ea1213, repair the recorded UTF-8 defect.
+Resolver and realisation now share candidateArtifactDigest. Only validated
+write content is opaque to recursive absolute-path interpretation; exact
+content remains hash-bound. Metadata/path guards, old accepted candidate
+digests and generic provider Contribution identity remain unchanged.
+The resolve handler preserves typed UsfError instead of masking it as
+RESOLVE_BASIS_INVALID. No effect adapter or parallel admission was added.
+
+Accepted candidate sha256:51b701306d656827e69cd5b7cc449a54b3560242f3c91f4885cfe0f6efd15a94
+passed scoped TypeScript, both required confined checks and native postimage
+validation. Request sha256:a0a3103cacd0ad4c36dbde6667876bc7fc3610ea1f4b3d8daefa92d4968d1a56;
+observation sha256:f4b6a3af11c15676642ff0ae3479ac3f930881af5d574ced3cfc43ae60c70657.
+Measured lock wait2.803ms/hold3181.616ms are not end-to-end timing.
+Independent read-only review found no blocker. Integrated workspace regression
+passed1/1 with comment-leading source preserved exactly.
+
+Postintegration construction publication was applied and verified at
+evidence/construction-authority/ddd227dd09be6b7b027ab79bf08123e0769a7a5f3dd85358ce9b4f6d37e7edd4.json,
+receipt sha256:a49eb2e249d03dabc91c985447f8cb502d0eea7547b3c4603391b8dc43936d51,
+carrier23340cfa24e8e343d44760b5515407558aedf62a.
+Fresh installed CLI prepare-local -> resolve -> apply accepted raw UTF-8
+src/realisation/index.ts starting /**, with no encoding override.
+Candidate sha256:9f2058f170660a3d83fa8479108e72c29ac1156854a14fbac5ff338e82fedd99,
+basis sha256:1fef57b433aedcb9c9a7fb75e22f20ee1f5b5eec94d42a838d2f0a0ba6847315.
+The exact workspace bytes match primary. Inputs/results named
+.usf/inputs/candidate-content-raw-*.json are bounded temporal observations,
+not required helpers, completion evidence or a no-change-completion claim.
+
+Full COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check under
+umask022 exited0:950/950 tests, zero skips/cancellations, all five confined
+checks passed. Ordinary test duration126222.028522ms is not total gate time.
+Log .usf/inputs/candidate-content-full-check.log.
+Earlier candidates remain accurately unaccepted: v2 test typing and refusal
+expectation defects; v3 passed checks but whitespace preflight refused extra
+blank lines. v4 alone integrated. Removed196K redundant authoring copy after
+all seven source files matched the exact encoded proposal; no tracked
+implementation references that path. Retain native candidate/receipt history.
+Disk334G available,81% used; unrelated worktrees/runtime were not removed.
+
+Current transition inspect digest
+sha256:4fdcb1ef63560ee19edbb5b0cdddba39b3115c7ac8d3c964efc9b9412a9c51e6
+remains complete=false, executionAuthority=none, parallelSafety=unproven.
+Terminal artifact declaration and recovery edges remain missing.
+No1192 acceptance, provider contact/failover, ANQR delivery,1189 autonomy,
+clean-clone acceptance or separate umask portability repair is claimed.
+
+Next exact command: ./bin/usf transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json.
+Then reconcile current construction authority and author the actual no-change
+producer input/effect/recovery contract. Candidate digest is a derived OUTPUT,
+not a reused completion-evidence request input. Canonical root/manifest should
+derive work/profile; legacy realise no-change's three explicit selectors are
+not a reason to preserve repeated caller inputs. Materialisation is effectful,
+not observation. Partial/conflicting retained state stays refused; no partial
+recovery or adapter support may be invented from a graph declaration.
+Reuse per-obligation check recovery; do not add a second cohort protocol.
+
+USF-1192 comment80dd97b9-0c0e-4d22-9068-9f8ac27a172d records this next scope.
+Commentecf47604-667e-4914-962f-4bc62edb791e records another concrete hidden input:
+mutation needs exact returned USF_STEWARD_GENERATION alongside session/claim,
+but current steward/transact help omits that environment requirement.
+Fix the canonical input/help gap without weakening generation refusal.
+USF-1194 comment16e6013f-ebd4-481a-8298-c9848018198d records integration/CLI
+evidence. Source carrier23340cf was pushed and separately read back from GitHub.
+Hermes supervisor e2f6e23b399268910ef4311d9/PID2054583 remained live at cycle639,
+with no providerActivity or transactions in its snapshot. Supported handoff
+succeeded for claim sha256:37f3e1c558add70071d4d5dda53de53c50a7a52bdbc7bfffca1c75010924d437,
+generation sha256:615af4aa6d6ff8433ed35a4fc7295d591eb3241637936b602e5dd77623cedfbe.
+Controller exited; readback is handed-off/dead, activeActivity=false,
+primaryMutation=idle, supervisor=live. Final documentation carrier and remote
+readback are recorded in the matching Linear checkpoint; obtain current Git
+HEAD/tree rather than treating the preceding source carrier as current HEAD.
+
+
 ## Non-destructive no-change replay integrated - 2026-09-07 UTC
 
 USF-1192 progressed, not accepted. Semantic carrier
